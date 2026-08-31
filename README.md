@@ -223,3 +223,13 @@ pnpm changeset
 ## Security disclosures
 
 If you find a security issue or exploit, please email us at **security@talisman.xyz**. Please _DO NOT_ create an issue or PR in this repo for security issues.
+
+## License
+
+The source code in this repository is licensed under the [Talisman License](LICENSE), a source-available license which permits use, copying, and modification for non-commercial purposes only. Commercial use requires a separate license from the [Paraverse Foundation](https://talisman.xyz).
+
+Exceptions: [`packages/orb`](packages/orb) and [`packages/substrate-vrf`](packages/substrate-vrf) are licensed under MIT (see the LICENSE file in each package).
+
+This license applies to this repository only; other repositories in the [TalismanSociety](https://github.com/TalismanSociety) organization are licensed under their own terms.
+
+By contributing to this repository, you agree to the contribution terms set out in the [Contribution Guidelines](CONTRIBUTING.md).

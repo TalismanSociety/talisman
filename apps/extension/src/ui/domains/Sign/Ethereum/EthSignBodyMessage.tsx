@@ -14,7 +14,6 @@ import { cn } from "@ui/util/cn"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageOrder } from "./EthSignBodyMessageOrder"
@@ -162,7 +161,6 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         </div>
       )}
       <div className="mb-8 flex w-full flex-col items-center gap-4">
-        <RiskAnalysisPillButton />
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>
       <Message className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")} text={text} />

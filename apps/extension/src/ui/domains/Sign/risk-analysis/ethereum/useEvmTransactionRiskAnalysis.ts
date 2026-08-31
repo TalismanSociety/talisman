@@ -15,6 +15,8 @@ type UseEvmTransactionRiskAnalysisProps = {
   origin?: string
   disableAutoRiskScan?: boolean
   disableCriticalPane?: boolean
+  /** identity of the signing step, required when a flow signs several transactions in sequence */
+  subjectId?: string
 }
 
 export const useEvmTransactionRiskAnalysis = ({
@@ -22,6 +24,7 @@ export const useEvmTransactionRiskAnalysis = ({
   tx,
   disableAutoRiskScan,
   disableCriticalPane,
+  subjectId,
 }: UseEvmTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
@@ -42,6 +45,7 @@ export const useEvmTransactionRiskAnalysis = ({
     networkId,
     disableAutoRiskScan,
     disableCriticalPane,
+    subjectId,
     queryKey: ["useEvmTransactionRiskAnalysis", networkId, txData, origin],
     queryFn: async () => {
       if (!networkId || !txData) return null

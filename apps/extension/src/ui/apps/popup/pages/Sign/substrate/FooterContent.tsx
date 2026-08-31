@@ -11,6 +11,7 @@ import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
+import { getPayloadTip } from "@ui/domains/Sign/Substrate/util/getPayloadTip"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useTokensMap } from "@ui/state/chaindata"
 import { uniq } from "lodash-es"
@@ -148,12 +149,15 @@ const EstimatedFeesRow: FC = () => {
     chain,
     errorDecodingExtrinsic,
     signingRequest,
+    payload,
     dryRun,
     dryRunIsLoading,
   } = usePolkadotSigningRequest()
   const tokens = useTokensMap()
 
   const feeToken = useFeeToken(chain?.nativeTokenId)
+
+  const tip = useMemo(() => getPayloadTip(payload), [payload])
 
   const deliveryFees = useMemo<FeeDetails[]>(() => {
     if (!chain?.nativeTokenId || !dryRun?.ok || !dryRun.data.success) return []
@@ -223,8 +227,22 @@ const EstimatedFeesRow: FC = () => {
           ]
         : []
 
-    return [...deliveryFeesWithBalances, ...executionFee]
-  }, [deliveryFees, fee, feeToken?.id, t, allBalances])
+    const tipFee =
+      tip > 0n && feeToken?.id
+        ? [
+            {
+              label: t("Tip:"),
+              plancks: tip,
+              tokenId: feeToken.id,
+              balance:
+                allBalances.balances.find({ tokenId: feeToken.id }).each[0]?.transferable.planck ??
+                null,
+            },
+          ]
+        : []
+
+    return [...deliveryFeesWithBalances, ...executionFee, ...tipFee]
+  }, [deliveryFees, fee, feeToken?.id, t, allBalances, tip])
 
   const estimatedFee = useMemo(
     () =>

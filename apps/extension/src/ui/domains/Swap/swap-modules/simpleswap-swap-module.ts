@@ -33,6 +33,7 @@ import {
   estimateDepositGas,
 } from "./deposit-swap-transactions"
 import { getSimpleSwapApiKey as getApiKeyFromUtils, getSimpleSwapTalismanFee } from "./fee-utils"
+import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 const PROTOCOL: SupportedSwapProtocol = "simpleswap"
@@ -554,12 +555,11 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
       )
       throw new Error("Incorrect currencies from provider. Please try again later")
     }
-    if (
-      BigNumber(exchange.expected_amount).isGreaterThan(
-        planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
-      )
-    )
-      throw new Error("Quote changed. Please try again.")
+    assertDepositAmountWithinInput({
+      depositAmount: exchange.expected_amount,
+      fromAmount,
+      decimals: fromAsset.decimals,
+    })
     if (exchange.address_to !== formattedToAddress)
       throw new Error("Incorrect destination address from provider. Please try again later")
 
@@ -579,6 +579,12 @@ const getTransaction = async (
 
   const exchange = params.exchange as Exchange | undefined
   if (!exchange?.address_from) throw new Error("Missing exchange")
+
+  assertDepositAmountWithinInput({
+    depositAmount: exchange.expected_amount,
+    fromAmount: params.fromAmount,
+    decimals: fromAsset.decimals,
+  })
 
   const deposit: DepositInfo = {
     depositAddress: exchange.address_from,

@@ -6,7 +6,16 @@ import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "../Asset/Fiat"
@@ -16,7 +25,10 @@ import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
-import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
@@ -92,16 +104,13 @@ const TotalAmountRow = () => {
   if (!totalValue) return null
 
   return (
-    <div className="mt-4 flex h-4.25 justify-between text-xs">
-      <div className="text-body-secondary">{t("Total Amount")}</div>
-      <div className="text-body">
-        {totalValue ? (
-          <Fiat amount={totalValue} />
-        ) : (
-          <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />
-        )}
-      </div>
-    </div>
+    <SummaryRow label={t("Total Amount")}>
+      {totalValue ? (
+        <Fiat amount={totalValue} />
+      ) : (
+        <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />
+      )}
+    </SummaryRow>
   )
 }
 
@@ -287,40 +296,36 @@ const EthFeeSummary = () => {
 
   return (
     <>
-      <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">{t("Transaction Priority")}</div>
-        <div>
-          {network.nativeTokenId && priority && tx && txDetails && (
-            <EthFeeSelect
-              tokenId={network.nativeTokenId}
-              drawerContainerId="main"
-              gasSettingsByPriority={gasSettingsByPriority}
-              setCustomSettings={setCustomSettings}
-              onChange={setPriority}
-              priority={priority}
-              txDetails={txDetails}
-              networkUsage={networkUsage}
-              tx={tx}
-            />
-          )}
-        </div>
-      </div>
-      <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">
-          {t("Estimated Fee")} <SendFundsFeeTooltip />
-        </div>
-        <div className="text-body">
-          <div className="inline-flex h-4.25 items-center">
-            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
-            {!!txDetails?.estimatedFee && network && (
-              <TokensAndFiat
-                planck={txDetails.estimatedFee.toString()}
-                tokenId={network.nativeTokenId}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      <SummaryRow label={t("Transaction Priority")}>
+        {network.nativeTokenId && priority && tx && txDetails && (
+          <EthFeeSelect
+            tokenId={network.nativeTokenId}
+            drawerContainerId="main"
+            gasSettingsByPriority={gasSettingsByPriority}
+            setCustomSettings={setCustomSettings}
+            onChange={setPriority}
+            priority={priority}
+            txDetails={txDetails}
+            networkUsage={networkUsage}
+            tx={tx}
+          />
+        )}
+      </SummaryRow>
+      <SummaryRow
+        label={
+          <>
+            {t("Estimated Fee")} <SendFundsFeeTooltip />
+          </>
+        }
+      >
+        {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+        {!!txDetails?.estimatedFee && network && (
+          <TokensAndFiat
+            planck={txDetails.estimatedFee.toString()}
+            tokenId={network.nativeTokenId}
+          />
+        )}
+      </SummaryRow>
     </>
   )
 }
@@ -336,33 +341,29 @@ const DefaultFeeSummary = () => {
   return (
     <>
       {!!tip && !!tipToken && tip.planck > 0n && (
-        <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
-          <div className="text-body-secondary">{t("Tip")}</div>
-          <div className="text-body">
-            <div className={cn("inline-flex h-4.25 items-center")}>
-              <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
-            </div>
-          </div>
-        </div>
+        <SummaryRow label={t("Tip")}>
+          <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
+        </SummaryRow>
       )}
-      <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">
-          {t("Estimated Fee")} <SendFundsFeeTooltip />
+      <SummaryRow
+        label={
+          <>
+            {t("Estimated Fee")} <SendFundsFeeTooltip />
+          </>
+        }
+      >
+        <div className={cn("flex items-center", isRefetching && "animate-pulse")}>
+          {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+          {estimatedFee && feeToken && (
+            <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
+          )}
+          {error && (
+            <WithTooltip tooltip={(error as Error).message}>
+              <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
+            </WithTooltip>
+          )}
         </div>
-        <div className="text-body">
-          <div className={cn("inline-flex h-4.25 items-center", isRefetching && "animate-pulse")}>
-            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
-            {estimatedFee && feeToken && (
-              <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
-            )}
-            {error && (
-              <WithTooltip tooltip={(error as Error).message}>
-                <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
-              </WithTooltip>
-            )}
-          </div>
-        </div>
-      </div>
+      </SummaryRow>
     </>
   )
 }
@@ -384,14 +385,9 @@ const Token2022TransferFeeRow: FC = () => {
   if (!feeInfo || !token || !isTokenOfType(token, "sol-token2022")) return null
 
   return (
-    <div className="mt-4 flex h-4.25 items-center justify-between gap-8 text-xs">
-      <div className="text-body-secondary">
-        {t("Transfer Fee ({{bps}}bps)", { bps: feeInfo.feeBasisPoints })}
-      </div>
-      <div className="text-body">
-        <TokensAndFiat planck={feeInfo.feeAmount} tokenId={token.id} />
-      </div>
-    </div>
+    <SummaryRow label={t("Transfer Fee ({{bps}}bps)", { bps: feeInfo.feeBasisPoints })}>
+      <TokensAndFiat planck={feeInfo.feeAmount} tokenId={token.id} />
+    </SummaryRow>
   )
 }
 
@@ -435,18 +431,19 @@ export const SendFundsConfirmForm = () => {
                 <div className="py-8">
                   <hr className="text-grey-800" />
                 </div>
-                <BittensorAlphaTokenRow />
-                <div className="mt-4 flex items-center justify-between gap-8 text-xs">
-                  <div className="text-body-secondary">{t("Network")}</div>
-                  <NetworkDisplay />
+                <div className="flex w-full flex-col gap-4">
+                  <BittensorAlphaTokenRow />
+                  <SummaryRow label={t("Network")}>
+                    <NetworkDisplay />
+                  </SummaryRow>
+                  <FeeSummary />
+                  <RiskAssessmentRow />
+                  <Token2022TransferFeeRow />
+                  <TotalAmountRow />
                 </div>
-                <FeeSummary />
-                <Token2022TransferFeeRow />
-                <TotalAmountRow />
               </div>
             </div>
           </ScrollContainer>
-          {riskAnalysis && <RiskAnalysisPillButton />}
           <SendButton />
         </div>
       </RiskAnalysisProvider>
@@ -461,11 +458,34 @@ const BittensorAlphaTokenRow: FC = () => {
   if (token?.type !== "substrate-dtao") return null
 
   return (
-    <div className="mt-4 flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
-      <div className="text-body-secondary">{t("Token")}</div>
+    <SummaryRow label={t("Token")}>
       <div className={cn("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
         {token.name}
         <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+      </div>
+    </SummaryRow>
+  )
+}
+
+const RiskAssessmentRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <SummaryRow label={t("Risk Assessment")}>
+      <RiskAnalysisPillButton className="h-12" size="xs" />
+    </SummaryRow>
+  )
+}
+
+const SummaryRow: FC<PropsWithChildren<{ label: ReactNode }>> = ({ label, children }) => {
+  return (
+    <div className="flex h-12 w-full items-center justify-between gap-8 overflow-hidden text-xs">
+      <div className="shrink-0 text-body-secondary">{label}</div>
+      <div className="flex h-full grow items-center justify-end overflow-hidden text-body">
+        {children}
       </div>
     </div>
   )

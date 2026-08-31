@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 2.0.1
+
+### Patch Changes
+
+- 2d5885d: fix bundled .d.ts exporting getDynamicBuilder as type-only (TS1362 for consumers calling it)
+
 ## 2.0.0
 
 ### Major Changes

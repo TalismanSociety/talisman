@@ -57,6 +57,12 @@ class Accounts implements InjectedAccounts {
   }
 }
 
+// Shown in the dapp's console when it calls `metadata.provide`.
+const PROVIDE_METADATA_WARNING =
+  "[Talisman] Provided metadata is ignored. Talisman only trusts runtime metadata it downloads " +
+  "itself from the chain, because the metadata used to decode a transaction decides what the " +
+  "user is shown before signing. Talisman will refresh its own copy for this chain instead."
+
 class Metadata implements InjectedMetadata {
   readonly #sendRequest: SendRequest
 
@@ -69,6 +75,8 @@ class Metadata implements InjectedMetadata {
   }
 
   public provide = (definition: MetadataDef): Promise<boolean> => {
+    // biome-ignore lint/suspicious/noConsole: dapp-facing notice, no logger in page context
+    console.warn(PROVIDE_METADATA_WARNING)
     return this.#sendRequest("pub(metadata.provide)", definition)
   }
 }

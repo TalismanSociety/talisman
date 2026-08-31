@@ -5,7 +5,6 @@ import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
-import { RiskAnalysisPillButton } from "./risk-analysis/RiskAnalysisPillButton"
 import { SubSignDecoded } from "./Substrate/decode/SubSignDecoded"
 
 type SignContainerProps = {
@@ -39,7 +38,6 @@ export const SignContainer: FC<SignContainerProps> = ({
         {networkType === "substrate" && <ViewDetailsSub />}
       </div>
       <div className="mt-12 mb-8 grow text-center">
-        {networkType === "ethereum" && <RiskAnalysisPillButton />}
         {networkType === "substrate" && <SubSignDecoded />}
       </div>
       {alert && alertContainer && createPortal(alert, alertContainer)}
