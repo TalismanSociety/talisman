@@ -26,14 +26,16 @@ describe("getRootWeightsBreakdown", () => {
 
     const breakdown = getRootWeightsBreakdown(weights)
 
+    const slices = [
+      { netuid: 51, ratio: 0.4 },
+      { netuid: 8, ratio: 0.3 },
+      { netuid: 64, ratio: 0.2 },
+      { netuid: 3, ratio: 0.1 },
+    ]
     expect(breakdown).toEqual({
       subnetCount: 4,
-      topSlices: [
-        { netuid: 51, ratio: 0.4 },
-        { netuid: 8, ratio: 0.3 },
-        { netuid: 64, ratio: 0.2 },
-        { netuid: 3, ratio: 0.1 },
-      ],
+      topSlices: slices,
+      allSlices: slices,
       othersRatio: expect.closeTo(0),
     })
   })
@@ -89,6 +91,7 @@ describe("getRootWeightsBreakdown", () => {
 
     expect(breakdown?.subnetCount).toBe(12)
     expect(breakdown?.topSlices).toHaveLength(8)
+    expect(breakdown?.allSlices).toHaveLength(12)
     expect(breakdown?.othersRatio).toBeCloseTo(4 / 12)
   })
 })

@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import {
@@ -161,6 +162,7 @@ export const ChangeValidatorSelect = () => {
                 selectedHotkey={newHotkey ?? currentHotkey}
                 isLoading={isLoading}
                 showRootWeights={netuid === ROOT_NETUID}
+                containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
                 onSelect={handleSubmit}
               />
             )}

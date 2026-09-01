@@ -2,6 +2,7 @@ import { BittensorValidatorPicker } from "@ui/domains/TaoDashboard/subnet/swap/B
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
@@ -37,6 +38,7 @@ export const BittensorValidatorSelect = () => {
         networkId={networkId}
         netuid={netuid}
         hotkey={hotkey}
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         onSelect={handleSubmit}
       />
     </BittensorModalLayout>

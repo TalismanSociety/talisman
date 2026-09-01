@@ -3,11 +3,15 @@ import { ROOT_NETUID } from "./constants"
 /** decoded element of `get_validator_weights`: declared root weight for one destination */
 export type RootWeightEntry = [netuid: number, weight: number]
 
+export type RootWeightSlice = { netuid: number; ratio: number }
+
 export type RootWeightsBreakdown = {
   /** subnets with exposure — a netuid 0 (TAO cash position) slice is excluded */
   subnetCount: number
   /** largest slices first, ratios over the full vector including the TAO slice */
-  topSlices: { netuid: number; ratio: number }[]
+  topSlices: RootWeightSlice[]
+  /** every positive slice, same order as topSlices */
+  allSlices: RootWeightSlice[]
   othersRatio: number
 }
 
@@ -25,14 +29,15 @@ export const getRootWeightsBreakdown = (
   const total = positive.reduce((sum, [, weight]) => sum + weight, 0)
   if (!total) return null
 
-  const topSlices = positive
+  const allSlices = positive
     .toSorted(([netuidA, weightA], [netuidB, weightB]) => weightB - weightA || netuidA - netuidB)
-    .slice(0, TOP_SLICE_COUNT)
     .map(([netuid, weight]) => ({ netuid, ratio: weight / total }))
+  const topSlices = allSlices.slice(0, TOP_SLICE_COUNT)
 
   return {
     subnetCount: positive.filter(([netuid]) => netuid !== ROOT_NETUID).length,
     topSlices,
+    allSlices,
     othersRatio: Math.max(0, 1 - topSlices.reduce((sum, slice) => sum + slice.ratio, 0)),
   }
 }

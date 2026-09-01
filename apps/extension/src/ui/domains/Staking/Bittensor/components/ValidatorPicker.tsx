@@ -16,12 +16,12 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import { type FC, useMemo } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 import type { ValidatorSortValue } from "../utils/validatorSorting"
-import { RootWeightsStat } from "./RootWeightsStat"
+import { RootWeightsStat, RootWeightsViewAllModal } from "./RootWeightsStat"
 
 export const ValidatorSortMethodButton: FC<{
   method: ValidatorSortValue
@@ -77,9 +77,23 @@ export const ValidatorRows: FC<{
   selectedHotkey?: string | null
   isLoading?: boolean
   showRootWeights?: boolean
+  containerId?: string
   onSelect: (hotkey: string) => void
-}> = ({ taoTokenId, validators, selectedHotkey, isLoading, showRootWeights, onSelect }) => {
+}> = ({
+  taoTokenId,
+  validators,
+  selectedHotkey,
+  isLoading,
+  showRootWeights,
+  containerId,
+  onSelect,
+}) => {
   const { ref: refContainer } = useScrollContainer()
+  const tao = useToken(taoTokenId)
+
+  const [viewAllHotkey, setViewAllHotkey] = useState<string | null>(null)
+  const [isViewAllOpen, setIsViewAllOpen] = useState(false)
+  const closeViewAll = useCallback(() => setIsViewAllOpen(false), [])
 
   const virtualizer = useVirtualizer({
     count: validators.length,
@@ -120,11 +134,25 @@ export const ValidatorRows: FC<{
                 onClick={() => onSelect(validator.hotkey)}
                 isLoading={isLoading}
                 showRootWeights={showRootWeights}
+                onViewAllWeights={(hotkey) => {
+                  setViewAllHotkey(hotkey)
+                  setIsViewAllOpen(true)
+                }}
               />
             </div>
           )
         })}
       </div>
+      {/* hosted here, outside the virtualized rows, so a row unmount can't close it */}
+      {viewAllHotkey && (
+        <RootWeightsViewAllModal
+          networkId={tao?.networkId as DotNetworkId | undefined}
+          hotkey={viewAllHotkey}
+          containerId={containerId}
+          isOpen={isViewAllOpen}
+          onDismiss={closeViewAll}
+        />
+      )}
     </div>
   )
 }
@@ -161,8 +189,17 @@ const ValidatorRow: FC<{
   isSelected?: boolean
   isLoading?: boolean
   showRootWeights?: boolean
+  onViewAllWeights: (hotkey: string) => void
   onClick: () => void
-}> = ({ option, isSelected, isLoading, taoTokenId, showRootWeights, onClick }) => {
+}> = ({
+  option,
+  isSelected,
+  isLoading,
+  taoTokenId,
+  showRootWeights,
+  onViewAllWeights,
+  onClick,
+}) => {
   const { t } = useTranslation()
   const tao = useToken(taoTokenId)
 
@@ -268,6 +305,7 @@ const ValidatorRow: FC<{
             <RootWeightsStat
               networkId={tao?.networkId as DotNetworkId | undefined}
               hotkey={option.hotkey}
+              onViewAll={() => onViewAllWeights(option.hotkey)}
             />
           )}
         </div>

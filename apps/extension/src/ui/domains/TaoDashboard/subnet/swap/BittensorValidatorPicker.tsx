@@ -29,8 +29,9 @@ export const BittensorValidatorPicker: FC<{
   networkId: DotNetworkId
   netuid: number
   hotkey: string | null
+  containerId?: string
   onSelect: (hotkey: string) => void
-}> = ({ networkId, netuid, hotkey, onSelect }) => {
+}> = ({ networkId, netuid, hotkey, containerId, onSelect }) => {
   const { t } = useTranslation()
   const isRoot = netuid === ROOT_NETUID
   const apyColumnLabel = isRoot ? t("APR [30D]") : t("APY [30D]")
@@ -126,6 +127,7 @@ export const BittensorValidatorPicker: FC<{
               selectedHotkey={hotkey}
               isLoading={isLoading}
               showRootWeights={isRoot}
+              containerId={containerId}
               onSelect={onSelect}
             />
           )}

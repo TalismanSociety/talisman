@@ -58,6 +58,7 @@ export const SelectValidatorPill: FC<{
               networkId={networkId}
               netuid={netuid}
               hotkey={hotkey}
+              containerId="select-validator-picker-modal"
               onSelect={handleSelect}
             />
           </WizardModalDialog>

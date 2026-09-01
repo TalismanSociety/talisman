@@ -34,6 +34,8 @@ interface TooltipOptions {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   delay?: number
+  /** Keeps the tooltip open while the cursor travels to its content, so it can hold buttons or links */
+  interactive?: boolean
 }
 
 /** Needed because of https://github.com/microsoft/TypeScript/issues/47663#issuecomment-1519138189 */
@@ -49,6 +51,7 @@ function useTooltip({
   open: controlledOpen,
   onOpenChange: setControlledOpen,
   delay = 250,
+  interactive = false,
 }: TooltipOptions = {}): UseTooltipReturnType {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen)
 
@@ -84,7 +87,7 @@ function useTooltip({
     enabled: controlledOpen == null,
     // safePolygon keeps the tooltip open while the cursor moves between the trigger and floating element,
     // preventing flicker when the tooltip overlaps the trigger (e.g. center placement)
-    handleClose: isCenter ? safePolygon() : undefined,
+    handleClose: isCenter || interactive ? safePolygon() : undefined,
     delay: {
       open: delay,
       // delay on close has side-effects, don't use it
@@ -113,7 +116,7 @@ type ContextType = ReturnType<typeof useTooltip> | null
 
 const TooltipContext = createContext<ContextType>(null)
 
-const useTooltipContext = (): NonNullable<ContextType> => {
+export const useTooltipContext = (): NonNullable<ContextType> => {
   const context = useContext(TooltipContext)
 
   if (context == null) {
