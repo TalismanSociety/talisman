@@ -41,10 +41,16 @@ const TYPES: Record<string, { name: string; type: string }[]> = {
   ],
   OrderComponents: [
     { name: "offerer", type: "address" },
+    { name: "zone", type: "address" },
     { name: "offer", type: "OfferItem[]" },
     { name: "consideration", type: "ConsiderationItem[]" },
+    { name: "orderType", type: "uint8" },
     { name: "startTime", type: "uint256" },
     { name: "endTime", type: "uint256" },
+    { name: "zoneHash", type: "bytes32" },
+    { name: "salt", type: "uint256" },
+    { name: "conduitKey", type: "bytes32" },
+    { name: "counter", type: "uint256" },
   ],
   PermitDetails: [
     { name: "token", type: "address" },
@@ -129,11 +135,12 @@ describe("decodeEvmTypedData", () => {
 
     expect(
       decodeEvmTypedData(
-        typedData("Permit", { holder: OWNER, spender: ATTACKER, allowed: false }, DAI, [
-          { name: "holder", type: "address" },
-          { name: "spender", type: "address" },
-          { name: "allowed", type: "bool" },
-        ])
+        typedData(
+          "Permit",
+          { holder: OWNER, spender: ATTACKER, nonce: 0, expiry: 0, allowed: false },
+          DAI,
+          TYPES.DaiPermit
+        )
       )
     ).toMatchObject({ allowances: [{ token: DAI, amount: 0n }] })
   })
@@ -403,5 +410,115 @@ describe("decodeEvmTypedData", () => {
     expect(
       decodeEvmTypedData(typedData("Permit", { spender: ATTACKER, value: 1 }, "not an address"))
     ).toBeUndefined()
+  })
+
+  it("rejects a standard-looking type that signs more than the standard declares", () => {
+    // an extra signed field can carry semantics the permit summary would hide
+    expect(
+      decodeEvmTypedData(
+        typedData(
+          "Permit",
+          {
+            owner: OWNER,
+            spender: ATTACKER,
+            value: "1000000",
+            nonce: 0,
+            deadline: "1893456000",
+            executor: ATTACKER,
+          },
+          USDC,
+          [...TYPES.Permit, { name: "executor", type: "address" }]
+        )
+      )
+    ).toBeUndefined()
+
+    // a retyped field isn't the standard's field, even with the same name
+    expect(
+      decodeEvmTypedData(
+        typedData(
+          "Permit",
+          { owner: OWNER, spender: ATTACKER, value: "1000000", nonce: 0, deadline: "1893456000" },
+          USDC,
+          TYPES.Permit.map((field) =>
+            field.name === "value" ? { name: "value", type: "bytes32" } : field
+          )
+        )
+      )
+    ).toBeUndefined()
+
+    // an extra field on a nested struct is signed too
+    expect(
+      decodeEvmTypedData({
+        ...typedData("PermitSingle", {
+          details: { token: USDC, amount: MAX_UINT160, expiration: "1893456000", nonce: 0 },
+          spender: ATTACKER,
+          sigDeadline: "1767225600",
+        }),
+        types: {
+          PermitSingle: TYPES.PermitSingle,
+          PermitDetails: [...TYPES.PermitDetails, { name: "operator", type: "address" }],
+        },
+      })
+    ).toBeUndefined()
+
+    // a truncated order isn't a seaport order: its other fields could mean anything
+    expect(
+      decodeEvmTypedData({
+        ...typedData("OrderComponents", {
+          offerer: OWNER,
+          offer: [],
+          consideration: [],
+          endTime: "1767225600",
+        }),
+        types: {
+          OrderComponents: [
+            { name: "offerer", type: "address" },
+            { name: "offer", type: "OfferItem[]" },
+            { name: "consideration", type: "ConsiderationItem[]" },
+            { name: "endTime", type: "uint256" },
+          ],
+          OfferItem: TYPES.OfferItem,
+          ConsiderationItem: TYPES.ConsiderationItem,
+        },
+      })
+    ).toBeUndefined()
+  })
+
+  it("rejects a domain type that smuggles extra signed fields", () => {
+    const permit = typedData(
+      "Permit",
+      { owner: OWNER, spender: ATTACKER, value: "1000000", nonce: 0, deadline: "1893456000" },
+      USDC
+    )
+
+    expect(
+      decodeEvmTypedData({
+        ...permit,
+        types: {
+          ...permit.types,
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "verifyingContract", type: "address" },
+            { name: "executor", type: "address" },
+          ],
+        },
+      })
+    ).toBeUndefined()
+
+    // the standard domain fields are fine, declared or not
+    expect(
+      decodeEvmTypedData({
+        ...permit,
+        types: {
+          ...permit.types,
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+        },
+      })
+    ).toMatchObject({ type: "permit", spender: ATTACKER })
   })
 })

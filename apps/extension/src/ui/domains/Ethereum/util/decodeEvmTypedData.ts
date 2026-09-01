@@ -79,6 +79,135 @@ const asFieldList = (value: unknown) => {
   return fields as TypedDataField[]
 }
 
+type StructSchema = Record<string, string[]>
+
+// the eip-712 domain only identifies the verifying contract; an extra field declared there would
+// be signed without ever being shown
+const DOMAIN_FIELD_TYPES: Record<string, string> = {
+  name: "string",
+  version: "string",
+  chainId: "uint256",
+  verifyingContract: "address",
+  salt: "bytes32",
+}
+
+const PERMIT2_DETAILS = ["token:address", "amount:uint160", "expiration:uint48", "nonce:uint48"]
+const PERMIT2_PERMITTED = ["token:address", "amount:uint256"]
+const SEAPORT_OFFER_ITEM = [
+  "itemType:uint8",
+  "token:address",
+  "identifierOrCriteria:uint256",
+  "startAmount:uint256",
+  "endAmount:uint256",
+]
+
+// a summary can only replace the raw message if it describes every signed field, so each standard
+// is pinned to its exact type graph: a payload that adds, drops, retypes or reorders any field can
+// carry semantics the summary doesn't show, and must keep the generic view
+const STANDARD_SCHEMAS: Record<string, StructSchema[]> = {
+  Permit: [
+    {
+      Permit: [
+        "owner:address",
+        "spender:address",
+        "value:uint256",
+        "nonce:uint256",
+        "deadline:uint256",
+      ],
+    },
+    // dai's variant
+    {
+      Permit: [
+        "holder:address",
+        "spender:address",
+        "nonce:uint256",
+        "expiry:uint256",
+        "allowed:bool",
+      ],
+    },
+  ],
+  PermitSingle: [
+    {
+      PermitSingle: ["details:PermitDetails", "spender:address", "sigDeadline:uint256"],
+      PermitDetails: PERMIT2_DETAILS,
+    },
+  ],
+  PermitBatch: [
+    {
+      PermitBatch: ["details:PermitDetails[]", "spender:address", "sigDeadline:uint256"],
+      PermitDetails: PERMIT2_DETAILS,
+    },
+  ],
+  PermitTransferFrom: [
+    {
+      PermitTransferFrom: [
+        "permitted:TokenPermissions",
+        "spender:address",
+        "nonce:uint256",
+        "deadline:uint256",
+      ],
+      TokenPermissions: PERMIT2_PERMITTED,
+    },
+  ],
+  PermitBatchTransferFrom: [
+    {
+      PermitBatchTransferFrom: [
+        "permitted:TokenPermissions[]",
+        "spender:address",
+        "nonce:uint256",
+        "deadline:uint256",
+      ],
+      TokenPermissions: PERMIT2_PERMITTED,
+    },
+  ],
+  OrderComponents: [
+    {
+      OrderComponents: [
+        "offerer:address",
+        "zone:address",
+        "offer:OfferItem[]",
+        "consideration:ConsiderationItem[]",
+        "orderType:uint8",
+        "startTime:uint256",
+        "endTime:uint256",
+        "zoneHash:bytes32",
+        "salt:uint256",
+        "conduitKey:bytes32",
+        "counter:uint256",
+      ],
+      OfferItem: SEAPORT_OFFER_ITEM,
+      ConsiderationItem: [...SEAPORT_OFFER_ITEM, "recipient:address"],
+    },
+  ],
+}
+
+const matchesStruct = (declared: unknown, expected: string[]) => {
+  const fields = asFieldList(declared)
+  return (
+    !!fields &&
+    fields.length === expected.length &&
+    fields.every((field, index) => `${field.name}:${field.type}` === expected[index])
+  )
+}
+
+const matchesSchema = (types: TypedDataRecord, schema: StructSchema) =>
+  Object.entries(schema).every(([name, fields]) => matchesStruct(types[name], fields))
+
+// the domain type may be omitted (signers then derive it from the domain's own keys), but when
+// declared it must only carry the standard identity fields
+const isStandardDomainType = (types: TypedDataRecord) => {
+  if (!("EIP712Domain" in types)) return true
+
+  const fields = asFieldList(types.EIP712Domain)
+  if (!fields) return false
+
+  const names = fields.map((field) => field.name)
+  return (
+    new Set(names).size === names.length &&
+    fields.every((field) => DOMAIN_FIELD_TYPES[field.name] === field.type)
+  )
+}
+
 const ARRAY_TYPE = /^(.+)\[\d*\]$/
 // a struct can't contain itself, so a message that keeps nesting isn't signable
 const MAX_STRUCT_DEPTH = 8
@@ -226,6 +355,10 @@ export const decodeEvmTypedData = (typedData: unknown): DecodedTypedData | undef
   const parsed = asRecord(typedData)
   const types = asRecord(parsed?.types)
   if (!parsed || !types || typeof parsed.primaryType !== "string") return undefined
+  if (!isStandardDomainType(types)) return undefined
+
+  const schemas = STANDARD_SCHEMAS[parsed.primaryType]
+  if (!schemas?.some((schema) => matchesSchema(types, schema))) return undefined
 
   const message = getSignedStruct(types, parsed.primaryType, parsed.message)
   if (!message) return undefined
