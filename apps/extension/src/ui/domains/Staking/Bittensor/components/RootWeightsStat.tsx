@@ -115,7 +115,7 @@ export const RootWeightsStat: FC<{
 
   if (!breakdown)
     return (
-      <Tooltip>
+      <Tooltip placement="left">
         <TooltipTrigger asChild>
           <div className="flex items-center gap-2">
             <PieChartIcon />
@@ -127,7 +127,7 @@ export const RootWeightsStat: FC<{
     )
 
   return (
-    <Tooltip>
+    <Tooltip placement="left">
       <TooltipTrigger asChild>
         <div className="flex items-center gap-2">
           <PieChartIcon />
