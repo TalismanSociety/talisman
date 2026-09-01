@@ -66,6 +66,19 @@ describe("getRootWeightsBreakdown", () => {
     expect(breakdown?.topSlices).toEqual([{ netuid: 3, ratio: 1 }])
   })
 
+  it("breaks weight ties by ascending netuid", () => {
+    const weights: RootWeightEntry[] = [
+      [51, 500],
+      [3, 500],
+      [8, 700],
+      [19, 500],
+    ]
+
+    const breakdown = getRootWeightsBreakdown(weights)
+
+    expect(breakdown?.topSlices.map(({ netuid }) => netuid)).toEqual([8, 3, 19, 51])
+  })
+
   it("counts every weighted subnet even beyond the top slices", () => {
     const weights: RootWeightEntry[] = Array.from(
       { length: 12 },

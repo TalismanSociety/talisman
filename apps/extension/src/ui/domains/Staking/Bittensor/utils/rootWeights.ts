@@ -26,7 +26,7 @@ export const getRootWeightsBreakdown = (
   if (!total) return null
 
   const topSlices = positive
-    .toSorted(([, a], [, b]) => b - a)
+    .toSorted(([netuidA, weightA], [netuidB, weightB]) => weightB - weightA || netuidA - netuidB)
     .slice(0, TOP_SLICE_COUNT)
     .map(([netuid, weight]) => ({ netuid, ratio: weight / total }))
 
