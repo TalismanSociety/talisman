@@ -11,6 +11,7 @@ type StorageChanges = [{ changes: [key: string, value: string | null][] }]
 
 const fetchStorageEntries = async (
   sapi: ScaleApi,
+  at: string,
   entry: string,
   ...keyArgs: number[]
 ): Promise<[key: number[], value: unknown][]> => {
@@ -18,10 +19,10 @@ const fetchStorageEntries = async (
   const codec = builder.buildStorage("SubtensorModule", entry)
 
   const prefix = codec.keys.enc(...keyArgs)
-  const keys = (await connector.send("state_getKeysPaged", [prefix, 1000, null])) as string[]
+  const keys = (await connector.send("state_getKeysPaged", [prefix, 1000, null, at])) as string[]
   if (!keys.length) return []
 
-  const [{ changes }] = (await connector.send("state_queryStorageAt", [keys])) as StorageChanges
+  const [{ changes }] = (await connector.send("state_queryStorageAt", [keys, at])) as StorageChanges
 
   return changes
     .filter(([, value]) => value !== null)
@@ -30,31 +31,34 @@ const fetchStorageEntries = async (
 
 const fetchDoubleMapEntries = async <T>(
   sapi: ScaleApi,
+  at: string,
   entry: string,
   firstKey: number
 ): Promise<Map<number, T>> => {
-  const entries = await fetchStorageEntries(sapi, entry, firstKey)
+  const entries = await fetchStorageEntries(sapi, at, entry, firstKey)
   return new Map(entries.map(([[, uid], value]) => [uid, value as T]))
 }
 
-const fetchExistingNetuids = async (sapi: ScaleApi): Promise<Set<number>> => {
-  const entries = await fetchStorageEntries(sapi, "NetworksAdded")
+const fetchExistingNetuids = async (sapi: ScaleApi, at: string): Promise<Set<number>> => {
+  const entries = await fetchStorageEntries(sapi, at, "NetworksAdded")
   return new Set(entries.filter(([, added]) => added === true).map(([[netuid]]) => netuid))
 }
 
 /**
  * Declared root weights of every root validator, keyed by hotkey: how each root-stake
  * fund allocates deposits across subnets. Swept from the `Weights`, `Keys` and
- * `NetworksAdded` storage maps in six RPC calls total, instead of one runtime API call
- * per validator. Weights targeting removed subnets are dropped, matching the runtime's
- * deployable basket. A missing hotkey means the validator never set weights (uncurated
- * fund) — stakers still earn, dividends accumulate in place following raw subnet emissions.
+ * `NetworksAdded` storage maps at one pinned block, so a uid reassigned mid-sweep can't
+ * pair a hotkey with another validator's weights. Weights targeting removed subnets are
+ * dropped, matching the runtime's deployable basket. A missing hotkey means the validator
+ * never set weights (uncurated fund) — stakers still earn, dividends accumulate in place
+ * following raw subnet emissions.
  */
 const fetchRootWeightsByHotkey = async (sapi: ScaleApi) => {
+  const at = (await sapi.chain.connector.send("chain_getBlockHash", [])) as string
   const [hotkeyByUid, weightsByUid, existingNetuids] = await Promise.all([
-    fetchDoubleMapEntries<string>(sapi, "Keys", ROOT_NETUID),
-    fetchDoubleMapEntries<RootWeightEntry[]>(sapi, "Weights", ROOT_NETUID),
-    fetchExistingNetuids(sapi),
+    fetchDoubleMapEntries<string>(sapi, at, "Keys", ROOT_NETUID),
+    fetchDoubleMapEntries<RootWeightEntry[]>(sapi, at, "Weights", ROOT_NETUID),
+    fetchExistingNetuids(sapi, at),
   ])
 
   const byHotkey: Record<string, RootWeightEntry[]> = {}

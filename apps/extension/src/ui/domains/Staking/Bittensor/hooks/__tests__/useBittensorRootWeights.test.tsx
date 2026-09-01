@@ -17,6 +17,7 @@ import { useBittensorRootWeights } from "../useBittensorRootWeights"
 // ── Test fixtures ─────────────────────────────────────────────────
 
 const HOTKEY = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const BLOCK_HASH = "0xabc"
 
 // storage keys are faked as "<entry>:<keyArgs>" strings so prefix matching
 // and key decoding mirror the real getKeysPaged/queryStorageAt flow
@@ -34,12 +35,15 @@ const makeSapi = (storage: Record<string, unknown>) => ({
     },
     connector: {
       send: async (method: string, params: unknown[]) => {
+        if (method === "chain_getBlockHash") return BLOCK_HASH
         if (method === "state_getKeysPaged") {
-          const [prefix] = params as [string]
+          const [prefix, , , at] = params as [string, number, null, string]
+          expect(at).toBe(BLOCK_HASH)
           return Object.keys(storage).filter((key) => key.startsWith(prefix))
         }
         if (method === "state_queryStorageAt") {
-          const [keys] = params as [string[]]
+          const [keys, at] = params as [string[], string]
+          expect(at).toBe(BLOCK_HASH)
           return [{ changes: keys.map((key) => [key, storage[key]]) }]
         }
         throw new Error(`Unexpected RPC method: ${method}`)
