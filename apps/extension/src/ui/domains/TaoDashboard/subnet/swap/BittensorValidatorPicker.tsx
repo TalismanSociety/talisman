@@ -125,6 +125,7 @@ export const BittensorValidatorPicker: FC<{
               validators={displayedValidators}
               selectedHotkey={hotkey}
               isLoading={isLoading}
+              showRootWeights={isRoot}
               onSelect={onSelect}
             />
           )}

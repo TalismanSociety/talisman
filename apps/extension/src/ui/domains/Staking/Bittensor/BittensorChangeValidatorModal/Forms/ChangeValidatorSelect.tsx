@@ -25,6 +25,7 @@ import {
   ValidatorSortMethodButton,
 } from "../../components/ValidatorPicker"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
+import { ROOT_NETUID } from "../../utils/constants"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
 
 export const ChangeValidatorSelect = () => {
@@ -159,6 +160,7 @@ export const ChangeValidatorSelect = () => {
                 validators={displayedValidators}
                 selectedHotkey={newHotkey ?? currentHotkey}
                 isLoading={isLoading}
+                showRootWeights={netuid === ROOT_NETUID}
                 onSelect={handleSubmit}
               />
             )}
