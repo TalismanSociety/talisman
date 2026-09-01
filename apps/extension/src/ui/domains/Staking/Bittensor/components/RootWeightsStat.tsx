@@ -10,6 +10,7 @@ import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { Tooltip, TooltipContent, TooltipTrigger, useTooltipContext } from "@ui/components/Tooltip"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
@@ -17,7 +18,6 @@ import { useTokens } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, type MouseEvent, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useBittensorRootWeights } from "../hooks/useBittensorRootWeights"
 import { ROOT_NETUID } from "../utils/constants"
 import { getRootWeightsBreakdown } from "../utils/rootWeights"
@@ -132,12 +132,13 @@ const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
   )
 }
 
-const SliceRow: FC<{ slice: DonutSlice; decimals?: number; withLogo?: boolean }> = ({
-  slice,
-  decimals = 1,
-  withLogo,
-}) => (
-  <div className="flex w-full items-center justify-between gap-4">
+const SliceRow: FC<{
+  slice: DonutSlice
+  decimals?: number
+  withLogo?: boolean
+  className?: string
+}> = ({ slice, decimals = 1, withLogo, className }) => (
+  <div className={cn("flex w-full items-center justify-between gap-4", className)}>
     <div className="flex min-w-0 items-center gap-3">
       {withLogo ? (
         <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
@@ -200,44 +201,54 @@ export const RootWeightsViewAllModal: FC<{
 
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
-      {breakdown && (
-        <div className="flex size-full flex-col bg-black">
-          <div className="flex flex-col gap-8 p-12 pb-8">
-            <div className="flex items-center justify-center gap-4 overflow-hidden">
-              <AccountIcon address={hotkey} className="size-12 shrink-0 text-lg" />
-              <BittensorValidatorName
-                hotkey={hotkey}
-                noTooltip
-                className="truncate font-bold text-body"
-              />
-            </div>
-            <SearchInputControlled
-              containerClassName={cn(
-                "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
-                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
-              )}
-              placeholder={t("Search subnets")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch("")}
-              autoFocus
+      <WizardModalDialog
+        onBackClick={onDismiss}
+        className="border-none"
+        contentClassName="overflow-hidden! p-0! flex flex-col gap-4"
+        title={
+          <div className="flex h-full items-center justify-center gap-4 overflow-hidden">
+            <AccountIcon address={hotkey} className="size-12 shrink-0 text-lg" />
+            <BittensorValidatorName
+              hotkey={hotkey}
+              noTooltip
+              className="truncate font-bold text-body"
             />
           </div>
-          <ScrollContainer className="grow" innerClassName="flex flex-col gap-4 px-12 pb-8">
-            {filteredSlices.map((slice) => (
-              <SliceRow key={slice.label} slice={slice} decimals={2} withLogo />
-            ))}
-            {!filteredSlices.length && (
-              <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
+        }
+      >
+        <div className="flex flex-col gap-8 px-12">
+          <SearchInputControlled
+            containerClassName={cn(
+              "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
+              "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
             )}
-          </ScrollContainer>
-          <div className="p-12 pt-8">
-            <Button fullWidth onClick={onDismiss}>
-              {t("Close")}
-            </Button>
-          </div>
+            placeholder={t("Search subnets")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onClear={() => setSearch("")}
+            autoFocus
+          />
         </div>
-      )}
+        <ScrollContainer className="grow" innerClassName="flex flex-col">
+          {filteredSlices.map((slice) => (
+            <SliceRow
+              key={slice.label}
+              slice={slice}
+              decimals={2}
+              withLogo
+              className="p-3 px-12 text-sm hover:bg-grey-800"
+            />
+          ))}
+          {!filteredSlices.length && (
+            <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
+          )}
+        </ScrollContainer>
+        <div className="shrink-0 px-12 pb-12">
+          <Button fullWidth onClick={onDismiss}>
+            {t("Close")}
+          </Button>
+        </div>
+      </WizardModalDialog>
     </Modal>
   )
 }
