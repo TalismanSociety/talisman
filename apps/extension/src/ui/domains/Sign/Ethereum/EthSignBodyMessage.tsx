@@ -163,7 +163,12 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
       <div className="mb-8 flex w-full flex-col items-center gap-4">
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>
-      <Message className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")} text={text} />
+      {!decoded && (
+        <Message
+          className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")}
+          text={text}
+        />
+      )}
 
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">

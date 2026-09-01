@@ -130,6 +130,7 @@ describe("EthSignBodyMessage", () => {
     // the allowance's own expiration is out of date range: it never expires
     expect(container.textContent).toContain("never")
     expect(container.textContent).toContain("spend all of these tokens on your behalf")
+    expect(screen.queryByTestId("raw-message")).toBeNull()
   })
 
   it("shows the amount and expiry of a bounded ERC-2612 permit", () => {
