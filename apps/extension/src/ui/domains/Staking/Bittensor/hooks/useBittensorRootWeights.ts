@@ -9,6 +9,8 @@ import { getDeployableWeights, type RootWeightEntry } from "../utils/rootWeights
 
 type StorageChanges = [{ changes: [key: string, value: string | null][] }]
 
+const NO_WEIGHTS: RootWeightEntry[] = []
+
 const fetchStorageEntries = async (
   sapi: ScaleApi,
   at: string,
@@ -80,7 +82,7 @@ export const useBittensorRootWeights = (networkId: DotNetworkId | undefined, hot
     },
     enabled: !!sapi,
     staleTime: 5 * 60_000,
-    select: (byHotkey) => byHotkey[hotkey] ?? [],
+    select: (byHotkey) => byHotkey[hotkey] ?? NO_WEIGHTS,
   })
 
   // useScaleApi resolving to null (metadata unavailable) leaves the weights query
