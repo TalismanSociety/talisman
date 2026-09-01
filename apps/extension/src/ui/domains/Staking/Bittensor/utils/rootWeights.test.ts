@@ -1,6 +1,30 @@
 import { describe, expect, it } from "vitest"
 
-import { getRootWeightsBreakdown, type RootWeightEntry } from "./rootWeights"
+import { getDeployableWeights, getRootWeightsBreakdown, type RootWeightEntry } from "./rootWeights"
+
+describe("getDeployableWeights", () => {
+  it("drops entries targeting removed subnets", () => {
+    const weights: RootWeightEntry[] = [
+      [3, 1000],
+      [99, 4000],
+      [8, 2000],
+    ]
+
+    expect(getDeployableWeights(weights, new Set([3, 8]))).toEqual([
+      [3, 1000],
+      [8, 2000],
+    ])
+  })
+
+  it("keeps the root netuid even when absent from the existing set", () => {
+    const weights: RootWeightEntry[] = [
+      [0, 5000],
+      [3, 1000],
+    ]
+
+    expect(getDeployableWeights(weights, new Set([3]))).toEqual(weights)
+  })
+})
 
 describe("getRootWeightsBreakdown", () => {
   it("returns null when no weights are set", () => {

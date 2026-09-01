@@ -262,7 +262,19 @@ export const RootWeightsStat: FC<{
   const { breakdown, isLoading, isError } = useRootWeightsSlices(networkId, hotkey)
 
   if (isLoading) return <div className="h-6 w-14 animate-pulse rounded-xs bg-grey-800" />
-  if (isError) return null
+
+  if (isError)
+    return (
+      <Tooltip placement="left">
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2">
+            <PieChartIcon />
+            <span>{t("N/A")}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{t("Failed to load allocations")}</TooltipContent>
+      </Tooltip>
+    )
 
   if (!breakdown)
     return (

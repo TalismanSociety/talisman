@@ -18,6 +18,16 @@ export type RootWeightsBreakdown = {
 const TOP_SLICE_COUNT = 8
 
 /**
+ * The runtime only deploys to root or currently existing subnets (`do_claim_root`):
+ * stale entries pointing at removed subnets must not dilute the displayed ratios.
+ */
+export const getDeployableWeights = (
+  weights: RootWeightEntry[],
+  existingNetuids: ReadonlySet<number>
+): RootWeightEntry[] =>
+  weights.filter(([netuid]) => netuid === ROOT_NETUID || existingNetuids.has(netuid))
+
+/**
  * Weights are max-upscaled on chain (largest entry = u16::MAX), not sum-normalized:
  * proportions only exist relative to the vector's own sum, mirroring how the chain
  * deploys deposits (`deploy_tao_into_basket`).
