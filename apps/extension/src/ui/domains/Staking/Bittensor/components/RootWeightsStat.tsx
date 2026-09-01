@@ -1,6 +1,7 @@
-import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId, SubDTaoToken } from "@talismn/chaindata-provider"
 import { PieChartIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useTokens } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -22,6 +23,26 @@ const OTHERS_COLOR = "#5a5a5a"
 
 type DonutSlice = { label: string; percent: number; color: string }
 
+const useSubnetNamesByNetuid = (networkId: DotNetworkId | undefined) => {
+  const tokens = useTokens()
+
+  return useMemo(
+    () =>
+      new Map(
+        tokens
+          .filter(
+            (token): token is SubDTaoToken =>
+              token.type === "substrate-dtao" &&
+              !token.hotkey &&
+              token.networkId === networkId &&
+              !!token.subnetName
+          )
+          .map((token) => [token.netuid, token.subnetName as string])
+      ),
+    [tokens, networkId]
+  )
+}
+
 const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
   subnetCount,
   slices,
@@ -31,7 +52,7 @@ const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
   return (
     <div className="relative shrink-0">
       {/* r chosen so the circumference is 100: dash lengths are percentages */}
-      <svg className="size-32" viewBox="0 0 36 36">
+      <svg className="size-[64px]" viewBox="0 0 36 36">
         {slices.map((slice) => {
           const dashOffset = 25 - startPercent
           startPercent += slice.percent
@@ -63,13 +84,20 @@ export const RootWeightsStat: FC<{
 }> = ({ networkId, hotkey }) => {
   const { t } = useTranslation()
   const { data: weights, isLoading, isError } = useBittensorRootWeights(networkId, hotkey)
+  const subnetNames = useSubnetNamesByNetuid(networkId)
 
   const breakdown = useMemo(() => {
     const raw = weights ? getRootWeightsBreakdown(weights) : null
     if (!raw) return null
 
+    const getLabel = (netuid: number) => {
+      if (netuid === ROOT_NETUID) return "TAO"
+      const name = subnetNames.get(netuid)
+      return name ? `SN${netuid} ${name}` : `SN${netuid}`
+    }
+
     const topSlices = raw.topSlices.map<DonutSlice>(({ netuid, ratio }, index) => ({
-      label: netuid === ROOT_NETUID ? "TAO" : `SN${netuid}`,
+      label: getLabel(netuid),
       percent: ratio * 100,
       color: SLICE_COLORS[index] ?? OTHERS_COLOR,
     }))
@@ -80,14 +108,14 @@ export const RootWeightsStat: FC<{
         : topSlices
 
     return { subnetCount: raw.subnetCount, slices }
-  }, [weights, t])
+  }, [weights, subnetNames, t])
 
   if (isLoading) return <div className="h-6 w-14 animate-pulse rounded-xs bg-grey-800" />
   if (isError) return null
 
   if (!breakdown)
     return (
-      <Tooltip placement="left">
+      <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-2">
             <PieChartIcon />
@@ -99,7 +127,7 @@ export const RootWeightsStat: FC<{
     )
 
   return (
-    <Tooltip placement="left">
+    <Tooltip>
       <TooltipTrigger asChild>
         <div className="flex items-center gap-2">
           <PieChartIcon />
@@ -107,14 +135,19 @@ export const RootWeightsStat: FC<{
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <div className="flex items-center gap-8 p-4">
+        <div className="flex w-[200px] max-w-[200px] flex-col items-center gap-4 p-4">
           <RootWeightsDonut subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
-          <div className="flex min-w-64 flex-col gap-2">
+          <div className="flex w-full flex-col gap-2">
             {breakdown.slices.map((slice) => (
-              <div key={slice.label} className="flex items-center gap-4">
-                <div className="size-3 rounded-full" style={{ backgroundColor: slice.color }} />
-                <div className="text-body-secondary">{slice.label}</div>
-                <div className="ml-auto text-body">{slice.percent.toFixed(1)}%</div>
+              <div key={slice.label} className="flex w-full items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className="size-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: slice.color }}
+                  />
+                  <div className="truncate text-body-secondary">{slice.label}</div>
+                </div>
+                <div className="shrink-0 text-body">{slice.percent.toFixed(1)}%</div>
               </div>
             ))}
           </div>
