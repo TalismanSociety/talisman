@@ -1,11 +1,21 @@
-import type { DotNetworkId, SubDTaoToken } from "@talismn/chaindata-provider"
+import {
+  type DotNetworkId,
+  type SubDTaoToken,
+  subNativeTokenId,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { PieChartIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { Tooltip, TooltipContent, TooltipTrigger, useTooltipContext } from "@ui/components/Tooltip"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useTokens } from "@ui/state/chaindata"
-import { type FC, type MouseEvent, useMemo } from "react"
+import { cn } from "@ui/util/cn"
+import { type FC, type MouseEvent, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useBittensorRootWeights } from "../hooks/useBittensorRootWeights"
@@ -24,9 +34,9 @@ const SLICE_COLORS = [
 ]
 const OTHERS_COLOR = "#5a5a5a"
 
-type DonutSlice = { label: string; percent: number; color: string }
+type DonutSlice = { label: string; percent: number; color: string; tokenId?: TokenId }
 
-const useSubnetNamesByNetuid = (networkId: DotNetworkId | undefined) => {
+const useSubnetTokensByNetuid = (networkId: DotNetworkId | undefined) => {
   const tokens = useTokens()
 
   return useMemo(
@@ -35,12 +45,9 @@ const useSubnetNamesByNetuid = (networkId: DotNetworkId | undefined) => {
         tokens
           .filter(
             (token): token is SubDTaoToken =>
-              token.type === "substrate-dtao" &&
-              !token.hotkey &&
-              token.networkId === networkId &&
-              !!token.subnetName
+              token.type === "substrate-dtao" && !token.hotkey && token.networkId === networkId
           )
-          .map((token) => [token.netuid, token.subnetName as string])
+          .map((token) => [token.netuid, token])
       ),
     [tokens, networkId]
   )
@@ -49,7 +56,7 @@ const useSubnetNamesByNetuid = (networkId: DotNetworkId | undefined) => {
 const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: string) => {
   const { t } = useTranslation()
   const { data: weights, isLoading, isError } = useBittensorRootWeights(networkId, hotkey)
-  const subnetNames = useSubnetNamesByNetuid(networkId)
+  const subnetTokens = useSubnetTokensByNetuid(networkId)
 
   const breakdown = useMemo(() => {
     const raw = weights ? getRootWeightsBreakdown(weights) : null
@@ -57,14 +64,20 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
 
     const getLabel = (netuid: number) => {
       if (netuid === ROOT_NETUID) return "TAO"
-      const name = subnetNames.get(netuid)
+      const name = subnetTokens.get(netuid)?.subnetName
       return name ? `SN${netuid} ${name}` : `SN${netuid}`
+    }
+
+    const getTokenId = (netuid: number) => {
+      if (netuid === ROOT_NETUID) return networkId ? subNativeTokenId(networkId) : undefined
+      return subnetTokens.get(netuid)?.id
     }
 
     const toDonutSlice = ({ netuid, ratio }: { netuid: number; ratio: number }, index: number) => ({
       label: getLabel(netuid),
       percent: ratio * 100,
       color: SLICE_COLORS[index] ?? OTHERS_COLOR,
+      tokenId: getTokenId(netuid),
     })
 
     const topSlices = raw.topSlices.map<DonutSlice>(toDonutSlice)
@@ -79,7 +92,7 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
       slices,
       allSlices: raw.allSlices.map<DonutSlice>(toDonutSlice),
     }
-  }, [weights, subnetNames, t])
+  }, [weights, subnetTokens, networkId, t])
 
   return { breakdown, isLoading, isError }
 }
@@ -119,13 +132,21 @@ const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
   )
 }
 
-const SliceRow: FC<{ slice: DonutSlice }> = ({ slice }) => (
+const SliceRow: FC<{ slice: DonutSlice; decimals?: number; withLogo?: boolean }> = ({
+  slice,
+  decimals = 1,
+  withLogo,
+}) => (
   <div className="flex w-full items-center justify-between gap-4">
     <div className="flex min-w-0 items-center gap-3">
-      <div className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
+      {withLogo ? (
+        <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
+      ) : (
+        <div className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
+      )}
       <div className="truncate text-body-secondary">{slice.label}</div>
     </div>
-    <div className="shrink-0 text-body">{slice.percent.toFixed(1)}%</div>
+    <div className="shrink-0 text-body">{slice.percent.toFixed(decimals)}%</div>
   </div>
 )
 
@@ -165,18 +186,50 @@ export const RootWeightsViewAllModal: FC<{
   const { t } = useTranslation()
   const { breakdown } = useRootWeightsSlices(networkId, hotkey)
 
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    if (isOpen) setSearch("")
+  }, [isOpen])
+
+  const filteredSlices = useMemo(() => {
+    if (!breakdown) return []
+    const lowerSearch = search.toLowerCase()
+    return breakdown.allSlices.filter((slice) => slice.label.toLowerCase().includes(lowerSearch))
+  }, [breakdown, search])
+
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
       {breakdown && (
         <div className="flex size-full flex-col bg-black">
-          <div className="flex flex-col items-center gap-4 p-12 pb-8">
-            <RootWeightsDonut subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
-            <div className="font-bold text-body">{t("Root Weights")}</div>
+          <div className="flex flex-col gap-8 p-12 pb-8">
+            <div className="flex items-center justify-center gap-4 overflow-hidden">
+              <AccountIcon address={hotkey} className="size-12 shrink-0 text-lg" />
+              <BittensorValidatorName
+                hotkey={hotkey}
+                noTooltip
+                className="truncate font-bold text-body"
+              />
+            </div>
+            <SearchInputControlled
+              containerClassName={cn(
+                "h-[2.25rem] shrink-0 grow rounded-sm border border-field bg-field! px-4! text-sm ring-transparent focus-within:border-grey-700",
+                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
+              )}
+              placeholder={t("Search subnets")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch("")}
+              autoFocus
+            />
           </div>
           <ScrollContainer className="grow" innerClassName="flex flex-col gap-4 px-12 pb-8">
-            {breakdown.allSlices.map((slice) => (
-              <SliceRow key={slice.label} slice={slice} />
+            {filteredSlices.map((slice) => (
+              <SliceRow key={slice.label} slice={slice} decimals={2} withLogo />
             ))}
+            {!filteredSlices.length && (
+              <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
+            )}
           </ScrollContainer>
           <div className="p-12 pt-8">
             <Button fullWidth onClick={onDismiss}>
