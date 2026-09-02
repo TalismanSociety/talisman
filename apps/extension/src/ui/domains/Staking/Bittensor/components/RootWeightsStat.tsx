@@ -5,7 +5,6 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import { PieChartIcon } from "@talismn/icons"
-import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
@@ -27,14 +26,21 @@ const SLICE_COLORS = [
   "#8b8bf9",
   "#f55cb1",
   "#ffb056",
-  "#5cd8ff",
   "#7bdca4",
   "#ffe45c",
   "#e08bff",
+  "#5cd8ff",
 ]
 const OTHERS_COLOR = "#5a5a5a"
 
-type DonutSlice = { label: string; percent: number; color: string; tokenId?: TokenId }
+type DonutSlice = {
+  label: string
+  code: string
+  name?: string
+  percent: number
+  color: string
+  tokenId?: TokenId
+}
 
 const useSubnetTokensByNetuid = (networkId: DotNetworkId | undefined) => {
   const tokens = useTokens()
@@ -62,29 +68,39 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
     const raw = weights ? getRootWeightsBreakdown(weights) : null
     if (!raw) return null
 
-    const getLabel = (netuid: number) => {
-      if (netuid === ROOT_NETUID) return "TAO"
-      const name = subnetTokens.get(netuid)?.subnetName
-      return name ? `SN${netuid} ${name}` : `SN${netuid}`
-    }
+    const getCode = (netuid: number) => (netuid === ROOT_NETUID ? "TAO" : `SN${netuid}`)
+    const getName = (netuid: number) =>
+      netuid === ROOT_NETUID ? undefined : subnetTokens.get(netuid)?.subnetName
 
     const getTokenId = (netuid: number) => {
       if (netuid === ROOT_NETUID) return networkId ? subNativeTokenId(networkId) : undefined
       return subnetTokens.get(netuid)?.id
     }
 
-    const toDonutSlice = ({ netuid, ratio }: { netuid: number; ratio: number }, index: number) => ({
-      label: getLabel(netuid),
-      percent: ratio * 100,
-      color: SLICE_COLORS[index] ?? OTHERS_COLOR,
-      tokenId: getTokenId(netuid),
-    })
+    const toDonutSlice = (
+      { netuid, ratio }: { netuid: number; ratio: number },
+      index: number
+    ): DonutSlice => {
+      const code = getCode(netuid)
+      const name = getName(netuid)
+      return {
+        label: name ? `${code} ${name}` : code,
+        code,
+        name,
+        percent: ratio * 100,
+        color: SLICE_COLORS[index] ?? OTHERS_COLOR,
+        tokenId: getTokenId(netuid),
+      }
+    }
 
     const topSlices = raw.topSlices.map<DonutSlice>(toDonutSlice)
     const othersPercent = raw.othersRatio * 100
     const slices =
       othersPercent >= 0.05
-        ? [...topSlices, { label: t("Others"), percent: othersPercent, color: OTHERS_COLOR }]
+        ? [
+            ...topSlices,
+            { label: t("Others"), code: t("Others"), percent: othersPercent, color: OTHERS_COLOR },
+          ]
         : topSlices
 
     return {
@@ -132,22 +148,30 @@ const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
   )
 }
 
-const SliceRow: FC<{
-  slice: DonutSlice
-  decimals?: number
-  withLogo?: boolean
-  className?: string
-}> = ({ slice, decimals = 1, withLogo, className }) => (
-  <div className={cn("flex w-full items-center justify-between gap-4", className)}>
+const SliceLabel: FC<{ slice: DonutSlice }> = ({ slice }) => (
+  <div className="truncate">
+    <span className="text-body">{slice.code}</span>
+    {slice.name && <span className="text-body-secondary"> {slice.name}</span>}
+  </div>
+)
+
+const SliceRow: FC<{ slice: DonutSlice }> = ({ slice }) => (
+  <div className="flex w-full items-center justify-between gap-4">
     <div className="flex min-w-0 items-center gap-3">
-      {withLogo ? (
-        <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
-      ) : (
-        <div className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
-      )}
-      <div className="truncate text-body-secondary">{slice.label}</div>
+      <div className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
+      <SliceLabel slice={slice} />
     </div>
-    <div className="shrink-0 text-body">{slice.percent.toFixed(decimals)}%</div>
+    <div className="shrink-0 text-body">{slice.percent.toFixed(1)}%</div>
+  </div>
+)
+
+const RootWeightRow: FC<{ slice: DonutSlice }> = ({ slice }) => (
+  <div className="flex w-full items-center justify-between gap-4 p-3 px-12 text-sm hover:bg-grey-800">
+    <div className="flex min-w-0 items-center gap-3">
+      <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
+      <SliceLabel slice={slice} />
+    </div>
+    <div className="shrink-0 text-body">{slice.percent.toFixed(2)}%</div>
   </div>
 )
 
@@ -229,24 +253,19 @@ export const RootWeightsViewAllModal: FC<{
             autoFocus
           />
         </div>
-        <ScrollContainer className="grow" innerClassName="flex flex-col">
-          {filteredSlices.map((slice) => (
-            <SliceRow
-              key={slice.label}
-              slice={slice}
-              decimals={2}
-              withLogo
-              className="p-3 px-12 text-sm hover:bg-grey-800"
-            />
-          ))}
-          {!filteredSlices.length && (
-            <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
-          )}
-        </ScrollContainer>
-        <div className="shrink-0 px-12 pb-12">
-          <Button fullWidth onClick={onDismiss}>
-            {t("Close")}
-          </Button>
+        <div className="flex w-full grow flex-col gap-2 overflow-hidden">
+          <div className="flex justify-between px-12 text-body-disabled text-sm">
+            <div>{t("Subnet")}</div>
+            <div>{t("Share")}</div>
+          </div>
+          <ScrollContainer className="grow" innerClassName="flex flex-col bg-grey-900">
+            {filteredSlices.map((slice) => (
+              <RootWeightRow key={slice.label} slice={slice} />
+            ))}
+            {!filteredSlices.length && (
+              <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
+            )}
+          </ScrollContainer>
         </div>
       </WizardModalDialog>
     </Modal>
