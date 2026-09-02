@@ -79,6 +79,7 @@ export const ValidatorRows: FC<{
   showRootWeights?: boolean
   containerId?: string
   onSelect: (hotkey: string) => void
+  onClose: () => void
 }> = ({
   taoTokenId,
   validators,
@@ -87,6 +88,7 @@ export const ValidatorRows: FC<{
   showRootWeights,
   containerId,
   onSelect,
+  onClose,
 }) => {
   const { ref: refContainer } = useScrollContainer()
   const tao = useToken(taoTokenId)
@@ -151,6 +153,7 @@ export const ValidatorRows: FC<{
           containerId={containerId}
           isOpen={isViewAllOpen}
           onDismiss={closeViewAll}
+          onClose={onClose}
         />
       )}
     </div>

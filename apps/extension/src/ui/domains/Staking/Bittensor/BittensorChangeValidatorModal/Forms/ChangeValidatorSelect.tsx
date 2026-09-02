@@ -164,6 +164,7 @@ export const ChangeValidatorSelect = () => {
                 showRootWeights={netuid === ROOT_NETUID}
                 containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
                 onSelect={handleSubmit}
+                onClose={close}
               />
             )}
             {isError && (

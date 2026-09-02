@@ -60,6 +60,7 @@ export const SelectValidatorPill: FC<{
               hotkey={hotkey}
               containerId="select-validator-picker-modal"
               onSelect={handleSelect}
+              onClose={close}
             />
           </WizardModalDialog>
         </PopupSizeModalContainer>

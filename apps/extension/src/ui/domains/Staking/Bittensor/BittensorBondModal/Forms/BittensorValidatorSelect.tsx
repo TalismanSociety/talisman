@@ -40,6 +40,7 @@ export const BittensorValidatorSelect = () => {
         hotkey={hotkey}
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         onSelect={handleSubmit}
+        onClose={close}
       />
     </BittensorModalLayout>
   )

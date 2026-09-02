@@ -31,7 +31,8 @@ export const BittensorValidatorPicker: FC<{
   hotkey: string | null
   containerId?: string
   onSelect: (hotkey: string) => void
-}> = ({ networkId, netuid, hotkey, containerId, onSelect }) => {
+  onClose: () => void
+}> = ({ networkId, netuid, hotkey, containerId, onSelect, onClose }) => {
   const { t } = useTranslation()
   const isRoot = netuid === ROOT_NETUID
   const apyColumnLabel = isRoot ? t("APR [30D]") : t("APY [30D]")
@@ -129,6 +130,7 @@ export const BittensorValidatorPicker: FC<{
               showRootWeights={isRoot}
               containerId={containerId}
               onSelect={onSelect}
+              onClose={onClose}
             />
           )}
           {!isError && displayedValidators?.length === 0 && (

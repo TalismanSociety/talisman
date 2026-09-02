@@ -207,7 +207,8 @@ export const RootWeightsViewAllModal: FC<{
   containerId?: string
   isOpen: boolean
   onDismiss: () => void
-}> = ({ networkId, hotkey, containerId, isOpen, onDismiss }) => {
+  onClose: () => void
+}> = ({ networkId, hotkey, containerId, isOpen, onDismiss, onClose }) => {
   const { t } = useTranslation()
   const { breakdown } = useRootWeightsSlices(networkId, hotkey)
 
@@ -227,6 +228,7 @@ export const RootWeightsViewAllModal: FC<{
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
       <WizardModalDialog
         onBackClick={onDismiss}
+        onCloseClick={onClose}
         className="border-none"
         contentClassName="overflow-hidden! p-0! flex flex-col gap-4"
         title={
