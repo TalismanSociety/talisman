@@ -1,9 +1,9 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
@@ -18,7 +18,7 @@ import {
 
 const HotkeyDisplay: FC<{ hotkey: string }> = ({ hotkey }) => (
   <span className="inline-flex max-w-full items-center gap-4 overflow-hidden align-middle">
-    <AccountIcon className="shrink-0 text-lg!" address={hotkey} />
+    <BittensorHotkeyAvatar hotkey={hotkey} className="shrink-0 text-lg!" />
     <BittensorValidatorName hotkey={hotkey} className="truncate" />
   </span>
 )
