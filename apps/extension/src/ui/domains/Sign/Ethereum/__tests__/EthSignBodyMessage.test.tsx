@@ -56,7 +56,7 @@ vi.mock("@ui/components/Drawer", () => ({
 import { EthSignBodyMessage } from "../EthSignBodyMessage"
 
 const SIGNER = "0x1111111111111111111111111111111111111111"
-const ATTACKER = "0x00000000000000000000000000000000deadbeef"
+const COUNTERPARTY = "0x00000000000000000000000000000000deadbeef"
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 const NFT = "0x2222222222222222222222222222222222222222"
 const PERMIT2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
@@ -125,13 +125,13 @@ describe("EthSignBodyMessage", () => {
       domain: { name: "Permit2", chainId: 1, verifyingContract: PERMIT2 },
       message: {
         details: { token: USDC, amount: MAX_UINT160, expiration: MAX_UINT48, nonce: 0 },
-        spender: ATTACKER,
+        spender: COUNTERPARTY,
         sigDeadline: String(IN_ONE_HOUR),
       },
     })
 
     expect(container.textContent).toContain("permission to spend your tokens")
-    expect(screen.getAllByTestId("address").map((el) => el.textContent)).toContain(ATTACKER)
+    expect(screen.getAllByTestId("address").map((el) => el.textContent)).toContain(COUNTERPARTY)
     expect(screen.getByTestId("erc20-token").textContent).toBe("USDC")
     expect(container.textContent).toContain("Unlimited")
     // the allowance's own expiration is out of date range: it never expires
@@ -155,7 +155,7 @@ describe("EthSignBodyMessage", () => {
       domain: { name: "USD Coin", chainId: 1, verifyingContract: USDC },
       message: {
         owner: SIGNER,
-        spender: ATTACKER,
+        spender: COUNTERPARTY,
         value: "1500000",
         nonce: 0,
         deadline: String(IN_ONE_HOUR),
@@ -184,7 +184,7 @@ describe("EthSignBodyMessage", () => {
             identifierOrCriteria: "0",
             startAmount: "1000000000000000000",
             endAmount: "1000000000000000000",
-            recipient: ATTACKER,
+            recipient: COUNTERPARTY,
           },
         ],
         endTime: String(IN_ONE_HOUR),

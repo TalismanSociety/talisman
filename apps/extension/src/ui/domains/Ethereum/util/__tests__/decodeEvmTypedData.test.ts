@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { decodeEvmTypedData } from "../decodeEvmTypedData"
 
 const OWNER = "0x1111111111111111111111111111111111111111"
-const ATTACKER = "0x00000000000000000000000000000000deadbeef"
+const COUNTERPARTY = "0x00000000000000000000000000000000deadbeef"
 const USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 const NFT = "0x2222222222222222222222222222222222222222"
@@ -102,14 +102,20 @@ describe("decodeEvmTypedData", () => {
     const decoded = decodeEvmTypedData(
       typedData(
         "Permit",
-        { owner: OWNER, spender: ATTACKER, value: MAX_UINT256, nonce: 0, deadline: "1893456000" },
+        {
+          owner: OWNER,
+          spender: COUNTERPARTY,
+          value: MAX_UINT256,
+          nonce: 0,
+          deadline: "1893456000",
+        },
         USDC
       )
     )
 
     expect(decoded).toEqual({
       type: "permit",
-      spender: ATTACKER,
+      spender: COUNTERPARTY,
       allowances: [{ token: USDC, amount: 2n ** 256n - 1n }],
       deadline: 1893456000n,
     })
@@ -119,7 +125,7 @@ describe("decodeEvmTypedData", () => {
     const decoded = decodeEvmTypedData(
       typedData(
         "Permit",
-        { holder: OWNER, spender: ATTACKER, nonce: 0, expiry: 0, allowed: true },
+        { holder: OWNER, spender: COUNTERPARTY, nonce: 0, expiry: 0, allowed: true },
         DAI,
         TYPES.DaiPermit
       )
@@ -128,7 +134,7 @@ describe("decodeEvmTypedData", () => {
     // a DAI permit with expiry 0 never expires
     expect(decoded).toEqual({
       type: "permit",
-      spender: ATTACKER,
+      spender: COUNTERPARTY,
       allowances: [{ token: DAI, amount: 2n ** 256n - 1n }],
       deadline: undefined,
     })
@@ -137,7 +143,7 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData(
         typedData(
           "Permit",
-          { holder: OWNER, spender: ATTACKER, nonce: 0, expiry: 0, allowed: false },
+          { holder: OWNER, spender: COUNTERPARTY, nonce: 0, expiry: 0, allowed: false },
           DAI,
           TYPES.DaiPermit
         )
@@ -154,7 +160,7 @@ describe("decodeEvmTypedData", () => {
           "Permit",
           {
             owner: OWNER,
-            spender: ATTACKER,
+            spender: COUNTERPARTY,
             value: MAX_UINT256,
             nonce: 0,
             deadline: "1893456000",
@@ -172,7 +178,7 @@ describe("decodeEvmTypedData", () => {
           "PermitTransferFrom",
           {
             permitted: { token: USDC, amount: "5000000" },
-            spender: ATTACKER,
+            spender: COUNTERPARTY,
             nonce: 1,
             deadline: MAX_UINT256,
             sigDeadline: "1767225600",
@@ -188,7 +194,7 @@ describe("decodeEvmTypedData", () => {
         primaryType: "Permit",
         types: {},
         domain: { verifyingContract: USDC },
-        message: { owner: OWNER, spender: ATTACKER, value: MAX_UINT256 },
+        message: { owner: OWNER, spender: COUNTERPARTY, value: MAX_UINT256 },
       })
     ).toBeUndefined()
   })
@@ -200,7 +206,7 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData(
         typedData("PermitTransferFrom", {
           permitted: { token: USDC, amount: "5000000", expiration: "1" },
-          spender: ATTACKER,
+          spender: COUNTERPARTY,
           nonce: 1,
           deadline: MAX_UINT256,
         })
@@ -212,7 +218,7 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData({
         ...typedData("PermitSingle", {
           details: { token: USDC, amount: MAX_UINT160, expiration: "1893456000", nonce: 0 },
-          spender: ATTACKER,
+          spender: COUNTERPARTY,
           sigDeadline: "1767225600",
         }),
         types: { PermitSingle: TYPES.PermitSingle },
@@ -224,14 +230,14 @@ describe("decodeEvmTypedData", () => {
     const decoded = decodeEvmTypedData(
       typedData("PermitSingle", {
         details: { token: USDC, amount: MAX_UINT160, expiration: "1893456000", nonce: 0 },
-        spender: ATTACKER,
+        spender: COUNTERPARTY,
         sigDeadline: "1767225600",
       })
     )
 
     expect(decoded).toEqual({
       type: "permit",
-      spender: ATTACKER,
+      spender: COUNTERPARTY,
       allowances: [{ token: USDC, amount: 2n ** 160n - 1n, expiration: 1893456000n }],
       deadline: 1767225600n,
     })
@@ -244,13 +250,13 @@ describe("decodeEvmTypedData", () => {
           { token: USDC, amount: MAX_UINT160, expiration: "1893456000", nonce: 0 },
           { token: DAI, amount: "1000000", expiration: "1893456000", nonce: 0 },
         ],
-        spender: ATTACKER,
+        spender: COUNTERPARTY,
         sigDeadline: "1767225600",
       })
     )
 
     expect(decoded).toMatchObject({
-      spender: ATTACKER,
+      spender: COUNTERPARTY,
       allowances: [
         { token: USDC, amount: 2n ** 160n - 1n },
         { token: DAI, amount: 1000000n },
@@ -262,7 +268,7 @@ describe("decodeEvmTypedData", () => {
     const decoded = decodeEvmTypedData(
       typedData("PermitTransferFrom", {
         permitted: { token: USDC, amount: "5000000" },
-        spender: ATTACKER,
+        spender: COUNTERPARTY,
         nonce: 1,
         deadline: "1767225600",
       })
@@ -270,7 +276,7 @@ describe("decodeEvmTypedData", () => {
 
     expect(decoded).toEqual({
       type: "permit",
-      spender: ATTACKER,
+      spender: COUNTERPARTY,
       allowances: [{ token: USDC, amount: 5000000n, expiration: undefined }],
       deadline: 1767225600n,
     })
@@ -296,7 +302,7 @@ describe("decodeEvmTypedData", () => {
             identifierOrCriteria: "0",
             startAmount: "1000000000000000",
             endAmount: "1000000000000000",
-            recipient: ATTACKER,
+            recipient: COUNTERPARTY,
           },
         ],
         endTime: "1767225600",
@@ -313,7 +319,7 @@ describe("decodeEvmTypedData", () => {
           identifier: 0n,
           amount: 1000000000000000n,
           isNft: false,
-          recipient: ATTACKER,
+          recipient: COUNTERPARTY,
         },
       ],
       deadline: 1767225600n,
@@ -389,11 +395,11 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData(typedData("Permit", { owner: OWNER, value: MAX_UINT256 }, USDC))
     ).toBeUndefined()
     expect(
-      decodeEvmTypedData(typedData("Permit", { owner: OWNER, spender: ATTACKER }, USDC))
+      decodeEvmTypedData(typedData("Permit", { owner: OWNER, spender: COUNTERPARTY }, USDC))
     ).toBeUndefined()
     expect(
       decodeEvmTypedData(
-        typedData("PermitSingle", { details: { amount: MAX_UINT160 }, spender: ATTACKER })
+        typedData("PermitSingle", { details: { amount: MAX_UINT160 }, spender: COUNTERPARTY })
       )
     ).toBeUndefined()
     expect(
@@ -403,12 +409,12 @@ describe("decodeEvmTypedData", () => {
             { token: USDC, amount: MAX_UINT160 },
             { token: DAI, amount: "not a number" },
           ],
-          spender: ATTACKER,
+          spender: COUNTERPARTY,
         })
       )
     ).toBeUndefined()
     expect(
-      decodeEvmTypedData(typedData("Permit", { spender: ATTACKER, value: 1 }, "not an address"))
+      decodeEvmTypedData(typedData("Permit", { spender: COUNTERPARTY, value: 1 }, "not an address"))
     ).toBeUndefined()
   })
 
@@ -420,11 +426,11 @@ describe("decodeEvmTypedData", () => {
           "Permit",
           {
             owner: OWNER,
-            spender: ATTACKER,
+            spender: COUNTERPARTY,
             value: "1000000",
             nonce: 0,
             deadline: "1893456000",
-            executor: ATTACKER,
+            executor: COUNTERPARTY,
           },
           USDC,
           [...TYPES.Permit, { name: "executor", type: "address" }]
@@ -437,7 +443,13 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData(
         typedData(
           "Permit",
-          { owner: OWNER, spender: ATTACKER, value: "1000000", nonce: 0, deadline: "1893456000" },
+          {
+            owner: OWNER,
+            spender: COUNTERPARTY,
+            value: "1000000",
+            nonce: 0,
+            deadline: "1893456000",
+          },
           USDC,
           TYPES.Permit.map((field) =>
             field.name === "value" ? { name: "value", type: "bytes32" } : field
@@ -451,7 +463,7 @@ describe("decodeEvmTypedData", () => {
       decodeEvmTypedData({
         ...typedData("PermitSingle", {
           details: { token: USDC, amount: MAX_UINT160, expiration: "1893456000", nonce: 0 },
-          spender: ATTACKER,
+          spender: COUNTERPARTY,
           sigDeadline: "1767225600",
         }),
         types: {
@@ -487,7 +499,7 @@ describe("decodeEvmTypedData", () => {
   it("rejects a domain type that smuggles extra signed fields", () => {
     const permit = typedData(
       "Permit",
-      { owner: OWNER, spender: ATTACKER, value: "1000000", nonce: 0, deadline: "1893456000" },
+      { owner: OWNER, spender: COUNTERPARTY, value: "1000000", nonce: 0, deadline: "1893456000" },
       USDC
     )
 
@@ -519,6 +531,6 @@ describe("decodeEvmTypedData", () => {
           ],
         },
       })
-    ).toMatchObject({ type: "permit", spender: ATTACKER })
+    ).toMatchObject({ type: "permit", spender: COUNTERPARTY })
   })
 })

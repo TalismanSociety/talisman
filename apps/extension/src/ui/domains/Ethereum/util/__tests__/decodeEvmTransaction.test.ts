@@ -3,7 +3,7 @@ import { decodeEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransac
 import { encodeFunctionData, parseAbi } from "viem"
 import { describe, expect, it } from "vitest"
 
-const VICTIM = "0x1111111111111111111111111111111111111111"
+const OWNER = "0x1111111111111111111111111111111111111111"
 const RECIPIENT = "0x00000000000000000000000000000000DeaDBeef"
 const CONTRACT = "0x2222222222222222222222222222222222222222"
 const TOKEN = "0x3333333333333333333333333333333333333333"
@@ -42,13 +42,13 @@ describe("decodeEvmTransaction", () => {
       encodeFunctionData({
         abi: parseAbi(abiErc1155),
         functionName: "safeTransferFrom",
-        args: [VICTIM, RECIPIENT, 42n, 1000n, "0x"],
+        args: [OWNER, RECIPIENT, 42n, 1000n, "0x"],
       })
     )
 
     expect(decoded.contractType).toBe("ERC1155")
     expect(decoded.contractCall?.functionName).toBe("safeTransferFrom")
-    expect(decoded.contractCall?.args).toEqual([VICTIM, RECIPIENT, 42n, 1000n, "0x"])
+    expect(decoded.contractCall?.args).toEqual([OWNER, RECIPIENT, 42n, 1000n, "0x"])
     expect(decoded.asset?.tokenId).toBe(42n)
     // the collection-wide uri placeholder is expanded to the token id, as 64 hex characters
     expect(decoded.asset?.tokenURI).toBe(
@@ -61,19 +61,13 @@ describe("decodeEvmTransaction", () => {
       encodeFunctionData({
         abi: parseAbi(abiErc1155),
         functionName: "safeBatchTransferFrom",
-        args: [VICTIM, RECIPIENT, [42n, 43n], [1000n, 2000n], "0x"],
+        args: [OWNER, RECIPIENT, [42n, 43n], [1000n, 2000n], "0x"],
       })
     )
 
     expect(decoded.contractType).toBe("ERC1155")
     expect(decoded.contractCall?.functionName).toBe("safeBatchTransferFrom")
-    expect(decoded.contractCall?.args).toEqual([
-      VICTIM,
-      RECIPIENT,
-      [42n, 43n],
-      [1000n, 2000n],
-      "0x",
-    ])
+    expect(decoded.contractCall?.args).toEqual([OWNER, RECIPIENT, [42n, 43n], [1000n, 2000n], "0x"])
   })
 
   it("decodes a Permit2 approval, with the metadata of the token being approved", async () => {
