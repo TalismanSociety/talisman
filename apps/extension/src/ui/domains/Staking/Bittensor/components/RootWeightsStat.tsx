@@ -4,7 +4,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { PieChartIcon } from "@talismn/icons"
+import { ChevronRightIcon, PieChartIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
@@ -33,7 +33,7 @@ const SLICE_COLORS = [
 ]
 const OTHERS_COLOR = "#5a5a5a"
 
-type DonutSlice = {
+type WeightSlice = {
   label: string
   code: string
   name?: string
@@ -77,10 +77,10 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
       return subnetTokens.get(netuid)?.id
     }
 
-    const toDonutSlice = (
+    const toWeightSlice = (
       { netuid, ratio }: { netuid: number; ratio: number },
       index: number
-    ): DonutSlice => {
+    ): WeightSlice => {
       const code = getCode(netuid)
       const name = getName(netuid)
       return {
@@ -93,7 +93,7 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
       }
     }
 
-    const topSlices = raw.topSlices.map<DonutSlice>(toDonutSlice)
+    const topSlices = raw.topSlices.map<WeightSlice>(toWeightSlice)
     const othersPercent = raw.othersRatio * 100
     const slices =
       othersPercent >= 0.05
@@ -106,70 +106,63 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
     return {
       subnetCount: raw.subnetCount,
       slices,
-      allSlices: raw.allSlices.map<DonutSlice>(toDonutSlice),
+      allSlices: raw.allSlices.map<WeightSlice>(toWeightSlice),
     }
   }, [weights, subnetTokens, networkId, t])
 
   return { breakdown, isLoading, isError }
 }
 
-const RootWeightsDonut: FC<{ subnetCount: number; slices: DonutSlice[] }> = ({
-  subnetCount,
-  slices,
-}) => {
-  let startPercent = 0
+const RootWeightsBar: FC<{ slices: WeightSlice[] }> = ({ slices }) => (
+  <div className="flex h-3 w-full shrink-0 overflow-hidden rounded-full">
+    {slices.map((slice) => (
+      <div
+        key={slice.label}
+        className="h-full rounded-full"
+        style={{ width: `${slice.percent}%`, backgroundColor: slice.color }}
+      />
+    ))}
+  </div>
+)
+
+const RootWeightsSummary: FC<{
+  subnetCount: number
+  slices: WeightSlice[]
+  className?: string
+}> = ({ subnetCount, slices, className }) => {
+  const { t } = useTranslation()
 
   return (
-    <div className="relative shrink-0">
-      {/* r chosen so the circumference is 100: dash lengths are percentages */}
-      <svg className="size-[64px]" viewBox="0 0 36 36">
-        {slices.map((slice) => {
-          const dashOffset = 25 - startPercent
-          startPercent += slice.percent
-          return (
-            <circle
-              key={slice.label}
-              cx="18"
-              cy="18"
-              r="15.9155"
-              fill="none"
-              stroke={slice.color}
-              strokeWidth="3"
-              strokeDasharray={`${slice.percent} ${100 - slice.percent}`}
-              strokeDashoffset={dashOffset}
-            />
-          )
-        })}
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-body text-sm">
-        {subnetCount}
-      </div>
+    <div className={cn("flex w-full flex-col gap-4", className)}>
+      <div>{t("{{count}} subnet weights", { count: subnetCount })}</div>
+      <RootWeightsBar slices={slices} />
     </div>
   )
 }
 
-const SliceLabel: FC<{ slice: DonutSlice }> = ({ slice }) => (
+const SliceLabel: FC<{ slice: WeightSlice }> = ({ slice }) => (
   <div className="truncate">
     <span className="text-body">{slice.code}</span>
     {slice.name && <span className="text-body-secondary"> {slice.name}</span>}
   </div>
 )
 
-const SliceRow: FC<{ slice: DonutSlice }> = ({ slice }) => (
+const SliceRow: FC<{ slice: WeightSlice }> = ({ slice }) => (
   <div className="flex w-full items-center justify-between gap-4">
     <div className="flex min-w-0 items-center gap-3">
-      <div className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
+      <div className="size-4 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
       <SliceLabel slice={slice} />
     </div>
-    <div className="shrink-0 text-body">{slice.percent.toFixed(1)}%</div>
+    <div className="shrink-0 text-body-secondary">{slice.percent.toFixed(1)}%</div>
   </div>
 )
 
-const RootWeightRow: FC<{ slice: DonutSlice }> = ({ slice }) => (
+const RootWeightRow: FC<{ slice: WeightSlice }> = ({ slice }) => (
   <div className="flex w-full items-center justify-between gap-4 p-3 px-12 text-sm hover:bg-grey-800">
     <div className="flex min-w-0 items-center gap-3">
       <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
       <SliceLabel slice={slice} />
+      <div className="size-4 shrink-0 rounded-full" style={{ backgroundColor: slice.color }}></div>
     </div>
     <div className="shrink-0 text-body">{slice.percent.toFixed(2)}%</div>
   </div>
@@ -187,12 +180,9 @@ const ViewAllButton: FC<{ onClick: () => void }> = ({ onClick }) => {
   }
 
   return (
-    <button
-      type="button"
-      className="text-grey-300 text-xs underline hover:text-body"
-      onClick={handleClick}
-    >
-      {t("View all")}
+    <button type="button" className="text-body text-xs" onClick={handleClick}>
+      <span className="underline">{t("View all")}</span>{" "}
+      <ChevronRightIcon className="inline-block text-sm text-white" />
     </button>
   )
 }
@@ -254,7 +244,15 @@ export const RootWeightsViewAllModal: FC<{
             onClear={() => setSearch("")}
             autoFocus
           />
+          {breakdown && (
+            <RootWeightsSummary
+              subnetCount={breakdown.subnetCount}
+              slices={breakdown.slices}
+              className="text-body-secondary text-sm"
+            />
+          )}
         </div>
+        <div className="h-2 shrink-0"></div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="flex justify-between px-12 text-body-disabled text-sm">
             <div>{t("Subnet")}</div>
@@ -319,14 +317,18 @@ export const RootWeightsStat: FC<{
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <div className="flex w-[200px] max-w-[200px] flex-col items-center gap-4 p-4">
-          <RootWeightsDonut subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
+        <div className="flex w-[200px] max-w-[200px] flex-col gap-6 p-4">
+          <RootWeightsSummary subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
           <div className="flex w-full flex-col gap-2">
             {breakdown.slices.map((slice) => (
               <SliceRow key={slice.label} slice={slice} />
             ))}
           </div>
-          {onViewAll && <ViewAllButton onClick={onViewAll} />}
+          {onViewAll && (
+            <div className="w-full text-right">
+              <ViewAllButton onClick={onViewAll} />
+            </div>
+          )}
         </div>
       </TooltipContent>
     </Tooltip>
