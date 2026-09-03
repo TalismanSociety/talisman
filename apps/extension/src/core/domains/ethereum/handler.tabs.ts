@@ -67,6 +67,7 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
+import { assertTypedDataTargetsChain } from "./typedData"
 import type {
   AnyEthRequest,
   AnyEvmError,
@@ -535,6 +536,9 @@ export class EthTabsHandler extends TabsHandler {
 
     // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
+
+    if (["eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method))
+      assertTypedDataTargetsChain(message, site.ethChainId)
 
     const account = await keyringStore.getAccount(from)
 

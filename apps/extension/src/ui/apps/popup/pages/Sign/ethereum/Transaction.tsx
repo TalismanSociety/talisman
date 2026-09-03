@@ -105,15 +105,16 @@ export const EthSignTransactionRequest = () => {
             </div>
           </PopupContent>
           <PopupFooter className="flex flex-col gap-8">
-            <div id="sign-alerts-inject" className="flex flex-col gap-4">
-              {errorMessage && (
-                <SignAlertMessage type="error">
-                  <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
-                </SignAlertMessage>
-              )}
-            </div>
+            {/* portal-only container: React must not own any of its children, or
+                reconciliation of an inline child silently detaches portaled alerts */}
+            <div id="sign-alerts-inject" className="flex flex-col gap-4 empty:hidden"></div>
+            {errorMessage && (
+              <SignAlertMessage type="error">
+                <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
+              </SignAlertMessage>
+            )}
 
-            <div className="flex min-h-[2.8rem] flex-col gap-2 text-body-secondary text-sm">
+            <div className="flex flex-col gap-2 text-body-secondary text-sm">
               {transaction && txDetails && !!network && (
                 <>
                   <div className="flex items-center justify-between gap-8">

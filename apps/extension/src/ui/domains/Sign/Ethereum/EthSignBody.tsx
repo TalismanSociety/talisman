@@ -12,6 +12,9 @@ import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
 import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
+import { EthSignBodyErc1155Transfer } from "./EthSignBodyErc1155Transfer"
+import { EthSignBodyPermit2Approve } from "./EthSignBodyPermit2Approve"
+import { EthSignBodyUnexpectedValueAlert } from "./EthSignBodyUnexpectedValueAlert"
 import { EthSignMoonStakingCancel } from "./staking/EthSignMoonStakingCancel"
 import { EthSignMoonStakingExecute } from "./staking/EthSignMoonStakingExecute"
 import { EthSignMoonStakingSetAutoCompound } from "./staking/EthSignMoonStakingSetAutoCompound"
@@ -42,6 +45,11 @@ const getComponentFromKnownContractCall = (decodedTx: DecodedEvmTransaction) => 
     case "ERC721.transferFrom":
     case "ERC721.safeTransferFrom":
       return EthSignBodyErc721Transfer
+    case "ERC1155.safeTransferFrom":
+    case "ERC1155.safeBatchTransferFrom":
+      return EthSignBodyErc1155Transfer
+    case "Permit2.approve":
+      return EthSignBodyPermit2Approve
     case "MoonStaking.delegateWithAutoCompound":
       return EthSignMoonStakingStake
     case "MoonStaking.delegatorBondMore":
@@ -74,11 +82,18 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
   if (!isReady || !decodedTx) return <SignViewBodyShimmer />
 
   const Component = getComponentFromKnownContractCall(decodedTx)
+  const hasNativeValue = !!decodedTx.value
 
+  // every call we recognize is non-payable, and none of their summaries has a place for a native
+  // value - so when one carries a value anyway, keep the decoded summary and surface the value
+  // through an alert, so neither leg of the transaction is hidden
   if (Component)
     return (
-      <FallbackErrorBoundary fallback={<EthSignBodyDefault />}>
+      <FallbackErrorBoundary
+        fallback={<EthSignBodyDefault unexpectedNativeValue={hasNativeValue} />}
+      >
         <Component />
+        {hasNativeValue && <EthSignBodyUnexpectedValueAlert />}
       </FallbackErrorBoundary>
     )
 
