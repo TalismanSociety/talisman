@@ -1,4 +1,4 @@
-import type { TokenId } from "@talismn/chaindata-provider"
+import type { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, TalismanHandIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -15,11 +15,12 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import { type FC, useMemo } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 import type { ValidatorSortValue } from "../utils/validatorSorting"
 import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
+import { RootWeightsStat, RootWeightsViewAllModal } from "./RootWeightsStat"
 
 export const ValidatorSortMethodButton: FC<{
   method: ValidatorSortValue
@@ -49,7 +50,7 @@ export const ValidatorSortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-[8px] py-[6px] text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
+          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-4 py-3 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -74,9 +75,26 @@ export const ValidatorRows: FC<{
   validators: BondOptionType[]
   selectedHotkey?: string | null
   isLoading?: boolean
+  showRootWeights?: boolean
+  containerId?: string
   onSelect: (hotkey: string) => void
-}> = ({ taoTokenId, validators, selectedHotkey, isLoading, onSelect }) => {
+  onClose: () => void
+}> = ({
+  taoTokenId,
+  validators,
+  selectedHotkey,
+  isLoading,
+  showRootWeights,
+  containerId,
+  onSelect,
+  onClose,
+}) => {
   const { ref: refContainer } = useScrollContainer()
+  const tao = useToken(taoTokenId)
+
+  const [viewAllHotkey, setViewAllHotkey] = useState<string | null>(null)
+  const [isViewAllOpen, setIsViewAllOpen] = useState(false)
+  const closeViewAll = useCallback(() => setIsViewAllOpen(false), [])
 
   const virtualizer = useVirtualizer({
     count: validators.length,
@@ -116,11 +134,27 @@ export const ValidatorRows: FC<{
                 isSelected={validator.hotkey === selectedHotkey}
                 onClick={() => onSelect(validator.hotkey)}
                 isLoading={isLoading}
+                showRootWeights={showRootWeights}
+                onViewAllWeights={(hotkey) => {
+                  setViewAllHotkey(hotkey)
+                  setIsViewAllOpen(true)
+                }}
               />
             </div>
           )
         })}
       </div>
+      {/* hosted here, outside the virtualized rows, so a row unmount can't close it */}
+      {viewAllHotkey && (
+        <RootWeightsViewAllModal
+          networkId={tao?.networkId as DotNetworkId | undefined}
+          hotkey={viewAllHotkey}
+          containerId={containerId}
+          isOpen={isViewAllOpen}
+          onDismiss={closeViewAll}
+          onClose={onClose}
+        />
+      )}
     </div>
   )
 }
@@ -129,7 +163,7 @@ export const ValidatorRowSkeleton = () => {
   return (
     <div className="flex h-14.5 w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
       <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
-      <div className="grow space-y-[5px]">
+      <div className="grow space-y-2.5">
         <div className={"flex w-full justify-between font-bold text-body text-sm"}>
           <div>
             <div className="inline-block h-7 w-56 animate-pulse rounded-xs bg-grey-750"></div>
@@ -156,8 +190,18 @@ const ValidatorRow: FC<{
   taoTokenId: TokenId
   isSelected?: boolean
   isLoading?: boolean
+  showRootWeights?: boolean
+  onViewAllWeights: (hotkey: string) => void
   onClick: () => void
-}> = ({ option, isSelected, isLoading, taoTokenId, onClick }) => {
+}> = ({
+  option,
+  isSelected,
+  isLoading,
+  taoTokenId,
+  showRootWeights,
+  onViewAllWeights,
+  onClick,
+}) => {
   const { t } = useTranslation()
   const tao = useToken(taoTokenId)
 
@@ -188,8 +232,8 @@ const ValidatorRow: FC<{
                 <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
               )}
               {option.isFeatured && (
-                <EarnTypeBadge className="inline-flex h-[18px] shrink-0 items-center gap-[4px] rounded-[12px] border-none bg-primary/10 px-[8px] font-light text-[10px] text-primary normal-case">
-                  <TalismanHandIcon className="size-[12px]" />
+                <EarnTypeBadge className="inline-flex h-9 shrink-0 items-center gap-2 rounded-[12px] border-none bg-primary/10 px-4 font-light text-primary text-tiny normal-case">
+                  <TalismanHandIcon className="size-6" />
                   {t("Featured")}
                 </EarnTypeBadge>
               )}
@@ -204,12 +248,14 @@ const ValidatorRow: FC<{
         {/* metagraph entries have no registry stats: stakers/subnets would be fake zeros */}
         <div
           className={cn(
-            "flex w-full justify-between text-body-secondary text-xs",
+            "flex w-full items-center justify-between text-body-secondary text-xs",
             isLoading && "animate-pulse",
-            option.source === "metagraph" && "hidden"
+            option.source === "metagraph" && !showRootWeights && "hidden"
           )}
         >
-          <div className="flex items-center gap-4">
+          <div
+            className={cn("flex items-center gap-4", option.source === "metagraph" && "invisible")}
+          >
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
@@ -257,6 +303,13 @@ const ValidatorRow: FC<{
               </TooltipContent>
             </Tooltip>
           </div>
+          {showRootWeights && (
+            <RootWeightsStat
+              networkId={tao?.networkId as DotNetworkId | undefined}
+              hotkey={option.hotkey}
+              onViewAll={() => onViewAllWeights(option.hotkey)}
+            />
+          )}
         </div>
       </div>
     </button>
