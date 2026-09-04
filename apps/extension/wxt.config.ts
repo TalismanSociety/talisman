@@ -947,8 +947,12 @@ if (typeof document === "undefined") {
       // which would break build reproducibility)
       "apps/**/dist/**",
       "packages/**/dist/**",
+      "config/**/dist/**",
       "**/coverage/**",
       "**/node_modules/**",
+      // dotSources=false stops `**` from matching the hidden `.papi` segment,
+      // so the pnpm peer-dep symlink under .papi/descriptors needs an explicit pattern
+      ".papi/**/node_modules/**",
       // Review/test artifacts
       "review/**",
       "test-results/**",
