@@ -44,6 +44,10 @@ minimumReleaseAgeExclude:
   - "@polkadot-api/sm-provider"
   - "@polkadot-api/ws-middleware"
   - "@polkadot-api/ws-provider"
+  # cn 0.2.4 (shadcn-ui) published 2026-09-02. Tarball inspected, zero deps, and the
+  # merge output was diffed against tailwind-merge on every cn() call in the extension.
+  # Can be removed after 2026-09-05.
+  - "cn"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
