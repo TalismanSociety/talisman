@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 2.0.2
+
+### Patch Changes
+
+- aa5a15e: Add `getGithubBittensorHotkeyAssetUrl` to resolve chaindata's Bittensor hotkey logo assets
+- 88f2fca: Derive block explorer labels from a brand allowlist and support bittensor.ai explorer routes
+
 ## 2.0.1
 
 ### Patch Changes
