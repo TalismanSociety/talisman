@@ -14,7 +14,6 @@ import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
@@ -22,9 +21,9 @@ import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import type { FC, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useBittensorHotkeyConviction } from "../hooks/useBittensorHotkeyConviction"
 import type { NeuronRole, SubnetNeuron } from "../hooks/useBittensorSubnetNeurons"
+import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
 
 const ROLE_BADGE: Record<NeuronRole, { Icon: FC<SVGProps<SVGSVGElement>>; className: string }> = {
   owner: { Icon: HomeIcon, className: "bg-primary/10 text-primary" },
@@ -196,7 +195,7 @@ const HotkeyRow: FC<{
         isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
-      <AccountIcon address={neuron.hotkey} className="size-16 shrink-0 text-xl" />
+      <BittensorHotkeyAvatar hotkey={neuron.hotkey} className="size-16 shrink-0 text-xl" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-8 text-body text-sm">
           <div className="min-w-0">

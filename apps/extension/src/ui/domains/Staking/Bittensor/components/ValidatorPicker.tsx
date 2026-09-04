@@ -10,7 +10,6 @@ import {
 } from "@ui/components/ContextMenu"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnTypeBadge } from "@ui/domains/Earn/components/EarnTypeBadge"
@@ -18,9 +17,9 @@ import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import type { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 import type { ValidatorSortValue } from "../utils/validatorSorting"
+import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
 import { RootWeightsStat, RootWeightsViewAllModal } from "./RootWeightsStat"
 
 export const ValidatorSortMethodButton: FC<{
@@ -217,7 +216,7 @@ const ValidatorRow: FC<{
         isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
-      <AccountIcon address={option.hotkey} className="size-16 shrink-0 text-xl" />
+      <BittensorHotkeyAvatar hotkey={option.hotkey} className="size-16 shrink-0 text-xl" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex w-full justify-between gap-8 text-body text-sm">
           <div className={cn("min-w-0", option.isRecommended && "font-bold text-primary")}>

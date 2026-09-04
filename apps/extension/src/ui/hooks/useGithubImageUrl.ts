@@ -62,9 +62,9 @@ const isGithubUrl = (url: string): boolean => parseGithubUrl(url) !== null
 // exported for tests
 export const getFileUrl = (
   url: string | null | undefined,
-  fallbackUrl: string,
+  fallbackUrl?: string,
   rotate?: boolean
-) => {
+): string | undefined => {
   if (!url || url === fallbackUrl) return fallbackUrl
 
   const parsed = parseGithubUrl(url)
@@ -80,7 +80,7 @@ export const getFileUrl = (
   return GITHUB_SOURCE_FLOW[sourceIndex].build(parsed.asset)
 }
 
-export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl: string) => {
+export const useGithubImageUrl = (url: string | null | undefined, fallbackUrl?: string) => {
   // SWR data-URL cache for non-GitHub images (provider logos, defi logos, etc.)
   const shouldCache =
     !!url && (url.startsWith("https://") || url.startsWith("http://")) && !isGithubUrl(url)
