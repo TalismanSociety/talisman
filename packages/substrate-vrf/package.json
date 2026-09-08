@@ -35,10 +35,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@scure/sr25519": "2.2.0"
+    "@scure/sr25519": "2.4.0"
   },
   "devDependencies": {
-    "@scure/base": "2.2.0",
+    "@scure/base": "2.4.0",
     "@talismn/tsconfig": "workspace:*",
     "typescript": "^7.0.2"
   },

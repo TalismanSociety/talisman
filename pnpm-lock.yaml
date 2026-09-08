@@ -106,8 +106,8 @@ importers:
         specifier: ^2.31.0
         version: 2.31.0(@types/node@24.12.0)
       '@noble/hashes':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.61.1
@@ -218,17 +218,17 @@ importers:
         specifier: 6.0.0
         version: 6.0.0(supports-color@10.2.2)
       '@metamask/eth-sig-util':
-        specifier: 8.2.0
-        version: 8.2.0(supports-color@10.2.2)
+        specifier: 9.0.0
+        version: 9.0.0(supports-color@10.2.2)
       '@metamask/phishing-controller':
         specifier: ^17.2.0
         version: 17.2.0(@babel/runtime@7.29.7)(@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)
       '@noble/ciphers':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@noble/curves':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@polkadot-api/descriptors':
         specifier: workspace:*
         version: link:../../.papi/descriptors
@@ -254,11 +254,11 @@ importers:
         specifier: ^0.10.8
         version: 0.10.8(react@19.2.7)(rxjs@7.8.2)
       '@scure/bip39':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.4.0
+        version: 2.4.0
       '@scure/sr25519':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@sentry/browser':
         specifier: 10.62.0
         version: 10.62.0
@@ -797,26 +797,26 @@ importers:
   packages/crypto:
     dependencies:
       '@noble/ciphers':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@noble/curves':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@noble/hashes':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@scure/base':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@scure/bip32':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@scure/bip39':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@scure/sr25519':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       bech32:
         specifier: 2.0.0
         version: 2.0.0
@@ -1000,12 +1000,12 @@ importers:
   packages/substrate-vrf:
     dependencies:
       '@scure/sr25519':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
     devDependencies:
       '@scure/base':
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.4.0
+        version: 2.4.0
       '@talismn/tsconfig':
         specifier: workspace:*
         version: link:../../config/tsconfig
@@ -2427,6 +2427,10 @@ packages:
     resolution: {integrity: sha512-LZDglIh4gYGw9Myp+2aIwKrj6lIJpMC4e0m7wKJU+BxLLBFcrTgKrjdjstXGVWvuYG3kutlh9J+uNBRPJqffWQ==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
+  '@metamask/eth-sig-util@9.0.0':
+    resolution: {integrity: sha512-iB/iNjA+f+Vl4RlxbWw96UJGJnGG5SP4kZjGlR+e8IC2bTRIzx46r9Xr5mpWgAGeU4G3o3KuXeWRLffhr+JtxA==}
+    engines: {node: ^22 || ^24 || >=26}
+
   '@metamask/eth-simple-keyring@12.0.2':
     resolution: {integrity: sha512-3faDLsOAgjcj76SALIUPxnt7YbLCktnive4u7N5bLn+qEoqVe0JN0p+ue1WMe1IWZkmC9y4LYfuTSnpGYxuLvg==}
     engines: {node: ^18.18 || >=20}
@@ -2720,8 +2724,8 @@ packages:
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/ciphers@2.2.0':
-    resolution: {integrity: sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA==}
+  '@noble/ciphers@2.4.0':
+    resolution: {integrity: sha512-AnjFn0Jv92laAkvMrghlFZq4qQCIN/4DxFV/eooqtC2YTjB7kBeLMS2T9KJX4Dn+ZVXLOwK0lSgqDtx9gvxtiw==}
     engines: {node: '>= 20.19.0'}
 
   '@noble/curves@1.4.2':
@@ -2735,8 +2739,8 @@ packages:
     resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/curves@2.2.0':
-    resolution: {integrity: sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==}
+  '@noble/curves@2.4.0':
+    resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
     engines: {node: '>= 20.19.0'}
 
   '@noble/hashes@1.3.3':
@@ -2751,8 +2755,8 @@ packages:
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/hashes@2.2.0':
-    resolution: {integrity: sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==}
+  '@noble/hashes@2.4.0':
+    resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
   '@nodable/entities@2.2.0':
@@ -3551,8 +3555,8 @@ packages:
   '@scure/base@1.2.6':
     resolution: {integrity: sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==}
 
-  '@scure/base@2.2.0':
-    resolution: {integrity: sha512-b8XEupJibegiXV+tDUseI8oLQc8ei3d/4Jkb2RpbHh3MfE054ov3uIz2dhFkB3FI8iwYkEh0gGCApkrYggkPNg==}
+  '@scure/base@2.4.0':
+    resolution: {integrity: sha512-thZ1TuJwFwBblOhgsjDKvvGirBxNp+wSvY/DR6tJBJOTDhdAAcHJ8Vbr2eFnqaxeca4+t0i9KBf+uHYGWwZORg==}
 
   '@scure/bip32@1.4.0':
     resolution: {integrity: sha512-sVUpc0Vq3tXCkDGYVWGIZTRfnvu8LoTDaev7vbwh0omSvVORONr960MQWdKqJDCReIEmTj3PAr73O3aoxz7OPg==}
@@ -3560,8 +3564,8 @@ packages:
   '@scure/bip32@1.7.0':
     resolution: {integrity: sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==}
 
-  '@scure/bip32@2.2.0':
-    resolution: {integrity: sha512-zFr7t2F+a9+5tB7QbarF2HQNYrgjCNaoLAupZdKkrFMYMozJf5zqH2WJCQibMzm1qQ0QogrxVGO3qXfQDYMaQg==}
+  '@scure/bip32@2.4.0':
+    resolution: {integrity: sha512-i3DS0CptAocyvqE4n3SUkpzeQK4vJMFwWLofTwRiiKo2aWojBOfyMCgfKw9HVpO6fSY5AK86sHS/Uzn8kK9Few==}
 
   '@scure/bip39@1.3.0':
     resolution: {integrity: sha512-disdg7gHuTDZtY+ZdkmLpPCk7fxZSu3gBiEGuoC1XYxv9cGx3Z6cpTggCgW6odSOOIXCiDjuGejW+aJKCY/pIQ==}
@@ -3569,11 +3573,11 @@ packages:
   '@scure/bip39@1.6.0':
     resolution: {integrity: sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==}
 
-  '@scure/bip39@2.2.0':
-    resolution: {integrity: sha512-T/Bj/YvYMNkIPq6EENO6/rcs2e7qTNuyoUXf0KBFDmp0ZDu0H2X4Lq6yC3i0c8PcWkov5EbW+yQZZbdMmk154A==}
+  '@scure/bip39@2.4.0':
+    resolution: {integrity: sha512-82dxFbZUYboyOf0AXiydsQrFQ5Q4h9mX+O2UkE91ROYmsc0BKMGZLwDmy96Jpa2+vrtoxomjUhy1RPIgH/r2nA==}
 
-  '@scure/sr25519@2.2.0':
-    resolution: {integrity: sha512-UTOZb6Hzw44REQdl2SWNBhBFIoqOIhMLNIz3zYyVQLbqdshhuyuuxYoibKHlDg9oqdwdCHQe5LkTsevugPpUbw==}
+  '@scure/sr25519@2.4.0':
+    resolution: {integrity: sha512-Xzpy/MuVqR8wNHrXrz6HHLqCI8nPirQmJEhOMabZ8jSrM6bQiDg+1xkUgw4+Kr7857u3xxQL/PfKFeav9rodZg==}
     engines: {node: '>= 20.19.0'}
 
   '@sec-ant/readable-stream@0.4.1':
@@ -11547,6 +11551,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@metamask/eth-sig-util@9.0.0(supports-color@10.2.2)':
+    dependencies:
+      '@ethereumjs/rlp': 4.0.1
+      '@ethereumjs/util': 8.1.0
+      '@metamask/abi-utils': 3.0.0(supports-color@10.2.2)
+      '@metamask/utils': 11.11.0(supports-color@10.2.2)
+      '@scure/base': 1.1.9
+      ethereum-cryptography: 2.2.1
+      tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@metamask/eth-simple-keyring@12.0.2(supports-color@10.2.2)':
     dependencies:
       '@ethereumjs/util': 9.1.0
@@ -12266,7 +12282,7 @@ snapshots:
 
   '@noble/ciphers@1.3.0': {}
 
-  '@noble/ciphers@2.2.0': {}
+  '@noble/ciphers@2.4.0': {}
 
   '@noble/curves@1.4.2':
     dependencies:
@@ -12280,9 +12296,9 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@noble/curves@2.2.0':
+  '@noble/curves@2.4.0':
     dependencies:
-      '@noble/hashes': 2.2.0
+      '@noble/hashes': 2.4.0
 
   '@noble/hashes@1.3.3': {}
 
@@ -12290,7 +12306,7 @@ snapshots:
 
   '@noble/hashes@1.8.0': {}
 
-  '@noble/hashes@2.2.0': {}
+  '@noble/hashes@2.4.0': {}
 
   '@nodable/entities@2.2.0': {}
 
@@ -12556,7 +12572,7 @@ snapshots:
 
   '@polkadot-api/signer@0.3.3':
     dependencies:
-      '@noble/hashes': 2.2.0
+      '@noble/hashes': 2.4.0
       '@polkadot-api/merkleize-metadata': 1.2.3
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/signers-common': 0.2.3
@@ -12586,9 +12602,9 @@ snapshots:
 
   '@polkadot-api/substrate-bindings@0.20.3':
     dependencies:
-      '@noble/hashes': 2.2.0
+      '@noble/hashes': 2.4.0
       '@polkadot-api/utils': 0.4.0
-      '@scure/base': 2.2.0
+      '@scure/base': 2.4.0
       scale-ts: 1.6.1
 
   '@polkadot-api/substrate-client@0.7.0':
@@ -12925,7 +12941,7 @@ snapshots:
 
   '@scure/base@1.2.6': {}
 
-  '@scure/base@2.2.0': {}
+  '@scure/base@2.4.0': {}
 
   '@scure/bip32@1.4.0':
     dependencies:
@@ -12939,11 +12955,11 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
-  '@scure/bip32@2.2.0':
+  '@scure/bip32@2.4.0':
     dependencies:
-      '@noble/curves': 2.2.0
-      '@noble/hashes': 2.2.0
-      '@scure/base': 2.2.0
+      '@noble/curves': 2.4.0
+      '@noble/hashes': 2.4.0
+      '@scure/base': 2.4.0
 
   '@scure/bip39@1.3.0':
     dependencies:
@@ -12955,15 +12971,14 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
-  '@scure/bip39@2.2.0':
+  '@scure/bip39@2.4.0':
     dependencies:
-      '@noble/hashes': 2.2.0
-      '@scure/base': 2.2.0
+      '@noble/hashes': 2.4.0
 
-  '@scure/sr25519@2.2.0':
+  '@scure/sr25519@2.4.0':
     dependencies:
-      '@noble/curves': 2.2.0
-      '@noble/hashes': 2.2.0
+      '@noble/curves': 2.4.0
+      '@noble/hashes': 2.4.0
 
   '@sec-ant/readable-stream@0.4.1': {}
 
@@ -13948,10 +13963,10 @@ snapshots:
 
   '@talismn/siws@2.0.0':
     dependencies:
-      '@noble/curves': 2.2.0
-      '@noble/hashes': 2.2.0
-      '@scure/base': 2.2.0
-      '@scure/sr25519': 2.2.0
+      '@noble/curves': 2.4.0
+      '@noble/hashes': 2.4.0
+      '@scure/base': 2.4.0
+      '@scure/sr25519': 2.4.0
 
   '@tanstack/devtools-event-client@0.4.4': {}
 

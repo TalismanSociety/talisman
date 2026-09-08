@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs"
 
-import { bytesToHex, randomBytes } from "@noble/hashes/utils"
+import { bytesToHex, randomBytes } from "@noble/hashes/utils.js"
 import type { BrowserContext, Locator, Page, Worker } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
 

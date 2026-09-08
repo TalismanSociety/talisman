@@ -66,7 +66,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
     "@changesets/cli": "^2.31.0",
-    "@noble/hashes": "1.8.0",
+    "@noble/hashes": "2.4.0",
     "@playwright/test": "^1.61.1",
     "@svgr/rollup": "8.1.0",
     "@types/node": "^24.5.1",
