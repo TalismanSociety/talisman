@@ -59,8 +59,6 @@
     "check:licenses": "node scripts/check-direct-licenses.mjs"
   },
   "dependencies": {
-    "@polkadot-api/json-rpc-provider": "0.2.0",
-    "@polkadot-api/ws-provider": "0.9.1",
     "polkadot-api": "2.2.0"
   },
   "devDependencies": {

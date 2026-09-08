@@ -89,12 +89,6 @@ importers:
 
   .:
     dependencies:
-      '@polkadot-api/json-rpc-provider':
-        specifier: 0.2.0
-        version: 0.2.0
-      '@polkadot-api/ws-provider':
-        specifier: 0.9.1
-        version: 0.9.1(rxjs@7.8.2)
       polkadot-api:
         specifier: 2.2.0
         version: 2.2.0(bufferutil@4.0.8)(esbuild@0.28.1)(rxjs@7.8.2)(supports-color@10.2.2)(utf-8-validate@6.0.4)
