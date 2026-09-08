@@ -101,12 +101,37 @@ async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Pro
       return fetchStealthexStatus(txInfo.exchangeId)
     case "swap-lifi":
       return fetchLifiStatus(txId, txInfo)
+    case "swap-bittensor-evm":
+      return fetchBittensorEvmStatus(txId)
     default:
       return "unknown"
   }
 }
 
 // --- Provider-specific fetchers (simple fetch wrappers, no SDK dependency) ---
+
+// a watcher that died before confirming leaves the transfer unconfirmed forever, so past this age
+// the initial on-chain success stands
+const NATIVE_TRANSFER_CONFIRMATION_GRACE_MS = 10 * 60 * 1_000
+
+// native chain transfer: complete once the on-chain transfer is confirmed, failed if it got reverted
+async function fetchBittensorEvmStatus(txId: string): Promise<SwapStatus> {
+  const tx = await db.transactionsV2.get(txId)
+  if (!tx) return "not_found"
+
+  switch (tx.status) {
+    case "success":
+      if (tx.confirmed) return "finished"
+      return Date.now() - tx.timestamp >= NATIVE_TRANSFER_CONFIRMATION_GRACE_MS
+        ? "finished"
+        : "confirming"
+    case "error":
+    case "replaced":
+      return "failed"
+    default:
+      return "confirming"
+  }
+}
 
 async function fetchSimpleswapStatus(exchangeId: string): Promise<SwapStatus> {
   const { simpleswapApiKey } = await remoteConfigStore.get("swaps")

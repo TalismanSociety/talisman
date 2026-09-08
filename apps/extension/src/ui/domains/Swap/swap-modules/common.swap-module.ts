@@ -40,6 +40,8 @@ export type BaseQuote<TData = any> = {
   timeInSec: number
   providerLogo: string
   providerName: string
+  /** Short provider-specific remark shown on the confirmation screen */
+  note?: string
 
   /** If defined, the UI must account for a gas buffer of `maxNativeTokenGasBuffer` wei to be used for the swap */
   maxNativeTokenGasBuffer?: string
@@ -96,6 +98,8 @@ export type GetTransactionParams = {
   fromAmount: bigint
   exchange: unknown // specific exchange type varies per module
   context: SwapTransactionContext
+  /** recipient selected by the user, lets modules reject a quote built for another recipient */
+  toAddress?: string
 }
 
 export type SwapModuleTransaction =

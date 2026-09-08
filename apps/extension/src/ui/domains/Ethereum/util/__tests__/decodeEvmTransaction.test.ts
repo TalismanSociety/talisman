@@ -1,4 +1,11 @@
-import { abiErc20, abiErc1155, abiPermit2, PERMIT2_ADDRESS } from "@core/util/abi"
+import { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } from "@core/domains/bittensor/constants"
+import {
+  abiBittensorBalanceTransfer,
+  abiErc20,
+  abiErc1155,
+  abiPermit2,
+  PERMIT2_ADDRESS,
+} from "@core/util/abi"
 import { decodeEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import { encodeFunctionData, parseAbi } from "viem"
 import { describe, expect, it } from "vitest"
@@ -97,6 +104,77 @@ describe("decodeEvmTransaction", () => {
     const decoded = await decode("0xdeadbeef", PERMIT2_ADDRESS)
 
     expect(decoded.contractType).toBe("unknown")
+  })
+
+  describe("bittensor balance transfer precompile", () => {
+    const DEST_PUBKEY = "0xc4518fa0ed143e016e4a1410193704924b890de8f854b94c7a6037651ec65dd0"
+    const transferData = encodeFunctionData({
+      abi: abiBittensorBalanceTransfer,
+      functionName: "transfer",
+      args: [DEST_PUBKEY],
+    })
+    // the precompile has no bytecode, so isContractAddress() is false on these chains
+    const bittensorClient = (chainId: number) =>
+      ({
+        chain: { id: chainId },
+        getBytecode: async () => "0x" as const,
+      }) as unknown as Parameters<typeof decodeEvmTransaction>[0]
+
+    it("decodes a transfer on Bittensor EVM without bytecode", async () => {
+      const decoded = await decodeEvmTransaction(bittensorClient(964), {
+        to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+        data: transferData,
+        value: 1_000_000_000n,
+      })
+
+      expect(decoded.contractType).toBe("BittensorBalanceTransfer")
+      expect(decoded.contractCall?.functionName).toBe("transfer")
+      expect(decoded.contractCall?.args).toEqual([DEST_PUBKEY])
+      expect(decoded.value).toBe(1_000_000_000n)
+    })
+
+    it("decodes a transfer on the Bittensor EVM testnet", async () => {
+      const decoded = await decodeEvmTransaction(bittensorClient(945), {
+        to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+        data: transferData,
+        value: 0n,
+      })
+
+      expect(decoded.contractType).toBe("BittensorBalanceTransfer")
+    })
+
+    it("does not label the same call on another chain as a Bittensor transfer", async () => {
+      const decoded = await decode(transferData, BITTENSOR_BALANCE_TRANSFER_PRECOMPILE)
+
+      expect(decoded.contractType).not.toBe("BittensorBalanceTransfer")
+    })
+
+    it("leaves an unknown precompile selector undecoded", async () => {
+      const decoded = await decodeEvmTransaction(bittensorClient(964), {
+        to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+        data: "0xdeadbeef",
+        value: 0n,
+      })
+
+      expect(decoded.contractType).toBe("unknown")
+    })
+
+    it("leaves the precompile methods without a signing summary undecoded", async () => {
+      const transferAllData = encodeFunctionData({
+        abi: parseAbi(["function transferAll(bytes32 destination, bool keepAlive)"]),
+        functionName: "transferAll",
+        args: [DEST_PUBKEY, false],
+      })
+
+      const decoded = await decodeEvmTransaction(bittensorClient(964), {
+        to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+        data: transferAllData,
+        value: 0n,
+      })
+
+      expect(decoded.contractType).toBe("unknown")
+      expect(decoded.contractCall).toBeUndefined()
+    })
   })
 
   it("still decodes an ERC20 transfer", async () => {

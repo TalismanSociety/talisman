@@ -369,3 +369,56 @@ describe("getBlockExplorerLabel", () => {
     expect(getBlockExplorerLabel("https://solscan.io")).toBe("Explorer")
   })
 })
+
+const BITTENSOR_EVM = {
+  id: "964",
+  blockExplorerUrls: ["https://evm.taostats.io", "https://bittensor.ai/explorer/evm"],
+} as unknown as Network
+
+describe("bittensor evm explorers", () => {
+  const hash = "0x4ed9525114dae7bb4472ca0416bc677f739eaa23b9d131f4eb62707807702d88"
+  const address = "0x54D435009Ee265d5967cc1Ed8b37cf8426De1149"
+
+  it("transaction", () => {
+    expect(getBlockExplorerUrls(BITTENSOR_EVM, { type: "transaction", id: hash })).toEqual([
+      `https://evm.taostats.io/tx/${hash}`,
+      `https://bittensor.ai/explorer/evm/transactions/${hash}`,
+    ])
+  })
+
+  it("block", () => {
+    expect(getBlockExplorerUrls(BITTENSOR_EVM, { type: "block", id: 9021964 })).toEqual([
+      "https://evm.taostats.io/block/9021964",
+      "https://bittensor.ai/explorer/evm/blocks/9021964",
+    ])
+  })
+
+  it("address (contract)", () => {
+    expect(getBlockExplorerUrls(BITTENSOR_EVM, { type: "address", address })).toEqual([
+      `https://evm.taostats.io/address/${address}`,
+      `https://bittensor.ai/explorer/evm/contracts/${address}`,
+    ])
+  })
+
+  it("account has no bittensor.ai page", () => {
+    expect(getBlockExplorerUrls(BITTENSOR_EVM, { type: "account", address })).toEqual([
+      `https://evm.taostats.io/account/${address}`,
+    ])
+  })
+
+  it("extrinsic queries are unsupported on bittensor.ai evm", () => {
+    expect(getBlockExplorerUrls(BITTENSOR_EVM, { type: "extrinsic-unknown", hash })).toEqual([])
+  })
+
+  it("trailing slash on the evm base path", () => {
+    const network = { id: "964", blockExplorerUrls: ["https://bittensor.ai/explorer/evm/"] }
+    expect(
+      getBlockExplorerUrls(network as unknown as Network, { type: "transaction", id: hash })
+    ).toEqual([`https://bittensor.ai/explorer/evm/transactions/${hash}`])
+  })
+
+  it("label", () => {
+    expect(getBlockExplorerLabel("https://bittensor.ai/explorer/evm")).toEqual("Bittensor.ai")
+    expect(getBlockExplorerLabel("https://evm.taostats.io")).toEqual("Explorer")
+  })
+})

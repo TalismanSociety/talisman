@@ -4,7 +4,7 @@
 type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
 type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
 
-export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
+export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi" | "bittensor-evm"
 
 export type SwapExchange =
   | { protocol: "simpleswap"; data: SimpleswapExchange }

@@ -22,6 +22,7 @@ import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { QuoteDuration } from "@ui/domains/Swap/components/QuoteDuration"
 import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
+import { QuoteNote } from "@ui/domains/Swap/components/QuoteNote"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
@@ -241,6 +242,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         fromAmount,
         exchange: exchangeQuote ?? selectedQuote,
         context,
+        toAddress,
       })
 
       if (signal.aborted) throw new Error("Aborted")
@@ -574,6 +576,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           <QuoteProvider />
           <QuoteDuration />
           <QuoteExchangeRate />
+          <QuoteNote />
           {supportsSlippage ? (
             <div className="flex h-11 items-center justify-between gap-8">
               <div className="whitespace-nowrap text-body-secondary text-xs">

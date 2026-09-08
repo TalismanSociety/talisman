@@ -82,6 +82,14 @@ export type WalletTransactionInfo =
       to: Address
     }
   | {
+      type: "swap-bittensor-evm"
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+      to: Address
+    }
+  | {
       type: "bittensor-staking"
       fromTokenId: TokenId
       toTokenId: TokenId

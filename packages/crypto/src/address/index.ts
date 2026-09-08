@@ -1,6 +1,7 @@
 export * from "./addressFromPublicKey"
 export * from "./encodeAnyAddress"
 export * from "./encoding"
+export * from "./frontierEvmMirror"
 export * from "./isAddressEqual"
 export * from "./isAddressValid"
 export * from "./normalizeAddress"
