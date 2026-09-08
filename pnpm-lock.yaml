@@ -226,6 +226,9 @@ importers:
       '@noble/curves':
         specifier: 2.4.0
         version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
       '@polkadot-api/descriptors':
         specifier: workspace:*
         version: link:../../.papi/descriptors

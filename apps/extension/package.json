@@ -23,6 +23,7 @@
     "@metamask/phishing-controller": "^17.2.0",
     "@noble/ciphers": "2.4.0",
     "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
     "@polkadot-api/descriptors": "workspace:*",
     "@polkadot-api/merkleize-metadata": "1.2.3",
     "@polkadot-api/signers-common": "0.2.3",
