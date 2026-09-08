@@ -1,4 +1,3 @@
-import { getBittensorEvmPairByEvmNetworkId } from "@core/domains/bittensor/constants"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrls,
@@ -22,12 +21,11 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
 
-const getBittensorEvmTrackerUrl = (fromTokenId: string, txHash: string): string | null => {
-  const pair = getBittensorEvmPairByEvmNetworkId(networkIdFromTokenId(fromTokenId))
-  return pair?.evmExplorerTxUrl ? `${pair.evmExplorerTxUrl}${txHash}` : null
-}
-
-const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): string | null => {
+const getSwapTrackerUrl = (
+  txInfo: WalletTransactionInfo,
+  txHash: string,
+  network: Network | undefined | null
+): string | null => {
   switch (txInfo.type) {
     case "swap-simpleswap":
       return txInfo.exchangeId ? `https://simpleswap.io/exchange?id=${txInfo.exchangeId}` : null
@@ -36,7 +34,7 @@ const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): strin
     case "swap-lifi":
       return `https://scan.li.fi/tx/${txHash}`
     case "swap-bittensor-evm":
-      return getBittensorEvmTrackerUrl(txInfo.fromTokenId, txHash)
+      return getBlockExplorerUrl(network, txHash)
     default:
       return null
   }
@@ -114,7 +112,10 @@ export const SwapProgress: FC<SwapProgressProps> = ({
   }, [tx])
 
   const explorerUrl = useMemo(() => getBlockExplorerUrl(network, txHash), [network, txHash])
-  const swapTrackerUrl = useMemo(() => getSwapTrackerUrl(txInfo, txHash), [txInfo, txHash])
+  const swapTrackerUrl = useMemo(
+    () => getSwapTrackerUrl(txInfo, txHash, network),
+    [txInfo, txHash, network]
+  )
 
   const handleTrackClick = useCallback(() => {
     if (swapTrackerUrl) window.open(swapTrackerUrl, "_blank", "noopener")

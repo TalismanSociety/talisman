@@ -28,19 +28,13 @@ const BITTENSOR_TESTNET_EVM_NETWORK_ID = "945"
 export type BittensorEvmPair = {
   substrateNetworkId: string
   evmNetworkId: string
-  evmExplorerTxUrl: string | null
 }
 
 export const BITTENSOR_EVM_PAIRS: BittensorEvmPair[] = [
-  {
-    substrateNetworkId: BITTENSOR_NETWORK_ID,
-    evmNetworkId: BITTENSOR_EVM_NETWORK_ID,
-    evmExplorerTxUrl: "https://evm.taostats.io/tx/",
-  },
+  { substrateNetworkId: BITTENSOR_NETWORK_ID, evmNetworkId: BITTENSOR_EVM_NETWORK_ID },
   {
     substrateNetworkId: BITTENSOR_TESTNET_NETWORK_ID,
     evmNetworkId: BITTENSOR_TESTNET_EVM_NETWORK_ID,
-    evmExplorerTxUrl: null,
   },
 ]
 
