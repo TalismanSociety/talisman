@@ -213,7 +213,7 @@ describe("EthSignBody", () => {
 
     const { container } = renderBody(decodedTx)
 
-    expect(screen.getByTestId("alert").textContent).toContain("cannot decode")
+    expect(screen.getByTestId("alert").textContent).toContain("can't read")
     expect(container.textContent).toContain("0x87517c45")
   })
 
