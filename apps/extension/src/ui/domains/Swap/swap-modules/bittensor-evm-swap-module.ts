@@ -240,10 +240,6 @@ const getSubToEvmQuote = async (
 ): Promise<BaseQuote<BittensorEvmQuoteData>> => {
   const { substrateNetworkId } = route.pair
 
-  const feeRao = fromAddress ? await estimateSubstrateFeeRao(substrateNetworkId, fromAddress) : null
-  const minimum = BITTENSOR_EXISTENTIAL_DEPOSIT_RAO + (feeRao ?? 0n)
-  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, TAO_DECIMALS)
-
   const mirror =
     toAddress && isEthereumAddress(toAddress)
       ? frontierH160ToSs58Mirror(toAddress, BITTENSOR_SS58_PREFIX)
@@ -251,9 +247,12 @@ const getSubToEvmQuote = async (
   const funded = mirror ? await isMirrorFunded(substrateNetworkId, mirror) : false
   const edHeldRao = funded ? 0n : BITTENSOR_EXISTENTIAL_DEPOSIT_RAO
 
-  const outputRao = fromAmount - edHeldRao
-  if (outputRao <= 0n) await throwMinimumError(route.fromTokenId, minimum, TAO_DECIMALS)
+  // the fee is paid on top by the sender, the confirmation screen checks it against the balance
+  const minimum = edHeldRao + BITTENSOR_EXISTENTIAL_DEPOSIT_RAO
+  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, TAO_DECIMALS)
 
+  const feeRao = fromAddress ? await estimateSubstrateFeeRao(substrateNetworkId, fromAddress) : null
+  const outputRao = fromAmount - edHeldRao
   const fees = feeRao !== null ? [toQuoteFee(route.fromTokenId, feeRao, TAO_DECIMALS)] : []
   const note = edHeldRao
     ? `${planckToTokens(edHeldRao.toString(), TAO_DECIMALS)} TAO stays locked in the EVM account as existential deposit`
@@ -286,14 +285,14 @@ const getEvmToSubQuote = async (
   const outputRao = fromAmount / BITTENSOR_WEI_PER_RAO
   const value = outputRao * BITTENSOR_WEI_PER_RAO
 
+  // gas is paid on top by the sender, the confirmation screen checks it against the balance
+  const minimum = BITTENSOR_EXISTENTIAL_DEPOSIT_RAO * BITTENSOR_WEI_PER_RAO
+  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, EVM_TAO_DECIMALS)
+
   const feeWei =
     fromAddress && isEthereumAddress(fromAddress)
       ? await estimateEvmFeeWei(evmNetworkId, fromAddress, toAddress, value)
       : null
-  const feeRao = feeWei !== null ? feeWei / BITTENSOR_WEI_PER_RAO : 0n
-  const minimum = (BITTENSOR_EXISTENTIAL_DEPOSIT_RAO + feeRao) * BITTENSOR_WEI_PER_RAO
-  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, EVM_TAO_DECIMALS)
-
   const fees = feeWei !== null ? [toQuoteFee(route.fromTokenId, feeWei, EVM_TAO_DECIMALS)] : []
 
   return buildQuote(route, fromAmount, outputRao, fees, {

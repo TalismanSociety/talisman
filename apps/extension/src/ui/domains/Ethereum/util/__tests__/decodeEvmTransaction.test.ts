@@ -158,6 +158,23 @@ describe("decodeEvmTransaction", () => {
 
       expect(decoded.contractType).toBe("unknown")
     })
+
+    it("leaves the precompile methods without a signing summary undecoded", async () => {
+      const transferAllData = encodeFunctionData({
+        abi: parseAbi(["function transferAll(bytes32 destination, bool keepAlive)"]),
+        functionName: "transferAll",
+        args: [DEST_PUBKEY, false],
+      })
+
+      const decoded = await decodeEvmTransaction(bittensorClient(964), {
+        to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+        data: transferAllData,
+        value: 0n,
+      })
+
+      expect(decoded.contractType).toBe("unknown")
+      expect(decoded.contractCall).toBeUndefined()
+    })
   })
 
   it("still decodes an ERC20 transfer", async () => {

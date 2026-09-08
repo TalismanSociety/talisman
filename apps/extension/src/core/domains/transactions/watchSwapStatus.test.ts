@@ -1,0 +1,96 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+// --- Mocks ---
+
+const mockSleep = vi.fn()
+vi.mock("@talismn/util", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@talismn/util")>()),
+  sleep: (...args: unknown[]) => mockSleep(...args),
+}))
+
+vi.mock("../app/store.remoteConfig", () => ({
+  remoteConfigStore: { get: vi.fn() },
+}))
+
+import { db } from "../../db"
+import type { WalletTransactionEth } from "./types"
+import { watchSwapStatus } from "./watchSwapStatus"
+
+// --- Helpers ---
+
+const HASH = "0xabc"
+
+const insertTransfer = (overrides: Partial<WalletTransactionEth> = {}) =>
+  db.transactionsV2.put({
+    id: HASH,
+    platform: "ethereum",
+    networkId: "964",
+    account: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    status: "success",
+    confirmed: false,
+    payload: {},
+    hash: HASH,
+    nonce: 1,
+    timestamp: Date.now(),
+    txInfo: {
+      type: "swap-bittensor-evm",
+      fromTokenId: "964:evm-native",
+      toTokenId: "bittensor:substrate-native",
+      fromAmount: "1000000000000000000",
+      toAmount: "1000000000",
+      to: "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu",
+    },
+    ...overrides,
+  })
+
+const getSwapStatus = async () => (await db.transactionsV2.get(HASH))?.swapStatus
+
+describe("watchSwapStatus bittensor-evm", () => {
+  beforeEach(async () => {
+    await db.transactionsV2.clear()
+    vi.clearAllMocks()
+    mockSleep.mockResolvedValue(undefined)
+  })
+
+  it("finishes once the transfer is confirmed", async () => {
+    await insertTransfer({ confirmed: true })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+    expect(mockSleep).not.toHaveBeenCalled()
+  })
+
+  it("keeps confirming until the confirmation lands", async () => {
+    await insertTransfer()
+    mockSleep.mockImplementationOnce(async () => {
+      expect(await getSwapStatus()).toBe("confirming")
+      await db.transactionsV2.update(HASH, { confirmed: true })
+    })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+    expect(mockSleep).toHaveBeenCalledTimes(1)
+  })
+
+  it("fails when the confirmation reverts the transfer", async () => {
+    await insertTransfer()
+    mockSleep.mockImplementationOnce(async () => {
+      await db.transactionsV2.update(HASH, { status: "error", confirmed: true })
+    })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("failed")
+  })
+
+  it("lets an old unconfirmed success stand", async () => {
+    await insertTransfer({ timestamp: Date.now() - 11 * 60 * 1_000 })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+    expect(mockSleep).not.toHaveBeenCalled()
+  })
+})

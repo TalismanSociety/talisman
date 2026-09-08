@@ -233,8 +233,25 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
     expect(quote?.outputAmountBN).toBe((ONE_TAO_RAO - ED) * WEI_PER_RAO)
   })
 
-  it("rejects amounts below the existential deposit plus fee", async () => {
-    await expect(quoteSubToEvm(ED + FEE_RAO - 1n)).rejects.toThrow(/minimum is 0.0001005 TAO/)
+  it("requires a fresh mirror to receive at least the existential deposit on top of the retained one", async () => {
+    await expect(quoteSubToEvm(2n * ED - 1n)).rejects.toThrow(/minimum is 0.000001 TAO/)
+
+    const quote = single(await quoteSubToEvm(2n * ED))
+    expect(quote?.outputAmountBN).toBe(ED * WEI_PER_RAO)
+  })
+
+  it("requires a funded mirror to receive at least the existential deposit", async () => {
+    mockGetStorage.mockResolvedValue({ data: { free: ED } })
+
+    await expect(quoteSubToEvm(ED - 1n)).rejects.toThrow(/minimum is 0.0000005 TAO/)
+    await expect(quoteSubToEvm(ED)).resolves.toBeTruthy()
+  })
+
+  it("does not require the amount to cover the fee", async () => {
+    const quote = single(await quoteSubToEvm(2n * ED))
+
+    expect(quote?.outputAmountBN).toBe(ED * WEI_PER_RAO)
+    expect(quote?.fees[0]?.amount.toString()).toBe("0.0001")
   })
 
   it("carries the recipient in the quote data", async () => {
@@ -275,12 +292,19 @@ describe("bittensorEvmSwapModule getQuote evm -> substrate", () => {
     expect(quote?.fees[0]?.amount.toString()).toBe("0.00021")
   })
 
-  it("rejects amounts below the existential deposit plus fee", async () => {
-    const feeRao = (21_000n * 10_000_000_000n) / WEI_PER_RAO
-    const minimum = (ED + feeRao) * WEI_PER_RAO
+  it("requires the recipient to receive at least the existential deposit", async () => {
+    const minimum = ED * WEI_PER_RAO
 
-    await expect(quoteEvmToSub(minimum - 1n)).rejects.toThrow(/minimum is/)
+    await expect(quoteEvmToSub(minimum - 1n)).rejects.toThrow(/minimum is 0.0000005 TAO/)
     await expect(quoteEvmToSub(minimum)).resolves.toBeTruthy()
+  })
+
+  it("does not require the amount to cover the gas", async () => {
+    // 21000 gas * 10 gwei = 210_000 rao worth of gas, far above the 500 rao sent
+    const quote = single(await quoteEvmToSub(ED * WEI_PER_RAO))
+
+    expect(quote?.outputAmountBN).toBe(ED)
+    expect(quote?.fees[0]?.amount.toString()).toBe("0.00021")
   })
 
   it("still quotes when gas estimation fails", async () => {
