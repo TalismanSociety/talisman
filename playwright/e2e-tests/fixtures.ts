@@ -1,6 +1,6 @@
+import { randomBytes } from "node:crypto"
 import { existsSync } from "node:fs"
 
-import { bytesToHex, randomBytes } from "@noble/hashes/utils"
 import type { BrowserContext, Locator, Page, Worker } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
 
@@ -9,7 +9,7 @@ type WatchedAccountType = "ethereum" | "substrate" | "solana"
 type PrivateKeyAccountType = "ethereum" | "solana"
 
 const randomName = (prefix: string) => {
-  const suffix = bytesToHex(randomBytes(2)).slice(0, 3)
+  const suffix = randomBytes(2).toString("hex").slice(0, 3)
   return `${prefix} (${suffix})`
 }
 
