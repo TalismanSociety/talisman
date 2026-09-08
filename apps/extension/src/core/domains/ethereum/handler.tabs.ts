@@ -66,6 +66,7 @@ import {
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
+import { assertPersonalSignMessageDecodable } from "./personalSignMessage"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { assertTypedDataTargetsChain } from "./typedData"
 import type {
@@ -536,6 +537,8 @@ export class EthTabsHandler extends TabsHandler {
 
     // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
+
+    if (method === "personal_sign") assertPersonalSignMessageDecodable(message)
 
     if (["eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method))
       assertTypedDataTargetsChain(message, site.ethChainId)

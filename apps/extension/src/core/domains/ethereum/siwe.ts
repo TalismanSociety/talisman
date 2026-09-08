@@ -1,5 +1,16 @@
 import { ParsedMessage } from "@spruceid/siwe-parser"
-import { type Hex, hexToString } from "viem"
+import { decodePersonalSignMessage } from "./personalSignMessage"
+
+export const parseSiweMessage = (message: string | undefined): ParsedMessage | null => {
+  if (!message) return null
+  const text = decodePersonalSignMessage(message)
+  if (text === null) return null
+  try {
+    return new ParsedMessage(text)
+  } catch {
+    return null
+  }
+}
 
 /**
  * EIP-4361: a Sign-In With Ethereum message must declare a `domain` matching the requesting site.
@@ -9,15 +20,15 @@ import { type Hex, hexToString } from "viem"
  */
 export const isSiweDomainMismatch = (
   method: string | undefined,
-  messageHex: string | undefined,
+  message: string | undefined,
   url: string | undefined
 ): boolean => {
-  if (method !== "personal_sign" || !messageHex || !url) return false
+  if (method !== "personal_sign" || !url) return false
+  const siwe = parseSiweMessage(message)
+  if (!siwe) return false
   try {
-    const siwe = new ParsedMessage(hexToString(messageHex as Hex))
     return siwe.domain !== new URL(url).hostname
   } catch {
-    // not a SIWE message (or unparseable) => nothing to flag
     return false
   }
 }

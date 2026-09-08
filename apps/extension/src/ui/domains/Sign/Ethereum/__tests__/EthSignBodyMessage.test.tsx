@@ -12,6 +12,7 @@ const fx = vi.hoisted(() => ({
   },
   nativeToken: { id: "1-evm-native", symbol: "ETH", decimals: 18 },
   erc20Token: { id: "1-evm-erc20-usdc", symbol: "USDC", decimals: 6 },
+  siweDomainMismatch: false,
 }))
 
 vi.mock("@ui/state/chaindata", async (importOriginal) => ({
@@ -48,11 +49,27 @@ vi.mock("@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton", () => ({
 
 vi.mock("@ui/domains/Sign/ViewDetails/ViewDetailsButton", () => ({ ViewDetailsButton: () => null }))
 
+vi.mock("@talismn/icons", () => ({
+  UserRightIcon: () => null,
+  InfoIcon: () => null,
+  LoaderIcon: () => null,
+}))
+
+vi.mock("@ui/domains/Sign/SignRequestContext", () => ({
+  useEthSignMessageRequest: () => ({
+    siweDomainMismatch: fx.siweDomainMismatch,
+    isSiweMismatchAcknowledged: false,
+    setIsSiweMismatchAcknowledged: () => {},
+  }),
+}))
+
 vi.mock("@ui/components/Drawer", () => ({
   Drawer: ({ isOpen, children }: { isOpen?: boolean; children?: ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
 }))
 
+import { isSiweDomainMismatch } from "@core/domains/ethereum/siwe"
+import { stringToHex } from "viem"
 import { EthSignBodyMessage } from "../EthSignBodyMessage"
 
 const SIGNER = "0x1111111111111111111111111111111111111111"
@@ -104,6 +121,70 @@ const renderMessage = (typedData: unknown) =>
       }
     />
   )
+
+const SITE_URL = "https://example.com/login"
+
+const siweMessage = (domain: string) =>
+  [
+    `${domain} wants you to sign in with your Ethereum account:`,
+    SIGNER,
+    "",
+    "Sign in.",
+    "",
+    `URI: https://${domain}/`,
+    "Version: 1",
+    "Chain ID: 1",
+    "Nonce: 12345678",
+    "Issued At: 2021-09-30T16:25:24.000Z",
+  ].join("\n")
+
+const renderPersonalSign = (message: string) => {
+  const request = {
+    method: "personal_sign",
+    request: message,
+    url: SITE_URL,
+    ethChainId: 1,
+  } as unknown as EthSignRequest
+  fx.siweDomainMismatch = isSiweDomainMismatch(request.method, request.request, request.url)
+  return render(
+    <EthSignBodyMessage
+      account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}
+      request={request}
+    />
+  )
+}
+
+describe("EthSignBodyMessage personal_sign", () => {
+  it("shows the sign-in screen and the domain warning for a hex SIWE message", () => {
+    const { container } = renderPersonalSign(stringToHex(siweMessage("evil.com")))
+
+    expect(container.textContent).toContain("Sign In")
+    expect(container.textContent).toContain("evil.com")
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+  })
+
+  it("treats a raw text SIWE message the same as its hex encoding", () => {
+    const { container } = renderPersonalSign(siweMessage("evil.com"))
+
+    expect(container.textContent).toContain("Sign In")
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+  })
+
+  it("shows no domain warning when the sign-in domain matches the site", () => {
+    const { container } = renderPersonalSign(stringToHex(siweMessage("example.com")))
+
+    expect(container.textContent).toContain("Sign In")
+    expect(container.textContent).not.toContain("Sign in domain is different")
+  })
+
+  it("never shows the sign-in screen for an odd-length hex payload", () => {
+    const { container } = renderPersonalSign(`${stringToHex(siweMessage("evil.com"))}0`)
+
+    expect(container.textContent).not.toContain("Sign In")
+    expect(container.textContent).toContain("Sign Request")
+    expect(screen.getByTestId("raw-message")).toBeDefined()
+  })
+})
 
 describe("EthSignBodyMessage", () => {
   it("decodes a Permit2 allowance instead of showing raw typed data", () => {

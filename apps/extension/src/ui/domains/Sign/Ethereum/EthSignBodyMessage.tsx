@@ -1,9 +1,10 @@
 import { log } from "@common/log"
 import { sentry } from "@core/config/sentry"
+import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
+import { parseSiweMessage } from "@core/domains/ethereum/siwe"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
-import { ParsedMessage } from "@spruceid/siwe-parser"
-import { hexToString, isHexString, stripHexPrefix } from "@talismn/util"
+import { isHexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { decodeEvmTypedData } from "@ui/domains/Ethereum/util/decodeEvmTypedData"
@@ -65,27 +66,15 @@ const useEthSignMessage = (request: EthSignRequest) => {
         sentry.captureException(err)
       }
     }
-    try {
-      if (isHexString(request.request)) {
-        const stripped = stripHexPrefix(request.request)
-        const buff = Buffer.from(stripped, "hex")
-        // if 32 bytes display as is, can be tested when approving NFT listings on tofunft.com
-        return buff.length === 32 ? request.request : buff.toString("utf8")
-      }
-    } catch (err) {
-      log.error(err)
-    }
-    return request.request
+    // a 32 bytes payload is a hash, not text - can be tested when approving NFT listings on tofunft.com
+    if (isHexString(request.request) && request.request.length === 66) return request.request
+    return decodePersonalSignMessage(request.request) ?? request.request
   }, [request.request, typedMessage])
 
-  const siwe = useMemo(() => {
-    try {
-      const text = hexToString(request.request)
-      return new ParsedMessage(text)
-    } catch {
-      return null
-    }
-  }, [request.request])
+  const siwe = useMemo(
+    () => (request.method === "personal_sign" ? parseSiweMessage(request.request) : null),
+    [request.method, request.request]
+  )
 
   return {
     siwe,

@@ -1,8 +1,8 @@
+import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
 import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
-import { hexToString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
@@ -26,7 +26,10 @@ const ViewDetailsContent: FC<{
   const { t } = useTranslation()
   const evmNetwork = useNetworkById(String(siwe.chainId), "ethereum")
 
-  const message = useMemo(() => hexToString(request.request), [request.request])
+  const message = useMemo(
+    () => decodePersonalSignMessage(request.request) ?? request.request,
+    [request.request]
+  )
 
   return (
     <div className="flex max-h-150 w-full flex-col gap-12 bg-grey-850 p-12">
