@@ -1,3 +1,4 @@
+import { getBittensorEvmPairByEvmNetworkId } from "@core/domains/bittensor/constants"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrls,
@@ -21,6 +22,11 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
 
+const getBittensorEvmTrackerUrl = (fromTokenId: string, txHash: string): string | null => {
+  const pair = getBittensorEvmPairByEvmNetworkId(networkIdFromTokenId(fromTokenId))
+  return pair?.evmExplorerTxUrl ? `${pair.evmExplorerTxUrl}${txHash}` : null
+}
+
 const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): string | null => {
   switch (txInfo.type) {
     case "swap-simpleswap":
@@ -29,6 +35,8 @@ const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): strin
       return txInfo.exchangeId ? `https://stealthex.io/exchange?id=${txInfo.exchangeId}` : null
     case "swap-lifi":
       return `https://scan.li.fi/tx/${txHash}`
+    case "swap-bittensor-evm":
+      return getBittensorEvmTrackerUrl(txInfo.fromTokenId, txHash)
     default:
       return null
   }

@@ -268,6 +268,23 @@ describe("useSwapTxInfo", () => {
     })
   })
 
+  describe("bittensor-evm protocol", () => {
+    it("returns swap-bittensor-evm tx info without an exchange", () => {
+      const { result } = renderHook(() =>
+        useSwapTxInfo({ ...baseParams, exchange: undefined, protocol: "bittensor-evm" })
+      )
+
+      expect(result.current).toEqual({
+        type: "swap-bittensor-evm",
+        fromTokenId: baseParams.fromTokenId,
+        toTokenId: baseParams.toTokenId,
+        fromAmount: "1000000",
+        toAmount: "999000",
+        to: baseParams.toAddress,
+      })
+    })
+  })
+
   describe("lifi protocol", () => {
     it("returns swap-lifi tx info with subProtocol", () => {
       const { result } = renderHook(() =>

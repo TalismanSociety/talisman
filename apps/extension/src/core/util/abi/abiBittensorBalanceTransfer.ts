@@ -1,0 +1,29 @@
+export const abiBittensorBalanceTransfer = [
+  {
+    inputs: [{ internalType: "bytes32", name: "data", type: "bytes32" }],
+    name: "transfer",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "destination", type: "bytes32" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+    ],
+    name: "transferKeepAlive",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "destination", type: "bytes32" },
+      { internalType: "bool", name: "keepAlive", type: "bool" },
+    ],
+    name: "transferAll",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const

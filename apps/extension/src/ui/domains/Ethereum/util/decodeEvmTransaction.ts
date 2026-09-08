@@ -1,4 +1,9 @@
 import {
+  BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+  BITTENSOR_EVM_CHAIN_IDS,
+} from "@core/domains/bittensor/constants"
+import {
+  abiBittensorBalanceTransfer,
   abiErc20,
   abiErc721,
   abiErc1155,
@@ -84,12 +89,41 @@ const readErc20Metadata = async (publicClient: PublicClient, address: `0x${strin
   }
 }
 
+const decodeBittensorPrecompile = (
+  publicClient: PublicClient,
+  targetAddress: TransactionRequestBase["to"],
+  data: TransactionRequestBase["data"]
+) => {
+  const chainId = publicClient.chain?.id
+  if (!chainId || !BITTENSOR_EVM_CHAIN_IDS.includes(chainId)) return null
+  if (!targetAddress || !data) return null
+  if (targetAddress.toLowerCase() !== BITTENSOR_BALANCE_TRANSFER_PRECOMPILE) return null
+
+  try {
+    const abi = abiBittensorBalanceTransfer
+    const contractCall = decodeFunctionData({ abi, data })
+    return {
+      contractType: "BittensorBalanceTransfer" as const,
+      contractCall,
+      targetAddress,
+      isContractCall: true,
+      abi,
+    }
+  } catch {
+    return null
+  }
+}
+
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
 ) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx
+
+  // bittensor precompiles have no bytecode, so they must be matched before the contract check
+  const bittensorPrecompile = decodeBittensorPrecompile(publicClient, targetAddress, data)
+  if (bittensorPrecompile) return { ...bittensorPrecompile, value }
 
   const isContractCall = targetAddress
     ? await isContractAddress(publicClient, targetAddress)

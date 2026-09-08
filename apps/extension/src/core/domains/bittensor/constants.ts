@@ -21,3 +21,39 @@ export const sortBittensorNetworkIds = <T extends string>(networkIds: T[]): T[] 
   [...networkIds].sort(
     (a, b) => Number(b === BITTENSOR_NETWORK_ID) - Number(a === BITTENSOR_NETWORK_ID)
   )
+
+const BITTENSOR_EVM_NETWORK_ID = "964"
+const BITTENSOR_TESTNET_EVM_NETWORK_ID = "945"
+
+export type BittensorEvmPair = {
+  substrateNetworkId: string
+  evmNetworkId: string
+  evmExplorerTxUrl: string | null
+}
+
+export const BITTENSOR_EVM_PAIRS: BittensorEvmPair[] = [
+  {
+    substrateNetworkId: BITTENSOR_NETWORK_ID,
+    evmNetworkId: BITTENSOR_EVM_NETWORK_ID,
+    evmExplorerTxUrl: "https://evm.taostats.io/tx/",
+  },
+  {
+    substrateNetworkId: BITTENSOR_TESTNET_NETWORK_ID,
+    evmNetworkId: BITTENSOR_TESTNET_EVM_NETWORK_ID,
+    evmExplorerTxUrl: null,
+  },
+]
+
+export const BITTENSOR_EVM_CHAIN_IDS = BITTENSOR_EVM_PAIRS.map((pair) => Number(pair.evmNetworkId))
+
+export const BITTENSOR_BALANCE_TRANSFER_PRECOMPILE =
+  "0x0000000000000000000000000000000000000800" as const
+
+export const BITTENSOR_SS58_PREFIX = 42
+export const BITTENSOR_EXISTENTIAL_DEPOSIT_RAO = 500n
+export const BITTENSOR_WEI_PER_RAO = 1_000_000_000n
+
+export const getBittensorEvmPairByEvmNetworkId = (
+  evmNetworkId: string | null | undefined
+): BittensorEvmPair | undefined =>
+  BITTENSOR_EVM_PAIRS.find((pair) => pair.evmNetworkId === evmNetworkId)

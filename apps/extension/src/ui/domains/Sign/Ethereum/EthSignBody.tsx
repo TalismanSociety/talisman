@@ -3,6 +3,7 @@ import type { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmT
 import type { FC } from "react"
 
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
+import { EthSignBittensorBalanceTransfer } from "./bittensor/EthSignBittensorBalanceTransfer"
 import { EthSignMoonVotingDelegate } from "./convictionVoting/EthSignMoonVotingDelegate"
 import { EthSignMoonVotingUndelegate } from "./convictionVoting/EthSignMoonVotingUndelegate"
 import { EthSignMoonVotingVote } from "./convictionVoting/EthSignMoonVotingVote"
@@ -73,6 +74,8 @@ const getComponentFromKnownContractCall = (decodedTx: DecodedEvmTransaction) => 
       return EthSignMoonVotingUndelegate
     case "MoonXTokens.transfer":
       return EthSignMoonXTokensTransfer
+    case "BittensorBalanceTransfer.transfer":
+      return EthSignBittensorBalanceTransfer
     default:
       return null
   }
@@ -82,11 +85,12 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
   if (!isReady || !decodedTx) return <SignViewBodyShimmer />
 
   const Component = getComponentFromKnownContractCall(decodedTx)
-  const hasNativeValue = !!decodedTx.value
+  const isPayableCall = decodedTx.contractType === "BittensorBalanceTransfer"
+  const hasNativeValue = !!decodedTx.value && !isPayableCall
 
-  // every call we recognize is non-payable, and none of their summaries has a place for a native
-  // value - so when one carries a value anyway, keep the decoded summary and surface the value
-  // through an alert, so neither leg of the transaction is hidden
+  // apart from payable precompiles, every call we recognize is non-payable, and none of their
+  // summaries has a place for a native value - so when one carries a value anyway, keep the
+  // decoded summary and surface the value through an alert, so neither leg of the transaction is hidden
   if (Component)
     return (
       <FallbackErrorBoundary

@@ -1,7 +1,12 @@
 import { log } from "@common/log"
+import { getBittensorEvmPairByEvmNetworkId } from "@core/domains/bittensor/constants"
 import { isTxInfoSwap } from "@core/domains/transactions/exports"
 import type { WalletTransaction } from "@core/domains/transactions/types"
-import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import {
+  getBlockExplorerLabel,
+  getBlockExplorerUrls,
+  networkIdFromTokenId,
+} from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -131,6 +136,10 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
     if (swapInfo.type === "swap-stealthex" && swapInfo.exchangeId)
       return `https://stealthex.io/exchange?id=${swapInfo.exchangeId}`
     if (swapInfo.type === "swap-lifi") return `https://scan.li.fi/tx/${getTransactionId(tx)}`
+    if (swapInfo.type === "swap-bittensor-evm") {
+      const pair = getBittensorEvmPairByEvmNetworkId(networkIdFromTokenId(swapInfo.fromTokenId))
+      return pair?.evmExplorerTxUrl ? `${pair.evmExplorerTxUrl}${getTransactionId(tx)}` : undefined
+    }
     return undefined
   }, [swapInfo, tx])
 

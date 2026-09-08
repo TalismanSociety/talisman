@@ -81,6 +81,15 @@ export function useSwapTxInfo({
           toAmount: toAmount.toString(),
           to: toAddress,
         }
+      case "bittensor-evm":
+        return {
+          type: "swap-bittensor-evm",
+          fromTokenId,
+          toTokenId,
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
+          to: toAddress,
+        }
       default:
         throw new Error(`swapModule ${protocol as string} not supported`)
     }

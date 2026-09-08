@@ -101,6 +101,9 @@ async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Pro
       return fetchStealthexStatus(txInfo.exchangeId)
     case "swap-lifi":
       return fetchLifiStatus(txId, txInfo)
+    case "swap-bittensor-evm":
+      // native chain transfer: the on-chain success that triggered this watcher is the final state
+      return "finished"
     default:
       return "unknown"
   }
