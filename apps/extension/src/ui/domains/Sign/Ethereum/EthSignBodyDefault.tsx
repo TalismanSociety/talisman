@@ -64,9 +64,9 @@ export const EthSignBodyDefault: FC<EthSignBodyDefaultProps> = ({ unexpectedNati
               </SignAlertMessage>
             )}
             {undecodedSelector && (
-              <SignAlertMessage type="error">
+              <SignAlertMessage type="warning">
                 {t(
-                  "Talisman cannot decode this contract call, so what it does is unknown - the app could be requesting anything, including access to your funds. Only approve it if you trust this app."
+                  "Talisman can't read what this transaction does. Check that you trust this site before you approve."
                 )}
               </SignAlertMessage>
             )}
