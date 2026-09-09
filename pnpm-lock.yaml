@@ -5,8 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@ledgerhq/devices': 8.15.1
-  '@ledgerhq/hw-transport': 6.35.4
+  '@ledgerhq/devices': 8.17.0
+  '@ledgerhq/hw-transport': 6.35.7
+  '@ledgerhq/errors': 7.0.0
   polkadot-api: 2.2.0
   braces@<3.0.3: '>=3.0.3'
   cookie@<0.7.0: '>=0.7.0'
@@ -188,20 +189,20 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1(react@19.2.7)
       '@ledgerhq/hw-app-eth':
-        specifier: 7.8.7
-        version: 7.8.7(debug@4.4.3(supports-color@10.2.2))(react@19.2.7)(supports-color@10.2.2)
+        specifier: 7.8.17
+        version: 7.8.17(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@ledgerhq/hw-app-solana':
-        specifier: ^7.10.4
-        version: 7.10.4
+        specifier: ^7.10.7
+        version: 7.10.7
       '@ledgerhq/hw-transport':
-        specifier: 6.35.4
-        version: 6.35.4
+        specifier: 6.35.7
+        version: 6.35.7
       '@ledgerhq/hw-transport-webhid':
-        specifier: ^6.35.4
-        version: 6.35.4
+        specifier: ^6.36.0
+        version: 6.36.0
       '@ledgerhq/hw-transport-webusb':
-        specifier: 6.34.4
-        version: 6.34.4
+        specifier: 6.35.0
+        version: 6.35.0
       '@lifi/sdk':
         specifier: ^4.0.1
         version: 4.0.1
@@ -359,8 +360,8 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       '@zondax/ledger-substrate':
-        specifier: 2.3.5
-        version: 2.3.5(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: 2.3.7
+        version: 2.3.7(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@zxing/browser':
         specifier: ^0.2.0
         version: 0.2.0(@zxing/library@0.23.0)
@@ -2275,53 +2276,50 @@ packages:
   '@kurkle/color@0.3.4':
     resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
 
-  '@ledgerhq/client-ids@0.10.3':
-    resolution: {integrity: sha512-DqhCC+/ePRJskJuVkstiguR8z52OZcbeXZFXMAYY7VhVPpRrCBiBH3xKX1bTOnIYX74uPPzShMnaPWraL/GZMw==}
+  '@ledgerhq/devices@8.17.0':
+    resolution: {integrity: sha512-l+rrVQEjR1hSWOLD00LFX4zbS8yB1M/Mb6UYPmSHGO7TmE1CFbZ4CmDJC/kZSl3hdrXCJ+YUNpvaLCcSWDwA+Q==}
 
-  '@ledgerhq/devices@8.15.1':
-    resolution: {integrity: sha512-o4XEHiwPytnZxYUnOC5JoHX5TPDJpeMXPfXjwhsXVJ9LAbahxQWzC37Iuzk8ZY/oC2yDptzqjs/qNP2y9D9vCA==}
+  '@ledgerhq/domain-service@1.8.17':
+    resolution: {integrity: sha512-gLQuLpdrJOOGbcdvRVyy5X9dYSfxtXSGOIxzugbL3mTADXWVN49x4cQkPS2+F21ujMZDKDBpTsX5tjDkcrEeDQ==}
 
-  '@ledgerhq/domain-service@1.8.7':
-    resolution: {integrity: sha512-xC/atXDyBqnB066mIxs53HHadyikB/Uc7L3BVI2n3dMhzS/kg2KNR64eQMtPWYBFibuLFQpNumBPufL1w0HxKg==}
+  '@ledgerhq/errors@7.0.0':
+    resolution: {integrity: sha512-+Q/vykUlNeIxiM+I3cu1B660WLkzlmIsHLTV9QNV5D2/Ocplx3QMg52NYq2X7OAfGQnfH1rQvhn/NrjT+t9wBA==}
 
-  '@ledgerhq/errors@6.36.0':
-    resolution: {integrity: sha512-o2Q5hNvf2TzAzlH8ORAozppRbzixRPYDfmSQrP7FOcM997OEH7qDleXgp/uMpvRdxR/t3CJCG+n0i+bU/oYMKA==}
+  '@ledgerhq/evm-tools@1.14.2':
+    resolution: {integrity: sha512-kNlrs+l497GtCAhSQgz06XXq+sfp26x14wXswjrcdea9fOmCbx87j1CvaGde6Hg1XikuVGolUH8bjc8U8q6c9A==}
 
-  '@ledgerhq/evm-tools@1.12.10':
-    resolution: {integrity: sha512-0zYqY1yhfovSH2dOx8oiZk17WW8kExJFfl3DWiEwoW33+gYeTqZXLR+b3w+eYSQf0OqMfmj4QitPOWq/Q84sJw==}
+  '@ledgerhq/hw-app-eth@7.8.17':
+    resolution: {integrity: sha512-ium3Q85TZx3gUyQximUHcCAJZmrTpYvKS1vtwHnI/juUO7K5ukQzmPU9JpInU/K1dLTftZeuyiRFLg3dL1a+pg==}
 
-  '@ledgerhq/hw-app-eth@7.8.7':
-    resolution: {integrity: sha512-KWH8DwMXYTyEHL/lFktAkq58itrxPv0qPX6W3rYjdkA6Rz+91ELkKFH8n+uRyhLDwfubVoACLdDKNioxWaEyOw==}
+  '@ledgerhq/hw-app-solana@7.10.7':
+    resolution: {integrity: sha512-zJw1n90P8k6XmYfo7yWACz5PqQ6gliirQSDmoE8hDYvScDqy7gxHdmFyeXQYAB/JODoUc2gHt27OUkOO9UGHZw==}
 
-  '@ledgerhq/hw-app-solana@7.10.4':
-    resolution: {integrity: sha512-hMMRGPTNDjPzDNCQz9leC08jsFOaVvR84pzP+EvgpuasiT43tzyAVVG8oRyq0yLlcKjtla2MamEfYrr3bB+45g==}
+  '@ledgerhq/hw-transport-mocker@6.34.7':
+    resolution: {integrity: sha512-AyaO4unEHhZbyyo9y16z36uOi9pqY6kqVtWhTAp1PLZuQhXR/Y0m+Yd3yJrjUvlNpIOrrVN1rA+gHlmewl43Og==}
 
-  '@ledgerhq/hw-transport-mocker@6.34.4':
-    resolution: {integrity: sha512-EmAXKfwhH30LGOIqvbsOtjOb4AAj1Q0XwEowXQkFhGLWUokhmlWnZSRgYhdiIoo9nDZ5it+7fG7SPUAI2RZsCA==}
+  '@ledgerhq/hw-transport-node-hid-noevents@6.36.0':
+    resolution: {integrity: sha512-hsqybDCDtpNWeWVY2b/emrsFDqVfc3Rkv4+2b6h5ubPGsKWFd+7t0u6oy0sJEl5v6C+V/uxl03shBjWEcSoxgw==}
 
-  '@ledgerhq/hw-transport-node-hid-noevents@6.35.4':
-    resolution: {integrity: sha512-187670Uuuek9ECcT92NQm1PnDfFHT6gBmaJinatnueMLV9lk3q4IrpFZqTotr+LhPNub+YdGQFjYJImcXvYWtw==}
+  '@ledgerhq/hw-transport-node-hid@6.33.5':
+    resolution: {integrity: sha512-uJ7VztZEDdhCAmCByMltH9Zg6qrU1CrTjVpLrO7IQD5paQbMhZNOLSrtBhWSoP8LYNo/gx5VtLTdtUIIedjsVA==}
 
-  '@ledgerhq/hw-transport-node-hid@6.33.4':
-    resolution: {integrity: sha512-/k0rH+wTpTmUifdxWuOER/dM3vPxW7RQIF0tByGC6noszVC3SGOZVcskBqJZ6xwIs1TvAHvZlEFvZWbnUJMBiw==}
+  '@ledgerhq/hw-transport-webhid@6.36.0':
+    resolution: {integrity: sha512-1mKWm3LyGOgmaYlAiqbmaGoupOZHbj2Kow5sXLxKZzQa4kFvQuUdinYOWhs7T8hqJyAkz9WlHYyKM7aIs8kjNg==}
 
-  '@ledgerhq/hw-transport-webhid@6.35.4':
-    resolution: {integrity: sha512-5tspX0/XMaLd5Nz45AYUcsevvG5QoYJ8/n8g4dUFfIketH8CZA9UPZbgPJD+OWykzhzYLQPGpahDmzxjItVZlQ==}
+  '@ledgerhq/hw-transport-webusb@6.35.0':
+    resolution: {integrity: sha512-8fBNqzQnyR3pKLE2AVxCAc54nHMEKz9/eAYLDENVRuDp+A23lBJYWErxSyoZ6riCM19jIhRvtHjB0o4PXpa2tg==}
 
-  '@ledgerhq/hw-transport-webusb@6.34.4':
-    resolution: {integrity: sha512-asBy3Uu8Cl/leyEAY5M27S/oAZwCpYuRPi9Sz6fgEgF2clX8Sold0iSI+MD0sne3PqcLK1K8V6H4MxviHH7sVw==}
+  '@ledgerhq/hw-transport@6.35.7':
+    resolution: {integrity: sha512-vVhAVQ56+7A5FY5Mr09HY+bmf3H6TXpwsj+/xbadNkjl//e/YzTWfpXk4eBnj3hwk1PQ9Mn6pKFH0BHjS2BKlg==}
 
-  '@ledgerhq/hw-transport@6.35.4':
-    resolution: {integrity: sha512-FMVxiniQp0pgSIEBX9CjXYBuIAH9BTm3OcrN+/2LqkB8QBeFZdiwmO4BeN9nc2aWspe9z6kxN3SuUyouedNokA==}
-
-  '@ledgerhq/live-env@2.39.0':
-    resolution: {integrity: sha512-SYGogZJewIpfA0m4sELbcn7KlFGoKS7tUUxaCoPOJIEdneka5rokNBCQL+gwMKk6Zbzk/zy9KcQjkLAjivojVw==}
+  '@ledgerhq/live-env@3.2.0':
+    resolution: {integrity: sha512-gkfJO/GwqQLQTrFhWD7AgGwYXK5g6UOsKBIeVO9oTbajDzkZbSR8caWmAF1otRgcCBnVuorQza8cU1A6Y38drA==}
 
   '@ledgerhq/logs@6.17.0':
     resolution: {integrity: sha512-yra33g5q/AU7+PwAws+GaVpQGUuxnDREjVBnviJjcaJLVKuLzI4pnj8Bd3nY3fypM5k1yZEYKEXfUuGFUjP2+w==}
 
-  '@ledgerhq/types-live@6.112.0':
-    resolution: {integrity: sha512-FIk+CpTSo6bVlm2z1cpn7Y1MZsBxk3hK52RhUF9QL4/59MzLBC8qHfv2zCxmyJ9NJbWpEcMZFzaw7541AT96PQ==}
+  '@ledgerhq/types-live@6.122.0':
+    resolution: {integrity: sha512-nIinbAfGlwGinHkVRV90r5bWc5YqyE/dchE0h5ENzK++Lv5u2cxNZw7XIoVK5t9CZh+N+5S2R6DFzYY+BEBnNQ==}
 
   '@lifi/sdk@4.0.1':
     resolution: {integrity: sha512-YmSeBPhhtHCyvAVLck+1kdwWwwNzemyh/HJu1z+nDSs14jyzMTPp0nrGf/k2k2wA9gDVBo0dAFIF7m5zRb4zDQ==}
@@ -3259,17 +3257,6 @@ packages:
   '@redocly/openapi-core@1.34.15':
     resolution: {integrity: sha512-HAwCnNyKcs5XGQqms+9t7OdAPM/5TDstmhF+0i7tdCFato2QKuYIlyWETwkXd8c5zbltr1oB+6y9NTeQLr2d6Q==}
     engines: {node: '>=18.17.0', npm: '>=9.5.0'}
-
-  '@reduxjs/toolkit@2.11.2':
-    resolution: {integrity: sha512-Kd6kAHTA6/nUpp8mySPqj3en3dm0tdMIgbttnQ1xFMVpufoj+ADi8pXLBsd4xzTRHQa7t/Jv8W5UnCuW4kuWMQ==}
-    peerDependencies:
-      react: 19.2.7
-      react-redux: ^7.2.1 || ^8.1.3 || ^9.0.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-redux:
-        optional: true
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -4374,9 +4361,6 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@standard-schema/utils@0.3.0':
-    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
-
   '@supercharge/promise-pool@3.3.0':
     resolution: {integrity: sha512-qGzCltMN05ohRRQAXB8TPWt+0Coz9Va266gr9nYN1qc/f/EIaup3VRg7b59mtRaeKTRcxreF20l/udCM/gOqNg==}
     engines: {node: '>=8'}
@@ -5154,11 +5138,12 @@ packages:
   '@yuku-toolchain/types@0.5.43':
     resolution: {integrity: sha512-kSpvPntnXw5+lYjO71ffBEnQ5ycQ74KGIYknh0TS4xeyCuBkOqxyJumxZkMhLBBUCLjDAbx2+Icnr3Zh4ftjpQ==}
 
-  '@zondax/ledger-js@1.3.1':
-    resolution: {integrity: sha512-sDBwsunK2nSzkqJ5xi6QTiVVpAxSy+X1BVcMfKioBsInjktki2SezT7K8Hw6kSlYd3yfOJlw8cs+hqVtxpAGtg==}
+  '@zondax/ledger-js@1.3.4':
+    resolution: {integrity: sha512-GrMGU22do4Wl7+UkWpXe32HsOuIXF3fVCL4cr/uiEgwwbmBXqzto7yBII7YepnfdMzuNAcXbQ6gO0wh0HZGSBg==}
+    engines: {node: '>=20'}
 
-  '@zondax/ledger-substrate@2.3.5':
-    resolution: {integrity: sha512-hUThBmTXGcrFOjJOZVWL61jqpgmImag7PAZ5zg+ByziHRU2CptoJrJ3v/bYrjTlsA7Jx1ydAUJDo8ajND7YTkQ==}
+  '@zondax/ledger-substrate@2.3.7':
+    resolution: {integrity: sha512-jNVimk1hiq6xJg0ZZsKKz+hIgBdxP0UcLBYj9QChIVvXVO66R2MdlphZOiBl9OVbo0E0VvpBKXwA2botNh+7Tw==}
 
   '@zxing/browser@0.2.0':
     resolution: {integrity: sha512-+ORhrLva0vm6ck74NDCmvYNW3XLoAG81Mu90qfcssN1PBKJjQadxZGeMCcIk+BdJbD/zEAjjHDXOwEK1QCmRtw==}
@@ -6891,9 +6876,6 @@ packages:
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
 
-  immer@11.1.8:
-    resolution: {integrity: sha512-/tbkHMW7y10Lx6i1crLjD4/OhNkRG+Fo7byZHtah0547nIeXYcpIXaUh0IAQY6gO5459qpGGYapcEOHtFXkIuA==}
-
   immer@9.0.21:
     resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
 
@@ -8386,14 +8368,6 @@ packages:
   real-require@1.0.0:
     resolution: {integrity: sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==}
 
-  redux-thunk@3.1.0:
-    resolution: {integrity: sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw==}
-    peerDependencies:
-      redux: ^5.0.0
-
-  redux@5.0.1:
-    resolution: {integrity: sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==}
-
   regenerate-unicode-properties@10.2.2:
     resolution: {integrity: sha512-m03P+zhBeQd1RGnYxrGyDAPpWX/epKirLrp8e3qevZdVkKtnCrjjWczIbYc8+xd6vcTStVlqfycTx1KR4LOr0g==}
     engines: {node: '>=4'}
@@ -9279,10 +9253,6 @@ packages:
 
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
-
-  utility-types@3.11.0:
-    resolution: {integrity: sha512-6Z7Ma2aVEWisaL6TvBCy7P8rm2LQoPv6dJ7ecIaIixHcwfbJ0x7mWdbcwlIM5IGQxPZSFYeqRCqlOOeKoJYMkw==}
-    engines: {node: '>= 4'}
 
   uuid@11.1.1:
     resolution: {integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==}
@@ -11257,139 +11227,115 @@ snapshots:
 
   '@kurkle/color@0.3.4': {}
 
-  '@ledgerhq/client-ids@0.10.3(react@19.2.7)':
+  '@ledgerhq/devices@8.17.0':
     dependencies:
-      '@ledgerhq/live-env': 2.39.0
-      '@reduxjs/toolkit': 2.11.2(react@19.2.7)
-      uuid: 11.1.1
-    transitivePeerDependencies:
-      - react
-      - react-redux
-
-  '@ledgerhq/devices@8.15.1':
-    dependencies:
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/logs': 6.17.0
-      rxjs: 7.8.2
       semver: 7.8.5
 
-  '@ledgerhq/domain-service@1.8.7(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@ledgerhq/domain-service@1.8.17(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
-      '@ledgerhq/errors': 6.36.0
       '@ledgerhq/logs': 6.17.0
-      '@ledgerhq/types-live': 6.112.0(react@19.2.7)
+      '@ledgerhq/types-live': 6.122.0
       axios: 1.18.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       eip55: 2.1.1
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
     transitivePeerDependencies:
       - debug
-      - react-redux
       - supports-color
 
-  '@ledgerhq/errors@6.36.0': {}
+  '@ledgerhq/errors@7.0.0': {}
 
-  '@ledgerhq/evm-tools@1.12.10(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@ledgerhq/evm-tools@1.14.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@ethersproject/constants': 5.7.0
       '@ethersproject/hash': 5.7.0
-      '@ledgerhq/live-env': 2.39.0
+      '@ledgerhq/live-env': 3.2.0
       axios: 1.18.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       crypto-js: 4.2.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@ledgerhq/hw-app-eth@7.8.7(debug@4.4.3(supports-color@10.2.2))(react@19.2.7)(supports-color@10.2.2)':
+  '@ledgerhq/hw-app-eth@7.8.17(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@ethersproject/rlp': 5.7.0
       '@ethersproject/transactions': 5.7.0
-      '@ledgerhq/domain-service': 1.8.7(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/evm-tools': 1.12.10(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
-      '@ledgerhq/hw-transport': 6.35.4
-      '@ledgerhq/hw-transport-mocker': 6.34.4
+      '@ledgerhq/domain-service': 1.8.17(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+      '@ledgerhq/evm-tools': 1.14.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+      '@ledgerhq/hw-transport': 6.35.7
+      '@ledgerhq/hw-transport-mocker': 6.34.7
       '@ledgerhq/logs': 6.17.0
-      '@ledgerhq/types-live': 6.112.0(react@19.2.7)
+      '@ledgerhq/types-live': 6.122.0
       axios: 1.18.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       bignumber.js: 9.1.2
       semver: 7.8.5
     transitivePeerDependencies:
       - debug
-      - react
-      - react-redux
       - supports-color
 
-  '@ledgerhq/hw-app-solana@7.10.4':
+  '@ledgerhq/hw-app-solana@7.10.7':
     dependencies:
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/errors': 7.0.0
+      '@ledgerhq/hw-transport': 6.35.7
       bip32-path: 0.4.2
 
-  '@ledgerhq/hw-transport-mocker@6.34.4':
+  '@ledgerhq/hw-transport-mocker@6.34.7':
     dependencies:
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/hw-transport': 6.35.7
       '@ledgerhq/logs': 6.17.0
       rxjs: 7.8.2
 
-  '@ledgerhq/hw-transport-node-hid-noevents@6.35.4':
+  '@ledgerhq/hw-transport-node-hid-noevents@6.36.0':
     dependencies:
-      '@ledgerhq/devices': 8.15.1
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/devices': 8.17.0
+      '@ledgerhq/errors': 7.0.0
+      '@ledgerhq/hw-transport': 6.35.7
       '@ledgerhq/logs': 6.17.0
       node-hid: 2.1.2
     optional: true
 
-  '@ledgerhq/hw-transport-node-hid@6.33.4':
+  '@ledgerhq/hw-transport-node-hid@6.33.5':
     dependencies:
-      '@ledgerhq/devices': 8.15.1
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/hw-transport': 6.35.4
-      '@ledgerhq/hw-transport-node-hid-noevents': 6.35.4
+      '@ledgerhq/devices': 8.17.0
+      '@ledgerhq/errors': 7.0.0
+      '@ledgerhq/hw-transport': 6.35.7
+      '@ledgerhq/hw-transport-node-hid-noevents': 6.36.0
       '@ledgerhq/logs': 6.17.0
       lodash: 4.18.1
       node-hid: 2.1.2
       usb: 2.9.0
     optional: true
 
-  '@ledgerhq/hw-transport-webhid@6.35.4':
+  '@ledgerhq/hw-transport-webhid@6.36.0':
     dependencies:
-      '@ledgerhq/devices': 8.15.1
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/devices': 8.17.0
+      '@ledgerhq/errors': 7.0.0
+      '@ledgerhq/hw-transport': 6.35.7
       '@ledgerhq/logs': 6.17.0
 
-  '@ledgerhq/hw-transport-webusb@6.34.4':
+  '@ledgerhq/hw-transport-webusb@6.35.0':
     dependencies:
-      '@ledgerhq/devices': 8.15.1
-      '@ledgerhq/errors': 6.36.0
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/devices': 8.17.0
+      '@ledgerhq/errors': 7.0.0
+      '@ledgerhq/hw-transport': 6.35.7
       '@ledgerhq/logs': 6.17.0
 
-  '@ledgerhq/hw-transport@6.35.4':
+  '@ledgerhq/hw-transport@6.35.7':
     dependencies:
-      '@ledgerhq/devices': 8.15.1
-      '@ledgerhq/errors': 6.36.0
+      '@ledgerhq/devices': 8.17.0
+      '@ledgerhq/errors': 7.0.0
       '@ledgerhq/logs': 6.17.0
       events: 3.3.0
 
-  '@ledgerhq/live-env@2.39.0':
-    dependencies:
-      rxjs: 7.8.2
-      utility-types: 3.11.0
+  '@ledgerhq/live-env@3.2.0': {}
 
   '@ledgerhq/logs@6.17.0': {}
 
-  '@ledgerhq/types-live@6.112.0(react@19.2.7)':
+  '@ledgerhq/types-live@6.122.0':
     dependencies:
-      '@ledgerhq/client-ids': 0.10.3(react@19.2.7)
       bignumber.js: 9.1.2
       rxjs: 7.8.2
-    transitivePeerDependencies:
-      - react
-      - react-redux
 
   '@lifi/sdk@4.0.1':
     dependencies:
@@ -13157,17 +13103,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@reduxjs/toolkit@2.11.2(react@19.2.7)':
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      '@standard-schema/utils': 0.3.0
-      immer: 11.1.8
-      redux: 5.0.1
-      redux-thunk: 3.1.0(redux@5.0.1)
-      reselect: 5.1.1
-    optionalDependencies:
-      react: 19.2.7
-
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true
 
@@ -14219,8 +14154,6 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@standard-schema/utils@0.3.0': {}
-
   '@supercharge/promise-pool@3.3.0': {}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.29.7(supports-color@10.2.2))':
@@ -14880,18 +14813,18 @@ snapshots:
 
   '@yuku-toolchain/types@0.5.43': {}
 
-  '@zondax/ledger-js@1.3.1':
+  '@zondax/ledger-js@1.3.4':
     dependencies:
-      '@ledgerhq/hw-transport': 6.35.4
+      '@ledgerhq/hw-transport': 6.35.7
 
-  '@zondax/ledger-substrate@2.3.5(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@zondax/ledger-substrate@2.3.7(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
-      '@ledgerhq/hw-transport': 6.35.4
-      '@zondax/ledger-js': 1.3.1
+      '@ledgerhq/hw-transport': 6.35.7
+      '@zondax/ledger-js': 1.3.4
       axios: 1.18.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       buffer: 6.0.3
     optionalDependencies:
-      '@ledgerhq/hw-transport-node-hid': 6.33.4
+      '@ledgerhq/hw-transport-node-hid': 6.33.5
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -16843,8 +16776,6 @@ snapshots:
 
   immediate@3.0.6: {}
 
-  immer@11.1.8: {}
-
   immer@9.0.21: {}
 
   import-fresh@3.3.1:
@@ -18339,12 +18270,6 @@ snapshots:
 
   real-require@1.0.0: {}
 
-  redux-thunk@3.1.0(redux@5.0.1):
-    dependencies:
-      redux: 5.0.1
-
-  redux@5.0.1: {}
-
   regenerate-unicode-properties@10.2.2:
     dependencies:
       regenerate: 1.4.2
@@ -19312,8 +19237,6 @@ snapshots:
       is-generator-function: 1.0.10
       is-typed-array: 1.1.15
       which-typed-array: 1.1.19
-
-  utility-types@3.11.0: {}
 
   uuid@11.1.1: {}
 
