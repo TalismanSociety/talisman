@@ -48,7 +48,7 @@
     "p-queue": "8.1.0",
     "rxjs": "^7.8.2",
     "scale-ts": "^1.6.1",
-    "viem": "2.52.2",
+    "viem": "2.56.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
