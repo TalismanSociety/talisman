@@ -3,6 +3,7 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
+import { fetchForevermoneyStatus } from "../forevermoney/deliveryStatus"
 import { isTxInfoSwap, updateSwapStatus } from "./helpers"
 import { FINAL_SWAP_STATUSES, type SwapStatus, type WalletTransactionInfo } from "./types"
 
@@ -103,12 +104,23 @@ async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Pro
       return fetchLifiStatus(txId, txInfo)
     case "swap-bittensor-evm":
       return fetchBittensorEvmStatus(txId)
+    case "swap-forevermoney":
+      return fetchForevermoneyStatusForTx(txId, txInfo)
     default:
       return "unknown"
   }
 }
 
 // --- Provider-specific fetchers (simple fetch wrappers, no SDK dependency) ---
+
+async function fetchForevermoneyStatusForTx(
+  txId: string,
+  txInfo: Extract<WalletTransactionInfo, { type: "swap-forevermoney" }>
+): Promise<SwapStatus> {
+  const tx = await db.transactionsV2.get(txId)
+  if (!tx) return "not_found"
+  return fetchForevermoneyStatus(tx, txInfo)
+}
 
 // a watcher that died before confirming leaves the transfer unconfirmed forever, so past this age
 // the initial on-chain success stands

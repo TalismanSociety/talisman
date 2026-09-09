@@ -1,3 +1,4 @@
+import { getCcipExplorerTxUrl } from "@core/domains/forevermoney/constants"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrls,
@@ -35,6 +36,8 @@ const getSwapTrackerUrl = (
       return `https://scan.li.fi/tx/${txHash}`
     case "swap-bittensor-evm":
       return getBlockExplorerUrl(network, txHash)
+    case "swap-forevermoney":
+      return getCcipExplorerTxUrl(txHash)
     default:
       return null
   }

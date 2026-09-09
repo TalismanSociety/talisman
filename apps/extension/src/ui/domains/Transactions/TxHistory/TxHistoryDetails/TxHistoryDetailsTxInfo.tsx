@@ -27,6 +27,8 @@ export const TxHistoryDetailsTxInfo: FC<{
       return <SwapLifiTxInfo txInfo={txInfo} networkId={tx.networkId} />
     case "swap-bittensor-evm":
       return <SwapBittensorEvmTxInfo txInfo={txInfo} networkId={tx.networkId} />
+    case "swap-forevermoney":
+      return <SwapForevermoneyTxInfo txInfo={txInfo} networkId={tx.networkId} />
     case "bittensor-staking":
       return <BittensorStakingTxInfo txInfo={txInfo} />
     default:
@@ -92,7 +94,14 @@ const ApproveErc20TxInfo: FC<{
 
 type SwapTxInfo = Extract<
   WalletTransaction["txInfo"],
-  { type: "swap-simpleswap" | "swap-stealthex" | "swap-lifi" | "swap-bittensor-evm" }
+  {
+    type:
+      | "swap-simpleswap"
+      | "swap-stealthex"
+      | "swap-lifi"
+      | "swap-bittensor-evm"
+      | "swap-forevermoney"
+  }
 >
 
 const SwapTxInfoCard: FC<{
@@ -183,6 +192,13 @@ const SwapBittensorEvmTxInfo: FC<{
   txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-bittensor-evm" }>
 }> = ({ networkId, txInfo }) => (
   <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="Bittensor EVM" />
+)
+
+const SwapForevermoneyTxInfo: FC<{
+  networkId: NetworkId
+  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-forevermoney" }>
+}> = ({ networkId, txInfo }) => (
+  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="ForeverMoney" />
 )
 
 const BittensorStakingTxInfo: FC<{

@@ -21,6 +21,10 @@ vi.mock("../swap-modules/simpleswap-swap-module", () => ({
 }))
 
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
+import type { SwapExchange } from "../swap-modules/common.swap-module"
+
+const mockExchange = (protocol: "simpleswap" | "stealthex", id: string) =>
+  ({ protocol, data: { id } }) as SwapExchange
 
 // ── isUserRejectionError ────────────────────────────────────────────
 
@@ -205,7 +209,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: { id: "exchange-123" },
+          exchange: mockExchange("simpleswap", "exchange-123"),
           protocol: "simpleswap",
         })
       )
@@ -239,7 +243,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: { id: "stealthex-456" },
+          exchange: mockExchange("stealthex", "stealthex-456"),
           protocol: "stealthex",
         })
       )
@@ -290,7 +294,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: { id: "lifi-789" },
+          exchange: mockExchange("simpleswap", "lifi-789"),
           protocol: "lifi",
           subProtocol: "uniswap-v3",
         })
@@ -311,7 +315,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: { id: "lifi-789" },
+          exchange: mockExchange("simpleswap", "lifi-789"),
           protocol: "lifi",
         })
       )
@@ -326,7 +330,7 @@ describe("useSwapTxInfo", () => {
         useSwapTxInfo({
           ...baseParams,
           fromTokenId: null,
-          exchange: { id: "x" },
+          exchange: mockExchange("simpleswap", "x"),
           protocol: "simpleswap",
         })
       )
@@ -338,7 +342,7 @@ describe("useSwapTxInfo", () => {
         useSwapTxInfo({
           ...baseParams,
           toTokenId: null,
-          exchange: { id: "x" },
+          exchange: mockExchange("simpleswap", "x"),
           protocol: "simpleswap",
         })
       )
@@ -350,7 +354,7 @@ describe("useSwapTxInfo", () => {
         useSwapTxInfo({
           ...baseParams,
           fromAmount: null,
-          exchange: { id: "x" },
+          exchange: mockExchange("simpleswap", "x"),
           protocol: "simpleswap",
         })
       )
@@ -362,7 +366,7 @@ describe("useSwapTxInfo", () => {
         useSwapTxInfo({
           ...baseParams,
           toAmount: null,
-          exchange: { id: "x" },
+          exchange: mockExchange("simpleswap", "x"),
           protocol: "simpleswap",
         })
       )
@@ -374,7 +378,7 @@ describe("useSwapTxInfo", () => {
         useSwapTxInfo({
           ...baseParams,
           toAddress: null,
-          exchange: { id: "x" },
+          exchange: mockExchange("simpleswap", "x"),
           protocol: "simpleswap",
         })
       )
@@ -391,7 +395,7 @@ describe("useSwapTxInfo", () => {
           renderHook(() =>
             useSwapTxInfo({
               ...baseParams,
-              exchange: { id: "x" },
+              exchange: mockExchange("simpleswap", "x"),
               protocol: "unknown-protocol",
             })
           )
@@ -406,7 +410,7 @@ describe("useSwapTxInfo", () => {
     it("returns the same reference when inputs are unchanged", () => {
       const props = {
         ...baseParams,
-        exchange: { id: "ex-1" },
+        exchange: mockExchange("simpleswap", "ex-1"),
         protocol: "simpleswap" as const,
       }
       const { result, rerender } = renderHook(() => useSwapTxInfo(props))

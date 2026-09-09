@@ -42,6 +42,8 @@ export type BaseQuote<TData = any> = {
   providerName: string
   /** Short provider-specific remark shown on the confirmation screen */
   note?: string
+  /** Provider-specific notice shown as an info banner on the confirmation screen */
+  notice?: string
 
   /** If defined, the UI must account for a gas buffer of `maxNativeTokenGasBuffer` wei to be used for the swap */
   maxNativeTokenGasBuffer?: string

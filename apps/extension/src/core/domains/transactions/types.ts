@@ -90,6 +90,16 @@ export type WalletTransactionInfo =
       to: Address
     }
   | {
+      type: "swap-forevermoney"
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+      to: Address
+      /** destination block read before broadcast, where the delivery watcher starts scanning */
+      destinationStartBlock: string
+    }
+  | {
       type: "bittensor-staking"
       fromTokenId: TokenId
       toTokenId: TokenId

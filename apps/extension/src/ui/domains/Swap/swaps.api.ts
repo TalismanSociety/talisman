@@ -7,6 +7,7 @@ import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/que
 import { useTokensMap } from "@ui/state/chaindata"
 import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
+import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
@@ -24,6 +25,7 @@ export const swapModules = [
   stealthexSwapModule,
   lifiSwapModule,
   bittensorEvmSwapModule,
+  forevermoneySwapModule,
 ]
 
 // ─── Asset-fetching helpers ─────────────────────────────────────────

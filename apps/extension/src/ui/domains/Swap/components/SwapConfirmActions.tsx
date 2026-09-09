@@ -292,7 +292,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   })
 
   const txInfo = useSwapTxInfo({
-    exchange: exchange?.data as { id: string } | undefined,
+    exchange: exchange ?? undefined,
     fromTokenId,
     toTokenId,
     fromAmount,
@@ -651,6 +651,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           >
             <InfoIcon className="mt-px size-6 shrink-0" />
             <div>{errorMessage}</div>
+          </div>
+        )}
+
+        {!errorMessage && selectedQuote?.notice && (
+          <div
+            role="note"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
+          >
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>{selectedQuote.notice}</div>
           </div>
         )}
 
