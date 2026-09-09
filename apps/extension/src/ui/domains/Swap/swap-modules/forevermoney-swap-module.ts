@@ -65,6 +65,7 @@ const MAX_CCIP_FEE_WEI_BITTENSOR = 10n ** 17n // 0.1 TAO
 const FEE_BUFFER_NUMERATOR = 102n
 const FEE_BUFFER_DENOMINATOR = 100n
 const MIN_LIQUID_INBOUND_WEI = 10n ** 16n // 0.01 TAO, the vault must unstake the bridged position
+const MIN_OUTBOUND_WEI = 2n * 10n ** 15n // 0.002 TAO, the vault stakes the deposit and subtensor rejects smaller stakes
 
 export type ForevermoneyQuoteData = {
   direction: ForevermoneyDirection
@@ -228,9 +229,11 @@ const runChecks = async (
   route: ForevermoneyRoute,
   amountWei: bigint
 ) => {
-  if (route.direction !== "evm-to-spoke" && amountWei < MIN_LIQUID_INBOUND_WEI)
+  const minAmountWei =
+    route.direction === "evm-to-spoke" ? MIN_OUTBOUND_WEI : MIN_LIQUID_INBOUND_WEI
+  if (amountWei < minAmountWei)
     throw new Error(
-      `${PROTOCOL_NAME} minimum is ${planckToTokens(MIN_LIQUID_INBOUND_WEI.toString(), EVM_DECIMALS)} TAO`
+      `${PROTOCOL_NAME} minimum is ${planckToTokens(minAmountWei.toString(), EVM_DECIMALS)} TAO`
     )
   await Promise.all([assertWithinRateLimit(sourceClient, route, amountWei), assertVaultOpen(route)])
 }
@@ -371,7 +374,7 @@ const getTransaction = async (
   const { fromTokenId, fromAddress, fromAmount, exchange, context, toAddress } = params
 
   const data = exchange as ForevermoneyExchange | undefined
-  if (!data?.toAddress || !data.amountWei || data.fromTokenId !== fromTokenId)
+  if (!data?.toAddress || !data.amountWei || !data.feeWei || data.fromTokenId !== fromTokenId)
     throw new Error("Please select the quote again")
   if (toAddress && !isAddressEqual(toAddress, data.toAddress))
     throw new Error("Please select the quote again")

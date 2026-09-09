@@ -224,6 +224,12 @@ describe("forevermoneySwapModule getQuote", () => {
     )
   })
 
+  it("rejects an outbound amount below 0.002 TAO", async () => {
+    await expect(quote(EVM_TAO, BASE_WTAO, 10n ** 14n, EVM_ADDRESS)).rejects.toThrow(
+      "minimum is 0.002 TAO"
+    )
+  })
+
   it("rejects an amount above the rate limiter bucket", async () => {
     state.bucketTokens = ONE_TAO_WEI / 2n
 
