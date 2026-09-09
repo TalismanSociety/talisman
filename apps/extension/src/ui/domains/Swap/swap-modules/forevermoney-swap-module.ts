@@ -50,7 +50,7 @@ import forevermoneyLogo from "./forevermoney-logo.png?url"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "forevermoney"
-const PROTOCOL_NAME = "ForeverMoney (Experimental)"
+const PROTOCOL_NAME = "ForeverMoney - Beta"
 const DECENTRALISATION_SCORE = 2
 const OUTBOUND_DURATION_SEC = 180
 const INBOUND_DURATION_SEC = 1800

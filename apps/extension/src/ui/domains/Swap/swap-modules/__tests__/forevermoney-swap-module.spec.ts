@@ -183,7 +183,7 @@ describe("forevermoneySwapModule getQuote", () => {
     const q = single(await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI + 123n, SUB_ADDRESS))
 
     expect(q?.protocol).toBe("forevermoney")
-    expect(q?.providerName).toBe("ForeverMoney (Experimental)")
+    expect(q?.providerName).toBe("ForeverMoney - Beta")
     expect(q?.inputAmountBN).toBe(ONE_TAO_WEI + 123n)
     expect(q?.outputAmountBN).toBe(ONE_TAO_WEI / WEI_PER_RAO)
     expect(q?.fees.map((f) => [f.name, f.tokenId, f.amount.toFixed()])).toEqual([
@@ -422,7 +422,7 @@ describe("forevermoneySwapModule getApprovalInfo", () => {
       tokenAddress: "0xf3081494B87e8D5fb7960f066E931D1D0e6E3d67",
       chainId: 8453,
       fromAddress: EVM_ADDRESS,
-      protocolName: "ForeverMoney (Experimental)",
+      protocolName: "ForeverMoney - Beta",
     })
   })
 
