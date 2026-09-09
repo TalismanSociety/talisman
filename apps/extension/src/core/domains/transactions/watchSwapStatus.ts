@@ -3,9 +3,17 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
-import { fetchForevermoneyStatus } from "../forevermoney/deliveryStatus"
+import {
+  fetchForevermoneyStatus,
+  isForevermoneyDeliveryExpired,
+} from "../forevermoney/deliveryStatus"
 import { isTxInfoSwap, updateSwapStatus } from "./helpers"
-import { FINAL_SWAP_STATUSES, type SwapStatus, type WalletTransactionInfo } from "./types"
+import {
+  FINAL_SWAP_STATUSES,
+  type SwapStatus,
+  type WalletTransaction,
+  type WalletTransactionInfo,
+} from "./types"
 
 const POLL_INTERVAL_MS = 20_000
 const MAX_RETRIES = 10
@@ -15,6 +23,14 @@ const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
 
 // Track active watchers to prevent duplicate polling for the same transaction.
 const activeWatchers = new Set<string>()
+
+// a failed CCIP delivery can be executed again manually, so it stays open until the delivery window closes
+const isFinalSwapStatus = (tx: WalletTransaction, status: SwapStatus) => {
+  if (!FINAL_SWAP_STATUSES.includes(status)) return false
+  if (tx.txInfo?.type === "swap-forevermoney" && status === "failed")
+    return isForevermoneyDeliveryExpired(tx)
+  return true
+}
 
 /**
  * Start polling the exchange API for swap status updates.
@@ -34,9 +50,9 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
     if (tx.txInfo.type === "bittensor-staking") return
 
     // Already in a terminal state — nothing to do
-    if (tx.swapStatus && FINAL_SWAP_STATUSES.includes(tx.swapStatus)) return
+    if (tx.swapStatus && isFinalSwapStatus(tx, tx.swapStatus)) return
 
-    await pollSwapStatus(txId, tx.txInfo)
+    await pollSwapStatus(tx, tx.txInfo)
   } catch (err) {
     log.error("watchSwapStatus", { err, txId })
   } finally {
@@ -44,7 +60,8 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
   }
 }
 
-async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Promise<void> {
+async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionInfo): Promise<void> {
+  const txId = tx.id
   let notFoundSince: number | null = null
 
   // eslint-disable-next-line no-constant-condition
@@ -58,7 +75,7 @@ async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Prom
 
     await updateSwapStatus(txId, status)
 
-    if (FINAL_SWAP_STATUSES.includes(status)) return
+    if (isFinalSwapStatus(tx, status)) return
 
     // Allow a grace period for not_found — the tx may still be in the mempool
     if (status === "not_found") {
@@ -219,7 +236,7 @@ export const resumeSwapWatchers = async () => {
         if (!tx.txInfo || !isTxInfoSwap(tx.txInfo)) return false
         if (tx.txInfo.type === "bittensor-staking") return false
         // Resume if swapStatus hasn't reached a terminal state
-        return !tx.swapStatus || !FINAL_SWAP_STATUSES.includes(tx.swapStatus)
+        return !tx.swapStatus || !isFinalSwapStatus(tx, tx.swapStatus)
       })
       .toArray()
 

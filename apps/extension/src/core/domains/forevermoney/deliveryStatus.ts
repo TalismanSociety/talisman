@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { isAddressEqual, type PublicClient, parseEventLogs } from "viem"
+import { type GetLogsReturnType, isAddressEqual, type PublicClient, parseEventLogs } from "viem"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import type { SwapStatus, WalletTransaction, WalletTransactionInfo } from "../transactions/types"
 import {
@@ -17,11 +17,27 @@ import {
 
 const LOGS_CHUNK_SIZE = 5_000n
 const DELIVERY_MAX_AGE_MS = 24 * 60 * 60 * 1_000
+// blocks re-read on every poll, so a delivery landing in a replaced block is still found
+const REORG_OVERLAP_BLOCKS = 12n
+// same depth as the source transaction watcher before an execution outcome is recorded
+const DELIVERY_CONFIRMATIONS = 2n
 
 type ForevermoneyTxInfo = Extract<WalletTransactionInfo, { type: "swap-forevermoney" }>
+type ExecutionLog = GetLogsReturnType<(typeof abiCcipOffRamp)[0]>[number]
 
-// destination blocks already scanned per transaction, so each poll only reads new blocks
-const scannedUntil = new Map<string, bigint>()
+type DeliveryScan = {
+  nextBlock: bigint
+  execution: ExecutionLog | undefined
+}
+
+// destination scan progress per transaction, so each poll only reads new blocks
+const scans = new Map<string, DeliveryScan>()
+
+const maxBigInt = (a: bigint, b: bigint) => (a > b ? a : b)
+const minBigInt = (a: bigint, b: bigint) => (a < b ? a : b)
+
+export const isForevermoneyDeliveryExpired = (tx: WalletTransaction) =>
+  Date.now() - tx.timestamp >= DELIVERY_MAX_AGE_MS
 
 const getClient = async (networkId: string): Promise<PublicClient> => {
   const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
@@ -59,7 +75,16 @@ const getMessageId = async (
   return event?.args.messageId ?? "missing"
 }
 
-const findExecutionState = async (
+const isFinalExecution = (l: ExecutionLog) =>
+  l.args.state === CCIP_EXECUTION_STATE_SUCCESS || l.args.state === CCIP_EXECUTION_STATE_FAILURE
+
+/**
+ * Returns the most recent final execution of the message and its depth. CCIP lets a failed message
+ * be executed again manually, so the latest state wins. Blocks inside the reorg window are read
+ * again on every poll, and an execution remembered from a previous poll only survives when it sits
+ * below that window.
+ */
+const findLatestExecution = async (
   txId: string,
   client: PublicClient,
   route: ForevermoneyRoute,
@@ -67,11 +92,13 @@ const findExecutionState = async (
   startBlock: bigint
 ) => {
   const latest = await client.getBlockNumber()
-  let fromBlock = scannedUntil.get(txId) ?? startBlock
+  const scan = scans.get(txId) ?? { nextBlock: startBlock, execution: undefined }
+  let execution =
+    scan.execution && scan.execution.blockNumber < scan.nextBlock ? scan.execution : undefined
 
+  let fromBlock = scan.nextBlock
   while (fromBlock <= latest) {
-    const toBlock =
-      fromBlock + LOGS_CHUNK_SIZE - 1n < latest ? fromBlock + LOGS_CHUNK_SIZE - 1n : latest
+    const toBlock = minBigInt(fromBlock + LOGS_CHUNK_SIZE - 1n, latest)
     const logs = await client.getLogs({
       address: route.destinationOffRamp,
       event: abiCcipOffRamp[0],
@@ -79,23 +106,50 @@ const findExecutionState = async (
       fromBlock,
       toBlock,
     })
-    const final = logs.findLast(
-      (l) =>
-        l.args.state === CCIP_EXECUTION_STATE_SUCCESS ||
-        l.args.state === CCIP_EXECUTION_STATE_FAILURE
-    )
-    if (final) return final
-    scannedUntil.set(txId, toBlock + 1n)
+    execution = logs.findLast(isFinalExecution) ?? execution
     fromBlock = toBlock + 1n
   }
-  return null
+
+  scans.set(txId, {
+    nextBlock: maxBigInt(startBlock, latest + 1n - REORG_OVERLAP_BLOCKS),
+    execution,
+  })
+
+  const confirmations = execution ? latest - execution.blockNumber + 1n : 0n
+  return { execution, confirmations }
 }
 
-const wasBookedClaimable = async (client: PublicClient, hash: `0x${string}`) => {
-  const receipt = await client.getTransactionReceipt({ hash })
-  const logs = receipt.logs.filter((l) => isAddressEqual(l.address, FOREVERMONEY_ALPHA_GATEWAY))
+/**
+ * The OffRamp executes several messages in one transaction and emits ExecutionStateChanged after
+ * each one, so the gateway events of this message are the ones between the previous
+ * ExecutionStateChanged event and its own.
+ */
+const wasBookedClaimable = async (
+  client: PublicClient,
+  route: ForevermoneyRoute,
+  execution: ExecutionLog
+) => {
+  const receipt = await client.getTransactionReceipt({ hash: execution.transactionHash })
+
+  const previousExecutionIndex = parseEventLogs({
+    abi: abiCcipOffRamp,
+    eventName: "ExecutionStateChanged",
+    logs: receipt.logs.filter((l) => isAddressEqual(l.address, route.destinationOffRamp)),
+  })
+    .map((l) => l.logIndex)
+    .filter((i) => i < execution.logIndex)
+    .reduce((max, i) => Math.max(max, i), -1)
+
+  const messageLogs = receipt.logs.filter(
+    (l) =>
+      l.logIndex > previousExecutionIndex &&
+      l.logIndex < execution.logIndex &&
+      isAddressEqual(l.address, FOREVERMONEY_ALPHA_GATEWAY)
+  )
+
   return (
-    parseEventLogs({ abi: abiForevermoneyAlphaGateway, eventName: "Claimable", logs }).length > 0
+    parseEventLogs({ abi: abiForevermoneyAlphaGateway, eventName: "Claimable", logs: messageLogs })
+      .length > 0
   )
 }
 
@@ -104,7 +158,8 @@ const wasBookedClaimable = async (client: PublicClient, hash: `0x${string}`) => 
  * waits for the destination OffRamp to report the message executed.
  * - `finished`: delivered
  * - `refunded`: delivered on Bittensor EVM but the gateway booked the funds as claimable by the sender
- * - `failed`: source reverted or CCIP execution failed (manual retry through the CCIP explorer)
+ * - `failed`: source reverted or CCIP execution failed (manual retry through the CCIP explorer);
+ *   the watcher keeps polling a failed execution until the delivery window closes
  */
 export const fetchForevermoneyStatus = async (
   tx: WalletTransaction,
@@ -125,7 +180,7 @@ export const fetchForevermoneyStatus = async (
   }
 
   const destinationClient = await getClient(route.destinationNetworkId)
-  const execution = await findExecutionState(
+  const { execution, confirmations } = await findLatestExecution(
     tx.id,
     destinationClient,
     route,
@@ -133,16 +188,17 @@ export const fetchForevermoneyStatus = async (
     BigInt(txInfo.destinationStartBlock)
   )
 
-  if (!execution) {
-    if (Date.now() - tx.timestamp >= DELIVERY_MAX_AGE_MS) return "unknown"
-    return "exchanging"
+  if (!execution) return isForevermoneyDeliveryExpired(tx) ? "unknown" : "exchanging"
+  if (confirmations < DELIVERY_CONFIRMATIONS) return "verifying"
+
+  if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) {
+    if (isForevermoneyDeliveryExpired(tx)) scans.delete(tx.id)
+    return "failed"
   }
 
-  scannedUntil.delete(tx.id)
-  if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) return "failed"
-
-  if (route.direction !== "evm-to-spoke" && execution.transactionHash) {
-    const claimable = await wasBookedClaimable(destinationClient, execution.transactionHash)
+  scans.delete(tx.id)
+  if (route.direction !== "evm-to-spoke") {
+    const claimable = await wasBookedClaimable(destinationClient, route, execution)
     if (claimable) return "refunded"
   }
 

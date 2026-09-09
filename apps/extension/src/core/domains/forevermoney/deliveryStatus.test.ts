@@ -12,7 +12,7 @@ vi.mock("../../rpcs/chain-connector-evm", () => ({
 }))
 
 import type { WalletTransactionEth } from "../transactions/types"
-import { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } from "./abi"
+import { abiCcipOffRamp, abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } from "./abi"
 import { fetchForevermoneyStatus } from "./deliveryStatus"
 
 // the watcher remembers scanned blocks per transaction id, so each test gets its own id
@@ -51,22 +51,49 @@ const bridgedOutLog = () => ({
   ),
 })
 
-const claimableLog = () => ({
+const claimableLog = (logIndex: number, user: `0x${string}` = SENDER) => ({
   address: ALPHA_GATEWAY,
+  logIndex,
   topics: encodeEventTopics({
     abi: abiForevermoneyAlphaGateway,
     eventName: "Claimable",
-    args: { token: WTAO, user: SENDER },
+    args: { token: WTAO, user },
   }),
   data: encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [10n ** 18n, 0n]),
+})
+
+const executionStateChangedLog = (logIndex: number, messageId: `0x${string}`) => ({
+  address: BITTENSOR_OFFRAMP,
+  logIndex,
+  topics: encodeEventTopics({
+    abi: abiCcipOffRamp,
+    eventName: "ExecutionStateChanged",
+    args: { sourceChainSelector: 15971525489660198786n, sequenceNumber: 1n, messageId },
+  }),
+  data: encodeAbiParameters(
+    [{ type: "bytes32" }, { type: "uint8" }, { type: "bytes" }, { type: "uint256" }],
+    [messageId, 2, "0x", 0n]
+  ),
+})
+
+type ExecutionLog = {
+  args: { state: number }
+  transactionHash: `0x${string}`
+  blockNumber: bigint
+  logIndex: number
+}
+
+const execution = (state: number, blockNumber = 950n, logIndex = 5): ExecutionLog => ({
+  args: { state },
+  transactionHash: DELIVERY_HASH,
+  blockNumber,
+  logIndex,
 })
 
 const makeClient = () => ({
   getTransactionReceipt: vi.fn(),
   getBlockNumber: vi.fn(async () => 1_000n),
-  getLogs: vi.fn(
-    async (): Promise<{ args: { state: number }; transactionHash: `0x${string}` }[]> => []
-  ),
+  getLogs: vi.fn(async (_: { fromBlock: bigint; toBlock: bigint }): Promise<ExecutionLog[]> => []),
 })
 
 const inboundTx = (): WalletTransactionEth => ({
@@ -172,7 +199,7 @@ describe("fetchForevermoneyStatus", () => {
       status: "success",
       logs: [bridgedToFinneyLog()],
     })
-    bittensor.getLogs.mockResolvedValue([{ args: { state: 2 }, transactionHash: DELIVERY_HASH }])
+    bittensor.getLogs.mockResolvedValue([execution(2)])
     bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
 
     expect(await status(inboundTx())).toBe("finished")
@@ -184,10 +211,35 @@ describe("fetchForevermoneyStatus", () => {
       status: "success",
       logs: [bridgedToFinneyLog()],
     })
-    bittensor.getLogs.mockResolvedValue([{ args: { state: 2 }, transactionHash: DELIVERY_HASH }])
-    bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [claimableLog()] })
+    bittensor.getLogs.mockResolvedValue([execution(2)])
+    bittensor.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [claimableLog(3), executionStateChangedLog(5, MESSAGE_ID)],
+    })
 
     expect(await status(inboundTx())).toBe("refunded")
+  })
+
+  it("ignores a claim booked for another message executed in the same transaction", async () => {
+    const OTHER_MESSAGE_ID = "0x4444444444444444444444444444444444444444444444444444444444444444"
+    const OTHER_USER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    bittensor.getLogs.mockResolvedValue([execution(2, 950n, 5)])
+    bittensor.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [
+        claimableLog(1, OTHER_USER),
+        executionStateChangedLog(2, OTHER_MESSAGE_ID),
+        executionStateChangedLog(5, MESSAGE_ID),
+        claimableLog(7, OTHER_USER),
+        executionStateChangedLog(8, OTHER_MESSAGE_ID),
+      ],
+    })
+
+    expect(await status(inboundTx())).toBe("finished")
   })
 
   it("fails when CCIP execution failed", async () => {
@@ -195,9 +247,85 @@ describe("fetchForevermoneyStatus", () => {
       status: "success",
       logs: [bridgedToFinneyLog()],
     })
-    bittensor.getLogs.mockResolvedValue([{ args: { state: 3 }, transactionHash: DELIVERY_HASH }])
+    bittensor.getLogs.mockResolvedValue([execution(3)])
 
     expect(await status(inboundTx())).toBe("failed")
+  })
+
+  it("finishes when a failed execution was retried successfully in a later chunk", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    bittensor.getBlockNumber.mockResolvedValue(7_000n)
+    bittensor.getLogs.mockImplementation(async ({ fromBlock }) =>
+      fromBlock === 900n ? [execution(3, 1_000n)] : [execution(2, 6_000n)]
+    )
+    bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
+
+    expect(await status(inboundTx())).toBe("finished")
+    expect(bittensor.getLogs).toHaveBeenCalledTimes(2)
+  })
+
+  it("keeps a failed execution open and picks up a later manual retry", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    const tx = inboundTx()
+    bittensor.getLogs.mockResolvedValue([execution(3, 950n)])
+    expect(await status(tx)).toBe("failed")
+
+    bittensor.getLogs.mockResolvedValue([])
+    bittensor.getBlockNumber.mockResolvedValue(1_100n)
+    expect(await status(tx)).toBe("failed")
+
+    bittensor.getLogs.mockResolvedValue([execution(2, 1_150n)])
+    bittensor.getBlockNumber.mockResolvedValue(1_200n)
+    bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
+    expect(await status(tx)).toBe("finished")
+  })
+
+  it("waits for confirmations before recording an execution", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    bittensor.getLogs.mockResolvedValue([execution(2, 1_000n)])
+
+    expect(await status(inboundTx())).toBe("verifying")
+    expect(bittensor.getTransactionReceipt).not.toHaveBeenCalled()
+  })
+
+  it("re-reads the reorg window on the next poll", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    const tx = inboundTx()
+    expect(await status(tx)).toBe("exchanging")
+
+    bittensor.getBlockNumber.mockResolvedValue(1_005n)
+    bittensor.getLogs.mockResolvedValue([execution(2, 998n)])
+    bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
+    expect(await status(tx)).toBe("finished")
+    expect(bittensor.getLogs).toHaveBeenLastCalledWith(
+      expect.objectContaining({ fromBlock: 989n, toBlock: 1_005n })
+    )
+  })
+
+  it("drops an unconfirmed execution that disappeared in a reorg", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    const tx = inboundTx()
+    bittensor.getLogs.mockResolvedValue([execution(2, 1_000n)])
+    expect(await status(tx)).toBe("verifying")
+
+    bittensor.getBlockNumber.mockResolvedValue(1_010n)
+    bittensor.getLogs.mockResolvedValue([])
+    expect(await status(tx)).toBe("exchanging")
   })
 
   it("finishes an outbound bridge from the spoke OffRamp without a claimable check", async () => {
@@ -205,7 +333,7 @@ describe("fetchForevermoneyStatus", () => {
       status: "success",
       logs: [bridgedOutLog()],
     })
-    base.getLogs.mockResolvedValue([{ args: { state: 2 }, transactionHash: DELIVERY_HASH }])
+    base.getLogs.mockResolvedValue([execution(2)])
 
     expect(await status(outboundTx())).toBe("finished")
     expect(base.getLogs).toHaveBeenCalledWith(
