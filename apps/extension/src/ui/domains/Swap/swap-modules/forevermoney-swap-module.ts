@@ -57,8 +57,6 @@ const INBOUND_DURATION_SEC = 1800
 const EVM_DECIMALS = 18
 const NOTICE =
   "Experimental bridge operated by ForeverMoney over Chainlink CCIP. Bridged TAO is backed by root-staked TAO."
-const INBOUND_NOTE = "Transfers to Bittensor take 15 to 30 minutes"
-const OUTBOUND_NOTE = "Transfers from Bittensor take 2 to 3 minutes"
 
 // CCIP fee is a fraction of a cent to a dollar; anything above these caps means a broken quote
 const MAX_CCIP_FEE_WEI_SPOKE = 10n ** 16n // 0.01 ETH
@@ -310,7 +308,6 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
     timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
     providerLogo: forevermoneyLogo,
     providerName: PROTOCOL_NAME,
-    note: isOutbound ? OUTBOUND_NOTE : INBOUND_NOTE,
     notice: NOTICE,
     maxNativeTokenGasBuffer:
       isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
