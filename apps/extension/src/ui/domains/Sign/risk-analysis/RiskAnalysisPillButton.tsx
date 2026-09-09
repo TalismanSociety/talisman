@@ -93,7 +93,9 @@ export const RiskAnalysisPillButton: FC<{ className?: string; size?: PillButtonS
 
       // Consider it's worth retrying in case of api error (429, 500..) unless it's because of an invalid request
       // Add conditions here as we discover them
-      const isInvalidRequest = error?.message === "Unsupported message type. Proceed with caution"
+      const isInvalidRequest =
+        error?.message === "Unsupported message type. Proceed with caution" ||
+        /not supported/i.test(error?.message ?? "")
 
       return {
         icon: ShieldUnavailableIcon,
