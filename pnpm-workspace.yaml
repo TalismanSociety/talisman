@@ -48,14 +48,24 @@ minimumReleaseAgeExclude:
   # merge output was diffed against tailwind-merge on every cn() call in the extension.
   # Can be removed after 2026-09-05.
   - "cn"
+  # hw-app-eth 7.8.17 and its transitive graph were published 2026-09-07, the last
+  # release of the legacy hw-app libs. Tarballs diffed against the previous versions.
+  # Can be removed after 2026-09-10.
+  - "@ledgerhq/hw-app-eth"
+  - "@ledgerhq/domain-service"
+  - "@ledgerhq/evm-tools"
+  - "@ledgerhq/live-env"
+  - "@ledgerhq/types-live"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
-  # pins 6.35.3 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
+  # pins 6.35.6 while hw-app-eth/solana 7.x use 6.35.7 and the web transports 6.35.5, which
   # otherwise produces two incompatible Transport types. The Transport API is
   # stable across 6.x. devices follows transport.
-  "@ledgerhq/devices": "8.15.1"
-  "@ledgerhq/hw-transport": "6.35.4"
+  "@ledgerhq/devices": "8.17.0"
+  "@ledgerhq/hw-transport": "6.35.7"
+  # errors 7 only removed two type aliases; webhid/webusb still declare ^6.37.
+  "@ledgerhq/errors": "7.0.0"
   # .papi/descriptors declares an open `polkadot-api: >=2.0.0` peer range (papi codegen
   # writes that file), which otherwise resolves to its own copy and ships a second
   # polkadot-api — and a second sync-provider — in the bundle. Keep in sync with the
@@ -154,5 +164,3 @@ peerDependencyRules:
   allowAny:
     - "utf-8-validate"
     - "eciesjs"
-    # @solana-program/token-2022 declares a stale ^5.0 peer, kit 6.10 ships sysvars 6.10
-    - "@solana/sysvars"

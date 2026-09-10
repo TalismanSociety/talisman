@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@solana/kit": "6.10.0",
+    "@solana/kit": "8.2.0",
     "@talismn/crypto": "workspace:*"
   },
   "devDependencies": {
