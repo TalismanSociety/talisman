@@ -6,7 +6,9 @@ import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Skeleton } from "@ui/components/Skeleton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
@@ -29,6 +31,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -384,6 +387,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const feeToken = useToken(activeFeeTokenId ?? undefined)
+  const feeTokenBalance = useBalance(fromAddress, activeFeeTokenId)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
@@ -456,7 +460,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   ])
 
   const hasFeeError = useMemo(() => {
-    if (!activeTransaction) return false
+    if (!activeTransaction) return Boolean(exchangeError)
     switch (activeTransaction.platform) {
       case "ethereum": {
         if (exchangeError) return true
@@ -615,6 +619,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
                     setCustomSettings={activeEthTx.setCustomSettings}
                     onChange={activeEthTx.setPriority}
                   />
+                ) : hasFeeError ? (
+                  <div className="text-body-secondary text-xs">-</div>
                 ) : (
                   <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
                 )}
@@ -624,6 +630,24 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary text-xs">
               {t("Estimated TX Fee")}
+              {activeFeeTokenId && (feePlanck || feeTokenBalance) ? (
+                <Tooltip placement="top">
+                  <TooltipTrigger asChild>
+                    <span className="ml-2">
+                      <InfoIcon className="inline align-text-top" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <FeeTooltip
+                      tokenId={activeFeeTokenId}
+                      estimatedFee={feePlanck ? BigInt(feePlanck) : undefined}
+                      maxFee={activeEthTx.txDetails?.maxFee}
+                      l1DataFee={activeEthTx.txDetails?.estimatedL1DataFee}
+                      balance={feeTokenBalance?.transferable.planck}
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
             </div>
             {hasFeeError ? (
               <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
