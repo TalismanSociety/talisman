@@ -294,7 +294,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: mockExchange("simpleswap", "lifi-789"),
+          exchange: undefined,
           protocol: "lifi",
           subProtocol: "uniswap-v3",
         })
@@ -315,7 +315,7 @@ describe("useSwapTxInfo", () => {
       const { result } = renderHook(() =>
         useSwapTxInfo({
           ...baseParams,
-          exchange: mockExchange("simpleswap", "lifi-789"),
+          exchange: undefined,
           protocol: "lifi",
         })
       )
