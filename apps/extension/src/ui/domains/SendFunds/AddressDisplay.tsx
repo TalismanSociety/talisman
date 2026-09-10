@@ -147,7 +147,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
             <button
               onClick={handleCopyAddress}
               type="button"
-              className="text-grey-300 text-md hover:text-white"
+              className="text-grey-300 hover:text-white"
             >
               <CopyIcon />
             </button>
