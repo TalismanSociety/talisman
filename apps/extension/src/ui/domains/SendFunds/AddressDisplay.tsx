@@ -116,41 +116,43 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           chainName={chain?.name}
         />
       </TooltipContent>
-      <TooltipTrigger
-        className={cn(
-          "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
-          className
-        )}
-      >
-        <AccountIcon
-          className={cn("text-lg!", accountIconClassName)}
-          address={resolvedAddress}
-          genesisHash={getAccountGenesisHash(account)}
-        />
-        <div className="grow truncate leading-base">{text}</div>
-        <AccountTypeIcon
-          type={account?.type}
-          className="text-primary"
-          signetUrl={getAccountSignetUrl(account)}
-        />
-        {blockExplorerUrl ? (
-          <a
-            href={blockExplorerUrl}
-            target="_blank"
-            className="text-grey-300 hover:text-white"
-            rel="noopener"
-          >
-            <ExternalLinkIcon />
-          </a>
-        ) : (
-          <button
-            onClick={handleCopyAddress}
-            type="button"
-            className="text-grey-300 text-md hover:text-white"
-          >
-            <CopyIcon />
-          </button>
-        )}
+      <TooltipTrigger asChild>
+        <div
+          className={cn(
+            "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
+            className
+          )}
+        >
+          <AccountIcon
+            className={cn("text-lg!", accountIconClassName)}
+            address={resolvedAddress}
+            genesisHash={getAccountGenesisHash(account)}
+          />
+          <div className="grow truncate leading-base">{text}</div>
+          <AccountTypeIcon
+            type={account?.type}
+            className="text-primary"
+            signetUrl={getAccountSignetUrl(account)}
+          />
+          {blockExplorerUrl ? (
+            <a
+              href={blockExplorerUrl}
+              target="_blank"
+              className="text-grey-300 hover:text-white"
+              rel="noopener"
+            >
+              <ExternalLinkIcon />
+            </a>
+          ) : (
+            <button
+              onClick={handleCopyAddress}
+              type="button"
+              className="text-grey-300 text-md hover:text-white"
+            >
+              <CopyIcon />
+            </button>
+          )}
+        </div>
       </TooltipTrigger>
     </Tooltip>
   )
