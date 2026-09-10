@@ -10,6 +10,15 @@ import type { QuoteFee } from "../swap-modules/common.swap-module"
 
 const getAdditionalFees = (fees: QuoteFee[]) => fees.filter((fee) => fee.additional)
 
+const toPlanck = (fee: QuoteFee, decimals: number) =>
+  BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
+
+/** Sum of the additional fees charged in `tokenId`, the amount the account must hold on top of gas */
+export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: string, decimals: number) =>
+  getAdditionalFees(fees)
+    .filter((fee) => fee.tokenId === tokenId)
+    .reduce((total, fee) => total + BigInt(toPlanck(fee, decimals)), 0n)
+
 export const SwapAdditionalFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
   fees,
   isLoading,
@@ -24,9 +33,7 @@ export const SwapAdditionalFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = 
 const AdditionalFeeRow: FC<{ fee: QuoteFee; isLoading: boolean }> = ({ fee, isLoading }) => {
   const { t } = useTranslation()
   const token = useToken(fee.tokenId)
-  const planck = token
-    ? BigNumber(fee.amount).shiftedBy(token.decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
-    : null
+  const planck = token ? toPlanck(fee, token.decimals) : null
 
   return (
     <div className="flex h-11 items-center justify-between gap-8">

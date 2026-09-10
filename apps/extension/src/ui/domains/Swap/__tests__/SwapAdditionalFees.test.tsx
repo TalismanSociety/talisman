@@ -2,7 +2,7 @@ import { render } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { SwapAdditionalFees } from "../components/SwapAdditionalFees"
+import { getAdditionalFeePlanck, SwapAdditionalFees } from "../components/SwapAdditionalFees"
 import type { QuoteFee } from "../swap-modules/common.swap-module"
 
 vi.mock("react-i18next", () => ({
@@ -82,5 +82,30 @@ describe("SwapAdditionalFees", () => {
 
     expect(getByText("Additional Fee")).toBeTruthy()
     expect(getByText("Unknown token")).toBeTruthy()
+  })
+})
+
+describe("getAdditionalFeePlanck", () => {
+  it("sums the additional fees charged in the given token", () => {
+    const otherToken: QuoteFee = { ...bridgeFee, tokenId: "1:evm-native", amount: BigNumber("1") }
+    const relayerFee: QuoteFee = { ...bridgeFee, name: "Relayer Fee", amount: BigNumber("0.00001") }
+
+    expect(
+      getAdditionalFeePlanck([bridgeFee, gasFee, otherToken, relayerFee], "8453:evm-native", 18)
+    ).toBe(1_030_000_000_000_000n)
+  })
+
+  it("is zero without additional fees", () => {
+    expect(getAdditionalFeePlanck([gasFee], "8453:evm-native", 18)).toBe(0n)
+  })
+
+  it("rounds a fee below one planck up", () => {
+    expect(
+      getAdditionalFeePlanck(
+        [{ ...bridgeFee, amount: BigNumber("0.0000001") }],
+        "8453:evm-native",
+        6
+      )
+    ).toBe(1n)
   })
 })

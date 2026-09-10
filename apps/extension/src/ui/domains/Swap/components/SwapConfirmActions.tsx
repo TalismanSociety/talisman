@@ -50,7 +50,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
-import { SwapAdditionalFees } from "./SwapAdditionalFees"
+import { getAdditionalFeePlanck, SwapAdditionalFees } from "./SwapAdditionalFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -491,10 +491,20 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
+  // the approval only spends its own gas, additional fees are drawn by the swap transaction
+  const additionalFeePlanck = useMemo(() => {
+    if (needsApproval || !feeToken) return 0n
+    return getAdditionalFeePlanck(
+      exchangeAndTransactionQuery.data?.fees ?? [],
+      feeToken.id,
+      feeToken.decimals
+    )
+  }, [exchangeAndTransactionQuery.data?.fees, feeToken, needsApproval])
+
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
     feeTokenId: activeFeeTokenId,
-    feePlanck,
+    feePlanck: feePlanck === null ? null : BigInt(feePlanck) + additionalFeePlanck,
     isFeeLoading,
     fromTokenId,
     fromAmount,
