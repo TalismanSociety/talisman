@@ -1,8 +1,10 @@
 import type { WalletTransaction } from "@core/domains/transactions/types"
-import { type NetworkId, parseTokenId } from "@talismn/chaindata-provider"
+import { type NetworkId, networkIdFromTokenId, parseTokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { CodeBlock } from "@ui/components/CodeBlock"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import type { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -104,6 +106,16 @@ type SwapTxInfo = Extract<
   }
 >
 
+const SwapNetworkLabel: FC<{ networkId: NetworkId }> = ({ networkId }) => (
+  <span className="text-body">
+    <NetworkLogo
+      networkId={networkId}
+      className="mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub"
+    />
+    <NetworkName networkId={networkId} />
+  </span>
+)
+
 const SwapTxInfoCard: FC<{
   networkId: NetworkId
   txInfo: SwapTxInfo
@@ -111,35 +123,52 @@ const SwapTxInfoCard: FC<{
 }> = ({ networkId, txInfo, protocolLabel }) => {
   const { t } = useTranslation()
   const label = protocolLabel ?? (txInfo.type === "swap-lifi" ? txInfo.protocolName : undefined)
+  const fromNetworkId = networkIdFromTokenId(txInfo.fromTokenId)
+  const toNetworkId = networkIdFromTokenId(txInfo.toTokenId)
+  const isCrossChain = fromNetworkId !== toNetworkId
+
+  const tokenComponents = {
+    FromTokens: (
+      <TokensAndFiat
+        planck={txInfo.fromAmount}
+        tokenId={txInfo.fromTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+    ToTokens: (
+      <TokensAndFiat
+        planck={txInfo.toAmount}
+        tokenId={txInfo.toTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+  }
 
   return (
     <TxInfoCard>
       <div className="flex flex-col gap-2">
         <div>
-          <Trans
-            t={t}
-            defaults="Swap <FromTokens /> for <ToTokens />"
-            components={{
-              FromTokens: (
-                <TokensAndFiat
-                  planck={txInfo.fromAmount}
-                  tokenId={txInfo.fromTokenId}
-                  withLogo
-                  noFiat
-                  className="text-body"
-                />
-              ),
-              ToTokens: (
-                <TokensAndFiat
-                  planck={txInfo.toAmount}
-                  tokenId={txInfo.toTokenId}
-                  withLogo
-                  noFiat
-                  className="text-body"
-                />
-              ),
-            }}
-          />
+          {isCrossChain ? (
+            <Trans
+              t={t}
+              defaults="Swap <FromTokens /> on <FromNetwork /> for <ToTokens /> on <ToNetwork />"
+              components={{
+                ...tokenComponents,
+                FromNetwork: <SwapNetworkLabel networkId={fromNetworkId} />,
+                ToNetwork: <SwapNetworkLabel networkId={toNetworkId} />,
+              }}
+            />
+          ) : (
+            <Trans
+              t={t}
+              defaults="Swap <FromTokens /> for <ToTokens />"
+              components={tokenComponents}
+            />
+          )}
           {txInfo.to ? (
             <Trans
               t={t}
