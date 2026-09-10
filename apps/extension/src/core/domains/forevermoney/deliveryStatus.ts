@@ -15,7 +15,8 @@ import {
   findForevermoneyRoute,
 } from "./constants"
 
-const LOGS_CHUNK_SIZE = 5_000n
+// the smallest eth_getLogs range cap among the usable chaindata RPCs
+const LOGS_CHUNK_SIZE = 2_000n
 const DELIVERY_MAX_AGE_MS = 24 * 60 * 60 * 1_000
 // blocks re-read on every poll, so a delivery landing in a replaced block is still found
 const REORG_OVERLAP_BLOCKS = 12n

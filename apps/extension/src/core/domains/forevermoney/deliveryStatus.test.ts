@@ -257,9 +257,9 @@ describe("fetchForevermoneyStatus", () => {
       status: "success",
       logs: [bridgedToFinneyLog()],
     })
-    bittensor.getBlockNumber.mockResolvedValue(7_000n)
+    bittensor.getBlockNumber.mockResolvedValue(3_000n)
     bittensor.getLogs.mockImplementation(async ({ fromBlock }) =>
-      fromBlock === 900n ? [execution(3, 1_000n)] : [execution(2, 6_000n)]
+      fromBlock === 900n ? [execution(3, 1_000n)] : [execution(2, 2_950n)]
     )
     bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
 
