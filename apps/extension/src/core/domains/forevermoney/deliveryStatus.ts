@@ -1,7 +1,12 @@
 import { log } from "@common/log"
 import { type GetLogsReturnType, isAddressEqual, type PublicClient, parseEventLogs } from "viem"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
-import type { SwapStatus, WalletTransaction, WalletTransactionInfo } from "../transactions/types"
+import {
+  FINAL_SWAP_STATUSES,
+  type SwapStatus,
+  type WalletTransaction,
+  type WalletTransactionInfo,
+} from "../transactions/types"
 import {
   abiCcipOffRamp,
   abiForevermoneyAlphaGateway,
@@ -39,6 +44,15 @@ const minBigInt = (a: bigint, b: bigint) => (a < b ? a : b)
 
 export const isForevermoneyDeliveryExpired = (tx: WalletTransaction) =>
   Date.now() - tx.timestamp >= DELIVERY_MAX_AGE_MS
+
+/**
+ * A failed CCIP execution can be retried manually and a missing delivery may still land, so both
+ * stay open until the delivery window closes.
+ */
+export const isForevermoneyStatusFinal = (tx: WalletTransaction, status: SwapStatus) => {
+  if (status === "failed" || status === "unknown") return isForevermoneyDeliveryExpired(tx)
+  return FINAL_SWAP_STATUSES.includes(status)
+}
 
 const getClient = async (networkId: string): Promise<PublicClient> => {
   const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
@@ -166,6 +180,15 @@ export const fetchForevermoneyStatus = async (
   tx: WalletTransaction,
   txInfo: ForevermoneyTxInfo
 ): Promise<SwapStatus> => {
+  const status = await resolveStatus(tx, txInfo)
+  if (isForevermoneyStatusFinal(tx, status)) scans.delete(tx.id)
+  return status
+}
+
+const resolveStatus = async (
+  tx: WalletTransaction,
+  txInfo: ForevermoneyTxInfo
+): Promise<SwapStatus> => {
   if (tx.platform !== "ethereum") return "invalid"
 
   const route = findForevermoneyRoute(txInfo.fromTokenId, txInfo.toTokenId)
@@ -191,13 +214,8 @@ export const fetchForevermoneyStatus = async (
 
   if (!execution) return isForevermoneyDeliveryExpired(tx) ? "unknown" : "exchanging"
   if (confirmations < DELIVERY_CONFIRMATIONS) return "verifying"
+  if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) return "failed"
 
-  if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) {
-    if (isForevermoneyDeliveryExpired(tx)) scans.delete(tx.id)
-    return "failed"
-  }
-
-  scans.delete(tx.id)
   if (route.direction !== "evm-to-spoke") {
     const claimable = await wasBookedClaimable(destinationClient, route, execution)
     if (claimable) return "refunded"

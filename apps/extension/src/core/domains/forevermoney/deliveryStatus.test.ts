@@ -286,6 +286,33 @@ describe("fetchForevermoneyStatus", () => {
     expect(await status(tx)).toBe("finished")
   })
 
+  it("keeps the scan when the claimable check fails", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    const tx = inboundTx()
+    bittensor.getLogs.mockResolvedValue([execution(2, 950n)])
+    bittensor.getTransactionReceipt.mockRejectedValue(new Error("rpc down"))
+    await expect(status(tx)).rejects.toThrow("rpc down")
+
+    bittensor.getLogs.mockResolvedValue([])
+    bittensor.getTransactionReceipt.mockResolvedValue({ status: "success", logs: [] })
+    expect(await status(tx)).toBe("finished")
+  })
+
+  it("releases the scan once the delivery window closed", async () => {
+    base.getTransactionReceipt.mockResolvedValue({
+      status: "success",
+      logs: [bridgedToFinneyLog()],
+    })
+    const tx = { ...inboundTx(), timestamp: Date.now() - 25 * 60 * 60 * 1_000 }
+    expect(await status(tx)).toBe("unknown")
+    expect(await status(tx)).toBe("unknown")
+
+    expect(bittensor.getLogs).toHaveBeenLastCalledWith(expect.objectContaining({ fromBlock: 900n }))
+  })
+
   it("waits for confirmations before recording an execution", async () => {
     base.getTransactionReceipt.mockResolvedValue({
       status: "success",
