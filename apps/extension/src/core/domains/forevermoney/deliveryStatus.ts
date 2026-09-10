@@ -42,7 +42,7 @@ const scans = new Map<string, DeliveryScan>()
 const maxBigInt = (a: bigint, b: bigint) => (a > b ? a : b)
 const minBigInt = (a: bigint, b: bigint) => (a < b ? a : b)
 
-export const isForevermoneyDeliveryExpired = (tx: WalletTransaction) =>
+const isDeliveryExpired = (tx: WalletTransaction) =>
   Date.now() - tx.timestamp >= DELIVERY_MAX_AGE_MS
 
 /**
@@ -50,7 +50,7 @@ export const isForevermoneyDeliveryExpired = (tx: WalletTransaction) =>
  * stay open until the delivery window closes.
  */
 export const isForevermoneyStatusFinal = (tx: WalletTransaction, status: SwapStatus) => {
-  if (status === "failed" || status === "unknown") return isForevermoneyDeliveryExpired(tx)
+  if (status === "failed" || status === "unknown") return isDeliveryExpired(tx)
   return FINAL_SWAP_STATUSES.includes(status)
 }
 
@@ -212,7 +212,7 @@ const resolveStatus = async (
     BigInt(txInfo.destinationStartBlock)
   )
 
-  if (!execution) return isForevermoneyDeliveryExpired(tx) ? "unknown" : "exchanging"
+  if (!execution) return isDeliveryExpired(tx) ? "unknown" : "exchanging"
   if (confirmations < DELIVERY_CONFIRMATIONS) return "verifying"
   if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) return "failed"
 

@@ -154,6 +154,60 @@ describe("watchSwapStatus forevermoney", () => {
     expect(mockFetchForevermoneyStatus).not.toHaveBeenCalled()
   })
 
+  it("keeps polling an unknown delivery inside the window", async () => {
+    await insertBridge({ timestamp: Date.now() - 2 * 60 * 60 * 1_000 })
+    mockFetchForevermoneyStatus.mockResolvedValueOnce("unknown").mockResolvedValueOnce("finished")
+    mockSleep.mockImplementationOnce(async () => {
+      expect(await getSwapStatus()).toBe("unknown")
+    })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+    expect(mockSleep).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps polling a recent delivery after the status fetch keeps failing", async () => {
+    await insertBridge()
+    mockFetchForevermoneyStatus.mockRejectedValue(new Error("rpc down"))
+    mockSleep.mockImplementation(async (ms: number) => {
+      if (ms !== 20_000) return
+      expect(await getSwapStatus()).toBe("unknown")
+      mockFetchForevermoneyStatus.mockResolvedValue("finished")
+    })
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+  })
+
+  it("stops on an unknown delivery once the delivery window closed", async () => {
+    await insertBridge({ timestamp: Date.now() - 25 * 60 * 60 * 1_000 })
+    mockFetchForevermoneyStatus.mockResolvedValue("unknown")
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("unknown")
+    expect(mockSleep).not.toHaveBeenCalled()
+  })
+
+  it("resumes a watcher for an unknown delivery inside the window", async () => {
+    await insertBridge({ timestamp: Date.now() - 2 * 60 * 60 * 1_000, swapStatus: "unknown" })
+    mockFetchForevermoneyStatus.mockResolvedValue("finished")
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("finished")
+  })
+
+  it("does not restart a watcher for an unknown delivery past the window", async () => {
+    await insertBridge({ timestamp: Date.now() - 25 * 60 * 60 * 1_000, swapStatus: "unknown" })
+
+    await watchSwapStatus(HASH)
+
+    expect(mockFetchForevermoneyStatus).not.toHaveBeenCalled()
+  })
+
   it("resumes a watcher for a recently failed delivery", async () => {
     await insertBridge({ swapStatus: "failed" })
     mockFetchForevermoneyStatus.mockResolvedValue("finished")

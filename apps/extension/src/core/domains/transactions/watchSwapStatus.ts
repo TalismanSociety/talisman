@@ -3,10 +3,7 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
-import {
-  fetchForevermoneyStatus,
-  isForevermoneyDeliveryExpired,
-} from "../forevermoney/deliveryStatus"
+import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
 import { isTxInfoSwap, updateSwapStatus } from "./helpers"
 import {
   FINAL_SWAP_STATUSES,
@@ -24,12 +21,11 @@ const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
 // Track active watchers to prevent duplicate polling for the same transaction.
 const activeWatchers = new Set<string>()
 
-// a failed CCIP delivery can be executed again manually, so it stays open until the delivery window closes
+// an unknown status may still resolve while the transaction is recent, so its watcher keeps polling
 const isFinalSwapStatus = (tx: WalletTransaction, status: SwapStatus) => {
-  if (!FINAL_SWAP_STATUSES.includes(status)) return false
-  if (tx.txInfo?.type === "swap-forevermoney" && status === "failed")
-    return isForevermoneyDeliveryExpired(tx)
-  return true
+  if (tx.txInfo?.type === "swap-forevermoney") return isForevermoneyStatusFinal(tx, status)
+  if (status === "unknown") return Date.now() - tx.timestamp >= UNKNOWN_MAX_AGE_MS
+  return FINAL_SWAP_STATUSES.includes(status)
 }
 
 /**
@@ -66,13 +62,8 @@ async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionIn
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const status = await fetchSwapStatusWithRetry(txId, txInfo)
-    if (status === undefined) {
-      // All retries exhausted — mark as unknown so the UI can show an appropriate state
-      await updateSwapStatus(txId, "unknown")
-      return
-    }
-
+    // exhausted retries leave the status unknown until a later poll succeeds or the tx ages out
+    const status = (await fetchSwapStatusWithRetry(txId, txInfo)) ?? "unknown"
     await updateSwapStatus(txId, status)
 
     if (isFinalSwapStatus(tx, status)) return
@@ -248,9 +239,6 @@ export const resumeSwapWatchers = async () => {
         await updateSwapStatus(tx.id, "unknown")
         continue
       }
-
-      // Don't resume unknown watchers past the max age
-      if (tx.swapStatus === "unknown" && now - tx.timestamp >= UNKNOWN_MAX_AGE_MS) continue
 
       // Fire-and-forget — each watcher runs independently
       watchSwapStatus(tx.id)
