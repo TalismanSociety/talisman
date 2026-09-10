@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { decodeFunctionData } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -187,7 +188,7 @@ describe("forevermoneySwapModule getQuote", () => {
     expect(q?.inputAmountBN).toBe(ONE_TAO_WEI + 123n)
     expect(q?.outputAmountBN).toBe(ONE_TAO_WEI / WEI_PER_RAO)
     expect(q?.fees.map((f) => [f.name, f.tokenId, f.amount.toFixed()])).toEqual([
-      ["Bridge Fee", "8453:evm-native", "0.001"],
+      ["Bridge Fee", "8453:evm-native", "0.00102"],
       ["Est. Gas Fees", "8453:evm-native", "0.000000000002"],
     ])
     expect(q?.timeInSec).toBe(1800)
@@ -213,7 +214,12 @@ describe("forevermoneySwapModule getQuote", () => {
     const q = single(await quote(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS))
 
     expect(q?.outputAmountBN).toBe(ONE_TAO_WEI)
-    expect(q?.fees[0]).toMatchObject({ name: "Bridge Fee", tokenId: "964:evm-native" })
+    expect(q?.fees[0]).toMatchObject({
+      name: "Bridge Fee",
+      tokenId: "964:evm-native",
+      additional: true,
+    })
+    expect(q?.fees[0]?.amount.toFixed()).toBe("0.00102")
     expect(q?.maxNativeTokenGasBuffer).toBe(FEE_WITH_BUFFER.toString())
     expect(q?.timeInSec).toBe(180)
   })
@@ -275,6 +281,14 @@ describe("forevermoneySwapModule createExchange", () => {
 
     expect(ex).toEqual({
       protocol: "forevermoney",
+      fees: [
+        {
+          name: "Bridge Fee",
+          tokenId: "8453:evm-native",
+          amount: BigNumber("0.00102"),
+          additional: true,
+        },
+      ],
       data: {
         direction: "spoke-to-substrate",
         fromTokenId: BASE_WTAO,

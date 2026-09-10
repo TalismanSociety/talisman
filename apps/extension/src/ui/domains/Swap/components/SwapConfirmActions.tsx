@@ -46,9 +46,11 @@ import {
   type SwapConfirmError,
 } from "../swap-errors"
 import type {
+  BaseQuote,
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { SwapAdditionalFees } from "./SwapAdditionalFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -201,8 +203,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       // slippage, fetch a fresh quote so the route reflects the user's current slippage.
       // The main quote manager intentionally omits slippage from its cache key so that
       // editing slippage on the confirm screen doesn't destabilise quote selection.
-      let exchangeQuote: unknown = exchange?.data ?? null
-      if (!exchangeQuote && supportsSlippage) {
+      let freshQuote: BaseQuote | null = null
+      if (!exchange && supportsSlippage) {
         const freshQuotes = await swapModule.getQuote(
           {
             fromTokenId,
@@ -223,7 +225,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           : []
 
         // Prefer the route matching the user's selected protocol/subProtocol
-        exchangeQuote =
+        freshQuote =
           quotesArray.find(
             (q) =>
               q.protocol === selectedQuote?.protocol &&
@@ -243,14 +245,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         fromTokenId,
         fromAddress,
         fromAmount,
-        exchange: exchangeQuote ?? selectedQuote,
+        exchange: exchange?.data ?? freshQuote ?? selectedQuote,
         context,
         toAddress,
       })
 
       if (signal.aborted) throw new Error("Aborted")
 
-      return { exchange, transaction }
+      const fees = exchange?.fees ?? freshQuote?.fees ?? selectedQuote?.fees ?? []
+
+      return { exchange, transaction, fees }
     },
     enabled:
       !!swapModule &&
@@ -663,6 +667,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
+          <SwapAdditionalFees
+            fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
+            isLoading={isExchangeLoading}
+          />
           <SimulationRow />
         </div>
       </ScrollContainer>

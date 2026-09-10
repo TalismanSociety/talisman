@@ -25,6 +25,11 @@ export type QuoteFee = {
   name: string
   amount: BigNumber
   tokenId: TokenId
+  /**
+   * Charged on top of the input amount and of the network fee, shown as "Additional Fee" on the confirm screen.
+   * Only fees in the source network's native token are balance-checked and allowed in the transaction value.
+   */
+  additional?: boolean
 }
 
 export type BaseQuote<TData = any> = {

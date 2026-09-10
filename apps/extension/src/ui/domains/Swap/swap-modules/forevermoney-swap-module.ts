@@ -266,6 +266,11 @@ const toQuoteFee = (name: string, tokenId: TokenId, wei: bigint): QuoteFee => ({
   amount: BigNumber(planckToTokens(wei.toString(), EVM_DECIMALS)),
 })
 
+const toBridgeFee = (tokenId: TokenId, feeWei: bigint): QuoteFee => ({
+  ...toQuoteFee("Bridge Fee", tokenId, withFeeBuffer(feeWei)),
+  additional: true,
+})
+
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei
 
@@ -287,7 +292,7 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
 
   if (fromAddress && isEthereumAddress(fromAddress)) {
     feeWei = await readCcipFeeWei(client, route, amountWei, fromAddress, toAddress)
-    fees.push(toQuoteFee("Bridge Fee", feeTokenId, feeWei))
+    fees.push(toBridgeFee(feeTokenId, feeWei))
 
     const recipient = toAddress && isEthereumAddress(toAddress) ? toAddress : fromAddress
     const gasFeeWei = await estimateGasFeeWei(client, {
@@ -357,6 +362,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
   return {
     protocol: PROTOCOL,
+    fees: [toBridgeFee(evmNativeTokenId(route.sourceNetworkId), feeWei)],
     data: {
       direction: route.direction,
       fromTokenId: route.fromTokenId,

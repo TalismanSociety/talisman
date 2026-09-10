@@ -4,6 +4,7 @@
 type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
 type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
 type ForevermoneyExchange = import("./forevermoney-swap-module").ForevermoneyExchange
+type QuoteFee = import("./common.swap-module").QuoteFee
 
 export type SupportedSwapProtocol =
   | "simpleswap"
@@ -12,7 +13,9 @@ export type SupportedSwapProtocol =
   | "bittensor-evm"
   | "forevermoney"
 
-export type SwapExchange =
+/** `fees` are the fees re-read at exchange time, they replace the quote's on the confirm screen */
+export type SwapExchange = { fees?: QuoteFee[] } & (
   | { protocol: "simpleswap"; data: SimpleswapExchange }
   | { protocol: "stealthex"; data: StealthexExchange }
   | { protocol: "forevermoney"; data: ForevermoneyExchange }
+)
