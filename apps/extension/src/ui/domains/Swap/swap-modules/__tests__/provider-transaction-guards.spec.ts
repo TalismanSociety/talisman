@@ -103,4 +103,68 @@ describe("assertNativeValueWithinInput", () => {
       assertNativeValueWithinInput({ value: 1n, fromAmount, isNativeInput: false })
     ).toThrow("Unexpected transaction amount")
   })
+
+  describe("with an additional native fee", () => {
+    const additionalNativeValue = 1_000n
+
+    it("lets a native swap carry the entered amount plus the fee", () => {
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: fromAmount + additionalNativeValue,
+          fromAmount,
+          isNativeInput: true,
+          additionalNativeValue,
+        })
+      ).not.toThrow()
+    })
+
+    it("rejects a native swap spending more than the entered amount plus the fee", () => {
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: fromAmount + additionalNativeValue + 1n,
+          fromAmount,
+          isNativeInput: true,
+          additionalNativeValue,
+        })
+      ).toThrow("Unexpected transaction amount")
+    })
+
+    it("requires an erc20 swap to carry exactly the fee", () => {
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: additionalNativeValue,
+          fromAmount,
+          isNativeInput: false,
+          additionalNativeValue,
+        })
+      ).not.toThrow()
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: additionalNativeValue + 1n,
+          fromAmount,
+          isNativeInput: false,
+          additionalNativeValue,
+        })
+      ).toThrow("Unexpected transaction amount")
+    })
+
+    it("rejects a negative value or a negative fee", () => {
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: -1n,
+          fromAmount,
+          isNativeInput: true,
+          additionalNativeValue,
+        })
+      ).toThrow("Unexpected transaction amount")
+      expect(() =>
+        assertNativeValueWithinInput({
+          value: 0n,
+          fromAmount,
+          isNativeInput: false,
+          additionalNativeValue: -1n,
+        })
+      ).toThrow("Unexpected transaction amount")
+    })
+  })
 })
