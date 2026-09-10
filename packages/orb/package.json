@@ -22,7 +22,7 @@
   "dependencies": {
     "@talismn/crypto": "workspace:*",
     "blueimp-md5": "2.19.0",
-    "color": "4.2.3"
+    "color": "5.0.3"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",

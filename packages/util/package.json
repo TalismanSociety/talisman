@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "bignumber.js": "^11.1.3",
+    "bignumber.js": "^11.1.5",
     "lodash-es": "4.18.1",
     "rxjs": "7.8.2"
   },
