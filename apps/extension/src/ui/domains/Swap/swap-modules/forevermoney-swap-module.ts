@@ -88,11 +88,14 @@ const toWholeRao = (wei: bigint) => (wei / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WE
 
 const withFeeBuffer = (fee: bigint) => (fee * FEE_BUFFER_NUMERATOR) / FEE_BUFFER_DENOMINATOR
 
-const getEvmClient = async (evmNetworkId: string): Promise<PublicClient> => {
+const getEvmNetwork = async (evmNetworkId: string) => {
   const network = await firstValueFrom(getNetworkById$(evmNetworkId))
   if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
-  return getExtensionPublicClient(network)
+  return network
 }
+
+const getEvmClient = async (evmNetworkId: string): Promise<PublicClient> =>
+  getExtensionPublicClient(await getEvmNetwork(evmNetworkId))
 
 const isSubstrateAddress = (address: string) => {
   if (isEthereumAddress(address)) return false
@@ -399,8 +402,7 @@ const getTransaction = async (
     throw new Error("Bridge fee is unexpectedly high")
   }
 
-  const network = await firstValueFrom(getNetworkById$(route.sourceNetworkId))
-  if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
+  const network = await getEvmNetwork(route.sourceNetworkId)
   const publicClient = getExtensionPublicClient(network)
 
   const transaction = await prepareTransactionRequestWithGasCheck(
