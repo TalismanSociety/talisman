@@ -1,5 +1,17 @@
 # @talismn/chain-connectors
 
+## 1.0.3
+
+### Patch Changes
+
+- 57a9865: Bump @solana/kit to 8.2.0 and @solana-program/system, token, token-2022 to their kit 8 releases
+- e61425b: Bump viem to 2.56.3
+- Updated dependencies [67dab7c]
+- Updated dependencies [ba2381a]
+- Updated dependencies [65d5779]
+  - @talismn/chaindata-provider@2.0.3
+  - @talismn/util@2.0.1
+
 ## 1.0.2
 
 ### Patch Changes
