@@ -1,5 +1,15 @@
 # @talismn/solana
 
+## 1.0.2
+
+### Patch Changes
+
+- ba2381a: Bump dev tooling dependencies
+- 57a9865: Bump @solana/kit to 8.2.0 and @solana-program/system, token, token-2022 to their kit 8 releases
+- Updated dependencies [67dab7c]
+- Updated dependencies [54d4e62]
+  - @talismn/crypto@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

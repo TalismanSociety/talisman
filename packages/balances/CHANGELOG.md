@@ -1,5 +1,26 @@
 # @talismn/balances
 
+## 3.0.3
+
+### Patch Changes
+
+- ba2381a: Bump dev tooling dependencies
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+- 57a9865: Bump @solana/kit to 8.2.0 and @solana-program/system, token, token-2022 to their kit 8 releases
+- e61425b: Bump viem to 2.56.3
+- Updated dependencies [67dab7c]
+- Updated dependencies [67dab7c]
+- Updated dependencies [ba2381a]
+- Updated dependencies [54d4e62]
+- Updated dependencies [65d5779]
+- Updated dependencies [57a9865]
+- Updated dependencies [e61425b]
+  - @talismn/chaindata-provider@2.0.3
+  - @talismn/crypto@1.1.0
+  - @talismn/util@2.0.1
+  - @talismn/chain-connectors@1.0.3
+  - @talismn/token-rates@4.0.3
+
 ## 3.0.2
 
 ### Patch Changes
