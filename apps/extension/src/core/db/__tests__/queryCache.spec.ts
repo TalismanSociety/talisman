@@ -1,4 +1,4 @@
-import pako from "pako"
+import * as pako from "pako"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { db } from "../db"
@@ -35,7 +35,7 @@ describe("queryCacheStore", () => {
       expect(row).toBeDefined()
       expect(row!.data).toBeInstanceOf(Uint8Array)
 
-      const decompressed = JSON.parse(pako.inflate(row!.data, { to: "string" }))
+      const decompressed = JSON.parse(pako.inflate(row!.data, { toText: true }))
       expect(decompressed).toEqual(data)
     })
 

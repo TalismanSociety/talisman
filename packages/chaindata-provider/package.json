@@ -31,11 +31,11 @@
   "dependencies": {
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "dexie": "^4.4.4",
+    "dexie": "^4.4.5",
     "lodash-es": "4.18.1",
     "lz-string": "^1.5.0",
     "rxjs": "^7.8.2",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
