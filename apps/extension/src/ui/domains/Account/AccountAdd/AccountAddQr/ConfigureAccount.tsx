@@ -159,10 +159,10 @@ export const ConfigureAccount = () => {
                 <AccountDerivedPicker
                   lockToNetwork
                   label={
-                    <Trans t={t}>
+                    <Trans values={{ name: chain.name }} t={t}>
                       <span>This is a derived account (restrict account to </span>
                       <NetworkLogo networkId={chain.id} className="inline" />
-                      <span className="text-body">{chain.name}</span>
+                      <span className="text-body">{"{{name}}"}</span>
                       <span> network)</span>
                     </Trans>
                   }

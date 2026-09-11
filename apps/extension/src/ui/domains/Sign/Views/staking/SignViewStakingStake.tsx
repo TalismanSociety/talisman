@@ -18,9 +18,9 @@ export const SignViewStakingStake: FC<{
         <TokensAndFiat planck={planck} tokenId={tokenId} noCountUp />
       </div>
       {!!autoCompound && (
-        <Trans t={t}>
+        <Trans values={{ autoCompound }} t={t}>
           <div>
-            with <span className="text-body">{autoCompound}%</span> of rewards
+            with <span className="text-body">{"{{autoCompound}}"}%</span> of rewards
           </div>
           <div>auto-compounding</div>
         </Trans>

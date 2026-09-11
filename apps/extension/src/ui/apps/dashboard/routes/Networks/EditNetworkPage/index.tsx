@@ -454,13 +454,13 @@ const ConfirmRemove: FC<{
       <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
           {isNetworkKnown(saved) ? (
-            <Trans t={t}>
-              This will reset <span className="text-body">{saved?.name}</span> to its Talisman
+            <Trans values={{ name: saved?.name ?? "" }} t={t}>
+              This will reset <span className="text-body">{"{{name}}"}</span> to its Talisman
               default state. Are you sure you want to continue ?
             </Trans>
           ) : (
-            <Trans t={t}>
-              Are you sure you want to remove <span className="text-body">{saved?.name}</span> from
+            <Trans values={{ name: saved?.name ?? "" }} t={t}>
+              Are you sure you want to remove <span className="text-body">{"{{name}}"}</span> from
               your token list ?
             </Trans>
           )}

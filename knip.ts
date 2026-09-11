@@ -47,7 +47,7 @@ const config: KnipConfig = {
         "entrypoints/dashboard/index.html",
         "entrypoints/onboarding/index.html",
         "entrypoints/support/index.html",
-        "i18next-parser.config.cjs",
+        "i18next.config.ts",
       ],
       project: ["src/**/*.{ts,tsx,css}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],
