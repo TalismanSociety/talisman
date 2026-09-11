@@ -40,8 +40,8 @@
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "@types/node": "^24.5.1",
-    "tsx": "^4.22.4",
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

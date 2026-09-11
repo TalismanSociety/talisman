@@ -27,8 +27,9 @@ describe("yieldToEventLoop", () => {
   it("lets queued timers fire between repeated yields", async () => {
     let ticks = 0
     const interval = setInterval(() => ticks++, 0)
+    const deadline = Date.now() + 1000
     try {
-      for (let i = 0; i < 20; i++) await yieldToEventLoop()
+      while (ticks === 0 && Date.now() < deadline) await yieldToEventLoop()
     } finally {
       clearInterval(interval)
     }

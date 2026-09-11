@@ -35,7 +35,7 @@ export const PolkadotSignMessageRequest = () => {
     [status, statusMessage]
   )
 
-  const bytes = (request?.payload as SignerPayloadRaw).data
+  const bytes = (request.payload as SignerPayloadRaw).data
   const messageText = useMemo(
     () => (isAsciiPrintable(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
     [bytes]

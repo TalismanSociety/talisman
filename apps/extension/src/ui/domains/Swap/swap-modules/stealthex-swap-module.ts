@@ -424,6 +424,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
   }
 }
 
+/** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type { StealthexExchange }
 
 const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
