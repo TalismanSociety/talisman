@@ -174,17 +174,19 @@ describe("summary call args coverage", () => {
     expect(registeredCalls.toSorted()).toStrictEqual(Object.keys(SUMMARY_ARGS_COVERAGE).toSorted())
   })
 
-  it.each(Object.entries(SUMMARY_ARGS_COVERAGE))("%s renders the args it claims to", (call, {
-    displayed,
-  }) => {
-    const source = PALLET_SOURCES[call.split(".")[0] as string] as string
+  it.each(Object.entries(SUMMARY_ARGS_COVERAGE))(
+    "%s renders the args it claims to",
+    (call, { displayed }) => {
+      const source = PALLET_SOURCES[call.split(".")[0] as string] as string
 
-    for (const arg of displayed) expect(source).toContain(`args.${String(arg)}`)
-  })
+      for (const arg of displayed) expect(source).toContain(`args.${String(arg)}`)
+    }
+  )
 
-  it.each(Object.entries(SUMMARY_ARGS_COVERAGE))("%s explains every arg it leaves out", (_call, {
-    ignored,
-  }) => {
-    for (const reason of Object.values(ignored)) expect(String(reason).length).toBeGreaterThan(0)
-  })
+  it.each(Object.entries(SUMMARY_ARGS_COVERAGE))(
+    "%s explains every arg it leaves out",
+    (_call, { ignored }) => {
+      for (const reason of Object.values(ignored)) expect(String(reason).length).toBeGreaterThan(0)
+    }
+  )
 })

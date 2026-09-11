@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "@types/node": "^24.5.1",
+    "@types/node": "^24.13.3",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
