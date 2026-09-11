@@ -6,7 +6,9 @@ import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Skeleton } from "@ui/components/Skeleton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
@@ -29,6 +31,7 @@ import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -43,9 +46,11 @@ import {
   type SwapConfirmError,
 } from "../swap-errors"
 import type {
+  BaseQuote,
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { getAdditionalFeePlanck, SwapAdditionalFees } from "./SwapAdditionalFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -198,8 +203,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       // slippage, fetch a fresh quote so the route reflects the user's current slippage.
       // The main quote manager intentionally omits slippage from its cache key so that
       // editing slippage on the confirm screen doesn't destabilise quote selection.
-      let exchangeQuote: unknown = exchange?.data ?? null
-      if (!exchangeQuote && supportsSlippage) {
+      let freshQuote: BaseQuote | null = null
+      if (!exchange && supportsSlippage) {
         const freshQuotes = await swapModule.getQuote(
           {
             fromTokenId,
@@ -220,7 +225,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           : []
 
         // Prefer the route matching the user's selected protocol/subProtocol
-        exchangeQuote =
+        freshQuote =
           quotesArray.find(
             (q) =>
               q.protocol === selectedQuote?.protocol &&
@@ -240,14 +245,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         fromTokenId,
         fromAddress,
         fromAmount,
-        exchange: exchangeQuote ?? selectedQuote,
+        exchange: exchange?.data ?? freshQuote ?? selectedQuote,
         context,
         toAddress,
       })
 
       if (signal.aborted) throw new Error("Aborted")
 
-      return { exchange, transaction }
+      const fees = exchange?.fees ?? freshQuote?.fees ?? selectedQuote?.fees ?? []
+
+      return { exchange, transaction, fees }
     },
     enabled:
       !!swapModule &&
@@ -292,7 +299,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   })
 
   const txInfo = useSwapTxInfo({
-    exchange: exchange?.data as { id: string } | undefined,
+    exchange: exchange ?? undefined,
     fromTokenId,
     toTokenId,
     fromAmount,
@@ -384,6 +391,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const feeToken = useToken(activeFeeTokenId ?? undefined)
+  const feeTokenBalance = useBalance(fromAddress, activeFeeTokenId)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
@@ -456,7 +464,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   ])
 
   const hasFeeError = useMemo(() => {
-    if (!activeTransaction) return false
+    if (!activeTransaction) return Boolean(exchangeError)
     switch (activeTransaction.platform) {
       case "ethereum": {
         if (exchangeError) return true
@@ -483,10 +491,20 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
+  // the approval only spends its own gas, additional fees are drawn by the swap transaction
+  const additionalFeePlanck = useMemo(() => {
+    if (needsApproval || !feeToken) return 0n
+    return getAdditionalFeePlanck(
+      exchangeAndTransactionQuery.data?.fees ?? [],
+      feeToken.id,
+      feeToken.decimals
+    )
+  }, [exchangeAndTransactionQuery.data?.fees, feeToken, needsApproval])
+
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
     feeTokenId: activeFeeTokenId,
-    feePlanck,
+    feePlanck: feePlanck === null ? null : BigInt(feePlanck) + additionalFeePlanck,
     isFeeLoading,
     fromTokenId,
     fromAmount,
@@ -615,6 +633,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
                     setCustomSettings={activeEthTx.setCustomSettings}
                     onChange={activeEthTx.setPriority}
                   />
+                ) : hasFeeError ? (
+                  <div className="text-body-secondary text-xs">-</div>
                 ) : (
                   <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
                 )}
@@ -624,6 +644,24 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary text-xs">
               {t("Estimated TX Fee")}
+              {activeFeeTokenId && (feePlanck || feeTokenBalance) ? (
+                <Tooltip placement="top">
+                  <TooltipTrigger asChild>
+                    <span className="ml-2">
+                      <InfoIcon className="inline align-text-top" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <FeeTooltip
+                      tokenId={activeFeeTokenId}
+                      estimatedFee={feePlanck ? BigInt(feePlanck) : undefined}
+                      maxFee={activeEthTx.txDetails?.maxFee}
+                      l1DataFee={activeEthTx.txDetails?.estimatedL1DataFee}
+                      balance={feeTokenBalance?.transferable.planck}
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
             </div>
             {hasFeeError ? (
               <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
@@ -639,6 +677,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
+          <SwapAdditionalFees
+            fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
+            isLoading={isExchangeLoading}
+          />
           <SimulationRow />
         </div>
       </ScrollContainer>
@@ -651,6 +693,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           >
             <InfoIcon className="mt-px size-6 shrink-0" />
             <div>{errorMessage}</div>
+          </div>
+        )}
+
+        {!errorMessage && selectedQuote?.notice && (
+          <div
+            role="note"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
+          >
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>{selectedQuote.notice}</div>
           </div>
         )}
 

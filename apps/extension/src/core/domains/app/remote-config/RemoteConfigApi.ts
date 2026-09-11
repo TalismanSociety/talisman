@@ -290,40 +290,42 @@ export class RemoteConfigApi<
           featureFlags: {
             /** Shows the buy crypto button in the wallet */
             BUY_CRYPTO: boolean;
-            /** Shows the transaction history link in the wallet */
+            /** deprecated */
             LINK_TX_HISTORY: boolean;
-            /** Shows the staking link in the wallet */
+            /** deprecated */
             LINK_STAKING: boolean;
-            /** Enables internationalization support */
+            /** deprecated */
             I18N: boolean;
-            /** Enables the use of the OnFinality API key */
+            /** deprecated */
             USE_ONFINALITY_API_KEY: boolean;
-            /** Enables the token swaps feature */
+            /** deprecated */
             SWAPS: boolean;
-            /** Enables quest link in portfolio header */
+            /** deprecated */
             QUEST_LINK: boolean;
-            /** Enables unified address banners on home page and copy address chain picker */
+            /** deprecated */
             UNIFIED_ADDRESS_BANNER: boolean;
             /** Enables transaction validation via risk analysis */
             RISK_ANALYSIS_V2: boolean;
-            /** Enables the Autonomys quest banner */
+            /** deprecated */
             AUTONOMYS_QUEST_BANNER: boolean;
             /** Enables the NFTs v2 feature */
             NFTS_V2: boolean;
             /** Enables SEEK-based TAO fee discounts */
             SEEK_TAO_DISCOUNT: boolean;
-            /** Enables SEEK token benefits features */
+            /** deprecated */
             SEEK_BENEFITS: boolean;
-            /** Enables SEEK presale features */
+            /** deprecated */
             SEEK_PRESALE: boolean;
-            /** Enables Blockaid phishing checks for dApps */
+            /** deprecated */
             BLOCKAID_DAPP_SCAN: boolean;
-            /** Enables the Asset Hub migration banner */
+            /** deprecated */
             ASSET_HUB_MIGRATION_BANNER: boolean;
             /** Enables Bittensor MEV Shield protection */
             BITTENSOR_MEV_SHIELD: boolean;
             /** Enables the quick unlock feature */
             QUICK_UNLOCK: boolean;
+            /** Enables the ForeverMoney TAO bridge */
+            SWAPS_FOREVERMONEY_TAO_BRIDGE: boolean;
           };
           /** CoinGecko price data proxy configuration */
           coingecko: {
@@ -495,6 +497,56 @@ export class RemoteConfigApi<
           featureFlags: {
             /** Enables Bittensor staking in the mobile wallet */
             BITTENSOR_STAKE: boolean;
+            /** Enables Bittensor settings in the mobile wallet */
+            BITTENSOR_SETTINGS: boolean;
+            /** Enables Bittensor dTAO staking in the mobile wallet */
+            BITTENSOR_DTAO_STAKE: boolean;
+            /** Enables Bittensor Root Reborn claim, claim + unstake, and claim activity history in the mobile wallet */
+            BITTENSOR_ROOT_CLAIM: boolean;
+            /** Enables Bittensor MEV shield in the mobile wallet */
+            BITTENSOR_MEV_SHIELD: boolean;
+            /** Enables token swaps in the mobile wallet */
+            SWAPS: boolean;
+          };
+          /** Token swap feature configuration including LI.FI, SimpleSwap, and StealthEX integrations. Sourced from the shared config's swaps section (minus deprecated fields) — see src/mobile-remote-config/loader.ts */
+          swaps: {
+            /** API key for LI.FI cross-chain swap aggregator */
+            lifiApiKey: string;
+            /** Additional token IDs to enable in LI.FI that may not be available by default. Format: 'chainId:evm-erc20:contractAddress' */
+            lifiTalismanTokens: string[];
+            /** API key for SimpleSwap aggregator */
+            simpleswapApiKey: string;
+            /** API key for SimpleSwap aggregator with discounted rates */
+            simpleswapApiKeyDiscounted: string;
+            /** Currency symbols eligible for discounted SimpleSwap rates */
+            simpleswapDiscountedCurrencies: string[];
+            /** Token IDs displayed in the '🔥 Popular' section of the swap UI. Includes both legacy and new-format IDs for backward compatibility */
+            curatedTokens: string[];
+            /** Token IDs always shown at the top of the 'All tokens' and '🔥 Popular' buy sections */
+            promotedBuyTokens: string[];
+            /** Token IDs always shown at the top of the 'All tokens' and '🔥 Popular' sell sections */
+            promotedSellTokens: string[];
+            /** Map from token ID to custom Talisman fee amount (e.g. 0.2 = 0.2%). Tokens not listed use the default 0.2% fee */
+            lifiCustomFeeTokens: Record<string, number>;
+            /** SimpleSwap network and token ID mappings */
+            simpleswap: {
+              /** Maps provider network identifiers to Talisman network IDs (e.g. 'arbitrum' → '42161', 'sol' → 'solana-mainnet') */
+              networks: Record<string, string>;
+              /** Maps provider asset keys to Talisman token IDs for tokens that cannot be auto-resolved (native tokens, substrate tokens). E.g. 'dot' → 'polkadot-asset-hub:substrate-native' */
+              tokens: Record<string, string>;
+            };
+            /** StealthEX network and token ID mappings */
+            stealthex: {
+              /** Maps provider network identifiers to Talisman network IDs (e.g. 'arbitrum' → '42161', 'sol' → 'solana-mainnet') */
+              networks: Record<string, string>;
+              /** Maps provider asset keys to Talisman token IDs for tokens that cannot be auto-resolved (native tokens, substrate tokens). E.g. 'dot' → 'polkadot-asset-hub:substrate-native' */
+              tokens: Record<string, string>;
+            };
+            /** LI.FI-specific configuration for Solana chain handling */
+            lifi: {
+              /** LI.FI's internal chain ID for Solana */
+              solanaChainId: number;
+            };
           };
         },
         any

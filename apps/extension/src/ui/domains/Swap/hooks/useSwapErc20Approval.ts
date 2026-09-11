@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { encodeFunctionData, erc20Abi } from "viem"
 
 import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
-import type { swapModules } from "../swaps.api"
+import type { SwapModuleEntry } from "../swaps.api"
 
 /**
  * Manages ERC20 approval state for the selected swap module.
@@ -21,7 +21,7 @@ import type { swapModules } from "../swaps.api"
  * normal `approve(spender, amount)` flow automatically.
  */
 export const useSwapErc20Approval = (params: {
-  selectedModule: (typeof swapModules)[number] | undefined
+  selectedModule: SwapModuleEntry | undefined
   fromTokenId: string | null
   toTokenId: string | null
   fromAmount: bigint | null

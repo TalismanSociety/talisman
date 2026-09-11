@@ -16,8 +16,8 @@ vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({}),
 }))
 
-vi.mock("../swaps.api", () => ({
-  swapModules: [
+vi.mock("../swaps.api", () => {
+  const swapModules = [
     {
       protocol: "lifi",
       decentralisationScore: 2,
@@ -38,8 +38,9 @@ vi.mock("../swaps.api", () => ({
       createExchange: async () => null,
       getTransaction: async () => null,
     } satisfies SwapModule,
-  ],
-}))
+  ]
+  return { swapModules, useSwapModules: () => swapModules }
+})
 
 // eslint-disable-next-line import/first
 import { useSwapQuoteManager } from "../hooks/useSwapQuoteManager"

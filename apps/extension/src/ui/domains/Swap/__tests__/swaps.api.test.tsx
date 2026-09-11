@@ -10,6 +10,11 @@ const getFromAssetsMock = vi.fn()
 const getToAssetsMock = vi.fn()
 
 const mockUseTokensMap = vi.fn()
+const mockUseFeatureFlag = vi.fn()
+
+vi.mock("@ui/state/remoteConfig", () => ({
+  useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag),
+}))
 
 vi.mock("@ui/state/chaindata", () => ({
   useTokensMap: () => mockUseTokensMap(),
@@ -51,6 +56,15 @@ vi.mock("../swap-modules/stealthex-swap-module", () => ({
   },
 }))
 
+vi.mock("../swap-modules/forevermoney-swap-module", () => ({
+  forevermoneySwapModule: {
+    protocol: "forevermoney",
+    getFromAssets: (signal: AbortSignal) => getFromAssetsMock("forevermoney", signal),
+    getToAssets: (fromTokenId: string | null, signal: AbortSignal) =>
+      getToAssetsMock("forevermoney", fromTokenId, signal),
+  },
+}))
+
 const makeToken = (id: string, symbol: string) => ({ id, symbol, decimals: 18 }) as unknown as Token
 
 describe("useSwapAssets", () => {
@@ -74,6 +88,7 @@ describe("useSwapAssets", () => {
 
     getFromAssetsMock.mockResolvedValue(["tok-a", "tok-b"])
     getToAssetsMock.mockResolvedValue(["tok-a", "tok-b"])
+    mockUseFeatureFlag.mockReturnValue(true)
   })
 
   afterEach(() => {
@@ -93,5 +108,31 @@ describe("useSwapAssets", () => {
     await waitFor(() => expect(result.current.isLoadingToAssets).toBe(false))
     await waitFor(() => expect(result.current.fromAssetIds).toEqual(["tok-a", "tok-b"]))
     await waitFor(() => expect(result.current.toAssetIds).toEqual(["tok-a", "tok-b"]))
+  })
+
+  it("queries the forevermoney module only when its feature flag is enabled", async () => {
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    mockUseFeatureFlag.mockReturnValue(false)
+
+    const { result } = renderHook(() => useSwapAssets(null), { wrapper })
+
+    await waitFor(() => expect(result.current.isLoadingFromAssets).toBe(false))
+    expect(mockUseFeatureFlag).toHaveBeenCalledWith("SWAPS_FOREVERMONEY_TAO_BRIDGE")
+    expect(getFromAssetsMock).not.toHaveBeenCalledWith("forevermoney", expect.anything())
+    expect(getFromAssetsMock).toHaveBeenCalledWith("lifi", expect.anything())
+  })
+
+  it("queries the forevermoney module when its feature flag is enabled", async () => {
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    const { result } = renderHook(() => useSwapAssets(null), { wrapper })
+
+    await waitFor(() => expect(result.current.isLoadingFromAssets).toBe(false))
+    expect(getFromAssetsMock).toHaveBeenCalledWith("forevermoney", expect.anything())
   })
 })
