@@ -48,6 +48,7 @@ const config: KnipConfig = {
         "entrypoints/onboarding/index.html",
         "entrypoints/support/index.html",
         "i18next.config.ts",
+        "scripts/i18nextTransDefaults.ts",
       ],
       project: ["src/**/*.{ts,tsx,css}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],
