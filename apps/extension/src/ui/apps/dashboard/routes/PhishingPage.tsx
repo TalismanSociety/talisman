@@ -35,8 +35,8 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
               <AlertTriangleIcon className="inline-block text-[4.8125rem] text-alert-warn" />
               <h1 className="m-0 text-alert-warn text-bold text-xl">{t("Warning")}</h1>
               <div className="font-light text-lg text-white">
-                <Trans t={t}>
-                  <span className="block break-all">{displayUrl}</span> has been reported as a{" "}
+                <Trans values={{ displayUrl }} t={t}>
+                  <span className="block break-all">{"{{displayUrl}}"}</span> has been reported as a{" "}
                   <span className="block text-alert-warn">malicious site</span>
                 </Trans>
               </div>

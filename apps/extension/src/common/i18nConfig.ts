@@ -9,7 +9,7 @@ import {
   keySeparator,
   namespaceSeparator,
   pluralSeparator,
-} from "./i18nParserConfig"
+} from "./i18nSharedConfig"
 
 // juicy human-readable names
 export const languages: Record<string, string> = process.env.SUPPORTED_LANGUAGES
@@ -30,25 +30,25 @@ i18next
   .use(HttpBackend)
   .init<HttpBackendOptions>({
     // use 'common' as default and fallback namespace
-    // kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
+    // kept in sync with i18nSharedConfig.ts and i18next.config.ts
     ns: defaultNamespace,
     defaultNS: defaultNamespace,
     fallbackNS: defaultNamespace,
 
     // natural language keys
-    // kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
+    // kept in sync with i18nSharedConfig.ts and i18next.config.ts
     nsSeparator: namespaceSeparator as false,
     keySeparator: keySeparator as false,
     pluralSeparator: pluralSeparator,
 
     // supported languages
-    // make sure this is kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
+    // make sure this is kept in sync with i18nSharedConfig.ts and i18next.config.ts
     supportedLngs: [
       // necessary (is the default before LanguageDetector chimes in)
       "dev",
 
       // the actual languages
-      // kept in sync with i18nParserConfig.ts for development
+      // kept in sync with i18nSharedConfig.ts for development
       // fetched from SimpleLocalize as part of the build process for production builds
       ...locales,
     ],

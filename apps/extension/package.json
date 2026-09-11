@@ -127,6 +127,7 @@
   "devDependencies": {
     "@rollup/plugin-replace": "6.0.3",
     "@sentry/vite-plugin": "^5.4.0",
+    "@swc/types": "0.1.28",
     "@tailwindcss/postcss": "^4.3.3",
     "@talismn/tsconfig": "workspace:*",
     "@testing-library/dom": "^10.4.1",
@@ -143,7 +144,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "consola": "3.4.2",
     "fake-indexeddb": "6.2.5",
-    "i18next-parser": "^9.4.0",
+    "i18next-cli": "1.73.1",
     "jszip": "3.10.1",
     "mock-socket": "^9.3.1",
     "openapi-typescript": "^7.13.0",
@@ -160,7 +161,7 @@
   },
   "scripts": {
     "postinstall": "mkdir -p ~/.talisman-dev/chrome-data && wxt prepare",
-    "chore:update-translations": "pnpm exec i18next --silent --config i18next-parser.config.cjs",
+    "chore:update-translations": "pnpm exec i18next-cli extract --config i18next.config.ts",
     "chore:download-translations": "pnpm tsx scripts/download-translations.ts",
     "chore:codegen:stealthex-swaps": "openapi-typescript https://stealthex.talisman.xyz/docs/openapi.json --export-type --root-types -o src/ui/domains/Swap/swap-modules/stealthex.api.d.ts",
     "chore:generate-clients:sn45": "pnpm dlx swagger-typescript-api@13.6.2 generate -p https://sn45api.talisman.xyz/openapi.json -o ./src/core/domains/bittensor/sn45 -n Sn45Api --api-class-name Sn45Api",

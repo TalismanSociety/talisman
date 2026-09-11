@@ -545,14 +545,14 @@ const ConfirmRemove: FC<{
       <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
           {isTokenKnown(saved) ? (
-            <Trans t={t}>
-              This will reset <span className="text-body">{saved?.symbol}</span> to its Talisman
+            <Trans values={{ symbol: saved?.symbol ?? "" }} t={t}>
+              This will reset <span className="text-body">{"{{symbol}}"}</span> to its Talisman
               default state. Are you sure you want to continue ?
             </Trans>
           ) : (
-            <Trans t={t}>
-              Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
-              from your token list ?
+            <Trans values={{ symbol: saved?.symbol ?? "" }} t={t}>
+              Are you sure you want to remove <span className="text-body">{"{{symbol}}"}</span> from
+              your token list ?
             </Trans>
           )}
         </div>
