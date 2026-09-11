@@ -44,7 +44,7 @@ vi.mock("../evm-gas-check", () => ({
   ),
 }))
 
-vi.mock("../forevermoney-logo.png?url", () => ({ default: "forevermoney-logo.png" }))
+vi.mock("../forevermoney-logo.svg?url", () => ({ default: "forevermoney-logo.svg" }))
 
 const { forevermoneySwapModule } = await import("../forevermoney-swap-module")
 const { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } = await import(

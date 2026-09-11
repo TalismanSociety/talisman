@@ -46,7 +46,7 @@ import type {
   SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
-import forevermoneyLogo from "./forevermoney-logo.png?url"
+import forevermoneyLogo from "./forevermoney-logo.svg?url"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "forevermoney"
