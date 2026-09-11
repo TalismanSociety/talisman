@@ -8,7 +8,7 @@
 #   docker build --no-cache -t talisman-builder -f Dockerfile.firefox .
 #   docker run --rm -v $(pwd)/output:/output talisman-builder
 #
-FROM node:24.8.0-slim
+FROM node:24.21.0-slim
 
 # Set locale for consistent file sorting (critical for deterministic builds)
 ENV LC_ALL=C.UTF-8
