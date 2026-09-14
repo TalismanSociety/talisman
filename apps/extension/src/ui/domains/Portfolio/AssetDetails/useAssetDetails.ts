@@ -1,7 +1,9 @@
 import { Balances } from "@talismn/balances"
 import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { isTruthy } from "@talismn/util"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
+import { getSameNetworkMirrorTokenIds } from "@ui/util/getSameNetworkMirrorTokenIds"
 import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
@@ -9,10 +11,12 @@ export const useAssetDetails = (balances: Balances) => {
   const { hydrate } = usePortfolioGlobalData()
   const currency = useSelectedCurrency()
 
-  const tokenIds = useMemo<TokenId[]>(
-    () => uniq(balances.each.map((b) => b.tokenId)),
-    [balances.each]
-  )
+  const tokenIds = useMemo<TokenId[]>(() => {
+    const mirrorTokenIds = getSameNetworkMirrorTokenIds(
+      balances.each.map((b) => b.token).filter(isTruthy)
+    )
+    return uniq(balances.each.map((b) => b.tokenId)).filter((id) => !mirrorTokenIds.has(id))
+  }, [balances.each])
 
   const balancesByToken = useMemo(
     () =>

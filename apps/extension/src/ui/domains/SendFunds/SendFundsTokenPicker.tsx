@@ -33,6 +33,7 @@ export const SendFundsTokenPicker = () => {
       initialSearch={tokenSymbol}
       selected={tokenId}
       networkFilterContainerId="main"
+      hideSameNetworkMirrors
       onSelect={handleTokenSelect}
       tokenFilter={tokenFilter}
     />
