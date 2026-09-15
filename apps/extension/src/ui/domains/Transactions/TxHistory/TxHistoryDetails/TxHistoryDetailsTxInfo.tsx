@@ -22,15 +22,15 @@ export const TxHistoryDetailsTxInfo: FC<{
     case "approve-erc20":
       return <ApproveErc20TxInfo txInfo={txInfo} networkId={tx.networkId} />
     case "swap-simpleswap":
-      return <SwapSimpleSwapTxInfo txInfo={txInfo} networkId={tx.networkId} />
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel="SimpleSwap" />
     case "swap-stealthex":
-      return <SwapStealthExTxInfo txInfo={txInfo} networkId={tx.networkId} />
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel="StealthEX" />
     case "swap-lifi":
-      return <SwapLifiTxInfo txInfo={txInfo} networkId={tx.networkId} />
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel={txInfo.protocolName} />
     case "swap-bittensor-evm":
-      return <SwapBittensorEvmTxInfo txInfo={txInfo} networkId={tx.networkId} />
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel="Bittensor EVM" />
     case "swap-forevermoney":
-      return <SwapForevermoneyTxInfo txInfo={txInfo} networkId={tx.networkId} />
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel="ForeverMoney" />
     case "bittensor-staking":
       return <BittensorStakingTxInfo txInfo={txInfo} />
     default:
@@ -117,12 +117,10 @@ const SwapNetworkLabel: FC<{ networkId: NetworkId }> = ({ networkId }) => (
 )
 
 const SwapTxInfoCard: FC<{
-  networkId: NetworkId
   txInfo: SwapTxInfo
-  protocolLabel?: string
-}> = ({ networkId, txInfo, protocolLabel }) => {
+  protocolLabel: string
+}> = ({ txInfo, protocolLabel }) => {
   const { t } = useTranslation()
-  const label = protocolLabel ?? (txInfo.type === "swap-lifi" ? txInfo.protocolName : undefined)
   const fromNetworkId = networkIdFromTokenId(txInfo.fromTokenId)
   const toNetworkId = networkIdFromTokenId(txInfo.toTokenId)
   const isCrossChain = fromNetworkId !== toNetworkId
@@ -174,61 +172,24 @@ const SwapTxInfoCard: FC<{
               t={t}
               defaults=" and send proceeds to <Address />"
               components={{
-                Address: <TxHistoryDetailsAddress address={txInfo.to} networkId={networkId} />,
+                Address: <TxHistoryDetailsAddress address={txInfo.to} networkId={toNetworkId} />,
               }}
             />
           ) : null}
         </div>
-        {label ? (
-          <div className="text-body-secondary">
-            <Trans
-              t={t}
-              defaults="Protocol: <Protocol />"
-              components={{
-                Protocol: <span className="text-body">{label}</span>,
-              }}
-            />
-          </div>
-        ) : null}
+        <div className="text-body-secondary">
+          <Trans
+            t={t}
+            defaults="Protocol: <Protocol />"
+            components={{
+              Protocol: <span className="text-body">{protocolLabel}</span>,
+            }}
+          />
+        </div>
       </div>
     </TxInfoCard>
   )
 }
-
-const SwapSimpleSwapTxInfo: FC<{
-  networkId: NetworkId
-  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-simpleswap" }>
-}> = ({ networkId, txInfo }) => (
-  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="SimpleSwap" />
-)
-
-const SwapStealthExTxInfo: FC<{
-  networkId: NetworkId
-  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-stealthex" }>
-}> = ({ networkId, txInfo }) => (
-  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="StealthEX" />
-)
-
-const SwapLifiTxInfo: FC<{
-  networkId: NetworkId
-  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-lifi" }>
-}> = ({ networkId, txInfo }) => (
-  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel={txInfo.protocolName} />
-)
-
-const SwapBittensorEvmTxInfo: FC<{
-  networkId: NetworkId
-  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-bittensor-evm" }>
-}> = ({ networkId, txInfo }) => (
-  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="Bittensor EVM" />
-)
-
-const SwapForevermoneyTxInfo: FC<{
-  networkId: NetworkId
-  txInfo: Extract<WalletTransaction["txInfo"], { type: "swap-forevermoney" }>
-}> = ({ networkId, txInfo }) => (
-  <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel="ForeverMoney" />
-)
 
 const BittensorStakingTxInfo: FC<{
   txInfo: Extract<WalletTransaction["txInfo"], { type: "bittensor-staking" }>
