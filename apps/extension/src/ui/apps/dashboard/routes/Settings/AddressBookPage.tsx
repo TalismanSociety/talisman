@@ -147,7 +147,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
         </Tooltip>
         <ContextMenu placement="bottom-end">
           <ContextMenuTrigger asChild>
-            <SquareButton>
+            <SquareButton data-testid="contact-menu-button">
               <MoreHorizontalIcon />
             </SquareButton>
           </ContextMenuTrigger>

@@ -101,6 +101,7 @@ const NetworkForm: FC = () => {
               children={(field) => (
                 <FormFieldContainer label="Network Name" error={field.state.meta.errors[0]}>
                   <FormFieldInputText
+                    name={field.name}
                     type="text"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
