@@ -7,7 +7,7 @@ import type {
   SupportedSwapProtocol,
   SwapModule,
 } from "../swap-modules/common.swap-module"
-import { swapModules } from "../swaps.api"
+import { useSwapModules } from "../swaps.api"
 import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
 
 const areSortedQuotesEqual = (
@@ -83,6 +83,8 @@ export const useSwapQuoteManager = (params: {
     [fromAmount, fromAddress, fromTokenId, toAddress, toTokenId]
   )
 
+  const swapModules = useSwapModules()
+
   const applicableModules = useMemo(
     () =>
       fromTokenId && toTokenId && fromSupportMap && toSupportMap
@@ -92,7 +94,7 @@ export const useSwapQuoteManager = (params: {
               toSupportMap.get(toTokenId)?.has(m.protocol)
           )
         : [],
-    [fromTokenId, toTokenId, fromSupportMap, toSupportMap]
+    [fromTokenId, toTokenId, fromSupportMap, toSupportMap, swapModules]
   )
 
   const queryResults = useQueries({
@@ -232,7 +234,7 @@ export const useSwapQuoteManager = (params: {
   const selectedModule: SwapModule | undefined = useMemo(() => {
     if (!selectedQuote) return undefined
     return swapModules.find((m) => m.protocol === selectedQuote.protocol)
-  }, [selectedQuote])
+  }, [selectedQuote, swapModules])
 
   // Output amount
   const toAmount: bigint | null = useMemo(() => {

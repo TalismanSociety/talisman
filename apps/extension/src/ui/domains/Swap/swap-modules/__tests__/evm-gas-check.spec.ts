@@ -76,6 +76,21 @@ describe("prepareTransactionRequestWithGasCheck", () => {
     expect(error.required).toBe(BALANCE + GAS * LOW_FEE)
   })
 
+  it("throws InsufficientGasBalanceError when the value alone exceeds the balance", async () => {
+    const client = makeClient({
+      estimateGas: vi.fn().mockRejectedValue(new Error("EVM error: OutOfFunds")),
+    })
+
+    const error = await prepareTransactionRequestWithGasCheck(client, "evm-native-8453", {
+      ...request,
+      value: BALANCE + 1n,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InsufficientGasBalanceError)
+    expect(error.required).toBe(BALANCE + 1n)
+    expect(error.available).toBe(BALANCE)
+  })
+
   it("rethrows the original error on a genuine revert", async () => {
     const client = makeClient({
       estimateGas: vi.fn().mockRejectedValue(new Error("ERC20: transfer amount exceeds balance")),

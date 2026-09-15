@@ -3,8 +3,14 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
+import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
 import { isTxInfoSwap, updateSwapStatus } from "./helpers"
-import { FINAL_SWAP_STATUSES, type SwapStatus, type WalletTransactionInfo } from "./types"
+import {
+  FINAL_SWAP_STATUSES,
+  type SwapStatus,
+  type WalletTransaction,
+  type WalletTransactionInfo,
+} from "./types"
 
 const POLL_INTERVAL_MS = 20_000
 const MAX_RETRIES = 10
@@ -14,6 +20,13 @@ const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
 
 // Track active watchers to prevent duplicate polling for the same transaction.
 const activeWatchers = new Set<string>()
+
+// an unknown status may still resolve while the transaction is recent, so its watcher keeps polling
+const isFinalSwapStatus = (tx: WalletTransaction, status: SwapStatus) => {
+  if (tx.txInfo?.type === "swap-forevermoney") return isForevermoneyStatusFinal(tx, status)
+  if (status === "unknown") return Date.now() - tx.timestamp >= UNKNOWN_MAX_AGE_MS
+  return FINAL_SWAP_STATUSES.includes(status)
+}
 
 /**
  * Start polling the exchange API for swap status updates.
@@ -33,9 +46,9 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
     if (tx.txInfo.type === "bittensor-staking") return
 
     // Already in a terminal state — nothing to do
-    if (tx.swapStatus && FINAL_SWAP_STATUSES.includes(tx.swapStatus)) return
+    if (tx.swapStatus && isFinalSwapStatus(tx, tx.swapStatus)) return
 
-    await pollSwapStatus(txId, tx.txInfo)
+    await pollSwapStatus(tx, tx.txInfo)
   } catch (err) {
     log.error("watchSwapStatus", { err, txId })
   } finally {
@@ -43,21 +56,17 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
   }
 }
 
-async function pollSwapStatus(txId: string, txInfo: WalletTransactionInfo): Promise<void> {
+async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionInfo): Promise<void> {
+  const txId = tx.id
   let notFoundSince: number | null = null
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const status = await fetchSwapStatusWithRetry(txId, txInfo)
-    if (status === undefined) {
-      // All retries exhausted — mark as unknown so the UI can show an appropriate state
-      await updateSwapStatus(txId, "unknown")
-      return
-    }
-
+    // exhausted retries leave the status unknown until a later poll succeeds or the tx ages out
+    const status = (await fetchSwapStatusWithRetry(txId, txInfo)) ?? "unknown"
     await updateSwapStatus(txId, status)
 
-    if (FINAL_SWAP_STATUSES.includes(status)) return
+    if (isFinalSwapStatus(tx, status)) return
 
     // Allow a grace period for not_found — the tx may still be in the mempool
     if (status === "not_found") {
@@ -103,12 +112,23 @@ async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Pro
       return fetchLifiStatus(txId, txInfo)
     case "swap-bittensor-evm":
       return fetchBittensorEvmStatus(txId)
+    case "swap-forevermoney":
+      return fetchForevermoneyStatusForTx(txId, txInfo)
     default:
       return "unknown"
   }
 }
 
 // --- Provider-specific fetchers (simple fetch wrappers, no SDK dependency) ---
+
+async function fetchForevermoneyStatusForTx(
+  txId: string,
+  txInfo: Extract<WalletTransactionInfo, { type: "swap-forevermoney" }>
+): Promise<SwapStatus> {
+  const tx = await db.transactionsV2.get(txId)
+  if (!tx) return "not_found"
+  return fetchForevermoneyStatus(tx, txInfo)
+}
 
 // a watcher that died before confirming leaves the transfer unconfirmed forever, so past this age
 // the initial on-chain success stands
@@ -207,7 +227,7 @@ export const resumeSwapWatchers = async () => {
         if (!tx.txInfo || !isTxInfoSwap(tx.txInfo)) return false
         if (tx.txInfo.type === "bittensor-staking") return false
         // Resume if swapStatus hasn't reached a terminal state
-        return !tx.swapStatus || !FINAL_SWAP_STATUSES.includes(tx.swapStatus)
+        return !tx.swapStatus || !isFinalSwapStatus(tx, tx.swapStatus)
       })
       .toArray()
 
@@ -219,9 +239,6 @@ export const resumeSwapWatchers = async () => {
         await updateSwapStatus(tx.id, "unknown")
         continue
       }
-
-      // Don't resume unknown watchers past the max age
-      if (tx.swapStatus === "unknown" && now - tx.timestamp >= UNKNOWN_MAX_AGE_MS) continue
 
       // Fire-and-forget — each watcher runs independently
       watchSwapStatus(tx.id)

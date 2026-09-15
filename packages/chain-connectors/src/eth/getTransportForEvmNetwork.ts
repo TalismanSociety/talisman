@@ -1,5 +1,5 @@
 import type { EthNetwork } from "@talismn/chaindata-provider"
-import { fallback, http } from "viem"
+import { fallback, http, shouldThrow } from "viem"
 
 export type TransportOptions = {
   batch?:
@@ -9,6 +9,12 @@ export type TransportOptions = {
         wait?: number | undefined
       }
 }
+
+// Frontier nodes report reverts with a message viem does not recognize, which makes fallback retry every rpc
+const FRONTIER_EXECUTION_ERROR = /VM Exception while processing transaction/
+
+const isFinalError = (error: Error) =>
+  shouldThrow(error) || FRONTIER_EXECUTION_ERROR.test(error.message)
 
 export const getTransportForEvmNetwork = (
   evmNetwork: EthNetwork,
@@ -20,6 +26,6 @@ export const getTransportForEvmNetwork = (
 
   return fallback(
     evmNetwork.rpcs.map((url) => http(url, { batch, retryCount: 0 })),
-    { retryCount: 0 }
+    { retryCount: 0, shouldThrow: isFinalError }
   )
 }

@@ -2,7 +2,7 @@ import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks
 import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import type { SupportedSwapProtocol, SwapExchange } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 
 /**
@@ -35,7 +35,7 @@ export function useSwapTxInfo({
   protocol,
   subProtocol,
 }: {
-  exchange: { id: string } | undefined
+  exchange: SwapExchange | undefined
   fromTokenId: string | null
   toTokenId: string | null
   fromAmount: bigint | null
@@ -49,10 +49,10 @@ export function useSwapTxInfo({
 
     switch (protocol) {
       case "simpleswap":
-        if (!exchange) return
+        if (exchange?.protocol !== "simpleswap") return
         return {
           type: "swap-simpleswap",
-          exchangeId: exchange.id,
+          exchangeId: exchange.data.id,
           fromTokenId,
           toTokenId,
           fromAmount: fromAmount.toString(),
@@ -60,10 +60,10 @@ export function useSwapTxInfo({
           to: toAddress,
         }
       case "stealthex":
-        if (!exchange) return
+        if (exchange?.protocol !== "stealthex") return
         return {
           type: "swap-stealthex",
-          exchangeId: exchange.id,
+          exchangeId: exchange.data.id,
           fromTokenId,
           toTokenId,
           fromAmount: fromAmount.toString(),
@@ -89,6 +89,17 @@ export function useSwapTxInfo({
           fromAmount: fromAmount.toString(),
           toAmount: toAmount.toString(),
           to: toAddress,
+        }
+      case "forevermoney":
+        if (exchange?.protocol !== "forevermoney") return
+        return {
+          type: "swap-forevermoney",
+          fromTokenId,
+          toTokenId,
+          fromAmount: fromAmount.toString(),
+          toAmount: toAmount.toString(),
+          to: toAddress,
+          destinationStartBlock: exchange.data.destinationStartBlock,
         }
       default:
         throw new Error(`swapModule ${protocol as string} not supported`)

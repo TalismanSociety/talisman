@@ -48,7 +48,8 @@
     "BLOCKAID_DAPP_SCAN": false,
     "ASSET_HUB_MIGRATION_BANNER": false,
     "BITTENSOR_MEV_SHIELD": true,
-    "QUICK_UNLOCK": true
+    "QUICK_UNLOCK": true,
+    "SWAPS_FOREVERMONEY_TAO_BRIDGE": true
   },
   "coingecko": {
     "apiUrl": "https://cgp.talisman.xyz"

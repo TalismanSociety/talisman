@@ -31,7 +31,9 @@ type PrepareRequest = {
  * transaction runs out of gas mid-execution and estimation fails with a bare
  * "execution reverted" instead of an explicit insufficient-funds error.
  *
- * On failure, re-estimate without fee fields (which skips the affordability cap):
+ * On failure, compare the sender's balance against the request:
+ * - if the value alone exceeds the balance, throw {@link InsufficientGasBalanceError}
+ * - otherwise re-estimate without fee fields (which skips the affordability cap):
  * - if that also fails, the revert is genuine → rethrow the original error
  * - if it succeeds but the sender cannot cover `value + gas * maxFeePerGas`,
  *   throw {@link InsufficientGasBalanceError} so the UI can show a proper hint
@@ -54,25 +56,33 @@ async function throwIfCannotAffordGas(
   feeTokenId: TokenId,
   request: PrepareRequest
 ): Promise<void> {
-  let required: bigint
+  const value = request.value ?? 0n
+
   let available: bigint
   try {
-    const [gas, fees, balance] = await Promise.all([
+    available = await publicClient.getBalance({ address: request.account })
+  } catch {
+    return
+  }
+
+  if (value > available) throw new InsufficientGasBalanceError(feeTokenId, value, available)
+
+  let required: bigint
+  try {
+    const [gas, fees] = await Promise.all([
       publicClient.estimateGas({
         account: request.account,
         to: request.to,
         data: request.data,
-        value: request.value,
+        value,
       }),
       publicClient.estimateFeesPerGas(),
-      publicClient.getBalance({ address: request.account }),
     ])
 
     const maxFeePerGas = fees.maxFeePerGas ?? fees.gasPrice
     if (!maxFeePerGas) return
 
-    required = (request.value ?? 0n) + gas * maxFeePerGas
-    available = balance
+    required = value + gas * maxFeePerGas
   } catch {
     // diagnostic itself failed (e.g. a genuine revert) - let the caller rethrow the original error
     return

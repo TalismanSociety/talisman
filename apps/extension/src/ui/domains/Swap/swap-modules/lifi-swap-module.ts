@@ -32,6 +32,7 @@ import {
   type BaseQuote,
   type GetTransactionParams,
   getTokenIdForSwappableAsset,
+  type QuoteFee,
   type QuoteParams,
   type SupportedSwapProtocol,
   type SwapModule,
@@ -413,6 +414,39 @@ const getRoutes = async (
 
 type LifiRouteQuote = BaseQuote<lifiSdk.Route>
 
+// Solana assets in this module are stored with `chainId: SOLANA_NETWORK_ID`
+// (string), but LI.FI gas tokens use the numeric LI.FI Solana chain ID. We
+// need to accept either form to detect Solana-source swaps and to match
+// their gas tokens; otherwise `maxNativeTokenGasBuffer` is always 0 for
+// Solana.
+const isSourceNativeToken = (fromAsset: { chainId: string }, lifiSolanaChainId: number) => {
+  const isSolanaFrom =
+    fromAsset.chainId === SOLANA_NETWORK_ID ||
+    String(fromAsset.chainId) === String(lifiSolanaChainId)
+
+  return (token: { address: string; chainId: number }) => {
+    if (isSolanaFrom) {
+      return (
+        String(token.chainId) === String(lifiSolanaChainId) &&
+        SOLANA_NATIVE_ADDRESSES.has(token.address)
+      )
+    }
+    return String(token.chainId) === String(fromAsset.chainId) && token.address === zeroAddress
+  }
+}
+
+/** Fees the route charges on top of the input, in the source network's native token: they ride in the transaction value */
+const getAdditionalNativeFeeWei = (
+  step: lifiSdk.LiFiStep,
+  fromAsset: { chainId: string },
+  lifiSolanaChainId: number
+) => {
+  const isNativeToken = isSourceNativeToken(fromAsset, lifiSolanaChainId)
+  return (step.estimate.feeCosts ?? [])
+    .filter((fee) => !fee.included && isNativeToken(fee.token))
+    .reduce((total, fee) => total + BigInt(fee.amount), 0n)
+}
+
 const getRouteQuote = async (
   route: lifiSdk.Route,
   fromTokenId: string,
@@ -424,11 +458,12 @@ const getRouteQuote = async (
   const fromAsset = resolveAsset(fromTokenId)
   if (!fromAsset) return null
 
-  const fees = await Promise.all(
+  const fees: QuoteFee[] = await Promise.all(
     step.estimate.feeCosts?.map(async (fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
       name: fee.name,
       tokenId: await feeTokenId(fee.token),
+      additional: !fee.included,
     })) ?? []
   )
 
@@ -455,26 +490,7 @@ const getRouteQuote = async (
   })
 
   const lifiSolanaChainId = await getLifiSolanaChainId()
-  // Solana assets in this module are stored with `chainId: SOLANA_NETWORK_ID`
-  // (string), but LI.FI gas tokens use the numeric LI.FI Solana chain ID. We
-  // need to accept either form to detect Solana-source swaps and to match
-  // their gas tokens; otherwise `maxNativeTokenGasBuffer` is always 0 for
-  // Solana.
-  const isSolanaFrom =
-    fromAsset.chainId === SOLANA_NETWORK_ID ||
-    String(fromAsset.chainId) === String(lifiSolanaChainId)
-
-  const isNativeGasToken = (gasToken: { address: string; chainId: number }) => {
-    if (isSolanaFrom) {
-      return (
-        String(gasToken.chainId) === String(lifiSolanaChainId) &&
-        SOLANA_NATIVE_ADDRESSES.has(gasToken.address)
-      )
-    }
-    return (
-      String(gasToken.chainId) === String(fromAsset.chainId) && gasToken.address === zeroAddress
-    )
-  }
+  const isNativeGasToken = isSourceNativeToken(fromAsset, lifiSolanaChainId)
 
   const maxNativeTokenGasBuffer =
     fromAsset.contractAddress === undefined
@@ -637,6 +653,7 @@ const getTransaction = async (
       value: BigInt(txRequest.value),
       fromAmount,
       isNativeInput: !fromAsset.contractAddress,
+      additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
     })
 
     const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))

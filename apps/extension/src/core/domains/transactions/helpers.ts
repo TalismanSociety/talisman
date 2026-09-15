@@ -281,6 +281,7 @@ export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =
     "swap-stealthex",
     "swap-lifi",
     "swap-bittensor-evm",
+    "swap-forevermoney",
     "bittensor-staking",
   ])
 
