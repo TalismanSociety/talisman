@@ -1,5 +1,17 @@
 # @talismn/chaindata-provider
 
+## 2.0.3
+
+### Patch Changes
+
+- 67dab7c: Resolve Bittensor EVM explorer links (evm.taostats.io, bittensor.ai/explorer/evm)
+- ba2381a: Bump dev tooling dependencies
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+- dde2de8: generate init data
+- Updated dependencies [ba2381a]
+- Updated dependencies [65d5779]
+  - @talismn/util@2.0.1
+
 ## 2.0.2
 
 ### Patch Changes

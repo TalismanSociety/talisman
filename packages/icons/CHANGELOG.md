@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 1.0.1
+
+### Patch Changes
+
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+
 ## 1.0.0
 
 ### Major Changes

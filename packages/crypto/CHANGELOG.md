@@ -1,5 +1,15 @@
 # @talismn/crypto
 
+## 1.1.0
+
+### Minor Changes
+
+- 67dab7c: Add Frontier EVM H160 to SS58 mirror address helpers
+
+### Patch Changes
+
+- 54d4e62: Bump @noble and @scure packages to 2.4.0
+
 ## 1.0.1
 
 ### Patch Changes
