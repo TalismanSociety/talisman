@@ -20,7 +20,7 @@
   },
   "include": [
     ".wxt/wxt.d.ts",
-    "i18next-parser.config.cjs",
+    "i18next.config.ts",
     "src",
     "src/**/*.json",
     "entrypoints",

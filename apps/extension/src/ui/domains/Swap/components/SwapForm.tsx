@@ -202,15 +202,21 @@ export const SwapForm = () => {
             <div className="flex animate-slide-in-up flex-col gap-12 rounded bg-black-tertiary p-12">
               <div className="flex items-center gap-4 text-orange-400 text-sm">
                 {toIsWatched && (
-                  <Trans t={t}>
-                    <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to a
-                    watch-only account on {toNetwork?.name}.
+                  <Trans
+                    values={{ symbol: toToken?.symbol ?? "", name: toNetwork?.name ?? "" }}
+                    t={t}
+                  >
+                    <AlertCircleIcon className="size-16" /> Sending {"{{symbol}}"} to a watch-only
+                    account on {"{{name}}"}.
                   </Trans>
                 )}
                 {toIsExternal && (
-                  <Trans t={t}>
-                    <AlertCircleIcon className="size-16" /> Sending {toToken?.symbol} to an external
-                    account on {toNetwork?.name}.
+                  <Trans
+                    values={{ symbol: toToken?.symbol ?? "", name: toNetwork?.name ?? "" }}
+                    t={t}
+                  >
+                    <AlertCircleIcon className="size-16" /> Sending {"{{symbol}}"} to an external
+                    account on {"{{name}}"}.
                   </Trans>
                 )}
               </div>

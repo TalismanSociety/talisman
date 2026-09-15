@@ -54,10 +54,10 @@ export const AddEthereumNetwork = () => {
           <NetworkLogo networkId={request.network.id} className="mt-6 inline-block text-3xl" />
           <h1 className="mt-8 mb-12 font-bold text-md">{t("Add Network")}</h1>
           <p className="text-body-secondary leading-6.5">
-            <Trans t={t}>
+            <Trans values={{ name: request.network.name }} t={t}>
               This app wants to connect Talisman to the{" "}
               <span className="inline-block h-6.5 items-center rounded-3xl bg-grey-850 px-3 font-light text-body">
-                {request.network.name}
+                {"{{name}}"}
               </span>{" "}
               network.
             </Trans>
