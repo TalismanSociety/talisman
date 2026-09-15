@@ -267,7 +267,14 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
       - name: Bump changed package versions to a snapshot version
-        run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
+        # changesets 3 exits 1 when there are no unreleased changesets; pnpm publish skips
+        # already-published versions, so an empty snapshot is a no-op rather than a failure
+        run: |
+          if [ -n "$(find .changeset -maxdepth 1 -name '*.md' -not -name README.md)" ]; then
+            pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
+          else
+            echo "No unreleased changesets, nothing to snapshot"
+          fi
       - name: Build packages for npm publish
         run: pnpm build:packages
       - name: Publish snapshot packages

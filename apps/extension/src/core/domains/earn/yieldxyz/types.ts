@@ -7,28 +7,16 @@ import type { BalanceDto, YieldDto } from "@yieldxyz/sdk"
 export type {
   ActionArgumentsDto,
   ActionDto,
-  ArgumentFieldDto,
   ArgumentSchemaDto,
   BalanceDto,
-  BalancesRequestDto,
   BalancesResponseDto,
-  CreateActionDto,
-  CreateManageActionDto,
-  HealthStatusDto,
-  NetworkDto,
   Networks,
   PendingActionDto,
-  ProviderDto,
-  SubmitHashDto,
   TimePeriodDto,
   TokenDto,
   TransactionDto,
-  ValidatorDto,
   YieldBalancesDto,
-  YieldBalancesRequestDto,
   YieldDto,
-  YieldsControllerGetYieldsParams,
-  YieldsControllerGetYieldValidators200,
 } from "@yieldxyz/sdk"
 
 export type YieldxyzProvider = {

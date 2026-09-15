@@ -11,17 +11,13 @@ const config: KnipConfig = {
   ],
 
   ignoreDependencies: [
-    // Loaded via @plugin directive in CSS (knip can't parse CSS imports)
-    "@tailwindcss/forms",
-    // Core framework — referenced via @tailwindcss/postcss, not direct JS imports
-    "tailwindcss",
     // Generated workspace package (.papi/descriptors); provided to packages/{balances,sapi} via the
     // root/extension declaration + shamefullyHoist, so they import it without declaring it directly
     "@polkadot-api/descriptors",
   ],
 
   // Shell utilities used in package.json scripts — not npm binaries
-  ignoreBinaries: ["lsof", "wait"],
+  ignoreBinaries: ["wait"],
 
   ignoreExportsUsedInFile: {
     interface: true,
@@ -53,7 +49,7 @@ const config: KnipConfig = {
         "entrypoints/support/index.html",
         "i18next-parser.config.cjs",
       ],
-      project: ["src/**/*.{ts,tsx}", "entrypoints/**/*.{ts,tsx}"],
+      project: ["src/**/*.{ts,tsx,css}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],
     },
   },

@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import pako from "pako"
+import * as pako from "pako"
 
 import { db } from "./db"
 
@@ -23,7 +23,7 @@ export const queryCacheStore = {
       }
 
       return {
-        data: JSON.parse(pako.inflate(row.data, { to: "string" })),
+        data: JSON.parse(pako.inflate(row.data, { toText: true })),
         dataUpdatedAt: row.dataUpdatedAt,
       }
     } catch (err) {
