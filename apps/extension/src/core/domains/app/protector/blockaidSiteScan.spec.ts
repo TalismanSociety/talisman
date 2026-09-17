@@ -324,12 +324,25 @@ it("does not redirect when the setting or a host exception changes during a scan
   expect(redirect).not.toHaveBeenCalled()
 })
 
-it("allows a rescan after the one minute failure cache expires", async () => {
+it("allows a rescan five seconds after a failed scan", async () => {
   mocks.fetch.mockRejectedValueOnce(new Error("offline"))
   await scan()
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(1)
-  vi.setSystemTime(Date.now() + 60_000)
+  vi.setSystemTime(Date.now() + 4_999)
+  await scan()
+  expect(mocks.fetch).toHaveBeenCalledTimes(1)
+  vi.setSystemTime(Date.now() + 1)
+  await scan()
+  expect(mocks.fetch).toHaveBeenCalledTimes(2)
+})
+
+it("keeps a clean verdict for a full minute", async () => {
+  await scan()
+  vi.setSystemTime(Date.now() + 59_999)
+  await scan()
+  expect(mocks.fetch).toHaveBeenCalledTimes(1)
+  vi.setSystemTime(Date.now() + 1)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
 })

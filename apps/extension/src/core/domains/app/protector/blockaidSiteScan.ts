@@ -8,6 +8,7 @@ import { settingsStore } from "../store.settings"
 import { isExemptHost } from "./ParaverseProtector"
 
 const VERDICT_TTL = 60_000
+const FAILED_SCAN_TTL = 5_000
 const NON_PUBLIC_TLDS = new Set(["localhost", "local", "test"])
 
 const scanResultSchema = z.object({ isMalicious: z.boolean() })
@@ -34,10 +35,10 @@ function getVerdict(host: string): Verdict | undefined {
   return verdict && verdict.expiresAt > Date.now() ? verdict : undefined
 }
 
-function setVerdict(host: string, isMalicious: boolean): void {
+function setVerdict(host: string, isMalicious: boolean, ttl = VERDICT_TTL): void {
   const now = Date.now()
   for (const [key, verdict] of verdicts) if (verdict.expiresAt <= now) verdicts.delete(key)
-  verdicts.set(host, { isMalicious, expiresAt: now + VERDICT_TTL })
+  verdicts.set(host, { isMalicious, expiresAt: now + ttl })
 }
 
 export function isBlockaidMalicious(host: string): boolean {
@@ -66,11 +67,15 @@ async function scan({ origin, hostname }: URL): Promise<void> {
   // safe until proven malicious: scans fail open, and the entry stops concurrent scans of the host
   setVerdict(hostname, false)
 
-  const isMalicious = await fetchIsMalicious(origin).catch(() => false)
-  if (!isMalicious) return
+  try {
+    if (!(await fetchIsMalicious(origin))) return
 
-  setVerdict(hostname, true)
-  if (isBlockaidMalicious(hostname)) maliciousOrigin$.next(origin)
+    setVerdict(hostname, true)
+    if (isBlockaidMalicious(hostname)) maliciousOrigin$.next(origin)
+  } catch {
+    // a failed scan expires fast, so the next message retries instead of trusting the host for a minute
+    setVerdict(hostname, false, FAILED_SCAN_TTL)
+  }
 }
 
 export function requestSiteScan(rawUrl: string): void {
