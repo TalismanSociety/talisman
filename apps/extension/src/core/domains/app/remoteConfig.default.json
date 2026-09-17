@@ -46,7 +46,7 @@
     "SEEK_BENEFITS": true,
     "SEEK_PRESALE": false,
     "BLOCKAID_DAPP_SCAN": false,
-    "BLOCKAID_DAPP_SCAN_V2": false,
+    "BLOCKAID_DAPP_SCAN_V2": true,
     "ASSET_HUB_MIGRATION_BANNER": false,
     "BITTENSOR_MEV_SHIELD": true,
     "QUICK_UNLOCK": true,
