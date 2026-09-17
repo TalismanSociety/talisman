@@ -7,10 +7,10 @@ const mocks = vi.hoisted(() => ({
   set: vi.fn(),
   fetch: vi.fn<typeof fetch>(),
 }))
-let config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN: boolean } }>({
-  featureFlags: { BLOCKAID_DAPP_SCAN: true },
+let config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN_V2: boolean } }>({
+  featureFlags: { BLOCKAID_DAPP_SCAN_V2: true },
 })
-let settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
+let settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
 let token$ = new BehaviorSubject({ status: "success", data: "test-token" })
 
 vi.mock("../../../db/blobs", () => ({
@@ -54,10 +54,10 @@ beforeEach(async () => {
   vi.resetModules()
   vi.useFakeTimers()
   vi.setSystemTime(new Date("2026-09-17T00:00:00Z"))
-  config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN: boolean } }>({
-    featureFlags: { BLOCKAID_DAPP_SCAN: true },
+  config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN_V2: boolean } }>({
+    featureFlags: { BLOCKAID_DAPP_SCAN_V2: true },
   })
-  settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
+  settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
   token$ = new BehaviorSubject({ status: "success", data: "test-token" })
   vi.spyOn(chrome.storage.local, "set")
   mocks.blobs.clear()
@@ -112,10 +112,10 @@ async function restart() {
   config$.complete()
   settings$.complete()
   vi.resetModules()
-  config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN: boolean } }>({
-    featureFlags: { BLOCKAID_DAPP_SCAN: true },
+  config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN_V2: boolean } }>({
+    featureFlags: { BLOCKAID_DAPP_SCAN_V2: true },
   })
-  settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
+  settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
   scans = await import("./blockaidSiteScan")
   protector = await import("./ParaverseProtector")
   ;({ getPhishingSource } = await import("./phishingSource"))
@@ -200,14 +200,20 @@ it("runs different hosts concurrently without a network queue", async () => {
   expect(mocks.fetch).toHaveBeenCalledTimes(10)
 })
 
-it.each([false, undefined])("does not scan when autoRiskScan is %s", async (autoRiskScan) => {
-  settings$.next({ autoRiskScan })
+it("does not scan when autoDappScan is off", async () => {
+  settings$.next({ autoDappScan: false })
   await scan()
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
 
+it("scans when autoDappScan is undefined, as the setting defaults to on", async () => {
+  settings$.next({})
+  await scan()
+  expect(mocks.fetch).toHaveBeenCalledOnce()
+})
+
 it("does not scan with the feature flag off", async () => {
-  config$.next({ featureFlags: { BLOCKAID_DAPP_SCAN: false } })
+  config$.next({ featureFlags: { BLOCKAID_DAPP_SCAN_V2: false } })
   await scan()
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
@@ -218,8 +224,8 @@ it.each(["flag", "setting"])(
     mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
     await scan()
     expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
-    if (switchName === "flag") config$.next({ featureFlags: { BLOCKAID_DAPP_SCAN: false } })
-    else settings$.next({ autoRiskScan: false })
+    if (switchName === "flag") config$.next({ featureFlags: { BLOCKAID_DAPP_SCAN_V2: false } })
+    else settings$.next({ autoDappScan: false })
     expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
     expect(await isFlagged("https://dapp.example")).toBe(false)
   }
@@ -306,11 +312,11 @@ it("does not redirect when the setting or a host exception changes during a scan
       })
   )
   await scan()
-  settings$.next({ autoRiskScan: false })
+  settings$.next({ autoDappScan: false })
   resolve(response({ isMalicious: true }))
   await flush()
   expect(redirect).not.toHaveBeenCalled()
-  settings$.next({ autoRiskScan: true })
+  settings$.next({ autoDappScan: true })
   await scan("https://other.example")
   protector.addException("https://other.example")
   resolve(response({ isMalicious: true }))

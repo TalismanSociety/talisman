@@ -21,7 +21,8 @@ let isEnabled = false
 
 combineLatest([remoteConfigStore.observable, settingsStore.observable]).subscribe({
   next: ([config, settings]) => {
-    isEnabled = config.featureFlags.BLOCKAID_DAPP_SCAN === true && settings.autoRiskScan === true
+    isEnabled =
+      config.featureFlags.BLOCKAID_DAPP_SCAN_V2 === true && settings.autoDappScan !== false
   },
   error: () => {
     isEnabled = false
