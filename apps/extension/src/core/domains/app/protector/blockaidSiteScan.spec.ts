@@ -285,11 +285,11 @@ it("includes the Gandalf token wait in the eight second deadline", async () => {
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
 
-it("pauses scans after a 429", async () => {
+it("keeps scanning other hosts after a 429", async () => {
   mocks.fetch.mockResolvedValue(new Response(null, { status: 429 }))
   await scan()
   await scan("https://another.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(1)
+  expect(mocks.fetch).toHaveBeenCalledTimes(2)
 })
 
 it("redirects once and keeps the verdict for one minute", async () => {

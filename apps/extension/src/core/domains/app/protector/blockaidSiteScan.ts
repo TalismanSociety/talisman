@@ -9,7 +9,6 @@ import { isExemptHost } from "./ParaverseProtector"
 
 const VERDICT_TTL = 60_000
 const SCAN_TIMEOUT = 8_000
-const RATE_LIMIT_PAUSE = 10 * 60_000
 const NON_PUBLIC_TLDS = new Set(["localhost", "local", "test"])
 
 const scanResultSchema = z.object({ isMalicious: z.boolean() })
@@ -20,7 +19,6 @@ export const maliciousOrigin$ = new Subject<string>()
 
 const verdicts = new Map<string, Verdict>()
 let isEnabled = false
-let pausedUntil = 0
 
 combineLatest([remoteConfigStore.observable, settingsStore.observable]).subscribe({
   next: ([config, settings]) => {
@@ -61,7 +59,6 @@ async function fetchIsMalicious(origin: string, signal: AbortSignal): Promise<bo
     body: JSON.stringify({ url: origin }),
     signal,
   })
-  if (response.status === 429) pausedUntil = Date.now() + RATE_LIMIT_PAUSE
   if (!response.ok) throw new Error("Site scan failed")
   return scanResultSchema.parse(await response.json()).isMalicious
 }
@@ -92,7 +89,7 @@ async function scan({ origin, hostname }: URL): Promise<void> {
 }
 
 export function requestSiteScan(rawUrl: string): void {
-  if (!isEnabled || pausedUntil > Date.now() || !URL.canParse(rawUrl)) return
+  if (!isEnabled || !URL.canParse(rawUrl)) return
 
   const url = new URL(rawUrl)
   if (!isPublicWebUrl(url) || isExemptHost(url.hostname) || getVerdict(url.hostname)) return
