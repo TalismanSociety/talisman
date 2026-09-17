@@ -6,7 +6,6 @@ import { Dexie } from "dexie"
 import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"
 import { getHostName } from "../helpers"
-import { addBlockaidSiteException, isBlockaidMalicious } from "./blockaidSiteVerdicts"
 import { initialPhishingList } from "./initial-phishing-list"
 
 // Supports ETag-based conditional requests (304 = no re-download).
@@ -272,17 +271,12 @@ let lifecycleGeneration = 0
 function ensureInitialised(): Promise<void> {
   if (!initialised) {
     const generation = lifecycleGeneration
-    const promise = restoreFromBlobStore().then(({ hasMetamaskCache }) => {
+    const promise = restoreFromBlobStore().then(async ({ hasMetamaskCache }) => {
       if (generation !== lifecycleGeneration || initialised !== promise) return
-      const startPeriodicRefresh = () => {
-        if (generation !== lifecycleGeneration || initialised !== promise) return
-        refreshTimer = setTimeout(() => scheduleRefresh(generation), INITIAL_REFRESH_DELAY_MS)
-      }
-      if (hasMetamaskCache) startPeriodicRefresh()
-      else
-        refreshTimer = setTimeout(() => {
-          void refreshPhishingLists().then(startPeriodicRefresh)
-        }, 0)
+      if (!hasMetamaskCache) await refreshPhishingLists()
+      if (generation !== lifecycleGeneration || initialised !== promise) return
+      // start periodic refresh 30 s after first use
+      refreshTimer = setTimeout(() => scheduleRefresh(generation), INITIAL_REFRESH_DELAY_MS)
     })
     initialised = promise
   }
@@ -352,20 +346,10 @@ export async function isPhishingSite(url: string): Promise<boolean> {
   await ensureInitialised()
 
   const { val: host, ok } = getHostName(url)
-  if (!ok || isAllowedHost(host)) return false
-  return isStaticPhishingSite(url) || isBlockaidMalicious(host)
-}
-
-export function isAllowedHost(host: string): boolean {
-  return talismanAllowHosts.has(host)
-}
-
-export function isStaticPhishingSite(url: string): boolean {
-  const { val: host, ok } = getHostName(url)
   if (!ok) return false
 
   // talisman host allow list (includes host-scoped user exceptions)
-  if (isAllowedHost(host)) return false
+  if (talismanAllowHosts.has(host)) return false
 
   // polkadot deny list
   if (checkHost(polkadotList.deny, host)) {
@@ -386,6 +370,13 @@ export function isStaticPhishingSite(url: string): boolean {
   return false
 }
 
+export function isExemptHost(host: string): boolean {
+  return (
+    talismanAllowHosts.has(host) ||
+    [...talismanAllowUrls].some((url) => new URL(url).hostname === host)
+  )
+}
+
 /** Whitelist a URL so it is no longer flagged as phishing for this session. */
 export function addException(url: string): boolean {
   const { val: host, ok } = getHostName(url)
@@ -399,7 +390,6 @@ export function addException(url: string): boolean {
     if (!urlException) return false
 
     talismanAllowUrls.add(urlException)
-    addBlockaidSiteException(host)
     return true
   }
 

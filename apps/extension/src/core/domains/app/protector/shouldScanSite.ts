@@ -22,9 +22,13 @@ const ethereumMethods = new Set([
   "eth_sendTransaction",
 ])
 
-export function shouldScanSite(type: string, request: unknown, isConnected: boolean): boolean {
+export async function shouldScanSite(
+  type: string,
+  request: unknown,
+  isConnected: () => Promise<boolean>
+): Promise<boolean> {
   if (messages.has(type)) return true
   if (type !== "pub(eth.request)" || !request || typeof request !== "object") return false
   if (!("method" in request) || typeof request.method !== "string") return false
-  return request.method === "eth_accounts" ? isConnected : ethereumMethods.has(request.method)
+  return request.method === "eth_accounts" ? isConnected() : ethereumMethods.has(request.method)
 }

@@ -26,7 +26,7 @@ import Tabs from "./Tabs"
 // would otherwise wait on
 vi.mock("../domains/app/protector", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../domains/app/protector")>()),
-  isPhishingSite: async () => false,
+  getPhishingSource: async () => undefined,
 }))
 
 vi.setConfig({ testTimeout: 10_000 })

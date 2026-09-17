@@ -1,22 +1,21 @@
 import { BLOCKAID_API_URL } from "@common/constants"
-import { combineLatest } from "rxjs"
+import { combineLatest, Subject } from "rxjs"
 import { z } from "zod"
 
 import { gandalfFetch } from "../../gandalf/fetch"
 import { remoteConfigStore } from "../store.remoteConfig"
 import { settingsStore } from "../store.settings"
-import { isAllowedHost, isStaticPhishingSite } from "./ParaverseProtector"
+import { isExemptHost } from "./ParaverseProtector"
 
 const MINUTE = 60_000
 const MAX_VERDICT_TTL = MINUTE
-const NEGATIVE_TTL = MINUTE
 const SCAN_TIMEOUT = 8_000
 const MAX_SCANS_PER_MINUTE = 10
 const MAX_SCANS_PER_DAY = 100
 const BREAKER_FAILURE_THRESHOLD = 3
-const BUDGET_STORAGE_KEY = "blockaidSiteScanBudget"
 const BREAKER_TTL = 10 * MINUTE
-const MAX_HOSTS = 500
+const BUDGET_STORAGE_KEY = "blockaidSiteScanBudget"
+const NON_PUBLIC_TLDS = new Set(["localhost", "local", "test"])
 
 const budgetSchema = z.object({
   day: z.string(),
@@ -27,24 +26,22 @@ const resultSchema = z
   .object({
     status: z.enum(["hit", "miss", "error"]),
     isMalicious: z.boolean(),
-    cachedAt: z.string(),
     ttlSeconds: z.number().finite(),
-    stale: z.boolean(),
   })
   .refine((result) => !result.isMalicious || result.status === "hit")
 
 type Verdict = { isMalicious: boolean; expiresAt: number }
 type Budget = z.infer<typeof budgetSchema>
+
+export const maliciousOrigin$ = new Subject<string>()
+
 const verdicts = new Map<string, Verdict>()
-const exceptedHosts = new Set<string>()
-const inFlight = new Map<string, Promise<void>>()
+const inFlight = new Set<string>()
 let budget: Budget = { day: "", count: 0, recent: [] }
 let enabled = false
 let failures = 0
 let blockedUntil = 0
 let hydration: Promise<void> | undefined
-let pendingWrite: Promise<void> = Promise.resolve()
-let onMalicious: (origin: string) => void | Promise<void> = () => {}
 
 combineLatest([remoteConfigStore.observable, settingsStore.observable]).subscribe({
   next: ([config, settings]) => {
@@ -55,14 +52,25 @@ combineLatest([remoteConfigStore.observable, settingsStore.observable]).subscrib
   },
 })
 
-function pruneVerdicts() {
-  const now = Date.now()
-  for (const [host, verdict] of verdicts) {
-    if (verdict.expiresAt <= now) verdicts.delete(host)
-  }
-  if (verdicts.size <= MAX_HOSTS) return
-  const byExpiry = [...verdicts].sort((a, b) => a[1].expiresAt - b[1].expiresAt)
-  for (const [host] of byExpiry.slice(0, verdicts.size - MAX_HOSTS)) verdicts.delete(host)
+function getFreshVerdict(host: string): Verdict | undefined {
+  const verdict = verdicts.get(host)
+  return verdict && verdict.expiresAt > Date.now() ? verdict : undefined
+}
+
+export function isBlockaidMalicious(host: string): boolean {
+  return enabled && !isExemptHost(host) && getFreshVerdict(host)?.isMalicious === true
+}
+
+function canScan(host: string): boolean {
+  return enabled && blockedUntil <= Date.now() && !isExemptHost(host) && !getFreshVerdict(host)
+}
+
+function isPublicWebUrl({ protocol, hostname }: URL): boolean {
+  if (protocol !== "http:" && protocol !== "https:") return false
+  const labels = hostname.replace(/\.$/, "").split(".")
+  const tld = labels.at(-1) ?? ""
+  const isIpAddress = /^\d+$/.test(tld) || hostname.includes(":")
+  return labels.length > 1 && !isIpAddress && !NON_PUBLIC_TLDS.has(tld)
 }
 
 function hydrateBudget(): Promise<void> {
@@ -72,36 +80,6 @@ function hydrateBudget(): Promise<void> {
     if (parsed.success) budget = parsed.data
   })()
   return hydration
-}
-
-function persistBudget(): Promise<void> {
-  pendingWrite = pendingWrite
-    .catch(() => {})
-    .then(async () => {
-      await chrome.storage.local.set({
-        [BUDGET_STORAGE_KEY]: { ...budget, recent: [...budget.recent] },
-      })
-    })
-  return pendingWrite
-}
-
-export function addBlockaidSiteException(host: string): void {
-  exceptedHosts.add(host)
-  verdicts.delete(host)
-}
-
-function isExemptHost(host: string): boolean {
-  return exceptedHosts.has(host) || isAllowedHost(host)
-}
-
-export function isBlockaidMalicious(host: string): boolean {
-  if (!enabled || exceptedHosts.has(host)) return false
-  const verdict = verdicts.get(host)
-  return verdict?.isMalicious === true && verdict.expiresAt > Date.now()
-}
-
-export function setSiteScanRedirect(callback: typeof onMalicious): void {
-  onMalicious = callback
 }
 
 function reserveBudget(): boolean {
@@ -116,92 +94,64 @@ function reserveBudget(): boolean {
   return true
 }
 
+async function requestVerdict(origin: string, signal: AbortSignal) {
+  const response = await gandalfFetch(`${BLOCKAID_API_URL}/site/scan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url: origin }),
+    signal,
+  })
+  if (response.status === 429) blockedUntil = Date.now() + BREAKER_TTL
+  if (response.status !== 200) throw new Error("Site scan failed")
+  return resultSchema.parse(await response.json())
+}
+
 async function fetchVerdict(origin: string) {
   const controller = new AbortController()
-  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    controller.signal.addEventListener("abort", () => reject(new Error("Site scan timed out")))
+  })
+  const timer = setTimeout(() => controller.abort(), SCAN_TIMEOUT)
   try {
-    return await Promise.race([
-      (async () => {
-        const response = await gandalfFetch(`${BLOCKAID_API_URL}/site/scan`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: origin }),
-          signal: controller.signal,
-        })
-        if (response.status === 429) blockedUntil = Date.now() + BREAKER_TTL
-        if (response.status !== 200) throw new Error("Site scan failed")
-        return resultSchema.parse(await response.json())
-      })(),
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => {
-          controller.abort()
-          reject(new Error("Site scan timed out"))
-        }, SCAN_TIMEOUT)
-      }),
-    ])
+    // the race also bounds the Gandalf token wait, which the signal cannot interrupt
+    return await Promise.race([requestVerdict(origin, controller.signal), timeout])
   } finally {
     clearTimeout(timer)
   }
 }
 
 async function scan(url: URL): Promise<void> {
-  // Reserve durably before sending: a worker restart must not reset the daily ceiling.
-  await persistBudget()
-  if (!enabled || blockedUntil > Date.now() || isExemptHost(url.hostname)) return
+  // persist the reservation before sending: a worker restart must not reset the daily ceiling
+  await chrome.storage.local.set({ [BUDGET_STORAGE_KEY]: budget })
+  if (!canScan(url.hostname)) return
 
-  let verdict: Verdict = { isMalicious: false, expiresAt: Date.now() + NEGATIVE_TTL }
-  let failed = true
-  try {
-    const result = await fetchVerdict(url.origin)
-    verdict = {
-      isMalicious: result.isMalicious,
-      expiresAt: Date.now() + Math.min(MAX_VERDICT_TTL, Math.max(0, result.ttlSeconds) * 1_000),
-    }
-    failed = result.status === "error"
-  } catch {
-    verdict.expiresAt = Date.now() + NEGATIVE_TTL
-  }
+  const result = await fetchVerdict(url.origin).catch(() => undefined)
 
-  if (failed) {
-    if (++failures >= BREAKER_FAILURE_THRESHOLD) blockedUntil = Date.now() + BREAKER_TTL
-  } else failures = 0
+  if (result && result.status !== "error") failures = 0
+  else if (++failures >= BREAKER_FAILURE_THRESHOLD) blockedUntil = Date.now() + BREAKER_TTL
 
-  verdicts.set(url.hostname, verdict)
-  pruneVerdicts()
-  if (enabled && verdict.isMalicious && !isExemptHost(url.hostname)) await onMalicious(url.origin)
+  const now = Date.now()
+  for (const [host, verdict] of verdicts) if (verdict.expiresAt <= now) verdicts.delete(host)
+
+  const ttl = result ? Math.max(0, result.ttlSeconds) * 1_000 : MAX_VERDICT_TTL
+  verdicts.set(url.hostname, {
+    isMalicious: result?.isMalicious === true,
+    expiresAt: now + Math.min(MAX_VERDICT_TTL, ttl),
+  })
+  if (isBlockaidMalicious(url.hostname)) maliciousOrigin$.next(url.origin)
 }
 
 export function requestSiteScan(rawUrl: string): void {
-  try {
-    if (!enabled) return
-    const url = new URL(rawUrl)
-    const host = url.hostname
-    const normalisedHost = host.replace(/\.$/, "")
-    if (
-      !["http:", "https:"].includes(url.protocol) ||
-      !normalisedHost.includes(".") ||
-      normalisedHost === "localhost" ||
-      normalisedHost.endsWith(".localhost") ||
-      normalisedHost.endsWith(".local") ||
-      normalisedHost.endsWith(".test") ||
-      host.includes(":") ||
-      /^\d+\.\d+\.\d+\.\d+$/.test(normalisedHost) ||
-      isExemptHost(host) ||
-      isStaticPhishingSite(rawUrl)
-    )
-      return
-    if ((verdicts.get(host)?.expiresAt ?? 0) > Date.now() || inFlight.has(host)) return
+  if (!URL.canParse(rawUrl)) return
+  const url = new URL(rawUrl)
+  const host = url.hostname
+  if (!isPublicWebUrl(url) || !canScan(host) || inFlight.has(host)) return
 
-    const pending = (async () => {
-      await hydrateBudget()
-      if (!enabled || (verdicts.get(host)?.expiresAt ?? 0) > Date.now()) return
-      if (blockedUntil > Date.now() || !reserveBudget()) return
-      await scan(url)
-    })()
-      .catch(() => {})
-      .finally(() => {
-        inFlight.delete(host)
-      })
-    inFlight.set(host, pending)
-  } catch {}
+  inFlight.add(host)
+  void (async () => {
+    await hydrateBudget()
+    if (canScan(host) && reserveBudget()) await scan(url)
+  })()
+    .catch(() => {})
+    .finally(() => inFlight.delete(host))
 }

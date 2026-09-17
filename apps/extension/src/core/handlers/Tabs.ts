@@ -7,12 +7,8 @@ import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import type { RequestAccountList } from "../domains/accounts/types"
-import { isPhishingSite, isStaticPhishingSite } from "../domains/app/protector"
-import {
-  isBlockaidMalicious,
-  requestSiteScan,
-  setSiteScanRedirect,
-} from "../domains/app/protector/blockaidSiteVerdicts"
+import { getPhishingSource, type PhishingSource } from "../domains/app/protector"
+import { maliciousOrigin$, requestSiteScan } from "../domains/app/protector/blockaidSiteVerdicts"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
@@ -71,7 +67,9 @@ export default class Tabs extends TabsHandler {
 
   constructor(stores: TabStore) {
     super(stores)
-    setSiteScanRedirect((origin) => this.redirectPhishingOrigin(origin))
+    maliciousOrigin$.subscribe((origin) => {
+      this.redirectMaliciousOrigin(origin).catch((err) => sentry.captureException(err))
+    })
 
     // routing to sub-handlers
     this.#routes = {
@@ -319,70 +317,60 @@ export default class Tabs extends TabsHandler {
     return this.#rpcState.rpcUnsubscribe(request, port)
   }
 
-  private phishingLandingUrl(phishingWebsite: string, source?: "blockaid"): string {
-    const search = source === "blockaid" ? "?source=blockaid" : ""
-    return `${chrome.runtime.getURL("dashboard.html")}#${PHISHING_PAGE_REDIRECT}/${encodeURIComponent(phishingWebsite.split("#")[0])}${search}`
-  }
-
-  private async redirectTab(
-    id: number,
-    phishingWebsite: string,
-    source?: "blockaid"
-  ): Promise<void> {
-    const url = this.phishingLandingUrl(phishingWebsite, source)
+  private async isEthereumConnected(url: string): Promise<boolean> {
     try {
-      await chrome.tabs.update(id, { url })
-    } catch (err) {
-      sentry.captureException(err, { extra: { url } })
+      const site = await this.stores.sites.getSiteFromUrl(url)
+      return !!site?.ethAddresses?.length
+    } catch {
+      return false
     }
   }
 
-  private redirectPhishingLanding(phishingWebsite: string, source?: "blockaid"): void {
-    void chrome.tabs
-      .query({ url: phishingWebsite.split("#")[0] })
-      .then(async (tabs) => {
-        await Promise.all(
-          tabs.map(({ id }) =>
-            typeof id === "number" ? this.redirectTab(id, phishingWebsite, source) : undefined
-          )
-        )
-      })
-      .catch(sentry.captureException)
+  private phishingLandingUrl(phishingWebsite: string, source: PhishingSource): string {
+    const dashboard = chrome.runtime.getURL("dashboard.html")
+    const website = encodeURIComponent(phishingWebsite.split("#")[0])
+    return `${dashboard}#${PHISHING_PAGE_REDIRECT}/${website}?source=${source}`
   }
 
-  private async redirectPhishingOrigin(origin: string): Promise<void> {
-    const tabs = await chrome.tabs.query({ url: `${origin}/*` })
+  private reportPhishingRedirect(url: string, source: PhishingSource): void {
+    const properties = { url, source }
+    sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
+    talismanAnalytics.capture("Redirect from phishing site", properties)
+  }
+
+  private async redirectToPhishingPage(
+    tabs: chrome.tabs.Tab[],
+    source: PhishingSource
+  ): Promise<void> {
     await Promise.all(
-      tabs.map(async ({ id, url }) => {
-        if (typeof id !== "number" || !url) return
-        const currentUrl = new URL(url)
-        if (currentUrl.origin !== origin) return
-        if (!isBlockaidMalicious(currentUrl.hostname) || !(await isPhishingSite(url))) return
-        const properties = { url, source: "blockaid" }
-        sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
-        talismanAnalytics.capture("Redirect from phishing site", properties)
-        await this.redirectTab(id, url, "blockaid")
+      tabs.map(async ({ id, url: tabUrl }) => {
+        if (typeof id !== "number" || !tabUrl) return
+        const url = this.phishingLandingUrl(tabUrl, source)
+        await chrome.tabs
+          .update(id, { url })
+          .catch((err) => sentry.captureException(err, { extra: { url } }))
       })
     )
   }
 
+  private async redirectMaliciousOrigin(origin: string): Promise<void> {
+    const tabs = (await chrome.tabs.query({ url: `${origin}/*` })).filter(
+      ({ url }) => url && new URL(url).origin === origin
+    )
+    for (const { url } of tabs) if (url) this.reportPhishingRedirect(url, "blockaid")
+    await this.redirectToPhishingPage(tabs, "blockaid")
+  }
+
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await isPhishingSite(url)
+    const source = await getPhishingSource(url)
+    if (!source) return false
 
-    if (isInDenyList) {
-      const source = isStaticPhishingSite(url) ? undefined : "blockaid"
-      const properties = { url, ...(source ? { source } : {}) }
-      sentry.captureEvent({
-        message: "Redirect from phishing site",
-        extra: properties,
-      })
-      talismanAnalytics.capture("Redirect from phishing site", properties)
-      this.redirectPhishingLanding(url, source)
-
-      return true
-    }
-
-    return false
+    this.reportPhishingRedirect(url, source)
+    chrome.tabs
+      .query({ url: url.split("#")[0] })
+      .then((tabs) => this.redirectToPhishingPage(tabs, source))
+      .catch((err) => sentry.captureException(err))
+    return true
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -405,16 +393,8 @@ export default class Tabs extends TabsHandler {
     const isPhishing = await this.redirectIfPhishing(url)
     if (isPhishing) return
 
-    let isConnected = false
-    if (
-      type === "pub(eth.request)" &&
-      (request as RequestType<"pub(eth.request)">)?.method === "eth_accounts"
-    ) {
-      try {
-        isConnected = !!(await this.stores.sites.getSiteFromUrl(url))?.ethAddresses?.length
-      } catch {}
-    }
-    if (shouldScanSite(type, request, isConnected)) requestSiteScan(url)
+    if (await shouldScanSite(type, request, () => this.isEthereumConnected(url)))
+      requestSiteScan(url)
 
     // --------------------------------------------------------------------
     // Then try known sub-handlers based on prefix of message ------------

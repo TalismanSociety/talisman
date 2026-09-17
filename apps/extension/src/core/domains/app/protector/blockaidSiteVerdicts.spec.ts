@@ -46,14 +46,13 @@ const response = (changes = {}) =>
   Response.json({
     status: "hit",
     isMalicious: false,
-    cachedAt: "2026-09-17T00:00:00Z",
     ttlSeconds: 86_400,
-    stale: false,
     ...changes,
   })
 const flush = () => vi.advanceTimersByTimeAsync(0)
 let scans: typeof import("./blockaidSiteVerdicts")
 let protector: typeof import("./ParaverseProtector")
+let getPhishingSource: typeof import("./phishingSource").getPhishingSource
 let redirect = vi.fn()
 
 beforeEach(async () => {
@@ -96,8 +95,9 @@ beforeEach(async () => {
   vi.stubGlobal("fetch", mocks.fetch)
   scans = await import("./blockaidSiteVerdicts")
   protector = await import("./ParaverseProtector")
+  ;({ getPhishingSource } = await import("./phishingSource"))
   redirect = vi.fn()
-  scans.setSiteScanRedirect(redirect)
+  scans.maliciousOrigin$.subscribe(redirect)
   await protector.isPhishingSite("https://initial.example")
   protector.dispose()
 })
@@ -112,6 +112,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
+
+const isFlagged = async (url: string) => (await getPhishingSource(url)) !== undefined
 
 async function scan(url = "https://dapp.example/path?private=value") {
   expect(scans.requestSiteScan(url)).toBeUndefined()
@@ -137,27 +139,31 @@ async function restart() {
   settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
   scans = await import("./blockaidSiteVerdicts")
   protector = await import("./ParaverseProtector")
-  scans.setSiteScanRedirect(redirect)
+  ;({ getPhishingSource } = await import("./phishingSource"))
+  scans.maliciousOrigin$.subscribe(redirect)
 }
 
-it("keeps the hot path network-free, including a cold list cache", async () => {
-  expect(await protector.isPhishingSite("https://unknown.example")).toBe(false)
+it("keeps the hot path free of Blockaid requests", async () => {
+  expect(await getPhishingSource("https://unknown.example")).toBeUndefined()
   expect(mocks.fetch).not.toHaveBeenCalled()
-  protector.dispose()
-  mocks.blobs.delete("phishing-metamask")
-  expect(await protector.isPhishingSite("https://unknown.example")).toBe(false)
-  expect(mocks.fetch).not.toHaveBeenCalled()
+})
+
+it("reports which source flagged a site", async () => {
+  mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
+  await scan()
+  expect(await getPhishingSource("https://dapp.example")).toBe("blockaid")
+  expect(await getPhishingSource("https://denied.example")).toBe("lists")
 })
 
 it("honours malicious verdicts, expiry and proceed anyway", async () => {
   mocks.fetch.mockImplementation(async () => response({ isMalicious: true, ttlSeconds: 60 }))
   await scan()
-  expect(await protector.isPhishingSite("https://dapp.example/other")).toBe(true)
+  expect(await isFlagged("https://dapp.example/other")).toBe(true)
   expect(protector.addException("https://dapp.example/other")).toBe(true)
-  expect(await protector.isPhishingSite("https://dapp.example/other")).toBe(false)
+  expect(await isFlagged("https://dapp.example/other")).toBe(false)
   protector.dispose()
   vi.setSystemTime(Date.now() + 60_000)
-  expect(await protector.isPhishingSite("https://dapp.example")).toBe(false)
+  expect(await isFlagged("https://dapp.example")).toBe(false)
 })
 
 it.each(["cached", "pending", "absent"])(
@@ -165,8 +171,8 @@ it.each(["cached", "pending", "absent"])(
   async (verdictState) => {
     const sharedOrigin = "https://shared.example"
     const exceptedUrl = `${sharedOrigin}/phish`
-    expect(await protector.isPhishingSite(exceptedUrl)).toBe(true)
-    expect(await protector.isPhishingSite(`${sharedOrigin}/legit`)).toBe(false)
+    expect(await isFlagged(exceptedUrl)).toBe(true)
+    expect(await isFlagged(`${sharedOrigin}/legit`)).toBe(false)
     mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
     let resolveScan: ((response: Response) => void) | undefined
     if (verdictState === "pending") {
@@ -184,11 +190,10 @@ it.each(["cached", "pending", "absent"])(
     expect(protector.addException(exceptedUrl)).toBe(true)
     resolveScan?.(response({ isMalicious: true }))
     await flush()
-    expect(await protector.isPhishingSite(exceptedUrl)).toBe(false)
-    expect(await protector.isPhishingSite(`${sharedOrigin}/legit`)).toBe(false)
-    expect(await protector.isPhishingSite(`${sharedOrigin}/other-phish`)).toBe(true)
+    expect(await isFlagged(exceptedUrl)).toBe(false)
+    expect(await isFlagged(`${sharedOrigin}/legit`)).toBe(false)
+    expect(await isFlagged(`${sharedOrigin}/other-phish`)).toBe(true)
     expect(scans.isBlockaidMalicious("shared.example")).toBe(false)
-    expect(protector.isAllowedHost("shared.example")).toBe(false)
     expect(redirect).not.toHaveBeenCalled()
 
     vi.setSystemTime(Date.now() + 60_000)
@@ -197,15 +202,6 @@ it.each(["cached", "pending", "absent"])(
     expect(mocks.fetch).toHaveBeenCalledTimes(verdictState === "absent" ? 0 : 1)
   }
 )
-
-it("accepts the cachedAt string without imposing an undocumented date format", async () => {
-  mocks.fetch.mockImplementation(async () =>
-    response({ isMalicious: true, cachedAt: "proxy timestamp" })
-  )
-  await scan()
-  expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
-  expect(redirect).toHaveBeenCalledExactlyOnceWith("https://dapp.example")
-})
 
 it("deduplicates 100 concurrent triggers and later triggers within the TTL", async () => {
   for (let i = 0; i < 100; i++) scans.requestSiteScan(`https://dapp.example/${i}`)
@@ -283,7 +279,7 @@ it.each(["flag", "setting"])(
     if (switchName === "flag") config$.next({ featureFlags: { BLOCKAID_DAPP_SCAN: false } })
     else settings$.next({ autoRiskScan: false })
     expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
-    expect(await protector.isPhishingSite("https://dapp.example")).toBe(false)
+    expect(await isFlagged("https://dapp.example")).toBe(false)
   }
 )
 
@@ -298,7 +294,6 @@ it.each([
   "chrome-extension://abc/test",
   "https://app.talisman.xyz",
   "https://talisman.xyz",
-  "https://denied.example",
   "https://excepted.example",
   "invalid",
 ])("filters %s without a fetch", async (url) => {
@@ -321,11 +316,6 @@ const failures = [
   ],
   ["malformed JSON", () => Promise.resolve(new Response("{"))],
   ["wrong boolean", () => Promise.resolve(response({ isMalicious: "yes" }))],
-  ["wrong timestamp type", () => Promise.resolve(response({ isMalicious: true, cachedAt: 123 }))],
-  [
-    "missing timestamp",
-    () => Promise.resolve(response({ isMalicious: true, cachedAt: undefined })),
-  ],
   ["inconsistent status", () => Promise.resolve(response({ status: "miss", isMalicious: true }))],
   ["missing fields", () => Promise.resolve(Response.json({ status: "hit", isMalicious: true }))],
   ["timeout", () => new Promise<Response>(() => {})],
@@ -335,7 +325,7 @@ it.each(failures)("fails open and negative-caches %s", async (_, fetchResponse) 
   await scan()
   await vi.advanceTimersByTimeAsync(8_000)
   expect(redirect).not.toHaveBeenCalled()
-  expect(await protector.isPhishingSite("https://dapp.example")).toBe(false)
+  expect(await isFlagged("https://dapp.example")).toBe(false)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(1)
 })

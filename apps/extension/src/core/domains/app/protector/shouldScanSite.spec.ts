@@ -12,8 +12,8 @@ it.each([
   "solana.provider.signIn",
   "solana.provider.signMessage",
   "solana.provider.signTransaction",
-])("scans pub(%s)", (message) => {
-  expect(shouldScanSite(`pub(${message})`, null, false)).toBe(true)
+])("scans pub(%s)", async (message) => {
+  expect(await shouldScanSite(`pub(${message})`, null, async () => false)).toBe(true)
 })
 
 it.each([
@@ -25,8 +25,8 @@ it.each([
   "eth_signTypedData_v3",
   "eth_signTypedData_v4",
   "eth_sendTransaction",
-])("scans %s", (method) => {
-  expect(shouldScanSite("pub(eth.request)", { method }, false)).toBe(true)
+])("scans %s", async (method) => {
+  expect(await shouldScanSite("pub(eth.request)", { method }, async () => false)).toBe(true)
 })
 
 it.each([
@@ -36,8 +36,8 @@ it.each([
   "eth_getBalance",
   "wallet_sendCalls",
   "eth_unknown",
-])("never scans %s", (method) => {
-  expect(shouldScanSite("pub(eth.request)", { method }, true)).toBe(false)
+])("never scans %s", async (method) => {
+  expect(await shouldScanSite("pub(eth.request)", { method }, async () => true)).toBe(false)
 })
 
 it.each([
@@ -50,14 +50,21 @@ it.each([
   "solana.provider.subscribe",
   "talisman.getAccount",
   "ping",
-])("never scans pub(%s)", (message) => {
-  expect(shouldScanSite(`pub(${message})`, { method: "personal_sign" }, true)).toBe(false)
+])("never scans pub(%s)", async (message) => {
+  expect(
+    await shouldScanSite(`pub(${message})`, { method: "personal_sign" }, async () => true)
+  ).toBe(false)
 })
 
-it.each([true, false])("only scans eth_accounts when connected: %s", (connected) => {
-  expect(shouldScanSite("pub(eth.request)", { method: "eth_accounts" }, connected)).toBe(connected)
+it.each([true, false])("only scans eth_accounts when connected: %s", async (connected) => {
+  expect(
+    await shouldScanSite("pub(eth.request)", { method: "eth_accounts" }, async () => connected)
+  ).toBe(connected)
 })
 
-it.each([null, undefined, {}, { method: 42 }])("ignores malformed requests: %s", (request) => {
-  expect(shouldScanSite("pub(eth.request)", request, true)).toBe(false)
-})
+it.each([null, undefined, {}, { method: 42 }])(
+  "ignores malformed requests: %s",
+  async (request) => {
+    expect(await shouldScanSite("pub(eth.request)", request, async () => true)).toBe(false)
+  }
+)
