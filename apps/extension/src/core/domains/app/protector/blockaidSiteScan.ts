@@ -8,7 +8,6 @@ import { settingsStore } from "../store.settings"
 import { isExemptHost } from "./ParaverseProtector"
 
 const VERDICT_TTL = 60_000
-const SCAN_TIMEOUT = 8_000
 const NON_PUBLIC_TLDS = new Set(["localhost", "local", "test"])
 
 const scanResultSchema = z.object({ isMalicious: z.boolean() })
@@ -52,36 +51,21 @@ function isPublicWebUrl({ protocol, hostname }: URL): boolean {
   return labels.length > 1 && !isIpAddress && !NON_PUBLIC_TLDS.has(tld)
 }
 
-async function fetchIsMalicious(origin: string, signal: AbortSignal): Promise<boolean> {
+async function fetchIsMalicious(origin: string): Promise<boolean> {
   const response = await gandalfFetch(`${BLOCKAID_API_URL}/site/scan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url: origin }),
-    signal,
   })
   if (!response.ok) throw new Error("Site scan failed")
   return scanResultSchema.parse(await response.json()).isMalicious
-}
-
-async function fetchIsMaliciousWithTimeout(origin: string): Promise<boolean> {
-  const controller = new AbortController()
-  const timeout = new Promise<never>((_, reject) => {
-    controller.signal.addEventListener("abort", () => reject(new Error("Site scan timed out")))
-  })
-  const timer = setTimeout(() => controller.abort(), SCAN_TIMEOUT)
-  try {
-    // the race also bounds the Gandalf token wait, which the signal cannot interrupt
-    return await Promise.race([fetchIsMalicious(origin, controller.signal), timeout])
-  } finally {
-    clearTimeout(timer)
-  }
 }
 
 async function scan({ origin, hostname }: URL): Promise<void> {
   // safe until proven malicious: scans fail open, and the entry stops concurrent scans of the host
   setVerdict(hostname, false)
 
-  const isMalicious = await fetchIsMaliciousWithTimeout(origin).catch(() => false)
+  const isMalicious = await fetchIsMalicious(origin).catch(() => false)
   if (!isMalicious) return
 
   setVerdict(hostname, true)

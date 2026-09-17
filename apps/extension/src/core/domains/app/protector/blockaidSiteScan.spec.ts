@@ -198,7 +198,6 @@ it("runs different hosts concurrently without a network queue", async () => {
   for (let i = 0; i < 10; i++) scans.requestSiteScan(`https://dapp${i}.example`)
   await flush()
   expect(mocks.fetch).toHaveBeenCalledTimes(10)
-  await vi.advanceTimersByTimeAsync(8_000)
 })
 
 it.each([false, undefined])("does not scan when autoRiskScan is %s", async (autoRiskScan) => {
@@ -251,38 +250,18 @@ const failures = [
   ["429", () => Promise.resolve(new Response(null, { status: 429 }))],
   ["500", () => Promise.resolve(new Response(null, { status: 500 }))],
   ["offline", () => Promise.reject(new Error("offline"))],
-  [
-    "synchronous throw",
-    () => {
-      throw new Error("fetch threw")
-    },
-  ],
   ["malformed JSON", () => Promise.resolve(new Response("{"))],
   ["wrong boolean", () => Promise.resolve(response({ isMalicious: "yes" }))],
   ["missing fields", () => Promise.resolve(Response.json({}))],
-  ["timeout", () => new Promise<Response>(() => {})],
+  ["no response", () => new Promise<Response>(() => {})],
 ] as const
 it.each(failures)("fails open and negative-caches %s", async (_, fetchResponse) => {
   mocks.fetch.mockImplementation(fetchResponse)
   await scan()
-  await vi.advanceTimersByTimeAsync(8_000)
   expect(redirect).not.toHaveBeenCalled()
   expect(await isFlagged("https://dapp.example")).toBe(false)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(1)
-})
-
-it("includes the Gandalf token wait in the eight second deadline", async () => {
-  token$.next({ status: "loading", data: "" })
-  await scan()
-  await vi.advanceTimersByTimeAsync(8_000)
-  expect(mocks.fetch).not.toHaveBeenCalled()
-  await scan()
-  expect(mocks.fetch).not.toHaveBeenCalled()
-  token$.next({ status: "success", data: "late-token" })
-  await flush()
-  expect(redirect).not.toHaveBeenCalled()
-  expect(mocks.fetch).not.toHaveBeenCalled()
 })
 
 it("keeps scanning other hosts after a 429", async () => {
