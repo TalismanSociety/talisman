@@ -80,7 +80,7 @@ beforeEach(async () => {
     data: {
       allowlist: [],
       blocklist: ["denied.example"],
-      blocklistPaths: [],
+      blocklistPaths: ["shared.example/phish", "shared.example/other-phish"],
       fuzzylist: [],
       tolerance: 0,
       version: 1,
@@ -158,6 +158,53 @@ it("honours malicious verdicts, expiry and proceed anyway", async () => {
   protector.dispose()
   vi.setSystemTime(Date.now() + 60_000)
   expect(await protector.isPhishingSite("https://dapp.example")).toBe(false)
+})
+
+it.each(["cached", "pending", "absent"])(
+  "honours a path exception with a %s Blockaid verdict without allowing other static paths",
+  async (verdictState) => {
+    const sharedOrigin = "https://shared.example"
+    const exceptedUrl = `${sharedOrigin}/phish`
+    expect(await protector.isPhishingSite(exceptedUrl)).toBe(true)
+    expect(await protector.isPhishingSite(`${sharedOrigin}/legit`)).toBe(false)
+    mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
+    let resolveScan: ((response: Response) => void) | undefined
+    if (verdictState === "pending") {
+      mocks.fetch.mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveScan = resolve
+          })
+      )
+    }
+    if (verdictState !== "absent") await scan(`${sharedOrigin}/legit`)
+    if (verdictState === "cached") expect(scans.isBlockaidMalicious("shared.example")).toBe(true)
+    redirect.mockClear()
+
+    expect(protector.addException(exceptedUrl)).toBe(true)
+    resolveScan?.(response({ isMalicious: true }))
+    await flush()
+    expect(await protector.isPhishingSite(exceptedUrl)).toBe(false)
+    expect(await protector.isPhishingSite(`${sharedOrigin}/legit`)).toBe(false)
+    expect(await protector.isPhishingSite(`${sharedOrigin}/other-phish`)).toBe(true)
+    expect(scans.isBlockaidMalicious("shared.example")).toBe(false)
+    expect(protector.isAllowedHost("shared.example")).toBe(false)
+    expect(redirect).not.toHaveBeenCalled()
+
+    vi.setSystemTime(Date.now() + 60_000)
+    await scan(exceptedUrl)
+    await scan(`${sharedOrigin}/legit`)
+    expect(mocks.fetch).toHaveBeenCalledTimes(verdictState === "absent" ? 0 : 1)
+  }
+)
+
+it("accepts the cachedAt string without imposing an undocumented date format", async () => {
+  mocks.fetch.mockImplementation(async () =>
+    response({ isMalicious: true, cachedAt: "proxy timestamp" })
+  )
+  await scan()
+  expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
+  expect(redirect).toHaveBeenCalledExactlyOnceWith("https://dapp.example")
 })
 
 it("deduplicates 100 concurrent triggers and later triggers within the TTL", async () => {
@@ -274,6 +321,11 @@ const failures = [
   ],
   ["malformed JSON", () => Promise.resolve(new Response("{"))],
   ["wrong boolean", () => Promise.resolve(response({ isMalicious: "yes" }))],
+  ["wrong timestamp type", () => Promise.resolve(response({ isMalicious: true, cachedAt: 123 }))],
+  [
+    "missing timestamp",
+    () => Promise.resolve(response({ isMalicious: true, cachedAt: undefined })),
+  ],
   ["inconsistent status", () => Promise.resolve(response({ status: "miss", isMalicious: true }))],
   ["missing fields", () => Promise.resolve(Response.json({ status: "hit", isMalicious: true }))],
   ["timeout", () => new Promise<Response>(() => {})],
@@ -301,7 +353,7 @@ it("includes the Gandalf token wait in the eight second deadline", async () => {
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
 
-it("opens the breaker after three failures and permits calls after ten minutes", async () => {
+it("opens the breaker after three failures and reopens when the recovery scan fails", async () => {
   mocks.fetch.mockRejectedValue(new Error("offline"))
   for (let i = 0; i < 3; i++) await scan(`https://bad${i}.example`)
   await scan("https://new.example")
@@ -311,6 +363,8 @@ it("opens the breaker after three failures and permits calls after ten minutes",
   expect(mocks.fetch).toHaveBeenCalledTimes(3)
   vi.setSystemTime(Date.now() + 1)
   await scan("https://new.example")
+  expect(mocks.fetch).toHaveBeenCalledTimes(4)
+  await scan("https://still-offline.example")
   expect(mocks.fetch).toHaveBeenCalledTimes(4)
 })
 

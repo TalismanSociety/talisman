@@ -6,7 +6,7 @@ import { Dexie } from "dexie"
 import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"
 import { getHostName } from "../helpers"
-import { isBlockaidMalicious } from "./blockaidSiteVerdicts"
+import { addBlockaidSiteException, isBlockaidMalicious } from "./blockaidSiteVerdicts"
 import { initialPhishingList } from "./initial-phishing-list"
 
 // Supports ETag-based conditional requests (304 = no re-download).
@@ -365,7 +365,7 @@ export function isStaticPhishingSite(url: string): boolean {
   if (!ok) return false
 
   // talisman host allow list (includes host-scoped user exceptions)
-  if (talismanAllowHosts.has(host)) return false
+  if (isAllowedHost(host)) return false
 
   // polkadot deny list
   if (checkHost(polkadotList.deny, host)) {
@@ -399,6 +399,7 @@ export function addException(url: string): boolean {
     if (!urlException) return false
 
     talismanAllowUrls.add(urlException)
+    addBlockaidSiteException(host)
     return true
   }
 

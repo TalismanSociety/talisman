@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest"
 
 vi.mock("./blockaidSiteVerdicts", () => ({
   isBlockaidMalicious: vi.fn(() => false),
+  addBlockaidSiteException: vi.fn(),
 }))
 
 const mockBlobStores = vi.hoisted(() => new Map<string, unknown>())

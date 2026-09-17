@@ -8,7 +8,12 @@ import { settingsStore } from "../store.settings"
 import { isAllowedHost, isStaticPhishingSite } from "./ParaverseProtector"
 
 const MINUTE = 60_000
+const MAX_VERDICT_TTL = MINUTE
 const NEGATIVE_TTL = MINUTE
+const SCAN_TIMEOUT = 8_000
+const MAX_SCANS_PER_MINUTE = 10
+const MAX_SCANS_PER_DAY = 100
+const BREAKER_FAILURE_THRESHOLD = 3
 const BUDGET_STORAGE_KEY = "blockaidSiteScanBudget"
 const BREAKER_TTL = 10 * MINUTE
 const MAX_HOSTS = 500
@@ -22,7 +27,7 @@ const resultSchema = z
   .object({
     status: z.enum(["hit", "miss", "error"]),
     isMalicious: z.boolean(),
-    cachedAt: z.iso.datetime({ offset: true }),
+    cachedAt: z.string(),
     ttlSeconds: z.number().finite(),
     stale: z.boolean(),
   })
@@ -31,6 +36,7 @@ const resultSchema = z
 type Verdict = { isMalicious: boolean; expiresAt: number }
 type Budget = z.infer<typeof budgetSchema>
 const verdicts = new Map<string, Verdict>()
+const exceptedHosts = new Set<string>()
 const inFlight = new Map<string, Promise<void>>()
 let budget: Budget = { day: "", count: 0, recent: [] }
 let enabled = false
@@ -79,8 +85,17 @@ function persistBudget(): Promise<void> {
   return pendingWrite
 }
 
+export function addBlockaidSiteException(host: string): void {
+  exceptedHosts.add(host)
+  verdicts.delete(host)
+}
+
+function isExemptHost(host: string): boolean {
+  return exceptedHosts.has(host) || isAllowedHost(host)
+}
+
 export function isBlockaidMalicious(host: string): boolean {
-  if (!enabled) return false
+  if (!enabled || exceptedHosts.has(host)) return false
   const verdict = verdicts.get(host)
   return verdict?.isMalicious === true && verdict.expiresAt > Date.now()
 }
@@ -94,7 +109,8 @@ function reserveBudget(): boolean {
   const day = new Date(now).toISOString().slice(0, 10)
   if (budget.day !== day) budget = { day, count: 0, recent: budget.recent }
   budget.recent = budget.recent.filter((time) => time > now - MINUTE)
-  if (budget.count >= 100 || budget.recent.length >= 10) return false
+  if (budget.count >= MAX_SCANS_PER_DAY || budget.recent.length >= MAX_SCANS_PER_MINUTE)
+    return false
   budget.count++
   budget.recent.push(now)
   return true
@@ -120,7 +136,7 @@ async function fetchVerdict(origin: string) {
         timer = setTimeout(() => {
           controller.abort()
           reject(new Error("Site scan timed out"))
-        }, 8_000)
+        }, SCAN_TIMEOUT)
       }),
     ])
   } finally {
@@ -131,7 +147,7 @@ async function fetchVerdict(origin: string) {
 async function scan(url: URL): Promise<void> {
   // Reserve durably before sending: a worker restart must not reset the daily ceiling.
   await persistBudget()
-  if (!enabled || blockedUntil > Date.now() || isAllowedHost(url.hostname)) return
+  if (!enabled || blockedUntil > Date.now() || isExemptHost(url.hostname)) return
 
   let verdict: Verdict = { isMalicious: false, expiresAt: Date.now() + NEGATIVE_TTL }
   let failed = true
@@ -139,7 +155,7 @@ async function scan(url: URL): Promise<void> {
     const result = await fetchVerdict(url.origin)
     verdict = {
       isMalicious: result.isMalicious,
-      expiresAt: Date.now() + Math.min(60, Math.max(0, result.ttlSeconds)) * 1_000,
+      expiresAt: Date.now() + Math.min(MAX_VERDICT_TTL, Math.max(0, result.ttlSeconds) * 1_000),
     }
     failed = result.status === "error"
   } catch {
@@ -147,12 +163,12 @@ async function scan(url: URL): Promise<void> {
   }
 
   if (failed) {
-    if (++failures >= 3) blockedUntil = Date.now() + BREAKER_TTL
+    if (++failures >= BREAKER_FAILURE_THRESHOLD) blockedUntil = Date.now() + BREAKER_TTL
   } else failures = 0
 
   verdicts.set(url.hostname, verdict)
   pruneVerdicts()
-  if (enabled && verdict.isMalicious && !isAllowedHost(url.hostname)) await onMalicious(url.origin)
+  if (enabled && verdict.isMalicious && !isExemptHost(url.hostname)) await onMalicious(url.origin)
 }
 
 export function requestSiteScan(rawUrl: string): void {
@@ -170,7 +186,7 @@ export function requestSiteScan(rawUrl: string): void {
       normalisedHost.endsWith(".test") ||
       host.includes(":") ||
       /^\d+\.\d+\.\d+\.\d+$/.test(normalisedHost) ||
-      isAllowedHost(host) ||
+      isExemptHost(host) ||
       isStaticPhishingSite(rawUrl)
     )
       return

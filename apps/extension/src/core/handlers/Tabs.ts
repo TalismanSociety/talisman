@@ -7,13 +7,12 @@ import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import type { RequestAccountList } from "../domains/accounts/types"
-import { isPhishingSite } from "../domains/app/protector"
+import { isPhishingSite, isStaticPhishingSite } from "../domains/app/protector"
 import {
   isBlockaidMalicious,
   requestSiteScan,
   setSiteScanRedirect,
 } from "../domains/app/protector/blockaidSiteVerdicts"
-import { isStaticPhishingSite } from "../domains/app/protector/ParaverseProtector"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
@@ -355,8 +354,10 @@ export default class Tabs extends TabsHandler {
     const tabs = await chrome.tabs.query({ url: `${origin}/*` })
     await Promise.all(
       tabs.map(async ({ id, url }) => {
-        if (typeof id !== "number" || !url || new URL(url).origin !== origin) return
-        if (!isBlockaidMalicious(new URL(url).hostname) || !(await isPhishingSite(url))) return
+        if (typeof id !== "number" || !url) return
+        const currentUrl = new URL(url)
+        if (currentUrl.origin !== origin) return
+        if (!isBlockaidMalicious(currentUrl.hostname) || !(await isPhishingSite(url))) return
         const properties = { url, source: "blockaid" }
         sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
         talismanAnalytics.capture("Redirect from phishing site", properties)
