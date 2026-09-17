@@ -9,7 +9,7 @@ import { tryConsumeScanQuota } from "./blockaidScanQuota"
 import { isExemptHost } from "./ParaverseProtector"
 
 const MINUTE = 60_000
-const MAX_VERDICT_TTL = MINUTE
+const VERDICT_TTL = MINUTE
 const SCAN_TIMEOUT = 8_000
 const MAX_CONSECUTIVE_FAILURES = 3
 const PAUSE_AFTER_FAILURES = 10 * MINUTE
@@ -19,7 +19,6 @@ const scanResultSchema = z
   .object({
     status: z.enum(["hit", "miss", "error"]),
     isMalicious: z.boolean(),
-    ttlSeconds: z.number().finite(),
   })
   .refine((result) => !result.isMalicious || result.status === "hit")
 
@@ -47,10 +46,10 @@ function getVerdict(host: string): Verdict | undefined {
   return verdict && verdict.expiresAt > Date.now() ? verdict : undefined
 }
 
-function setVerdict(host: string, isMalicious: boolean, ttl: number): void {
+function setVerdict(host: string, isMalicious: boolean): void {
   const now = Date.now()
   for (const [key, verdict] of verdicts) if (verdict.expiresAt <= now) verdicts.delete(key)
-  verdicts.set(host, { isMalicious, expiresAt: now + Math.min(MAX_VERDICT_TTL, Math.max(0, ttl)) })
+  verdicts.set(host, { isMalicious, expiresAt: now + VERDICT_TTL })
 }
 
 export function isBlockaidMalicious(host: string): boolean {
@@ -108,8 +107,7 @@ async function scan({ origin, hostname }: URL): Promise<void> {
   else if (++consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) pauseScans()
 
   // failures are cached as safe: scans fail open and must not retry on every message
-  const ttl = result ? result.ttlSeconds * 1_000 : MAX_VERDICT_TTL
-  setVerdict(hostname, result?.isMalicious === true, ttl)
+  setVerdict(hostname, result?.isMalicious === true)
   if (isBlockaidMalicious(hostname)) maliciousOrigin$.next(origin)
 }
 

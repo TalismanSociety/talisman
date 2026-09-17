@@ -46,7 +46,6 @@ const response = (changes = {}) =>
   Response.json({
     status: "hit",
     isMalicious: false,
-    ttlSeconds: 86_400,
     ...changes,
   })
 const flush = () => vi.advanceTimersByTimeAsync(0)
@@ -156,7 +155,7 @@ it("reports which source flagged a site", async () => {
 })
 
 it("honours malicious verdicts, expiry and proceed anyway", async () => {
-  mocks.fetch.mockImplementation(async () => response({ isMalicious: true, ttlSeconds: 60 }))
+  mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
   await scan()
   expect(await isFlagged("https://dapp.example/other")).toBe(true)
   expect(protector.addException("https://dapp.example/other")).toBe(true)
@@ -317,7 +316,7 @@ const failures = [
   ["malformed JSON", () => Promise.resolve(new Response("{"))],
   ["wrong boolean", () => Promise.resolve(response({ isMalicious: "yes" }))],
   ["inconsistent status", () => Promise.resolve(response({ status: "miss", isMalicious: true }))],
-  ["missing fields", () => Promise.resolve(Response.json({ status: "hit", isMalicious: true }))],
+  ["missing fields", () => Promise.resolve(Response.json({ status: "hit" }))],
   ["timeout", () => new Promise<Response>(() => {})],
 ] as const
 it.each(failures)("fails open and negative-caches %s", async (_, fetchResponse) => {
@@ -365,8 +364,8 @@ it("opens the breaker immediately for a 429", async () => {
   expect(mocks.fetch).toHaveBeenCalledTimes(1)
 })
 
-it("counts error responses as failures with the server TTL and resets failures after success", async () => {
-  mocks.fetch.mockImplementation(async () => response({ status: "error", ttlSeconds: 5 }))
+it("counts error responses as failures and resets failures after success", async () => {
+  mocks.fetch.mockImplementation(async () => response({ status: "error" }))
   await scan("https://error1.example")
   await scan("https://error2.example")
   mocks.fetch.mockImplementationOnce(async () => response({ status: "miss" }))
@@ -378,16 +377,15 @@ it("counts error responses as failures with the server TTL and resets failures a
   expect(mocks.fetch).toHaveBeenCalledTimes(6)
 })
 
-it.each([
-  [5, 5],
-  [10_000_000, 60],
-])("caps TTL %s at %s seconds and redirects once", async (ttlSeconds, expected) => {
-  mocks.fetch.mockImplementation(async () => response({ isMalicious: true, ttlSeconds }))
+it("redirects once and keeps the verdict for one minute", async () => {
+  mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
   await scan()
   await scan()
   expect(redirect).toHaveBeenCalledExactlyOnceWith("https://dapp.example")
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
-  vi.setSystemTime(Date.now() + expected * 1_000)
+  vi.setSystemTime(Date.now() + 59_999)
+  expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
+  vi.setSystemTime(Date.now() + 1)
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
