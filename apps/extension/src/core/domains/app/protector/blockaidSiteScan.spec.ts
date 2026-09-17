@@ -6,9 +6,9 @@ const mocks = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
   fetch: vi.fn<typeof fetch>(),
-  budget: new Map<string, unknown>(),
-  getBudget: vi.fn(),
-  setBudget: vi.fn(),
+  quota: new Map<string, unknown>(),
+  getQuota: vi.fn(),
+  setQuota: vi.fn(),
 }))
 let config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN: boolean } }>({
   featureFlags: { BLOCKAID_DAPP_SCAN: true },
@@ -50,7 +50,7 @@ const response = (changes = {}) =>
     ...changes,
   })
 const flush = () => vi.advanceTimersByTimeAsync(0)
-let scans: typeof import("./blockaidSiteVerdicts")
+let scans: typeof import("./blockaidSiteScan")
 let protector: typeof import("./ParaverseProtector")
 let getPhishingSource: typeof import("./phishingSource").getPhishingSource
 let redirect = vi.fn()
@@ -64,15 +64,15 @@ beforeEach(async () => {
   })
   settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
   token$ = new BehaviorSubject({ status: "success", data: "test-token" })
-  mocks.budget.clear()
-  mocks.getBudget
+  mocks.quota.clear()
+  mocks.getQuota
     .mockReset()
-    .mockImplementation(async (id: string) => ({ [id]: structuredClone(mocks.budget.get(id)) }))
-  mocks.setBudget.mockReset().mockImplementation(async (data: Record<string, unknown>) => {
-    for (const [id, value] of Object.entries(data)) mocks.budget.set(id, structuredClone(value))
+    .mockImplementation(async (id: string) => ({ [id]: structuredClone(mocks.quota.get(id)) }))
+  mocks.setQuota.mockReset().mockImplementation(async (data: Record<string, unknown>) => {
+    for (const [id, value] of Object.entries(data)) mocks.quota.set(id, structuredClone(value))
   })
-  vi.spyOn(chrome.storage.local, "get").mockImplementation(mocks.getBudget)
-  vi.spyOn(chrome.storage.local, "set").mockImplementation(mocks.setBudget)
+  vi.spyOn(chrome.storage.local, "get").mockImplementation(mocks.getQuota)
+  vi.spyOn(chrome.storage.local, "set").mockImplementation(mocks.setQuota)
   mocks.blobs.clear()
   mocks.blobs.set("phishing-metamask", {
     etag: "",
@@ -93,7 +93,7 @@ beforeEach(async () => {
   })
   mocks.fetch.mockReset().mockImplementation(async () => response())
   vi.stubGlobal("fetch", mocks.fetch)
-  scans = await import("./blockaidSiteVerdicts")
+  scans = await import("./blockaidSiteScan")
   protector = await import("./ParaverseProtector")
   ;({ getPhishingSource } = await import("./phishingSource"))
   redirect = vi.fn()
@@ -120,11 +120,11 @@ async function scan(url = "https://dapp.example/path?private=value") {
   await flush()
 }
 
-function persistedBudget() {
-  return mocks.budget.get("blockaidSiteScanBudget") as {
+function persistedQuota() {
+  return mocks.quota.get("blockaidSiteScanQuota") as {
     day: string
-    count: number
-    recent: number[]
+    scansToday: number
+    recentScans: number[]
   }
 }
 
@@ -137,7 +137,7 @@ async function restart() {
     featureFlags: { BLOCKAID_DAPP_SCAN: true },
   })
   settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
-  scans = await import("./blockaidSiteVerdicts")
+  scans = await import("./blockaidSiteScan")
   protector = await import("./ParaverseProtector")
   ;({ getPhishingSource } = await import("./phishingSource"))
   scans.maliciousOrigin$.subscribe(redirect)
@@ -229,9 +229,9 @@ it("caps 100 different hosts at ten calls per rolling minute and 100 per UTC day
     expect(mocks.fetch).toHaveBeenCalledTimes((minute + 1) * 10)
     await vi.advanceTimersByTimeAsync(60_000)
   }
-  expect(persistedBudget().count).toBe(100)
+  expect(persistedQuota().scansToday).toBe(100)
   await restart()
-  await scan("https://over-budget.example")
+  await scan("https://over-quota.example")
   expect(mocks.fetch).toHaveBeenCalledTimes(100)
   vi.setSystemTime(new Date("2026-09-18T00:00:00Z"))
   await scan("https://next-day.example")
@@ -240,7 +240,7 @@ it("caps 100 different hosts at ten calls per rolling minute and 100 per UTC day
 
 it("persists reservations before fetch and preserves the rolling minute across restart", async () => {
   mocks.fetch.mockImplementation(async () => {
-    expect(persistedBudget().count).toBeGreaterThan(0)
+    expect(persistedQuota().scansToday).toBeGreaterThan(0)
     return response()
   })
   for (let i = 0; i < 10; i++) await scan(`https://host${i}.example`)
@@ -252,8 +252,8 @@ it("persists reservations before fetch and preserves the rolling minute across r
   expect(mocks.fetch).toHaveBeenCalledTimes(11)
 })
 
-it("skips network if a budget reservation cannot be persisted", async () => {
-  mocks.setBudget.mockRejectedValue(new Error("disk unavailable"))
+it("skips network if a quota reservation cannot be persisted", async () => {
+  mocks.setQuota.mockRejectedValue(new Error("disk unavailable"))
   await scan()
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
@@ -393,7 +393,7 @@ it.each([
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
 })
 
-it("keeps verdicts only in memory, while retaining the budget on restart", async () => {
+it("keeps verdicts only in memory, while retaining the quota on restart", async () => {
   mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
   await scan()
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
@@ -401,10 +401,10 @@ it("keeps verdicts only in memory, while retaining the budget on restart", async
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
-  expect(persistedBudget().count).toBe(2)
+  expect(persistedQuota().scansToday).toBe(2)
   expect(mocks.set).not.toHaveBeenCalled()
   expect(
-    mocks.setBudget.mock.calls.every(([data]) => !("verdicts" in data.blockaidSiteScanBudget))
+    mocks.setQuota.mock.calls.every(([data]) => !("verdicts" in data.blockaidSiteScanQuota))
   ).toBe(true)
 })
 
@@ -429,8 +429,8 @@ it("does not redirect when the setting or a host exception changes during a scan
   expect(redirect).not.toHaveBeenCalled()
 })
 
-it("skips scans if the persisted budget cannot be read", async () => {
-  mocks.getBudget.mockRejectedValue(new Error("storage unavailable"))
+it("skips scans if the persisted quota cannot be read", async () => {
+  mocks.getQuota.mockRejectedValue(new Error("storage unavailable"))
   await scan()
   expect(mocks.fetch).not.toHaveBeenCalled()
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)

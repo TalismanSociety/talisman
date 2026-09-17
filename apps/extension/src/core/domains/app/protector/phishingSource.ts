@@ -1,5 +1,5 @@
 import { getHostName } from "../helpers"
-import { isBlockaidMalicious } from "./blockaidSiteVerdicts"
+import { isBlockaidMalicious } from "./blockaidSiteScan"
 import { isPhishingSite } from "./ParaverseProtector"
 
 export type PhishingSource = "lists" | "blockaid"
