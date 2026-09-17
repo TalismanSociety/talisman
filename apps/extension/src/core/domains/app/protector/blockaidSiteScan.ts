@@ -5,31 +5,21 @@ import { z } from "zod"
 import { gandalfFetch } from "../../gandalf/fetch"
 import { remoteConfigStore } from "../store.remoteConfig"
 import { settingsStore } from "../store.settings"
-import { tryConsumeScanQuota } from "./blockaidScanQuota"
 import { isExemptHost } from "./ParaverseProtector"
 
-const MINUTE = 60_000
-const VERDICT_TTL = MINUTE
+const VERDICT_TTL = 60_000
 const SCAN_TIMEOUT = 8_000
-const MAX_CONSECUTIVE_FAILURES = 3
-const PAUSE_AFTER_FAILURES = 10 * MINUTE
+const RATE_LIMIT_PAUSE = 10 * 60_000
 const NON_PUBLIC_TLDS = new Set(["localhost", "local", "test"])
 
-const scanResultSchema = z
-  .object({
-    status: z.enum(["hit", "miss", "error"]),
-    isMalicious: z.boolean(),
-  })
-  .refine((result) => !result.isMalicious || result.status === "hit")
+const scanResultSchema = z.object({ isMalicious: z.boolean() })
 
 type Verdict = { isMalicious: boolean; expiresAt: number }
 
 export const maliciousOrigin$ = new Subject<string>()
 
 const verdicts = new Map<string, Verdict>()
-const scanningHosts = new Set<string>()
 let isEnabled = false
-let consecutiveFailures = 0
 let pausedUntil = 0
 
 combineLatest([remoteConfigStore.observable, settingsStore.observable]).subscribe({
@@ -56,14 +46,6 @@ export function isBlockaidMalicious(host: string): boolean {
   return isEnabled && !isExemptHost(host) && getVerdict(host)?.isMalicious === true
 }
 
-function pauseScans(): void {
-  pausedUntil = Date.now() + PAUSE_AFTER_FAILURES
-}
-
-function canScan(host: string): boolean {
-  return isEnabled && pausedUntil <= Date.now() && !isExemptHost(host) && !getVerdict(host)
-}
-
 function isPublicWebUrl({ protocol, hostname }: URL): boolean {
   if (protocol !== "http:" && protocol !== "https:") return false
   const labels = hostname.replace(/\.$/, "").split(".")
@@ -72,19 +54,19 @@ function isPublicWebUrl({ protocol, hostname }: URL): boolean {
   return labels.length > 1 && !isIpAddress && !NON_PUBLIC_TLDS.has(tld)
 }
 
-async function requestScan(origin: string, signal: AbortSignal) {
+async function fetchIsMalicious(origin: string, signal: AbortSignal): Promise<boolean> {
   const response = await gandalfFetch(`${BLOCKAID_API_URL}/site/scan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url: origin }),
     signal,
   })
-  if (response.status === 429) pauseScans()
-  if (response.status !== 200) throw new Error("Site scan failed")
-  return scanResultSchema.parse(await response.json())
+  if (response.status === 429) pausedUntil = Date.now() + RATE_LIMIT_PAUSE
+  if (!response.ok) throw new Error("Site scan failed")
+  return scanResultSchema.parse(await response.json()).isMalicious
 }
 
-async function requestScanWithTimeout(origin: string) {
+async function fetchIsMaliciousWithTimeout(origin: string): Promise<boolean> {
   const controller = new AbortController()
   const timeout = new Promise<never>((_, reject) => {
     controller.signal.addEventListener("abort", () => reject(new Error("Site scan timed out")))
@@ -92,33 +74,28 @@ async function requestScanWithTimeout(origin: string) {
   const timer = setTimeout(() => controller.abort(), SCAN_TIMEOUT)
   try {
     // the race also bounds the Gandalf token wait, which the signal cannot interrupt
-    return await Promise.race([requestScan(origin, controller.signal), timeout])
+    return await Promise.race([fetchIsMalicious(origin, controller.signal), timeout])
   } finally {
     clearTimeout(timer)
   }
 }
 
 async function scan({ origin, hostname }: URL): Promise<void> {
-  if (!(await tryConsumeScanQuota()) || !canScan(hostname)) return
+  // safe until proven malicious: scans fail open, and the entry stops concurrent scans of the host
+  setVerdict(hostname, false)
 
-  const result = await requestScanWithTimeout(origin).catch(() => undefined)
+  const isMalicious = await fetchIsMaliciousWithTimeout(origin).catch(() => false)
+  if (!isMalicious) return
 
-  if (result && result.status !== "error") consecutiveFailures = 0
-  else if (++consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) pauseScans()
-
-  // failures are cached as safe: scans fail open and must not retry on every message
-  setVerdict(hostname, result?.isMalicious === true)
+  setVerdict(hostname, true)
   if (isBlockaidMalicious(hostname)) maliciousOrigin$.next(origin)
 }
 
 export function requestSiteScan(rawUrl: string): void {
-  if (!URL.canParse(rawUrl)) return
-  const url = new URL(rawUrl)
-  const host = url.hostname
-  if (!isPublicWebUrl(url) || !canScan(host) || scanningHosts.has(host)) return
+  if (!isEnabled || pausedUntil > Date.now() || !URL.canParse(rawUrl)) return
 
-  scanningHosts.add(host)
-  scan(url)
-    .catch(() => {})
-    .finally(() => scanningHosts.delete(host))
+  const url = new URL(rawUrl)
+  if (!isPublicWebUrl(url) || isExemptHost(url.hostname) || getVerdict(url.hostname)) return
+
+  void scan(url)
 }

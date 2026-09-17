@@ -6,9 +6,6 @@ const mocks = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
   fetch: vi.fn<typeof fetch>(),
-  quota: new Map<string, unknown>(),
-  getQuota: vi.fn(),
-  setQuota: vi.fn(),
 }))
 let config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN: boolean } }>({
   featureFlags: { BLOCKAID_DAPP_SCAN: true },
@@ -44,7 +41,6 @@ vi.mock("../../gandalf/observable", () => ({
 
 const response = (changes = {}) =>
   Response.json({
-    status: "hit",
     isMalicious: false,
     ...changes,
   })
@@ -63,15 +59,7 @@ beforeEach(async () => {
   })
   settings$ = new BehaviorSubject<{ autoRiskScan?: boolean }>({ autoRiskScan: true })
   token$ = new BehaviorSubject({ status: "success", data: "test-token" })
-  mocks.quota.clear()
-  mocks.getQuota
-    .mockReset()
-    .mockImplementation(async (id: string) => ({ [id]: structuredClone(mocks.quota.get(id)) }))
-  mocks.setQuota.mockReset().mockImplementation(async (data: Record<string, unknown>) => {
-    for (const [id, value] of Object.entries(data)) mocks.quota.set(id, structuredClone(value))
-  })
-  vi.spyOn(chrome.storage.local, "get").mockImplementation(mocks.getQuota)
-  vi.spyOn(chrome.storage.local, "set").mockImplementation(mocks.setQuota)
+  vi.spyOn(chrome.storage.local, "set")
   mocks.blobs.clear()
   mocks.blobs.set("phishing-metamask", {
     etag: "",
@@ -117,14 +105,6 @@ const isFlagged = async (url: string) => (await getPhishingSource(url)) !== unde
 async function scan(url = "https://dapp.example/path?private=value") {
   expect(scans.requestSiteScan(url)).toBeUndefined()
   await flush()
-}
-
-function persistedQuota() {
-  return mocks.quota.get("blockaidSiteScanQuota") as {
-    day: string
-    scansToday: number
-    recentScans: number[]
-  }
 }
 
 async function restart() {
@@ -221,42 +201,6 @@ it("runs different hosts concurrently without a network queue", async () => {
   await vi.advanceTimersByTimeAsync(8_000)
 })
 
-it("caps 100 different hosts at ten calls per rolling minute and 100 per UTC day across restarts", async () => {
-  for (let minute = 0; minute < 10; minute++) {
-    for (let i = 0; i < 100; i++) scans.requestSiteScan(`https://dapp${minute}-${i}.example`)
-    await flush()
-    expect(mocks.fetch).toHaveBeenCalledTimes((minute + 1) * 10)
-    await vi.advanceTimersByTimeAsync(60_000)
-  }
-  expect(persistedQuota().scansToday).toBe(100)
-  await restart()
-  await scan("https://over-quota.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(100)
-  vi.setSystemTime(new Date("2026-09-18T00:00:00Z"))
-  await scan("https://next-day.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(101)
-})
-
-it("persists reservations before fetch and preserves the rolling minute across restart", async () => {
-  mocks.fetch.mockImplementation(async () => {
-    expect(persistedQuota().scansToday).toBeGreaterThan(0)
-    return response()
-  })
-  for (let i = 0; i < 10; i++) await scan(`https://host${i}.example`)
-  await restart()
-  await scan("https://eleventh.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(10)
-  vi.setSystemTime(Date.now() + 60_000)
-  await scan("https://eleventh.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(11)
-})
-
-it("skips network if a quota reservation cannot be persisted", async () => {
-  mocks.setQuota.mockRejectedValue(new Error("disk unavailable"))
-  await scan()
-  expect(mocks.fetch).not.toHaveBeenCalled()
-})
-
 it.each([false, undefined])("does not scan when autoRiskScan is %s", async (autoRiskScan) => {
   settings$.next({ autoRiskScan })
   await scan()
@@ -315,8 +259,7 @@ const failures = [
   ],
   ["malformed JSON", () => Promise.resolve(new Response("{"))],
   ["wrong boolean", () => Promise.resolve(response({ isMalicious: "yes" }))],
-  ["inconsistent status", () => Promise.resolve(response({ status: "miss", isMalicious: true }))],
-  ["missing fields", () => Promise.resolve(Response.json({ status: "hit" }))],
+  ["missing fields", () => Promise.resolve(Response.json({}))],
   ["timeout", () => new Promise<Response>(() => {})],
 ] as const
 it.each(failures)("fails open and negative-caches %s", async (_, fetchResponse) => {
@@ -342,39 +285,11 @@ it("includes the Gandalf token wait in the eight second deadline", async () => {
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
 
-it("opens the breaker after three failures and reopens when the recovery scan fails", async () => {
-  mocks.fetch.mockRejectedValue(new Error("offline"))
-  for (let i = 0; i < 3; i++) await scan(`https://bad${i}.example`)
-  await scan("https://new.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(3)
-  vi.setSystemTime(Date.now() + 599_999)
-  await scan("https://new.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(3)
-  vi.setSystemTime(Date.now() + 1)
-  await scan("https://new.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(4)
-  await scan("https://still-offline.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(4)
-})
-
-it("opens the breaker immediately for a 429", async () => {
+it("pauses scans after a 429", async () => {
   mocks.fetch.mockResolvedValue(new Response(null, { status: 429 }))
   await scan()
   await scan("https://another.example")
   expect(mocks.fetch).toHaveBeenCalledTimes(1)
-})
-
-it("counts error responses as failures and resets failures after success", async () => {
-  mocks.fetch.mockImplementation(async () => response({ status: "error" }))
-  await scan("https://error1.example")
-  await scan("https://error2.example")
-  mocks.fetch.mockImplementationOnce(async () => response({ status: "miss" }))
-  await scan("https://success.example")
-  await scan("https://error3.example")
-  await scan("https://error4.example")
-  await scan("https://error5.example")
-  await scan("https://blocked.example")
-  expect(mocks.fetch).toHaveBeenCalledTimes(6)
 })
 
 it("redirects once and keeps the verdict for one minute", async () => {
@@ -391,19 +306,16 @@ it("redirects once and keeps the verdict for one minute", async () => {
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
 })
 
-it("keeps verdicts only in memory, while retaining the quota on restart", async () => {
+it("keeps verdicts only in memory", async () => {
   mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
   await scan()
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(true)
+  expect(mocks.set).not.toHaveBeenCalled()
+  expect(chrome.storage.local.set).not.toHaveBeenCalled()
   await restart()
   expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
   await scan()
   expect(mocks.fetch).toHaveBeenCalledTimes(2)
-  expect(persistedQuota().scansToday).toBe(2)
-  expect(mocks.set).not.toHaveBeenCalled()
-  expect(
-    mocks.setQuota.mock.calls.every(([data]) => !("verdicts" in data.blockaidSiteScanQuota))
-  ).toBe(true)
 })
 
 it("does not redirect when the setting or a host exception changes during a scan", async () => {
@@ -425,13 +337,6 @@ it("does not redirect when the setting or a host exception changes during a scan
   resolve(response({ isMalicious: true }))
   await flush()
   expect(redirect).not.toHaveBeenCalled()
-})
-
-it("skips scans if the persisted quota cannot be read", async () => {
-  mocks.getQuota.mockRejectedValue(new Error("storage unavailable"))
-  await scan()
-  expect(mocks.fetch).not.toHaveBeenCalled()
-  expect(scans.isBlockaidMalicious("dapp.example")).toBe(false)
 })
 
 it("allows a rescan after the one minute failure cache expires", async () => {
