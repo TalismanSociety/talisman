@@ -6,6 +6,7 @@ import { Dexie } from "dexie"
 import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"
 import { getHostName } from "../helpers"
+import { isBlockaidMalicious } from "./blockaidSiteVerdicts"
 import { initialPhishingList } from "./initial-phishing-list"
 
 // Supports ETag-based conditional requests (304 = no re-download).
@@ -271,12 +272,17 @@ let lifecycleGeneration = 0
 function ensureInitialised(): Promise<void> {
   if (!initialised) {
     const generation = lifecycleGeneration
-    const promise = restoreFromBlobStore().then(async ({ hasMetamaskCache }) => {
+    const promise = restoreFromBlobStore().then(({ hasMetamaskCache }) => {
       if (generation !== lifecycleGeneration || initialised !== promise) return
-      if (!hasMetamaskCache) await refreshPhishingLists()
-      if (generation !== lifecycleGeneration || initialised !== promise) return
-      // start periodic refresh 30 s after first use
-      refreshTimer = setTimeout(() => scheduleRefresh(generation), INITIAL_REFRESH_DELAY_MS)
+      const startPeriodicRefresh = () => {
+        if (generation !== lifecycleGeneration || initialised !== promise) return
+        refreshTimer = setTimeout(() => scheduleRefresh(generation), INITIAL_REFRESH_DELAY_MS)
+      }
+      if (hasMetamaskCache) startPeriodicRefresh()
+      else
+        refreshTimer = setTimeout(() => {
+          void refreshPhishingLists().then(startPeriodicRefresh)
+        }, 0)
     })
     initialised = promise
   }
@@ -345,6 +351,16 @@ export async function refreshPhishingLists(): Promise<void> {
 export async function isPhishingSite(url: string): Promise<boolean> {
   await ensureInitialised()
 
+  const { val: host, ok } = getHostName(url)
+  if (!ok || isAllowedHost(host)) return false
+  return isStaticPhishingSite(url) || isBlockaidMalicious(host)
+}
+
+export function isAllowedHost(host: string): boolean {
+  return talismanAllowHosts.has(host)
+}
+
+export function isStaticPhishingSite(url: string): boolean {
   const { val: host, ok } = getHostName(url)
   if (!ok) return false
 

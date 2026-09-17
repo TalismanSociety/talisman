@@ -43,12 +43,16 @@ const getGandalfAccessToken = () =>
  * Authorization header so the server can respond with 401.
  */
 export const gandalfFetch: typeof fetch = async (input, init) => {
+  const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined)
+  signal?.throwIfAborted()
+  let token: string | undefined
   try {
-    const token = await getGandalfAccessToken()
-    const headers = new Headers(init?.headers)
-    headers.set("Authorization", `Bearer ${token}`)
-    return fetch(input, { ...init, headers })
-  } catch {
-    return fetch(input, init)
-  }
+    token = await getGandalfAccessToken()
+  } catch {}
+  signal?.throwIfAborted()
+  if (token === undefined) return fetch(input, init)
+
+  const headers = new Headers(init?.headers)
+  headers.set("Authorization", `Bearer ${token}`)
+  return fetch(input, { ...init, headers })
 }

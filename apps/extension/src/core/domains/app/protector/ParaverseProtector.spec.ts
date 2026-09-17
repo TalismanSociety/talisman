@@ -1,5 +1,9 @@
 import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest"
 
+vi.mock("./blockaidSiteVerdicts", () => ({
+  isBlockaidMalicious: vi.fn(() => false),
+}))
+
 const mockBlobStores = vi.hoisted(() => new Map<string, unknown>())
 
 const mockMetamaskStalelist = {
@@ -104,13 +108,19 @@ it("Checks phishing sites", async () => {
   expect(await isPhishingSite("some garbage")).toBeFalsy()
 })
 
-it("Refreshes immediately before the first check when no valid MetaMask cache exists", async () => {
+it("Refreshes in the background without delaying the first check when no cached list exists", async () => {
   dispose()
   mockBlobStores.clear()
   setDefaultFetchResponses()
   mockFetch.mockClear()
 
+  vi.useFakeTimers()
+  expect(await isPhishingSite("https://something.else")).toBeFalsy()
+  expect(mockFetch).not.toHaveBeenCalled()
+  await vi.advanceTimersByTimeAsync(0)
   expect(await isPhishingSite("https://badsite.com")).toBeTruthy()
+  dispose()
+  vi.useRealTimers()
   expect(
     mockFetch.mock.calls.some(([input]) => fetchInputToString(input).includes("metamask"))
   ).toBe(true)
@@ -154,6 +164,7 @@ it("Does not re-arm refresh timers after dispose", async () => {
 })
 
 it("Can add an exception to phishing sites", async () => {
+  await refreshPhishingLists()
   const badsite = "https://badsite.com"
   expect(await isPhishingSite(badsite)).toBeTruthy()
   addException(badsite)
@@ -164,6 +175,8 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
   dispose()
   mockBlobStores.clear()
   setDefaultFetchResponses()
+
+  await refreshPhishingLists()
 
   const blockedPath = "https://sites.google.com/view/1incha?ref=from-link#section"
   expect(await isPhishingSite(blockedPath)).toBeTruthy()

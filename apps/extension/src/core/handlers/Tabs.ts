@@ -8,6 +8,13 @@ import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import type { RequestAccountList } from "../domains/accounts/types"
 import { isPhishingSite } from "../domains/app/protector"
+import {
+  isBlockaidMalicious,
+  requestSiteScan,
+  setSiteScanRedirect,
+} from "../domains/app/protector/blockaidSiteVerdicts"
+import { isStaticPhishingSite } from "../domains/app/protector/ParaverseProtector"
+import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
 import type {
@@ -65,6 +72,7 @@ export default class Tabs extends TabsHandler {
 
   constructor(stores: TabStore) {
     super(stores)
+    setSiteScanRedirect((origin) => this.redirectPhishingOrigin(origin))
 
     // routing to sub-handlers
     this.#routes = {
@@ -312,38 +320,63 @@ export default class Tabs extends TabsHandler {
     return this.#rpcState.rpcUnsubscribe(request, port)
   }
 
-  private redirectPhishingLanding(phishingWebsite: string): void {
-    const nonFragment = phishingWebsite.split("#")[0]
-    const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${chrome.runtime.getURL(
-      "dashboard.html"
-    )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
+  private phishingLandingUrl(phishingWebsite: string, source?: "blockaid"): string {
+    const search = source === "blockaid" ? "?source=blockaid" : ""
+    return `${chrome.runtime.getURL("dashboard.html")}#${PHISHING_PAGE_REDIRECT}/${encodeURIComponent(phishingWebsite.split("#")[0])}${search}`
+  }
 
-    chrome.tabs.query({ url: nonFragment }).then((tabs) => {
-      tabs
-        .map(({ id }) => id)
-        .filter((id): id is number => typeof id === "number")
-        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
-        .forEach((id) =>
-          chrome.tabs.update(id, { url }).catch((err: Error) => {
-            // biome-ignore lint/suspicious/noConsole: legacy
-            console.error("Failed to redirect tab to phishing page", { err })
-            sentry.captureException(err, { extra: { url } })
-          })
+  private async redirectTab(
+    id: number,
+    phishingWebsite: string,
+    source?: "blockaid"
+  ): Promise<void> {
+    const url = this.phishingLandingUrl(phishingWebsite, source)
+    try {
+      await chrome.tabs.update(id, { url })
+    } catch (err) {
+      sentry.captureException(err, { extra: { url } })
+    }
+  }
+
+  private redirectPhishingLanding(phishingWebsite: string, source?: "blockaid"): void {
+    void chrome.tabs
+      .query({ url: phishingWebsite.split("#")[0] })
+      .then(async (tabs) => {
+        await Promise.all(
+          tabs.map(({ id }) =>
+            typeof id === "number" ? this.redirectTab(id, phishingWebsite, source) : undefined
+          )
         )
-    })
+      })
+      .catch(sentry.captureException)
+  }
+
+  private async redirectPhishingOrigin(origin: string): Promise<void> {
+    const tabs = await chrome.tabs.query({ url: `${origin}/*` })
+    await Promise.all(
+      tabs.map(async ({ id, url }) => {
+        if (typeof id !== "number" || !url || new URL(url).origin !== origin) return
+        if (!isBlockaidMalicious(new URL(url).hostname) || !(await isPhishingSite(url))) return
+        const properties = { url, source: "blockaid" }
+        sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
+        talismanAnalytics.capture("Redirect from phishing site", properties)
+        await this.redirectTab(id, url, "blockaid")
+      })
+    )
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
     const isInDenyList = await isPhishingSite(url)
 
     if (isInDenyList) {
+      const source = isStaticPhishingSite(url) ? undefined : "blockaid"
+      const properties = { url, ...(source ? { source } : {}) }
       sentry.captureEvent({
         message: "Redirect from phishing site",
-        extra: { url },
+        extra: properties,
       })
-      talismanAnalytics.capture("Redirect from phishing site", { url })
-      this.redirectPhishingLanding(url)
+      talismanAnalytics.capture("Redirect from phishing site", properties)
+      this.redirectPhishingLanding(url, source)
 
       return true
     }
@@ -370,6 +403,17 @@ export default class Tabs extends TabsHandler {
     // check for phishing on all requests
     const isPhishing = await this.redirectIfPhishing(url)
     if (isPhishing) return
+
+    let isConnected = false
+    if (
+      type === "pub(eth.request)" &&
+      (request as RequestType<"pub(eth.request)">)?.method === "eth_accounts"
+    ) {
+      try {
+        isConnected = !!(await this.stores.sites.getSiteFromUrl(url))?.ethAddresses?.length
+      } catch {}
+    }
+    if (shouldScanSite(type, request, isConnected)) requestSiteScan(url)
 
     // --------------------------------------------------------------------
     // Then try known sub-handlers based on prefix of message ------------

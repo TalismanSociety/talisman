@@ -83,7 +83,7 @@ const Content = () => {
             }
             subtitle={
               <Trans t={t}>
-                Automatically assess risks of transactions via{" "}
+                Automatically assess risks of transactions and sites via{" "}
                 <a
                   className="text-grey-200 hover:text-body"
                   href="https://blockaid.io"
