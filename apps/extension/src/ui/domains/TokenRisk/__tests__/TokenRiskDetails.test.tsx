@@ -30,7 +30,7 @@ describe("TokenRiskDetails", () => {
     expect(screen.getByText("Locked liquidity").nextElementSibling?.textContent).toBe("99.59%")
   })
 
-  it("orders feature groups by severity", () => {
+  it("lists findings by severity without benign entries", () => {
     render(
       <TokenRiskDetails
         symbol="BAD"
@@ -49,6 +49,6 @@ describe("TokenRiskDetails", () => {
     )
 
     const descriptions = screen.getAllByRole("listitem").map((item) => item.textContent)
-    expect(descriptions).toEqual(["malicious", "warning", "info", "benign"])
+    expect(descriptions).toEqual(["malicious", "warning", "info"])
   })
 })

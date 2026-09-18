@@ -39,46 +39,62 @@ export const useTokenRiskVerdictLabel = () => {
   }
 }
 
+const useTokenRiskTitle = () => {
+  const { t } = useTranslation()
+  return (verdict: TokenRiskVerdict) => {
+    switch (verdict) {
+      case "Malicious":
+        return t("Malicious token")
+      case "Warning":
+        return t("Risky token")
+      case "Spam":
+        return t("Spam token")
+      case "Benign":
+        return t("No risks found")
+      default:
+        return t("No verdict available")
+    }
+  }
+}
+
 const useTokenRiskHeadline = () => {
   const { t } = useTranslation()
   return (verdict: TokenRiskVerdict, symbol: string) => {
     switch (verdict) {
       case "Malicious":
-        return t(
-          "Blockaid flagged {{symbol}} as malicious. Interacting with it may result in a loss of funds.",
-          { symbol }
-        )
+        return t("{{symbol}} shows malicious behaviour. You could lose funds if you use it.", {
+          symbol,
+        })
       case "Warning":
-        return t("Blockaid found risks with {{symbol}}. Review them carefully before proceeding.", {
+        return t("{{symbol}} shows signs of risk. Review the findings before you proceed.", {
           symbol,
         })
       case "Spam":
-        return t("Blockaid flagged {{symbol}} as spam. It is likely worthless or deceptive.", {
-          symbol,
-        })
+        return t("{{symbol}} looks like spam. It is likely worthless or deceptive.", { symbol })
       case "Benign":
-        return t("Blockaid found no risks with {{symbol}}.", { symbol })
+        return t("{{symbol}} passed all security checks.", { symbol })
       default:
-        return t("Blockaid has no verdict for {{symbol}}.", { symbol })
+        return t("{{symbol}} could not be analysed.", { symbol })
     }
   }
 }
 
-const FEATURE_TYPE_ORDER = ["Malicious", "Warning", "Info", "Benign"]
+const FINDING_TYPE_ORDER = ["Malicious", "Warning", "Info"]
 
-const getFeatureTypeRank = (type: string) => {
-  const rank = FEATURE_TYPE_ORDER.indexOf(type)
-  return rank === -1 ? FEATURE_TYPE_ORDER.length : rank
+const FINDING_MARKER_CLASSES: Record<string, string> = {
+  Malicious: "marker:text-alert-error",
+  Warning: "marker:text-alert-warn",
 }
 
-const groupFeaturesByType = (features: TokenRiskFeature[]) => {
-  const groups = new Map<string, TokenRiskFeature[]>()
-  for (const feature of features)
-    groups.set(feature.type, [...(groups.get(feature.type) ?? []), feature])
-  return [...groups.entries()].sort(
-    ([typeA], [typeB]) => getFeatureTypeRank(typeA) - getFeatureTypeRank(typeB)
-  )
+const getFindingRank = (type: string) => {
+  const rank = FINDING_TYPE_ORDER.indexOf(type)
+  return rank === -1 ? FINDING_TYPE_ORDER.length : rank
 }
+
+const getFindings = (features: TokenRiskFeature[]) =>
+  features
+    .filter((feature) => feature.type !== "Benign")
+    .sort((a, b) => getFindingRank(a.type) - getFindingRank(b.type))
 
 const formatPercent = (value: number) =>
   `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
@@ -93,9 +109,10 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
   className,
 }) => {
   const { t } = useTranslation()
-  const getLabel = useTokenRiskVerdictLabel()
+  const getTitle = useTokenRiskTitle()
   const getHeadline = useTokenRiskHeadline()
-  const { verdict, features, fees, financialStats } = scan
+  const { verdict, fees, financialStats } = scan
+  const findings = getFindings(scan.features)
 
   const feeRows = [
     [t("Buy fee"), fees.buy],
@@ -111,34 +128,36 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
 
   return (
     <div className={cn("flex w-full flex-col gap-8 text-sm", className)}>
-      <div className="flex flex-col items-center gap-4 text-center">
+      <div className="flex flex-col items-center text-center">
         {verdict !== "unknown" && (
           <div
             className={cn(
-              "flex items-center gap-2 rounded-full px-4 py-1 text-xs",
+              "flex size-24 items-center justify-center rounded-full",
               TOKEN_RISK_COLOR_CLASSES[verdict]
             )}
           >
-            <TokenRiskVerdictIcon verdict={verdict} />
-            <span>{getLabel(verdict)}</span>
+            <TokenRiskVerdictIcon verdict={verdict} className="size-12" />
           </div>
         )}
-        <p className="text-body leading-paragraph">{getHeadline(verdict, symbol)}</p>
+        <div className="mt-6 font-bold text-body text-md">{getTitle(verdict)}</div>
+        <p className="mt-4 text-body-secondary leading-paragraph">{getHeadline(verdict, symbol)}</p>
       </div>
-      {features.length > 0 && (
-        <div className="scrollable scrollable-700 flex max-h-[24rem] flex-col gap-6 overflow-y-auto">
-          {groupFeaturesByType(features).map(([type, group]) => (
-            <div key={type} className="flex flex-col gap-2">
-              <div className="text-body-secondary text-xs uppercase">{type}</div>
-              <ul className="flex flex-col gap-2">
-                {group.map((feature) => (
-                  <li key={feature.id} className="text-body-secondary leading-paragraph">
-                    {feature.description}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+      {findings.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <div className="text-body">{t("Findings")}</div>
+          <ul className="scrollable scrollable-700 flex max-h-[24rem] list-disc flex-col gap-2 overflow-y-auto pl-8">
+            {findings.map((finding) => (
+              <li
+                key={finding.id}
+                className={cn(
+                  "text-body-secondary leading-paragraph",
+                  FINDING_MARKER_CLASSES[finding.type]
+                )}
+              >
+                {finding.description}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       {(feeRows.length > 0 || statRows.length > 0) && (
