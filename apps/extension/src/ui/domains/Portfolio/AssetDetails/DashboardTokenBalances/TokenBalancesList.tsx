@@ -6,6 +6,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
+import { TokenRiskPill } from "@ui/domains/TokenRisk/TokenRiskPill"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -80,6 +81,7 @@ export const TokenBalancesList = ({
                     {t("Testnet")}
                   </span>
                 )}
+                <TokenRiskPill tokenId={tokenId} />
               </div>
             </div>
             <div className="flex w-full items-center gap-2 overflow-hidden">

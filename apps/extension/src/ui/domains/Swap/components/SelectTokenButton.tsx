@@ -1,5 +1,6 @@
 import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
-import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
+import { AlertTriangleIcon, ChevronDownIcon, LoaderIcon, PlusIcon } from "@talismn/icons"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
@@ -7,17 +8,27 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
+import {
+  getTokenRiskRef,
+  type TokenRiskScan,
+  tokenRiskScanQueryOptions,
+  UNKNOWN_TOKEN_RISK,
+} from "@ui/domains/TokenRisk/tokenRiskScan"
+import { useIsTokenRiskScanEnabled } from "@ui/domains/TokenRisk/useTokenRiskScan"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
-import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import { filterAndSortTokensByTab, getTokenTabs } from "../swap-services/token-filtering"
 import { useRecentTokenIds } from "../swap-services/useRecentTokenIds"
 
 const PICKER_CONTAINER_ID = "swap-modal-token-picker"
+const RISK_SCAN_TIMEOUT_MS = 4000
 
 type Props = {
   allowedTokenIds: string[] | undefined // todo rename, these are tokenIds
@@ -85,8 +96,14 @@ const TokenPickerModalContent: FC<{
   const remoteConfig = useRemoteConfig()
 
   const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
+  const [riskWarning, setRiskWarning] = useState<{ tokenId: string; scan: TokenRiskScan } | null>(
+    null
+  )
+  const [scanningTokenId, setScanningTokenId] = useState<string | null>(null)
   const { safeTokens, acknowledgedTokenIds, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
+  const { scanToken } = useSwapTokenRiskScan()
+  const selectionRef = useRef<string | null>(null)
 
   const priorityTokens = useCallback(
     (token: Token) => {
@@ -119,26 +136,54 @@ const TokenPickerModalContent: FC<{
     [assetIdSet]
   )
 
-  const handleSelectTokenId = useCallback(
-    (tokenId: string, acceptWarning?: boolean) => {
-      if (!acceptWarning && !acknowledgedTokenIds.has(tokenId)) {
-        const token = tokensMap[tokenId]
-        const erc20Address =
-          token && "contractAddress" in token ? (token.contractAddress as string) : undefined
-        const networkId = token?.networkId
-        const isSafe = safeTokens.has(`${networkId}:${erc20Address?.toLowerCase()}`)
-        const shouldShowWarning = !isSafe && erc20Address !== undefined
-        if (shouldShowWarning) return setWarningTokenId(tokenId)
+  const showSafeListWarningIfNeeded = useCallback(
+    (tokenId: string) => {
+      const token = tokensMap[tokenId]
+      const erc20Address =
+        token && "contractAddress" in token ? (token.contractAddress as string) : undefined
+      const isSafe = safeTokens.has(`${token?.networkId}:${erc20Address?.toLowerCase()}`)
+      if (!isSafe && erc20Address !== undefined) {
+        setWarningTokenId(tokenId)
+        return true
       }
+      return false
+    },
+    [safeTokens, tokensMap]
+  )
 
+  const handleSelectTokenId = useCallback(
+    async (tokenId: string, acceptWarning?: boolean) => {
       if (acceptWarning) {
         acknowledgeToken(tokenId)
         setWarningTokenId(null)
+        setRiskWarning(null)
+        return onSelect(tokenId)
       }
-      onSelect(tokenId)
+      if (acknowledgedTokenIds.has(tokenId)) return onSelect(tokenId)
+      if (selectionRef.current) return
+
+      const token = tokensMap[tokenId]
+      selectionRef.current = tokenId
+      setScanningTokenId(tokenId)
+      const scan = await scanToken(token)
+      selectionRef.current = null
+      setScanningTokenId(null)
+
+      if (scan.verdict === "Benign") return onSelect(tokenId)
+      if (scan.verdict !== "unknown") return setRiskWarning({ tokenId, scan })
+      if (!showSafeListWarningIfNeeded(tokenId)) onSelect(tokenId)
     },
-    [safeTokens, tokensMap, onSelect, acknowledgedTokenIds, acknowledgeToken]
+    [
+      tokensMap,
+      onSelect,
+      acknowledgedTokenIds,
+      acknowledgeToken,
+      scanToken,
+      showSafeListWarningIfNeeded,
+    ]
   )
+
+  const riskWarningToken = useToken(riskWarning?.tokenId)
 
   return (
     <WizardModalDialog
@@ -162,10 +207,24 @@ const TokenPickerModalContent: FC<{
         onSelect={handleSelectTokenId}
         showEmptyBalances
       />
+      {scanningTokenId && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+          <LoaderIcon className="animate-spin-slow text-xl" />
+        </div>
+      )}
       <SelectTokenWarningDrawer
         tokenId={warningTokenId}
         onBack={() => setWarningTokenId(null)}
         onAccept={() => handleSelectTokenId(warningTokenId!, true)}
+      />
+      <TokenRiskDrawer
+        scan={riskWarning?.scan ?? null}
+        symbol={riskWarningToken?.symbol}
+        isOpen={!!riskWarning}
+        containerId={PICKER_CONTAINER_ID}
+        requireAcknowledgement={priorityMode !== "sell"}
+        onDismiss={() => setRiskWarning(null)}
+        onAccept={() => handleSelectTokenId(riskWarning!.tokenId, true)}
       />
     </WizardModalDialog>
   )
@@ -229,6 +288,36 @@ const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ classNa
   />
 )
 
+const useSwapTokenRiskScan = () => {
+  const queryClient = useQueryClient()
+  const isEnabled = useIsTokenRiskScanEnabled()
+  const { genericEvent } = useAnalytics()
+
+  const scanToken = useCallback(
+    async (token: Token | undefined): Promise<TokenRiskScan> => {
+      const ref = isEnabled ? getTokenRiskRef(token) : null
+      if (!ref) return UNKNOWN_TOKEN_RISK
+      let timer: ReturnType<typeof setTimeout> | undefined
+      const timeout = new Promise<TokenRiskScan>((resolve) => {
+        timer = setTimeout(() => resolve(UNKNOWN_TOKEN_RISK), RISK_SCAN_TIMEOUT_MS)
+      })
+      const scan = await Promise.race([
+        queryClient.fetchQuery(tokenRiskScanQueryOptions(ref)).catch(() => UNKNOWN_TOKEN_RISK),
+        timeout,
+      ]).finally(() => clearTimeout(timer))
+      genericEvent("token risk scan", {
+        surface: "swap-select",
+        verdict: scan.verdict,
+        chain: ref.chain,
+      })
+      return scan
+    },
+    [isEnabled, queryClient, genericEvent]
+  )
+
+  return { scanToken }
+}
+
 const useTokenFilterOptions = () => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
@@ -285,9 +374,6 @@ const SelectTokenWarningDrawer: FC<{
     if (tokenId) setSafeTokenId(tokenId)
   }, [tokenId])
 
-  const contractAddress =
-    token && "contractAddress" in token ? (token.contractAddress as string) : undefined
-
   return (
     <Drawer
       anchor="bottom"
@@ -311,28 +397,6 @@ const SelectTokenWarningDrawer: FC<{
                 "isn't traded on leading U.S. centralised exchanges or frequently swapped. Always do your own research before proceeding."
               )}
             </p>
-            <div className="flex h-28 w-full items-center gap-4 rounded-lg border border-grey-700 px-6">
-              <img
-                src="data:image/png;base64,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"
-                alt=""
-                className="h-16 w-auto shrink-0"
-              />
-              <div className="flex flex-col gap-3">
-                <p className="text-body text-sm leading-none!">{t("Token Audit Report")}</p>
-                <p className="text-body-secondary text-xs leading-none!">
-                  {t("Powered by GoPlus")}
-                </p>
-              </div>
-              <div className="grow"></div>
-              <a
-                href={`https://gopluslabs.io/token-security/${token.networkId}/${contractAddress}`}
-                target="_blank"
-                className="flex h-14 items-center rounded-full bg-primary-500/10 px-6 text-primary-500/80 text-sm hover:bg-primary-500/20 hover:text-primary"
-                rel="noopener"
-              >
-                <span>{t("View Report")}</span>
-              </a>
-            </div>
           </div>
           <div className="grid w-full grid-cols-2 gap-8">
             <Button onClick={onBack}>{t("Back")}</Button>
