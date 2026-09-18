@@ -2,6 +2,7 @@ import type { TokenId } from "@talismn/chaindata-provider"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
+import { IS_POPUP } from "@ui/util/constants"
 import type { FC } from "react"
 
 import {
@@ -37,7 +38,13 @@ export const TokenRiskPill: FC<{ tokenId: TokenId; className?: string }> = ({
         <TokenRiskVerdictIcon verdict={scan.verdict} />
         <span>{getLabel(scan.verdict)}</span>
       </button>
-      <TokenRiskDrawer scan={scan} symbol={token.symbol} isOpen={isOpen} onDismiss={close} />
+      <TokenRiskDrawer
+        scan={scan}
+        symbol={token.symbol}
+        isOpen={isOpen}
+        variant={IS_POPUP ? "drawer" : "modal"}
+        onDismiss={close}
+      />
     </>
   )
 }
