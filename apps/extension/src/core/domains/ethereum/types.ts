@@ -228,11 +228,16 @@ export type WATCH_ASSET_PREFIX = "eth-watchasset"
 export const WATCH_ASSET_PREFIX: WATCH_ASSET_PREFIX = "eth-watchasset"
 export type WatchAssetRequestId = BaseRequestId<WATCH_ASSET_PREFIX>
 export type WatchAssetRequestIdOnly = { id: WatchAssetRequestId }
+export type WatchAssetWarning =
+  | { type: "unverified-contract" }
+  | { type: "symbol-mismatch"; symbol: string | undefined; contractSymbol: string }
+  | { type: "missing-coingecko-id" }
+  | { type: "duplicate-symbol"; symbol: string | undefined }
 export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
   url: string
   request: WatchAssetBase
   token: EvmErc20Token
-  warnings: string[]
+  warnings: WatchAssetWarning[]
 }
 
 export type EthRequests = {

@@ -28,6 +28,7 @@ import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
+import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
 import { TokenRiskBanner } from "@ui/domains/TokenRisk/TokenRiskBanner"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -387,6 +388,8 @@ const AddCustomTokenForm = () => {
           )}
         />
       </div>
+
+      <GoPlusReportCard token={token} className="mt-8" />
 
       {token && (
         <TokenRiskBanner

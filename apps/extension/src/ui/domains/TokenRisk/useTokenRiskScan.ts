@@ -13,7 +13,7 @@ import {
   UNKNOWN_TOKEN_RISK,
 } from "./tokenRiskScan"
 
-type TokenRiskSurface = "swap-select" | "add-token" | "token-settings"
+type TokenRiskSurface = "swap-select" | "add-token" | "dapp-add-token" | "token-settings"
 
 export const useIsTokenRiskScanEnabled = () => {
   const withTokenScan = useFeatureFlag("BLOCKAID_TOKEN_SCAN")

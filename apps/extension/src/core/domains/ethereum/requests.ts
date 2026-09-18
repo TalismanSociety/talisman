@@ -7,6 +7,7 @@ import {
   WATCH_ASSET_PREFIX,
   type WatchAssetBase,
   type WatchAssetRequestIdOnly,
+  type WatchAssetWarning,
 } from "./types"
 
 class AddNetworkError extends Error {}
@@ -47,7 +48,7 @@ export const requestWatchAsset = async (
   url: string,
   request: WatchAssetBase,
   token: EvmErc20Token,
-  warnings: string[],
+  warnings: WatchAssetWarning[],
   port: Port
 ) => {
   const address = request.options.address

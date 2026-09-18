@@ -37,10 +37,16 @@ const mockAcknowledgedTokenVerdicts = new Map<string, string>()
 const mockGenericEvent = vi.fn()
 const mockUseFeatureFlag = vi.fn()
 const mockUseSettingValue = vi.fn()
+const mockSafeTokens = new Set<string>()
 
 vi.mock("react-i18next", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
   useTranslation: () => ({ t: (value: string) => value }),
+}))
+
+vi.mock("@talismn/icons", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@talismn/icons")>()),
+  ShieldOkIcon: () => null,
 }))
 
 vi.mock("@ui/util/gandalfFetch", () => ({
@@ -68,7 +74,7 @@ vi.mock("@ui/state/chaindata", () => ({
 
 vi.mock("../SwapProvider", () => ({
   useSwap: () => ({
-    safeTokens: new Set<string>(),
+    safeTokens: mockSafeTokens,
     acknowledgedTokenVerdicts: mockAcknowledgedTokenVerdicts,
     acknowledgeToken: mockAcknowledgeToken,
   }),
@@ -152,6 +158,9 @@ describe("SelectTokenButton token risk scan", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAcknowledgedTokenVerdicts.clear()
+    mockSafeTokens.clear()
+    mockSafeTokens.add(`1:${TOKENS[MALICIOUS_ID].contractAddress}`)
+    mockSafeTokens.add(`1:${TOKENS[BENIGN_ID].contractAddress}`)
     mockUseFeatureFlag.mockReturnValue(true)
     mockUseSettingValue.mockReturnValue(true)
     mockGandalfFetch.mockResolvedValue(Response.json({ results: scanResults }))
@@ -254,6 +263,7 @@ describe("SelectTokenButton token risk scan", () => {
 
   it("falls back to the safe list warning when scanning is disabled", async () => {
     mockUseSettingValue.mockReturnValue(false)
+    mockSafeTokens.clear()
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("BAD"))
@@ -261,5 +271,52 @@ describe("SelectTokenButton token risk scan", () => {
     expect(await screen.findByText("Warning")).toBeTruthy()
     expect(mockGandalfFetch).not.toHaveBeenCalled()
     expect(onSelectTokenId).not.toHaveBeenCalled()
+  })
+
+  it("shows the GoPlus and Blockaid reports for a benign token outside the safe list", async () => {
+    mockSafeTokens.clear()
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("GOOD"))
+
+    expect(await screen.findByText("Verified")).toBeTruthy()
+    expect(screen.getByRole("link", { name: "View Report" }).getAttribute("href")).toBe(
+      `https://gopluslabs.io/token-security/1/${TOKENS[BENIGN_ID].contractAddress}`
+    )
+    expect(onSelectTokenId).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByText("I Understand"))
+    expect(mockAcknowledgeToken).toHaveBeenCalledWith(BENIGN_ID, "Benign")
+    expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID)
+  })
+
+  it("requires acknowledging a malicious token outside the safe list before buying it", async () => {
+    mockSafeTokens.clear()
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    const proceed = screen.getByText("Proceed").closest("button") as HTMLButtonElement
+    expect(proceed.disabled).toBe(true)
+
+    fireEvent.click(screen.getByLabelText("I acknowledge the risks"))
+    fireEvent.click(proceed)
+
+    expect(mockAcknowledgeToken).toHaveBeenCalledWith(MALICIOUS_ID, "Malicious")
+    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
+  })
+
+  it("never blocks selling a malicious token outside the safe list", async () => {
+    mockSafeTokens.clear()
+    const onSelectTokenId = renderPicker("sell")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
+
+    fireEvent.click(screen.getByText("I Understand"))
+    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
   })
 })

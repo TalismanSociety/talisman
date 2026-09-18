@@ -8,14 +8,17 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
+import { TokenRiskCard } from "@ui/domains/TokenRisk/TokenRiskCard"
 import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
 import {
   getTokenRiskRef,
   type TokenRiskScan,
+  type TokenRiskVerdict,
   tokenRiskScanQueryOptions,
   UNKNOWN_TOKEN_RISK,
 } from "@ui/domains/TokenRisk/tokenRiskScan"
-import { useIsTokenRiskScanEnabled } from "@ui/domains/TokenRisk/useTokenRiskScan"
+import { useIsTokenRiskScanEnabled, useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -143,29 +146,31 @@ const TokenPickerModalContent: FC<{
     [assetIdSet]
   )
 
-  const showSafeListWarningIfNeeded = useCallback(
+  const isSafeListed = useCallback(
     (tokenId: string) => {
       const token = tokensMap[tokenId]
       const erc20Address =
         token && "contractAddress" in token ? (token.contractAddress as string) : undefined
-      const isSafe = safeTokens.has(`${token?.networkId}:${erc20Address?.toLowerCase()}`)
-      if (!isSafe && erc20Address !== undefined) {
-        setWarningTokenId(tokenId)
-        return true
-      }
-      return false
+      return (
+        erc20Address === undefined ||
+        safeTokens.has(`${token?.networkId}:${erc20Address.toLowerCase()}`)
+      )
     },
     [safeTokens, tokensMap]
   )
 
+  const acceptToken = useCallback(
+    (tokenId: string, verdict: TokenRiskVerdict) => {
+      acknowledgeToken(tokenId, verdict)
+      setWarningTokenId(null)
+      setRiskWarning(null)
+      onSelect(tokenId)
+    },
+    [acknowledgeToken, onSelect]
+  )
+
   const handleSelectTokenId = useCallback(
-    async (tokenId: string, acceptWarning?: boolean) => {
-      if (acceptWarning) {
-        acknowledgeToken(tokenId, riskWarning?.scan.verdict ?? "unknown")
-        setWarningTokenId(null)
-        setRiskWarning(null)
-        return onSelect(tokenId)
-      }
+    async (tokenId: string) => {
       if (selectionRef.current) return
 
       const selection = {}
@@ -176,20 +181,12 @@ const TokenPickerModalContent: FC<{
       selectionRef.current = null
       setScanningTokenId(null)
 
-      if (scan.verdict === "Benign") return onSelect(tokenId)
       if (acknowledgedTokenVerdicts.get(tokenId) === scan.verdict) return onSelect(tokenId)
-      if (scan.verdict !== "unknown") return setRiskWarning({ tokenId, scan })
-      if (!showSafeListWarningIfNeeded(tokenId)) onSelect(tokenId)
+      if (!isSafeListed(tokenId)) return setWarningTokenId(tokenId)
+      if (scan.verdict === "Benign" || scan.verdict === "unknown") return onSelect(tokenId)
+      setRiskWarning({ tokenId, scan })
     },
-    [
-      tokensMap,
-      onSelect,
-      acknowledgedTokenVerdicts,
-      acknowledgeToken,
-      riskWarning,
-      scanToken,
-      showSafeListWarningIfNeeded,
-    ]
+    [tokensMap, onSelect, acknowledgedTokenVerdicts, scanToken, isSafeListed]
   )
 
   const riskWarningToken = useToken(riskWarning?.tokenId)
@@ -223,8 +220,9 @@ const TokenPickerModalContent: FC<{
       )}
       <SelectTokenWarningDrawer
         tokenId={warningTokenId}
+        requireAcknowledgement={priorityMode !== "sell"}
         onBack={() => setWarningTokenId(null)}
-        onAccept={() => handleSelectTokenId(warningTokenId!, true)}
+        onAccept={acceptToken}
       />
       <TokenRiskDrawer
         scan={riskWarning?.scan ?? null}
@@ -233,7 +231,7 @@ const TokenPickerModalContent: FC<{
         containerId={PICKER_CONTAINER_ID}
         requireAcknowledgement={priorityMode !== "sell"}
         onDismiss={() => setRiskWarning(null)}
-        onAccept={() => handleSelectTokenId(riskWarning!.tokenId, true)}
+        onAccept={() => acceptToken(riskWarning!.tokenId, riskWarning!.scan.verdict)}
       />
     </WizardModalDialog>
   )
@@ -370,18 +368,24 @@ const useTokenFilterOptions = () => {
 
 const SelectTokenWarningDrawer: FC<{
   tokenId: string | null
+  requireAcknowledgement: boolean
   onBack: () => void
-  onAccept: (tokenId: string) => void
-}> = ({ tokenId, onBack, onAccept }) => {
+  onAccept: (tokenId: string, verdict: TokenRiskVerdict) => void
+}> = ({ tokenId, requireAcknowledgement, onBack, onAccept }) => {
   const { t } = useTranslation()
 
   // keep something to display while drawer closes
   const [safeTokenId, setSafeTokenId] = useState<string | null>(tokenId)
   const token = useToken(safeTokenId ?? undefined)
+  const { scan } = useTokenRiskScan(token)
+  const [isAcknowledged, setIsAcknowledged] = useState(false)
 
   useEffect(() => {
     if (tokenId) setSafeTokenId(tokenId)
+    else setIsAcknowledged(false)
   }, [tokenId])
+
+  const needsAcknowledgement = requireAcknowledgement && scan?.verdict === "Malicious"
 
   return (
     <Drawer
@@ -407,10 +411,23 @@ const SelectTokenWarningDrawer: FC<{
               )}
             </p>
           </div>
+          <div className="flex w-full flex-col gap-6">
+            <GoPlusReportCard token={token} />
+            <TokenRiskCard
+              scan={scan}
+              symbol={token.symbol}
+              isAcknowledged={isAcknowledged}
+              onAcknowledgedChange={requireAcknowledgement ? setIsAcknowledged : undefined}
+            />
+          </div>
           <div className="grid w-full grid-cols-2 gap-8">
             <Button onClick={onBack}>{t("Back")}</Button>
-            <Button primary onClick={() => onAccept(safeTokenId)}>
-              {t("I Understand")}
+            <Button
+              primary
+              disabled={needsAcknowledgement && !isAcknowledged}
+              onClick={() => onAccept(safeTokenId, scan?.verdict ?? "unknown")}
+            >
+              {needsAcknowledgement ? t("Proceed") : t("I Understand")}
             </Button>
           </div>
         </div>
