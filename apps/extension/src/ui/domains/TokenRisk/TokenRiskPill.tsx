@@ -42,7 +42,8 @@ export const TokenRiskPill: FC<{ tokenId: TokenId; className?: string }> = ({
         scan={scan}
         symbol={token.symbol}
         isOpen={isOpen}
-        variant={IS_POPUP ? "drawer" : "modal"}
+        variant="modal"
+        containerId={IS_POPUP ? "main" : undefined}
         onDismiss={close}
       />
     </>

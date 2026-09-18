@@ -48,7 +48,7 @@ export const TokenRiskDrawer: FC<TokenRiskDrawerProps> = ({
     <div
       className={cn(
         "flex flex-col items-center gap-8 bg-grey-800 p-12",
-        variant === "modal" ? "w-100 max-w-full rounded-xl" : "rounded-t-xl"
+        variant === "modal" ? "w-full rounded-xl" : "rounded-t-xl"
       )}
     >
       <TokenRiskDetails scan={displayed.scan} symbol={displayed.symbol} />
@@ -75,7 +75,12 @@ export const TokenRiskDrawer: FC<TokenRiskDrawerProps> = ({
   )
 
   return variant === "modal" ? (
-    <Modal isOpen={isOpen} onDismiss={onDismiss} containerId={containerId}>
+    <Modal
+      className="w-100 max-w-[calc(100%-3.2rem)]"
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+      containerId={containerId}
+    >
       {content}
     </Modal>
   ) : (
