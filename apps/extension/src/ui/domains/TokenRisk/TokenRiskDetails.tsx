@@ -64,15 +64,25 @@ const useTokenRiskHeadline = () => {
   }
 }
 
+const FEATURE_TYPE_ORDER = ["Malicious", "Warning", "Info", "Benign"]
+
+const getFeatureTypeRank = (type: string) => {
+  const rank = FEATURE_TYPE_ORDER.indexOf(type)
+  return rank === -1 ? FEATURE_TYPE_ORDER.length : rank
+}
+
 const groupFeaturesByType = (features: TokenRiskFeature[]) => {
   const groups = new Map<string, TokenRiskFeature[]>()
   for (const feature of features)
     groups.set(feature.type, [...(groups.get(feature.type) ?? []), feature])
-  return [...groups.entries()]
+  return [...groups.entries()].sort(
+    ([typeA], [typeB]) => getFeatureTypeRank(typeA) - getFeatureTypeRank(typeB)
+  )
 }
 
 const formatPercent = (value: number) =>
-  `${(value * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
+  `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
+const formatFraction = (value: number) => formatPercent(value * 100)
 const formatUsd = (value: number) =>
   value.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 })
 const formatCount = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 0 })
@@ -134,7 +144,7 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
       {(feeRows.length > 0 || statRows.length > 0) && (
         <div className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-2 text-body-secondary">
           {feeRows.map(([label, value]) => (
-            <TokenRiskRow key={label} label={label} value={formatPercent(value)} />
+            <TokenRiskRow key={label} label={label} value={formatFraction(value)} />
           ))}
           {statRows.map(([label, value, format]) => (
             <TokenRiskRow key={label} label={label} value={format(value)} />
