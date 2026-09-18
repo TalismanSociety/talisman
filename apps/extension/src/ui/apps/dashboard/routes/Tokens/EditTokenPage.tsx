@@ -31,6 +31,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { TokenRiskPill } from "@ui/domains/TokenRisk/TokenRiskPill"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -73,7 +74,10 @@ export const EditTokenPage = () => {
               tokenSymbol: token.symbol,
               networkName: network.name,
             })}
-            <TokenTypePill type={token.type} />
+            <div className="flex shrink-0 items-center gap-2">
+              <TokenRiskPill tokenId={token.id} />
+              <TokenTypePill type={token.type} />
+            </div>
           </div>
         }
         text={t(
