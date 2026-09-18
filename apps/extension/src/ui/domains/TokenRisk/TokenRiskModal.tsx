@@ -21,11 +21,13 @@ export const TokenRiskModal: FC<{
       <PopupSizeModalContainer id="token-risk-modal">
         <WizardModalDialog
           className="size-full border-none"
-          contentClassName="flex flex-col"
+          contentClassName="flex flex-col overflow-hidden"
           title={t("Token risk scan")}
           onCloseClick={onDismiss}
         >
-          <TokenRiskDetails className="grow" scan={scan} symbol={symbol} />
+          <div className="scrollable scrollable-800 -mr-8 grow overflow-y-auto [scrollbar-gutter:stable]">
+            <TokenRiskDetails className="[&_ul]:max-h-none" scan={scan} symbol={symbol} />
+          </div>
           <Button className="mt-8 w-full shrink-0" onClick={onDismiss}>
             {t("Close")}
           </Button>
