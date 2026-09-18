@@ -100,10 +100,17 @@ const TokenPickerModalContent: FC<{
     null
   )
   const [scanningTokenId, setScanningTokenId] = useState<string | null>(null)
-  const { safeTokens, acknowledgedTokenIds, acknowledgeToken } = useSwap()
+  const { safeTokens, acknowledgedTokenVerdicts, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
   const { scanToken } = useSwapTokenRiskScan()
-  const selectionRef = useRef<string | null>(null)
+  const selectionRef = useRef<object | null>(null)
+
+  useEffect(
+    () => () => {
+      selectionRef.current = null
+    },
+    []
+  )
 
   const priorityTokens = useCallback(
     (token: Token) => {
@@ -154,30 +161,32 @@ const TokenPickerModalContent: FC<{
   const handleSelectTokenId = useCallback(
     async (tokenId: string, acceptWarning?: boolean) => {
       if (acceptWarning) {
-        acknowledgeToken(tokenId)
+        acknowledgeToken(tokenId, riskWarning?.scan.verdict ?? "unknown")
         setWarningTokenId(null)
         setRiskWarning(null)
         return onSelect(tokenId)
       }
-      if (acknowledgedTokenIds.has(tokenId)) return onSelect(tokenId)
       if (selectionRef.current) return
 
-      const token = tokensMap[tokenId]
-      selectionRef.current = tokenId
+      const selection = {}
+      selectionRef.current = selection
       setScanningTokenId(tokenId)
-      const scan = await scanToken(token)
+      const scan = await scanToken(tokensMap[tokenId])
+      if (selectionRef.current !== selection) return
       selectionRef.current = null
       setScanningTokenId(null)
 
       if (scan.verdict === "Benign") return onSelect(tokenId)
+      if (acknowledgedTokenVerdicts.get(tokenId) === scan.verdict) return onSelect(tokenId)
       if (scan.verdict !== "unknown") return setRiskWarning({ tokenId, scan })
       if (!showSafeListWarningIfNeeded(tokenId)) onSelect(tokenId)
     },
     [
       tokensMap,
       onSelect,
-      acknowledgedTokenIds,
+      acknowledgedTokenVerdicts,
       acknowledgeToken,
+      riskWarning,
       scanToken,
       showSafeListWarningIfNeeded,
     ]

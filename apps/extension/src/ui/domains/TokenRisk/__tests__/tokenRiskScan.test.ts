@@ -7,7 +7,13 @@ vi.mock("@ui/util/gandalfFetch", () => ({
   gandalfFetch: (...args: unknown[]) => mockGandalfFetch(...args),
 }))
 
-import { fetchTokenRiskScan, getTokenRiskRef, UNKNOWN_TOKEN_RISK } from "../tokenRiskScan"
+import {
+  fetchTokenRiskScan,
+  getTokenRiskRef,
+  type TokenRiskScan,
+  tokenRiskScanQueryOptions,
+  UNKNOWN_TOKEN_RISK,
+} from "../tokenRiskScan"
 
 const ERC20 = {
   id: "1:evm-erc20:0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -111,10 +117,26 @@ describe("fetchTokenRiskScan", () => {
     expect(sentTokens(1)).toHaveLength(1)
   })
 
-  it.each(["miss", "error", "unsupported"])("treats a %s status as unknown", async (status) => {
+  it.each(["error", "unsupported"])("treats a %s status as unknown", async (status) => {
     const ref = getTokenRiskRef(ERC20)!
     respond({ [`ethereum:${ref.address}`]: { status, cachedAt: "", ttlSeconds: 60 } })
     expect(await fetchTokenRiskScan(ref)).toBe(UNKNOWN_TOKEN_RISK)
+  })
+
+  it("treats a miss status as unknown with a pending scan", async () => {
+    const ref = getTokenRiskRef(ERC20)!
+    respond({ [`ethereum:${ref.address}`]: { status: "miss", cachedAt: "", ttlSeconds: 60 } })
+    expect(await fetchTokenRiskScan(ref)).toEqual({ ...UNKNOWN_TOKEN_RISK, isScanPending: true })
+  })
+
+  it("keeps unknown results fresh for a shorter time than verdicts", () => {
+    const { staleTime } = tokenRiskScanQueryOptions(getTokenRiskRef(ERC20))
+    const getStaleTime = (data: TokenRiskScan) =>
+      typeof staleTime === "function" ? staleTime({ state: { data } } as never) : staleTime
+
+    expect(getStaleTime(UNKNOWN_TOKEN_RISK)).toBeLessThan(
+      getStaleTime({ ...UNKNOWN_TOKEN_RISK, verdict: "Malicious" }) as number
+    )
   })
 
   it("treats a missing result as unknown", async () => {

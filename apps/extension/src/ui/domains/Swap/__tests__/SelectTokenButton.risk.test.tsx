@@ -33,6 +33,7 @@ const TOKENS = {
 
 const mockGandalfFetch = vi.fn()
 const mockAcknowledgeToken = vi.fn()
+const mockAcknowledgedTokenVerdicts = new Map<string, string>()
 const mockGenericEvent = vi.fn()
 const mockUseFeatureFlag = vi.fn()
 const mockUseSettingValue = vi.fn()
@@ -68,7 +69,7 @@ vi.mock("@ui/state/chaindata", () => ({
 vi.mock("../SwapProvider", () => ({
   useSwap: () => ({
     safeTokens: new Set<string>(),
-    acknowledgedTokenIds: new Set<string>(),
+    acknowledgedTokenVerdicts: mockAcknowledgedTokenVerdicts,
     acknowledgeToken: mockAcknowledgeToken,
   }),
 }))
@@ -86,7 +87,20 @@ vi.mock("@ui/components/Drawer", () => ({
 }))
 
 vi.mock("@ui/components/WizardModalDialog", () => ({
-  WizardModalDialog: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  WizardModalDialog: ({
+    children,
+    onBackClick,
+  }: {
+    children: ReactNode
+    onBackClick: () => void
+  }) => (
+    <div>
+      <button type="button" onClick={onBackClick}>
+        Dismiss picker
+      </button>
+      {children}
+    </div>
+  ),
 }))
 
 vi.mock("@ui/domains/Asset/TokenLogo", () => ({ TokenLogo: () => null }))
@@ -137,6 +151,7 @@ const renderPicker = (priorityMode: "buy" | "sell") => {
 describe("SelectTokenButton token risk scan", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAcknowledgedTokenVerdicts.clear()
     mockUseFeatureFlag.mockReturnValue(true)
     mockUseSettingValue.mockReturnValue(true)
     mockGandalfFetch.mockResolvedValue(Response.json({ results: scanResults }))
@@ -170,7 +185,7 @@ describe("SelectTokenButton token risk scan", () => {
     expect(proceed.disabled).toBe(false)
 
     fireEvent.click(proceed)
-    expect(mockAcknowledgeToken).toHaveBeenCalledWith(MALICIOUS_ID)
+    expect(mockAcknowledgeToken).toHaveBeenCalledWith(MALICIOUS_ID, "Malicious")
     expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
   })
 
@@ -197,6 +212,44 @@ describe("SelectTokenButton token risk scan", () => {
 
     fireEvent.click(screen.getByText("I Understand"))
     expect(onSelectTokenId).toHaveBeenCalledWith(UNCOVERED_ID)
+  })
+
+  it("skips the warning for a token acknowledged with the same verdict", async () => {
+    mockAcknowledgedTokenVerdicts.set(MALICIOUS_ID, "Malicious")
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    await waitFor(() => expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID))
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("warns about a malicious token that was only acknowledged as unknown", async () => {
+    mockAcknowledgedTokenVerdicts.set(MALICIOUS_ID, "unknown")
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
+    expect(onSelectTokenId).not.toHaveBeenCalled()
+  })
+
+  it("drops a pending selection when the picker is dismissed", async () => {
+    let resolveFetch: (response: Response) => void = () => {}
+    mockGandalfFetch.mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve
+      })
+    )
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("GOOD"))
+    await waitFor(() => expect(mockGandalfFetch).toHaveBeenCalled())
+    fireEvent.click(screen.getByText("Dismiss picker"))
+    resolveFetch(Response.json({ results: scanResults }))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    expect(onSelectTokenId).not.toHaveBeenCalled()
   })
 
   it("falls back to the safe list warning when scanning is disabled", async () => {

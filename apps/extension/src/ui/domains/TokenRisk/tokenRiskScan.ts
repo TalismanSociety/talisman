@@ -10,6 +10,9 @@ import { BLOCKAID_CHAIN_BY_NETWORK_ID } from "./blockaidChains"
 const MAX_TOKENS_PER_REQUEST = 100
 const REQUEST_TIMEOUT_MS = 10_000
 const STALE_TIME_MS = 5 * 60_000
+const UNKNOWN_STALE_TIME_MS = 10_000
+const PENDING_REFETCH_INTERVAL_MS = 8_000
+const MAX_PENDING_REFETCHES = 3
 const GC_TIME_MS = 30 * 60_000
 
 export type TokenRiskVerdict = "Benign" | "Warning" | "Malicious" | "Spam" | "unknown"
@@ -26,6 +29,7 @@ export type TokenRiskScan = {
   features: TokenRiskFeature[]
   fees: TokenRiskFees
   financialStats: TokenRiskFinancialStats
+  isScanPending?: boolean
 }
 
 export const UNKNOWN_TOKEN_RISK: TokenRiskScan = {
@@ -73,6 +77,7 @@ export const getTokenRiskRef = (token: Token | null | undefined): TokenRiskRef |
 const getTokenRiskKey = ({ chain, address }: TokenRiskRef) => `${chain}:${address}`
 
 const toTokenRiskScan = (result: ScanResult | undefined): TokenRiskScan => {
+  if (result?.status === "miss") return { ...UNKNOWN_TOKEN_RISK, isScanPending: true }
   if (result?.status !== "hit" || !result.resultType) return UNKNOWN_TOKEN_RISK
   return {
     verdict: result.resultType,
@@ -136,7 +141,12 @@ export const tokenRiskScanQueryOptions = (ref: TokenRiskRef | null) =>
     queryKey: ["token-risk-scan", ref?.chain, ref?.address],
     queryFn: () => (ref ? fetchTokenRiskScan(ref) : UNKNOWN_TOKEN_RISK),
     enabled: !!ref,
-    staleTime: STALE_TIME_MS,
+    staleTime: ({ state }) =>
+      state.data?.verdict === "unknown" ? UNKNOWN_STALE_TIME_MS : STALE_TIME_MS,
+    refetchInterval: ({ state }) =>
+      state.data?.isScanPending && state.dataUpdateCount <= MAX_PENDING_REFETCHES
+        ? PENDING_REFETCH_INTERVAL_MS
+        : false,
     gcTime: GC_TIME_MS,
     retry: false,
   })
