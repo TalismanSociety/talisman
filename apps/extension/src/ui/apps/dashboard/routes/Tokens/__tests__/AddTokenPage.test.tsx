@@ -9,6 +9,7 @@ const EXISTING_TOKEN_ID = `8453:evm-erc20:${USDC_ADDRESS}`
 const mockGetToken = vi.fn()
 const mockGetUniswapV2TokenInfo = vi.fn()
 const mockGetErc20TokenInfo = vi.fn()
+const mockUseTokenRiskScan = vi.fn()
 
 vi.mock("@ui/apps/dashboard/layout", () => ({
   DashboardLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -33,6 +34,10 @@ vi.mock("@ui/domains/Networks/NetworkCombo", () => ({
 }))
 
 vi.mock("@ui/domains/Asset/AssetLogo", () => ({ AssetLogo: () => null }))
+
+vi.mock("@ui/domains/TokenRisk/useTokenRiskScan", () => ({
+  useTokenRiskScan: (...args: unknown[]) => mockUseTokenRiskScan(...args),
+}))
 
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({ getExtensionPublicClient: () => ({}) }))
 
@@ -59,6 +64,7 @@ describe("AddTokenPage", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetToken.mockReturnValue(null)
+    mockUseTokenRiskScan.mockReturnValue({ ref: null, scan: undefined, isPending: false })
     mockGetUniswapV2TokenInfo.mockRejectedValue(new Error("not a uniswap v2 pair"))
     mockGetErc20TokenInfo.mockResolvedValue({
       id: EXISTING_TOKEN_ID,
@@ -111,5 +117,49 @@ describe("AddTokenPage", () => {
 
     for (const placeholder of ["TKN", "18", "(optional)", "My Custom Token"])
       expect((screen.getByPlaceholderText(placeholder) as HTMLInputElement).disabled).toBe(false)
+  })
+
+  test("blocks saving a malicious token until the risks are acknowledged", async () => {
+    mockUseTokenRiskScan.mockReturnValue({
+      ref: { chain: "base", address: USDC_ADDRESS },
+      scan: {
+        verdict: "Malicious",
+        features: [{ id: "HONEYPOT", type: "Malicious", description: "Cannot be sold" }],
+        fees: {},
+        financialStats: {},
+      },
+      isPending: false,
+    })
+
+    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await screen.findByDisplayValue("USDC")
+
+    expect(await screen.findByText("Cannot be sold")).toBeTruthy()
+    const save = screen.getByText("Save").closest("button") as HTMLButtonElement
+    expect(save.disabled).toBe(true)
+
+    fireEvent.click(screen.getByLabelText("I acknowledge the risks"))
+
+    expect(save.disabled).toBe(false)
+  })
+
+  test("does not block saving a token with warnings", async () => {
+    mockUseTokenRiskScan.mockReturnValue({
+      ref: { chain: "base", address: USDC_ADDRESS },
+      scan: {
+        verdict: "Warning",
+        features: [{ id: "HIGH_TRADE_VOLUME", type: "Warning", description: "Unusual volume" }],
+        fees: {},
+        financialStats: {},
+      },
+      isPending: false,
+    })
+
+    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await screen.findByDisplayValue("USDC")
+
+    expect(await screen.findByText("Unusual volume")).toBeTruthy()
+    expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
+    expect((screen.getByText("Save").closest("button") as HTMLButtonElement).disabled).toBe(false)
   })
 })

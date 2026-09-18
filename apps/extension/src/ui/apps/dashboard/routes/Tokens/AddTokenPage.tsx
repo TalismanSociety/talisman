@@ -28,10 +28,13 @@ import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
+import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
+import { TokenRiskBanner } from "@ui/domains/TokenRisk/TokenRiskBanner"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
 import { range } from "lodash-es"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
@@ -138,6 +141,13 @@ const AddCustomTokenForm = () => {
   // makes `token` the gate for both editing and validating them: validating them earlier would
   // display "expected string, received undefined" errors next to the contract address error.
   const hasTokenInfo = useStore(form.store, (s) => !!s.values.token)
+
+  const token = useStore(form.store, (s) => s.values.token as Token | undefined)
+  const symbol = useStore(form.store, (s) => s.values.symbol)
+  const { scan, isPending: isScanPending } = useTokenRiskScan(token, "add-token")
+  const [acknowledgedTokenId, setAcknowledgedTokenId] = useState<string | null>(null)
+  const isRiskAcknowledged = !!token && acknowledgedTokenId === token.id
+  const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
 
   // Fields populated from the token info fetch. They must all be cleared whenever the contract
   // address stops resolving to a new token, else they keep displaying the previous token's info.
@@ -379,6 +389,20 @@ const AddCustomTokenForm = () => {
         />
       </div>
 
+      <GoPlusReportCard token={token} className="mt-8" />
+
+      {token && (
+        <TokenRiskBanner
+          scan={scan}
+          symbol={symbol || token.symbol}
+          isAcknowledged={isRiskAcknowledged}
+          onAcknowledgedChange={(isAcknowledged) =>
+            setAcknowledgedTokenId(isAcknowledged ? token.id : null)
+          }
+          className="mt-8"
+        />
+      )}
+
       <div className="flex justify-end gap-8 py-8">
         <Button className="h-24 w-[15rem] text-base" type="button" onClick={() => navigate(-1)}>
           {t("Cancel")}
@@ -397,8 +421,8 @@ const AddCustomTokenForm = () => {
               icon={SaveIcon}
               className="h-24 w-[15rem] text-base"
               type="submit"
-              processing={isSubmitting || isValidating}
-              disabled={!canSubmit && !isSubmitting && !isValidating}
+              processing={isSubmitting || isValidating || isScanPending}
+              disabled={(!canSubmit && !isSubmitting && !isValidating) || isRiskBlocking}
             >
               {t("Save")}
             </Button>

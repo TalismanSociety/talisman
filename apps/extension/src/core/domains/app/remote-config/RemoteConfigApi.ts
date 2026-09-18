@@ -328,6 +328,8 @@ export class RemoteConfigApi<
             SWAPS_FOREVERMONEY_TAO_BRIDGE: boolean;
             /** Enables dapp scanning via Blockaid */
             BLOCKAID_DAPP_SCAN_V2: boolean;
+            /** Enables token scanning via Blockaid */
+            BLOCKAID_TOKEN_SCAN: boolean;
           };
           /** CoinGecko price data proxy configuration */
           coingecko: {

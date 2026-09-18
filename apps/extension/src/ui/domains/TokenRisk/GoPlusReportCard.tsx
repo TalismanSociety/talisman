@@ -1,0 +1,40 @@
+import type { Token } from "@talismn/chaindata-provider"
+import goPlusLogo from "@ui/theme/images/goplus-logo.png"
+import { cn } from "@ui/util/cn"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import { getGoPlusReportUrl } from "./goPlusReport"
+import { TOKEN_REPORT_BUTTON_CLASS_NAME, TokenReportCard } from "./TokenReportCard"
+
+export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?: string }> = ({
+  token,
+  className,
+}) => {
+  const { t } = useTranslation()
+  const reportUrl = getGoPlusReportUrl(token)
+
+  if (!reportUrl) return null
+
+  return (
+    <TokenReportCard
+      className={className}
+      logo={<img src={goPlusLogo} alt="" className="h-16 w-auto" />}
+      title={t("Token Audit Report")}
+      subtitle={t("Powered by GoPlus")}
+      action={
+        <a
+          href={reportUrl}
+          target="_blank"
+          className={cn(
+            TOKEN_REPORT_BUTTON_CLASS_NAME,
+            "bg-primary-500/10 text-primary-500/80 hover:bg-primary-500/20 hover:text-primary"
+          )}
+          rel="noopener"
+        >
+          <span>{t("View Report")}</span>
+        </a>
+      }
+    />
+  )
+}

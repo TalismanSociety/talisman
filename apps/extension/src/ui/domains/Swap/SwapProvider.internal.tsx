@@ -1,5 +1,6 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
+import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
 import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -88,11 +89,12 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
 
   // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
-  const [acknowledgedTokenIds, setAcknowledgedTokenIds] = useState<Set<string>>(
-    () => new Set<string>()
-  )
+  const [acknowledgedTokenVerdicts, setAcknowledgedTokenVerdicts] = useState<
+    Map<string, TokenRiskVerdict>
+  >(() => new Map())
   const acknowledgeToken = useCallback(
-    (tokenId: string) => setAcknowledgedTokenIds((prev) => new Set(prev).add(tokenId)),
+    (tokenId: string, verdict: TokenRiskVerdict) =>
+      setAcknowledgedTokenVerdicts((prev) => new Map(prev).set(tokenId, verdict)),
     []
   )
 
@@ -106,7 +108,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     setQuoteSorting("bestRate")
     setFromAddressRaw(null)
     setApprovalCounter(0)
-    setAcknowledgedTokenIds(new Set())
+    setAcknowledgedTokenVerdicts(new Map())
     resetFromAddressManuallySet()
     setSubmittedTxHash(null)
     setSubmittedNetworkId(null)
@@ -246,7 +248,7 @@ export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
     fromSupportMap,
     toSupportMap,
     safeTokens,
-    acknowledgedTokenIds,
+    acknowledgedTokenVerdicts,
     acknowledgeToken,
     isLoadingFromAssets,
     isLoadingToAssets,
