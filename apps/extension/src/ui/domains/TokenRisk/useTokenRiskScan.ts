@@ -13,7 +13,7 @@ import {
   UNKNOWN_TOKEN_RISK,
 } from "./tokenRiskScan"
 
-type TokenRiskSurface = "swap-select" | "add-token" | "token-details"
+type TokenRiskSurface = "swap-select" | "add-token" | "token-settings"
 
 export const useIsTokenRiskScanEnabled = () => {
   const withTokenScan = useFeatureFlag("BLOCKAID_TOKEN_SCAN")
@@ -39,7 +39,7 @@ export const useTokenRiskScan = (token: Token | null | undefined, surface?: Toke
   const { data, isPending } = useQuery(tokenRiskScanQueryOptions(ref))
 
   const scan = ref ? data : UNKNOWN_TOKEN_RISK
-  useTokenRiskScanAnalytics(surface ?? "token-details", surface ? ref : null, scan)
+  useTokenRiskScanAnalytics(surface ?? "token-settings", surface ? ref : null, scan)
 
   return { ref, scan, isPending: !!ref && isPending }
 }

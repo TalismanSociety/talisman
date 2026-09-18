@@ -75,10 +75,7 @@ export const EditTokenPage = () => {
               networkName: network.name,
             })}
             <div className="flex shrink-0 items-center gap-2">
-              <TokenRiskPill
-                tokenId={token.id}
-                className="ml-0 rounded-xs border border-current px-2 font-normal uppercase"
-              />
+              <TokenRiskPill tokenId={token.id} />
               <TokenTypePill type={token.type} />
             </div>
           </div>

@@ -17,7 +17,7 @@ export const TokenRiskPill: FC<{ tokenId: TokenId; className?: string }> = ({
   className,
 }) => {
   const token = useToken(tokenId)
-  const { scan } = useTokenRiskScan(token, "token-details")
+  const { scan } = useTokenRiskScan(token, "token-settings")
   const getLabel = useTokenRiskVerdictLabel()
   const { isOpen, open, close } = useOpenClose()
 
@@ -29,7 +29,7 @@ export const TokenRiskPill: FC<{ tokenId: TokenId; className?: string }> = ({
         type="button"
         onClick={open}
         className={cn(
-          "ml-3 inline-flex items-center gap-1 rounded px-3 py-1 align-middle font-light text-tiny hover:opacity-80",
+          "inline-flex items-center gap-1 rounded-xs border border-current px-2 py-1 text-tiny uppercase hover:opacity-80",
           TOKEN_RISK_COLOR_CLASSES[scan.verdict],
           className
         )}
