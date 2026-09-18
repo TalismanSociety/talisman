@@ -326,6 +326,8 @@ export class RemoteConfigApi<
             QUICK_UNLOCK: boolean;
             /** Enables the ForeverMoney TAO bridge */
             SWAPS_FOREVERMONEY_TAO_BRIDGE: boolean;
+            /** Enables dapp scanning via Blockaid */
+            BLOCKAID_DAPP_SCAN_V2: boolean;
           };
           /** CoinGecko price data proxy configuration */
           coingecko: {

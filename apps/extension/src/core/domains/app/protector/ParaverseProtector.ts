@@ -370,6 +370,13 @@ export async function isPhishingSite(url: string): Promise<boolean> {
   return false
 }
 
+export function isExemptHost(host: string): boolean {
+  return (
+    talismanAllowHosts.has(host) ||
+    [...talismanAllowUrls].some((url) => new URL(url).hostname === host)
+  )
+}
+
 /** Whitelist a URL so it is no longer flagged as phishing for this session. */
 export function addException(url: string): boolean {
   const { val: host, ok } = getHostName(url)

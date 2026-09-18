@@ -1,1 +1,2 @@
-export { addException, isPhishingSite } from "./ParaverseProtector"
+export { addException } from "./ParaverseProtector"
+export { getPhishingSource, type PhishingSource } from "./phishingSource"

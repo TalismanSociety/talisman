@@ -4,6 +4,7 @@ import {
   AlertCircleIcon,
   ChevronRightIcon,
   ClockIcon,
+  GlobeIcon,
   InfoIcon,
   LockIcon,
   ShieldZapIcon,
@@ -28,9 +29,11 @@ const Content = () => {
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const [autoRiskScan, setAutoRiskScan] = useSetting("autoRiskScan")
+  const [autoDappScan, setAutoDappScan] = useSetting("autoDappScan")
   const navigate = useNavigate()
 
   const withRiskAnalysis = useFeatureFlag("RISK_ANALYSIS_V2")
+  const withDappScan = useFeatureFlag("BLOCKAID_DAPP_SCAN_V2")
 
   const allBackedUp = useMnemonicsAllBackedUp()
 
@@ -96,6 +99,27 @@ const Content = () => {
             }
           >
             <Toggle checked={autoRiskScan} onChange={(e) => setAutoRiskScan(e.target.checked)} />
+          </Setting>
+        )}
+        {withDappScan && (
+          <Setting
+            iconLeft={GlobeIcon}
+            title={t("Malicious site protection")}
+            subtitle={
+              <Trans t={t}>
+                Block sites identified as malicious by{" "}
+                <a
+                  className="text-grey-200 hover:text-body"
+                  href="https://blockaid.io"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Blockaid
+                </a>
+              </Trans>
+            }
+          >
+            <Toggle checked={autoDappScan} onChange={(e) => setAutoDappScan(e.target.checked)} />
           </Setting>
         )}
         {!IS_FIREFOX && (

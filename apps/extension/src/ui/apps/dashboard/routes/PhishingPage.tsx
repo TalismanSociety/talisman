@@ -5,6 +5,7 @@ import { Button } from "@ui/components/Button"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 
 type PhishingPageProps = {
   url: string
@@ -12,6 +13,8 @@ type PhishingPageProps = {
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const isBlockaid = searchParams.get("source") === "blockaid"
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
     window.location.replace(url)
@@ -41,10 +44,14 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
                 </Trans>
               </div>
               <div className="leading-10">
-                <Trans t={t}>
-                  This URL has been reported as a known phishing site on a community maintained
-                  list.
-                </Trans>
+                {isBlockaid ? (
+                  t("Blockaid has flagged this website as malicious.")
+                ) : (
+                  <Trans t={t}>
+                    This URL has been reported as a known phishing site on a community maintained
+                    list.
+                  </Trans>
+                )}
               </div>
               <div className="w-full">
                 <a href={TALISMAN_WEB_APP_URL}>
