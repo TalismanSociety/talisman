@@ -3,6 +3,7 @@ import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BlockaidLogo } from "./BlockaidLogo"
 import type { TokenRiskFeature, TokenRiskScan, TokenRiskVerdict } from "./tokenRiskScan"
 
 export const TOKEN_RISK_COLOR_CLASSES: Record<Exclude<TokenRiskVerdict, "unknown">, string> = {
@@ -146,7 +147,17 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
         )}
         <div className="mt-6 font-bold text-body text-md">{getTitle(verdict)}</div>
         <p className="mt-4 text-body-secondary leading-paragraph">{getHeadline(verdict, symbol)}</p>
+        <div className="mt-8 flex items-center gap-3 rounded bg-grey-800 px-6 py-2 text-body-secondary text-xs leading-paragraph">
+          <div>{t("Powered by")}</div>
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-full bg-black">
+              <BlockaidLogo className="h-4 w-auto text-white" />
+            </div>
+            <div>Blockaid</div>
+          </div>
+        </div>
       </div>
+      <hr className="border-body-disabled" />
       {findings.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="text-body">{t("Findings")}</div>
@@ -183,7 +194,6 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
           ))}
         </div>
       )}
-      <div className="text-center text-body-disabled text-xs">{t("Powered by Blockaid")}</div>
     </div>
   )
 }
