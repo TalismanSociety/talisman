@@ -31,7 +31,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { TokenRiskPill } from "@ui/domains/TokenRisk/TokenRiskPill"
+import { GoPlusReportLink } from "@ui/domains/TokenRisk/GoPlusReportCard"
+import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
+import { TokenRiskVerdictPill } from "@ui/domains/TokenRisk/TokenRiskPill"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -74,10 +77,7 @@ export const EditTokenPage = () => {
               tokenSymbol: token.symbol,
               networkName: network.name,
             })}
-            <div className="flex shrink-0 items-center gap-2">
-              <TokenRiskPill tokenId={token.id} />
-              <TokenTypePill type={token.type} />
-            </div>
+            <TokenTypePill type={token.type} />
           </div>
         }
         text={t(
@@ -92,6 +92,8 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
+  const goPlusReportUrl = getGoPlusReportUrl(token)
+  const { scan: riskScan } = useTokenRiskScan(token, "token-settings")
   const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()
 
@@ -338,7 +340,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             />
           )}
         </div>
-        <div>
+        <div className="grid grid-cols-3 gap-x-12">
           <FormFieldContainer label={t("Display balances")}>
             <div className="flex gap-3">
               <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
@@ -360,6 +362,20 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               )}
             </div>
           </FormFieldContainer>
+          {goPlusReportUrl && (
+            <FormFieldContainer label={t("GoPlus token analysis")}>
+              <div className="flex">
+                <GoPlusReportLink reportUrl={goPlusReportUrl} />
+              </div>
+            </FormFieldContainer>
+          )}
+          {riskScan && riskScan.verdict !== "unknown" && (
+            <FormFieldContainer label={t("Blockaid token scan")}>
+              <div className="flex">
+                <TokenRiskVerdictPill scan={riskScan} symbol={token.symbol} />
+              </div>
+            </FormFieldContainer>
+          )}
         </div>
         <div className="flex justify-end gap-8 py-8">
           {isTokenCustom(token) && (

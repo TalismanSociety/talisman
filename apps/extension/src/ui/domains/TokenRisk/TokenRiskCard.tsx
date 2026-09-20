@@ -36,7 +36,7 @@ export const TokenRiskCard: FC<TokenRiskCardProps> = ({
         subtitle={t("Powered by Blockaid")}
         action={
           scan ? (
-            <TokenRiskVerdictPill scan={scan} symbol={symbol} variant="button" />
+            <TokenRiskVerdictPill scan={scan} symbol={symbol} />
           ) : (
             <div className={cn(TOKEN_REPORT_BUTTON_CLASS_NAME, "bg-grey-800 text-body-secondary")}>
               <LoaderIcon className="animate-spin-slow" />

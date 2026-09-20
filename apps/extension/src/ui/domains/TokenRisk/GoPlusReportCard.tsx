@@ -7,6 +7,28 @@ import { useTranslation } from "react-i18next"
 import { getGoPlusReportUrl } from "./goPlusReport"
 import { TOKEN_REPORT_BUTTON_CLASS_NAME, TokenReportCard } from "./TokenReportCard"
 
+export const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = ({
+  reportUrl,
+  className,
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <a
+      href={reportUrl}
+      target="_blank"
+      className={cn(
+        TOKEN_REPORT_BUTTON_CLASS_NAME,
+        "bg-primary-500/10 text-primary-500/80 hover:bg-primary-500/20 hover:text-primary",
+        className
+      )}
+      rel="noopener"
+    >
+      <span>{t("View Report")}</span>
+    </a>
+  )
+}
+
 export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?: string }> = ({
   token,
   className,
@@ -22,19 +44,7 @@ export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?:
       logo={<img src={goPlusLogo} alt="" className="h-16 w-auto" />}
       title={t("Token Audit Report")}
       subtitle={t("Powered by GoPlus")}
-      action={
-        <a
-          href={reportUrl}
-          target="_blank"
-          className={cn(
-            TOKEN_REPORT_BUTTON_CLASS_NAME,
-            "bg-primary-500/10 text-primary-500/80 hover:bg-primary-500/20 hover:text-primary"
-          )}
-          rel="noopener"
-        >
-          <span>{t("View Report")}</span>
-        </a>
-      }
+      action={<GoPlusReportLink reportUrl={reportUrl} />}
     />
   )
 }
