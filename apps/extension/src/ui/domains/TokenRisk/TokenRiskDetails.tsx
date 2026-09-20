@@ -81,9 +81,14 @@ const useTokenRiskHeadline = () => {
 
 const FINDING_TYPE_ORDER = ["Malicious", "Warning", "Info"]
 
-const FINDING_MARKER_CLASSES: Record<string, string> = {
-  Malicious: "marker:text-alert-error",
-  Warning: "marker:text-alert-warn",
+const FINDING_CARD_CLASSES: Record<string, string> = {
+  Malicious: "bg-alert-error/12",
+}
+
+const FINDING_DOT_CLASSES: Record<string, string> = {
+  Malicious: "text-alert-error bg-alert-error/15",
+  Warning: "text-alert-warn bg-alert-warn/15",
+  Info: "bg-white/15 text-grey-400",
 }
 
 const getFindingRank = (type: string) => {
@@ -145,16 +150,24 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
       {findings.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="text-body">{t("Findings")}</div>
-          <ul className="scrollable scrollable-700 flex max-h-[24rem] list-disc flex-col gap-2 overflow-y-auto pl-8">
+          <ul className="scrollable scrollable-700 flex max-h-[24rem] flex-col gap-6 overflow-y-auto">
             {findings.map((finding) => (
               <li
                 key={finding.id}
                 className={cn(
-                  "text-body-secondary leading-paragraph",
-                  FINDING_MARKER_CLASSES[finding.type]
+                  "flex items-center gap-6 rounded px-10 py-6 text-left text-body-secondary text-xs leading-paragraph",
+                  FINDING_CARD_CLASSES[finding.type] ?? "bg-grey-900"
                 )}
               >
-                {finding.description}
+                <div
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full",
+                    FINDING_DOT_CLASSES[finding.type] ?? "bg-white/15 text-white"
+                  )}
+                >
+                  <div className="size-3 rounded-full bg-current" />
+                </div>
+                <div>{finding.description}</div>
               </li>
             ))}
           </ul>
