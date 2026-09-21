@@ -404,7 +404,7 @@ const AddCustomTokenForm = () => {
           </div>
         </FormFieldContainer>
         <FormFieldContainer label={t("Blockaid token scan")}>
-          <div className="flex">
+          <div className="flex items-center gap-6">
             {token && scan?.verdict !== "unknown" ? (
               scan ? (
                 <TokenRiskVerdictPill scan={scan} symbol={symbol || token.symbol} />
@@ -414,20 +414,19 @@ const AddCustomTokenForm = () => {
             ) : (
               <TokenReportPlaceholderPill>{t("Unavailable")}</TokenReportPlaceholderPill>
             )}
+            {!!token && scan?.verdict === "Malicious" && (
+              <div className="text-body-secondary text-sm">
+                <Checkbox
+                  checked={isRiskAcknowledged}
+                  onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
+                >
+                  {t("I acknowledge the risks")}
+                </Checkbox>
+              </div>
+            )}
           </div>
         </FormFieldContainer>
       </div>
-
-      {!!token && scan?.verdict === "Malicious" && (
-        <div className="mt-8 text-body-secondary text-sm">
-          <Checkbox
-            checked={isRiskAcknowledged}
-            onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
-          >
-            {t("I acknowledge the risks")}
-          </Checkbox>
-        </div>
-      )}
 
       <div className="flex justify-end gap-8 py-8">
         <Button className="h-24 w-[15rem] text-base" type="button" onClick={() => navigate(-1)}>
