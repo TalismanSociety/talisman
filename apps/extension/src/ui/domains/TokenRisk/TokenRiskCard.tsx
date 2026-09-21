@@ -29,11 +29,10 @@ export const TokenRiskCard: FC<TokenRiskCardProps> = ({
   if (scan?.verdict === "unknown") return null
 
   return (
-    <div className={cn("flex w-full flex-col gap-6", className)}>
+    <div className={cn("flex w-full flex-col gap-4", className)}>
       <TokenReportCard
-        logo={<BlockaidLogo className="h-14 w-auto text-body" />}
-        title={t("Token Scan")}
-        subtitle={t("Powered by Blockaid")}
+        logo={<BlockaidLogo className="h-8 w-auto text-body" />}
+        title={t("Blockaid Token Scan")}
         action={
           scan ? (
             <TokenRiskVerdictPill scan={scan} symbol={symbol} />

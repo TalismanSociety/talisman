@@ -101,7 +101,7 @@ export const AddCustomErc20Token = () => {
               crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
             />
           </div>
-          <h1 className="pt-8 pb-12 font-bold text-md">{t("New Token")}</h1>
+          <h1 className="pt-8 pb-8 font-bold text-md">{t("New Token")}</h1>
           <div className="text-body-secondary">
             <p>{t("You are adding the token")}</p>
             <div className="flex items-center justify-center gap-2">
@@ -121,16 +121,16 @@ export const AddCustomErc20Token = () => {
               </FakePill>
             </div>
           </div>
-          <div className="mt-16">
+          <div className="mt-10">
             <CustomErc20TokenViewDetails token={request.token} network={network} />
           </div>
-          <GoPlusReportCard token={request.token} className="mt-12" />
+          <GoPlusReportCard token={request.token} className="mt-8" />
           <TokenRiskCard
             scan={scan}
             symbol={request.token.symbol}
             isAcknowledged={isRiskAcknowledged}
             onAcknowledgedChange={setIsRiskAcknowledged}
-            className="mt-6"
+            className="mt-4"
           />
           <div className="grow"></div>
           {!!request.warnings?.length && (

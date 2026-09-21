@@ -41,9 +41,8 @@ export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?:
   return (
     <TokenReportCard
       className={className}
-      logo={<img src={goPlusLogo} alt="" className="h-16 w-auto" />}
-      title={t("Token Audit Report")}
-      subtitle={t("Powered by GoPlus")}
+      logo={<img src={goPlusLogo} alt="" className="h-10 w-auto" />}
+      title={t("GoPlus Token Analysis")}
       action={<GoPlusReportLink reportUrl={reportUrl} />}
     />
   )
