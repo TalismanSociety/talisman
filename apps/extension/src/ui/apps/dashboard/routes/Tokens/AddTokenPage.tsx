@@ -29,10 +29,7 @@ import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
-import { GoPlusReportLink } from "@ui/domains/TokenRisk/GoPlusReportCard"
-import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
-import { TokenReportPlaceholderPill } from "@ui/domains/TokenRisk/TokenReportCard"
-import { TokenRiskScanningPill, TokenRiskVerdictPill } from "@ui/domains/TokenRisk/TokenRiskPill"
+import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
@@ -148,7 +145,6 @@ const AddCustomTokenForm = () => {
   const token = useStore(form.store, (s) => s.values.token as Token | undefined)
   const symbol = useStore(form.store, (s) => s.values.symbol)
   const { scan, isPending: isScanPending } = useTokenRiskScan(token, "add-token")
-  const goPlusReportUrl = getGoPlusReportUrl(token)
   const [acknowledgedTokenId, setAcknowledgedTokenId] = useState<string | null>(null)
   const isRiskAcknowledged = !!token && acknowledgedTokenId === token.id
   const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
@@ -393,42 +389,20 @@ const AddCustomTokenForm = () => {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-x-12">
-        <FormFieldContainer label={t("GoPlus token analysis")}>
-          <div className="flex">
-            {goPlusReportUrl ? (
-              <GoPlusReportLink reportUrl={goPlusReportUrl} />
-            ) : (
-              <TokenReportPlaceholderPill>{t("View Report")}</TokenReportPlaceholderPill>
-            )}
-          </div>
-        </FormFieldContainer>
-        <FormFieldContainer label={t("Blockaid token scan")}>
-          <div className="flex items-center gap-6">
-            {token && scan?.verdict !== "unknown" ? (
-              scan ? (
-                <TokenRiskVerdictPill scan={scan} symbol={symbol || token.symbol} />
-              ) : (
-                <TokenRiskScanningPill />
-              )
-            ) : (
-              <TokenReportPlaceholderPill>{t("Unavailable")}</TokenReportPlaceholderPill>
-            )}
-            {!!token && scan?.verdict === "Malicious" && (
-              <div className="text-body-secondary text-sm">
-                <Checkbox
-                  checked={isRiskAcknowledged}
-                  onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
-                >
-                  {t("I acknowledge the risks")}
-                </Checkbox>
-              </div>
-            )}
-          </div>
-        </FormFieldContainer>
-      </div>
+      <TokenSecurityPanels token={token} scan={scan} symbol={symbol || token?.symbol || ""} />
 
-      <div className="flex justify-end gap-8 py-8">
+      <div className="flex items-center justify-end gap-8 py-8">
+        {!!token && scan?.verdict === "Malicious" && (
+          <div className="text-body-secondary text-sm">
+            <Checkbox
+              checked={isRiskAcknowledged}
+              onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
+            >
+              {t("I acknowledge the risks")}
+            </Checkbox>
+          </div>
+        )}
+        <div className="grow" />
         <Button className="h-24 w-[15rem] text-base" type="button" onClick={() => navigate(-1)}>
           {t("Cancel")}
         </Button>

@@ -31,9 +31,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { GoPlusReportLink } from "@ui/domains/TokenRisk/GoPlusReportCard"
 import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
-import { TokenRiskVerdictPill } from "@ui/domains/TokenRisk/TokenRiskPill"
+import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -92,8 +91,8 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
-  const goPlusReportUrl = getGoPlusReportUrl(token)
   const { scan: riskScan } = useTokenRiskScan(token, "token-settings")
+  const hasSecurityReport = !!getGoPlusReportUrl(token) || riskScan?.verdict !== "unknown"
   const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()
 
@@ -362,21 +361,10 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               )}
             </div>
           </FormFieldContainer>
-          {goPlusReportUrl && (
-            <FormFieldContainer label={t("GoPlus token analysis")}>
-              <div className="flex">
-                <GoPlusReportLink reportUrl={goPlusReportUrl} />
-              </div>
-            </FormFieldContainer>
-          )}
-          {riskScan && riskScan.verdict !== "unknown" && (
-            <FormFieldContainer label={t("Blockaid token scan")}>
-              <div className="flex">
-                <TokenRiskVerdictPill scan={riskScan} symbol={token.symbol} />
-              </div>
-            </FormFieldContainer>
-          )}
         </div>
+        {hasSecurityReport && (
+          <TokenSecurityPanels token={token} scan={riskScan} symbol={token.symbol} />
+        )}
         <div className="flex justify-end gap-8 py-8">
           {isTokenCustom(token) && (
             <Button

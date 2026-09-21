@@ -41,6 +41,27 @@ const TokenRiskRow: FC<{ scan: TokenRiskScan | undefined; symbol: string }> = ({
   )
 }
 
+export const TokenSecurityPanels: FC<{
+  token: Token | null | undefined
+  scan: TokenRiskScan | undefined
+  symbol: string
+  className?: string
+}> = ({ token, scan, symbol, className }) => (
+  <div className={cn("grid w-full grid-cols-2 gap-x-12", className)}>
+    <TokenReportCard className="h-24 justify-center py-0">
+      <GoPlusReportRow token={token} />
+    </TokenReportCard>
+    <TokenReportCard
+      className={cn(
+        "h-24 justify-center py-0",
+        scan?.verdict === "Malicious" && "border-alert-error/40"
+      )}
+    >
+      <TokenRiskRow scan={scan} symbol={symbol} />
+    </TokenReportCard>
+  </div>
+)
+
 type TokenSecurityCardProps = {
   token: Token | null | undefined
   scan: TokenRiskScan | undefined

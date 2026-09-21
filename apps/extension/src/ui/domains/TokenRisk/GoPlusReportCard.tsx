@@ -12,7 +12,7 @@ import {
   TokenReportRow,
 } from "./TokenReportCard"
 
-export const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = ({
+const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = ({
   reportUrl,
   className,
 }) => {
