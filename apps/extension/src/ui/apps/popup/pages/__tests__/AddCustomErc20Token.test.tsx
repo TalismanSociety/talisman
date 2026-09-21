@@ -129,7 +129,7 @@ describe("AddCustomErc20Token", () => {
 
     render(<AddCustomErc20Token />)
 
-    expect(screen.getByText("Verified")).toBeTruthy()
+    expect(screen.getByText("Passed")).toBeTruthy()
     expect(getApproveButton().disabled).toBe(false)
   })
 

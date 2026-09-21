@@ -33,7 +33,7 @@ export const useTokenRiskVerdictLabel = () => {
       case "Spam":
         return t("Spam")
       case "Benign":
-        return t("Verified")
+        return t("Passed")
       default:
         return t("Unknown")
     }

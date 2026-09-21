@@ -360,7 +360,7 @@ describe("SelectTokenButton token risk scan", () => {
 
     fireEvent.click(screen.getByText("GOOD"))
 
-    expect(await screen.findByText("Verified")).toBeTruthy()
+    expect(await screen.findByText("Passed")).toBeTruthy()
     expect(screen.getByRole("link", { name: "View Report" }).getAttribute("href")).toBe(
       `https://gopluslabs.io/token-security/1/${TOKENS[BENIGN_ID].contractAddress}`
     )
