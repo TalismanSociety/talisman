@@ -5,8 +5,6 @@ import { queryOptions } from "@tanstack/react-query"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { z } from "zod/v4"
 
-import { BLOCKAID_CHAIN_BY_NETWORK_ID } from "./blockaidChains"
-
 const MAX_TOKENS_PER_REQUEST = 100
 const REQUEST_TIMEOUT_MS = 10_000
 const STALE_TIME_MS = 5 * 60_000
@@ -16,7 +14,7 @@ const MAX_PENDING_REFETCHES = 3
 const GC_TIME_MS = 30 * 60_000
 
 export type TokenRiskVerdict = "Benign" | "Warning" | "Malicious" | "Spam" | "unknown"
-export type TokenRiskRef = { chain: string; address: string }
+export type TokenRiskRef = { chainId: string; address: string }
 export type TokenRiskFeature = { id: string; type: string; description: string }
 type TokenRiskFees = { buy?: number; sell?: number; transfer?: number }
 type TokenRiskFinancialStats = {
@@ -30,6 +28,7 @@ export type TokenRiskScan = {
   fees: TokenRiskFees
   financialStats: TokenRiskFinancialStats
   isScanPending?: boolean
+  isChainUnsupported?: boolean
 }
 
 export const UNKNOWN_TOKEN_RISK: TokenRiskScan = {
@@ -65,19 +64,18 @@ type ScanResult = z.infer<typeof resultSchema>
 
 export const getTokenRiskRef = (token: Token | null | undefined): TokenRiskRef | null => {
   if (!token) return null
-  const chain = BLOCKAID_CHAIN_BY_NETWORK_ID[token.networkId]
-  if (!chain) return null
   if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]))
-    return { chain, address: token.contractAddress.toLowerCase() }
+    return { chainId: token.networkId, address: token.contractAddress.toLowerCase() }
   if (isTokenInTypes(token, ["sol-spl", "sol-token2022"]))
-    return { chain, address: token.mintAddress }
+    return { chainId: token.networkId, address: token.mintAddress }
   return null
 }
 
-const getTokenRiskKey = ({ chain, address }: TokenRiskRef) => `${chain}:${address}`
+const getTokenRiskKey = ({ chainId, address }: TokenRiskRef) => `${chainId}:${address}`
 
 const toTokenRiskScan = (result: ScanResult | undefined): TokenRiskScan => {
   if (result?.status === "miss") return { ...UNKNOWN_TOKEN_RISK, isScanPending: true }
+  if (result?.status === "unsupported") return { ...UNKNOWN_TOKEN_RISK, isChainUnsupported: true }
   if (result?.status !== "hit" || !result.resultType) return UNKNOWN_TOKEN_RISK
   return {
     verdict: result.resultType,
@@ -138,11 +136,13 @@ export const fetchTokenRiskScan = (ref: TokenRiskRef) =>
 
 export const tokenRiskScanQueryOptions = (ref: TokenRiskRef | null) =>
   queryOptions({
-    queryKey: ["token-risk-scan", ref?.chain, ref?.address],
+    queryKey: ["token-risk-scan", ref?.chainId, ref?.address],
     queryFn: () => (ref ? fetchTokenRiskScan(ref) : UNKNOWN_TOKEN_RISK),
     enabled: !!ref,
     staleTime: ({ state }) =>
-      state.data?.verdict === "unknown" ? UNKNOWN_STALE_TIME_MS : STALE_TIME_MS,
+      state.data?.verdict === "unknown" && !state.data.isChainUnsupported
+        ? UNKNOWN_STALE_TIME_MS
+        : STALE_TIME_MS,
     refetchInterval: ({ state }) =>
       state.data?.isScanPending && state.dataUpdateCount <= MAX_PENDING_REFETCHES
         ? PENDING_REFETCH_INTERVAL_MS

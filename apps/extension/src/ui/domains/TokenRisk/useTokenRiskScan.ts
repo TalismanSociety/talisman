@@ -29,7 +29,7 @@ const useTokenRiskScanAnalytics = (
   const { genericEvent } = useAnalytics()
   const verdict = scan?.verdict
   useEffect(() => {
-    if (ref && verdict) genericEvent("token risk scan", { surface, verdict, chain: ref.chain })
+    if (ref && verdict) genericEvent("token risk scan", { surface, verdict, chainId: ref.chainId })
   }, [genericEvent, surface, ref, verdict])
 }
 

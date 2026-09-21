@@ -127,16 +127,17 @@ vi.mock("@ui/domains/Asset/TokenPicker", () => ({
 import { SelectTokenButton } from "../components/SelectTokenButton"
 
 const scanResults = {
-  "ethereum:0x1111111111111111111111111111111111111111": {
+  "1:0x1111111111111111111111111111111111111111": {
     status: "hit",
     resultType: "Malicious",
     features: [{ id: "HONEYPOT", type: "Malicious", description: "Token cannot be sold" }],
   },
-  "ethereum:0x2222222222222222222222222222222222222222": {
+  "1:0x2222222222222222222222222222222222222222": {
     status: "hit",
     resultType: "Benign",
     features: [],
   },
+  "11155111:0x3333333333333333333333333333333333333333": { status: "unsupported" },
 }
 
 const renderPicker = (priorityMode: "buy" | "sell") => {
@@ -176,7 +177,7 @@ describe("SelectTokenButton token risk scan", () => {
     expect(mockGenericEvent).toHaveBeenCalledWith("token risk scan", {
       surface: "swap-select",
       verdict: "Benign",
-      chain: "ethereum",
+      chainId: "1",
     })
   })
 
@@ -210,13 +211,12 @@ describe("SelectTokenButton token risk scan", () => {
     expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
   })
 
-  it("falls back to the safe list warning for uncovered networks", async () => {
+  it("falls back to the safe list warning for unsupported networks", async () => {
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("SEP"))
 
     expect(await screen.findByText("Warning")).toBeTruthy()
-    expect(mockGandalfFetch).not.toHaveBeenCalled()
     expect(onSelectTokenId).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByText("I Understand"))

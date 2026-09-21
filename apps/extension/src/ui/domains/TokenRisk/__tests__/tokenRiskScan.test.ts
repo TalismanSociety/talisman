@@ -46,26 +46,31 @@ const respond = (results: Record<string, unknown>) =>
 
 const sentTokens = (call = 0) =>
   JSON.parse(mockGandalfFetch.mock.calls[call][1].body as string).tokens as {
-    chain: string
+    chainId: string
     address: string
   }[]
 
 describe("getTokenRiskRef", () => {
-  it("maps ERC20 tokens to a lowercase address on the Blockaid chain name", () => {
+  it("maps ERC20 tokens to a lowercase address on the network id", () => {
     expect(getTokenRiskRef(ERC20)).toEqual({
-      chain: "ethereum",
+      chainId: "1",
       address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
     })
   })
 
   it("keeps the case of Solana mints", () => {
-    expect(getTokenRiskRef(SPL)).toEqual({ chain: "solana", address: SPL_MINT })
+    expect(getTokenRiskRef(SPL)).toEqual({ chainId: "solana-mainnet", address: SPL_MINT })
   })
 
-  it("ignores native, substrate and uncovered-network tokens", () => {
+  it("leaves network support to the proxy", () => {
+    expect(getTokenRiskRef({ ...ERC20, networkId: "11155111" } as Token)?.chainId).toBe("11155111")
+    expect(getTokenRiskRef({ ...SPL, networkId: "solana-devnet" } as Token)?.chainId).toBe(
+      "solana-devnet"
+    )
+  })
+
+  it("ignores native and substrate tokens", () => {
     expect(getTokenRiskRef({ ...ERC20, type: "evm-native" } as Token)).toBeNull()
-    expect(getTokenRiskRef({ ...ERC20, networkId: "11155111" } as Token)).toBeNull()
-    expect(getTokenRiskRef({ ...SPL, networkId: "solana-devnet" } as Token)).toBeNull()
     expect(getTokenRiskRef({ type: "substrate-assets", networkId: "polkadot" } as Token)).toBeNull()
     expect(getTokenRiskRef(null)).toBeNull()
   })
@@ -80,8 +85,8 @@ describe("fetchTokenRiskScan", () => {
     const ethereum = getTokenRiskRef(ERC20)!
     const solana = getTokenRiskRef(SPL)!
     respond({
-      [`ethereum:${ethereum.address}`]: hit("Benign"),
-      [`solana:${solana.address}`]: hit("Malicious"),
+      [`1:${ethereum.address}`]: hit("Benign"),
+      [`solana-mainnet:${solana.address}`]: hit("Malicious"),
     })
 
     const [first, second, third] = await Promise.all([
@@ -106,7 +111,7 @@ describe("fetchTokenRiskScan", () => {
   it("splits more than 100 tokens across requests", async () => {
     respond({})
     const refs = Array.from({ length: 101 }, (_, i) => ({
-      chain: "ethereum",
+      chainId: "1",
       address: `0x${i.toString(16).padStart(40, "0")}`,
     }))
 
@@ -117,15 +122,24 @@ describe("fetchTokenRiskScan", () => {
     expect(sentTokens(1)).toHaveLength(1)
   })
 
-  it.each(["error", "unsupported"])("treats a %s status as unknown", async (status) => {
+  it("treats an error status as unknown", async () => {
     const ref = getTokenRiskRef(ERC20)!
-    respond({ [`ethereum:${ref.address}`]: { status, cachedAt: "", ttlSeconds: 60 } })
+    respond({ [`1:${ref.address}`]: { status: "error", cachedAt: "", ttlSeconds: 60 } })
     expect(await fetchTokenRiskScan(ref)).toBe(UNKNOWN_TOKEN_RISK)
+  })
+
+  it("treats an unsupported status as unknown on an unsupported chain", async () => {
+    const ref = getTokenRiskRef(ERC20)!
+    respond({ [`1:${ref.address}`]: { status: "unsupported", cachedAt: "", ttlSeconds: 60 } })
+    expect(await fetchTokenRiskScan(ref)).toEqual({
+      ...UNKNOWN_TOKEN_RISK,
+      isChainUnsupported: true,
+    })
   })
 
   it("treats a miss status as unknown with a pending scan", async () => {
     const ref = getTokenRiskRef(ERC20)!
-    respond({ [`ethereum:${ref.address}`]: { status: "miss", cachedAt: "", ttlSeconds: 60 } })
+    respond({ [`1:${ref.address}`]: { status: "miss", cachedAt: "", ttlSeconds: 60 } })
     expect(await fetchTokenRiskScan(ref)).toEqual({ ...UNKNOWN_TOKEN_RISK, isScanPending: true })
   })
 
@@ -136,6 +150,9 @@ describe("fetchTokenRiskScan", () => {
 
     expect(getStaleTime(UNKNOWN_TOKEN_RISK)).toBeLessThan(
       getStaleTime({ ...UNKNOWN_TOKEN_RISK, verdict: "Malicious" }) as number
+    )
+    expect(getStaleTime({ ...UNKNOWN_TOKEN_RISK, isChainUnsupported: true })).toBe(
+      getStaleTime({ ...UNKNOWN_TOKEN_RISK, verdict: "Malicious" })
     )
   })
 

@@ -8,8 +8,8 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
+import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import {
   getTokenRiskRef,
   type TokenRiskScan,
@@ -314,7 +314,7 @@ const useSwapTokenRiskScan = () => {
       genericEvent("token risk scan", {
         surface: "swap-select",
         verdict: scan.verdict,
-        chain: ref.chain,
+        chainId: ref.chainId,
       })
       return scan
     },
