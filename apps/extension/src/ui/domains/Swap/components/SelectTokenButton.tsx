@@ -12,6 +12,7 @@ import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
 import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import {
   getTokenRiskRef,
+  type TokenRiskRef,
   type TokenRiskScan,
   type TokenRiskVerdict,
   tokenRiskScanQueryOptions,
@@ -30,7 +31,7 @@ import { filterAndSortTokensByTab, getTokenTabs } from "../swap-services/token-f
 import { useRecentTokenIds } from "../swap-services/useRecentTokenIds"
 
 const PICKER_CONTAINER_ID = "swap-modal-token-picker"
-const RISK_SCAN_TIMEOUT_MS = 4000
+const RISK_SCAN_TIMEOUT_MS = 5000
 
 type Props = {
   allowedTokenIds: string[] | undefined // todo rename, these are tokenIds
@@ -81,19 +82,20 @@ const TokenPickerModal: FC<{
 }> = ({ isOpen, ...contentProps }) => {
   return (
     <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={contentProps.onDismiss}>
-      <TokenPickerModalContent {...contentProps} />
+      <TokenPickerModalContent isOpen={isOpen} {...contentProps} />
     </Modal>
   )
 }
 
 const TokenPickerModalContent: FC<{
+  isOpen: boolean
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
   tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
+}> = ({ isOpen, tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
@@ -107,12 +109,21 @@ const TokenPickerModalContent: FC<{
   const { scanToken } = useSwapTokenRiskScan()
   const selectionRef = useRef<object | null>(null)
 
-  useEffect(
-    () => () => {
-      selectionRef.current = null
-    },
-    []
-  )
+  const cancelSelection = useCallback(() => {
+    selectionRef.current = null
+    setScanningTokenId(null)
+  }, [])
+
+  // the modal keeps this component mounted while its closing animation runs
+  useEffect(() => {
+    if (!isOpen) cancelSelection()
+    return cancelSelection
+  }, [isOpen, cancelSelection])
+
+  const handleDismiss = useCallback(() => {
+    cancelSelection()
+    onDismiss()
+  }, [cancelSelection, onDismiss])
 
   const priorityTokens = useCallback(
     (token: Token) => {
@@ -195,7 +206,7 @@ const TokenPickerModalContent: FC<{
       className="border-none"
       contentClassName="p-0! relative"
       title={t("Select a token")}
-      onBackClick={onDismiss}
+      onBackClick={handleDismiss}
       id={PICKER_CONTAINER_ID}
     >
       <TokenPicker
@@ -230,7 +241,7 @@ const TokenPickerModalContent: FC<{
         containerId={PICKER_CONTAINER_ID}
         requireAcknowledgement={priorityMode !== "sell"}
         onDismiss={() => setRiskWarning(null)}
-        onAccept={() => acceptToken(riskWarning!.tokenId, riskWarning!.scan.verdict)}
+        onAccept={() => riskWarning && acceptToken(riskWarning.tokenId, riskWarning.scan.verdict)}
       />
     </WizardModalDialog>
   )
@@ -299,18 +310,28 @@ const useSwapTokenRiskScan = () => {
   const isEnabled = useIsTokenRiskScanEnabled()
   const { genericEvent } = useAnalytics()
 
-  const scanToken = useCallback(
-    async (token: Token | undefined): Promise<TokenRiskScan> => {
-      const ref = isEnabled ? getTokenRiskRef(token) : null
-      if (!ref) return UNKNOWN_TOKEN_RISK
+  const fetchScan = useCallback(
+    (ref: TokenRiskRef, options?: { staleTime: number }) => {
       let timer: ReturnType<typeof setTimeout> | undefined
       const timeout = new Promise<TokenRiskScan>((resolve) => {
         timer = setTimeout(() => resolve(UNKNOWN_TOKEN_RISK), RISK_SCAN_TIMEOUT_MS)
       })
-      const scan = await Promise.race([
-        queryClient.fetchQuery(tokenRiskScanQueryOptions(ref)).catch(() => UNKNOWN_TOKEN_RISK),
+      return Promise.race([
+        queryClient
+          .fetchQuery({ ...tokenRiskScanQueryOptions(ref), ...options })
+          .catch(() => UNKNOWN_TOKEN_RISK),
         timeout,
       ]).finally(() => clearTimeout(timer))
+    },
+    [queryClient]
+  )
+
+  const scanToken = useCallback(
+    async (token: Token | undefined): Promise<TokenRiskScan> => {
+      const ref = isEnabled ? getTokenRiskRef(token) : null
+      if (!ref) return UNKNOWN_TOKEN_RISK
+      const firstScan = await fetchScan(ref)
+      const scan = firstScan.isScanPending ? await fetchScan(ref, { staleTime: 0 }) : firstScan
       genericEvent("token risk scan", {
         surface: "swap-select",
         verdict: scan.verdict,
@@ -318,7 +339,7 @@ const useSwapTokenRiskScan = () => {
       })
       return scan
     },
-    [isEnabled, queryClient, genericEvent]
+    [isEnabled, fetchScan, genericEvent]
   )
 
   return { scanToken }

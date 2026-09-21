@@ -82,9 +82,11 @@ vi.mock("../SwapProvider", () => ({
 
 vi.mock("../swap-services/useRecentTokenIds", () => ({ useRecentTokenIds: () => [] }))
 
+// children stay mounted when closed, like the real Modal during its closing animation
 vi.mock("@ui/components/Modal", () => ({
-  Modal: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
-    isOpen ? children : null,
+  Modal: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) => (
+    <div hidden={!isOpen}>{children}</div>
+  ),
 }))
 
 vi.mock("@ui/components/Drawer", () => ({
@@ -241,6 +243,32 @@ describe("SelectTokenButton token risk scan", () => {
 
     expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
     expect(onSelectTokenId).not.toHaveBeenCalled()
+  })
+
+  it("retries a pending scan once before selecting the token", async () => {
+    const pendingResults = { "1:0x1111111111111111111111111111111111111111": { status: "miss" } }
+    mockGandalfFetch
+      .mockResolvedValueOnce(Response.json({ results: pendingResults }))
+      .mockResolvedValueOnce(Response.json({ results: scanResults }))
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
+    expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
+    expect(onSelectTokenId).not.toHaveBeenCalled()
+    expect(mockGenericEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it("selects a token whose scan is still pending after one retry", async () => {
+    const pendingResults = { "1:0x2222222222222222222222222222222222222222": { status: "miss" } }
+    mockGandalfFetch.mockImplementation(async () => Response.json({ results: pendingResults }))
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("GOOD"))
+
+    await waitFor(() => expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID))
+    expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
   })
 
   it("drops a pending selection when the picker is dismissed", async () => {
