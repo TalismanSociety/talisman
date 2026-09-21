@@ -32,30 +32,6 @@ minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   # published by Talisman, no buffer time needed
   - "@talismn/siws"
-  # polkadot-api 2.2.0 and its graph were published 2026-07-20. Diffed 2.2.0 against
-  # 2.1.6: a watch-entries refactor plus dep bumps; ws-provider 0.9.1 is a dep bump
-  # only; json-rpc-provider-proxy 0.4.1 is the sync-provider backoff reset fix we
-  # want. The rest below are transitive bumps pinned by polkadot-api 2.2.0.
-  # Can all be removed after 2026-07-23.
-  - "polkadot-api"
-  - "@polkadot-api/cli"
-  - "@polkadot-api/json-rpc-provider-proxy"
-  - "@polkadot-api/known-chains"
-  - "@polkadot-api/sm-provider"
-  - "@polkadot-api/ws-middleware"
-  - "@polkadot-api/ws-provider"
-  # cn 0.2.4 (shadcn-ui) published 2026-09-02. Tarball inspected, zero deps, and the
-  # merge output was diffed against tailwind-merge on every cn() call in the extension.
-  # Can be removed after 2026-09-05.
-  - "cn"
-  # hw-app-eth 7.8.17 and its transitive graph were published 2026-09-07, the last
-  # release of the legacy hw-app libs. Tarballs diffed against the previous versions.
-  # Can be removed after 2026-09-10.
-  - "@ledgerhq/hw-app-eth"
-  - "@ledgerhq/domain-service"
-  - "@ledgerhq/evm-tools"
-  - "@ledgerhq/live-env"
-  - "@ledgerhq/types-live"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
@@ -124,29 +100,42 @@ overrides:
   "playwright@<1.55.1": ">=1.55.1"
   "glob@>=10.2.0 <10.5.0": ">=10.5.0"
   "glob@>=11.0.0 <11.1.0": ">=11.1.0"
-  "js-yaml@>=4.0.0 <4.1.2": ">=4.1.2 <5.0.0"
+  "js-yaml@>=4.0.0 <4.3.2": ">=4.3.2 <5.0.0"
   "valibot@>=0.31.0 <1.2.0": ">=1.2.0"
   "devalue@<5.8.1": ">=5.8.1"
   # --- 2026-06 security sweep: dev/build-chain transitive advisories ---
   "shell-quote@<1.8.4": ">=1.8.4 <2.0.0"
-  "undici@>=7.0.0 <7.24.0": ">=7.24.0 <8.0.0"
+  "undici@>=7.0.0 <7.29.0": ">=7.29.0 <8.0.0"
   "node-forge@<1.4.0": ">=1.4.0 <2.0.0"
   "@isaacs/brace-expansion@<=5.0.0": ">=5.0.1 <6.0.0"
-  "brace-expansion@>=1.0.0 <1.1.13": ">=1.1.13 <2.0.0"
-  "brace-expansion@>=2.0.0 <2.0.2": ">=2.0.2 <3.0.0"
+  "brace-expansion@>=1.0.0 <1.1.18": ">=1.1.18 <2.0.0"
+  "brace-expansion@>=2.0.0 <2.1.4": ">=2.1.4 <3.0.0"
+  # 3.x and 4.x have no patched release of their own; 5.0.9 is the fix line
+  "brace-expansion@>=3.0.0 <5.0.9": ">=5.0.9 <6.0.0"
   "minimatch@>=3.0.0 <3.1.4": ">=3.1.4 <4.0.0"
   "minimatch@>=5.0.0 <5.1.8": ">=5.1.8 <6.0.0"
   "minimatch@>=9.0.0 <9.0.7": ">=9.0.7 <10.0.0"
   "minimatch@>=10.0.0 <10.2.3": ">=10.2.3 <11.0.0"
   "picomatch@<2.3.2": ">=2.3.2 <3.0.0"
   "picomatch@>=4.0.0 <4.0.4": ">=4.0.4 <5.0.0"
-  "fast-uri@<3.1.1": ">=3.1.1 <4.0.0"
+  "fast-uri@<3.1.6": ">=3.1.6 <4.0.0"
   "ajv@>=8.0.0 <8.18.0": ">=8.18.0 <9.0.0"
   "smol-toml@<1.6.1": ">=1.6.1 <2.0.0"
-  "qs@>=6.7.0 <6.15.2": ">=6.15.2 <7.0.0"
+  "qs@>=6.7.0 <6.16.0": ">=6.16.0 <7.0.0"
   "flatted@<3.4.2": ">=3.4.2 <4.0.0"
   "defu@<=6.1.4": ">=6.1.5 <7.0.0"
   "@babel/core@<7.29.1": ">=7.29.1 <8.0.0"
+  # --- 2026-09 sweep: dev/build-chain transitive advisories ---
+  "nanoid@<3.3.18": ">=3.3.18 <4.0.0"
+  "fast-xml-parser@>=5.9.3 <5.10.1": ">=5.10.1 <6.0.0"
+  "browserslist@<4.28.7": ">=4.28.7 <5.0.0"
+  "baseline-browser-mapping@>=2.0.0 <2.11.0": ">=2.11.0 <3.0.0"
+  "image-size@>=2.0.0 <=2.0.2": ">=2.0.3 <3.0.0"
+  "adm-zip@<0.6.1": ">=0.6.1 <0.7.0"
+  "svgo@>=3.0.0 <3.3.5": ">=3.3.5 <4.0.0"
+  # 7.x has no patched release of its own; 8.0.0 is the fix line
+  "deepmerge-ts@<8.0.0": ">=8.0.0 <9.0.0"
+  "diff@<3.5.1": ">=3.5.1 <4.0.0"
   # single resolution for ws's optional native peer, avoids peer-hash graph forks
   "utf-8-validate": "6.0.4"
   # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
