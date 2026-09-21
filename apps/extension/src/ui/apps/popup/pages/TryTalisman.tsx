@@ -46,7 +46,7 @@ const Header = () => {
 export const TryTalismanPage = () => (
   <PopupLayout>
     <Header />
-    <PopupContent>
+    <PopupContent className="px-8">
       <TryTalismanContent analytics={ANALYTICS_PAGE} />
     </PopupContent>
   </PopupLayout>
