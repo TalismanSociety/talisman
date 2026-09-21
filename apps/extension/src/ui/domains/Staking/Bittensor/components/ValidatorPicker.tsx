@@ -19,8 +19,8 @@ import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 import type { ValidatorSortValue } from "../utils/validatorSorting"
+import { BasketHoldingsStat, BasketHoldingsViewAllModal } from "./BasketHoldingsStat"
 import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
-import { RootWeightsStat, RootWeightsViewAllModal } from "./RootWeightsStat"
 
 export const ValidatorSortMethodButton: FC<{
   method: ValidatorSortValue
@@ -75,7 +75,7 @@ export const ValidatorRows: FC<{
   validators: BondOptionType[]
   selectedHotkey?: string | null
   isLoading?: boolean
-  showRootWeights?: boolean
+  showBasketHoldings?: boolean
   containerId?: string
   onSelect: (hotkey: string) => void
   onClose: () => void
@@ -84,7 +84,7 @@ export const ValidatorRows: FC<{
   validators,
   selectedHotkey,
   isLoading,
-  showRootWeights,
+  showBasketHoldings,
   containerId,
   onSelect,
   onClose,
@@ -134,8 +134,8 @@ export const ValidatorRows: FC<{
                 isSelected={validator.hotkey === selectedHotkey}
                 onClick={() => onSelect(validator.hotkey)}
                 isLoading={isLoading}
-                showRootWeights={showRootWeights}
-                onViewAllWeights={(hotkey) => {
+                showBasketHoldings={showBasketHoldings}
+                onViewAllHoldings={(hotkey) => {
                   setViewAllHotkey(hotkey)
                   setIsViewAllOpen(true)
                 }}
@@ -146,7 +146,7 @@ export const ValidatorRows: FC<{
       </div>
       {/* hosted here, outside the virtualized rows, so a row unmount can't close it */}
       {viewAllHotkey && (
-        <RootWeightsViewAllModal
+        <BasketHoldingsViewAllModal
           networkId={tao?.networkId as DotNetworkId | undefined}
           hotkey={viewAllHotkey}
           containerId={containerId}
@@ -190,16 +190,16 @@ const ValidatorRow: FC<{
   taoTokenId: TokenId
   isSelected?: boolean
   isLoading?: boolean
-  showRootWeights?: boolean
-  onViewAllWeights: (hotkey: string) => void
+  showBasketHoldings?: boolean
+  onViewAllHoldings: (hotkey: string) => void
   onClick: () => void
 }> = ({
   option,
   isSelected,
   isLoading,
   taoTokenId,
-  showRootWeights,
-  onViewAllWeights,
+  showBasketHoldings,
+  onViewAllHoldings,
   onClick,
 }) => {
   const { t } = useTranslation()
@@ -250,7 +250,7 @@ const ValidatorRow: FC<{
           className={cn(
             "flex w-full items-center justify-between text-body-secondary text-xs",
             isLoading && "animate-pulse",
-            option.source === "metagraph" && !showRootWeights && "hidden"
+            option.source === "metagraph" && !showBasketHoldings && "hidden"
           )}
         >
           <div
@@ -303,11 +303,11 @@ const ValidatorRow: FC<{
               </TooltipContent>
             </Tooltip>
           </div>
-          {showRootWeights && (
-            <RootWeightsStat
+          {showBasketHoldings && (
+            <BasketHoldingsStat
               networkId={tao?.networkId as DotNetworkId | undefined}
               hotkey={option.hotkey}
-              onViewAll={() => onViewAllWeights(option.hotkey)}
+              onViewAll={() => onViewAllHoldings(option.hotkey)}
             />
           )}
         </div>

@@ -17,9 +17,9 @@ import { useTokens } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, type MouseEvent, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useBittensorRootWeights } from "../hooks/useBittensorRootWeights"
+import { useBittensorBasketHoldings } from "../hooks/useBittensorBasketHoldings"
+import { getBasketHoldingsBreakdown } from "../utils/basketHoldings"
 import { ROOT_NETUID } from "../utils/constants"
-import { getRootWeightsBreakdown } from "../utils/rootWeights"
 
 const SLICE_COLORS = [
   "#d5ff5c",
@@ -33,7 +33,7 @@ const SLICE_COLORS = [
 ]
 const OTHERS_COLOR = "#5a5a5a"
 
-type WeightSlice = {
+type HoldingSlice = {
   label: string
   code: string
   name?: string
@@ -59,13 +59,13 @@ const useSubnetTokensByNetuid = (networkId: DotNetworkId | undefined) => {
   )
 }
 
-const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: string) => {
+const useBasketHoldingsSlices = (networkId: DotNetworkId | undefined, hotkey: string) => {
   const { t } = useTranslation()
-  const { data: weights, isLoading, isError } = useBittensorRootWeights(networkId, hotkey)
+  const { data: holdings, isLoading, isError } = useBittensorBasketHoldings(networkId, hotkey)
   const subnetTokens = useSubnetTokensByNetuid(networkId)
 
   const breakdown = useMemo(() => {
-    const raw = weights ? getRootWeightsBreakdown(weights) : null
+    const raw = holdings ? getBasketHoldingsBreakdown(holdings) : null
     if (!raw) return null
 
     const getCode = (netuid: number) => (netuid === ROOT_NETUID ? "TAO" : `SN${netuid}`)
@@ -77,10 +77,10 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
       return subnetTokens.get(netuid)?.id
     }
 
-    const toWeightSlice = (
+    const toHoldingSlice = (
       { netuid, ratio }: { netuid: number; ratio: number },
       index: number
-    ): WeightSlice => {
+    ): HoldingSlice => {
       const code = getCode(netuid)
       const name = getName(netuid)
       return {
@@ -93,7 +93,7 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
       }
     }
 
-    const topSlices = raw.topSlices.map<WeightSlice>(toWeightSlice)
+    const topSlices = raw.topSlices.map<HoldingSlice>(toHoldingSlice)
     const othersPercent = raw.othersRatio * 100
     const slices =
       othersPercent >= 0.05
@@ -106,14 +106,14 @@ const useRootWeightsSlices = (networkId: DotNetworkId | undefined, hotkey: strin
     return {
       subnetCount: raw.subnetCount,
       slices,
-      allSlices: raw.allSlices.map<WeightSlice>(toWeightSlice),
+      allSlices: raw.allSlices.map<HoldingSlice>(toHoldingSlice),
     }
-  }, [weights, subnetTokens, networkId, t])
+  }, [holdings, subnetTokens, networkId, t])
 
   return { breakdown, isLoading, isError }
 }
 
-const RootWeightsBar: FC<{ slices: WeightSlice[] }> = ({ slices }) => (
+const BasketHoldingsBar: FC<{ slices: HoldingSlice[] }> = ({ slices }) => (
   <div className="flex h-3 w-full shrink-0 overflow-hidden rounded-full">
     {slices.map((slice) => (
       <div
@@ -125,29 +125,29 @@ const RootWeightsBar: FC<{ slices: WeightSlice[] }> = ({ slices }) => (
   </div>
 )
 
-const RootWeightsSummary: FC<{
+const BasketHoldingsSummary: FC<{
   subnetCount: number
-  slices: WeightSlice[]
+  slices: HoldingSlice[]
   className?: string
 }> = ({ subnetCount, slices, className }) => {
   const { t } = useTranslation()
 
   return (
     <div className={cn("flex w-full flex-col gap-4", className)}>
-      <div>{t("{{count}} subnet weights", { count: subnetCount })}</div>
-      <RootWeightsBar slices={slices} />
+      <div>{t("{{count}} subnet holdings", { count: subnetCount })}</div>
+      <BasketHoldingsBar slices={slices} />
     </div>
   )
 }
 
-const SliceLabel: FC<{ slice: WeightSlice }> = ({ slice }) => (
+const SliceLabel: FC<{ slice: HoldingSlice }> = ({ slice }) => (
   <div className="truncate">
     <span className="text-body">{slice.code}</span>
     {slice.name && <span className="text-body-secondary"> {slice.name}</span>}
   </div>
 )
 
-const SliceRow: FC<{ slice: WeightSlice }> = ({ slice }) => (
+const SliceRow: FC<{ slice: HoldingSlice }> = ({ slice }) => (
   <div className="flex w-full items-center justify-between gap-4">
     <div className="flex min-w-0 items-center gap-3">
       <div className="size-4 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
@@ -157,7 +157,7 @@ const SliceRow: FC<{ slice: WeightSlice }> = ({ slice }) => (
   </div>
 )
 
-const RootWeightRow: FC<{ slice: WeightSlice }> = ({ slice }) => (
+const BasketHoldingRow: FC<{ slice: HoldingSlice }> = ({ slice }) => (
   <div className="flex w-full items-center justify-between gap-4 p-3 px-12 text-sm hover:bg-grey-800">
     <div className="flex min-w-0 items-center gap-3">
       <TokenLogo tokenId={slice.tokenId} className="size-10 shrink-0" />
@@ -191,7 +191,7 @@ const ViewAllButton: FC<{ onClick: () => void }> = ({ onClick }) => {
  * Rendered by the rows container, not by the stat: a virtualized row unmounts as soon as it leaves
  * the viewport and would take an inlined modal down with it.
  */
-export const RootWeightsViewAllModal: FC<{
+export const BasketHoldingsViewAllModal: FC<{
   networkId: DotNetworkId | undefined
   hotkey: string
   containerId?: string
@@ -200,7 +200,7 @@ export const RootWeightsViewAllModal: FC<{
   onClose: () => void
 }> = ({ networkId, hotkey, containerId, isOpen, onDismiss, onClose }) => {
   const { t } = useTranslation()
-  const { breakdown } = useRootWeightsSlices(networkId, hotkey)
+  const { breakdown } = useBasketHoldingsSlices(networkId, hotkey)
 
   const [search, setSearch] = useState("")
 
@@ -245,7 +245,7 @@ export const RootWeightsViewAllModal: FC<{
             autoFocus
           />
           {breakdown && (
-            <RootWeightsSummary
+            <BasketHoldingsSummary
               subnetCount={breakdown.subnetCount}
               slices={breakdown.slices}
               className="text-body-secondary text-sm"
@@ -260,7 +260,7 @@ export const RootWeightsViewAllModal: FC<{
           </div>
           <ScrollContainer className="grow" innerClassName="flex flex-col bg-grey-900">
             {filteredSlices.map((slice) => (
-              <RootWeightRow key={slice.label} slice={slice} />
+              <BasketHoldingRow key={slice.label} slice={slice} />
             ))}
             {!filteredSlices.length && (
               <div className="py-8 text-center text-body-secondary">{t("No subnets found")}</div>
@@ -272,13 +272,13 @@ export const RootWeightsViewAllModal: FC<{
   )
 }
 
-export const RootWeightsStat: FC<{
+export const BasketHoldingsStat: FC<{
   networkId: DotNetworkId | undefined
   hotkey: string
   onViewAll?: () => void
 }> = ({ networkId, hotkey, onViewAll }) => {
   const { t } = useTranslation()
-  const { breakdown, isLoading, isError } = useRootWeightsSlices(networkId, hotkey)
+  const { breakdown, isLoading, isError } = useBasketHoldingsSlices(networkId, hotkey)
 
   if (isLoading) return <div className="h-6 w-14 animate-pulse rounded-xs bg-grey-800" />
 
@@ -291,7 +291,7 @@ export const RootWeightsStat: FC<{
             <span>{t("N/A")}</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent>{t("Failed to load allocations")}</TooltipContent>
+        <TooltipContent>{t("Failed to load holdings")}</TooltipContent>
       </Tooltip>
     )
 
@@ -304,7 +304,7 @@ export const RootWeightsStat: FC<{
             <span>–</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent>{t("No allocation set — earnings follow subnet emissions")}</TooltipContent>
+        <TooltipContent>{t("Empty basket — no holdings yet")}</TooltipContent>
       </Tooltip>
     )
 
@@ -318,7 +318,7 @@ export const RootWeightsStat: FC<{
       </TooltipTrigger>
       <TooltipContent>
         <div className="flex w-[200px] max-w-[200px] flex-col gap-6 p-4">
-          <RootWeightsSummary subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
+          <BasketHoldingsSummary subnetCount={breakdown.subnetCount} slices={breakdown.slices} />
           <div className="flex w-full flex-col gap-2">
             {breakdown.slices.map((slice) => (
               <SliceRow key={slice.label} slice={slice} />
