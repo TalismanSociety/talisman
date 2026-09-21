@@ -1,7 +1,7 @@
 import { BLOCKAID_API_URL } from "@common/constants"
 import { log } from "@common/log"
 import { isTokenInTypes, type Token } from "@talismn/chaindata-provider"
-import { queryOptions } from "@tanstack/react-query"
+import { type QueryClient, queryOptions } from "@tanstack/react-query"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { z } from "zod/v4"
 
@@ -134,15 +134,15 @@ export const fetchTokenRiskScan = (ref: TokenRiskRef) =>
     setTimeout(flushQueue, 0)
   })
 
+const getStaleTime = (scan: TokenRiskScan | undefined) =>
+  scan?.verdict === "unknown" && !scan.isChainUnsupported ? UNKNOWN_STALE_TIME_MS : STALE_TIME_MS
+
 export const tokenRiskScanQueryOptions = (ref: TokenRiskRef | null) =>
   queryOptions({
     queryKey: ["token-risk-scan", ref?.chainId, ref?.address],
     queryFn: () => (ref ? fetchTokenRiskScan(ref) : UNKNOWN_TOKEN_RISK),
     enabled: !!ref,
-    staleTime: ({ state }) =>
-      state.data?.verdict === "unknown" && !state.data.isChainUnsupported
-        ? UNKNOWN_STALE_TIME_MS
-        : STALE_TIME_MS,
+    staleTime: ({ state }) => getStaleTime(state.data),
     refetchInterval: ({ state }) =>
       state.data?.isScanPending && state.dataUpdateCount <= MAX_PENDING_REFETCHES
         ? PENDING_REFETCH_INTERVAL_MS
@@ -150,3 +150,10 @@ export const tokenRiskScanQueryOptions = (ref: TokenRiskRef | null) =>
     gcTime: GC_TIME_MS,
     retry: false,
   })
+
+export const getFreshTokenRiskScan = (queryClient: QueryClient, ref: TokenRiskRef) => {
+  const { queryKey } = tokenRiskScanQueryOptions(ref)
+  const query = queryClient.getQueryCache().find<TokenRiskScan>({ queryKey })
+  if (!query?.state.data || query.state.data.isScanPending) return undefined
+  return query.isStaleByTime(getStaleTime(query.state.data)) ? undefined : query.state.data
+}

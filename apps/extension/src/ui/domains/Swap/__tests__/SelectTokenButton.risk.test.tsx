@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const MALICIOUS_ID = "1:evm-erc20:0x1111111111111111111111111111111111111111"
 const BENIGN_ID = "1:evm-erc20:0x2222222222222222222222222222222222222222"
 const UNCOVERED_ID = "11155111:evm-erc20:0x3333333333333333333333333333333333333333"
+const SOLANA_ID = "solana-mainnet:sol-spl:5b5Eu6FvdNSxRfBE87aMDhkZmLnP3xL7CXwE4wFxHGwN"
 
 const TOKENS = {
   [MALICIOUS_ID]: {
@@ -28,6 +29,13 @@ const TOKENS = {
     networkId: "11155111",
     symbol: "SEP",
     contractAddress: "0x3333333333333333333333333333333333333333",
+  },
+  [SOLANA_ID]: {
+    id: SOLANA_ID,
+    type: "sol-spl",
+    networkId: "solana-mainnet",
+    symbol: "wSN1",
+    mintAddress: "5b5Eu6FvdNSxRfBE87aMDhkZmLnP3xL7CXwE4wFxHGwN",
   },
 }
 
@@ -162,25 +170,62 @@ describe("SelectTokenButton token risk scan", () => {
     vi.clearAllMocks()
     mockAcknowledgedTokenVerdicts.clear()
     mockSafeTokens.clear()
-    mockSafeTokens.add(`1:${TOKENS[MALICIOUS_ID].contractAddress}`)
     mockSafeTokens.add(`1:${TOKENS[BENIGN_ID].contractAddress}`)
     mockUseFeatureFlag.mockReturnValue(true)
     mockUseSettingValue.mockReturnValue(true)
     mockGandalfFetch.mockResolvedValue(Response.json({ results: scanResults }))
   })
 
-  it("selects a benign token without any warning", async () => {
+  it("selects a safe listed token without any scan or warning", () => {
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("GOOD"))
 
-    await waitFor(() => expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID))
+    expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID)
     expect(screen.queryByRole("dialog")).toBeNull()
-    expect(mockGenericEvent).toHaveBeenCalledWith("token risk scan", {
-      surface: "swap-select",
-      verdict: "Benign",
-      chainId: "1",
-    })
+    expect(mockGandalfFetch).not.toHaveBeenCalled()
+  })
+
+  it("warns about a Solana token outside the safe list", () => {
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("wSN1"))
+
+    expect(screen.getByText("Warning")).toBeTruthy()
+    expect(onSelectTokenId).not.toHaveBeenCalled()
+  })
+
+  it("selects a safe listed Solana token without any warning", () => {
+    mockSafeTokens.add(`solana-mainnet:${TOKENS[SOLANA_ID].mintAddress}`)
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("wSN1"))
+
+    expect(onSelectTokenId).toHaveBeenCalledWith(SOLANA_ID)
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("opens the warning immediately and blocks accepting while the scan runs", async () => {
+    let resolveFetch: (response: Response) => void = () => {}
+    mockGandalfFetch.mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve
+      })
+    )
+    const onSelectTokenId = renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(screen.getByText("Warning")).toBeTruthy()
+    expect(screen.getByText("Scanning")).toBeTruthy()
+    const accept = screen.getByText("I Understand").closest("button") as HTMLButtonElement
+    expect(accept.disabled).toBe(true)
+
+    resolveFetch(Response.json({ results: scanResults }))
+
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    expect(screen.queryByText("Scanning")).toBeNull()
+    expect(onSelectTokenId).not.toHaveBeenCalled()
   })
 
   it("requires acknowledging a malicious token before buying it", async () => {
@@ -188,8 +233,7 @@ describe("SelectTokenButton token risk scan", () => {
 
     fireEvent.click(screen.getByText("BAD"))
 
-    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
-    expect(onSelectTokenId).not.toHaveBeenCalled()
+    expect(await screen.findByText("Malicious")).toBeTruthy()
     const proceed = screen.getByText("Proceed").closest("button") as HTMLButtonElement
     expect(proceed.disabled).toBe(true)
 
@@ -206,7 +250,7 @@ describe("SelectTokenButton token risk scan", () => {
 
     fireEvent.click(screen.getByText("BAD"))
 
-    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
+    expect(await screen.findByText("Malicious")).toBeTruthy()
     expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
 
     fireEvent.click(screen.getByText("I Understand"))
@@ -221,7 +265,14 @@ describe("SelectTokenButton token risk scan", () => {
     expect(await screen.findByText("Warning")).toBeTruthy()
     expect(onSelectTokenId).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByText("I Understand"))
+    const accept = screen.getByText("I Understand").closest("button") as HTMLButtonElement
+    await waitFor(() => expect(accept.disabled).toBe(false))
+    expect(screen.getByText("GoPlus Token Analysis")).toBeTruthy()
+    expect(screen.queryByText("View Report")).toBeNull()
+    expect(screen.getByText("Blockaid Token Scan")).toBeTruthy()
+    expect(screen.getAllByText("Unavailable")).toHaveLength(2)
+
+    fireEvent.click(accept)
     expect(onSelectTokenId).toHaveBeenCalledWith(UNCOVERED_ID)
   })
 
@@ -230,8 +281,11 @@ describe("SelectTokenButton token risk scan", () => {
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("BAD"))
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    fireEvent.click(screen.getByText("Back"))
+    fireEvent.click(screen.getByText("BAD"))
 
-    await waitFor(() => expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID))
+    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
     expect(screen.queryByRole("dialog")).toBeNull()
   })
 
@@ -240,58 +294,57 @@ describe("SelectTokenButton token risk scan", () => {
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("BAD"))
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    fireEvent.click(screen.getByText("Back"))
+    fireEvent.click(screen.getByText("BAD"))
 
-    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
+    expect(screen.getByRole("dialog")).toBeTruthy()
     expect(onSelectTokenId).not.toHaveBeenCalled()
   })
 
-  it("retries a pending scan once before selecting the token", async () => {
+  it("retries a pending scan once", async () => {
     const pendingResults = { "1:0x1111111111111111111111111111111111111111": { status: "miss" } }
     mockGandalfFetch
       .mockResolvedValueOnce(Response.json({ results: pendingResults }))
       .mockResolvedValueOnce(Response.json({ results: scanResults }))
+    renderPicker("buy")
+
+    fireEvent.click(screen.getByText("BAD"))
+
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
+    expect(mockGenericEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it("lets the user accept a token whose scan is still pending after one retry", async () => {
+    const pendingResults = { "1:0x1111111111111111111111111111111111111111": { status: "miss" } }
+    mockGandalfFetch.mockImplementation(async () => Response.json({ results: pendingResults }))
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("BAD"))
 
-    expect(await screen.findByText("Token cannot be sold")).toBeTruthy()
+    const accept = screen.getByText("I Understand").closest("button") as HTMLButtonElement
+    await waitFor(() => expect(accept.disabled).toBe(false))
     expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
-    expect(onSelectTokenId).not.toHaveBeenCalled()
-    expect(mockGenericEvent).toHaveBeenCalledTimes(1)
+
+    fireEvent.click(accept)
+    expect(mockAcknowledgeToken).toHaveBeenCalledWith(MALICIOUS_ID, "unknown")
+    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
   })
 
-  it("selects a token whose scan is still pending after one retry", async () => {
-    const pendingResults = { "1:0x2222222222222222222222222222222222222222": { status: "miss" } }
-    mockGandalfFetch.mockImplementation(async () => Response.json({ results: pendingResults }))
+  it("closes the warning when the picker is dismissed", async () => {
     const onSelectTokenId = renderPicker("buy")
 
-    fireEvent.click(screen.getByText("GOOD"))
+    fireEvent.click(screen.getByText("BAD"))
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    fireEvent.click(screen.getAllByText("Dismiss picker")[0])
 
-    await waitFor(() => expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID))
-    expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
-  })
-
-  it("drops a pending selection when the picker is dismissed", async () => {
-    let resolveFetch: (response: Response) => void = () => {}
-    mockGandalfFetch.mockReturnValue(
-      new Promise<Response>((resolve) => {
-        resolveFetch = resolve
-      })
-    )
-    const onSelectTokenId = renderPicker("buy")
-
-    fireEvent.click(screen.getByText("GOOD"))
-    await waitFor(() => expect(mockGandalfFetch).toHaveBeenCalled())
-    fireEvent.click(screen.getByText("Dismiss picker"))
-    resolveFetch(Response.json({ results: scanResults }))
-    await new Promise((resolve) => setTimeout(resolve, 20))
-
+    expect(screen.queryByRole("dialog")).toBeNull()
     expect(onSelectTokenId).not.toHaveBeenCalled()
   })
 
   it("falls back to the safe list warning when scanning is disabled", async () => {
     mockUseSettingValue.mockReturnValue(false)
-    mockSafeTokens.clear()
     const onSelectTokenId = renderPicker("buy")
 
     fireEvent.click(screen.getByText("BAD"))
@@ -316,35 +369,5 @@ describe("SelectTokenButton token risk scan", () => {
     fireEvent.click(screen.getByText("I Understand"))
     expect(mockAcknowledgeToken).toHaveBeenCalledWith(BENIGN_ID, "Benign")
     expect(onSelectTokenId).toHaveBeenCalledWith(BENIGN_ID)
-  })
-
-  it("requires acknowledging a malicious token outside the safe list before buying it", async () => {
-    mockSafeTokens.clear()
-    const onSelectTokenId = renderPicker("buy")
-
-    fireEvent.click(screen.getByText("BAD"))
-
-    expect(await screen.findByText("Malicious")).toBeTruthy()
-    const proceed = screen.getByText("Proceed").closest("button") as HTMLButtonElement
-    expect(proceed.disabled).toBe(true)
-
-    fireEvent.click(screen.getByLabelText("I acknowledge the risks"))
-    fireEvent.click(proceed)
-
-    expect(mockAcknowledgeToken).toHaveBeenCalledWith(MALICIOUS_ID, "Malicious")
-    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
-  })
-
-  it("never blocks selling a malicious token outside the safe list", async () => {
-    mockSafeTokens.clear()
-    const onSelectTokenId = renderPicker("sell")
-
-    fireEvent.click(screen.getByText("BAD"))
-
-    expect(await screen.findByText("Malicious")).toBeTruthy()
-    expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
-
-    fireEvent.click(screen.getByText("I Understand"))
-    expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)
   })
 })

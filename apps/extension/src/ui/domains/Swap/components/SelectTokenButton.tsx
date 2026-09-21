@@ -1,5 +1,5 @@
 import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
-import { AlertTriangleIcon, ChevronDownIcon, LoaderIcon, PlusIcon } from "@talismn/icons"
+import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -8,15 +8,12 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
 import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import {
+  getFreshTokenRiskScan,
   getTokenRiskRef,
-  type TokenRiskRef,
-  type TokenRiskScan,
   type TokenRiskVerdict,
   tokenRiskScanQueryOptions,
-  UNKNOWN_TOKEN_RISK,
 } from "@ui/domains/TokenRisk/tokenRiskScan"
 import { useIsTokenRiskScanEnabled, useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -24,14 +21,13 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
-import { type FC, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
 import { filterAndSortTokensByTab, getTokenTabs } from "../swap-services/token-filtering"
 import { useRecentTokenIds } from "../swap-services/useRecentTokenIds"
 
 const PICKER_CONTAINER_ID = "swap-modal-token-picker"
-const RISK_SCAN_TIMEOUT_MS = 5000
 
 type Props = {
   allowedTokenIds: string[] | undefined // todo rename, these are tokenIds
@@ -100,30 +96,14 @@ const TokenPickerModalContent: FC<{
   const remoteConfig = useRemoteConfig()
 
   const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
-  const [riskWarning, setRiskWarning] = useState<{ tokenId: string; scan: TokenRiskScan } | null>(
-    null
-  )
-  const [scanningTokenId, setScanningTokenId] = useState<string | null>(null)
   const { safeTokens, acknowledgedTokenVerdicts, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
-  const { scanToken } = useSwapTokenRiskScan()
-  const selectionRef = useRef<object | null>(null)
-
-  const cancelSelection = useCallback(() => {
-    selectionRef.current = null
-    setScanningTokenId(null)
-  }, [])
+  const getCachedVerdict = useCachedTokenRiskVerdict()
 
   // the modal keeps this component mounted while its closing animation runs
   useEffect(() => {
-    if (!isOpen) cancelSelection()
-    return cancelSelection
-  }, [isOpen, cancelSelection])
-
-  const handleDismiss = useCallback(() => {
-    cancelSelection()
-    onDismiss()
-  }, [cancelSelection, onDismiss])
+    if (!isOpen) setWarningTokenId(null)
+  }, [isOpen])
 
   const priorityTokens = useCallback(
     (token: Token) => {
@@ -159,6 +139,8 @@ const TokenPickerModalContent: FC<{
   const isSafeListed = useCallback(
     (tokenId: string) => {
       const token = tokensMap[tokenId]
+      if (isTokenInTypes(token, ["sol-spl", "sol-token2022"]))
+        return safeTokens.has(`${token.networkId}:${token.mintAddress}`)
       const erc20Address =
         token && "contractAddress" in token ? (token.contractAddress as string) : undefined
       return (
@@ -173,40 +155,28 @@ const TokenPickerModalContent: FC<{
     (tokenId: string, verdict: TokenRiskVerdict) => {
       acknowledgeToken(tokenId, verdict)
       setWarningTokenId(null)
-      setRiskWarning(null)
       onSelect(tokenId)
     },
     [acknowledgeToken, onSelect]
   )
 
   const handleSelectTokenId = useCallback(
-    async (tokenId: string) => {
-      if (selectionRef.current) return
-
-      const selection = {}
-      selectionRef.current = selection
-      setScanningTokenId(tokenId)
-      const scan = await scanToken(tokensMap[tokenId])
-      if (selectionRef.current !== selection) return
-      selectionRef.current = null
-      setScanningTokenId(null)
-
-      if (acknowledgedTokenVerdicts.get(tokenId) === scan.verdict) return onSelect(tokenId)
-      if (!isSafeListed(tokenId)) return setWarningTokenId(tokenId)
-      if (scan.verdict === "Benign" || scan.verdict === "unknown") return onSelect(tokenId)
-      setRiskWarning({ tokenId, scan })
+    (tokenId: string) => {
+      if (isSafeListed(tokenId)) return onSelect(tokenId)
+      const acknowledgedVerdict = acknowledgedTokenVerdicts.get(tokenId)
+      if (acknowledgedVerdict && acknowledgedVerdict === getCachedVerdict(tokensMap[tokenId]))
+        return onSelect(tokenId)
+      setWarningTokenId(tokenId)
     },
-    [tokensMap, onSelect, acknowledgedTokenVerdicts, scanToken, isSafeListed]
+    [tokensMap, onSelect, isSafeListed, acknowledgedTokenVerdicts, getCachedVerdict]
   )
-
-  const riskWarningToken = useToken(riskWarning?.tokenId)
 
   return (
     <WizardModalDialog
       className="border-none"
       contentClassName="p-0! relative"
       title={t("Select a token")}
-      onBackClick={handleDismiss}
+      onBackClick={onDismiss}
       id={PICKER_CONTAINER_ID}
     >
       <TokenPicker
@@ -223,25 +193,11 @@ const TokenPickerModalContent: FC<{
         onSelect={handleSelectTokenId}
         showEmptyBalances
       />
-      {scanningTokenId && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
-          <LoaderIcon className="animate-spin-slow text-xl" />
-        </div>
-      )}
       <SelectTokenWarningDrawer
         tokenId={warningTokenId}
         requireAcknowledgement={priorityMode !== "sell"}
         onBack={() => setWarningTokenId(null)}
         onAccept={acceptToken}
-      />
-      <TokenRiskDrawer
-        scan={riskWarning?.scan ?? null}
-        symbol={riskWarningToken?.symbol}
-        isOpen={!!riskWarning}
-        containerId={PICKER_CONTAINER_ID}
-        requireAcknowledgement={priorityMode !== "sell"}
-        onDismiss={() => setRiskWarning(null)}
-        onAccept={() => riskWarning && acceptToken(riskWarning.tokenId, riskWarning.scan.verdict)}
       />
     </WizardModalDialog>
   )
@@ -305,44 +261,47 @@ const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ classNa
   />
 )
 
-const useSwapTokenRiskScan = () => {
+const useCachedTokenRiskVerdict = () => {
   const queryClient = useQueryClient()
   const isEnabled = useIsTokenRiskScanEnabled()
-  const { genericEvent } = useAnalytics()
 
-  const fetchScan = useCallback(
-    (ref: TokenRiskRef, options?: { staleTime: number }) => {
-      let timer: ReturnType<typeof setTimeout> | undefined
-      const timeout = new Promise<TokenRiskScan>((resolve) => {
-        timer = setTimeout(() => resolve(UNKNOWN_TOKEN_RISK), RISK_SCAN_TIMEOUT_MS)
-      })
-      return Promise.race([
-        queryClient
-          .fetchQuery({ ...tokenRiskScanQueryOptions(ref), ...options })
-          .catch(() => UNKNOWN_TOKEN_RISK),
-        timeout,
-      ]).finally(() => clearTimeout(timer))
-    },
-    [queryClient]
-  )
-
-  const scanToken = useCallback(
-    async (token: Token | undefined): Promise<TokenRiskScan> => {
+  return useCallback(
+    (token: Token | undefined): TokenRiskVerdict | undefined => {
       const ref = isEnabled ? getTokenRiskRef(token) : null
-      if (!ref) return UNKNOWN_TOKEN_RISK
-      const firstScan = await fetchScan(ref)
-      const scan = firstScan.isScanPending ? await fetchScan(ref, { staleTime: 0 }) : firstScan
-      genericEvent("token risk scan", {
-        surface: "swap-select",
-        verdict: scan.verdict,
-        chainId: ref.chainId,
-      })
-      return scan
+      return ref ? getFreshTokenRiskScan(queryClient, ref)?.verdict : "unknown"
     },
-    [isEnabled, fetchScan, genericEvent]
+    [queryClient, isEnabled]
   )
+}
 
-  return { scanToken }
+const useRetriedTokenRiskScan = (tokenId: string | null, token: Token | null | undefined) => {
+  const queryClient = useQueryClient()
+  const { genericEvent } = useAnalytics()
+  const { ref, scan, isPending } = useTokenRiskScan(token)
+  const [retry, setRetry] = useState<{ tokenId: string; isDone: boolean } | null>(null)
+
+  useEffect(() => {
+    if (!tokenId) return setRetry(null)
+    if (!ref || !scan?.isScanPending || retry?.tokenId === tokenId) return
+    setRetry({ tokenId, isDone: false })
+    queryClient
+      .fetchQuery({ ...tokenRiskScanQueryOptions(ref), staleTime: 0 })
+      .catch(() => null)
+      .finally(() =>
+        setRetry((prev) => (prev?.tokenId === tokenId ? { tokenId, isDone: true } : prev))
+      )
+  }, [queryClient, tokenId, ref, scan?.isScanPending, retry?.tokenId])
+
+  const isRetrying = !!scan?.isScanPending && !(retry?.tokenId === tokenId && retry.isDone)
+  const verdict = isRetrying ? undefined : scan?.verdict
+  const chainId = ref?.chainId
+
+  useEffect(() => {
+    if (tokenId && chainId && verdict)
+      genericEvent("token risk scan", { surface: "swap-select", verdict, chainId })
+  }, [genericEvent, tokenId, chainId, verdict])
+
+  return { scan: isRetrying ? undefined : scan, isScanning: isPending || isRetrying }
 }
 
 const useTokenFilterOptions = () => {
@@ -395,13 +354,14 @@ const SelectTokenWarningDrawer: FC<{
   const { t } = useTranslation()
 
   // keep something to display while drawer closes
-  const [safeTokenId, setSafeTokenId] = useState<string | null>(tokenId)
+  const [lastTokenId, setLastTokenId] = useState<string | null>(tokenId)
+  const safeTokenId = tokenId ?? lastTokenId
   const token = useToken(safeTokenId ?? undefined)
-  const { scan } = useTokenRiskScan(token)
+  const { scan, isScanning } = useRetriedTokenRiskScan(tokenId, token)
   const [isAcknowledged, setIsAcknowledged] = useState(false)
 
   useEffect(() => {
-    if (tokenId) setSafeTokenId(tokenId)
+    if (tokenId) setLastTokenId(tokenId)
     else setIsAcknowledged(false)
   }, [tokenId])
 
@@ -442,7 +402,7 @@ const SelectTokenWarningDrawer: FC<{
             <Button onClick={onBack}>{t("Back")}</Button>
             <Button
               primary
-              disabled={needsAcknowledgement && !isAcknowledged}
+              disabled={isScanning || (needsAcknowledgement && !isAcknowledged)}
               onClick={() => onAccept(safeTokenId, scan?.verdict ?? "unknown")}
             >
               {needsAcknowledgement ? t("Proceed") : t("I Understand")}
