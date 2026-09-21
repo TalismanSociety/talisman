@@ -10,10 +10,7 @@ export const TokenReportCard: FC<PropsWithChildren<{ className?: string }>> = ({
   className,
 }) => (
   <div
-    className={cn(
-      "flex w-full flex-col gap-6 rounded-lg border border-grey-700 px-6 py-6",
-      className
-    )}
+    className={cn("flex w-full flex-col gap-6 rounded border border-grey-700 px-6 py-6", className)}
   >
     {children}
   </div>
