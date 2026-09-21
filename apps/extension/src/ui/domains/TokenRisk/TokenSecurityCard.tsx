@@ -6,8 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { BlockaidLogo } from "./BlockaidLogo"
 import { GoPlusReportRow } from "./GoPlusReportCard"
-import { getGoPlusReportUrl } from "./goPlusReport"
-import { TokenReportCard, TokenReportRow } from "./TokenReportCard"
+import { TokenReportCard, TokenReportPlaceholderPill, TokenReportRow } from "./TokenReportCard"
 import { TokenRiskScanningPill, TokenRiskVerdictPill } from "./TokenRiskPill"
 import type { TokenRiskScan } from "./tokenRiskScan"
 
@@ -17,15 +16,27 @@ const TokenRiskRow: FC<{ scan: TokenRiskScan | undefined; symbol: string }> = ({
 }) => {
   const { t } = useTranslation()
 
-  if (scan?.verdict === "unknown") return null
+  const getAction = () => {
+    if (!scan) return <TokenRiskScanningPill />
+    if (scan.verdict !== "unknown") return <TokenRiskVerdictPill scan={scan} symbol={symbol} />
+    return (
+      <TokenReportPlaceholderPill
+        tooltip={
+          scan.isChainUnsupported
+            ? t("Blockaid token scan isn't available on this network")
+            : t("Blockaid token scan isn't available for this token")
+        }
+      >
+        {t("Unavailable")}
+      </TokenReportPlaceholderPill>
+    )
+  }
 
   return (
     <TokenReportRow
       logo={<BlockaidLogo className="h-8 w-auto text-body" />}
       title={t("Blockaid Token Scan")}
-      action={
-        scan ? <TokenRiskVerdictPill scan={scan} symbol={symbol} /> : <TokenRiskScanningPill />
-      }
+      action={getAction()}
     />
   )
 }
@@ -48,11 +59,6 @@ export const TokenSecurityCard: FC<TokenSecurityCardProps> = ({
   className,
 }) => {
   const { t } = useTranslation()
-
-  const hasGoPlusReport = !!getGoPlusReportUrl(token)
-  const hasRiskScan = scan?.verdict !== "unknown"
-
-  if (!hasGoPlusReport && !hasRiskScan) return null
 
   return (
     <div className={cn("flex w-full flex-col gap-4", className)}>
