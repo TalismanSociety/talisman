@@ -80,7 +80,7 @@
     "bs58": "^6.0.0",
     "chart.js": "^4.5.1",
     "check-password-strength": "^3.0.0",
-    "cn": "^0.2.6",
+    "cn": "^0.3.0",
     "color": "5.0.3",
     "date-fns": "^4.4.0",
     "dexie": "^4.4.6",
