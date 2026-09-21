@@ -1,5 +1,6 @@
 import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
@@ -7,6 +8,15 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
+import {
+  getFreshTokenRiskScan,
+  getTokenRiskRef,
+  type TokenRiskVerdict,
+  tokenRiskScanQueryOptions,
+} from "@ui/domains/TokenRisk/tokenRiskScan"
+import { useIsTokenRiskScanEnabled, useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
@@ -68,25 +78,32 @@ const TokenPickerModal: FC<{
 }> = ({ isOpen, ...contentProps }) => {
   return (
     <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={contentProps.onDismiss}>
-      <TokenPickerModalContent {...contentProps} />
+      <TokenPickerModalContent isOpen={isOpen} {...contentProps} />
     </Modal>
   )
 }
 
 const TokenPickerModalContent: FC<{
+  isOpen: boolean
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
   priorityMode?: "buy" | "sell"
   tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
+}> = ({ isOpen, tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
   const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
-  const { safeTokens, acknowledgedTokenIds, acknowledgeToken } = useSwap()
+  const { safeTokens, acknowledgedTokenVerdicts, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
+  const getCachedVerdict = useCachedTokenRiskVerdict()
+
+  // the modal keeps this component mounted while its closing animation runs
+  useEffect(() => {
+    if (!isOpen) setWarningTokenId(null)
+  }, [isOpen])
 
   const priorityTokens = useCallback(
     (token: Token) => {
@@ -119,25 +136,39 @@ const TokenPickerModalContent: FC<{
     [assetIdSet]
   )
 
-  const handleSelectTokenId = useCallback(
-    (tokenId: string, acceptWarning?: boolean) => {
-      if (!acceptWarning && !acknowledgedTokenIds.has(tokenId)) {
-        const token = tokensMap[tokenId]
-        const erc20Address =
-          token && "contractAddress" in token ? (token.contractAddress as string) : undefined
-        const networkId = token?.networkId
-        const isSafe = safeTokens.has(`${networkId}:${erc20Address?.toLowerCase()}`)
-        const shouldShowWarning = !isSafe && erc20Address !== undefined
-        if (shouldShowWarning) return setWarningTokenId(tokenId)
-      }
+  const isSafeListed = useCallback(
+    (tokenId: string) => {
+      const token = tokensMap[tokenId]
+      if (isTokenInTypes(token, ["sol-spl", "sol-token2022"]))
+        return safeTokens.has(`${token.networkId}:${token.mintAddress}`)
+      const erc20Address =
+        token && "contractAddress" in token ? (token.contractAddress as string) : undefined
+      return (
+        erc20Address === undefined ||
+        safeTokens.has(`${token?.networkId}:${erc20Address.toLowerCase()}`)
+      )
+    },
+    [safeTokens, tokensMap]
+  )
 
-      if (acceptWarning) {
-        acknowledgeToken(tokenId)
-        setWarningTokenId(null)
-      }
+  const acceptToken = useCallback(
+    (tokenId: string, verdict: TokenRiskVerdict) => {
+      acknowledgeToken(tokenId, verdict)
+      setWarningTokenId(null)
       onSelect(tokenId)
     },
-    [safeTokens, tokensMap, onSelect, acknowledgedTokenIds, acknowledgeToken]
+    [acknowledgeToken, onSelect]
+  )
+
+  const handleSelectTokenId = useCallback(
+    (tokenId: string) => {
+      if (isSafeListed(tokenId)) return onSelect(tokenId)
+      const acknowledgedVerdict = acknowledgedTokenVerdicts.get(tokenId)
+      if (acknowledgedVerdict && acknowledgedVerdict === getCachedVerdict(tokensMap[tokenId]))
+        return onSelect(tokenId)
+      setWarningTokenId(tokenId)
+    },
+    [tokensMap, onSelect, isSafeListed, acknowledgedTokenVerdicts, getCachedVerdict]
   )
 
   return (
@@ -164,8 +195,9 @@ const TokenPickerModalContent: FC<{
       />
       <SelectTokenWarningDrawer
         tokenId={warningTokenId}
+        requireAcknowledgement={priorityMode !== "sell"}
         onBack={() => setWarningTokenId(null)}
-        onAccept={() => handleSelectTokenId(warningTokenId!, true)}
+        onAccept={acceptToken}
       />
     </WizardModalDialog>
   )
@@ -229,6 +261,49 @@ const BaseButton: FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ classNa
   />
 )
 
+const useCachedTokenRiskVerdict = () => {
+  const queryClient = useQueryClient()
+  const isEnabled = useIsTokenRiskScanEnabled()
+
+  return useCallback(
+    (token: Token | undefined): TokenRiskVerdict | undefined => {
+      const ref = isEnabled ? getTokenRiskRef(token) : null
+      return ref ? getFreshTokenRiskScan(queryClient, ref)?.verdict : "unknown"
+    },
+    [queryClient, isEnabled]
+  )
+}
+
+const useRetriedTokenRiskScan = (tokenId: string | null, token: Token | null | undefined) => {
+  const queryClient = useQueryClient()
+  const { genericEvent } = useAnalytics()
+  const { ref, scan, isPending } = useTokenRiskScan(token)
+  const [retry, setRetry] = useState<{ tokenId: string; isDone: boolean } | null>(null)
+
+  useEffect(() => {
+    if (!tokenId) return setRetry(null)
+    if (!ref || !scan?.isScanPending || retry?.tokenId === tokenId) return
+    setRetry({ tokenId, isDone: false })
+    queryClient
+      .fetchQuery({ ...tokenRiskScanQueryOptions(ref), staleTime: 0 })
+      .catch(() => null)
+      .finally(() =>
+        setRetry((prev) => (prev?.tokenId === tokenId ? { tokenId, isDone: true } : prev))
+      )
+  }, [queryClient, tokenId, ref, scan?.isScanPending, retry?.tokenId])
+
+  const isRetrying = !!scan?.isScanPending && !(retry?.tokenId === tokenId && retry.isDone)
+  const verdict = isRetrying ? undefined : scan?.verdict
+  const chainId = ref?.chainId
+
+  useEffect(() => {
+    if (tokenId && chainId && verdict)
+      genericEvent("token risk scan", { surface: "swap-select", verdict, chainId })
+  }, [genericEvent, tokenId, chainId, verdict])
+
+  return { scan: isRetrying ? undefined : scan, isScanning: isPending || isRetrying }
+}
+
 const useTokenFilterOptions = () => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
@@ -272,21 +347,25 @@ const useTokenFilterOptions = () => {
 
 const SelectTokenWarningDrawer: FC<{
   tokenId: string | null
+  requireAcknowledgement: boolean
   onBack: () => void
-  onAccept: (tokenId: string) => void
-}> = ({ tokenId, onBack, onAccept }) => {
+  onAccept: (tokenId: string, verdict: TokenRiskVerdict) => void
+}> = ({ tokenId, requireAcknowledgement, onBack, onAccept }) => {
   const { t } = useTranslation()
 
   // keep something to display while drawer closes
-  const [safeTokenId, setSafeTokenId] = useState<string | null>(tokenId)
+  const [lastTokenId, setLastTokenId] = useState<string | null>(tokenId)
+  const safeTokenId = tokenId ?? lastTokenId
   const token = useToken(safeTokenId ?? undefined)
+  const { scan, isScanning } = useRetriedTokenRiskScan(tokenId, token)
+  const [isAcknowledged, setIsAcknowledged] = useState(false)
 
   useEffect(() => {
-    if (tokenId) setSafeTokenId(tokenId)
+    if (tokenId) setLastTokenId(tokenId)
+    else setIsAcknowledged(false)
   }, [tokenId])
 
-  const contractAddress =
-    token && "contractAddress" in token ? (token.contractAddress as string) : undefined
+  const needsAcknowledgement = requireAcknowledgement && scan?.verdict === "Malicious"
 
   return (
     <Drawer
@@ -305,39 +384,28 @@ const SelectTokenWarningDrawer: FC<{
               <AlertTriangleIcon className="text-alert-warn text-md" />
               <p className="font-light text-alert-warn text-md">{t("Warning")}</p>
             </div>
-            <p className="font-light text-alert-warn text-sm leading-paragraph">
+            <p className="font-light text-body-secondary text-sm leading-paragraph">
               {token.symbol} (${token.symbol}){" "}
               {t(
                 "isn't traded on leading U.S. centralised exchanges or frequently swapped. Always do your own research before proceeding."
               )}
             </p>
-            <div className="flex h-28 w-full items-center gap-4 rounded-lg border border-grey-700 px-6">
-              <img
-                src="data:image/png;base64,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"
-                alt=""
-                className="h-16 w-auto shrink-0"
-              />
-              <div className="flex flex-col gap-3">
-                <p className="text-body text-sm leading-none!">{t("Token Audit Report")}</p>
-                <p className="text-body-secondary text-xs leading-none!">
-                  {t("Powered by GoPlus")}
-                </p>
-              </div>
-              <div className="grow"></div>
-              <a
-                href={`https://gopluslabs.io/token-security/${token.networkId}/${contractAddress}`}
-                target="_blank"
-                className="flex h-14 items-center rounded-full bg-primary-500/10 px-6 text-primary-500/80 text-sm hover:bg-primary-500/20 hover:text-primary"
-                rel="noopener"
-              >
-                <span>{t("View Report")}</span>
-              </a>
-            </div>
           </div>
+          <TokenSecurityCard
+            token={token}
+            scan={scan}
+            symbol={token.symbol}
+            isAcknowledged={isAcknowledged}
+            onAcknowledgedChange={requireAcknowledgement ? setIsAcknowledged : undefined}
+          />
           <div className="grid w-full grid-cols-2 gap-8">
             <Button onClick={onBack}>{t("Back")}</Button>
-            <Button primary onClick={() => onAccept(safeTokenId)}>
-              {t("I Understand")}
+            <Button
+              primary
+              disabled={isScanning || (needsAcknowledgement && !isAcknowledged)}
+              onClick={() => onAccept(safeTokenId, scan?.verdict ?? "unknown")}
+            >
+              {needsAcknowledgement ? t("Proceed") : t("I Understand")}
             </Button>
           </div>
         </div>

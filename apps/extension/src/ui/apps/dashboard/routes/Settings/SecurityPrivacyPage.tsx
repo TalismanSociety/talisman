@@ -4,6 +4,7 @@ import {
   AlertCircleIcon,
   ChevronRightIcon,
   ClockIcon,
+  CoinsIcon,
   GlobeIcon,
   InfoIcon,
   LockIcon,
@@ -30,10 +31,12 @@ const Content = () => {
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const [autoRiskScan, setAutoRiskScan] = useSetting("autoRiskScan")
   const [autoDappScan, setAutoDappScan] = useSetting("autoDappScan")
+  const [autoTokenScan, setAutoTokenScan] = useSetting("autoTokenScan")
   const navigate = useNavigate()
 
   const withRiskAnalysis = useFeatureFlag("RISK_ANALYSIS_V2")
   const withDappScan = useFeatureFlag("BLOCKAID_DAPP_SCAN_V2")
+  const withTokenScan = useFeatureFlag("BLOCKAID_TOKEN_SCAN")
 
   const allBackedUp = useMnemonicsAllBackedUp()
 
@@ -120,6 +123,41 @@ const Content = () => {
             }
           >
             <Toggle checked={autoDappScan} onChange={(e) => setAutoDappScan(e.target.checked)} />
+          </Setting>
+        )}
+        {withTokenScan && (
+          <Setting
+            iconLeft={CoinsIcon}
+            title={
+              <span className="inline-flex items-center gap-[0.3em]">
+                <span>{t("Token risk scan")}</span>
+                <Tooltip>
+                  <TooltipTrigger className="inline-block">
+                    <InfoIcon />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t(
+                      "This service is only available for tokens on Solana and major Ethereum networks."
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </span>
+            }
+            subtitle={
+              <Trans t={t}>
+                Assess token risks via{" "}
+                <a
+                  className="text-grey-200 hover:text-body"
+                  href="https://blockaid.io"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Blockaid
+                </a>
+              </Trans>
+            }
+          >
+            <Toggle checked={autoTokenScan} onChange={(e) => setAutoTokenScan(e.target.checked)} />
           </Setting>
         )}
         {!IS_FIREFOX && (

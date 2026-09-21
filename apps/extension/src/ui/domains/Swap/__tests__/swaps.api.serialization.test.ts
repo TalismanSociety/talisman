@@ -4,6 +4,7 @@ import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
+  getUniswapSafeTokenKey,
   serializeAssetRegistry,
   serializeSafeTokens,
 } from "../swaps.api.serialization"
@@ -32,6 +33,19 @@ describe("swaps.api serialization helpers", () => {
     expect(getSupportMapSnapshot(deserialized.supportMap)).toEqual(
       getSupportMapSnapshot(registry.supportMap)
     )
+  })
+
+  it("keys EVM safe tokens by chain id and lowercased address", () => {
+    expect(getUniswapSafeTokenKey({ chainId: 1, address: "0xAbC" })).toBe("1:0xabc")
+  })
+
+  it("keys Solana safe tokens by network id and case-sensitive mint", () => {
+    expect(
+      getUniswapSafeTokenKey({
+        chainId: 501000101,
+        address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      })
+    ).toBe("solana-mainnet:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
   })
 
   it("round-trips safe tokens through JSON-safe payload", () => {

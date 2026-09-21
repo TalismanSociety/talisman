@@ -31,6 +31,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
+import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -88,6 +91,8 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
+  const { scan: riskScan } = useTokenRiskScan(token, "token-settings")
+  const hasSecurityReport = !!getGoPlusReportUrl(token) || riskScan?.verdict !== "unknown"
   const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()
 
@@ -334,30 +339,31 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             />
           )}
         </div>
-        <div>
-          <FormFieldContainer label={t("Display balances")}>
-            <div className="flex gap-3">
-              <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
-                <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
-              </Toggle>
-              {isActiveSetByUser && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className="text-primary text-xs"
-                    type="button"
-                    onClick={resetToTalismanDefault}
-                  >
-                    <RotateCcwIcon />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div>{t("Reset to default")}</div>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          </FormFieldContainer>
-        </div>
-        <div className="flex justify-end gap-8 py-8">
+
+        {hasSecurityReport && (
+          <TokenSecurityPanels token={token} scan={riskScan} symbol={token.symbol} />
+        )}
+        <div className="mt-8 flex justify-end gap-8 py-8">
+          <div className="flex gap-3">
+            <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+              <span className={"text-grey-300"}>{t("Display balances")}</span>
+            </Toggle>
+            {isActiveSetByUser && (
+              <Tooltip>
+                <TooltipTrigger
+                  className="text-primary text-xs"
+                  type="button"
+                  onClick={resetToTalismanDefault}
+                >
+                  <RotateCcwIcon />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div>{t("Reset to default")}</div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div className="grow" />
           {isTokenCustom(token) && (
             <Button
               className="h-24 w-[15rem] text-base"

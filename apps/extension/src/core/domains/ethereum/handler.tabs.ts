@@ -10,7 +10,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { assert, throwAfter } from "@talismn/util"
-import i18next from "i18next"
 import {
   createClient,
   getAddress,
@@ -77,6 +76,7 @@ import type {
   EthRequestArguments,
   EthRequestResult,
   EthRequestSignArguments,
+  WatchAssetWarning,
   Web3WalletPermission,
   Web3WalletPermissionTarget,
 } from "./types"
@@ -597,24 +597,15 @@ export class EthTabsHandler extends TabsHandler {
         token.contractAddress.toLowerCase() !== address.toLowerCase()
     )
 
-    const warnings: string[] = []
+    const warnings: WatchAssetWarning[] = []
     if (!tokenInfo) {
-      warnings.push(i18next.t("Failed to verify the contract information"))
+      warnings.push({ type: "unverified-contract" })
     } else {
       if (tokenInfo.symbol !== symbol)
-        warnings.push(
-          i18next.t(
-            "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
-            { symbol, contractSymbol: tokenInfo.symbol }
-          )
-        )
-      if (!tokenInfo.coingeckoId)
-        warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
+        warnings.push({ type: "symbol-mismatch", symbol, contractSymbol: tokenInfo.symbol })
+      if (!tokenInfo.coingeckoId) warnings.push({ type: "missing-coingecko-id" })
     }
-    if (symbolFound)
-      warnings.push(
-        i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
-      )
+    if (symbolFound) warnings.push({ type: "duplicate-symbol", symbol })
 
     const token: EvmErc20Token = {
       id: tokenId,

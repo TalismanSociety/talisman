@@ -16,6 +16,7 @@ import { buildAssetRegistry } from "./swap-services/token-filtering"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
+  getUniswapSafeTokenKey,
   serializeAssetRegistry,
   serializeSafeTokens,
 } from "./swaps.api.serialization"
@@ -158,16 +159,15 @@ export const useSwapAssets = (fromTokenId: string | null) => {
  */
 export const useSafeTokens = () => {
   return useQuery({
-    queryKey: ["swap-safe-tokens-v2"],
+    queryKey: ["swap-safe-tokens-v3"],
     queryFn: async () => {
       const fetchTokenSet = (url: string) =>
         fetch(url)
           .then((r) => r.json())
           .then(
             (data: { tokens: { chainId: number; address: string }[] }) =>
-              new Set(data.tokens.map((tk) => `${tk.chainId}:${tk.address.toLowerCase()}`))
+              new Set(data.tokens.map(getUniswapSafeTokenKey))
           )
-          .catch(() => new Set<string>())
 
       const results = await Promise.allSettled([
         fetchTokenSet("https://tokens.uniswap.org/"),
@@ -178,13 +178,16 @@ export const useSafeTokens = () => {
             const lifiTalismanTokens = swapsConfig?.lifiTalismanTokens ?? []
             return new Set(
               lifiTalismanTokens.map((tokenId: string) => {
-                const [chainId, _type, contractAddress] = tokenId.split(":")
-                return `${chainId}:${contractAddress}`
+                const [chainId, type, address] = tokenId.split(":")
+                return `${chainId}:${type === "evm-erc20" ? address.toLowerCase() : address}`
               })
             )
           })
           .catch(() => new Set<string>()),
       ])
+
+      const [defaultList] = results
+      if (defaultList.status === "rejected") throw defaultList.reason
 
       const merged = new Set<string>()
       for (const result of results)

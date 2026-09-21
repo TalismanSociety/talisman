@@ -43,7 +43,7 @@ const Header = () => {
 export const ManageAccountsPage = () => (
   <PopupLayout>
     <Header />
-    <PopupContent>
+    <PopupContent className="px-8">
       <ManageAccountsProvider>
         <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
         <ManageAccountsLists className="py-8" />

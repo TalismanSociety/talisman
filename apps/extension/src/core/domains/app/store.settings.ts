@@ -22,6 +22,7 @@ export interface SettingsStoreData {
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
   autoDappScan: boolean
+  autoTokenScan: boolean
   nftsViewMode: "list" | "tiles"
   nftsSortBy: "value" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
@@ -53,6 +54,7 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
   autoDappScan: true,
+  autoTokenScan: true,
   nftsViewMode: "tiles",
   tokensSortBy: "total",
   earnPositionsSortBy: "total",

@@ -26,6 +26,19 @@ export const deserializeAssetRegistry = ({
 
 export type SerializableSafeTokens = string[]
 
+const UNISWAP_SOLANA_CHAIN_ID = 501000101
+
+export const getUniswapSafeTokenKey = ({
+  chainId,
+  address,
+}: {
+  chainId: number
+  address: string
+}) =>
+  chainId === UNISWAP_SOLANA_CHAIN_ID
+    ? `solana-mainnet:${address}`
+    : `${chainId}:${address.toLowerCase()}`
+
 export const serializeSafeTokens = (safeTokens: Set<string>): SerializableSafeTokens => [
   ...safeTokens,
 ]

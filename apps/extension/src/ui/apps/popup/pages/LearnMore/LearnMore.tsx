@@ -55,7 +55,7 @@ const Header = () => {
 export const LearnMorePage = () => (
   <PopupLayout>
     <Header />
-    <PopupContent>
+    <PopupContent className="px-8">
       <LearnMoreContent
         onAddHardwareClick={goToAddHardwareAccounts}
         onCurrenciesClick={goToSettingsCurrency}

@@ -1,0 +1,71 @@
+import type { Token } from "@talismn/chaindata-provider"
+import goPlusLogo from "@ui/theme/images/goplus-logo.png"
+import { cn } from "@ui/util/cn"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import { getGoPlusReportUrl } from "./goPlusReport"
+import {
+  TOKEN_REPORT_BUTTON_CLASS_NAME,
+  TokenReportCard,
+  TokenReportPlaceholderPill,
+  TokenReportRow,
+} from "./TokenReportCard"
+
+const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = ({
+  reportUrl,
+  className,
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <a
+      href={reportUrl}
+      target="_blank"
+      className={cn(
+        TOKEN_REPORT_BUTTON_CLASS_NAME,
+        "bg-grey-750 text-body-secondary transition-colors duration-100 ease-out hover:bg-grey-700",
+        className
+      )}
+      rel="noopener"
+    >
+      <span>{t("View Report")}</span>
+    </a>
+  )
+}
+
+export const GoPlusReportRow: FC<{ token: Token | null | undefined }> = ({ token }) => {
+  const { t } = useTranslation()
+  const reportUrl = getGoPlusReportUrl(token)
+
+  return (
+    <TokenReportRow
+      logo={<img src={goPlusLogo} alt="" className="h-10 w-auto" />}
+      title={t("GoPlus Token Analysis")}
+      action={
+        reportUrl ? (
+          <GoPlusReportLink reportUrl={reportUrl} />
+        ) : (
+          <TokenReportPlaceholderPill
+            tooltip={t("GoPlus token analysis isn't available on this network")}
+          >
+            {t("Unavailable")}
+          </TokenReportPlaceholderPill>
+        )
+      }
+    />
+  )
+}
+
+export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?: string }> = ({
+  token,
+  className,
+}) => {
+  if (!getGoPlusReportUrl(token)) return null
+
+  return (
+    <TokenReportCard className={className}>
+      <GoPlusReportRow token={token} />
+    </TokenReportCard>
+  )
+}
