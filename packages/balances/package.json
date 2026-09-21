@@ -28,13 +28,13 @@
   },
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
-    "@metaplex-foundation/umi": "^1.5.1",
+    "@metaplex-foundation/umi": "^1.6.0",
     "@polkadot-api/substrate-bindings": "0.20.3",
     "@polkadot-api/utils": "0.4.0",
     "@solana-program/system": "0.14.1",
     "@solana-program/token": "0.16.1",
     "@solana-program/token-2022": "0.16.1",
-    "@solana/kit": "8.2.0",
+    "@solana/kit": "8.3.0",
     "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/crypto": "workspace:*",
@@ -48,8 +48,8 @@
     "p-queue": "9.3.3",
     "rxjs": "^7.8.2",
     "scale-ts": "^1.6.1",
-    "viem": "2.56.3",
-    "zod": "^4.5.4"
+    "viem": "2.56.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",

@@ -29,12 +29,12 @@
   "dependencies": {
     "@polkadot-api/substrate-client": "0.7.0",
     "@polkadot-api/ws-provider": "0.9.1",
-    "@solana/kit": "8.2.0",
+    "@solana/kit": "8.3.0",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "lodash-es": "4.18.1",
-    "viem": "2.56.3"
+    "viem": "2.56.8"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
