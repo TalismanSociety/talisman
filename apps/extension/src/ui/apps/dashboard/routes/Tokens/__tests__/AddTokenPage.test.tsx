@@ -134,7 +134,7 @@ describe("AddTokenPage", () => {
     selectNetworkAndEnterAddress(USDC_ADDRESS)
     await screen.findByDisplayValue("USDC")
 
-    expect(await screen.findByText("Cannot be sold")).toBeTruthy()
+    expect(await screen.findByText("Malicious")).toBeTruthy()
     const save = screen.getByText("Save").closest("button") as HTMLButtonElement
     expect(save.disabled).toBe(true)
 
@@ -158,7 +158,7 @@ describe("AddTokenPage", () => {
     selectNetworkAndEnterAddress(USDC_ADDRESS)
     await screen.findByDisplayValue("USDC")
 
-    expect(await screen.findByText("Unusual volume")).toBeTruthy()
+    expect(await screen.findByText("Risky")).toBeTruthy()
     expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
     expect((screen.getByText("Save").closest("button") as HTMLButtonElement).disabled).toBe(false)
   })

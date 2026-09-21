@@ -1,21 +1,35 @@
 import { cn } from "@ui/util/cn"
-import type { FC, ReactNode } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 
 export const TOKEN_REPORT_BUTTON_CLASS_NAME =
   "flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-xs"
 
-export const TokenReportCard: FC<{
-  logo: ReactNode
-  title: ReactNode
-  action: ReactNode
-  className?: string
-}> = ({ logo, title, action, className }) => (
+export const TokenReportCard: FC<PropsWithChildren<{ className?: string }>> = ({
+  children,
+  className,
+}) => (
   <div
     className={cn(
-      "flex h-20 w-full items-center gap-4 rounded-lg border border-grey-700 px-6 text-left",
+      "flex w-full flex-col gap-6 rounded-lg border border-grey-700 px-6 py-6",
       className
     )}
   >
+    {children}
+  </div>
+)
+
+export const TokenReportPlaceholderPill: FC<PropsWithChildren> = ({ children }) => (
+  <div className={cn(TOKEN_REPORT_BUTTON_CLASS_NAME, "bg-grey-800 text-body-disabled")}>
+    {children}
+  </div>
+)
+
+export const TokenReportRow: FC<{
+  logo: ReactNode
+  title: ReactNode
+  action: ReactNode
+}> = ({ logo, title, action }) => (
+  <div className="flex w-full items-center gap-4 text-left">
     <div className="flex w-16 shrink-0 justify-center">{logo}</div>
     <div className="text-body text-sm leading-none!">{title}</div>
     <div className="grow"></div>

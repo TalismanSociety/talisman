@@ -6,8 +6,7 @@ import { Button } from "@ui/components/Button"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
-import { TokenRiskCard } from "@ui/domains/TokenRisk/TokenRiskCard"
+import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -124,13 +123,13 @@ export const AddCustomErc20Token = () => {
           <div className="mt-10">
             <CustomErc20TokenViewDetails token={request.token} network={network} />
           </div>
-          <GoPlusReportCard token={request.token} className="mt-8" />
-          <TokenRiskCard
+          <TokenSecurityCard
+            token={request.token}
             scan={scan}
             symbol={request.token.symbol}
             isAcknowledged={isRiskAcknowledged}
             onAcknowledgedChange={setIsRiskAcknowledged}
-            className="mt-4"
+            className="mt-8"
           />
           <div className="grow"></div>
           {!!request.warnings?.length && (

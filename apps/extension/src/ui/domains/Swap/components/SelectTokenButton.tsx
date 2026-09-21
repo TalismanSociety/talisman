@@ -8,8 +8,7 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
-import { TokenRiskCard } from "@ui/domains/TokenRisk/TokenRiskCard"
+import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { TokenRiskDrawer } from "@ui/domains/TokenRisk/TokenRiskDrawer"
 import {
   getTokenRiskRef,
@@ -411,15 +410,13 @@ const SelectTokenWarningDrawer: FC<{
               )}
             </p>
           </div>
-          <div className="flex w-full flex-col gap-6">
-            <GoPlusReportCard token={token} />
-            <TokenRiskCard
-              scan={scan}
-              symbol={token.symbol}
-              isAcknowledged={isAcknowledged}
-              onAcknowledgedChange={requireAcknowledgement ? setIsAcknowledged : undefined}
-            />
-          </div>
+          <TokenSecurityCard
+            token={token}
+            scan={scan}
+            symbol={token.symbol}
+            isAcknowledged={isAcknowledged}
+            onAcknowledgedChange={requireAcknowledgement ? setIsAcknowledged : undefined}
+          />
           <div className="grid w-full grid-cols-2 gap-8">
             <Button onClick={onBack}>{t("Back")}</Button>
             <Button

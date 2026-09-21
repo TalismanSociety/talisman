@@ -1,6 +1,8 @@
+import { LoaderIcon } from "@talismn/icons"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
+import { useTranslation } from "react-i18next"
 import { TOKEN_REPORT_BUTTON_CLASS_NAME } from "./TokenReportCard"
 import {
   TOKEN_RISK_COLOR_CLASSES,
@@ -9,6 +11,17 @@ import {
 } from "./TokenRiskDetails"
 import { TokenRiskModal } from "./TokenRiskModal"
 import type { TokenRiskScan } from "./tokenRiskScan"
+
+export const TokenRiskScanningPill: FC = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div className={cn(TOKEN_REPORT_BUTTON_CLASS_NAME, "bg-grey-800 text-body-secondary")}>
+      <LoaderIcon className="animate-spin-slow" />
+      <span>{t("Scanning")}</span>
+    </div>
+  )
+}
 
 export const TokenRiskVerdictPill: FC<{
   scan: TokenRiskScan

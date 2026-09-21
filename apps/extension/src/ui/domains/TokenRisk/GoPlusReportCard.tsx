@@ -5,7 +5,7 @@ import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { getGoPlusReportUrl } from "./goPlusReport"
-import { TOKEN_REPORT_BUTTON_CLASS_NAME, TokenReportCard } from "./TokenReportCard"
+import { TOKEN_REPORT_BUTTON_CLASS_NAME, TokenReportCard, TokenReportRow } from "./TokenReportCard"
 
 export const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = ({
   reportUrl,
@@ -29,21 +29,30 @@ export const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = (
   )
 }
 
-export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?: string }> = ({
-  token,
-  className,
-}) => {
+export const GoPlusReportRow: FC<{ token: Token | null | undefined }> = ({ token }) => {
   const { t } = useTranslation()
   const reportUrl = getGoPlusReportUrl(token)
 
   if (!reportUrl) return null
 
   return (
-    <TokenReportCard
-      className={className}
+    <TokenReportRow
       logo={<img src={goPlusLogo} alt="" className="h-10 w-auto" />}
       title={t("GoPlus Token Analysis")}
       action={<GoPlusReportLink reportUrl={reportUrl} />}
     />
+  )
+}
+
+export const GoPlusReportCard: FC<{ token: Token | null | undefined; className?: string }> = ({
+  token,
+  className,
+}) => {
+  if (!getGoPlusReportUrl(token)) return null
+
+  return (
+    <TokenReportCard className={className}>
+      <GoPlusReportRow token={token} />
+    </TokenReportCard>
   )
 }

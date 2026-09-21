@@ -21,6 +21,7 @@ import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -28,8 +29,10 @@ import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
-import { GoPlusReportCard } from "@ui/domains/TokenRisk/GoPlusReportCard"
-import { TokenRiskBanner } from "@ui/domains/TokenRisk/TokenRiskBanner"
+import { GoPlusReportLink } from "@ui/domains/TokenRisk/GoPlusReportCard"
+import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
+import { TokenReportPlaceholderPill } from "@ui/domains/TokenRisk/TokenReportCard"
+import { TokenRiskScanningPill, TokenRiskVerdictPill } from "@ui/domains/TokenRisk/TokenRiskPill"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
@@ -145,6 +148,7 @@ const AddCustomTokenForm = () => {
   const token = useStore(form.store, (s) => s.values.token as Token | undefined)
   const symbol = useStore(form.store, (s) => s.values.symbol)
   const { scan, isPending: isScanPending } = useTokenRiskScan(token, "add-token")
+  const goPlusReportUrl = getGoPlusReportUrl(token)
   const [acknowledgedTokenId, setAcknowledgedTokenId] = useState<string | null>(null)
   const isRiskAcknowledged = !!token && acknowledgedTokenId === token.id
   const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
@@ -389,18 +393,40 @@ const AddCustomTokenForm = () => {
         />
       </div>
 
-      <GoPlusReportCard token={token} className="mt-8" />
+      <div className="grid grid-cols-2 gap-x-12">
+        <FormFieldContainer label={t("GoPlus token analysis")}>
+          <div className="flex">
+            {goPlusReportUrl ? (
+              <GoPlusReportLink reportUrl={goPlusReportUrl} />
+            ) : (
+              <TokenReportPlaceholderPill>{t("View Report")}</TokenReportPlaceholderPill>
+            )}
+          </div>
+        </FormFieldContainer>
+        <FormFieldContainer label={t("Blockaid token scan")}>
+          <div className="flex">
+            {token && scan?.verdict !== "unknown" ? (
+              scan ? (
+                <TokenRiskVerdictPill scan={scan} symbol={symbol || token.symbol} />
+              ) : (
+                <TokenRiskScanningPill />
+              )
+            ) : (
+              <TokenReportPlaceholderPill>{t("Unavailable")}</TokenReportPlaceholderPill>
+            )}
+          </div>
+        </FormFieldContainer>
+      </div>
 
-      {token && (
-        <TokenRiskBanner
-          scan={scan}
-          symbol={symbol || token.symbol}
-          isAcknowledged={isRiskAcknowledged}
-          onAcknowledgedChange={(isAcknowledged) =>
-            setAcknowledgedTokenId(isAcknowledged ? token.id : null)
-          }
-          className="mt-8"
-        />
+      {!!token && scan?.verdict === "Malicious" && (
+        <div className="mt-8 text-body-secondary text-sm">
+          <Checkbox
+            checked={isRiskAcknowledged}
+            onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
+          >
+            {t("I acknowledge the risks")}
+          </Checkbox>
+        </div>
       )}
 
       <div className="flex justify-end gap-8 py-8">
