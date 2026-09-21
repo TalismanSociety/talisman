@@ -339,33 +339,31 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             />
           )}
         </div>
-        <div className="grid grid-cols-3 gap-x-12">
-          <FormFieldContainer label={t("Display balances")}>
-            <div className="flex gap-3">
-              <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
-                <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
-              </Toggle>
-              {isActiveSetByUser && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className="text-primary text-xs"
-                    type="button"
-                    onClick={resetToTalismanDefault}
-                  >
-                    <RotateCcwIcon />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div>{t("Reset to default")}</div>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          </FormFieldContainer>
-        </div>
+
         {hasSecurityReport && (
           <TokenSecurityPanels token={token} scan={riskScan} symbol={token.symbol} />
         )}
-        <div className="flex justify-end gap-8 py-8">
+        <div className="mt-8 flex justify-end gap-8 py-8">
+          <div className="flex gap-3">
+            <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+              <span className={"text-grey-300"}>{t("Display balances")}</span>
+            </Toggle>
+            {isActiveSetByUser && (
+              <Tooltip>
+                <TooltipTrigger
+                  className="text-primary text-xs"
+                  type="button"
+                  onClick={resetToTalismanDefault}
+                >
+                  <RotateCcwIcon />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div>{t("Reset to default")}</div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div className="grow" />
           {isTokenCustom(token) && (
             <Button
               className="h-24 w-[15rem] text-base"

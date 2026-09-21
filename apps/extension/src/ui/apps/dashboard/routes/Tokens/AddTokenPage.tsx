@@ -391,7 +391,7 @@ const AddCustomTokenForm = () => {
 
       <TokenSecurityPanels token={token} scan={scan} symbol={symbol || token?.symbol || ""} />
 
-      <div className="flex items-center justify-end gap-8 py-8">
+      <div className="mt-8 flex items-center justify-end gap-8 py-8">
         {!!token && scan?.verdict === "Malicious" && (
           <div className="text-body-secondary text-sm">
             <Checkbox
