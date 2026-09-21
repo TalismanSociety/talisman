@@ -10,7 +10,14 @@ import {
   useTokenRiskVerdictLabel,
 } from "./TokenRiskDetails"
 import { TokenRiskModal } from "./TokenRiskModal"
-import type { TokenRiskScan } from "./tokenRiskScan"
+import type { TokenRiskScan, TokenRiskVerdict } from "./tokenRiskScan"
+
+const TOKEN_RISK_HOVER_CLASSES: Record<Exclude<TokenRiskVerdict, "unknown">, string> = {
+  Malicious: "hover:bg-alert-error/15",
+  Warning: "hover:bg-alert-warn/15",
+  Spam: "hover:bg-alert-warn/15",
+  Benign: "hover:bg-alert-success/15",
+}
 
 export const TokenRiskScanningPill: FC = () => {
   const { t } = useTranslation()
@@ -40,8 +47,8 @@ export const TokenRiskVerdictPill: FC<{
         onClick={open}
         className={cn(
           TOKEN_REPORT_BUTTON_CLASS_NAME,
-          "hover:opacity-80",
           TOKEN_RISK_COLOR_CLASSES[scan.verdict],
+          TOKEN_RISK_HOVER_CLASSES[scan.verdict],
           className
         )}
       >

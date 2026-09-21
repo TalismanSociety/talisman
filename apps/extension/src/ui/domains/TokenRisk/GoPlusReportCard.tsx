@@ -24,7 +24,7 @@ export const GoPlusReportLink: FC<{ reportUrl: string; className?: string }> = (
       target="_blank"
       className={cn(
         TOKEN_REPORT_BUTTON_CLASS_NAME,
-        "bg-grey-800 text-body-secondary transition-colors duration-100 ease-out hover:bg-grey-700",
+        "bg-grey-750 text-body-secondary transition-colors duration-100 ease-out hover:bg-grey-700",
         className
       )}
       rel="noopener"
