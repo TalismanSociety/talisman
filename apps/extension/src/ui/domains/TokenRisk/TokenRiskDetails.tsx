@@ -157,7 +157,7 @@ export const TokenRiskDetails: FC<{ scan: TokenRiskScan; symbol: string; classNa
           </div>
         </div>
       </div>
-      <hr className="border-body-disabled" />
+      <hr className="border-body-disabled/30" />
       {findings.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="text-body">{t("Findings")}</div>
