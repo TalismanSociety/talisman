@@ -251,7 +251,7 @@ describe("SelectTokenButton token risk scan", () => {
     fireEvent.click(screen.getByText("BAD"))
 
     expect(await screen.findByText("Malicious")).toBeTruthy()
-    expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
+    expect(screen.getByLabelText("I acknowledge the risks").closest(".invisible")).toBeTruthy()
 
     fireEvent.click(screen.getByText("I Understand"))
     expect(onSelectTokenId).toHaveBeenCalledWith(MALICIOUS_ID)

@@ -66,16 +66,19 @@ export const TokenSecurityCard: FC<TokenSecurityCardProps> = ({
         <GoPlusReportRow token={token} />
         <TokenRiskRow scan={scan} symbol={symbol} />
       </TokenReportCard>
-      {scan?.verdict === "Malicious" && onAcknowledgedChange && (
-        <div className="text-left text-body-secondary text-sm">
-          <Checkbox
-            checked={isAcknowledged}
-            onChange={(e) => onAcknowledgedChange(e.target.checked)}
-          >
-            {t("I acknowledge the risks")}
-          </Checkbox>
-        </div>
-      )}
+      <div
+        className={cn(
+          "pl-6 text-left text-body-secondary text-sm",
+          scan?.verdict === "Malicious" && onAcknowledgedChange ? "visible" : "invisible"
+        )}
+      >
+        <Checkbox
+          checked={isAcknowledged}
+          onChange={(e) => onAcknowledgedChange?.(e.target.checked)}
+        >
+          {t("I acknowledge the risks")}
+        </Checkbox>
+      </div>
     </div>
   )
 }

@@ -108,7 +108,7 @@ describe("AddCustomErc20Token", () => {
     render(<AddCustomErc20Token />)
 
     expect(screen.getByText("Risky")).toBeTruthy()
-    expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
+    expect(screen.getByLabelText("I acknowledge the risks").closest(".invisible")).toBeTruthy()
     expect(getApproveButton().disabled).toBe(false)
   })
 
