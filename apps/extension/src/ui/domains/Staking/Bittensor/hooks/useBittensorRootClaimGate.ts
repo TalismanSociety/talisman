@@ -59,7 +59,6 @@ export const useBittensorRootClaimGate = (
   const {
     claimablePlancks,
     forfeitedPlancks,
-    dustRows,
     isClaimUnavailable,
     isBelowDustThreshold,
     canSubmit,
@@ -77,7 +76,6 @@ export const useBittensorRootClaimGate = (
     account,
     claimablePlancks,
     forfeitedPlancks,
-    dustRows,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,

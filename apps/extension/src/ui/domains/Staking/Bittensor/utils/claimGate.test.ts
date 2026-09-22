@@ -28,14 +28,12 @@ describe("rootClaimThresholdToPlancks", () => {
 
 const preview = (
   redeemableTao: bigint,
-  accruedTao = redeemableTao,
-  dustRows = 0
+  accruedTao = redeemableTao
 ): BittensorBasketClaimPreview => ({
   hotkey: "hotkey-1",
   accrued_tao: accruedTao,
   redeemable_tao: redeemableTao,
   forfeited_tao_est: accruedTao - redeemableTao,
-  dust_rows: dustRows,
 })
 
 const OPEN_GATE: BittensorClaimGateInputs = {
@@ -53,18 +51,16 @@ describe("getBittensorClaimGate", () => {
     expect(getBittensorClaimGate(OPEN_GATE)).toEqual({
       claimablePlancks: 100n,
       forfeitedPlancks: 0n,
-      dustRows: 0,
       isClaimUnavailable: false,
       isBelowDustThreshold: false,
       canSubmit: true,
     })
   })
 
-  it("displays the redeemable amount and reports the forfeited dust rows", () => {
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(80n, 100n, 3) })
+  it("displays the redeemable amount and reports the forfeited dust value", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(80n, 100n) })
     expect(gate.claimablePlancks).toBe(80n)
     expect(gate.forfeitedPlancks).toBe(20n)
-    expect(gate.dustRows).toBe(3)
     expect(gate.canSubmit).toBe(true)
   })
 
@@ -88,11 +84,11 @@ describe("getBittensorClaimGate", () => {
 
   it("blocks as dust when the redeemable amount is below the threshold the full entitlement clears", () => {
     // spec 468: the chain compares redeemable_tao (entitlement minus dust rows), not accrued_tao
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(40n, 100n, 2) })
+    // a claim the chain skips forfeits nothing, so no forfeit warning either
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(40n, 100n) })
     expect(gate).toEqual({
       claimablePlancks: 40n,
-      forfeitedPlancks: 60n,
-      dustRows: 2,
+      forfeitedPlancks: 0n,
       isClaimUnavailable: false,
       isBelowDustThreshold: true,
       canSubmit: false,
@@ -103,7 +99,7 @@ describe("getBittensorClaimGate", () => {
     const gate = getBittensorClaimGate({
       ...OPEN_GATE,
       dustThreshold: 0n,
-      freshPreview: preview(0n, 100n, 4),
+      freshPreview: preview(0n, 100n),
     })
     expect(gate.isClaimUnavailable).toBe(false)
     expect(gate.isBelowDustThreshold).toBe(true)

@@ -1,3 +1,5 @@
+import type { bittensor } from "@polkadot-api/descriptors"
+
 /**
  * `RootClaimableThreshold` is stored as fixed-point rao with 32 fractional bits — the
  * `sudo_set_root_claim_threshold` extrinsic takes plain rao and stores it shifted left by
@@ -7,18 +9,18 @@
  */
 export const rootClaimThresholdToPlancks = (raw: bigint): bigint => (raw + (1n << 32n) - 1n) >> 32n
 
-/** decoded `BetaBasketRuntimeApi.get_basket_claim_preview` (spec 468), the fields the gate reads */
-export type BittensorBasketClaimPreview = {
-  hotkey: string
-  /** full entitlement at the pre-sale realizable quote */
-  accrued_tao: bigint
-  /** what the claim pays: the entitlement excluding the skipped dust rows */
-  redeemable_tao: bigint
-  /** estimated value of the skipped dust rows, left in the fund for the remaining holders */
-  forfeited_tao_est: bigint
-  /** fund rows the claim skips as dust */
-  dust_rows: number
-}
+/**
+ * `BetaBasketRuntimeApi.get_basket_claim_preview` (spec 468), the fields the gate reads:
+ * `accrued_tao` is the full entitlement at the pre-sale realizable quote, `redeemable_tao`
+ * what the claim pays once the dust rows are skipped, `forfeited_tao_est` the estimated
+ * value of those skipped rows, left in the fund for the remaining holders.
+ */
+export type BittensorBasketClaimPreview = Pick<
+  NonNullable<
+    (typeof bittensor)["descriptors"]["apis"]["BetaBasketRuntimeApi"]["get_basket_claim_preview"][1]
+  >,
+  "hotkey" | "accrued_tao" | "redeemable_tao" | "forfeited_tao_est"
+>
 
 export type BittensorClaimGateInputs = {
   hasAccount: boolean
@@ -68,21 +70,16 @@ export const getBittensorClaimGate = ({
     !isClaimUnavailable &&
     (claimablePlancks < dustThreshold || (isFreshPreviewReady && claimablePlancks === 0n))
 
-  const forfeitedPlancks = isFreshPreviewReady ? (freshPreview?.forfeited_tao_est ?? 0n) : 0n
-  const dustRows = isFreshPreviewReady ? (freshPreview?.dust_rows ?? 0) : 0
+  // a claim the chain would skip or reject forfeits nothing: only warn about dust rows the
+  // submitted claim would actually leave behind
+  const isClaimExecutable = isFreshPreviewReady && !isClaimUnavailable && !isBelowDustThreshold
+  const forfeitedPlancks = isClaimExecutable ? (freshPreview?.forfeited_tao_est ?? 0n) : 0n
 
-  const canSubmit =
-    hasAccount &&
-    !isClaimUnavailable &&
-    isFreshPreviewReady &&
-    isDustThresholdReady &&
-    isHoldIntervalReady &&
-    !isBelowDustThreshold
+  const canSubmit = hasAccount && isClaimExecutable && isDustThresholdReady && isHoldIntervalReady
 
   return {
     claimablePlancks,
     forfeitedPlancks,
-    dustRows,
     isClaimUnavailable,
     isBelowDustThreshold,
     canSubmit,

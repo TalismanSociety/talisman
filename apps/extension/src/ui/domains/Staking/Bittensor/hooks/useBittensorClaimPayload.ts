@@ -1,16 +1,18 @@
+import { ERA_PERIOD } from "@talismn/sapi"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useMemo } from "react"
 
 import { getBittensorClaimPayload } from "../utils/bittensorClaimTx"
 import { getBlockTimeMs } from "../utils/helpers"
 
-// a payload is mortal for 64 blocks: rebuild it well within that window so a claim confirmed
-// after the modal sat open for a while is not rejected as expired
-const PAYLOAD_REFRESH_BLOCKS = 16
+// rebuild the payload well within its mortal era so a claim confirmed after the modal sat
+// open for a while is not rejected as expired
+const PAYLOAD_REFRESH_BLOCKS = ERA_PERIOD / 4
 // a rebuild can be late (tab suspended, rebuild failed): past this age the payload is
 // withheld until a fresh one lands rather than handed to the user to sign
-const PAYLOAD_MAX_AGE_BLOCKS = 32
+const PAYLOAD_MAX_AGE_BLOCKS = ERA_PERIOD / 2
 
 type UseBittensorClaimPayloadProps = {
   networkId: string | undefined
@@ -29,6 +31,7 @@ export const useBittensorClaimPayload = ({
   enabled,
 }: UseBittensorClaimPayloadProps) => {
   const { data: sapi, isLoading: isLoadingSapi, isError: isErrorSapi } = useScaleApi(networkId)
+  const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
 
   const {
     data: payloadData,
@@ -47,7 +50,7 @@ export const useBittensorClaimPayload = ({
     // under its own key, which the enabled transition then starts from
     enabled: enabled && !!sapi && !!address && !!hotkey,
     placeholderData: keepPreviousData,
-    refetchInterval: sapi ? getBlockTimeMs(sapi) * PAYLOAD_REFRESH_BLOCKS : false,
+    refetchInterval: blockTimeMs ? blockTimeMs * PAYLOAD_REFRESH_BLOCKS : false,
     // the interval only ticks in a focused tab by default: the modal left open in a
     // background tab is exactly the case the rebuild exists for
     refetchIntervalInBackground: true,
@@ -60,9 +63,9 @@ export const useBittensorClaimPayload = ({
   } = useGetFeeEstimate({ sapi, payload: payloadData?.payload })
 
   const isPayloadExpired =
-    !!sapi &&
+    !!blockTimeMs &&
     !!payloadData &&
-    Date.now() - payloadUpdatedAt > getBlockTimeMs(sapi) * PAYLOAD_MAX_AGE_BLOCKS
+    Date.now() - payloadUpdatedAt > blockTimeMs * PAYLOAD_MAX_AGE_BLOCKS
   // never expose a payload built for previous inputs (keepPreviousData) or one that may
   // sit outside its mortal era: a fast user could reach the confirm step and sign it while
   // the current one is still building

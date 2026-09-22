@@ -25,15 +25,13 @@ vi.mock("../shared/parseMetadataRpcCached", () => ({
 
 const CONNECTOR = {} as Parameters<typeof fetchBasketClaims>[0]
 
-type PreviewFixture = { hotkey: string; accrued_tao: bigint; redeemable_tao: bigint }
-
 const preview = (hotkey: string, redeemableTao: bigint, accruedTao = redeemableTao) => ({
   hotkey,
   accrued_tao: accruedTao,
   redeemable_tao: redeemableTao,
 })
 
-const mockRuntimeCalls = (previewsByAddress: Record<string, PreviewFixture[]>) => {
+const mockRuntimeCalls = (previewsByAddress: Record<string, ReturnType<typeof preview>[]>) => {
   vi.mocked(fetchRuntimeCallResult).mockImplementation(
     async (_connector, _networkId, _builder, _apiName, method, args) => {
       if (method === "get_root_basket_claim_previews")

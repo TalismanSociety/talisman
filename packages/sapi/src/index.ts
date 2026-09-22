@@ -3,6 +3,7 @@
 export { getPjsTxHelper, getTxHelper } from "@polkadot-api/tx-utils"
 export * from "./customSignedExtensions"
 export * from "./fetchBestMetadata"
+export { ERA_PERIOD } from "./helpers/getSignerPayloadJSON"
 export * from "./helpers/papi"
 export * from "./pjsInterop"
 export * from "./sapi"

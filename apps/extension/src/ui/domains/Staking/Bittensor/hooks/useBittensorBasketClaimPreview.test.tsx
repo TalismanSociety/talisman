@@ -19,7 +19,6 @@ const PREVIEW: BittensorBasketClaimPreview = {
   accrued_tao: 100n,
   redeemable_tao: 90n,
   forfeited_tao_est: 10n,
-  dust_rows: 1,
 }
 
 const getRuntimeCallValueMock = vi.fn()

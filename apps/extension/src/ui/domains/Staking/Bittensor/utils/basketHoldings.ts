@@ -1,7 +1,10 @@
+import type { bittensor } from "@polkadot-api/descriptors"
+
 import { ROOT_NETUID } from "./constants"
 
-/** decoded element of `get_validator_basket`: one fund holding valued at its realizable TAO */
-export type BasketHoldingEntry = [netuid: number, alpha: bigint, realizableTao: bigint]
+/** decoded element of `get_validator_basket`: `[netuid, alpha, realizableTao]`, one fund holding valued at its realizable TAO */
+export type BasketHoldingEntry =
+  (typeof bittensor)["descriptors"]["apis"]["BetaBasketRuntimeApi"]["get_validator_basket"][1][number]
 
 export type BasketHoldingSlice = { netuid: number; ratio: number }
 
