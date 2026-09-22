@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { getBittensorClaimGate, rootClaimThresholdToPlancks } from "../utils/claimGate"
 import { ROOT_NETUID } from "../utils/constants"
 import { getBlockTimeMs } from "../utils/helpers"
-import { useBittensorBasketPayout } from "./useBittensorBasketPayout"
+import { useBittensorBasketClaimPreview } from "./useBittensorBasketClaimPreview"
 import { useBittensorClaimablePlancks } from "./useBittensorClaimablePlancks"
 import { useSubtensorStorageBigInt } from "./useSubtensorStorageBigInt"
 
@@ -25,7 +25,7 @@ export const useBittensorRootClaimGate = (
   // from another device): submission gates on a fresh per-block chain read, with the cached
   // balances stream only seeding the display until it settles
   const streamedClaimablePlancks = useBittensorClaimablePlancks(target)
-  const { data: freshPayoutPlancks, isSuccess: isFreshPayoutReady } = useBittensorBasketPayout(
+  const { data: freshPreview, isSuccess: isFreshPreviewReady } = useBittensorBasketClaimPreview(
     sapi,
     target
   )
@@ -54,20 +54,28 @@ export const useBittensorRootClaimGate = (
     [sapi, holdIntervalBlocks]
   )
 
-  const { claimablePlancks, isClaimUnavailable, isBelowDustThreshold, canSubmit } =
-    getBittensorClaimGate({
-      hasAccount: !!account,
-      streamedClaimablePlancks,
-      freshPayoutPlancks,
-      isFreshPayoutReady,
-      dustThreshold,
-      isDustThresholdReady,
-      isHoldIntervalReady,
-    })
+  const {
+    claimablePlancks,
+    forfeitedPlancks,
+    dustRows,
+    isClaimUnavailable,
+    isBelowDustThreshold,
+    canSubmit,
+  } = getBittensorClaimGate({
+    hasAccount: !!account,
+    streamedClaimablePlancks,
+    freshPreview,
+    isFreshPreviewReady,
+    dustThreshold,
+    isDustThresholdReady,
+    isHoldIntervalReady,
+  })
 
   return {
     account,
     claimablePlancks,
+    forfeitedPlancks,
+    dustRows,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,

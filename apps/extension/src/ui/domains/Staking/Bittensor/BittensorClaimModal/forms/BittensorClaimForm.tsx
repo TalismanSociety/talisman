@@ -14,6 +14,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { BittensorClaimAlert } from "../../components/BittensorClaimAlert"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorClaimForfeitWarning } from "../../hooks/useBittensorClaimForfeitWarning"
 import { BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimModal } from "../hooks/useBittensorClaimModal"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
@@ -28,6 +29,7 @@ export const BittensorClaimForm = () => {
     hotkey,
     nativeToken,
     claimablePlancks,
+    forfeitedPlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
@@ -44,6 +46,7 @@ export const BittensorClaimForm = () => {
   } = useBittensorClaimWizard()
   const { close } = useBittensorClaimModal()
   const locale = useDateFnsLocale()
+  const forfeitWarning = useBittensorClaimForfeitWarning(forfeitedPlancks, nativeToken)
 
   const holdWarning = useMemo(() => {
     if (!holdDurationMs) return null
@@ -131,7 +134,7 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {[holdWarning, claimError, feeErrorMessage].filter(Boolean).map((message) => (
+      {[forfeitWarning, holdWarning, claimError, feeErrorMessage].filter(Boolean).map((message) => (
         <BittensorClaimAlert key={message}>{message}</BittensorClaimAlert>
       ))}
 

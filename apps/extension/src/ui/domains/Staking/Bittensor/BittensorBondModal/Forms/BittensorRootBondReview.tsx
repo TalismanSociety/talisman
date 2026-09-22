@@ -20,6 +20,7 @@ import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { ValidatorApy } from "../../components/ValidatorApy"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { useBittensorClaimForfeitWarning } from "../../hooks/useBittensorClaimForfeitWarning"
 
 export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
@@ -35,6 +36,7 @@ export const BittensorRootBondReview = () => {
     setStep,
     claimOption,
     claimablePlancks,
+    claimForfeitedPlancks,
     claimHoldDurationMs,
   } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
@@ -43,6 +45,11 @@ export const BittensorRootBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
 
   const withClaim = stakeDirection === "unbond" && claimOption.includeClaim
+
+  const claimForfeitWarning = useBittensorClaimForfeitWarning(
+    withClaim ? claimForfeitedPlancks : 0n,
+    nativeToken
+  )
 
   // claiming restarts the root stake hold window for the pair: the claimed TAO is staked
   // back onto root and locked, so the user must be warned before confirming
@@ -173,11 +180,11 @@ export const BittensorRootBondReview = () => {
           </div>
         </div>
       </div>
-      {claimHoldWarning && (
-        <div className="mt-4">
-          <BittensorClaimAlert>{claimHoldWarning}</BittensorClaimAlert>
+      {[claimForfeitWarning, claimHoldWarning].filter(Boolean).map((message) => (
+        <div key={message} className="mt-4">
+          <BittensorClaimAlert>{message}</BittensorClaimAlert>
         </div>
-      )}
+      ))}
       <div className="grow"></div>
       {payload && (
         <SapiSendButton
