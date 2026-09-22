@@ -9,7 +9,8 @@ import { getStorageValue } from "./getStorageValue"
 import { mortal, toPjsHex } from "./papi"
 import type { Chain, ChainInfo } from "./types"
 
-const ERA_PERIOD = 64 // validity period in blocks, used for mortal era
+/** validity period of a signed payload in blocks: the mortal era every payload is built with */
+export const ERA_PERIOD = 64
 
 export const getSignerPayloadJSON = async (
   chain: Chain,

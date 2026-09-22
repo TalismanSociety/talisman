@@ -161,7 +161,7 @@ export const ChangeValidatorSelect = () => {
                 validators={displayedValidators}
                 selectedHotkey={newHotkey ?? currentHotkey}
                 isLoading={isLoading}
-                showRootWeights={netuid === ROOT_NETUID}
+                showBasketHoldings={netuid === ROOT_NETUID}
                 containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
                 onSelect={handleSubmit}
                 onClose={close}

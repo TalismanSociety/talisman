@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  type BittensorBasketClaimPreview,
   type BittensorClaimGateInputs,
   getBittensorClaimGate,
   rootClaimThresholdToPlancks,
@@ -25,28 +26,52 @@ describe("rootClaimThresholdToPlancks", () => {
   })
 })
 
+const preview = (
+  redeemableTao: bigint,
+  accruedTao = redeemableTao
+): BittensorBasketClaimPreview => ({
+  hotkey: "hotkey-1",
+  accrued_tao: accruedTao,
+  redeemable_tao: redeemableTao,
+  forfeited_tao_est: accruedTao - redeemableTao,
+})
+
 const OPEN_GATE: BittensorClaimGateInputs = {
   hasAccount: true,
   streamedClaimablePlancks: 100n,
-  freshPayoutPlancks: 100n,
-  isFreshPayoutReady: true,
+  freshPreview: preview(100n),
+  isFreshPreviewReady: true,
   dustThreshold: 50n,
   isDustThresholdReady: true,
   isHoldIntervalReady: true,
 }
 
 describe("getBittensorClaimGate", () => {
-  it("submits when every read has settled and the fresh payout clears the threshold", () => {
+  it("submits when every read has settled and the redeemable amount clears the threshold", () => {
     expect(getBittensorClaimGate(OPEN_GATE)).toEqual({
       claimablePlancks: 100n,
+      forfeitedPlancks: 0n,
       isClaimUnavailable: false,
       isBelowDustThreshold: false,
       canSubmit: true,
     })
   })
 
-  it("blocks when the entitlement was claimed concurrently (fresh read is zero)", () => {
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPayoutPlancks: 0n })
+  it("displays the redeemable amount and reports the forfeited dust value", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(80n, 100n) })
+    expect(gate.claimablePlancks).toBe(80n)
+    expect(gate.forfeitedPlancks).toBe(20n)
+    expect(gate.canSubmit).toBe(true)
+  })
+
+  it("blocks when the entitlement was claimed concurrently (fresh preview is None)", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: null })
+    expect(gate.isClaimUnavailable).toBe(true)
+    expect(gate.canSubmit).toBe(false)
+  })
+
+  it("blocks when the fresh preview has no entitlement left", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(0n, 0n) })
     expect(gate.isClaimUnavailable).toBe(true)
     expect(gate.canSubmit).toBe(false)
   })
@@ -57,39 +82,60 @@ describe("getBittensorClaimGate", () => {
     expect(gate.canSubmit).toBe(false)
   })
 
-  it("blocks when NAV drift takes the fresh payout below the threshold", () => {
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPayoutPlancks: 40n })
+  it("blocks as dust when the redeemable amount is below the threshold the full entitlement clears", () => {
+    // spec 468: the chain compares redeemable_tao (entitlement minus dust rows), not accrued_tao
+    // a claim the chain skips forfeits nothing, so no forfeit warning either
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(40n, 100n) })
     expect(gate).toEqual({
       claimablePlancks: 40n,
+      forfeitedPlancks: 0n,
       isClaimUnavailable: false,
       isBelowDustThreshold: true,
       canSubmit: false,
     })
   })
 
-  it("submits when NAV drift takes the fresh payout above the threshold the stream is below", () => {
+  it("blocks as dust when the entitlement is made only of dust rows, whatever the threshold", () => {
+    const gate = getBittensorClaimGate({
+      ...OPEN_GATE,
+      dustThreshold: 0n,
+      freshPreview: preview(0n, 100n),
+    })
+    expect(gate.isClaimUnavailable).toBe(false)
+    expect(gate.isBelowDustThreshold).toBe(true)
+    expect(gate.canSubmit).toBe(false)
+  })
+
+  it("blocks when NAV drift takes the redeemable amount below the threshold", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(40n) })
+    expect(gate.isBelowDustThreshold).toBe(true)
+    expect(gate.canSubmit).toBe(false)
+  })
+
+  it("submits when NAV drift takes the redeemable amount above the threshold the stream is below", () => {
     const gate = getBittensorClaimGate({
       ...OPEN_GATE,
       streamedClaimablePlancks: 40n,
-      freshPayoutPlancks: 60n,
+      freshPreview: preview(60n),
     })
     expect(gate.isBelowDustThreshold).toBe(false)
     expect(gate.canSubmit).toBe(true)
   })
 
-  it("blocks while the fresh payout read is unresolved, displaying the streamed value", () => {
+  it("blocks while the fresh preview read is unresolved, displaying the streamed value", () => {
     const gate = getBittensorClaimGate({
       ...OPEN_GATE,
-      freshPayoutPlancks: undefined,
-      isFreshPayoutReady: false,
+      freshPreview: undefined,
+      isFreshPreviewReady: false,
     })
     expect(gate.claimablePlancks).toBe(100n)
+    expect(gate.forfeitedPlancks).toBe(0n)
     expect(gate.isClaimUnavailable).toBe(false)
     expect(gate.canSubmit).toBe(false)
   })
 
-  it("blocks when a refetch error leaves only a stale fresh payout", () => {
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, isFreshPayoutReady: false })
+  it("blocks when a refetch error leaves only a stale fresh preview", () => {
+    const gate = getBittensorClaimGate({ ...OPEN_GATE, isFreshPreviewReady: false })
     expect(gate.canSubmit).toBe(false)
   })
 
@@ -111,7 +157,7 @@ describe("getBittensorClaimGate", () => {
       ...OPEN_GATE,
       dustThreshold: 0n,
       streamedClaimablePlancks: 1n,
-      freshPayoutPlancks: 1n,
+      freshPreview: preview(1n),
     })
     expect(gate.isBelowDustThreshold).toBe(false)
     expect(gate.canSubmit).toBe(true)

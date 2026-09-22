@@ -4,8 +4,6 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,6 +12,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { BittensorClaimAlert } from "../../components/BittensorClaimAlert"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorClaimWarnings } from "../../hooks/useBittensorClaimWarnings"
 import { BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimModal } from "../hooks/useBittensorClaimModal"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
@@ -28,6 +27,7 @@ export const BittensorClaimForm = () => {
     hotkey,
     nativeToken,
     claimablePlancks,
+    forfeitedPlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
@@ -43,18 +43,7 @@ export const BittensorClaimForm = () => {
     onSubmitted,
   } = useBittensorClaimWizard()
   const { close } = useBittensorClaimModal()
-  const locale = useDateFnsLocale()
-
-  const holdWarning = useMemo(() => {
-    if (!holdDurationMs) return null
-    const duration = formatDuration(intervalToDuration({ start: 0, end: holdDurationMs }), {
-      locale,
-    })
-    return t("After this claim, your staked {{symbol}} will be locked for another {{duration}}", {
-      symbol: nativeToken?.symbol ?? "TAO",
-      duration,
-    })
-  }, [holdDurationMs, locale, nativeToken?.symbol, t])
+  const claimWarnings = useBittensorClaimWarnings({ forfeitedPlancks, holdDurationMs, nativeToken })
 
   const claimError = useMemo(() => {
     if (isClaimUnavailable) return t("These rewards are no longer available to claim")
@@ -131,7 +120,7 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {[holdWarning, claimError, feeErrorMessage].filter(Boolean).map((message) => (
+      {[...claimWarnings, claimError, feeErrorMessage].filter(Boolean).map((message) => (
         <BittensorClaimAlert key={message}>{message}</BittensorClaimAlert>
       ))}
 

@@ -53,6 +53,7 @@ const useBittensorClaimWizardProvider = () => {
   const {
     account,
     claimablePlancks,
+    forfeitedPlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
@@ -100,6 +101,7 @@ const useBittensorClaimWizardProvider = () => {
     hotkey: target?.hotkey ?? null,
     nativeToken,
     claimablePlancks,
+    forfeitedPlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,
