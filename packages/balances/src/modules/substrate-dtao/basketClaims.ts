@@ -1,3 +1,4 @@
+import type { bittensor } from "@polkadot-api/descriptors"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -71,22 +72,21 @@ export type FetchedBasketClaim = {
   amount: bigint
 }
 
-/** decoded element of `get_root_basket_positions`: one validator the coldkey holds owed shares on */
-type BasketPosition = [hotkey: string, owedShares: bigint, payoutTao: bigint]
+/** decoded element of `get_root_basket_claim_previews`: what a claim on one validator would pay */
+type BasketClaimPreview =
+  (typeof bittensor)["descriptors"]["apis"]["BetaBasketRuntimeApi"]["get_root_basket_claim_previews"][1][number]
 
 /**
- * Fetches the TAO each coldkey would realize by redeeming its validator beta baskets
+ * Fetches the TAO each coldkey would receive by claiming its validator beta baskets
  * (Bittensor spec 441 "Root Reborn": root dividends accrue in per-validator escrow funds
  * and must be claimed manually; the payout is TAO staked back onto the root position).
  *
- * Amounts are marked NAV quotes (BetaBasketRuntimeApi), so they move with subnet pool
- * prices as well as accrual. Attribution is per validator hotkey via
- * `get_root_basket_positions`, which walks the chain's own coldkey→hotkeys index and so
+ * Amounts are the chain's own claim preview (`redeemable_tao`, spec 468): the entitlement
+ * minus the dust rows the claim would skip, which is the figure the chain compares to
+ * `RootClaimableThreshold` and pays out. They are marked NAV quotes, so they move with
+ * subnet pool prices as well as accrual. Attribution is per validator hotkey:
+ * `get_root_basket_claim_previews` walks the chain's own coldkey→hotkeys index and so
  * includes validators the coldkey fully unstaked from (entitlement survives unstaking).
- *
- * It is the only entitlement read: the coldkey-wide `get_root_basket_owed` total sums the
- * same positions, and claiming is per validator hotkey, so entitlement outside a position
- * would be unclaimable anyway.
  */
 export const fetchBasketClaims = async (
   connector: IChainConnectorDot,
@@ -98,20 +98,20 @@ export const fetchBasketClaims = async (
   if (!addresses.length) return []
 
   const { unifiedMetadata, builder } = parseMetadataRpcCached(metadataRpc)
-  if (!hasRuntimeApi(unifiedMetadata, "BetaBasketRuntimeApi", "get_root_basket_positions"))
+  if (!hasRuntimeApi(unifiedMetadata, "BetaBasketRuntimeApi", "get_root_basket_claim_previews"))
     return []
 
   try {
-    const positionsByAddress = await Promise.all(
+    const previewsByAddress = await Promise.all(
       addresses.map(
-        async (address): Promise<[string, BasketPosition[]]> => [
+        async (address): Promise<[string, BasketClaimPreview[]]> => [
           address,
-          await fetchRuntimeCallResult<BasketPosition[]>(
+          await fetchRuntimeCallResult<BasketClaimPreview[]>(
             connector,
             networkId,
             builder,
             "BetaBasketRuntimeApi",
-            "get_root_basket_positions",
+            "get_root_basket_claim_previews",
             [address],
             at
           ),
@@ -119,10 +119,10 @@ export const fetchBasketClaims = async (
       )
     )
 
-    return positionsByAddress.flatMap(([address, positions]) =>
-      positions
-        .filter(([, , payoutTao]) => payoutTao > 0n)
-        .map(([hotkey, , payoutTao]) => ({ address, hotkey, amount: payoutTao }))
+    return previewsByAddress.flatMap(([address, previews]) =>
+      previews
+        .filter((preview) => preview.redeemable_tao > 0n)
+        .map((preview) => ({ address, hotkey: preview.hotkey, amount: preview.redeemable_tao }))
     )
   } catch (cause) {
     // an empty result reads as "nothing claimable" and deletes claim-only balances for this

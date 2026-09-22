@@ -45,7 +45,8 @@ const mockRuntimeCalls = ({ payout }: { payout: bigint }) => {
     async (_connector, _networkId, _builder, _apiName, method) => {
       if (method === "get_stake_info_for_coldkeys")
         return [[ADDRESS, [{ netuid: 0, hotkey: HOTKEY, stake: 100n }]]]
-      if (method === "get_root_basket_positions") return payout > 0n ? [[HOTKEY, 1n, payout]] : []
+      if (method === "get_root_basket_claim_previews")
+        return payout > 0n ? [{ hotkey: HOTKEY, redeemable_tao: payout }] : []
       throw new Error(`unexpected runtime call ${method}`)
     }
   )
@@ -170,7 +171,8 @@ describe("fetchBalances root stake hold", () => {
     vi.mocked(fetchRuntimeCallResult).mockImplementation(
       async (_connector, _networkId, _builder, _apiName, method) => {
         if (method === "get_stake_info_for_coldkeys") return [[ADDRESS, []]]
-        if (method === "get_root_basket_positions") return [[HOTKEY, 1n, 50n]]
+        if (method === "get_root_basket_claim_previews")
+          return [{ hotkey: HOTKEY, redeemable_tao: 50n }]
         throw new Error(`unexpected runtime call ${method}`)
       }
     )

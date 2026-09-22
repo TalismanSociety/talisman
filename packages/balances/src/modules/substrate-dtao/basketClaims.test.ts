@@ -25,12 +25,19 @@ vi.mock("../shared/parseMetadataRpcCached", () => ({
 
 const CONNECTOR = {} as Parameters<typeof fetchBasketClaims>[0]
 
-const mockRuntimeCalls = (
-  positionsByAddress: Record<string, Array<[hotkey: string, owedShares: bigint, payoutTao: bigint]>>
-) => {
+type PreviewFixture = { hotkey: string; accrued_tao: bigint; redeemable_tao: bigint }
+
+const preview = (hotkey: string, redeemableTao: bigint, accruedTao = redeemableTao) => ({
+  hotkey,
+  accrued_tao: accruedTao,
+  redeemable_tao: redeemableTao,
+})
+
+const mockRuntimeCalls = (previewsByAddress: Record<string, PreviewFixture[]>) => {
   vi.mocked(fetchRuntimeCallResult).mockImplementation(
     async (_connector, _networkId, _builder, _apiName, method, args) => {
-      if (method === "get_root_basket_positions") return positionsByAddress[args[0] as string] ?? []
+      if (method === "get_root_basket_claim_previews")
+        return previewsByAddress[args[0] as string] ?? []
       throw new Error(`unexpected runtime call ${method}`)
     }
   )
@@ -50,12 +57,9 @@ describe("fetchBasketClaims", () => {
     expect(fetchRuntimeCallResult).not.toHaveBeenCalled()
   })
 
-  it("attributes payouts per validator hotkey and skips zero payouts", async () => {
+  it("attributes redeemable payouts per validator hotkey and skips zero payouts", async () => {
     mockRuntimeCalls({
-      "address-1": [
-        ["hotkey-1", 10n, 30n],
-        ["hotkey-2", 5n, 0n],
-      ],
+      "address-1": [preview("hotkey-1", 30n), preview("hotkey-2", 0n)],
     })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
@@ -63,21 +67,40 @@ describe("fetchBasketClaims", () => {
     expect(claims).toEqual([{ address: "address-1", hotkey: "hotkey-1", amount: 30n }])
   })
 
+  it("reports the redeemable amount, not the full accrued entitlement", async () => {
+    // spec 468 dust rules: the chain pays redeemable_tao (entitlement minus dust rows) and
+    // compares that figure to the claim threshold, so accrued_tao overstates the payout
+    mockRuntimeCalls({ "address-1": [preview("hotkey-1", 30n, 45n)] })
+
+    const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
+
+    expect(claims).toEqual([{ address: "address-1", hotkey: "hotkey-1", amount: 30n }])
+  })
+
+  it("skips an entitlement made only of dust rows", async () => {
+    // accrued but nothing redeemable: a claim would be a paid no-op
+    mockRuntimeCalls({ "address-1": [preview("hotkey-1", 0n, 45n)] })
+
+    const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
+
+    expect(claims).toEqual([])
+  })
+
   it("reports positions on validators the coldkey no longer stakes to", async () => {
     // the chain keeps basket entitlement (and its coldkey→hotkeys index entry) after a
-    // full unstake: the positions call must be the source of truth, not stake records
-    mockRuntimeCalls({ "address-1": [["unstaked-hotkey", 10n, 25n]] })
+    // full unstake: the previews call must be the source of truth, not stake records
+    mockRuntimeCalls({ "address-1": [preview("unstaked-hotkey", 25n)] })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
 
     expect(claims).toEqual([{ address: "address-1", hotkey: "unstaked-hotkey", amount: 25n }])
   })
 
-  it("reads entitlement from the positions call only", async () => {
+  it("reads entitlement from the previews call only", async () => {
     // reconciling against the coldkey-wide get_root_basket_owed total fabricated claims:
     // both are marked NAV quotes that move every block, so a total read from another block
-    // than the positions leaves a residue with no validator to claim it from
-    mockRuntimeCalls({ "address-1": [["hotkey-1", 10n, 60n]] })
+    // than the previews leaves a residue with no validator to claim it from
+    mockRuntimeCalls({ "address-1": [preview("hotkey-1", 60n)] })
 
     const claims = await fetchBasketClaims(CONNECTOR, "bittensor", "0x00", ["address-1"])
 
@@ -88,7 +111,7 @@ describe("fetchBasketClaims", () => {
       "bittensor",
       expect.anything(),
       "BetaBasketRuntimeApi",
-      "get_root_basket_positions",
+      "get_root_basket_claim_previews",
       ["address-1"],
       undefined
     )
@@ -104,7 +127,7 @@ describe("fetchBasketClaims", () => {
       "bittensor",
       expect.anything(),
       "BetaBasketRuntimeApi",
-      "get_root_basket_positions",
+      "get_root_basket_claim_previews",
       ["address-1"],
       "0xblockhash"
     )
