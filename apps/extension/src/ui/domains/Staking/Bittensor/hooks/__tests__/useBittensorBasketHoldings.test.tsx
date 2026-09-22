@@ -23,9 +23,13 @@ const HOLDINGS = [
   [3, 1n, 3000n],
 ]
 
-const makeSapi = (getRuntimeCallValue: (...args: unknown[]) => Promise<unknown>) => ({
+const makeSapi = (
+  getRuntimeCallValue: (...args: unknown[]) => Promise<unknown>,
+  isApiAvailable: (api: string, method: string) => boolean = () => true
+) => ({
   id: "bittensor::v100",
   getRuntimeCallValue,
+  isApiAvailable,
 })
 
 const createWrapper = (): FC<{ children: ReactNode }> => {
@@ -88,6 +92,23 @@ describe("useBittensorBasketHoldings", () => {
 
     expect(result.current.isError).toBe(true)
     expect(result.current.isLoading).toBe(false)
+  })
+
+  it("reports an error without calling a runtime that lacks the api", () => {
+    const getRuntimeCallValue = vi.fn().mockResolvedValue(HOLDINGS)
+    const isApiAvailable = vi.fn().mockReturnValue(false)
+    mockUseScaleApi.mockReturnValue({
+      data: makeSapi(getRuntimeCallValue, isApiAvailable),
+      isPending: false,
+      isError: false,
+    })
+
+    const { result } = renderBasketHoldings()
+
+    expect(isApiAvailable).toHaveBeenCalledWith("BetaBasketRuntimeApi", "get_validator_basket")
+    expect(result.current.isError).toBe(true)
+    expect(result.current.isLoading).toBe(false)
+    expect(getRuntimeCallValue).not.toHaveBeenCalled()
   })
 
   it("reports an error when the runtime call fails", async () => {

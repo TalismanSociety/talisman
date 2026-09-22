@@ -16,6 +16,10 @@ import type { BasketHoldingEntry } from "../utils/basketHoldings"
 export const useBittensorBasketHoldings = (networkId: DotNetworkId | undefined, hotkey: string) => {
   const { data: sapi, isPending: isSapiPending, isError: isSapiError } = useScaleApi(networkId)
 
+  // a runtime without the api (lagging devnet/testnet, future rename) must not enter the
+  // query: the call builder throws before any request and react-query would retry it
+  const isApiSupported = !!sapi?.isApiAvailable("BetaBasketRuntimeApi", "get_validator_basket")
+
   const query = useQuery({
     queryKey: ["useBittensorBasketHoldings", sapi?.id, hotkey],
     queryFn: async () => {
@@ -26,13 +30,14 @@ export const useBittensorBasketHoldings = (networkId: DotNetworkId | undefined, 
         [hotkey]
       )
     },
-    enabled: !!sapi,
+    enabled: isApiSupported,
     staleTime: 5 * 60_000,
   })
 
-  // useScaleApi resolving to null (metadata unavailable) leaves the holdings query
-  // disabled forever: surface it as an error, not as an endless loading state
-  const isSapiUnavailable = isSapiError || (!isSapiPending && !sapi)
+  // useScaleApi resolving to null (metadata unavailable) or a runtime without the api
+  // leaves the holdings query disabled forever: surface it as an error, not as an
+  // endless loading state
+  const isSapiUnavailable = isSapiError || (!isSapiPending && !isApiSupported)
 
   return {
     data: query.data,

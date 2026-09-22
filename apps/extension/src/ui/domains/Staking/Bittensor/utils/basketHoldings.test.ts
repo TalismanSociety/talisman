@@ -58,6 +58,17 @@ describe("getBasketHoldingsBreakdown", () => {
     expect(breakdown?.othersRatio).toBe(0)
   })
 
+  it("reports a TAO-only fund as zero subnets with a full TAO slice", () => {
+    const breakdown = getBasketHoldingsBreakdown([[0, 5000n, 5000n]])
+
+    expect(breakdown).toEqual({
+      subnetCount: 0,
+      topSlices: [{ netuid: 0, ratio: 1 }],
+      allSlices: [{ netuid: 0, ratio: 1 }],
+      othersRatio: 0,
+    })
+  })
+
   it("ignores holdings with zero realizable value", () => {
     const breakdown = getBasketHoldingsBreakdown([
       [3, 1n, 100n],
