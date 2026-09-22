@@ -8,6 +8,9 @@ import { getBlockTimeMs } from "../utils/helpers"
 // a payload is mortal for 64 blocks: rebuild it well within that window so a claim confirmed
 // after the modal sat open for a while is not rejected as expired
 const PAYLOAD_REFRESH_BLOCKS = 16
+// a rebuild can be late (tab suspended, rebuild failed): past this age the payload is
+// withheld until a fresh one lands rather than handed to the user to sign
+const PAYLOAD_MAX_AGE_BLOCKS = 32
 
 type UseBittensorClaimPayloadProps = {
   networkId: string | undefined
@@ -29,6 +32,7 @@ export const useBittensorClaimPayload = ({
 
   const {
     data: payloadData,
+    dataUpdatedAt: payloadUpdatedAt,
     isPlaceholderData: isPlaceholderPayload,
     isLoading: isLoadingPayload,
     isError: isErrorPayload,
@@ -44,6 +48,9 @@ export const useBittensorClaimPayload = ({
     enabled: enabled && !!sapi && !!address && !!hotkey,
     placeholderData: keepPreviousData,
     refetchInterval: sapi ? getBlockTimeMs(sapi) * PAYLOAD_REFRESH_BLOCKS : false,
+    // the interval only ticks in a focused tab by default: the modal left open in a
+    // background tab is exactly the case the rebuild exists for
+    refetchIntervalInBackground: true,
   })
 
   const {
@@ -52,15 +59,22 @@ export const useBittensorClaimPayload = ({
     error: errorFeeEstimate,
   } = useGetFeeEstimate({ sapi, payload: payloadData?.payload })
 
+  const isPayloadExpired =
+    !!sapi &&
+    !!payloadData &&
+    Date.now() - payloadUpdatedAt > getBlockTimeMs(sapi) * PAYLOAD_MAX_AGE_BLOCKS
+  // never expose a payload built for previous inputs (keepPreviousData) or one that may
+  // sit outside its mortal era: a fast user could reach the confirm step and sign it while
+  // the current one is still building
+  const isPayloadCurrent = !isPlaceholderPayload && !isPayloadExpired
+
   return {
-    // never expose a payload built for previous inputs (keepPreviousData): a fast user could
-    // reach the confirm step and sign it while the current one is still building
-    payload: isPlaceholderPayload ? undefined : payloadData?.payload,
-    txMetadata: isPlaceholderPayload ? undefined : payloadData?.txMetadata,
+    payload: isPayloadCurrent ? payloadData?.payload : undefined,
+    txMetadata: isPayloadCurrent ? payloadData?.txMetadata : undefined,
     feeEstimate,
     isLoadingFeeEstimate: isLoadingSapi || isLoadingFee,
     errorFeeEstimate,
-    isLoadingPayload: isLoadingSapi || isLoadingPayload,
+    isLoadingPayload: isLoadingSapi || isLoadingPayload || isPayloadExpired,
     isErrorPayload: isErrorSapi || isErrorPayload,
     errorPayload,
   }

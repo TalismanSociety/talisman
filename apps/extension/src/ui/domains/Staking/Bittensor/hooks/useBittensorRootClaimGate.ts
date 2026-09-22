@@ -23,18 +23,20 @@ export const useBittensorRootClaimGate = (
 
   // the entitlement can shrink or disappear while the modal is open (NAV drift, or claimed
   // from another device): submission gates on a fresh per-block chain read, with the cached
-  // balances stream only seeding the display until it settles
+  // balances stream only seeding the display until it settles.
+  // Readiness requires a fetch completed for THIS mount: a preview cached from a previous
+  // modal open (eg right after claiming) would otherwise open the gate on an entitlement
+  // that is already gone and let the user pay a fee for a no-op
   const streamedClaimablePlancks = useBittensorClaimablePlancks(target)
-  const { data: freshPreview, isSuccess: isFreshPreviewReady } = useBittensorBasketClaimPreview(
-    sapi,
-    target
-  )
+  const previewQuery = useBittensorBasketClaimPreview(sapi, target)
+  const isFreshPreviewReady = previewQuery.isSuccess && previewQuery.isFetchedAfterMount
+  const freshPreview = previewQuery.data
 
   // claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust: block them
   // instead of letting the user pay a fee for a no-op.
-  // Readiness requires a fetch completed for THIS mount: a value cached from a previous
-  // modal open could hide an on-chain change (e.g. the hold window being enabled) and
-  // let the gate build a transaction the chain now rejects.
+  // Same readiness rule: a value cached from a previous modal open could hide an on-chain
+  // change (e.g. the hold window being enabled) and let the gate build a transaction the
+  // chain now rejects.
   const dustThresholdQuery = useSubtensorStorageBigInt(sapi, "RootClaimableThreshold", [
     ROOT_NETUID,
   ])
