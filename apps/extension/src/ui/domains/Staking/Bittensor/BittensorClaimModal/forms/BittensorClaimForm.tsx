@@ -134,9 +134,11 @@ export const BittensorClaimForm = () => {
         </div>
       </div>
 
-      {[forfeitWarning, holdWarning, claimError, feeErrorMessage].filter(Boolean).map((message) => (
-        <BittensorClaimAlert key={message}>{message}</BittensorClaimAlert>
-      ))}
+      {[claimError ? null : forfeitWarning, holdWarning, claimError, feeErrorMessage]
+        .filter(Boolean)
+        .map((message) => (
+          <BittensorClaimAlert key={message}>{message}</BittensorClaimAlert>
+        ))}
 
       <div className="grow" />
 

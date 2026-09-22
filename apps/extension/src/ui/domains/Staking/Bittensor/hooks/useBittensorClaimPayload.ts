@@ -3,6 +3,11 @@ import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getBittensorClaimPayload } from "../utils/bittensorClaimTx"
+import { getBlockTimeMs } from "../utils/helpers"
+
+// a payload is mortal for 64 blocks: rebuild it well within that window so a claim confirmed
+// after the modal sat open for a while is not rejected as expired
+const PAYLOAD_REFRESH_BLOCKS = 16
 
 type UseBittensorClaimPayloadProps = {
   networkId: string | undefined
@@ -38,6 +43,7 @@ export const useBittensorClaimPayload = ({
     // under its own key, which the enabled transition then starts from
     enabled: enabled && !!sapi && !!address && !!hotkey,
     placeholderData: keepPreviousData,
+    refetchInterval: sapi ? getBlockTimeMs(sapi) * PAYLOAD_REFRESH_BLOCKS : false,
   })
 
   const {
