@@ -1,5 +1,20 @@
 # @talismn/balances
 
+## 3.0.4
+
+### Patch Changes
+
+- cab105b: Bump viem, @solana/kit, zod, dexie and @metaplex-foundation/umi
+- 724a30e: read Bittensor claimable rewards from the spec 468 claim preview api (redeemable amount, dust rows excluded); chaindata pub folder bumped to v14 for the minimetadata change
+- Updated dependencies [cab105b]
+- Updated dependencies [724a30e]
+- Updated dependencies [d3dcfc4]
+- Updated dependencies [724a30e]
+  - @talismn/chain-connectors@1.0.4
+  - @talismn/chaindata-provider@2.0.4
+  - @talismn/sapi@2.0.2
+  - @talismn/token-rates@4.0.4
+
 ## 3.0.3
 
 ### Patch Changes

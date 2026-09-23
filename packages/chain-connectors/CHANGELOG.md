@@ -1,5 +1,15 @@
 # @talismn/chain-connectors
 
+## 1.0.4
+
+### Patch Changes
+
+- cab105b: Bump viem, @solana/kit, zod, dexie and @metaplex-foundation/umi
+- Updated dependencies [cab105b]
+- Updated dependencies [724a30e]
+- Updated dependencies [d3dcfc4]
+  - @talismn/chaindata-provider@2.0.4
+
 ## 1.0.3
 
 ### Patch Changes

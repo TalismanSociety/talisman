@@ -1,5 +1,11 @@
 # @talismn/solana
 
+## 1.0.3
+
+### Patch Changes
+
+- cab105b: Bump viem, @solana/kit, zod, dexie and @metaplex-foundation/umi
+
 ## 1.0.2
 
 ### Patch Changes

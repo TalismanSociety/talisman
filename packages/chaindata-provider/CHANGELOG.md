@@ -1,5 +1,13 @@
 # @talismn/chaindata-provider
 
+## 2.0.4
+
+### Patch Changes
+
+- cab105b: Bump viem, @solana/kit, zod, dexie and @metaplex-foundation/umi
+- 724a30e: read Bittensor claimable rewards from the spec 468 claim preview api (redeemable amount, dust rows excluded); chaindata pub folder bumped to v14 for the minimetadata change
+- d3dcfc4: generate init data
+
 ## 2.0.3
 
 ### Patch Changes
