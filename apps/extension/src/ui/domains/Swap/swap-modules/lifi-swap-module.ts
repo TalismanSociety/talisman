@@ -1,4 +1,3 @@
-import { isAbortError } from "@talismn/util"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import type {
@@ -22,6 +21,7 @@ import {
   setTransactionBlockhash,
   transactionFromBytes,
 } from "@talismn/solana"
+import { isAbortError } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
