@@ -14,7 +14,7 @@ CI runs these on every PR. Run the ones your change touches before you push.
 
 - Lint and format: `pnpm biome check --error-on-warnings -- <changed files>`. CI checks changed files only. `pnpm check:fix` applies fixes.
 - Types: `pnpm typecheck`.
-- Unit tests: `pnpm test [path]`, from the repo root. The root script sets `npm_package_version`; bare `vitest` runs fail in extension specs with `Invalid Version: undefined`.
+- Unit tests: `pnpm test [path]`, from the repo root.
 - Unused code and dependencies: `pnpm knip`. Dependencies are hoisted, so an import of a package that is missing from its workspace's `package.json` works locally. Knip fails CI on it.
 - Direct dependency licenses: `pnpm check:licenses`.
 
