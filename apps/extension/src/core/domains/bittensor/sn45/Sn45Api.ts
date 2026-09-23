@@ -1066,12 +1066,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns a list of subnets with price, volume, market cap, and holder data. Combines leaderboard data with the latest TAO/USD price for USD conversion.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns a list of subnets with price, volume, market cap, and holder data. Combines leaderboard data with the latest TAO/USD price for USD conversion.
      *
      * @tags Terminal
      * @name GetTerminalSubnets
      * @summary Subnet list for token picker
      * @request GET:/v1/terminal/subnets
+     * @deprecated
      */
     getTerminalSubnets: (
       query?: {
@@ -1126,12 +1127,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns combined tokenomics, leaderboard metrics, and sentiment data for a single subnet. All four data sources are fetched in parallel for low latency.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns combined tokenomics, leaderboard metrics, and sentiment data for a single subnet. All four data sources are fetched in parallel for low latency.
      *
      * @tags Terminal
      * @name GetTerminalSubnetOverview
      * @summary Subnet detail for analysis panel
      * @request GET:/v1/terminal/subnets/{netuid}/overview
+     * @deprecated
      */
     getTerminalSubnetOverview: (
       netuid: string,
@@ -1235,12 +1237,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns recent stake add/remove events formatted as market trades with price, side, and coldkey. Price is computed as taoAmount / alphaAmount.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns recent stake add/remove events formatted as market trades with price, side, and coldkey. Price is computed as taoAmount / alphaAmount.
      *
      * @tags Terminal
      * @name GetTerminalSubnetTrades
      * @summary Recent market trades for a subnet
      * @request GET:/v1/terminal/subnets/{netuid}/trades
+     * @deprecated
      */
     getTerminalSubnetTrades: (
       netuid: string,
@@ -1290,12 +1293,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns recent tweets with sentiment analysis for a subnet, formatted as social signals. Includes an aggregate score normalized to 0-100.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns recent tweets with sentiment analysis for a subnet, formatted as social signals. Includes an aggregate score normalized to 0-100.
      *
      * @tags Terminal
      * @name GetTerminalSubnetSignals
      * @summary Social signal feed for a subnet
      * @request GET:/v1/terminal/subnets/{netuid}/signals
+     * @deprecated
      */
     getTerminalSubnetSignals: (
       netuid: string,
@@ -1357,12 +1361,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns a wallet's portfolio with per-subnet positions including TAO value, USD value, cost basis, and PnL calculations.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns a wallet's portfolio with per-subnet positions including TAO value, USD value, cost basis, and PnL calculations.
      *
      * @tags Terminal
      * @name GetTerminalWalletPortfolio
      * @summary Wallet portfolio with per-subnet positions
      * @request GET:/v1/terminal/wallet/{address}/portfolio
+     * @deprecated
      */
     getTerminalWalletPortfolio: (address: string, params: RequestParams = {}) =>
       this.request<
@@ -1409,12 +1414,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns a composite analysis for a wallet including net TAO flow over the last 30 days, portfolio ROI based on cost basis and PnL, and portfolio-weighted sentiment across held subnets.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns a composite analysis for a wallet including net TAO flow over the last 30 days, portfolio ROI based on cost basis and PnL, and portfolio-weighted sentiment across held subnets.
      *
      * @tags Terminal
      * @name GetTerminalWalletAnalysis
      * @summary Wallet analysis with alpha flow, economics, and sentiment
      * @request GET:/v1/terminal/wallet/{address}/analysis
+     * @deprecated
      */
     getTerminalWalletAnalysis: (address: string, params: RequestParams = {}) =>
       this.request<
@@ -1462,12 +1468,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns stake/unstake transaction history for a wallet, optionally filtered by subnet.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns stake/unstake transaction history for a wallet, optionally filtered by subnet.
      *
      * @tags Terminal
      * @name GetTerminalWalletTransactions
      * @summary Wallet transaction history
      * @request GET:/v1/terminal/wallet/{address}/transactions
+     * @deprecated
      */
     getTerminalWalletTransactions: (
       address: string,
@@ -1521,12 +1528,13 @@ export class Sn45Api<
       }),
 
     /**
-     * @description Returns historical portfolio value data points for a wallet over the requested period. Aggregates daily stake snapshots across all subnets and converts to USD.
+     * @description Deprecated: this endpoint will be deleted on 2026-12-31. Returns historical portfolio value data points for a wallet over the requested period. Aggregates daily stake snapshots across all subnets and converts to USD.
      *
      * @tags Terminal
      * @name GetTerminalWalletHistory
      * @summary Historical portfolio value over time
      * @request GET:/v1/terminal/wallet/{address}/portfolio/history
+     * @deprecated
      */
     getTerminalWalletHistory: (
       address: string,
