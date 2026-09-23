@@ -37,32 +37,24 @@ import type {
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
-import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
+import type { MessageTypes, RequestType, ResponseType } from "../types"
 import type { Port } from "../types/base"
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
   MetadataDef,
-  ProviderMeta,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
 import { getMetadataDef } from "../util/getMetadataDef"
 import { urlToDomain } from "../util/urlToDomain"
-import RpcState from "./RpcState"
 import type { TabStore } from "./stores"
-import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
+import { genericAsyncSubscription } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
-  #rpcState = new RpcState()
   readonly #routes: Record<string, TabsHandler> = {}
 
   constructor(stores: TabStore) {
@@ -267,56 +259,6 @@ export default class Tabs extends TabsHandler {
     }))
   }
 
-  private rpcListProviders(): Promise<ResponseRpcListProviders> {
-    return this.#rpcState.rpcListProviders()
-  }
-
-  private rpcSend(request: RequestRpcSend, port: Port): Promise<UnknownJsonRpcResponse> {
-    return this.#rpcState.rpcSend(request, port)
-  }
-
-  private rpcStartProvider(key: string, port: Port): Promise<ProviderMeta> {
-    return this.#rpcState.rpcStartProvider(key, port)
-  }
-
-  private async rpcSubscribe(
-    request: RequestRpcSubscribe,
-    id: string,
-    port: Port
-  ): Promise<boolean> {
-    const innerCb = createSubscription<"pub(rpc.subscribe)">(id, port)
-    const cb = (_error: Error | null, data: SubscriptionMessageTypes["pub(rpc.subscribe)"]): void =>
-      innerCb(data)
-    const subscriptionId = await this.#rpcState.rpcSubscribe(request, cb, port)
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(sentry.captureException)
-    })
-
-    return true
-  }
-
-  private rpcSubscribeConnected(request: null, id: string, port: Port): Promise<boolean> {
-    const innerCb = createSubscription<"pub(rpc.subscribeConnected)">(id, port)
-    const cb = (
-      _error: Error | null,
-      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"]
-    ): void => innerCb(data)
-
-    this.#rpcState.rpcSubscribeConnected(request, cb, port)
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-    })
-
-    return Promise.resolve(true)
-  }
-
-  private rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
-    return this.#rpcState.rpcUnsubscribe(request, port)
-  }
-
   private async isEthereumConnected(url: string): Promise<boolean> {
     try {
       const site = await this.stores.sites.getSiteFromUrl(url)
@@ -450,24 +392,6 @@ export default class Tabs extends TabsHandler {
 
       case "pub(metadata.provide)":
         return this.metadataProvide(request as MetadataDef)
-
-      case "pub(rpc.listProviders)":
-        return this.rpcListProviders()
-
-      case "pub(rpc.send)":
-        return this.rpcSend(request as RequestRpcSend, port)
-
-      case "pub(rpc.startProvider)":
-        return this.rpcStartProvider(request as string, port)
-
-      case "pub(rpc.subscribe)":
-        return this.rpcSubscribe(request as RequestRpcSubscribe, id, port)
-
-      case "pub(rpc.subscribeConnected)":
-        return this.rpcSubscribeConnected(request as null, id, port)
-
-      case "pub(rpc.unsubscribe)":
-        return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
 
       case "pub(encrypt.encrypt)": {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
