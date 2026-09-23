@@ -6,8 +6,4 @@
 [![npm-version](https://img.shields.io/npm/v/@talismn/on-chain-id?style=flat-square)](https://www.npmjs.com/package/@talismn/on-chain-id)
 [![npm-downloads](https://img.shields.io/npm/dw/@talismn/on-chain-id?style=flat-square)](https://www.npmjs.com/package/@talismn/on-chain-id)
 
-**@talismn/on-chain-id** is used to query on-chain identifiers for account addresses in Ethereum, and more upcoming providers.
-
-In the case of Ethereum, it is also possible to go the other way (i.e. use the ENS identifier to look up an account address).
-
-The ENS domain resolution is handled internally by `viem`, the purpose of `@talismn/on-chain-id` is just to colocate the Ethereum and upcoming providers lookups into one API.
+**@talismn/on-chain-id** looks up on-chain names for account addresses, and resolves names to addresses. Only ENS (Ethereum) is live; the resolution is done by `viem`. The AZNS (azero.id) functions are deprecated stubs that return null.

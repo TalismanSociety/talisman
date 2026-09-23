@@ -15,12 +15,12 @@ _Avoid_: client, UI process
 ## Networks and tokens
 
 **Platform**:
-The chain family that a network, token or account belongs to: `polkadot`, `ethereum` or `solana`.
+The chain family that a network, token or account belongs to: `polkadot`, `ethereum` or `solana`. Accounts also allow `bitcoin` (contacts and watch-only xPubs), but the wallet has no Bitcoin networks.
 _Avoid_: ecosystem, chain type
 
 **Network**:
-One blockchain that the wallet can connect to. Code prefixes by platform: `DotNetwork`, `EthNetwork`, `SolNetwork`.
-_Avoid_: chain (except for the EVM numeric `chainId` and the Polkadot SDK genesis hash)
+One blockchain that the wallet can connect to, identified by a `networkId`. Code prefixes by platform: `DotNetwork`, `EthNetwork`, `SolNetwork`.
+_Avoid_: chain, `chainId`, `evmNetworkId` (older code uses `Chain`/`chainId` for a Polkadot SDK network and `EvmNetwork`/`evmNetworkId` for an EVM network; both are network ids now)
 
 **Polkadot SDK chain**:
 A network of the `polkadot` platform. Code uses `Dot` for network types and `Substrate`/`Sub` for token types and balance modules; these are the same platform.
@@ -40,8 +40,14 @@ _Avoid_: enabled
 A fungible asset on one network, with a token id, symbol and decimals. Each balance module defines its own token type (e.g. `evm-erc20`, `substrate-assets`).
 _Avoid_: asset, coin, currency
 
+**Token id**:
+`<networkId>:<tokenType>[:<specifier>]`, e.g. `bittensor:substrate-native` or `1:evm-erc20:0x07c3…`. Build and parse with `generateTokenId` and the `parse*TokenId` functions in `@talismn/chaindata-provider`.
+
+**Balance module**:
+One implementation of `IBalanceModule` in `@talismn/balances` (`src/modules/<token-type>/`). It defines a token type, fetches its balances, and declares the mini-metadata it needs.
+
 **Mirror token**:
-A token that shows the same balance as another token on the same network (`mirrorOf`). The UI hides it where the two would appear as duplicates.
+A token whose balance is the same asset as another token's (`mirrorOf` on the token). The UI hides it where the two would appear as duplicates. Networks have a `mirrorOf` too.
 
 **Planck**:
 The integer base unit of any token amount, on every platform. Convert with `planckToTokens` / `tokensToPlanck`.
@@ -66,7 +72,7 @@ An entry in the keyring: an address with a type, a name and type-specific data.
 How the wallet controls an account: `keypair`, `ledger-polkadot`, `ledger-ethereum`, `ledger-solana`, `polkadot-vault`, `signet`, `watch-only` or `contact`.
 
 **Owned account**:
-An account that the user can sign with: `keypair`, a Ledger type, or `polkadot-vault`.
+An account that the user can sign with: `keypair`, a Ledger type, or `polkadot-vault` (`isAccountOwned`). Every other type is an **external account** (`isAccountExternal`).
 
 **Portfolio account**:
 An account whose balances count in the portfolio totals: an owned account, or a watch-only account that the user marked as portfolio.
@@ -99,11 +105,11 @@ A website that connects to the wallet through the injected providers.
 _Avoid_: tab, site (except in "site authorisation")
 
 **Site authorisation**:
-The user's permission for a dapp to see some accounts.
-_Avoid_: connection, authorization
+The user's permission for a dapp to see some accounts. Code mixes spellings: `AuthorizedSite`, `sitesAuthorisedStore`, domain `sitesAuthorised`.
+_Avoid_: connection
 
 **Request**:
-An action that waits for the user's approval in a popup: a sign request, a site authorisation, an add-network request, and so on.
+An action that waits for the user's approval in a popup: a sign request, a site authorisation, an EVM add-network or watch-asset request, an encrypt request. See `KnownRequests` in `core/libs/requests/types.ts`.
 
 **Sign request**:
 A request to sign a transaction or a message with an account.
@@ -112,10 +118,13 @@ A request to sign a transaction or a message with an account.
 Settings that the wallet downloads at runtime, including feature flags that can turn features off.
 
 **Protector**:
-The phishing protection that blocks known malicious dapps.
+The phishing protection that blocks known malicious dapps (`core/domains/app/protector`). A code name only, never shown in the UI.
 
 **Gandalf**:
 Talisman's access-token service. The wallet gets a token from it and sends that token to Talisman's APIs.
+
+**`api`**:
+In the frontend, the typed message bridge to the backend (`ui/api/api.ts`). Not an HTTP API.
 
 ## Features
 
@@ -126,8 +135,12 @@ The view of the user's balances, grouped by token symbol across networks.
 The feature that transfers tokens to an address. "Transfer" is the on-chain call that it makes.
 
 **Swap**:
-An exchange of one token for another, often across networks, through a swap provider (e.g. LI.FI, StealthEX, SimpleSwap).
+An exchange of one token for another, often across networks, through a swap protocol.
 _Avoid_: exchange, trade
+
+**Swap protocol**:
+One integration in `ui/domains/Swap/swap-modules/` (`SupportedSwapProtocol`): LI.FI, StealthEX, SimpleSwap, ForeverMoney, Bittensor EVM.
+_Avoid_: swap provider
 
 **Earn**:
 The umbrella feature for putting tokens to work: native staking and yield.
@@ -140,7 +153,7 @@ _Avoid_: provider (a Yield.xyz provider is a protocol inside the Yield.xyz syste
 Locking native tokens to secure a network (nomination pools, bonding, Bittensor stake).
 
 **Asset discovery**:
-The background scan that finds inactive tokens with a balance in the user's accounts, and makes them active.
+The background scan that finds tokens with a balance that the user never turned on or off, and makes them active. On Polkadot SDK chains it activates the network instead.
 
 **Toast** / **Notification** / **Banner**:
 A toast is a short message inside the wallet UI. A notification is an operating-system notification from the background. A banner is a message at the top of a dashboard page.
