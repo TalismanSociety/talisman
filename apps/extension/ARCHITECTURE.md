@@ -171,6 +171,7 @@ Do not add `index.ts` re-exports. Import from the source module (`@ui/domains/Po
 
 ### Feature flags
 Feature flags come from remote config (`core/domains/app/store.remoteConfig.ts`), never from `common/constants.ts` or build-time env.
+The flag list mirrors the schema of the remote-config service, which lives in another repo. Keep a flag that no code reads until that service removes it.
 
 ## Tests
 
