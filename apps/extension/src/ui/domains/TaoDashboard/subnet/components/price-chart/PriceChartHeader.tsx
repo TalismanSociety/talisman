@@ -1,6 +1,6 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
+import { Skeleton } from "@ui/components/Skeleton"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
-import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { formatCompactAlpha } from "@ui/domains/TaoDashboard/shared/util"
 import { cn } from "@ui/util/cn"
 import type { FC, PropsWithChildren, ReactNode } from "react"

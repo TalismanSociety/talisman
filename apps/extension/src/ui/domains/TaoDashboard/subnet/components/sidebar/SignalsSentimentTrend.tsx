@@ -5,7 +5,7 @@ import {
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   useColorFromScore100Neg,
@@ -175,11 +175,11 @@ const SentimentTrendSkeleton = () => (
   <div className="flex h-41.25 items-stretch gap-14">
     <div className="flex h-full w-[118px] flex-col items-center justify-between">
       <div className="mb-1 text-body-inactive text-xs">
-        <Skeleton className="w-22.5" />
+        <TextSkeleton className="w-22.5" />
       </div>
       <SentimentGaucheSkeleton />
       <div>
-        <Skeleton className="w-15" />
+        <TextSkeleton className="w-15" />
       </div>
     </div>
 
@@ -218,10 +218,10 @@ const SentimentGaucheSkeleton = () => (
 const SentimentFieldSkeleton = () => (
   <div className="flex flex-col gap-2">
     <div className="text-body-inactive text-xs">
-      <Skeleton className="w-60" />
+      <TextSkeleton className="w-60" />
     </div>
     <div className="text-md">
-      <Skeleton className="w-20" />
+      <TextSkeleton className="w-20" />
     </div>
   </div>
 )

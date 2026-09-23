@@ -1,6 +1,6 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon } from "@talismn/icons"
+import { Skeleton } from "@ui/components/Skeleton"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
-import { Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactAlpha, formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import { cn } from "@ui/util/cn"

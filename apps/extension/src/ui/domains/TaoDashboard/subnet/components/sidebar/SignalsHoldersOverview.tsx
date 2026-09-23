@@ -5,7 +5,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import { cn } from "@ui/util/cn"
@@ -73,13 +73,13 @@ const HoldersOverviewSkeleton = () => (
         </svg>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
           <span className="l text-white text-xs">
-            <Skeleton className="w-56" />
+            <TextSkeleton className="w-56" />
           </span>
           <span className="font-medium text-lg text-white leading-base">
-            <Skeleton className="w-20" />
+            <TextSkeleton className="w-20" />
           </span>
           <span className="font-bold text-sm leading-base">
-            <Skeleton className="w-36" />
+            <TextSkeleton className="w-36" />
           </span>
         </div>
       </div>
@@ -333,14 +333,14 @@ const MetricsField: FC<
 const MetricsFieldSkeleton: FC<{ withExtra?: boolean }> = ({ withExtra }) => (
   <div className={cn("flex flex-col gap-2")}>
     <div className="text-body-inactive text-xs">
-      <Skeleton className="w-32" />
+      <TextSkeleton className="w-32" />
     </div>
     <div className={cn("text-md")}>
-      <Skeleton className="w-36" />
+      <TextSkeleton className="w-36" />
     </div>
     {!!withExtra && (
       <div className={cn("text-body-inactive text-xs")}>
-        <Skeleton className="w-20" />
+        <TextSkeleton className="w-20" />
       </div>
     )}
   </div>

@@ -1,7 +1,7 @@
 import { InfoIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useSubnetTradeFlow } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
+import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber, raoToTao } from "@ui/domains/TaoDashboard/shared/util"
 import { cn } from "@ui/util/cn"
@@ -237,10 +237,10 @@ const MetricFieldSkeleton = () => {
   return (
     <div className={cn("flex flex-col gap-1")}>
       <div className="text-body-inactive text-xs">
-        <Skeleton className="w-40" />
+        <TextSkeleton className="w-40" />
       </div>
       <div className={cn("text-md")}>
-        <Skeleton className="w-12.5" />
+        <TextSkeleton className="w-12.5" />
       </div>
     </div>
   )
@@ -251,21 +251,21 @@ const ComparisonFieldSkeleton = () => {
     <div className="flex w-full flex-col gap-1">
       <div className="flex w-full justify-between text-body-inactive text-xs">
         <div>
-          <Skeleton className="w-7.5" />
+          <TextSkeleton className="w-7.5" />
         </div>
         <div>
-          <Skeleton className="w-7.5" />
+          <TextSkeleton className="w-7.5" />
         </div>
       </div>
       <div className="flex w-full justify-between text-body text-md">
         <div>
-          <Skeleton className="w-12.5" />
+          <TextSkeleton className="w-12.5" />
         </div>
         <div>
-          <Skeleton className="w-12.5" />
+          <TextSkeleton className="w-12.5" />
         </div>
       </div>
-      <Skeleton className="h-4 w-full rounded-full"></Skeleton>
+      <TextSkeleton className="h-4 w-full rounded-full"></TextSkeleton>
     </div>
   )
 }
