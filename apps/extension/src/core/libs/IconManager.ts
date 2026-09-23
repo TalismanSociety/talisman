@@ -1,8 +1,5 @@
 import { requestStore } from "./requests/store"
 
-// Use chrome.action (MV3) or chrome.browserAction (MV2)
-const actionApi = chrome.action ?? chrome.browserAction
-
 class IconManager {
   constructor() {
     // update the icon when any of the request stores change
@@ -31,7 +28,7 @@ class IconManager {
                 ? "Decrypt"
                 : ""
 
-    actionApi?.setBadgeText?.({ text })
+    chrome.action.setBadgeText({ text })
   }
 }
 

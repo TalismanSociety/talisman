@@ -566,7 +566,6 @@ export default defineConfig({
         "windows",
         "notifications",
         "alarms",
-        "browserAction",
         "action",
         "permissions",
         "webRequest",

@@ -38,7 +38,7 @@ Then load the extension in Chrome:
 # Chrome development (with HMR)
 pnpm dev:extension
 
-# Firefox development (Manifest V2, output in dist/firefox-mv2-dev)
+# Firefox development (output in dist/firefox-mv3-dev)
 pnpm dev:extension:firefox
 ```
 
@@ -119,7 +119,7 @@ See `.env.sample` for the full list, including dev-only variables.
 | Command             | Unpacked Directory     | Zip File                                     |
 | ------------------- | ---------------------- | -------------------------------------------- |
 | `dev`               | `dist/chrome-mv3-dev`  | -                                            |
-| `dev:firefox`       | `dist/firefox-mv2-dev` | -                                            |
+| `dev:firefox`       | `dist/firefox-mv3-dev` | -                                            |
 | `build` / `build:*` | `dist/chrome-mv3`      | `dist/talisman-{version}-{buildType}-{gitSha}-chrome.zip`  |
 | `build:*:firefox`   | `dist/firefox-mv3`     | `dist/talisman-{version}-{buildType}-{gitSha}-firefox.zip` |
 

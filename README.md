@@ -66,7 +66,7 @@ To develop for Firefox instead:
 pnpm dev:extension:firefox
 ```
 
-Then load the extension from `apps/extension/dist/firefox-mv2-dev` in Firefox's `about:debugging` page. The dev server builds Manifest V2 for Firefox; the Firefox release builds are Manifest V3.
+Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's `about:debugging` page.
 
 ## Apps and packages
 
