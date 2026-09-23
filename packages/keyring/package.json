@@ -1,6 +1,7 @@
 {
   "name": "@talismn/keyring",
   "version": "2.0.2",
+  "description": "Keyring that stores accounts and mnemonics for the Talisman wallet",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",

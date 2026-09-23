@@ -1,6 +1,7 @@
 {
   "name": "@talismn/icons",
   "version": "1.0.1",
+  "description": "React icon components for Talisman apps",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",

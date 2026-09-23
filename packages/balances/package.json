@@ -1,6 +1,7 @@
 {
   "name": "@talismn/balances",
   "version": "3.0.4",
+  "description": "Fetch and subscribe to token balances on Polkadot SDK, EVM and Solana networks",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
