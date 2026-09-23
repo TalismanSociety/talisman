@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { isBooleanTrue } from "@talismn/util"
+import { isTruthy } from "@talismn/util"
 import { TooltipContent } from "@ui/components/Tooltip"
 import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
@@ -39,7 +39,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
           fiat: tokenBalances.sum.fiat("usd").total,
         }
       })
-      .filter(isBooleanTrue)
+      .filter(isTruthy)
       .sort((b1, b2) => {
         if (b1.fiat > b2.fiat) return -1
         if (b1.fiat < b2.fiat) return 1
