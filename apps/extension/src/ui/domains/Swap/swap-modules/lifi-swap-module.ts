@@ -1,3 +1,4 @@
+import { isAbortError } from "@talismn/util"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import type {
@@ -102,9 +103,6 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
 // LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
 // instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
 const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl })
-
-const isAbortError = (cause: unknown): boolean =>
-  cause instanceof Error && cause.name === "AbortError"
 
 // --- Helper to get a viem PublicClient for an EVM network ---
 const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
