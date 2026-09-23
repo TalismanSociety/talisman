@@ -347,8 +347,6 @@ export class RemoteConfigApi<
           swaps: {
             /** deprecated */
             questApi?: string;
-            /** API key for LI.FI cross-chain swap aggregator */
-            lifiApiKey: string;
             /** Additional token IDs to enable in LI.FI that may not be available by default. Format: 'chainId:evm-erc20:contractAddress' */
             lifiTalismanTokens: string[];
             /** API key for SimpleSwap aggregator */
@@ -512,10 +510,18 @@ export class RemoteConfigApi<
             /** Enables token swaps in the mobile wallet */
             SWAPS: boolean;
           };
+          /** Anonymous product analytics configuration for the mobile wallet. The app queues events until this section is fetched and drops everything when the user opts out in Settings. */
+          analytics: {
+            /** Posthog project API key (public, write-only) the mobile wallet sends anonymous product analytics with. Empty string disables analytics in the app. */
+            posthogApiKey: string;
+            /**
+             * Posthog batch capture endpoint the mobile wallet sends analytics events to
+             * @format uri
+             */
+            posthogUrl: string;
+          };
           /** Token swap feature configuration including LI.FI, SimpleSwap, and StealthEX integrations. Sourced from the shared config's swaps section (minus deprecated fields) — see src/mobile-remote-config/loader.ts */
           swaps: {
-            /** API key for LI.FI cross-chain swap aggregator */
-            lifiApiKey: string;
             /** Additional token IDs to enable in LI.FI that may not be available by default. Format: 'chainId:evm-erc20:contractAddress' */
             lifiTalismanTokens: string[];
             /** API key for SimpleSwap aggregator */
@@ -552,10 +558,86 @@ export class RemoteConfigApi<
               solanaChainId: number;
             };
           };
+          /** Per-platform, per-provider gating of the swaps feature: each listed provider carries App Store storefront and IP-region denylists. Region groups named in the YAML (EU, EEA) are expanded to country codes here. */
+          swapAccess: {
+            /** Swap access rules for one mobile platform */
+            ios: {
+              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. Swaps are hidden entirely when no listed provider passes its region rules, as if the SWAPS feature flag were off. */
+              providers: {
+                lifi?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+                simpleswap?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+                stealthex?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+              };
+            };
+            /** Swap access rules for one mobile platform */
+            android: {
+              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. Swaps are hidden entirely when no listed provider passes its region rules, as if the SWAPS feature flag were off. */
+              providers: {
+                lifi?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+                simpleswap?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+                stealthex?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
+              };
+            };
+          };
         },
         any
       >({
         path: `/mobile-config`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
+  geo = {
+    /**
+     * @description Returns the country Cloudflare resolved the connecting IP to. Never cached: the answer is specific to the caller.
+     *
+     * @tags Geo
+     * @name GetGeo
+     * @summary Get the caller's IP-derived country
+     * @request GET:/geo
+     */
+    getGeo: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /** ISO 3166-1 alpha-2 country code Cloudflare resolved the connecting IP to, or null when unknown (e.g. Tor, unroutable ranges, local development) */
+          country: string | null;
+          /** Whether Cloudflare places the connecting IP in the European Union */
+          isEUCountry: boolean;
+        },
+        any
+      >({
+        path: `/geo`,
         method: "GET",
         format: "json",
         ...params,

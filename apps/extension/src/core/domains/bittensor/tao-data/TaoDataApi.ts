@@ -270,7 +270,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @version 1.0.0
  * @externalDocs https://github.com/TalismanSociety/tao-data-api
  *
- * Read-only REST API serving aggregated Bittensor network data — pools, subnets, and validators — sourced from the Taostats upstream API. All responses are JSON. Data is cached with stale-while-revalidate semantics.
+ * Read-only REST API serving aggregated Bittensor network data — pools, validators, and price. All responses are JSON. Data is cached with stale-while-revalidate semantics.
  */
 export class TaoDataApi<
   SecurityDataType extends unknown,
@@ -319,40 +319,6 @@ export class TaoDataApi<
   };
   subnets = {
     /**
-     * @description Returns the latest snapshot of every registered Bittensor subnet with its netuid, emission value, and tempo parameter.
-     *
-     * @tags Deprecated
-     * @name ListSubnets
-     * @summary [Deprecated] List all Bittensor subnets
-     * @request GET:/subnets
-     * @deprecated
-     */
-    listSubnets: (params: RequestParams = {}) =>
-      this.request<
-        {
-          /** Unique subnet identifier on Bittensor (netuid). */
-          netuid: number;
-          /** Current subnet emission value as a string. */
-          emission: string;
-          /** Subnet tempo (epoch cadence parameter). */
-          tempo: number;
-        }[],
-        {
-          error: {
-            /** Machine-readable error code. */
-            code: string;
-            /** Human-readable error message. */
-            message: string;
-          };
-        }
-      >({
-        path: `/subnets`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Returns every validator registered on the specified subnet with their hotkey, current stake, and trailing 30-day APY.
      *
      * @tags Subnets
@@ -369,6 +335,8 @@ export class TaoDataApi<
           stake: number;
           /** Validator 30-day APY value when available. */
           thirty_day_apy: number | null;
+          /** Validator 30-day APY before delegate take, when available. */
+          thirty_day_apy_gross?: number | null;
         }[],
         {
           error: {
@@ -442,6 +410,8 @@ export class TaoDataApi<
           stake: number;
           /** Validator 30-day APY on this subnet when available. */
           thirty_day_apy: number | null;
+          /** Validator 30-day APY on this subnet before delegate take, when available. */
+          thirty_day_apy_gross?: number | null;
         }[],
         {
           error: {
@@ -460,12 +430,13 @@ export class TaoDataApi<
   };
   price = {
     /**
-     * @description Returns the current TAO token price, market capitalization, 24-hour trading volume, circulating supply, and fully diluted market cap.
+     * @description Deprecated — this endpoint will be removed soon. Returns the current TAO token price, market capitalization, 24-hour trading volume, circulating supply, and fully diluted market cap.
      *
      * @tags Price
      * @name GetPrice
-     * @summary Get current TAO price and market data
+     * @summary [Deprecated] Get current TAO price and market data
      * @request GET:/price
+     * @deprecated
      */
     getPrice: (params: RequestParams = {}) =>
       this.request<
