@@ -381,19 +381,6 @@ export class Balance {
   toJSON = (): BalanceJson => this.#storage
 
   isSource = (source: BalanceSource) => this.#storage.source === source
-  // // TODO: Fix this method, the types don't work with our plugin architecture.
-  // // Specifically, the `BalanceJson` type is compiled down to `IBalance` in the following way:
-  // //
-  // //     toJSON: () => BalanceJson // works
-  // //     isSource: (source: BalanceSource) => boolean // works
-  // //     asSource: <P extends string>(source: P) => NarrowBalanceType<IBalance, P> | null // Doesn't work! IBalance should just be BalanceJson!
-  // //
-  // // `IBalance` won't match the type of `BalanceSource` after `PluginBalanceTypes` has been extended by balance plugins.
-  // // As a result, typescript will think that the returned #storage is not a BalanceJson.
-  // asSource = <P extends BalanceSource>(source: P): NarrowBalanceType<BalanceJson, P> | null => {
-  //   if (this.#storage.source === source) return this.#storage as NarrowBalanceType<BalanceJson, P>
-  //   return null
-  // }
 
   hydrate = (hydrate?: HydrateDb) => {
     if (hydrate !== undefined && hydrate !== this.#db) {

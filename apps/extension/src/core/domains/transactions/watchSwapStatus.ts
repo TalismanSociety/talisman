@@ -60,7 +60,6 @@ async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionIn
   const txId = tx.id
   let notFoundSince: number | null = null
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     // exhausted retries leave the status unknown until a later poll succeeds or the tx ages out
     const status = (await fetchSwapStatusWithRetry(txId, txInfo)) ?? "unknown"

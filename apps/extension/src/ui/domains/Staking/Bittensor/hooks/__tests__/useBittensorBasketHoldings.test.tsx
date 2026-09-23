@@ -11,7 +11,6 @@ vi.mock("@ui/hooks/sapi/useScaleApi", () => ({
   useScaleApi: () => mockUseScaleApi(),
 }))
 
-// eslint-disable-next-line import/first
 import { useBittensorBasketHoldings } from "../useBittensorBasketHoldings"
 
 // ── Test fixtures ─────────────────────────────────────────────────

@@ -638,40 +638,6 @@ export const useEthTransaction = (
     [tx, isDecoding, txDetails, error]
   )
 
-  // @dev temporarily uncomment when troubleshooting
-
-  // useEffect(() => {
-  //   console.log("useEthTransaction", {
-  //     request,
-  //     evmNetworkId,
-  //     tx,
-  //     decodedTx,
-  //     hasEip1559Support,
-  //     nonce,
-  //     gasPrice,
-  //     networkUsage,
-  //     baseFeePerGas,
-  //     blockGasLimit,
-  //     feeHistoryAnalysis,
-  //     estimatedGas,
-  //     transaction,
-  //   })
-  // }, [
-  //   baseFeePerGas,
-  //   blockGasLimit,
-  //   decodedTx,
-  //   estimatedGas,
-  //   evmNetworkId,
-  //   feeHistoryAnalysis,
-  //   gasPrice,
-  //   hasEip1559Support,
-  //   networkUsage,
-  //   nonce,
-  //   request,
-  //   tx,
-  //   transaction,
-  // ])
-
   return {
     decodedTx,
     transaction,

@@ -195,9 +195,6 @@ const decodeBaseResult = (
 
   // even if these values are 0, we still need to add them to the balanceJson.values array
   // so that the balance pool can handle newly zeroed balances
-  // const existingValues = Object.fromEntries(
-  //   balanceJson.values.map((v) => [getValueId(v), v]),
-  // )
   const newValues: AmountWithLabel<string>[] = [
     { type: "free", label: "free", amount: free.toString() },
     { type: "reserved", label: "reserved", amount: reserved.toString() },

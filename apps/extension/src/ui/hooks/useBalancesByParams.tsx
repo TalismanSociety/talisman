@@ -17,7 +17,6 @@ const INITIAL_VALUE: BalanceSubscriptionResponse = {
 
 const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }
 
-// TODO merge addressesByChain and addressesandNetworks into a single addressesByNetwork object, or just remove both
 export type BalancesByParamsProps = {
   addressesAndTokens?: AddressesAndTokens
 }

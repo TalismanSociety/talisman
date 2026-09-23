@@ -42,7 +42,6 @@ vi.mock("../swaps.api", () => {
   return { swapModules, useSwapModules: () => swapModules }
 })
 
-// eslint-disable-next-line import/first
 import { useSwapQuoteManager } from "../hooks/useSwapQuoteManager"
 
 type Deferred<T> = {
