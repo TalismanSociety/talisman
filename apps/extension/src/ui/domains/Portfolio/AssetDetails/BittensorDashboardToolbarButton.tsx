@@ -11,7 +11,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
-import { uniq } from "lodash"
+import { uniq } from "lodash-es"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
