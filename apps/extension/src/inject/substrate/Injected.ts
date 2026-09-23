@@ -15,7 +15,7 @@ import type {
 // Minimal reimplementation of @polkadot/extension-base/page's Injected/Accounts/Metadata/Signer.
 // Importing them drags PostMessageProvider and its dependency chain (@polkadot/util logger →
 // bn.js, eventemitter3) into page.js — ~25% of the bundle — to power an `injected.provider`
-// that Talisman does not offer: the wallet exposes no RPC provider to dapps.
+// that Talisman does not offer: there is no polkadot-js `injected.provider`.
 // Dapp-facing message semantics below are identical to the upstream classes.
 //
 // All methods are arrow-function fields: upstream methods never touch `this` (module-level

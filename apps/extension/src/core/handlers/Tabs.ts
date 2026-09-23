@@ -11,7 +11,6 @@ import { getPhishingSource, type PhishingSource } from "../domains/app/protector
 import { maliciousOrigin$, requestSiteScan } from "../domains/app/protector/blockaidSiteScan"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
-
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { signSubstrate, signVrf } from "../domains/signing/requests"

@@ -219,7 +219,7 @@ export type EthTransactionDetails = {
 }
 
 export interface SigningMessages {
-  // dapp-facing, not part of the injected-web3 spec (Talisman-specific, like pub(encrypt.*))
+  // dapp-facing, not part of the injected-web3 spec (Talisman-specific)
   "pub(vrf.sign)": [VrfSignPayload, VrfSignResponse]
   // signing message signatures
   "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
