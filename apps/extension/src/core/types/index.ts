@@ -22,7 +22,7 @@ import type { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import type { SubstrateMessages } from "../domains/substrate/types"
 import type { TalismanMessages } from "../domains/talisman/types"
 import type { TokenRatesMessages } from "../domains/tokenRates/types"
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
+import type { NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 import type { RequestSignatures as PolkadotRequestSignatures } from "./pjsInterop"
 
 export declare type RequestTypes = {
@@ -46,10 +46,6 @@ declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefined
 }>
 
 export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = AllMessages[T][2]
-
-export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
-  [MessageType in MessageTypes]: AllMessages[MessageType][0]
-}>
 
 // lists all the messages (public and private) supported by the extension
 // PolkadotRequestSignatures only carries the legacy polkadot-js pub() dapp protocol,
@@ -107,9 +103,6 @@ export interface TransportRequestMessage<TMessageType extends MessageTypes> {
 }
 
 export declare type MessageTypesWithSubscriptions = keyof SubscriptionMessageTypes
-export declare type MessageTypesWithSubscriptionsById = keyof RequestIdOnlyMessageTypes &
-  MessageTypesWithSubscriptions
-
 export declare type MessageTypesWithNoSubscriptions = Exclude<
   MessageTypes,
   keyof SubscriptionMessageTypes

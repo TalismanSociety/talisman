@@ -55,7 +55,6 @@ import type {
 } from "@core/domains/signing/types"
 import type {
   AuthorisedSiteUpdate,
-  AuthorizedSite,
   AuthorizedSites,
   AuthRequestAddresses,
   AuthRequestId,
@@ -97,7 +96,6 @@ export default interface MessageTypes {
     cb: (val: ChangePasswordStatusUpdate) => void
   ) => UnsubscribeFn
   checkPassword: (password: string) => Promise<boolean>
-  authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
@@ -197,10 +195,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
 
   // authorized sites message types ------------------------------------------
-  authorizedSites: () => Promise<AuthorizedSites>
   authorizedSitesSubscribe: (cb: (sites: AuthorizedSites) => void) => UnsubscribeFn
-  authorizedSite: (id: string) => Promise<AuthorizedSite>
-  authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
   authorizedSitesDisconnectAll: (type: ProviderType) => Promise<boolean>

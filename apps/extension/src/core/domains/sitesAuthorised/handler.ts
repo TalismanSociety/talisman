@@ -13,7 +13,7 @@ import type {
   ResponseType,
   ResponseTypes,
 } from "../../types"
-import type { Port, RequestIdOnly } from "../../types/base"
+import type { Port } from "../../types/base"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { ignoreRequest } from "./requests"
@@ -115,17 +115,8 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // authorized sites handlers ------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(sites.list)":
-        return await this.stores.sites.get()
-
-      case "pri(sites.byid)":
-        return await this.stores.sites.get(id)
-
       case "pri(sites.subscribe)":
         return this.stores.sites.subscribe(id, port)
-
-      case "pri(sites.byid.subscribe)":
-        return this.stores.sites.subscribeById(id, port, request as RequestIdOnly)
 
       case "pri(sites.forget)":
         return this.authorizedForget(request as RequestAuthorizedSiteForget)
