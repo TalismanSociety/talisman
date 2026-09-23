@@ -1,4 +1,4 @@
-import { StorageProvider } from "../../libs/Store"
+import { StorageProvider } from "../../../libs/Store"
 
 type ActiveChains = Record<string, boolean>
 
@@ -11,16 +11,6 @@ type ActiveChains = Record<string, boolean>
 class ActiveChainsStore extends StorageProvider<ActiveChains> {
   constructor(initialData = {}) {
     super("activeChains", initialData)
-  }
-
-  async setActive(networkId: string, active: boolean) {
-    const activeNetworks = await this.get()
-    if (activeNetworks[networkId] === active) return
-    await this.set({ ...activeNetworks, [networkId]: active })
-  }
-
-  async resetActive(networkId: string) {
-    await this.delete(networkId)
   }
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest"
-import { mnemonicsStore } from "../store"
+import { mnemonicsStore } from "../legacy/store.mnemonics"
 
 describe("createMnemonicsStore", () => {
   it("should be defined", () => {

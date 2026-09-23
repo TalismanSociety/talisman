@@ -4,10 +4,10 @@ import { normalizeAddress } from "@talismn/crypto"
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
 import { chaindataProvider } from "../../../rpcs/chaindata"
-import { activeChainsStore } from "../../chains/store.activeChains"
-import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
+import { activeChainsStore } from "../../chains/legacy/store.activeChains"
+import { activeEvmNetworksStore } from "../../ethereum/legacy/store.activeEvmNetworks"
 import { DEFAULT_AUTO_LOCK_MINUTES, isUsableAutoLockDuration } from "../autoLock"
-import { addressBookStore } from "../store.addressBook"
+import { addressBookStore } from "../legacy/store.addressBook"
 import { settingsStore } from "../store.settings"
 
 export const cleanBadContacts: Migration = {
