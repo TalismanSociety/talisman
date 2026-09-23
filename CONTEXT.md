@@ -33,7 +33,7 @@ The list of known networks and tokens, published in the TalismanSociety/chaindat
 A network or token that the user added, or a known one whose settings the user changed.
 
 **Active network** / **Active token**:
-A network or token that the user has turned on. The wallet fetches balances only for active ones.
+A network or token that the wallet subscribes to balances for. It is active when the user turned it on, or when it is a chaindata default (`isDefault`, non-testnet for networks) that the user did not turn off. The active stores hold the user's overrides only: read the effective state with `isNetworkActive` and `isTokenActive` (`core/domains/balances/store.active*.ts`). Asset discovery queries inactive tokens too, then activates the ones with a balance.
 _Avoid_: enabled
 
 **Token**:
@@ -72,7 +72,10 @@ An entry in the keyring: an address with a type, a name and type-specific data.
 How the wallet controls an account: `keypair`, `ledger-polkadot`, `ledger-ethereum`, `ledger-solana`, `polkadot-vault`, `signet`, `watch-only` or `contact`.
 
 **Owned account**:
-An account that the user can sign with: `keypair`, a Ledger type, or `polkadot-vault` (`isAccountOwned`). Every other type is an **external account** (`isAccountExternal`).
+An account that the user can sign with: `keypair`, a Ledger type, or `polkadot-vault` (`isAccountOwned`).
+
+**External account**:
+An account whose key is held outside the wallet: a Ledger type, `polkadot-vault`, `signet`, `watch-only` or `contact` (`isAccountExternal`). The two sets overlap: Ledger and Vault accounts are both owned and external. `keypair` is the only type that is owned and not external, so `!isAccountOwned` is not the same as `isAccountExternal`.
 
 **Portfolio account**:
 An account whose balances count in the portfolio totals: an owned account, or a watch-only account that the user marked as portfolio.
