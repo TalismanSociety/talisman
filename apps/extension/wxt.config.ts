@@ -547,8 +547,6 @@ export default defineConfig({
   },
 
   // Vite configuration
-  // In dev mode: alias packages to source for hot reload
-  // In production: use pre-built tsup outputs from dist/ for smaller bundles
   vite: ({ mode, browser }) => {
     const isDev = mode === "development"
     // WXT passes browser via the ConfigEnv parameter (e.g., "firefox", "chrome")
