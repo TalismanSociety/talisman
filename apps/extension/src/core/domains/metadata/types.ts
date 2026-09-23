@@ -13,7 +13,5 @@ export type HexStringRequestIdOnly = {
 }
 
 export type MetadataMessages = {
-  "pri(metadata.get)": [string | null, MetadataDef | null]
-  "pri(metadata.list)": [null, MetadataDef[]]
   "pri(metadata.updates.subscribe)": [HexStringRequestIdOnly, boolean, MetadataUpdateStatus]
 }

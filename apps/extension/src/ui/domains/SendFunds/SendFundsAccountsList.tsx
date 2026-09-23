@@ -1,4 +1,3 @@
-import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Balance } from "@talismn/balances"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
@@ -9,7 +8,6 @@ import { AccountRow } from "./AccountRow"
 
 export type SendFundsAccount = {
   address: string
-  origin?: LegacyAccountOrigin
   name?: string
   genesisHash?: `0x${string}` | null
   balance?: Balance

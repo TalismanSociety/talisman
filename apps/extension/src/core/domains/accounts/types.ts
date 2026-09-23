@@ -7,7 +7,6 @@ import type {
 } from "@talismn/keyring"
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { HexString } from "@talismn/util"
-import type { Address } from "../../types/base"
 import type {
   AccountJson,
   PjsKeyringPairJson,
@@ -30,68 +29,7 @@ export interface ResponseAccountsExport {
 
 // account types ----------------------------------
 
-/** @deprecated */
-type AccountJsonHardwareSubstrateOwnProperties = {
-  isHardware: true
-  accountIndex: number
-  addressOffset: number
-  ledgerApp?: SubstrateLedgerAppType
-  migrationAppName?: string
-}
-
-/** @deprecated */
-type _AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
-
-/** @deprecated */
-type AccountJsonHardwareEthereumOwnProperties = {
-  isHardware: true
-  path: string
-}
-
-/** @deprecated */
-type _AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
-
-/** @deprecated */
-type AccountJsonHardwarePolkadotOwnProperties = {
-  isHardware: true
-  path: string
-}
-/** @deprecated */
-type _AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
-
-/** @deprecated */
-type AccountJsonQrOwnProperties = {
-  isQr: true
-}
-/** @deprecated */
-type _AccountJsonQr = AccountJson & AccountJsonQrOwnProperties
-
-/** @deprecated */
-type AccountJsonWatchedOwnProperties = {
-  isPortfolio: boolean
-}
-
-/** @deprecated */
-type _AccountJsonWatched = AccountJson & AccountJsonWatchedOwnProperties
-
-/** @deprecated */
-type AccountJsonSignetOwnProperties = {
-  signetUrl: string
-}
-
-/** @deprecated */
-type _AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
-
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
-
-const AccountImportSources = {
-  JSON: "json",
-  PK: "pk",
-} as const
-
-export type AccountImportSource = {
-  [K in keyof typeof AccountImportSources]: (typeof AccountImportSources)[K]
-}[keyof typeof AccountImportSources]
 
 /** @deprecated */
 export enum LegacyAccountOrigin {
@@ -101,24 +39,6 @@ export enum LegacyAccountOrigin {
   Watched = "WATCHED",
   Signet = "SIGNET",
 }
-
-/** @deprecated */
-export interface AccountMeta extends AccountJson {
-  name: string
-  origin: LegacyAccountOrigin
-  importSource?: AccountImportSource
-}
-
-/**
- * @deprecated
- */
-export interface LegacyAccount {
-  address: Address
-  meta: AccountMeta
-}
-
-/** @deprecated */
-type _AccountsList = LegacyAccount[]
 
 // TODO migrate
 /**
