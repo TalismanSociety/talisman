@@ -2,6 +2,16 @@
 
 A non-custodial browser wallet for Polkadot SDK, Ethereum (EVM) and Solana networks. This glossary sets one word per concept. Older code still uses some of the words under _Avoid_.
 
+## Wallet processes
+
+**Backend**:
+The extension's background service worker (`apps/extension/entrypoints/background.ts`, code in `apps/extension/src/core/`). It holds the keys, the stores and the shared chain connections, and it handles every request from the frontend and from dapps. It is not a server. Talisman's hosted services (Gandalf, the coins API, chaindata) are separate and are named as such.
+_Avoid_: server, service worker (except when the browser lifecycle matters)
+
+**Frontend**:
+The React UI in the popup, dashboard, onboarding and support pages (code in `apps/extension/src/ui/`). It talks to the backend over `PortMessageService` messages.
+_Avoid_: client, UI process
+
 ## Networks and tokens
 
 **Platform**:
