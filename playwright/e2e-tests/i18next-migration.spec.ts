@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import path from "node:path"
 import type { Page } from "@playwright/test"
 
-import { expect, test } from "./fixtures"
+import { ethDevChain, expect, test } from "./fixtures"
 
 const contactName = "Migration QA Contact"
 const phishingUrl = "https://migration-check.example.invalid"
@@ -74,6 +74,11 @@ for (const [language, label] of [
     const networkRoute = `${dashboard}/settings/networks-tokens/network/1`
     await page.goto(networkRoute)
     await page.locator('input[name="name"]').fill(networkName)
+    const deleteRpcButtons = page.getByTestId("network-rpcs-delete-button")
+    for (let i = (await deleteRpcButtons.count()) - 1; i >= 1; i--) {
+      await deleteRpcButtons.nth(i).click()
+    }
+    await page.getByTestId("form-field-input-rpc").fill(ethDevChain)
     await page.getByRole("button", { name: text("Save"), exact: true }).click()
     await expect(page).not.toHaveURL(networkRoute)
     await page.goto(networkRoute)
