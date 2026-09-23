@@ -243,7 +243,7 @@ const useSendFundsProvider = () => {
         token: tokensMap[tokenId],
         cost: new BalanceFormatter(amount, tokensMap[tokenId].decimals, tokenRates),
         balance: new BalanceFormatter(
-          balances.find({ tokenId }).sorted[0]?.transferable.planck,
+          balances.find({ tokenId }).each[0]?.transferable.planck,
           tokensMap[tokenId].decimals,
           tokenRatesMap[tokenId]
         ),

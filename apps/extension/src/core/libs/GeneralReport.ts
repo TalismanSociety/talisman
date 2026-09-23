@@ -202,9 +202,9 @@ async function getGeneralReport({
       transferableBalance: balances.sum.fiat("usd").transferable,
       unavailableBalance: balances.sum.fiat("usd").unavailable,
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
-      chainId: balances.sorted[0].networkId,
-      tokenId: balances.sorted[0].tokenId,
-      symbol: balances.sorted[0].token?.symbol,
+      chainId: balances.each[0].networkId,
+      tokenId: balances.each[0].tokenId,
+      symbol: balances.each[0].token?.symbol,
     }))
     .sort((a, b) => b.totalBalance - a.totalBalance)
 

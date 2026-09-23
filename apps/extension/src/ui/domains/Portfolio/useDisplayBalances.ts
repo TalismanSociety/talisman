@@ -121,9 +121,6 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
   new Balances([])
 )
 
-/**
- * @deprecated use atoms
- */
 export const useDisplayBalances = (balances: Balances) => {
   const accounts = usePortfolioSelectedAccounts()
   const networksById = useNetworksMapById()

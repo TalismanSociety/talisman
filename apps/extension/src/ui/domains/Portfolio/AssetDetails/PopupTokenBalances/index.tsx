@@ -26,7 +26,7 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
-  const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
+  const isUniswapV2LpToken = balances.each[0]?.source === "evm-uniswapv2"
 
   return (
     <TokenBalancesList
@@ -36,7 +36,7 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
       chainOrNetworkId={chainOrNetwork.id}
     >
       {isUniswapV2LpToken &&
-        balances.sorted
+        balances.each
           .filter((balance) => balance.total.planck > 0n)
           .map((balance, i, balances) => (
             <TokenBalancesUniswapV2Row
