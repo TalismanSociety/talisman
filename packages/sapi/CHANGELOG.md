@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 2.0.2
+
+### Patch Changes
+
+- 724a30e: export ERA_PERIOD, the mortal era every signed payload is built with
+
 ## 2.0.1
 
 ### Patch Changes
