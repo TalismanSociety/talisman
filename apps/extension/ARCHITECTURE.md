@@ -132,10 +132,10 @@ core/
 ### Core domain anatomy
 
 Each core domain typically has:
-- `handler.ts` — Extends `ExtensionHandler`, routes wallet UI messages (`pri(...)`) to methods. Domains that also serve dapps split it: `handler.extension.ts` for wallet UI messages, `handler.tabs.ts` (extends `TabsHandler`) for dapp messages (`pub(...)`).
+- `handler.ts` — Extends `ExtensionHandler`, routes wallet UI messages (`pri(...)`) to methods. The `ethereum` and `solana` domains split it: `handler.extension.ts` for wallet UI messages, `handler.tabs.ts` (extends `TabsHandler`) for dapp messages (`pub(...)`). The Polkadot dapp handler is `core/handlers/Tabs.ts`.
 - `types.ts` — Request/response type definitions for messages
 - `index.ts` — Exports handler + any stores (not a barrel — exports named items used elsewhere)
-- `exports.ts` — The UI-safe surface of the domain: helpers and types that `ui/` may import without pulling in handlers
+- `exports.ts` — In some domains (e.g. `keyring`, `bittensor`, `earn`): the UI-safe surface, helpers and types that `ui/` may import without pulling in handlers
 - `store.ts` / `store.*.ts` — Persistent stores (Dexie tables or chrome.storage key-value stores)
 - `helpers.ts` — Pure utility functions
 - Tests — colocated `*.test.ts` / `*.spec.ts`, or in `__tests__/`

@@ -3,7 +3,7 @@
 Business logic layer that runs in the extension's service worker. Has no access to DOM or React.
 
 **Subfolders:**
-- `domains/` — Business logic grouped by feature (accounts, balances, signing, etc.). Most domains have a `handler.ts` that processes messages from the UI, or a `handler.extension.ts` (UI messages) + `handler.tabs.ts` (dapp messages) pair. `exports.ts` is the part of a domain that the UI may import.
+- `domains/` — Business logic grouped by feature (accounts, balances, signing, etc.). Most domains have a `handler.ts` that processes messages from the UI. `ethereum` and `solana` have a `handler.extension.ts` (UI messages) + `handler.tabs.ts` (dapp messages) pair. Where present, `exports.ts` is the part of a domain that the UI may import.
 - `handlers/` — Message routing. `Extension.ts` dispatches incoming `PortMessageService` messages to the appropriate domain handler by message prefix.
 - `libs/` — Singletons and infrastructure: `Handler` base class, `Store`, `Analytics`, `RequestStore` (in `requests/`), `WindowManager`.
 - `db/` — Dexie (IndexedDB) database schema, migrations, and blob storage.
