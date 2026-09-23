@@ -96,7 +96,7 @@ Entrypoints handle platform-level setup (imports, zoom, sizing), then render the
 1. **`core/domains/`** — Business logic: database access, RPC calls, crypto operations.
 2. **`core/handlers/Extension.ts`** — Routes incoming messages to domain handlers by prefix (e.g., `"pri(accounts.*)"` → `AccountsHandler`).
 3. **`ui/api/api.ts`** — The UI's bridge to core. Sends messages via `PortMessageService` and exposes typed methods.
-4. **`ui/state/`** — Wraps `api` subscriptions as RxJS Observables, then uses `@react-rxjs/core`'s `bind()` to produce React hooks (e.g., `useAccounts`, `useBalances`).
+4. **`ui/state/`** — Wraps `api` subscriptions, or a shared core store (e.g. `remoteConfigStore`), as RxJS Observables, then uses `@react-rxjs/core`'s `bind()` to produce React hooks (e.g., `useAccounts`, `useBalances`). Cross-domain state only.
 5. **`ui/hooks/`** — Higher-level React hooks that combine state hooks with UI logic (e.g., formatting, derived state, navigation).
 6. **`ui/domains/`** — Feature-specific React components, organized by business domain.
 7. **`ui/apps/`** — App shells (routing, layout) that compose domain components.
@@ -121,8 +121,11 @@ core/
 │   ├── signing/        — Sign request queue for all platforms; approves Polkadot SDK and VRF requests
 │   │                     (Ethereum and Solana approvals live in their own domains) (🔴 SECURITY-CRITICAL)
 │   └── ...             — one folder per domain (`ls src/core/domains`)
-├── handlers/           — Message routing: Extension.ts dispatches to domain handlers
-├── libs/               — Singletons: Handler, Store, Analytics, requests/ (RequestStore), etc.
+├── handlers/           — Message routing. Extension.ts routes `pri(...)` messages to domain handlers,
+│                         Tabs.ts routes `pub(...)` dapp messages, index.ts exports `talismanHandler`
+├── libs/               — Handler base classes, Store (chrome.storage), Analytics, GeneralReport (daily
+│                         usage report), requests/ (RequestStore), migrations/, QrGenerator/ (Polkadot
+│                         Vault payloads), WindowManager, IconManager, isWalletReady, uiOpenState
 ├── notifications/      — Browser notification creation and click handling
 ├── rpcs/               — Chain connector instantiation (EVM, Substrate, Solana)
 ├── types/              — Message protocol type definitions
@@ -144,7 +147,7 @@ Each core domain typically has:
 
 ```
 ui/
-├── api/                — IPC message bridge to background (PortMessageService)
+├── api/                — `api` object (api.ts, typed in types.ts): the message bridge to core. Not an HTTP API
 ├── apps/               — App shells for each extension surface
 │   ├── popup/          — Popup layout, pages, routing
 │   ├── dashboard/      — Dashboard layout, routes
