@@ -1,6 +1,7 @@
 {
   "name": "@talismn/scale",
   "version": "2.0.1",
+  "description": "SCALE and chain metadata utilities over polkadot-api",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",

@@ -1,6 +1,7 @@
 {
   "name": "@talismn/solana",
   "version": "1.0.3",
+  "description": "Types and utilities for Solana, built on @solana/kit",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
