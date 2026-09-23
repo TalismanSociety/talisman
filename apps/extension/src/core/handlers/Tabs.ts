@@ -11,15 +11,7 @@ import { getPhishingSource, type PhishingSource } from "../domains/app/protector
 import { maliciousOrigin$, requestSiteScan } from "../domains/app/protector/blockaidSiteScan"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
-import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
-import type {
-  DecryptPayload,
-  DecryptResult,
-  EncryptPayload,
-  EncryptResult,
-  ResponseEncryptDecrypt,
-  ResponseEncryptEncrypt,
-} from "../domains/encrypt/types"
+
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { signSubstrate, signVrf } from "../domains/signing/requests"
@@ -192,36 +184,6 @@ export default class Tabs extends TabsHandler {
     return signVrf(url, { payload: request }, account, port)
   }
 
-  /**
-   * @deprecated sr25519 message encryption — SUMI-chain experiment, not part of the injected-web3
-   * spec, scheduled for removal.
-   */
-  private async messageEncrypt(
-    url: string,
-    request: EncryptPayload,
-    port: Port
-  ): Promise<ResponseEncryptEncrypt> {
-    const account = await keyringStore.getAccount(request.address)
-    if (!account) throw new Error("Account not found")
-
-    return requestEncrypt(url, request, account, port)
-  }
-
-  /**
-   * @deprecated sr25519 message decryption — SUMI-chain experiment, not part of the injected-web3
-   * spec, scheduled for removal.
-   */
-  private async messageDecrypt(
-    url: string,
-    request: DecryptPayload,
-    port: Port
-  ): Promise<ResponseEncryptDecrypt> {
-    const account = await keyringStore.getAccount(request.address)
-    if (!account) throw new Error("Account not found")
-
-    return requestDecrypt(url, request, account, port)
-  }
-
   private metadataProvide(request: MetadataDef): boolean {
     // Dapp-supplied metadata is never stored or trusted: it would decide how transactions are
     // rendered on the sign screen while the bytes actually signed are the dapp's own payload.
@@ -392,24 +354,6 @@ export default class Tabs extends TabsHandler {
 
       case "pub(metadata.provide)":
         return this.metadataProvide(request as MetadataDef)
-
-      case "pub(encrypt.encrypt)": {
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
-        const response = await this.messageEncrypt(url, request as EncryptPayload, port)
-        return {
-          id: Number(response.id),
-          result: response.result,
-        } as EncryptResult
-      }
-
-      case "pub(encrypt.decrypt)": {
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
-        const response = await this.messageDecrypt(url, request as DecryptPayload, port)
-        return {
-          id: Number(response.id),
-          result: response.result,
-        } as DecryptResult
-      }
 
       case "pub(ping)":
         return Promise.resolve(true)

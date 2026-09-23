@@ -75,17 +75,6 @@ export const api: MessageTypes = {
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
   approveSignVrf: (id) => messageService.sendMessage("pri(signing.approveSign.vrf)", { id }),
 
-  // encrypt messages -------------------------------------------------------
-  approveEncrypt: (id) =>
-    messageService.sendMessage("pri(encrypt.approveEncrypt)", {
-      id,
-    }),
-  approveDecrypt: (id) =>
-    messageService.sendMessage("pri(encrypt.approveDecrypt)", {
-      id,
-    }),
-  cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
-
   // mnemonic messages -------------------------------------------------------
   mnemonicsSubscribe: (cb) => messageService.subscribe("pri(mnemonics.subscribe)", null, cb),
   mnemonicUnlock: (mnemonicId, password) =>
