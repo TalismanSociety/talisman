@@ -38,7 +38,7 @@ Then load the extension in Chrome:
 # Chrome development (with HMR)
 pnpm dev:extension
 
-# Firefox development (output in dist/firefox-mv3-dev)
+# Firefox development (Firefox 147+, output in dist/firefox-mv3-dev)
 pnpm dev:extension:firefox
 ```
 
