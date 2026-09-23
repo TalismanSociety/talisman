@@ -214,7 +214,7 @@ export const fetchEthChainId = async (rpcUrl: string, signal?: AbortSignal) => {
   const parsedRpcUrl = z.url({ protocol: /^https?$/ }).safeParse(rpcUrl) // validate URL
   if (!parsedRpcUrl.success) throw new Error(parsedRpcUrl.error.issues[0].message)
 
-  const provider = http(parsedRpcUrl.data)({})
+  const provider = http(parsedRpcUrl.data, { retryCount: 0 })({})
   const hexChainId = await provider.request({
     method: "eth_chainId",
     params: [],
