@@ -48,7 +48,7 @@
 
 - `core` never imports from `ui` — the background service worker has no React.
 - `common` imports from `core` only for type definitions (`@core/types`), e.g. message protocol types used by `PortMessageService`.
-- `ui` imports from `core` for type definitions and domain exports, never for runtime classes.
+- `ui` imports from `core`: types, a domain's `exports.ts` and helpers, `core/util`, and the store singletons shared through chrome.storage and IndexedDB (e.g. `appStore`, `settingsStore`, `activeTokensStore`, the Dexie `db`). It imports only types from `core/handlers`, `core/libs` and `core/rpcs`.
 - `inject` imports from `core` only for type definitions.
 
 ### Path aliases (tsconfig.json)
@@ -118,25 +118,27 @@ core/
 │   ├── ethereum/       — EVM contract interactions, gas estimation
 │   ├── keyring/        — Key management, derivation, encryption (🔴 SECURITY-CRITICAL)
 │   ├── mnemonics/      — Mnemonic generation, backup, verification (🔴 SECURITY-CRITICAL)
-│   ├── signing/        — Transaction/message signing (🔴 SECURITY-CRITICAL)
-│   └── ...             — (25 domains total)
+│   ├── signing/        — Sign request queue for all platforms; approves Polkadot SDK and VRF requests
+│   │                     (Ethereum and Solana approvals live in their own domains) (🔴 SECURITY-CRITICAL)
+│   └── ...             — one folder per domain (`ls src/core/domains`)
 ├── handlers/           — Message routing: Extension.ts dispatches to domain handlers
-├── libs/               — Singletons: Handler, Store, Analytics, RequestStore, etc.
+├── libs/               — Singletons: Handler, Store, Analytics, requests/ (RequestStore), etc.
 ├── notifications/      — Browser notification creation and click handling
 ├── rpcs/               — Chain connector instantiation (EVM, Substrate, Solana)
 ├── types/              — Message protocol type definitions
-└── util/               — Backend-only helpers (crypto, ABI, contract data, RPC calls)
+└── util/               — Helpers with no domain affinity (crypto, ABI, contract data, RPC calls)
 ```
 
 ### Core domain anatomy
 
 Each core domain typically has:
-- `handler.ts` — Extends `ExtensionHandler`, routes message types to methods
+- `handler.ts` — Extends `ExtensionHandler`, routes wallet UI messages (`pri(...)`) to methods. Domains that also serve dapps split it: `handler.extension.ts` for wallet UI messages, `handler.tabs.ts` (extends `TabsHandler`) for dapp messages (`pub(...)`).
 - `types.ts` — Request/response type definitions for messages
 - `index.ts` — Exports handler + any stores (not a barrel — exports named items used elsewhere)
-- `store.*.ts` — Persistent stores (Dexie tables or key-value stores)
+- `exports.ts` — The UI-safe surface of the domain: helpers and types that `ui/` may import without pulling in handlers
+- `store.ts` / `store.*.ts` — Persistent stores (Dexie tables or chrome.storage key-value stores)
 - `helpers.ts` — Pure utility functions
-- `__tests__/` — Unit tests
+- Tests — colocated `*.test.ts` / `*.spec.ts`, or in `__tests__/`
 
 ## UI Layer (`src/ui/`)
 
@@ -185,7 +187,7 @@ Smaller domains (< 10 files) can be flat — no need to over-structure a handful
 | Cross-cutting React hook | `ui/hooks/` | Used in 2+ domains |
 | Domain-specific hook | `ui/domains/{Domain}/hooks/` | Used within one domain |
 | Global reactive state (RxJS) | `ui/state/` | Cross-domain observable streams |
-| Domain-specific state | `ui/domains/{Domain}/state/` | Observable used by one domain only |
+| Domain-specific state | `ui/domains/{Domain}/` (a `provideContext` provider or hooks) | Used by one domain only |
 | Frontend utility function | `ui/util/` | No domain affinity |
 | Background business logic | `core/domains/{domain}/` | Runs in service worker |
 | Backend utility function | `core/util/` | No domain affinity |
@@ -202,6 +204,8 @@ Smaller domains (< 10 files) can be flat — no need to over-structure a handful
 | `ui/state/` | — | camelCase `.ts` | Data layer, not components |
 
 The case difference between `core/domains/accounts` and `ui/domains/Account` is intentional — it reflects the different conventions of each layer.
+
+Folder casing applies to top-level domain folders. Sub-feature folders are often lowercase or kebab-case (e.g. `Earn/yieldxyz`, `Swap/swap-modules`, `core/domains/app/remote-config`).
 
 ## Inject Layer (`src/inject/`)
 
@@ -221,10 +225,11 @@ Content script (`entrypoints/content.ts`) relays messages between injected page 
 
 Small but critical shared configuration:
 
-- `constants.ts` — Port names, feature flags
-- `cryptoConfig.ts` — Crypto library configuration
+- `constants.ts` — Port names, environment flags (`DEBUG`, `TEST`, `IS_FIREFOX`), API and docs URLs. Feature flags come from remote config (`core/domains/app/store.remoteConfig.ts`).
+- `enableAnyloggerLogsInDevelopment.ts` — Shows `@talismn/*` package logs (anylogger) in development builds
 - `i18nConfig.ts` — i18next setup
-- `log.ts` — Anylogger-based logging
+- `i18nSharedConfig.ts` — Settings shared by the i18next runtime and the string extractor
+- `log.ts` — Console logging wrapper, silent in tests
 - `PortMessageService.ts` — Chrome extension port communication
 - `WindowMessageService.ts` — Window postMessage communication
 - `zodConfig.ts` — Zod schema defaults
@@ -232,7 +237,7 @@ Small but critical shared configuration:
 ## Key Architectural Patterns
 
 ### Message-based IPC
-Core and UI communicate exclusively via typed messages over `chrome.runtime.Port`. The message protocol is defined in `core/types/` with string keys like `"pri(accounts.subscribe)"`. This enforces a clean boundary and makes the extension work across the process isolation of browser extensions.
+Core and UI communicate via typed messages over `chrome.runtime.Port`. The exception is state shared through chrome.storage and IndexedDB: the UI reads some core stores and the Dexie `db` directly. The message protocol is defined in `core/types/` with string keys like `"pri(accounts.subscribe)"`. This enforces a clean boundary and makes the extension work across the process isolation of browser extensions.
 
 ### RxJS + @react-rxjs/core
 State management uses RxJS observables in `ui/state/`, bridged to React via `@react-rxjs/core`'s `bind()`. This pattern allows the same reactive streams to be composed, filtered, and shared across components without prop drilling or context providers.
@@ -240,5 +245,12 @@ State management uses RxJS observables in `ui/state/`, bridged to React via `@re
 ### provideContext
 When React context is needed (wizards, multi-step flows), use the `provideContext` utility from `ui/util/provideContext.tsx`. This avoids boilerplate context/provider pair creation.
 
-### No barrel files
-The project does not use `index.ts` barrel re-exports. Import directly from the source module (e.g., `@ui/domains/Portfolio/PortfolioContainer`, not `@ui/domains/Portfolio`). This helps tree-shaking and keeps dependency graphs explicit.
+### No new barrel files
+Do not add `index.ts` barrel re-exports. Import directly from the source module (e.g., `@ui/domains/Portfolio/PortfolioContainer`, not `@ui/domains/Portfolio`). This helps tree-shaking and keeps dependency graphs explicit. Some barrels already exist (e.g. `@ui/api`, `@ui/components/Notifications`, `core/db`); import from them as other code does.
+
+## Other Folders
+
+- `src/__tests__/` — Guard tests that scan the source for banned patterns (e.g. `instanceof` on classes that bundles can duplicate)
+- `src/types/` — Ambient `.d.ts` declarations (i18next, SVG imports)
+- `src/sentry.ts` — Sentry setup for the UI surfaces
+- `tests/` — Vitest setup files, mocks and fixtures
