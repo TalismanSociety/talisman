@@ -1,3 +1,4 @@
+import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@common/EthProviderRpcError"
 import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import {
   getGasLimit,
@@ -28,8 +29,6 @@ import { useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type PublicClient, type TransactionRequest } from "viem"
-
-import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"

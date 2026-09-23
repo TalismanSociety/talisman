@@ -1,12 +1,11 @@
-import { describe, expect, it, vi } from "vitest"
-
 import {
   ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   type EthProviderRpcError,
   WrappedEthProviderRpcError,
-} from "../EthProviderRpcError"
+} from "@common/EthProviderRpcError"
+import { describe, expect, it, vi } from "vitest"
 import { getInjectableEvmProvider } from "../getInjectableEvmProvider"
 
 const getProvider = (requestError: unknown) => {

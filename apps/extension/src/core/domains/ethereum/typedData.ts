@@ -1,4 +1,4 @@
-import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "./EthProviderRpcError"
+import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "@common/EthProviderRpcError"
 
 type TypedDataDomainTypes = Record<string, { name?: unknown }[] | undefined>
 
