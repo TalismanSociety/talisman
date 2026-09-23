@@ -8,7 +8,6 @@ import type {
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { HexString } from "@talismn/util"
 import type {
-  AccountJson,
   PjsKeyringPairJson,
   PjsKeyringPairsJson,
   RequestAccountSubscribe,
@@ -17,7 +16,6 @@ import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 
 export type { RequestAccountList } from "../../types/pjsInterop"
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
-export type { AccountJson }
 
 export interface ResponseAccountExport {
   exportedJson: PjsKeyringPairJson

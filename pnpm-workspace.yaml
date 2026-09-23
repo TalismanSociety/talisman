@@ -3,7 +3,6 @@ packages:
   - "apps/*"
   - "config/*"
   - "packages/*"
-  - "lib/*"
 
 # pnpm 11 only reads auth/registry settings from .npmrc; every other setting must
 # live here (camelCase). See .npmrc for the rationale behind shamefullyHoist.

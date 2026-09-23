@@ -118,49 +118,6 @@ export type ProviderList = Record<string, ProviderMeta>
 // @polkadot/extension-base/background/types
 // ---------------------------------------------------------------------------
 
-/**
- * Same shape as `AccountJson` from `@polkadot/extension-base/background/types`,
- * i.e. `KeyringPair$Meta` from `@polkadot/keyring/types` (flattened here) with a
- * required address
- */
-export interface AccountJson {
-  address: string
-  // KeyringPair$MetaExtension
-  source?: string
-  // KeyringPair$MetaFlags
-  isDefaultAuthSelected?: boolean
-  isExternal?: boolean
-  isHardware?: boolean
-  isHidden?: boolean
-  isInjected?: boolean
-  isMultisig?: boolean
-  isProxied?: boolean
-  isRecent?: boolean
-  isTesting?: boolean
-  // KeyringPair$MetaHardware
-  accountIndex?: number
-  accountOffset?: number
-  addressOffset?: number
-  hardwareType?: "ledger"
-  // KeyringPair$MetaMultisig
-  threshold?: number
-  who?: string[]
-  // KeyringPair$MetaParent
-  parentAddress?: string
-  parentName?: string
-  // KeyringPair$Meta
-  contract?: { abi: string; genesisHash?: HexString | null }
-  genesisHash?: HexString | null
-  name?: string
-  suri?: string
-  tags?: string[]
-  type?: KeypairType
-  whenCreated?: number
-  whenEdited?: number
-  whenUsed?: number
-  [key: string]: unknown
-}
-
 export interface RequestAuthorizeTab {
   origin: string
 }

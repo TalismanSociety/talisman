@@ -1,9 +1,5 @@
 import type { HexString } from "@talismn/util"
 
-import type { MetadataDef } from "../../types/pjsInterop"
-
-export type { MetadataDef }
-
 export type MetadataUpdateStatus = {
   isUpdating: boolean
 }

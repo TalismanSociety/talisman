@@ -32,7 +32,6 @@ export default defineConfig({
       "@ui": path.resolve(__dirname, "src/ui"),
       "@common": path.resolve(__dirname, "src/common"),
       inject: path.resolve(__dirname, "src/inject"),
-      "@tests": path.resolve(__dirname, "tests"),
     },
   },
   test: {

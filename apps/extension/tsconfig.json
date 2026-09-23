@@ -13,8 +13,6 @@
       "@core/*": ["./src/core/*"],
       "@ui": ["./src/ui"],
       "@ui/*": ["./src/ui/*"],
-      "@tests": ["./src/tests"],
-      "@tests/*": ["./src/tests/*"],
       "inject/*": ["./src/inject/*"]
     }
   },
