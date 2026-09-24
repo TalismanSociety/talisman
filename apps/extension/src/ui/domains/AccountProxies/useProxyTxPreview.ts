@@ -52,10 +52,17 @@ export const useProxyTxPreview = ({
         ? buildProxyPayload(sapi, method, delegateAddress, proxyType, delay, accountAddress)
         : null,
     enabled: !!sapi,
+    retry: false,
   })
 
+  const notifiedPayloadErrorRef = useRef<string | null>(null)
   useEffect(() => {
-    if (!payloadError) return
+    if (!payloadError) {
+      notifiedPayloadErrorRef.current = null
+      return
+    }
+    if (notifiedPayloadErrorRef.current === payloadError.message) return
+    notifiedPayloadErrorRef.current = payloadError.message
     notify({
       type: "error",
       title: t("Failed to build transaction"),

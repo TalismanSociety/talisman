@@ -6,28 +6,37 @@ import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
+  getPayloadExpiresAt,
   getPayloadRefreshIntervalMs,
-  isPayloadExpired,
   useSignerPayloadQuery,
 } from "./useSignerPayloadQuery"
 
-const sapiWithBlockTime = (blockTimeMs: number) =>
-  ({ id: `sapi-${blockTimeMs}`, getConstant: () => BigInt(blockTimeMs / 2) }) as unknown as ScaleApi
+const BIRTH_BLOCK = 1_000
 
-const buildPayload = (method: string) => ({ payload: { method } as SignerPayloadJSON })
+const sapiWithBlockTime = (blockTimeMs: number, head = BIRTH_BLOCK) =>
+  ({
+    id: `sapi-${blockTimeMs}-${head}`,
+    getConstant: () => BigInt(blockTimeMs / 2),
+    getStorage: async () => head,
+  }) as unknown as ScaleApi
+
+const buildPayload = (method: string) => ({
+  payload: { method, blockNumber: `0x${BIRTH_BLOCK.toString(16)}` } as SignerPayloadJSON,
+})
 type BuiltPayload = ReturnType<typeof buildPayload>
 
 describe("getPayloadRefreshIntervalMs", () => {
-  it("rebuilds every quarter of the 64-block era", () => {
-    expect(getPayloadRefreshIntervalMs(12_000)).toBe(16 * 12_000)
-    expect(getPayloadRefreshIntervalMs(250)).toBe(4_000)
+  it("rebuilds after a quarter of the era left at build time", () => {
+    expect(getPayloadRefreshIntervalMs(12_000, 64)).toBe(16 * 12_000)
+    expect(getPayloadRefreshIntervalMs(250, 64)).toBe(4_000)
+    expect(getPayloadRefreshIntervalMs(6_000, 32)).toBe(8 * 6_000)
   })
 })
 
-describe("isPayloadExpired", () => {
-  it("expires a payload older than half of the 64-block era", () => {
-    expect(isPayloadExpired(0, 6_000, 32 * 6_000)).toBe(false)
-    expect(isPayloadExpired(0, 6_000, 32 * 6_000 + 1)).toBe(true)
+describe("getPayloadExpiresAt", () => {
+  it("expires after half of the era left at build time", () => {
+    expect(getPayloadExpiresAt({ builtAt: 0, eraBlocksLeft: 64 }, 6_000)).toBe(32 * 6_000)
+    expect(getPayloadExpiresAt({ builtAt: 0, eraBlocksLeft: 32 }, 6_000)).toBe(16 * 6_000)
   })
 })
 
@@ -68,6 +77,38 @@ describe("useSignerPayloadQuery", () => {
     rerender()
 
     expect(result.current.data?.payload.method).toBe("0x01")
+  })
+
+  it("shortens the budget by the blocks between the era birth and the head", async () => {
+    const sapi = sapiWithBlockTime(12_000, BIRTH_BLOCK + 32)
+    const queryFn = vi.fn(async () => buildPayload("0x01"))
+    const { result, rerender } = renderHook(
+      () => useSignerPayloadQuery({ sapi, queryKey: ["lag"], queryFn }),
+      { wrapper }
+    )
+    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+
+    const builtAt = Date.now()
+    vi.spyOn(Date, "now").mockReturnValue(builtAt + 17 * 12_000)
+    rerender()
+
+    expect(result.current.data).toBeUndefined()
+  })
+
+  it("withholds the payload on time when its rebuild stalls", async () => {
+    const sapi = sapiWithBlockTime(20)
+    const queryFn = vi
+      .fn<() => Promise<BuiltPayload>>()
+      .mockResolvedValueOnce(buildPayload("0x01"))
+      .mockReturnValue(new Promise<BuiltPayload>(() => {}))
+    const { result } = renderHook(
+      () => useSignerPayloadQuery({ sapi, queryKey: ["stalled"], queryFn }),
+      { wrapper }
+    )
+    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+
+    await waitFor(() => expect(result.current.data).toBeUndefined(), { timeout: 2_000 })
+    expect(result.current.isLoading).toBe(true)
   })
 
   it("rebuilds the payload on the block-time interval without a loading state", async () => {

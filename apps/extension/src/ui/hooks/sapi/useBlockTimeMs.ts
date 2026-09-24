@@ -6,6 +6,7 @@ import { useMemo } from "react"
 const MEASURED_BLOCKS = 100
 // an underestimate only makes block-time based refreshes more frequent
 const FALLBACK_BLOCK_TIME_MS = 1_000
+const MEASURE_RETRY_INTERVAL_MS = 60_000
 
 /**
  * 2 × `Timestamp.MinimumPeriod`, the Aura and BABE convention. Null when the runtime sets it to
@@ -44,20 +45,21 @@ export const measureBlockTimeMs = async (sapi: ScaleApi): Promise<number> => {
 export const useBlockTimeMs = (sapi: ScaleApi | null | undefined): number | null => {
   const runtimeBlockTimeMs = useMemo(() => (sapi ? getRuntimeBlockTimeMs(sapi) : null), [sapi])
 
-  const { data: measuredBlockTimeMs } = useQuery({
+  const { data: measured } = useQuery({
     queryKey: ["useBlockTimeMs", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
       try {
-        return await measureBlockTimeMs(sapi)
+        return { blockTimeMs: await measureBlockTimeMs(sapi), isFallback: false }
       } catch (err) {
         log.warn("Failed to measure block time", { chainId: sapi.chainId, err })
-        return FALLBACK_BLOCK_TIME_MS
+        return { blockTimeMs: FALLBACK_BLOCK_TIME_MS, isFallback: true }
       }
     },
     enabled: !!sapi && runtimeBlockTimeMs === null,
     staleTime: Number.POSITIVE_INFINITY,
+    refetchInterval: (query) => (query.state.data?.isFallback ? MEASURE_RETRY_INTERVAL_MS : false),
   })
 
-  return runtimeBlockTimeMs ?? measuredBlockTimeMs ?? null
+  return runtimeBlockTimeMs ?? measured?.blockTimeMs ?? null
 }

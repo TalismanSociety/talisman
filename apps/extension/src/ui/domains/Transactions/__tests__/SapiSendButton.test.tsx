@@ -246,6 +246,25 @@ describe("SapiSendButton", () => {
     })
   })
 
+  describe("with a withheld payload", () => {
+    beforeEach(() => {
+      mockUseAccountByAddress.mockReturnValue({ type: "keypair", address: mockPayload.address })
+    })
+
+    it("keeps the password drawer open and disables the button", () => {
+      const { rerender } = render(
+        <SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} checkPassword />
+      )
+      fireEvent.click(screen.getByTestId("send-button"))
+      expect(screen.getByTestId("password-drawer")).toBeTruthy()
+
+      rerender(<SapiSendButton payload={undefined} onSubmitted={mockOnSubmitted} checkPassword />)
+
+      expect(screen.getByTestId("password-drawer")).toBeTruthy()
+      expect((screen.getByTestId("send-button") as HTMLButtonElement).disabled).toBe(true)
+    })
+  })
+
   describe("with ledger account", () => {
     beforeEach(() => {
       mockUseAccountByAddress.mockReturnValue({
@@ -266,6 +285,17 @@ describe("SapiSendButton", () => {
 
       expect(screen.getByTestId("sign-hardware")).toBeTruthy()
       expect(screen.queryByTestId("password-drawer")).toBeNull()
+    })
+
+    it("keeps the hardware signing component mounted while the payload is withheld", () => {
+      const { rerender } = render(
+        <SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} />
+      )
+      const signHardware = screen.getByTestId("sign-hardware")
+
+      rerender(<SapiSendButton payload={undefined} onSubmitted={mockOnSubmitted} />)
+
+      expect(screen.getByTestId("sign-hardware")).toBe(signHardware)
     })
   })
 

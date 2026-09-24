@@ -277,8 +277,15 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
+export const SapiSendButton: FC<SapiSendButtonProps> = ({ payload, disabled, ...rest }) => {
   const { t } = useTranslation()
+
+  // while a payload is rebuilt or withheld, keep the signing flow mounted with the last one:
+  // unmounting it drops a Ledger, Vault or password step that is in progress
+  const [lastPayload, setLastPayload] = useState(payload)
+  if (payload && payload !== lastPayload) setLastPayload(payload)
+  const props = { ...rest, payload: payload ?? lastPayload, disabled: disabled || !payload }
+
   const account = useAccountByAddress(props.payload?.address)
 
   const signMethod = useMemo(() => {
@@ -295,8 +302,6 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     }
   }, [account, props.loading])
 
-  // TODO if payload becomes undefined (while sapi.getPayload is loading), the component unmounts which causes UX issues.
-  // make it so we dont need a fallback disabled button here
   if (!props.payload)
     return (
       <Button className={cn("w-full", props.className)} primary disabled color={props.color}>
