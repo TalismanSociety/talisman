@@ -13,6 +13,7 @@ import {
   makeSubNativeToken,
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
+import log from "../log"
 import type { ChaindataStorage } from "../provider/ChaindataProvider"
 import type { Chaindata } from "./schema"
 
@@ -251,12 +252,17 @@ describe("getDefaultChaindata$", () => {
       expect(values[0]).toEqual(existing)
 
       const nextSpy = vi.spyOn(storage$, "next")
+      vi.mocked(log.info).mockClear()
 
       // Error from github → should NOT provision since storage is non-empty
       mockGithubChaindata$.error(new Error("fetch failed"))
 
-      // Give async handler time to run
-      await new Promise((r) => setTimeout(r, 50))
+      await vi.waitFor(() =>
+        expect(log.info).toHaveBeenCalledWith(
+          expect.stringContaining("skipping initial data provision"),
+          existing
+        )
+      )
 
       // storage$.next should not have been called (no provisioning)
       expect(nextSpy).not.toHaveBeenCalled()
@@ -293,18 +299,21 @@ describe("getDefaultChaindata$", () => {
 
     it("github emits same data as storage → no update (isEqual)", async () => {
       const result$ = getDefaultChaindata$(storage$)
-      const data = makeChaindata()
-      storage$.next(data)
+      // keep the github subscription alive: refCount drops it once the last subscriber leaves
+      const { waitForCount } = trackEmissions(result$)
+      storage$.next(makeChaindata())
 
-      await firstValueFrom(result$)
+      const [validated] = await waitForCount(1)
 
       const nextSpy = vi.spyOn(storage$, "next")
+      vi.mocked(log.debug).mockClear()
 
-      // GitHub emits the same data
-      mockGithubChaindata$.next(data)
+      // GitHub serves a schema-validated copy of the same data, like fetchChaindata does
+      mockGithubChaindata$.next(structuredClone(validated))
 
-      // Give async handler time to run
-      await new Promise((r) => setTimeout(r, 50))
+      await vi.waitFor(() =>
+        expect(log.debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed"))
+      )
       expect(nextSpy).not.toHaveBeenCalled()
     })
   })
