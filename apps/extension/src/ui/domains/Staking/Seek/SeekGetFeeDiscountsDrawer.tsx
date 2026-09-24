@@ -72,7 +72,12 @@ export const SeekGetFeeDiscountsDrawer = ({
         </div>
         <div className="flex flex-col gap-6 text-body-secondary text-sm">
           <div>
-            {t(`Stake ${tokenSymbol} to enjoy fee discounts on your subnet staking transactions. `)}
+            {t(
+              "Stake {{tokenSymbol}} to enjoy fee discounts on your subnet staking transactions.",
+              {
+                tokenSymbol,
+              }
+            )}{" "}
             <a
               className="inline-flex items-center justify-center gap-1 text-white"
               href={docsUrl}

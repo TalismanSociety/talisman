@@ -37,7 +37,12 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({
     if (type === "watch-only") return [EyeIcon, t("Watched account")]
     if (type === "contact") return [UsersIcon, t("Contact")]
     if (type === "signet")
-      return [SignetIcon, t(`Signet Vault${signetUrl !== undefined ? `: ${signetUrl}` : ""}`)]
+      return [
+        SignetIcon,
+        signetUrl !== undefined
+          ? t("Signet Vault: {{url}}", { url: signetUrl })
+          : t("Signet Vault"),
+      ]
 
     return [undefined, undefined]
   }, [type, showLinked, signetUrl, t])
