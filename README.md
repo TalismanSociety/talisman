@@ -86,6 +86,7 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 - Follow the pattern in `apps/extension/src/core/handlers/Extension.spec.ts` or `apps/extension/src/core/domains/signing/__tests__/requestsStore.spec.ts`
 - Run unit tests with `pnpm test`, or `pnpm test <path>` for one file.
 - End-to-end tests use [Playwright](https://playwright.dev/) (`playwright/`). Build the extension, start the local EVM devnet with `pnpm devnet:up`, then run `pnpm test:e2e`.
+- E2E tests load `apps/extension/dist/chrome-mv3`, else `chrome-mv3-dev`, and warn when the other build is newer. Set `E2E_EXTENSION_PATH=<build dir>` to choose the build.
 
 ## Code quality
 
