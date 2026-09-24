@@ -4,14 +4,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
 
-const { mockReadContract, mockEstimateGas, mockGetGasPrice, mockGetBlockNumber } = vi.hoisted(
-  () => ({
-    mockReadContract: vi.fn(),
-    mockEstimateGas: vi.fn(),
-    mockGetGasPrice: vi.fn(),
-    mockGetBlockNumber: vi.fn(),
-  })
-)
+const {
+  mockReadContract,
+  mockEstimateGas,
+  mockGetGasPrice,
+  mockGetBlockNumber,
+  forevermoneyConfig,
+} = vi.hoisted(() => ({
+  mockReadContract: vi.fn(),
+  mockEstimateGas: vi.fn(),
+  mockGetGasPrice: vi.fn(),
+  mockGetBlockNumber: vi.fn(),
+  forevermoneyConfig: { feeRecipients: {} as Record<string, string>, feeBps: 0 },
+}))
+
+vi.mock("@core/domains/app/store.remoteConfig", () => ({
+  remoteConfigStore: { get: vi.fn(async () => ({ forevermoney: forevermoneyConfig })) },
+}))
 
 const NETWORKS: Record<string, unknown> = {
   "8453": { id: "8453", platform: "ethereum", nativeTokenId: "8453:evm-native", name: "Base" },
@@ -47,6 +56,7 @@ vi.mock("../evm-gas-check", () => ({
 vi.mock("../forevermoney-logo.svg?url", () => ({ default: "forevermoney-logo.svg" }))
 
 const { forevermoneySwapModule } = await import("../forevermoney-swap-module")
+type ForevermoneyExchange = import("../forevermoney-swap-module").ForevermoneyExchange
 const { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } = await import(
   "@core/domains/forevermoney/abi"
 )
@@ -94,8 +104,36 @@ const state: ChainState = {
   fee: CCIP_FEE,
 }
 
-const readContractImpl = async (_networkId: string, args: { functionName: string }) => {
+const PARTNER = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+const RAO_ROUND_UP = (wei: bigint) => ((wei + WEI_PER_RAO - 1n) / WEI_PER_RAO) * WEI_PER_RAO
+
+const readContractImpl = async (
+  _networkId: string,
+  args: { functionName: string; args?: readonly unknown[] }
+) => {
   switch (args.functionName) {
+    case "quoteBridgeToFinneyWithFee": {
+      const [, amount, , , { bps }] = args.args as [
+        unknown,
+        bigint,
+        unknown,
+        unknown,
+        { bps: number },
+      ]
+      return [state.fee, (amount * BigInt(bps)) / 10_000n, amount]
+    }
+    case "quoteBridgeOutWithFee": {
+      const [, , , minted, taoAmount, , { bps }] = args.args as [
+        unknown,
+        unknown,
+        unknown,
+        bigint,
+        bigint,
+        unknown,
+        { bps: number },
+      ]
+      return [state.fee, RAO_ROUND_UP((taoAmount * BigInt(bps)) / 10_000n), 0n, minted]
+    }
     case "getCurrentOutboundRateLimiterState":
       return {
         tokens: state.bucketTokens,
@@ -142,6 +180,7 @@ const exchange = (fromTokenId: string, toTokenId: string, fromAmount: bigint, to
 
 beforeEach(() => {
   vi.clearAllMocks()
+  Object.assign(forevermoneyConfig, { feeRecipients: {}, feeBps: 0 })
   Object.assign(state, {
     bucketTokens: 5000n * ONE_TAO_WEI,
     bucketEnabled: true,
@@ -320,6 +359,7 @@ describe("forevermoneySwapModule createExchange", () => {
         toTokenId: SUB_TAO,
         toAddress: SUB_ADDRESS,
         amountWei: ONE_TAO_WEI.toString(),
+        partnerFeeWei: "0",
         feeWei: CCIP_FEE.toString(),
         destinationStartBlock: "7000000",
       },
@@ -483,5 +523,171 @@ describe("forevermoneySwapModule getApprovalInfo", () => {
         quoteData: null,
       })
     ).toBeNull()
+  })
+})
+
+describe("forevermoneySwapModule partner fee", () => {
+  const ONE_PERCENT_ABOVE = ONE_TAO_WEI + ONE_TAO_WEI / 100n
+
+  const enableFee = (networkIds: string[]) =>
+    Object.assign(forevermoneyConfig, {
+      feeRecipients: Object.fromEntries(networkIds.map((id) => [id, PARTNER])),
+      feeBps: 100,
+    })
+
+  const buildTx = async (
+    fromTokenId: string,
+    toTokenId: string,
+    fromAmount: bigint,
+    to: string
+  ) => {
+    const ex = await exchange(fromTokenId, toTokenId, fromAmount, to)
+    const tx = await forevermoneySwapModule.getTransaction({
+      fromTokenId,
+      fromAddress: EVM_ADDRESS,
+      fromAmount,
+      exchange: ex?.data,
+      context: { platform: "ethereum" },
+      toAddress: to,
+    })
+    if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
+    return tx.transaction
+  }
+
+  it("carves the fee out of an inbound input and bridges through bridgeToFinneyWithFee", async () => {
+    enableFee(["8453"])
+
+    const q = single(await quote(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS))
+    expect(q?.outputAmountBN).toBe(ONE_TAO_WEI / WEI_PER_RAO)
+    expect(q?.talismanFee).toBe(0.01)
+    expect(q?.fees[0]).toEqual({
+      name: "Talisman Fee",
+      tokenId: BASE_WTAO,
+      amount: BigNumber("0.01"),
+    })
+
+    const tx = await buildTx(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
+    expect(tx.value).toBe(FEE_WITH_BUFFER)
+    const { functionName, args } = decodeFunctionData({
+      abi: abiForevermoneySpokeGateway,
+      data: tx.data!,
+    })
+    expect(functionName).toBe("bridgeToFinneyWithFee")
+    expect(args[1]).toBe(ONE_TAO_WEI)
+    expect(args[4]).toEqual({ recipient: PARTNER, bps: 100 })
+  })
+
+  it("carves the fee out of an outbound input and bridges through bridgeOutWithFee", async () => {
+    enableFee(["964"])
+
+    const q = single(await quote(EVM_TAO, BASE_WTAO, ONE_PERCENT_ABOVE, EVM_ADDRESS))
+    expect(q?.outputAmountBN).toBe(ONE_TAO_WEI)
+    expect(q?.fees[0]?.amount.toFixed()).toBe("0.01")
+
+    const tx = await buildTx(EVM_TAO, BASE_WTAO, ONE_PERCENT_ABOVE, OTHER_EVM_ADDRESS)
+    expect(tx.value).toBe(ONE_PERCENT_ABOVE + FEE_WITH_BUFFER)
+    expect(decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data: tx.data! })).toEqual({
+      functionName: "bridgeOutWithFee",
+      args: [
+        BASE_SELECTOR,
+        "0xC5b6C1632d34901239396F5E1BDe54B342900256",
+        OTHER_EVM_ADDRESS,
+        ONE_TAO_WEI,
+        0n,
+        ONE_TAO_WEI,
+        { recipient: PARTNER, bps: 100 },
+      ],
+    })
+  })
+
+  it("skips the fee when the outbound top-up is below the minimum stake", async () => {
+    enableFee(["964"])
+
+    const tx = await buildTx(EVM_TAO, BASE_WTAO, ONE_TAO_WEI / 10n, OTHER_EVM_ADDRESS)
+    expect(decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data: tx.data! })).toMatchObject({
+      functionName: "bridgeOut",
+    })
+  })
+
+  it("takes no fee on a source chain without a recipient", async () => {
+    enableFee(["964"])
+
+    const q = single(await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS))
+    expect(q?.fees.map((f) => f.name)).not.toContain("Talisman Fee")
+    expect(q?.talismanFee).toBeUndefined()
+  })
+
+  it("never spends more than the input", async () => {
+    enableFee(["8453", "964"])
+
+    for (const fromAmount of [
+      ONE_TAO_WEI + 1n,
+      3n * ONE_TAO_WEI + 999_999_999n,
+      202_020_202_020_202_021n,
+    ]) {
+      for (const [fromTokenId, toTokenId, to] of [
+        [BASE_WTAO, EVM_TAO, EVM_ADDRESS],
+        [EVM_TAO, BASE_WTAO, EVM_ADDRESS],
+      ]) {
+        const ex = await exchange(fromTokenId!, toTokenId!, fromAmount, to!)
+        const data = ex?.data as ForevermoneyExchange
+        const amountWei = BigInt(data.amountWei)
+        const partnerFeeWei = BigInt(data.partnerFeeWei)
+        expect(partnerFeeWei).toBeGreaterThan(0n)
+        expect(amountWei % WEI_PER_RAO).toBe(0n)
+        expect(amountWei + partnerFeeWei).toBeLessThanOrEqual(fromAmount)
+      }
+    }
+  })
+
+  it("states the minimum input including the fee", async () => {
+    enableFee(["8453"])
+
+    await expect(quote(BASE_WTAO, SUB_TAO, 10n ** 16n, SUB_ADDRESS)).rejects.toThrow(
+      "minimum is 0.0101 TAO"
+    )
+  })
+
+  it("rejects a transaction when the fee settings changed after the exchange", async () => {
+    enableFee(["8453"])
+    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
+
+    forevermoneyConfig.feeBps = 50
+    await expect(
+      forevermoneySwapModule.getTransaction({
+        fromTokenId: BASE_WTAO,
+        fromAddress: EVM_ADDRESS,
+        fromAmount: ONE_PERCENT_ABOVE,
+        exchange: ex?.data,
+        context: { platform: "ethereum" },
+        toAddress: SUB_ADDRESS,
+      })
+    ).rejects.toThrow("select the quote again")
+  })
+
+  it("rejects a gateway fee quote that disagrees with the fee settings", async () => {
+    enableFee(["8453"])
+    mockReadContract.mockImplementation(
+      async (networkId: string, args: { functionName: string }) =>
+        args.functionName === "quoteBridgeToFinneyWithFee"
+          ? [CCIP_FEE, 0n, ONE_TAO_WEI]
+          : readContractImpl(networkId, args)
+    )
+
+    await expect(quote(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)).rejects.toThrow(
+      "Unexpected ForeverMoney fee quote"
+    )
+  })
+
+  it("ignores invalid fee settings", async () => {
+    Object.assign(forevermoneyConfig, { feeRecipients: { "8453": "0x1234" }, feeBps: 100 })
+    expect(
+      single(await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS))?.talismanFee
+    ).toBeUndefined()
+
+    Object.assign(forevermoneyConfig, { feeRecipients: { "8453": PARTNER }, feeBps: 101 })
+    expect(
+      single(await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS))?.talismanFee
+    ).toBeUndefined()
   })
 })

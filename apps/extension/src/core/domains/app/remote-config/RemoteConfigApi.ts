@@ -384,6 +384,17 @@ export class RemoteConfigApi<
               /** LI.FI's internal chain ID for Solana */
               solanaChainId: number;
             };
+            /** ForeverMoney TAO bridge partner fee settings */
+            forevermoney: {
+              /** Map from source EVM chain ID (8453 Base, 4663 Robinhood Chain, 964 Bittensor EVM) to the address that receives the Talisman fee on that chain. Chains not listed take no fee */
+              feeRecipients: Record<string, string>;
+              /**
+               * Talisman fee in basis points (100 = 1%, the gateway maximum). 0 disables the fee
+               * @min 0
+               * @max 100
+               */
+              feeBps: number;
+            };
           };
           /** Maps Substrate chain IDs to arrays of recommended nomination pool IDs for staking (e.g. 'polkadot-asset-hub': [282, 12, 16]) */
           nominationPools: Record<string, number[]>;
@@ -558,6 +569,17 @@ export class RemoteConfigApi<
             lifi: {
               /** LI.FI's internal chain ID for Solana */
               solanaChainId: number;
+            };
+            /** ForeverMoney TAO bridge partner fee settings */
+            forevermoney: {
+              /** Map from source EVM chain ID (8453 Base, 4663 Robinhood Chain, 964 Bittensor EVM) to the address that receives the Talisman fee on that chain. Chains not listed take no fee */
+              feeRecipients: Record<string, string>;
+              /**
+               * Talisman fee in basis points (100 = 1%, the gateway maximum). 0 disables the fee
+               * @min 0
+               * @max 100
+               */
+              feeBps: number;
             };
           };
           /** Per-platform, per-provider gating of the swaps feature: each listed provider carries App Store storefront and IP-region denylists. Region groups named in the YAML (EU, EEA) are expanded to country codes here. */

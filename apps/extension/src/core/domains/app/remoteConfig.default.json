@@ -273,6 +273,10 @@
     },
     "lifi": {
       "solanaChainId": 1151111081099710
+    },
+    "forevermoney": {
+      "feeRecipients": {},
+      "feeBps": 100
     }
   },
   "nominationPools": {

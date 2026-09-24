@@ -9,6 +9,15 @@ const EXIT_PARAMS = {
   type: "tuple",
 } as const
 
+const INTEGRATOR_FEE = {
+  components: [
+    { name: "recipient", type: "address" },
+    { name: "bps", type: "uint16" },
+  ],
+  name: "integrator",
+  type: "tuple",
+} as const
+
 const BRIDGE_TO_FINNEY_INPUTS = [
   { name: "token", type: "address" },
   { name: "amount", type: "uint256" },
@@ -32,6 +41,24 @@ export const abiForevermoneySpokeGateway = [
     type: "function",
   },
   {
+    inputs: [...BRIDGE_TO_FINNEY_INPUTS, INTEGRATOR_FEE],
+    name: "quoteBridgeToFinneyWithFee",
+    outputs: [
+      { name: "fee", type: "uint256" },
+      { name: "cut", type: "uint256" },
+      { name: "amountCrossing", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [...BRIDGE_TO_FINNEY_INPUTS, INTEGRATOR_FEE],
+    name: "bridgeToFinneyWithFee",
+    outputs: [{ name: "messageId", type: "bytes32" }],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
     anonymous: false,
     inputs: [
       { indexed: true, name: "token", type: "address" },
@@ -43,6 +70,15 @@ export const abiForevermoneySpokeGateway = [
     name: "BridgedToFinney",
     type: "event",
   },
+] as const
+
+const BRIDGE_OUT_INPUTS = [
+  { name: "destSelector", type: "uint64" },
+  { name: "token", type: "address" },
+  { name: "recipient", type: "address" },
+  { name: "taoAmount", type: "uint256" },
+  { name: "stakedAlphaRao", type: "uint256" },
+  { name: "minTokenOut", type: "uint256" },
 ] as const
 
 export const abiForevermoneyAlphaGateway = [
@@ -59,15 +95,35 @@ export const abiForevermoneyAlphaGateway = [
     type: "function",
   },
   {
+    inputs: BRIDGE_OUT_INPUTS,
+    name: "bridgeOut",
+    outputs: [{ name: "messageId", type: "bytes32" }],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
     inputs: [
       { name: "destSelector", type: "uint64" },
       { name: "token", type: "address" },
       { name: "recipient", type: "address" },
+      { name: "mintedAmount", type: "uint256" },
       { name: "taoAmount", type: "uint256" },
       { name: "stakedAlphaRao", type: "uint256" },
-      { name: "minTokenOut", type: "uint256" },
+      INTEGRATOR_FEE,
     ],
-    name: "bridgeOut",
+    name: "quoteBridgeOutWithFee",
+    outputs: [
+      { name: "fee", type: "uint256" },
+      { name: "nativeTopUp", type: "uint256" },
+      { name: "alphaTopUp", type: "uint256" },
+      { name: "amountCrossing", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [...BRIDGE_OUT_INPUTS, INTEGRATOR_FEE],
+    name: "bridgeOutWithFee",
     outputs: [{ name: "messageId", type: "bytes32" }],
     stateMutability: "payable",
     type: "function",
