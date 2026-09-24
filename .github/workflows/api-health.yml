@@ -12,7 +12,7 @@ concurrency:
 jobs:
   api-health:
     name: "API health checks"
-    timeout-minutes: 5
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +27,7 @@ jobs:
         env:
           TDA_API_KEY: ${{ secrets.TDA_API_KEY }}
           SN45_API_KEY: ${{ secrets.SN45_API_KEY }}
+          SIMPLESWAP_API_KEY: ${{ secrets.SIMPLESWAP_API_KEY }}
 
       - name: Upload test report
         uses: actions/upload-artifact@v7
