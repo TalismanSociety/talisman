@@ -1,4 +1,3 @@
-import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
 import type { HexString } from "@talismn/util"
 
 // structural equivalent of the legacy polkadot-js JsonRpcResponse type
@@ -39,12 +38,4 @@ export interface TalismanMessages {
   ]
   "pub(talisman.rpc.byGenesisHash.unsubscribe)": [RequestRpcByGenesisHashUnsubscribe, boolean]
   "pub(talisman.extension.openPortfolio)": [null, boolean]
-
-  // TODO yeet everything below once discussed with the team
-  "pub(talisman.customSubstrateChains.subscribe)": [null, string, DotNetwork[]]
-  "pub(talisman.customSubstrateChains.unsubscribe)": [string, boolean]
-  "pub(talisman.customEvmNetworks.subscribe)": [null, string, EthNetwork[]]
-  "pub(talisman.customEvmNetworks.unsubscribe)": [string, boolean]
-  "pub(talisman.customTokens.subscribe)": [null, string, Token[]]
-  "pub(talisman.customTokens.unsubscribe)": [string, boolean]
 }

@@ -22,11 +22,7 @@ class IconManager {
           ? "Network"
           : counts.get("eth-watchasset")
             ? "Assets"
-            : counts.get("encrypt")
-              ? "Encrypt"
-              : counts.get("decrypt")
-                ? "Decrypt"
-                : ""
+            : ""
 
     chrome.action.setBadgeText({ text })
   }

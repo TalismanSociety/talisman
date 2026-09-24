@@ -11,15 +11,6 @@ import { getPhishingSource, type PhishingSource } from "../domains/app/protector
 import { maliciousOrigin$, requestSiteScan } from "../domains/app/protector/blockaidSiteScan"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
-import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
-import type {
-  DecryptPayload,
-  DecryptResult,
-  EncryptPayload,
-  EncryptResult,
-  ResponseEncryptDecrypt,
-  ResponseEncryptEncrypt,
-} from "../domains/encrypt/types"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { signSubstrate, signVrf } from "../domains/signing/requests"
@@ -37,32 +28,24 @@ import type {
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
-import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
+import type { MessageTypes, RequestType, ResponseType } from "../types"
 import type { Port } from "../types/base"
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
   MetadataDef,
-  ProviderMeta,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
 import { getMetadataDef } from "../util/getMetadataDef"
 import { urlToDomain } from "../util/urlToDomain"
-import RpcState from "./RpcState"
 import type { TabStore } from "./stores"
-import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
+import { genericAsyncSubscription } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
-  #rpcState = new RpcState()
   readonly #routes: Record<string, TabsHandler> = {}
 
   constructor(stores: TabStore) {
@@ -200,36 +183,6 @@ export default class Tabs extends TabsHandler {
     return signVrf(url, { payload: request }, account, port)
   }
 
-  /**
-   * @deprecated sr25519 message encryption — SUMI-chain experiment, not part of the injected-web3
-   * spec, scheduled for removal.
-   */
-  private async messageEncrypt(
-    url: string,
-    request: EncryptPayload,
-    port: Port
-  ): Promise<ResponseEncryptEncrypt> {
-    const account = await keyringStore.getAccount(request.address)
-    if (!account) throw new Error("Account not found")
-
-    return requestEncrypt(url, request, account, port)
-  }
-
-  /**
-   * @deprecated sr25519 message decryption — SUMI-chain experiment, not part of the injected-web3
-   * spec, scheduled for removal.
-   */
-  private async messageDecrypt(
-    url: string,
-    request: DecryptPayload,
-    port: Port
-  ): Promise<ResponseEncryptDecrypt> {
-    const account = await keyringStore.getAccount(request.address)
-    if (!account) throw new Error("Account not found")
-
-    return requestDecrypt(url, request, account, port)
-  }
-
   private metadataProvide(request: MetadataDef): boolean {
     // Dapp-supplied metadata is never stored or trusted: it would decide how transactions are
     // rendered on the sign screen while the bytes actually signed are the dapp's own payload.
@@ -265,56 +218,6 @@ export default class Tabs extends TabsHandler {
       genesisHash,
       specVersion,
     }))
-  }
-
-  private rpcListProviders(): Promise<ResponseRpcListProviders> {
-    return this.#rpcState.rpcListProviders()
-  }
-
-  private rpcSend(request: RequestRpcSend, port: Port): Promise<UnknownJsonRpcResponse> {
-    return this.#rpcState.rpcSend(request, port)
-  }
-
-  private rpcStartProvider(key: string, port: Port): Promise<ProviderMeta> {
-    return this.#rpcState.rpcStartProvider(key, port)
-  }
-
-  private async rpcSubscribe(
-    request: RequestRpcSubscribe,
-    id: string,
-    port: Port
-  ): Promise<boolean> {
-    const innerCb = createSubscription<"pub(rpc.subscribe)">(id, port)
-    const cb = (_error: Error | null, data: SubscriptionMessageTypes["pub(rpc.subscribe)"]): void =>
-      innerCb(data)
-    const subscriptionId = await this.#rpcState.rpcSubscribe(request, cb, port)
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      this.rpcUnsubscribe({ ...request, subscriptionId }, port).catch(sentry.captureException)
-    })
-
-    return true
-  }
-
-  private rpcSubscribeConnected(request: null, id: string, port: Port): Promise<boolean> {
-    const innerCb = createSubscription<"pub(rpc.subscribeConnected)">(id, port)
-    const cb = (
-      _error: Error | null,
-      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"]
-    ): void => innerCb(data)
-
-    this.#rpcState.rpcSubscribeConnected(request, cb, port)
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-    })
-
-    return Promise.resolve(true)
-  }
-
-  private rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
-    return this.#rpcState.rpcUnsubscribe(request, port)
   }
 
   private async isEthereumConnected(url: string): Promise<boolean> {
@@ -450,42 +353,6 @@ export default class Tabs extends TabsHandler {
 
       case "pub(metadata.provide)":
         return this.metadataProvide(request as MetadataDef)
-
-      case "pub(rpc.listProviders)":
-        return this.rpcListProviders()
-
-      case "pub(rpc.send)":
-        return this.rpcSend(request as RequestRpcSend, port)
-
-      case "pub(rpc.startProvider)":
-        return this.rpcStartProvider(request as string, port)
-
-      case "pub(rpc.subscribe)":
-        return this.rpcSubscribe(request as RequestRpcSubscribe, id, port)
-
-      case "pub(rpc.subscribeConnected)":
-        return this.rpcSubscribeConnected(request as null, id, port)
-
-      case "pub(rpc.unsubscribe)":
-        return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
-
-      case "pub(encrypt.encrypt)": {
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
-        const response = await this.messageEncrypt(url, request as EncryptPayload, port)
-        return {
-          id: Number(response.id),
-          result: response.result,
-        } as EncryptResult
-      }
-
-      case "pub(encrypt.decrypt)": {
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
-        const response = await this.messageDecrypt(url, request as DecryptPayload, port)
-        return {
-          id: Number(response.id),
-          result: response.result,
-        } as DecryptResult
-      }
 
       case "pub(ping)":
         return Promise.resolve(true)
