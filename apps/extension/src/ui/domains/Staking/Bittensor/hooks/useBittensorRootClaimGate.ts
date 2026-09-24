@@ -1,11 +1,11 @@
 import type { DTaoClaimTarget } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
+import { getRuntimeBlockTimeMs } from "@ui/hooks/sapi/useBlockTimeMs"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useMemo } from "react"
 
 import { getBittensorClaimGate, rootClaimThresholdToPlancks } from "../utils/claimGate"
 import { ROOT_NETUID } from "../utils/constants"
-import { getBlockTimeMs } from "../utils/helpers"
 import { useBittensorBasketClaimPreview } from "./useBittensorBasketClaimPreview"
 import { useBittensorClaimablePlancks } from "./useBittensorClaimablePlancks"
 import { useSubtensorStorageBigInt } from "./useSubtensorStorageBigInt"
@@ -50,11 +50,10 @@ export const useBittensorRootClaimGate = (
   const isHoldIntervalReady = holdIntervalQuery.isSuccess && holdIntervalQuery.isFetchedAfterMount
   const holdIntervalBlocks = holdIntervalQuery.data ?? 0n
 
-  const holdDurationMs = useMemo(
-    () =>
-      sapi && holdIntervalBlocks > 0n ? Number(holdIntervalBlocks) * getBlockTimeMs(sapi) : null,
-    [sapi, holdIntervalBlocks]
-  )
+  const holdDurationMs = useMemo(() => {
+    const blockTimeMs = sapi ? getRuntimeBlockTimeMs(sapi) : null
+    return blockTimeMs && holdIntervalBlocks > 0n ? Number(holdIntervalBlocks) * blockTimeMs : null
+  }, [sapi, holdIntervalBlocks])
 
   const {
     claimablePlancks,

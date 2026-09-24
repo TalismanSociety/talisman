@@ -10,7 +10,6 @@ import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { Tooltip, TooltipContent, TooltipTrigger, useTooltipContext } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useTokens } from "@ui/state/chaindata"
@@ -20,6 +19,7 @@ import { useTranslation } from "react-i18next"
 import { useBittensorBasketHoldings } from "../hooks/useBittensorBasketHoldings"
 import { getBasketHoldingsBreakdown } from "../utils/basketHoldings"
 import { ROOT_NETUID } from "../utils/constants"
+import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
 
 const SLICE_COLORS = [
   "#d5ff5c",
@@ -223,7 +223,7 @@ export const BasketHoldingsViewAllModal: FC<{
         contentClassName="overflow-hidden! p-0! flex flex-col gap-4"
         title={
           <div className="flex h-full items-center justify-center gap-4 overflow-hidden">
-            <AccountIcon address={hotkey} className="size-12 shrink-0 text-lg" />
+            <BittensorHotkeyAvatar hotkey={hotkey} className="size-12 shrink-0 text-lg" />
             <BittensorValidatorName
               hotkey={hotkey}
               noTooltip

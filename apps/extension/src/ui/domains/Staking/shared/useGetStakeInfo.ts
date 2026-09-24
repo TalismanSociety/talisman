@@ -1,7 +1,5 @@
-import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
-import type { UseQueryResult } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
@@ -23,10 +21,7 @@ type GetStakeInfo = {
 type BondType = "nomPools"
 
 type StakeInfo = {
-  payloadInfo: UseQueryResult<{
-    payload: SignerPayloadJSON
-    txMetadata?: Uint8Array
-  } | null>
+  payloadInfo: ReturnType<typeof useGetNomPoolStakingPayload>
   bondType: BondType
   currentPoolId: string | number | undefined | null
 }

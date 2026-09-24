@@ -5,7 +5,7 @@ import { Spacer } from "@ui/components/Spacer"
 import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { capitalize } from "lodash-es"
-import { useCallback } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 
@@ -16,15 +16,19 @@ const Content = () => {
   const urlParamPlatform = (params.get("platform") ?? undefined) as AccountPlatform | undefined
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  const accountTypeString = useCallback(() => {
-    if (urlParamPlatform === "polkadot") return ` ${t("Substrate")}`
-    return urlParamPlatform ? ` ${capitalize(urlParamPlatform)}` : ""
+  const accountType = useMemo(() => {
+    if (urlParamPlatform === "polkadot") return t("Substrate")
+    return urlParamPlatform ? capitalize(urlParamPlatform) : null
   }, [urlParamPlatform, t])
 
   return (
     <>
       <HeaderBlock
-        title={t(`Create a new${accountTypeString()} account`)}
+        title={
+          accountType
+            ? t("Create a new {{type}} account", { type: accountType })
+            : t("Create a new account")
+        }
         text={!urlParamPlatform && t("What type of account would you like to create?")}
       />
       <Spacer small />
