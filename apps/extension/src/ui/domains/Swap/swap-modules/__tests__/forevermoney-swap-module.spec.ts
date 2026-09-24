@@ -353,6 +353,7 @@ describe("forevermoneySwapModule createExchange", () => {
           additional: true,
         },
       ],
+      outputAmountBN: ONE_TAO_WEI / 10n ** 9n,
       data: {
         direction: "spoke-to-substrate",
         fromTokenId: BASE_WTAO,
@@ -646,6 +647,16 @@ describe("forevermoneySwapModule partner fee", () => {
     await expect(quote(BASE_WTAO, SUB_TAO, 10n ** 16n, SUB_ADDRESS)).rejects.toThrow(
       "minimum is 0.0101 TAO"
     )
+  })
+
+  it("reports a lower exchange output when the fee was enabled after the quote", async () => {
+    const q = single(await quote(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS))
+
+    enableFee(["8453"])
+    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
+
+    expect(ex?.outputAmountBN).toBe(ONE_TAO_WEI / WEI_PER_RAO)
+    expect(ex?.outputAmountBN).toBeLessThan(q!.outputAmountBN)
   })
 
   it("rejects a transaction when the fee settings changed after the exchange", async () => {

@@ -510,6 +510,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
       ...toTalismanFees(route, amounts),
       toBridgeFee(evmNativeTokenId(route.sourceNetworkId), feeWei),
     ],
+    outputAmountBN: getOutputAmount(route, amounts.amountWei),
     data: {
       direction: route.direction,
       fromTokenId: route.fromTokenId,

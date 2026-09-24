@@ -14,7 +14,7 @@ export type SupportedSwapProtocol =
   | "forevermoney"
 
 /** `fees` are the fees re-read at exchange time, they replace the quote's on the confirm screen */
-export type SwapExchange = { fees?: QuoteFee[] } & (
+export type SwapExchange = { fees?: QuoteFee[]; outputAmountBN?: bigint } & (
   | { protocol: "simpleswap"; data: SimpleswapExchange }
   | { protocol: "stealthex"; data: StealthexExchange }
   | { protocol: "forevermoney"; data: ForevermoneyExchange }
