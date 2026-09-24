@@ -33,9 +33,7 @@ self.addEventListener("unhandledrejection", (event) => {
   })
 })
 
-// Use chrome.action (MV3) or chrome.browserAction (MV2) for badge
-const actionApi = chrome.action ?? chrome.browserAction
-actionApi?.setBadgeBackgroundColor?.({ color: "#d90000" })
+chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 
 // Onboarding and migrations
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
