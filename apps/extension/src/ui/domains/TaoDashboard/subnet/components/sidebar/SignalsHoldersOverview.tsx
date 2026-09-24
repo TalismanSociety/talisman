@@ -3,9 +3,9 @@
 // ============================================================================
 
 import { InfoIcon } from "@talismn/icons"
+import { TextSkeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useSubnetHolders } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { formatCompactNumber } from "@ui/domains/TaoDashboard/shared/util"
 import { cn } from "@ui/util/cn"

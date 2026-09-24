@@ -1,11 +1,11 @@
 import { InfoIcon } from "@talismn/icons"
+import { TextSkeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
   useColorFromScore100Neg,

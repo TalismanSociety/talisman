@@ -1,8 +1,8 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { DistanceToNow } from "@ui/components/DistanceToNow"
+import { TextSkeleton } from "@ui/components/Skeleton"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import { TextSkeleton } from "@ui/domains/TaoDashboard/shared/TextSkeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { useSocialFeedsMountSignal } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import {
