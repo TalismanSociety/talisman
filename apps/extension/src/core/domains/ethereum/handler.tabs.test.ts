@@ -1,10 +1,9 @@
+import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "@common/EthProviderRpcError"
 import { normalizeAddress } from "@talismn/crypto"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
 import { getPublicAccounts } from "../accounts/helpers"
 import { requestAuthoriseSite } from "../sitesAuthorised/requests"
 import type { AuthorizedSite } from "../sitesAuthorised/types"
-import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "./EthProviderRpcError"
 import { EthTabsHandler } from "./handler.tabs"
 
 // keep the real ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE, only stub the network-facing request

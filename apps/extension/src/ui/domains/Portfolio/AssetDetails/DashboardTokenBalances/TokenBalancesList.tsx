@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 
 import type { BalanceSummary } from "../../useTokenBalancesSummary"
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
-import { CopyAddressButton } from "../CopyAddressIconButton"
+import { CopyAddressButton } from "../CopyAddressButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
 import { BittensorValidatorName } from "./BittensorValidatorName"

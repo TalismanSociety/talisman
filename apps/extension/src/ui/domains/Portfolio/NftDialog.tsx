@@ -22,7 +22,7 @@ import { useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state/nf
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import { toPairs } from "lodash"
+import { toPairs } from "lodash-es"
 import {
   type CSSProperties,
   type FC,

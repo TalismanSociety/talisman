@@ -1,6 +1,5 @@
+import { ETH_ERROR_EIP1474_INVALID_PARAMS } from "@common/EthProviderRpcError"
 import { describe, expect, it } from "vitest"
-
-import { ETH_ERROR_EIP1474_INVALID_PARAMS } from "../EthProviderRpcError"
 import { assertTypedDataTargetsChain, getTypedDataDomainChainId } from "../typedData"
 
 const CONNECTED_CHAIN_ID = 1

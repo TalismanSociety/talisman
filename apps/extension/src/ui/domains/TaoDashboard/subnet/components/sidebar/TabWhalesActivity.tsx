@@ -2,6 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import type { SubDTaoToken, SubNativeToken } from "@talismn/chaindata-provider"
 import type { TokenRates } from "@talismn/token-rates"
 import { DistanceToNow } from "@ui/components/DistanceToNow"
+import { TextSkeleton } from "@ui/components/Skeleton"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import {
@@ -14,7 +15,6 @@ import {
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { AccountNameOrAddress } from "@ui/domains/TaoDashboard/shared/AccountNameOrAddress"
 import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
-import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { cn } from "@ui/util/cn"
@@ -72,12 +72,12 @@ const WhalesActivitySummary: FC<{ netuid: number; period: TimePeriod }> = ({ net
     return (
       <div className="flex h-27.5 w-full shrink-0 flex-col justify-center px-12">
         <div>
-          <Skeleton className="mb-3 h-8 w-48 font-medium text-white" />
+          <TextSkeleton className="mb-3 h-8 w-48 font-medium text-white" />
         </div>
-        <Skeleton className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></Skeleton>
+        <TextSkeleton className="mt-10 mb-5 flex h-2 w-full overflow-hidden rounded-full bg-grey-800"></TextSkeleton>
         <div className={cn("flex justify-between text-body-secondary text-xs")}>
-          <Skeleton className="h-6 w-16" />
-          <Skeleton className="h-6 w-16" />
+          <TextSkeleton className="h-6 w-16" />
+          <TextSkeleton className="h-6 w-16" />
         </div>
       </div>
     )
@@ -250,16 +250,16 @@ const WhaleActivityItemSkeleton = () => {
     <div className="flex h-28 shrink-0 items-center justify-between px-12 text-left text-sm">
       <div className="flex items-center gap-8">
         <div className="relative shrink-0">
-          <Skeleton className="size-[2.25rem] rounded-full" />
+          <TextSkeleton className="size-[2.25rem] rounded-full" />
         </div>
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-6 w-32" />
+          <TextSkeleton className="h-8 w-56" />
+          <TextSkeleton className="h-6 w-32" />
         </div>
       </div>
       <div className="flex flex-col items-end gap-2">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-6 w-36" />
+        <TextSkeleton className="h-8 w-32" />
+        <TextSkeleton className="h-6 w-36" />
       </div>
     </div>
   )

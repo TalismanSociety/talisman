@@ -1,6 +1,6 @@
+import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "@common/EthProviderRpcError"
 import { isHexString } from "@talismn/util"
 import { hexToBytes } from "viem"
-import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "./EthProviderRpcError"
 
 // Single source of truth for the text a personal_sign payload stands for: the signer hashes hex
 // payloads as bytes and anything else as utf-8, and every surface that reads the message must see

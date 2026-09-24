@@ -43,7 +43,6 @@ export default defineConfig({
       "fake-indexeddb/auto",
       "./tests/setup.ts",
       "./tests/mocks/index.ts",
-      "./tests/core/setup.ts",
       "./tests/core/mocks/index.ts",
     ],
   },

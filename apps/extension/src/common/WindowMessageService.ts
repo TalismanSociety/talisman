@@ -18,10 +18,7 @@ import type {
   UnsubscribeFn,
 } from "@core/types"
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  WrappedEthProviderRpcError,
-} from "../inject/ethereum/EthProviderRpcError"
+import { ETH_ERROR_EIP1474_INTERNAL_ERROR, WrappedEthProviderRpcError } from "./EthProviderRpcError"
 
 export interface Handler {
   // biome-ignore lint/suspicious/noExplicitAny: legacy

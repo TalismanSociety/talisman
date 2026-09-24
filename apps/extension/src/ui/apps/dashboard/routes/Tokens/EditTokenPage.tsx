@@ -12,7 +12,7 @@ import {
   type Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
-import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
@@ -30,6 +30,7 @@ import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
 import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
@@ -38,7 +39,6 @@ import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork, useToken } from "@ui/state/chaindata"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -426,35 +426,6 @@ const OnChainIdDisplay = ({ onChainId }: { onChainId: string | number }) => {
 
   return (
     <FormFieldTextarea value={yaml} spellCheck={false} data-lpignore readOnly rows={rowsCount} />
-  )
-}
-
-const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
-  address,
-  className,
-}) => {
-  const { t } = useTranslation()
-  const handleClick = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(address)
-      notify({
-        type: "success",
-        title: t(`Address copied`),
-        subtitle: shortenAddress(address, 6, 6),
-      })
-    } catch (err) {
-      notify({
-        type: "error",
-        title: t("Error"),
-        subtitle: (err as Error).message ?? "Failed to copy address",
-      })
-    }
-  }, [address, t])
-
-  return (
-    <IconButton className={className} onClick={handleClick} disabled={!address}>
-      <CopyIcon />
-    </IconButton>
   )
 }
 

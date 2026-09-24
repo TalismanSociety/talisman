@@ -20,10 +20,7 @@ import type {
 } from "@core/types"
 import type { Port } from "@core/types/base"
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  WrappedEthProviderRpcError,
-} from "../inject/ethereum/EthProviderRpcError"
+import { ETH_ERROR_EIP1474_INTERNAL_ERROR, WrappedEthProviderRpcError } from "./EthProviderRpcError"
 
 export interface Handler {
   message: string

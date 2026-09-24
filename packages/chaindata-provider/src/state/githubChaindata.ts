@@ -1,3 +1,4 @@
+import { isAbortError } from "@talismn/util"
 import { Observable, shareReplay } from "rxjs"
 
 import log from "../log"
@@ -28,7 +29,7 @@ export const githubChaindata$ = new Observable<Chaindata>((subscriber) => {
       // data is already validated by fetchChaindata (net.ts)
       subscriber.next(data)
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return
+      if (isAbortError(error)) return
 
       log.error("Failed to fetch chaindata", error)
       if (!subscriber.closed) subscriber.error(error)

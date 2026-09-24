@@ -12,3 +12,7 @@ export const Skeleton: FC<PropsWithChildren<{ className?: string }>> = ({
     {children}
   </div>
 )
+
+export const TextSkeleton: FC<{ className?: string }> = ({ className }) => (
+  <Skeleton className={cn("my-px h-[0.9em] shrink-0", className)} />
+)

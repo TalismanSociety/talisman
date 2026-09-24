@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { keepAlive, type Loadable } from "@talismn/util"
+import { isAbortError, keepAlive, type Loadable } from "@talismn/util"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"
@@ -47,7 +47,7 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
       subscriber.next({ status: "success", data: newData })
       blobStore.set(newData)
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return
+      if (isAbortError(error)) return
 
       log.error("Failed to fetch bittensor validators", error)
       // On error, keep showing existing data if we have it.

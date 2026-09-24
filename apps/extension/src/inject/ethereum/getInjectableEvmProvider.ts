@@ -1,13 +1,12 @@
-import { log } from "@common/log"
-import type { SendRequest } from "@core/types"
-import { EventEmitter } from "inject/shared/EventEmitter"
-
 import {
   ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProviderRpcError,
   type WrappedEthProviderRpcError,
-} from "./EthProviderRpcError"
+} from "@common/EthProviderRpcError"
+import { log } from "@common/log"
+import type { SendRequest } from "@core/types"
+import { EventEmitter } from "inject/shared/EventEmitter"
 
 interface RequestArguments {
   readonly method: string

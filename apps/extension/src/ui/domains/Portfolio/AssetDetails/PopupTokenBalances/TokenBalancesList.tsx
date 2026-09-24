@@ -11,7 +11,7 @@ import { type ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
-import { CopyAddressButton } from "../CopyAddressIconButton"
+import { CopyAddressButton } from "../CopyAddressButton"
 import { BittensorValidatorName } from "../DashboardTokenBalances/BittensorValidatorName"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"

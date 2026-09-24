@@ -441,9 +441,6 @@ importers:
       lightweight-charts:
         specifier: 5.2.1
         version: 5.2.1
-      lodash:
-        specifier: 4.18.1
-        version: 4.18.1
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
@@ -556,9 +553,6 @@ importers:
       '@types/blueimp-md5':
         specifier: 2.18.2
         version: 2.18.2
-      '@types/lodash':
-        specifier: 4.17.25
-        version: 4.17.25
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12

@@ -26,7 +26,7 @@ const config: KnipConfig = {
 
   // Spec-defined constant sets and generated API clients — all exports are intentional
   ignoreIssues: {
-    "**/EthProviderRpcError.ts": ["exports"],
+    "apps/extension/src/common/EthProviderRpcError.ts": ["exports"],
     "**/Sign/Qr/constants.ts": ["exports"],
     "**/inject/solana/solana.ts": ["exports"],
     // Public injected web3 API types exposed to dapps (mirror @polkadot/extension-inject)
