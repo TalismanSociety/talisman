@@ -1,6 +1,6 @@
 import path from "node:path"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vitest/config"
+import { configDefaults, defineConfig } from "vitest/config"
 
 const packagesDir = path.resolve(import.meta.dirname, "../../packages")
 
@@ -37,6 +37,7 @@ export default defineConfig({
   test: {
     environment: "./tests/vitest-env-jsdom.ts",
     globals: true,
+    exclude: [...configDefaults.exclude, "**/.tmp/**"],
     testTimeout: 20_000,
     setupFiles: [
       "fake-indexeddb/auto",
