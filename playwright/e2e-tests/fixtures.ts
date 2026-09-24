@@ -94,6 +94,7 @@ export const test = testWithExtensionBuild.extend<{
     })
 
     await utilize(context)
+    await context.close()
   },
   // get the extension id
   extensionId: async ({ context }, utilize) => {
