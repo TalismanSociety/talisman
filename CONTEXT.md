@@ -112,7 +112,7 @@ The user's permission for a dapp to see some accounts. Code mixes spellings: `Au
 _Avoid_: connection
 
 **Request**:
-An action that waits for the user's approval in a popup: a sign request, a site authorisation, an EVM add-network or watch-asset request, an encrypt request. See `KnownRequests` in `core/libs/requests/types.ts`.
+An action that waits for the user's approval in a popup: a sign request, a site authorisation, an EVM add-network or watch-asset request. See `KnownRequests` in `core/libs/requests/types.ts`.
 
 **Sign request**:
 A request to sign a transaction or a message with an account.

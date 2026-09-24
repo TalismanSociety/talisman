@@ -35,7 +35,6 @@ import type {
   YieldxyzPositionRefreshRequest,
   YieldxyzProvider,
 } from "@core/domains/earn/exports"
-import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import type {
   AddEthereumChainRequestId,
   AnyEthRequestChainId,
@@ -128,11 +127,6 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
-
-  // encrypt messages -------------------------------------------------------
-  approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
-  approveDecrypt: (id: DecryptRequestId) => Promise<boolean>
-  cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>

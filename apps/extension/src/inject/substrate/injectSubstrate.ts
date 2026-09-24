@@ -1,5 +1,4 @@
 import type { ResponseType, SendRequest } from "@core/types"
-import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
 import type { HexString } from "@talismn/util"
 
 // structural equivalent of the legacy polkadot-js ProviderInterfaceCallback type
@@ -7,9 +6,7 @@ import type { HexString } from "@talismn/util"
 type ProviderInterfaceCallback = (error: Error | null, result: any) => void
 
 type TalismanWindow = typeof globalThis & {
-  talismanSub?: ReturnType<typeof rpcProvider> &
-    ReturnType<typeof tokensProvider> &
-    ReturnType<typeof extensionUiProvider>
+  talismanSub?: ReturnType<typeof rpcProvider> & ReturnType<typeof extensionUiProvider>
 }
 
 const rpcProvider = (sendRequest: SendRequest) => ({
@@ -44,23 +41,6 @@ const rpcProvider = (sendRequest: SendRequest) => ({
     }),
 })
 
-const tokensProvider = (sendRequest: SendRequest) => ({
-  subscribeCustomSubstrateChains: (callback: (chains: DotNetwork[]) => unknown) => {
-    const idPromise = sendRequest("pub(talisman.customSubstrateChains.subscribe)", null, callback)
-    return () =>
-      idPromise.then((id) => sendRequest("pub(talisman.customSubstrateChains.unsubscribe)", id))
-  },
-  subscribeCustomEvmNetworks: (callback: (networks: EthNetwork[]) => unknown) => {
-    const idPromise = sendRequest("pub(talisman.customEvmNetworks.subscribe)", null, callback)
-    return () =>
-      idPromise.then((id) => sendRequest("pub(talisman.customEvmNetworks.unsubscribe)", id))
-  },
-  subscribeCustomTokens: (callback: (tokens: Token[]) => unknown) => {
-    const idPromise = sendRequest("pub(talisman.customTokens.subscribe)", null, callback)
-    return () => idPromise.then((id) => sendRequest("pub(talisman.customTokens.unsubscribe)", id))
-  },
-})
-
 const extensionUiProvider = (sendRequest: SendRequest) => ({
   openFullscreenPortfolio: () => sendRequest("pub(talisman.extension.openPortfolio)", null),
 })
@@ -71,7 +51,6 @@ export const injectSubstrate = (sendRequest: SendRequest) => {
 
   windowInject.talismanSub = {
     ...rpcProvider(sendRequest),
-    ...tokensProvider(sendRequest),
     ...extensionUiProvider(sendRequest),
   }
 }
