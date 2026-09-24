@@ -15,7 +15,11 @@ import {
   CCIP_EXECUTION_STATE_FAILURE,
   CCIP_EXECUTION_STATE_SUCCESS,
 } from "./abi"
-import { type ForevermoneyRoute, findForevermoneyRoute } from "./constants"
+import {
+  FOREVERMONEY_HUB_GATEWAYS,
+  type ForevermoneyRoute,
+  findForevermoneyRoute,
+} from "./constants"
 
 // the smallest eth_getLogs range cap among the usable chaindata RPCs
 const LOGS_CHUNK_SIZE = 2_000n
@@ -33,6 +37,7 @@ type ExecutionLog =
 type DeliveryScan = {
   nextBlock: bigint
   execution: ExecutionLog | undefined
+  offRamps: `0x${string}`[]
 }
 
 // destination scan progress per transaction, so each poll only reads new blocks
@@ -68,7 +73,8 @@ const getMessageId = async (
   if (!receipt) return "pending"
   if (receipt.status === "reverted") return "reverted"
 
-  const logs = receipt.logs.filter((l) => isAddressEqual(l.address, route.sourceGateway))
+  const gateways = [route.sourceGateway, ...route.legacySourceGateways]
+  const logs = receipt.logs.filter((l) => gateways.some((g) => isAddressEqual(l.address, g)))
 
   if (route.direction === "evm-to-spoke") {
     const [event] = parseEventLogs({
@@ -93,18 +99,31 @@ const isFinalExecution = (l: ExecutionLog) =>
 const byLogPosition = (a: ExecutionLog, b: ExecutionLog) =>
   a.blockNumber === b.blockNumber ? a.logIndex - b.logIndex : a.blockNumber < b.blockNumber ? -1 : 1
 
-/** CCIP moves execution to new OffRamps on upgrades, the destination router lists the current ones */
+const includesAddress = (addresses: `0x${string}`[], address: `0x${string}`) =>
+  addresses.some((a) => isAddressEqual(a, address))
+
+/**
+ * CCIP moves execution to new OffRamps on upgrades and the destination router only lists the
+ * current ones, so the known OffRamp stays in the set for executions it already emitted
+ */
 const getOffRamps = async (client: PublicClient, route: ForevermoneyRoute) => {
-  const offRamps = await client.readContract({
+  const routerOffRamps = await client.readContract({
     abi: abiCcipRouter,
     address: route.destinationCcipRouter,
     functionName: "getOffRamps",
   })
-  const laneOffRamps = offRamps
+  const laneOffRamps = routerOffRamps
     .filter((offRamp) => offRamp.sourceChainSelector === route.sourceSelector)
     .map((offRamp) => offRamp.offRamp)
-  if (!laneOffRamps.length) throw new Error("No CCIP OffRamp for the ForeverMoney lane")
-  return laneOffRamps
+    .filter((offRamp) => !isAddressEqual(offRamp, route.destinationOffRamp))
+  return [route.destinationOffRamp, ...laneOffRamps]
+}
+
+/** Blocks scanned before an OffRamp joined the set were never read for it, so the scan restarts */
+const getScan = (txId: string, startBlock: bigint, offRamps: `0x${string}`[]): DeliveryScan => {
+  const scan = scans.get(txId)
+  if (scan && offRamps.every((offRamp) => includesAddress(scan.offRamps, offRamp))) return scan
+  return { nextBlock: startBlock, execution: undefined, offRamps }
 }
 
 const getExecutionLogs = async (
@@ -151,7 +170,7 @@ const findLatestExecution = async (
     client.getBlockNumber(),
     getOffRamps(client, route),
   ])
-  const scan = scans.get(txId) ?? { nextBlock: startBlock, execution: undefined }
+  const scan = getScan(txId, startBlock, offRamps)
   let execution =
     scan.execution && scan.execution.blockNumber < scan.nextBlock ? scan.execution : undefined
 
@@ -166,6 +185,7 @@ const findLatestExecution = async (
   scans.set(txId, {
     nextBlock: maxBigInt(startBlock, latest + 1n - REORG_OVERLAP_BLOCKS),
     execution,
+    offRamps,
   })
 
   const confirmations = execution ? latest - execution.blockNumber + 1n : 0n
@@ -178,11 +198,7 @@ const findLatestExecution = async (
  * ExecutionStateChanged event and its own. The gateway books an undelivered message as claimable,
  * or reports it with NotDelivered.
  */
-const wasNotDelivered = async (
-  client: PublicClient,
-  route: ForevermoneyRoute,
-  execution: ExecutionLog
-) => {
+const wasNotDelivered = async (client: PublicClient, execution: ExecutionLog) => {
   const receipt = await client.getTransactionReceipt({ hash: execution.transactionHash })
 
   const previousExecutionIndex = parseEventLogs({
@@ -198,7 +214,7 @@ const wasNotDelivered = async (
     (l) =>
       l.logIndex > previousExecutionIndex &&
       l.logIndex < execution.logIndex &&
-      isAddressEqual(l.address, route.hubGateway)
+      includesAddress(FOREVERMONEY_HUB_GATEWAYS, l.address)
   )
 
   return (
@@ -260,7 +276,7 @@ const resolveStatus = async (
   if (execution.args.state === CCIP_EXECUTION_STATE_FAILURE) return "failed"
 
   if (route.direction !== "evm-to-spoke") {
-    const notDelivered = await wasNotDelivered(destinationClient, route, execution)
+    const notDelivered = await wasNotDelivered(destinationClient, execution)
     if (notDelivered) return "refunded"
   }
 
