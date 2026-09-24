@@ -56,7 +56,8 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "knip:production": "knip --production",
-    "check:licenses": "node scripts/check-direct-licenses.mjs"
+    "check:licenses": "node scripts/check-direct-licenses.mjs",
+    "verify": "pnpm check:licenses && pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched && pnpm knip && pnpm typecheck && pnpm test"
   },
   "dependencies": {
     "polkadot-api": "2.2.0"

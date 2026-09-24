@@ -10,7 +10,7 @@ Talisman wallet monorepo (pnpm). `apps/extension` is the browser extension (WXT 
 
 ## Checks
 
-CI runs these on every PR. Run the ones your change touches before you push.
+CI runs these on every PR. Run `pnpm verify` before you push. It runs all of them in CI order; Biome checks only the files your commits change since `origin/dev`.
 
 - Lint and format: `pnpm biome check --error-on-warnings -- <changed files>`. CI checks changed files only. `pnpm check:fix` applies fixes.
 - Types: `pnpm typecheck`.
