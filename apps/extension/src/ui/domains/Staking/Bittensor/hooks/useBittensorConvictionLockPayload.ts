@@ -1,7 +1,8 @@
 import type { ScaleApi } from "@talismn/sapi"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData } from "@tanstack/react-query"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 
 import { getBittensorConvictionLockPayload } from "../utils/convictionLockTx"
 
@@ -24,7 +25,8 @@ const useConvictionLockPayloadQuery = ({
   makePerpetual,
   currentIsPerpetual,
 }: UseConvictionLockPayloadQueryProps) =>
-  useQuery({
+  useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "useBittensorConvictionLockPayload",
       sapi?.id,

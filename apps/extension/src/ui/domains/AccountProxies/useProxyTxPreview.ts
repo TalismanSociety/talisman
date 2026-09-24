@@ -1,13 +1,13 @@
-import type { ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useAccountProxiesStatus, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useToken } from "@ui/state/chaindata"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { buildProxyPayload } from "./buildProxyPayload"
 import { getProxyDeposit } from "./proxyDeposit"
@@ -36,29 +36,32 @@ export const useProxyTxPreview = ({
   const nativeToken = useToken(nativeTokenId)
 
   // Payload
-  const [payload, setPayload] = useState<Awaited<
-    ReturnType<NonNullable<ScaleApi>["getExtrinsicPayload"]>
-  > | null>(null)
+  const { data: payload, error: payloadError } = useSignerPayloadQuery({
+    sapi,
+    queryKey: [
+      "useProxyTxPreview",
+      sapi?.id,
+      method,
+      delegateAddress,
+      proxyType,
+      delay,
+      accountAddress,
+    ],
+    queryFn: () =>
+      sapi
+        ? buildProxyPayload(sapi, method, delegateAddress, proxyType, delay, accountAddress)
+        : null,
+    enabled: !!sapi,
+  })
 
   useEffect(() => {
-    if (!sapi) return
-    let cancelled = false
-    buildProxyPayload(sapi, method, delegateAddress, proxyType, delay, accountAddress)
-      .then((p) => {
-        if (!cancelled) setPayload(p)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        notify({
-          type: "error",
-          title: t("Failed to build transaction"),
-          subtitle: String(err?.message ?? err),
-        })
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [accountAddress, delay, delegateAddress, method, proxyType, sapi, t])
+    if (!payloadError) return
+    notify({
+      type: "error",
+      title: t("Failed to build transaction"),
+      subtitle: payloadError.message,
+    })
+  }, [payloadError, t])
 
   // Proxy count & deposit
   const proxyStoreStatus = useAccountProxiesStatus()
@@ -97,7 +100,6 @@ export const useProxyTxPreview = ({
   const {
     data: feeEstimate,
     isLoading: isLoadingFee,
-    isFetching: isFetchingFee,
     error: feeError,
   } = useGetFeeEstimate({ sapi: sapi ?? null, payload: payload?.payload })
 
@@ -124,7 +126,7 @@ export const useProxyTxPreview = ({
 
   // Affordability
   const isAffordabilityCheckUnavailable =
-    isFetchingFee ||
+    isLoadingFee ||
     !!feeError ||
     transferablePlanck === null ||
     depositDelta === null ||
@@ -133,7 +135,7 @@ export const useProxyTxPreview = ({
 
   const insufficientBalance = useMemo(() => {
     if (
-      isFetchingFee ||
+      isLoadingFee ||
       feeError ||
       transferablePlanck === null ||
       depositDelta === null ||
@@ -147,7 +149,7 @@ export const useProxyTxPreview = ({
     const required = depositCost + feeEstimate + existentialDeposit.planck
     return transferablePlanck < required
   }, [
-    isFetchingFee,
+    isLoadingFee,
     feeError,
     transferablePlanck,
     depositDelta,
@@ -176,7 +178,6 @@ export const useProxyTxPreview = ({
     depositDelta,
     feeEstimate,
     isLoadingFee,
-    isFetchingFee,
     feeError,
     isBalanceLoading,
     transferablePlanck,

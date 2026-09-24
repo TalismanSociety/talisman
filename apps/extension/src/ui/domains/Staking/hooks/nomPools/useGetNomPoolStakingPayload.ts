@@ -1,5 +1,5 @@
 import type { ScaleApi } from "@talismn/sapi"
-import { useQuery } from "@tanstack/react-query"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useMemo } from "react"
 
 import { getNomPoolStakingPayload } from "../../helpers"
@@ -33,7 +33,8 @@ export const useGetNomPoolStakingPayload = ({
     return minJoinBond
   }, [hasJoinedNomPool, minJoinBond, plancks])
 
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "getNomPoolStakingPayload",
       sapi?.id,

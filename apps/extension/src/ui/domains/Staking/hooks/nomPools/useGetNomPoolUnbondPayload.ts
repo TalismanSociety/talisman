@@ -1,7 +1,7 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import type { ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
-import { useQuery } from "@tanstack/react-query"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 
 import type { NomPoolMember } from "../../types"
 
@@ -13,7 +13,8 @@ type GetNomPoolUnbondPayload = {
 }
 
 export const useGetNomPoolUnbondPayload = ({ sapi, address, pool }: GetNomPoolUnbondPayload) => {
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "getExtrinsicPayload",
       "NominationPools.unbond",
