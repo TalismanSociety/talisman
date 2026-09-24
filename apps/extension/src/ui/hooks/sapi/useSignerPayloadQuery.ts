@@ -20,7 +20,7 @@ export const getPayloadRefreshIntervalMs = (blockTimeMs: number, eraBlocksLeft: 
 export const getPayloadExpiresAt = ({ builtAt, eraBlocksLeft }: PayloadAge, blockTimeMs: number) =>
   builtAt + (blockTimeMs * eraBlocksLeft) / 2
 
-const getEraBlocksLeft = async (
+export const getEraBlocksLeft = async (
   sapi: ScaleApi | null | undefined,
   payload: SignerPayloadJSON
 ): Promise<number> => {

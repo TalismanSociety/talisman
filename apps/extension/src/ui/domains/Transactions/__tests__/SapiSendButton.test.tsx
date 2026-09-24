@@ -108,6 +108,8 @@ vi.mock("../PasswordCheckDrawer", () => ({
 
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 
+import { notify } from "@ui/components/Notifications"
+
 import { SapiSendButton } from "../SapiSendButton"
 
 const mockPayload: SignerPayloadJSON = {
@@ -249,6 +251,19 @@ describe("SapiSendButton", () => {
   describe("with a withheld payload", () => {
     beforeEach(() => {
       mockUseAccountByAddress.mockReturnValue({ type: "keypair", address: mockPayload.address })
+    })
+
+    it("does not submit a payload that left its era while the password drawer was open", async () => {
+      mockUseScaleApi.mockReturnValue({
+        data: { submit: mockSubmit, getStorage: async () => Number(mockPayload.blockNumber) + 62 },
+      })
+      render(<SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} checkPassword />)
+      fireEvent.click(screen.getByTestId("send-button"))
+
+      fireEvent.click(screen.getByTestId("password-verify"))
+
+      await waitFor(() => expect(notify).toHaveBeenCalled())
+      expect(mockSubmit).not.toHaveBeenCalled()
     })
 
     it("keeps the password drawer open and disables the button", () => {

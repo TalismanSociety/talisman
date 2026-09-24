@@ -3,12 +3,13 @@ import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
-import type { ScaleApiSubmitMode } from "@talismn/sapi"
+import type { ScaleApi, ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { getEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -17,6 +18,21 @@ import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 import { PasswordCheckDrawer } from "./PasswordCheckDrawer"
+
+// a signing step can outlive its payload (slow device, open password drawer): the node rejects a
+// payload outside its mortal era as a bad signature
+const MIN_ERA_BLOCKS_TO_SUBMIT = 4
+
+const isPayloadExpiring = async (sapi: ScaleApi, payload: SignerPayloadJSON) =>
+  (await getEraBlocksLeft(sapi, payload)) < MIN_ERA_BLOCKS_TO_SUBMIT
+
+const notifyPayloadExpired = (t: (key: string) => string) => {
+  notify({
+    type: "error",
+    title: t("Transaction expired"),
+    subtitle: t("Please try again."),
+  })
+}
 
 type LockedInputs = {
   payload: SignerPayloadJSON | undefined
@@ -88,6 +104,10 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     async ({ signature }: { signature: Hex }) => {
       const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
+      if (await isPayloadExpiring(sapi, payload)) {
+        notifyPayloadExpired(t)
+        return
+      }
 
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
@@ -146,6 +166,10 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
     async ({ signature }: { signature: Hex }) => {
       const { payload, txMode, txInfo } = lockedInputs
       if (!payload || !signature || !sapi) return
+      if (await isPayloadExpiring(sapi, payload)) {
+        notifyPayloadExpired(t)
+        return
+      }
 
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
@@ -214,6 +238,11 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     if (!sapi) return
     if (!submitPayload) return
     setIsSubmitting(true)
+    if (await isPayloadExpiring(sapi, submitPayload)) {
+      setIsSubmitting(false)
+      notifyPayloadExpired(t)
+      return
+    }
     try {
       const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
       setIsSubmitting(false)
