@@ -20,16 +20,22 @@ export const getPayloadRefreshIntervalMs = (blockTimeMs: number, eraBlocksLeft: 
 export const getPayloadExpiresAt = ({ builtAt, eraBlocksLeft }: PayloadAge, blockTimeMs: number) =>
   builtAt + (blockTimeMs * eraBlocksLeft) / 2
 
-export const getEraBlocksLeft = async (
+export const fetchEraBlocksLeft = async (
+  sapi: ScaleApi,
+  payload: SignerPayloadJSON
+): Promise<number> => {
+  const head = await sapi.getStorage<number>("System", "Number", [])
+  const blocksSinceBirth = head - Number(payload.blockNumber)
+  if (!Number.isFinite(blocksSinceBirth)) throw new Error("Invalid payload block number")
+  return Math.max(0, ERA_PERIOD - blocksSinceBirth)
+}
+
+const getEraBlocksLeft = async (
   sapi: ScaleApi | null | undefined,
   payload: SignerPayloadJSON
 ): Promise<number> => {
   try {
-    if (!sapi) return WORST_CASE_ERA_BLOCKS_LEFT
-    const head = await sapi.getStorage<number>("System", "Number", [])
-    const blocksSinceBirth = head - Number(payload.blockNumber)
-    if (!Number.isFinite(blocksSinceBirth)) return WORST_CASE_ERA_BLOCKS_LEFT
-    return Math.max(0, ERA_PERIOD - blocksSinceBirth)
+    return sapi ? await fetchEraBlocksLeft(sapi, payload) : WORST_CASE_ERA_BLOCKS_LEFT
   } catch {
     return WORST_CASE_ERA_BLOCKS_LEFT
   }

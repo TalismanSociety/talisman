@@ -8,8 +8,9 @@ import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { getEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
+import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -24,7 +25,7 @@ import { PasswordCheckDrawer } from "./PasswordCheckDrawer"
 const MIN_ERA_BLOCKS_TO_SUBMIT = 4
 
 const isPayloadExpiring = async (sapi: ScaleApi, payload: SignerPayloadJSON) =>
-  (await getEraBlocksLeft(sapi, payload)) < MIN_ERA_BLOCKS_TO_SUBMIT
+  (await fetchEraBlocksLeft(sapi, payload)) < MIN_ERA_BLOCKS_TO_SUBMIT
 
 const notifyPayloadExpired = (t: (key: string) => string) => {
   notify({
@@ -104,10 +105,9 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     async ({ signature }: { signature: Hex }) => {
       const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
-      if (await isPayloadExpiring(sapi, payload)) {
-        notifyPayloadExpired(t)
-        return
-      }
+      // throwing resets the Ledger signing state and shows the message there
+      if (await isPayloadExpiring(sapi, payload))
+        throw new TalismanLedgerError("Custom", t("Transaction expired. Please try again."))
 
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
@@ -166,12 +166,12 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
     async ({ signature }: { signature: Hex }) => {
       const { payload, txMode, txInfo } = lockedInputs
       if (!payload || !signature || !sapi) return
-      if (await isPayloadExpiring(sapi, payload)) {
-        notifyPayloadExpired(t)
-        return
-      }
 
       try {
+        if (await isPayloadExpiring(sapi, payload)) {
+          notifyPayloadExpired(t)
+          return
+        }
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
@@ -238,12 +238,12 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     if (!sapi) return
     if (!submitPayload) return
     setIsSubmitting(true)
-    if (await isPayloadExpiring(sapi, submitPayload)) {
-      setIsSubmitting(false)
-      notifyPayloadExpired(t)
-      return
-    }
     try {
+      if (await isPayloadExpiring(sapi, submitPayload)) {
+        setIsSubmitting(false)
+        notifyPayloadExpired(t)
+        return
+      }
       const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
       setIsSubmitting(false)
       onSubmitted(hash)
