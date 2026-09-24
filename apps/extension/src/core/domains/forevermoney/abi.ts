@@ -9,16 +9,23 @@ const EXIT_PARAMS = {
   type: "tuple",
 } as const
 
+const BRIDGE_TO_FINNEY_INPUTS = [
+  { name: "token", type: "address" },
+  { name: "amount", type: "uint256" },
+  EXIT_PARAMS,
+  { name: "gasLimit", type: "uint256" },
+] as const
+
 export const abiForevermoneySpokeGateway = [
   {
-    inputs: [{ name: "token", type: "address" }, { name: "amount", type: "uint256" }, EXIT_PARAMS],
+    inputs: BRIDGE_TO_FINNEY_INPUTS,
     name: "quoteBridgeToFinney",
     outputs: [{ name: "fee", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ name: "token", type: "address" }, { name: "amount", type: "uint256" }, EXIT_PARAMS],
+    inputs: BRIDGE_TO_FINNEY_INPUTS,
     name: "bridgeToFinney",
     outputs: [{ name: "messageId", type: "bytes32" }],
     stateMutability: "payable",
@@ -96,6 +103,17 @@ export const abiForevermoneyAlphaGateway = [
     name: "Claimable",
     type: "event",
   },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "sourceChainSelector", type: "uint64" },
+      { indexed: true, name: "token", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" },
+      { indexed: false, name: "reason", type: "uint8" },
+    ],
+    name: "NotDelivered",
+    type: "event",
+  },
 ] as const
 
 export const abiForevermoneyAlphaVault = [
@@ -151,6 +169,37 @@ export const abiCcipOffRamp = [
     ],
     name: "ExecutionStateChanged",
     type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "sourceChainSelector", type: "uint64" },
+      { indexed: true, name: "sequenceNumber", type: "uint64" },
+      { indexed: true, name: "messageId", type: "bytes32" },
+      { indexed: false, name: "state", type: "uint8" },
+      { indexed: false, name: "returnData", type: "bytes" },
+    ],
+    name: "ExecutionStateChanged",
+    type: "event",
+  },
+] as const
+
+export const abiCcipRouter = [
+  {
+    inputs: [],
+    name: "getOffRamps",
+    outputs: [
+      {
+        components: [
+          { name: "sourceChainSelector", type: "uint64" },
+          { name: "offRamp", type: "address" },
+        ],
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
 ] as const
 

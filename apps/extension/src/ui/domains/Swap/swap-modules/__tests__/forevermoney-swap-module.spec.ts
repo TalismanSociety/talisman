@@ -59,8 +59,10 @@ const ROBINHOOD_WTAO = "4663:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d6
 const SUB_TAO = "bittensor:substrate-native"
 const EVM_TAO = "964:evm-native"
 
-const BASE_GATEWAY = "0x5EF3d7D19e4b233a1A169DA0d5CB02ec6b160a2C"
-const ALPHA_GATEWAY = "0x998f20Fea90bF7792774dECc7f994716442B1705"
+const BASE_GATEWAY = "0x1da2415229b614C787e145D1D7346eb496319C52"
+const OUTBOUND_ALPHA_GATEWAY = "0xd5Fa238aa4177f6c1341491969d9cBeec94EEd69"
+const INBOUND_ALPHA_GATEWAY = "0xcd0C6d98D0A126B1c113d15b4c28F38321437787"
+const INBOUND_DESTINATION_GAS_LIMIT = 3_500_000n
 const BASE_SELECTOR = 15971525489660198786n
 
 const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
@@ -266,6 +268,29 @@ describe("forevermoneySwapModule getQuote", () => {
     )
   })
 
+  it("checks the lane on the hub gateway of each direction", async () => {
+    await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS)
+    await quote(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS)
+
+    const laneChecks = mockReadContract.mock.calls
+      .filter(([, args]) => args.functionName === "allowedLane")
+      .map(([networkId, args]) => [networkId, args.address, args.args])
+    expect(laneChecks).toEqual([
+      ["964", INBOUND_ALPHA_GATEWAY, [BASE_SELECTOR]],
+      ["964", OUTBOUND_ALPHA_GATEWAY, [BASE_SELECTOR]],
+    ])
+  })
+
+  it("quotes the inbound bridge fee for the destination gas limit", async () => {
+    await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS)
+
+    const quoteCall = mockReadContract.mock.calls.find(
+      ([, args]) => args.functionName === "quoteBridgeToFinney"
+    )
+    expect(quoteCall?.[1]).toMatchObject({ address: BASE_GATEWAY })
+    expect(quoteCall?.[1].args[3]).toBe(INBOUND_DESTINATION_GAS_LIMIT)
+  })
+
   it("rejects an absurd bridge fee", async () => {
     state.fee = ONE_TAO_WEI
 
@@ -355,6 +380,7 @@ describe("forevermoneySwapModule getTransaction", () => {
           wantLiquid: true,
           minTaoOut: ONE_TAO_WEI,
         },
+        INBOUND_DESTINATION_GAS_LIMIT,
       ],
     })
   })
@@ -376,7 +402,7 @@ describe("forevermoneySwapModule getTransaction", () => {
     const tx = await buildTx(EVM_TAO, BASE_WTAO, ONE_TAO_WEI + 9n, OTHER_EVM_ADDRESS)
     if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
 
-    expect(tx.transaction.to).toBe(ALPHA_GATEWAY)
+    expect(tx.transaction.to).toBe(OUTBOUND_ALPHA_GATEWAY)
     expect(tx.transaction.value).toBe(ONE_TAO_WEI + FEE_WITH_BUFFER)
     expect(
       decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data: tx.transaction.data! })

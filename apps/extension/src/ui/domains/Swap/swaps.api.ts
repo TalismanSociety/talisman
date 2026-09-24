@@ -34,7 +34,7 @@ export const swapModules = [
 export type SwapModuleEntry = (typeof swapModules)[number]
 
 export const useSwapModules = (): SwapModuleEntry[] => {
-  const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE")
+  const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE_V2")
 
   return useMemo(
     () =>

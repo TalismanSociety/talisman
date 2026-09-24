@@ -324,8 +324,10 @@ export class RemoteConfigApi<
             BITTENSOR_MEV_SHIELD: boolean;
             /** Enables the quick unlock feature */
             QUICK_UNLOCK: boolean;
-            /** Enables the ForeverMoney TAO bridge */
+            /** deprecated */
             SWAPS_FOREVERMONEY_TAO_BRIDGE: boolean;
+            /** Enables the ForeverMoney TAO bridge v2 */
+            SWAPS_FOREVERMONEY_TAO_BRIDGE_V2: boolean;
             /** Enables dapp scanning via Blockaid */
             BLOCKAID_DAPP_SCAN_V2: boolean;
             /** Enables token scanning via Blockaid */

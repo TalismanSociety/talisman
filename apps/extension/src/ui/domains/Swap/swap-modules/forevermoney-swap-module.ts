@@ -7,7 +7,6 @@ import {
   abiForevermoneySpokeGateway,
 } from "@core/domains/forevermoney/abi"
 import {
-  FOREVERMONEY_ALPHA_GATEWAY,
   FOREVERMONEY_ALPHA_TOKEN,
   FOREVERMONEY_ALPHA_VAULT,
   FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID,
@@ -66,6 +65,8 @@ const FEE_BUFFER_NUMERATOR = 102n
 const FEE_BUFFER_DENOMINATOR = 100n
 const MIN_LIQUID_INBOUND_WEI = 10n ** 16n // 0.01 TAO, the vault must unstake the bridged position
 const MIN_OUTBOUND_WEI = 2n * 10n ** 15n // 0.002 TAO, the vault stakes the deposit and subtensor rejects smaller stakes
+// the spoke default of 300k no longer covers the liquid exit on Bittensor, the SDK sends the same budget
+const INBOUND_DESTINATION_GAS_LIMIT = 3_500_000n
 
 export type ForevermoneyQuoteData = {
   direction: ForevermoneyDirection
@@ -137,6 +138,7 @@ const encodeBridgeToFinney = (
       FOREVERMONEY_WTAO,
       amountWei,
       { ss58: destinationPubkey, evmFallback, wantLiquid: true, minTaoOut: amountWei },
+      INBOUND_DESTINATION_GAS_LIMIT,
     ],
   })
 
@@ -160,7 +162,7 @@ const readCcipFeeWei = async (
     const recipient = toAddress && isEthereumAddress(toAddress) ? toAddress : fromAddress
     const fee = await client.readContract({
       abi: abiForevermoneyAlphaGateway,
-      address: FOREVERMONEY_ALPHA_GATEWAY,
+      address: route.sourceGateway,
       functionName: "quoteBridgeOut",
       args: [route.spoke.selector, FOREVERMONEY_ALPHA_TOKEN, recipient, amountWei],
     })
@@ -171,12 +173,13 @@ const readCcipFeeWei = async (
   const destinationPubkey = getQuoteDestinationPubkey(route, fromAddress, toAddress)
   const fee = await client.readContract({
     abi: abiForevermoneySpokeGateway,
-    address: route.spoke.gateway,
+    address: route.sourceGateway,
     functionName: "quoteBridgeToFinney",
     args: [
       FOREVERMONEY_WTAO,
       amountWei,
       { ss58: destinationPubkey, evmFallback: fromAddress, wantLiquid: true, minTaoOut: amountWei },
+      INBOUND_DESTINATION_GAS_LIMIT,
     ],
   })
   if (fee > MAX_CCIP_FEE_WEI_SPOKE) throw new Error("Bridge fee is unexpectedly high")
@@ -216,7 +219,7 @@ const assertVaultOpen = async (route: ForevermoneyRoute) => {
     }),
     client.readContract({
       abi: abiForevermoneyAlphaGateway,
-      address: FOREVERMONEY_ALPHA_GATEWAY,
+      address: route.hubGateway,
       functionName: "allowedLane",
       args: [route.spoke.selector],
     }),
@@ -297,7 +300,7 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
     const recipient = toAddress && isEthereumAddress(toAddress) ? toAddress : fromAddress
     const gasFeeWei = await estimateGasFeeWei(client, {
       account: fromAddress,
-      to: isOutbound ? FOREVERMONEY_ALPHA_GATEWAY : route.spoke.gateway,
+      to: route.sourceGateway,
       data: isOutbound
         ? encodeBridgeOut(route, recipient, amountWei)
         : encodeBridgeToFinney(
@@ -417,7 +420,7 @@ const getTransaction = async (
     {
       chain: null,
       account: fromAddress,
-      to: isOutbound ? FOREVERMONEY_ALPHA_GATEWAY : route.spoke.gateway,
+      to: route.sourceGateway,
       data: isOutbound
         ? encodeBridgeOut(route, data.toAddress as `0x${string}`, amountWei)
         : encodeBridgeToFinney(amountWei, getDestinationPubkey(route, data.toAddress), fromAddress),
@@ -440,7 +443,7 @@ const getApprovalInfo = (
   if (!route || route.direction === "evm-to-spoke") return null
 
   return {
-    contractAddress: route.spoke.gateway,
+    contractAddress: route.sourceGateway,
     amount: fromAmount,
     tokenAddress: FOREVERMONEY_WTAO,
     chainId: Number(route.spoke.evmNetworkId),
