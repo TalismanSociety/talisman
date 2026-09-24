@@ -276,7 +276,7 @@
     },
     "forevermoney": {
       "feeRecipients": {},
-      "feeBps": 100
+      "feeBps": 30
     }
   },
   "nominationPools": {
