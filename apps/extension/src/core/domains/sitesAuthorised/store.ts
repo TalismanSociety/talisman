@@ -2,7 +2,7 @@ import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import { isAddressEqual } from "@talismn/crypto"
 import { assert } from "@talismn/util"
 
-import { SubscribableByIdStorageProvider } from "../../libs/Store"
+import { SubscribableStorageProvider } from "../../libs/Store"
 import { urlToDomain } from "../../util/urlToDomain"
 import type { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 
@@ -10,10 +10,9 @@ const OLD_AUTH_URLS_KEY = "authUrls"
 
 // exported only for test purposes
 /** @knipignore exported for test mocks */
-export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
+export class SitesAuthorizedStore extends SubscribableStorageProvider<
   AuthorizedSites,
-  "pri(sites.subscribe)",
-  "pri(sites.byid.subscribe)"
+  "pri(sites.subscribe)"
 > {
   constructor(initialData: AuthorizedSites = {}) {
     super("sitesAuthorized", initialData)

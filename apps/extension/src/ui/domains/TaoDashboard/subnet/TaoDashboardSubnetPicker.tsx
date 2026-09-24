@@ -84,7 +84,6 @@ export const SubnetPicker: React.FC<{
             )}
             placeholder={t("Search subnets")}
             onChange={setSearch}
-            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           />
         </div>

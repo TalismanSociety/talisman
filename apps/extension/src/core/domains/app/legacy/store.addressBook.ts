@@ -1,4 +1,4 @@
-import { StorageProvider } from "../../libs/Store"
+import { StorageProvider } from "../../../libs/Store"
 
 type Address = string
 

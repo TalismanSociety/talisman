@@ -9,7 +9,7 @@ import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { encryptMnemonic, MnemonicSource, mnemonicsStore } from "../store"
+import { encryptMnemonic, MnemonicSource, mnemonicsStore } from "../legacy/store.mnemonics"
 
 type AccountType = {
   [K in keyof typeof AccountTypes]: (typeof AccountTypes)[K]

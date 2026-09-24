@@ -7,9 +7,9 @@ vi.mock("../../../config/sentry", () => ({
 }))
 
 vi.mock("../../../rpcs/chaindata", () => ({ chaindataProvider: {} }))
-vi.mock("../../chains/store.activeChains", () => ({ activeChainsStore: {} }))
-vi.mock("../../ethereum/store.activeEvmNetworks", () => ({ activeEvmNetworksStore: {} }))
-vi.mock("../store.addressBook", () => ({ addressBookStore: {} }))
+vi.mock("../../chains/legacy/store.activeChains", () => ({ activeChainsStore: {} }))
+vi.mock("../../ethereum/legacy/store.activeEvmNetworks", () => ({ activeEvmNetworksStore: {} }))
+vi.mock("../legacy/store.addressBook", () => ({ addressBookStore: {} }))
 
 const settings: Record<string, unknown> = {}
 vi.mock("../store.settings", () => ({

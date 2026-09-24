@@ -17,27 +17,10 @@ export type TreeFolder = {
 
 /** Defines the available `Tree` actions */
 export type RequestAccountsCatalogAction =
-  // account actions
-  | {
-      type: "moveAccount"
-      tree: AccountsCatalogTree
-      address: string
-      folderId?: string
-      beforeItem?: MoveBeforeTarget
-    }
-
-  // folder actions
   | { type: "addFolder"; tree: AccountsCatalogTree; name: string }
   | { type: "renameFolder"; tree: AccountsCatalogTree; id: string; newName: string }
-  | { type: "moveFolder"; tree: AccountsCatalogTree; id: string; beforeItem?: MoveBeforeTarget }
   | { type: "removeFolder"; tree: AccountsCatalogTree; id: string }
   | { type: "reorder"; tree: AccountsCatalogTree; items: Tree }
-
-/**
- * The target item of a `moveAccount` or `moveFolder` action.
- * The account or folder being moved will be placed in front of this target.
- */
-export type MoveBeforeTarget = { type: "account"; address: string } | { type: "folder"; id: string }
 
 /**
  * Given some trees and some actions, this will run those actions against the trees
@@ -60,13 +43,9 @@ const runActionOnTrees = (trees: Partial<Trees>) => (action: RequestAccountsCata
   // reordering overrides override the whole trees data
   if (type === "reorder") return reorderTree(trees, action)
 
-  // account actions
-  if (type === "moveAccount") return moveAccount(tree, action) // TODO remove?
-
   // folder actions
   if (type === "addFolder") return addFolder(tree, action)
   if (type === "renameFolder") return renameFolder(tree, action)
-  if (type === "moveFolder") return moveFolder(tree, action) // TODO remove?
   if (type === "removeFolder") return removeFolder(tree, action)
 
   // force compilation error if any action types don't have a case
@@ -74,32 +53,6 @@ const runActionOnTrees = (trees: Partial<Trees>) => (action: RequestAccountsCata
   // biome-ignore lint/suspicious/noConsole: legacy
   DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
   return
-}
-
-type MoveAccountAction = Extract<RequestAccountsCatalogAction, { type: "moveAccount" }>
-const moveAccount = (tree: Tree, { address, folderId, beforeItem }: MoveAccountAction) => {
-  // remove existing account from tree
-  const accountItem = removeAccountFromTree(tree, address)
-  if (!accountItem) return
-
-  // find destination set (either root tree, or folder tree)
-  const folderSet = folderId
-    ? tree.filter(folderFilter).find((item) => item.id === folderId)?.tree
-    : undefined
-  const set = folderSet ?? tree
-
-  // insert account into tree
-  const beforeItemIndex = beforeItem ? findBeforeItemIndex(set, beforeItem) : -1
-  if (beforeItem && beforeItemIndex !== -1) {
-    // insert before specified item
-    set.splice(beforeItemIndex, 0, accountItem)
-  } else {
-    // insert at end
-    set.push(accountItem)
-  }
-
-  // inform the store that a change was made
-  return true
 }
 
 type ReorderTreeAction = Extract<RequestAccountsCatalogAction, { type: "reorder" }>
@@ -141,29 +94,6 @@ const renameFolder = (tree: Tree, { id, newName }: RenameFolderAction) => {
   return true
 }
 
-type MoveFolderAction = Extract<RequestAccountsCatalogAction, { type: "moveFolder" }>
-const moveFolder = (tree: Tree, { id, beforeItem }: MoveFolderAction) => {
-  // find existing folder in tree
-  const folderIndex = tree.findIndex((item) => item.type === "folder" && item.id === id)
-  if (folderIndex === -1) return
-
-  // remove existing folder from tree
-  const folder = tree.splice(folderIndex, 1)[0]
-
-  // insert folder into tree
-  const beforeItemIndex = beforeItem ? findBeforeItemIndex(tree, beforeItem) : -1
-  if (beforeItem && beforeItemIndex !== -1) {
-    // insert before specified item
-    tree.splice(beforeItemIndex, 0, folder)
-  } else {
-    // insert at end
-    tree.push(folder)
-  }
-
-  // inform the store that a change was made
-  return true
-}
-
 type RemoveFolderAction = Extract<RequestAccountsCatalogAction, { type: "removeFolder" }>
 const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
   // find existing folder in tree
@@ -182,23 +112,9 @@ const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
   return true
 }
 
-/** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeAccount` */
-const _accountFilter = (item: TreeItem): item is TreeAccount => item.type === "account"
-
 /** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeFolder` */
 export const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
 
-/** Given a tree and a `MoveBeforeTarget`, finds the index of the target in the tree */
-const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
-  const findBeforeItem =
-    beforeItem.type === "account"
-      ? (item: TreeItem) =>
-          item.type === beforeItem.type && isAddressEqual(item.address, beforeItem.address)
-      : (item: TreeItem) => item.type === beforeItem.type && item.id === beforeItem.id
-  return tree.findIndex(findBeforeItem)
-}
-
-/** Recursive, removes an account from anywhere in the tree, including inside folders */
 const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undefined => {
   // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
   let account

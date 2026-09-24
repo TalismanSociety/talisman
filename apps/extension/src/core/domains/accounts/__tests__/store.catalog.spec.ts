@@ -120,78 +120,6 @@ describe("accountsCatalogStore", () => {
 })
 
 describe("runActionOnTrees", () => {
-  test("moving an account", () => {
-    const tree = getTestStartTree()
-    const actions: RequestAccountsCatalogAction[] = [
-      // move account-1 to the end
-      { type: "moveAccount", tree: "portfolio", address: ADDRESSES[1] },
-
-      // move account-2 into the end of folder-2
-      { type: "moveAccount", tree: "portfolio", address: ADDRESSES[2], folderId: "folder-2" },
-
-      // move account-3 into the start of folder-2
-      {
-        type: "moveAccount",
-        tree: "portfolio",
-        address: ADDRESSES[3],
-        folderId: "folder-2",
-        beforeItem: { type: "account", address: ADDRESSES[7] },
-      },
-
-      // move account-4 into the start of the tree
-      {
-        type: "moveAccount",
-        tree: "portfolio",
-        address: ADDRESSES[4],
-        beforeItem: { type: "folder", id: "folder-1" },
-      },
-
-      // move account-5 above account-1
-      {
-        type: "moveAccount",
-        tree: "portfolio",
-        address: ADDRESSES[5],
-        beforeItem: { type: "account", address: ADDRESSES[1] },
-      },
-    ]
-
-    const status = runActionsOnTrees({ portfolio: tree }, actions)
-    expect(status).toStrictEqual(true)
-
-    const expectedResult = [
-      { type: "account", address: ADDRESSES[4] },
-      {
-        type: "folder",
-        id: "folder-1",
-        name: "Folder 1",
-        tree: [],
-      },
-      { type: "account", address: ADDRESSES[6] },
-      {
-        type: "folder",
-        id: "folder-2",
-        name: "Folder 2",
-        tree: [
-          { type: "account", address: ADDRESSES[3] },
-          { type: "account", address: ADDRESSES[7] },
-          { type: "account", address: ADDRESSES[8] },
-          { type: "account", address: ADDRESSES[2] },
-        ],
-      },
-      { type: "account", address: ADDRESSES[9] },
-      {
-        type: "folder",
-        id: "empty-folder",
-        name: "Empty folder",
-        tree: [],
-      },
-      { type: "account", address: ADDRESSES[5] },
-      { type: "account", address: ADDRESSES[1] },
-    ]
-
-    expect(tree).toStrictEqual(expectedResult)
-  })
-
   test("adding a new folder", () => {
     const tree = getTestStartTree()
     const actions: RequestAccountsCatalogAction[] = [
@@ -226,59 +154,6 @@ describe("runActionOnTrees", () => {
     expect(tree.filter(folderFilter).find((folder) => folder.id === "folder-1")?.name).toBe(
       "Renamed folder 1"
     )
-  })
-
-  test("moving a folder", () => {
-    const tree = getTestStartTree()
-    const actions: RequestAccountsCatalogAction[] = [
-      // move folder-1 to the end
-      { type: "moveFolder", tree: "portfolio", id: "folder-1" },
-
-      // move folder-2 to the start
-      {
-        type: "moveFolder",
-        tree: "portfolio",
-        id: "folder-2",
-        beforeItem: { type: "account", address: ADDRESSES[1] },
-      },
-    ]
-
-    const status = runActionsOnTrees({ portfolio: tree }, actions)
-    expect(status).toStrictEqual(true)
-
-    const expectedResult = [
-      {
-        type: "folder",
-        id: "folder-2",
-        name: "Folder 2",
-        tree: [
-          { type: "account", address: ADDRESSES[7] },
-          { type: "account", address: ADDRESSES[8] },
-        ],
-      },
-      { type: "account", address: ADDRESSES[1] },
-      { type: "account", address: ADDRESSES[2] },
-      { type: "account", address: ADDRESSES[5] },
-      { type: "account", address: ADDRESSES[6] },
-      { type: "account", address: ADDRESSES[9] },
-      {
-        type: "folder",
-        id: "empty-folder",
-        name: "Empty folder",
-        tree: [],
-      },
-      {
-        type: "folder",
-        id: "folder-1",
-        name: "Folder 1",
-        tree: [
-          { type: "account", address: ADDRESSES[3] },
-          { type: "account", address: ADDRESSES[4] },
-        ],
-      },
-    ]
-
-    expect(tree).toStrictEqual(expectedResult)
   })
 
   test("removing a folder", () => {

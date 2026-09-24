@@ -42,8 +42,6 @@ describe("Extension", () => {
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-
     extensionStores.sites.set({
       "localhost:3000": {
         addresses: [],

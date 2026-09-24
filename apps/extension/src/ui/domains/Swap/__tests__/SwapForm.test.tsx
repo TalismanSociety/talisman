@@ -96,7 +96,6 @@ vi.mock("../components/TokenAndAmountContainer", () => ({
   ),
 }))
 
-// eslint-disable-next-line import/first
 import { SwapForm } from "../components/SwapForm"
 
 const createSwapState = (overrides: Record<string, unknown> = {}) => ({

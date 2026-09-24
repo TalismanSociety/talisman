@@ -1,5 +1,5 @@
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
-import { activeEvmNetworksStore } from "../store.activeEvmNetworks"
+import { activeEvmNetworksStore } from "../legacy/store.activeEvmNetworks"
 
 export const migrateToNewDefaultEvmNetworks: Migration = {
   forward: new MigrationFunction(async () => {

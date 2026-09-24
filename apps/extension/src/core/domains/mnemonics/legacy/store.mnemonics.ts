@@ -5,7 +5,7 @@ import { assert } from "@talismn/util"
 import md5 from "blueimp-md5"
 import { Err, Ok, type Result } from "ts-results"
 
-import { StorageProvider } from "../../libs/Store"
+import { StorageProvider } from "../../../libs/Store"
 
 const storageKey = "mnemonics"
 

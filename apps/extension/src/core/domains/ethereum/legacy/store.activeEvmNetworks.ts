@@ -1,6 +1,6 @@
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 
-import { StorageProvider } from "../../libs/Store"
+import { StorageProvider } from "../../../libs/Store"
 
 type ActiveEvmNetworks = Record<EthNetworkId, boolean>
 
@@ -13,16 +13,6 @@ type ActiveEvmNetworks = Record<EthNetworkId, boolean>
 class ActiveEvmNetworksStore extends StorageProvider<ActiveEvmNetworks> {
   constructor(initialData = {}) {
     super("activeEvmNetworks", initialData)
-  }
-
-  async setActive(networkId: EthNetworkId, active: boolean) {
-    const activeNetworks = await this.get()
-    if (activeNetworks[networkId] === active) return
-    return await this.mutate((activeEvmNetworks) => ({ ...activeEvmNetworks, [networkId]: active }))
-  }
-
-  async resetActive(networkId: EthNetworkId) {
-    await this.delete(networkId)
   }
 }
 

@@ -22,7 +22,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"

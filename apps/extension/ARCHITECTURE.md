@@ -81,6 +81,7 @@ A domain has only the files it needs:
 - `store.ts` / `store.<name>.ts` — persistent state: a `Store` (chrome.storage) or a Dexie table.
 - `helpers.ts` — pure functions.
 - `exports.ts` — what `ui/` may import when the domain has more than helpers and types to share. It must not import `handler*.ts`.
+- `migrations/` — data migrations for the domain's stores. `legacy/` — old stores that only migrations read.
 - Tests colocated as `*.test.ts` or `*.spec.ts`, or in `__tests__/`.
 
 Do not add an `index.ts`. Import the file you need.
@@ -170,6 +171,7 @@ Do not add `index.ts` re-exports. Import from the source module (`@ui/domains/Po
 
 ### Feature flags
 Feature flags come from remote config (`core/domains/app/store.remoteConfig.ts`), never from `common/constants.ts` or build-time env.
+The flag list mirrors the schema of the remote-config service, which lives in another repo. Keep a flag that no code reads until that service removes it.
 
 ## Tests
 

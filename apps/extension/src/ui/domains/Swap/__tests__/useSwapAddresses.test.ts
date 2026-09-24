@@ -55,7 +55,6 @@ vi.mock("@talismn/crypto", () => ({
 
 // ── Import after mocks ────────────────────────────────────────────
 
-// eslint-disable-next-line import/first
 import { useSwapAddresses } from "../hooks/useSwapAddresses"
 
 // ── Test fixtures ─────────────────────────────────────────────────
