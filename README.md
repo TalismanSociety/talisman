@@ -96,7 +96,7 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 We use [Biome](https://biomejs.dev/) for linting and formatting across the monorepo.
 
 - **Format code**: `pnpm format`
-- **Lint and format check**: `pnpm check` (`pnpm check:fix` applies fixes). `pnpm check` does not fail on warnings, but CI and the pre-commit hook do. To check your changes as CI does, run `pnpm biome check --error-on-warnings --changed --since=origin/dev`.
+- **Lint and format check**: `pnpm check` (`pnpm check:fix` applies fixes). `pnpm check` does not fail on warnings, but CI and the pre-commit hook do. To check your changes as CI does, run `pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched`.
 - **Pre-commit hook**: runs `biome check --staged --error-on-warnings` on the staged files. It only checks: it does not change or stage files. Run `pnpm check:fix`, then stage the fixes.
 
 If you're using VS Code, install the [Biome extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) for automatic formatting on save.

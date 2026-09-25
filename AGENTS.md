@@ -12,7 +12,7 @@ Talisman wallet monorepo (pnpm). `apps/extension` is the browser extension (WXT 
 
 CI runs these on every PR. Run `pnpm verify` before you push. It runs all of them in CI order; Biome checks only the files your commits change since `origin/dev`.
 
-- Lint and format: `pnpm biome check --error-on-warnings --changed --since=origin/dev`. CI checks changed files only and fails on warnings; `pnpm check` does not. `pnpm check:fix` applies fixes.
+- Lint and format: `pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched`. CI checks changed files only and fails on warnings; `pnpm check` does not. `pnpm check:fix` applies fixes.
 - Types: `pnpm typecheck`.
 - Unit tests: `pnpm test [path]`, from the repo root. For a fast loop, `pnpm vitest related --run <files>` runs only the tests that import `<files>`.
 - Unused code and dependencies: `pnpm knip`. Dependencies are hoisted, so an import of a package that is missing from its workspace's `package.json` works locally. Knip fails CI on it. To keep an unused export on purpose, tag it `/** @knipignore <reason> */`. Add to `ignoreIssues` in `knip.ts` only for generated or spec-defined files.
@@ -20,7 +20,7 @@ CI runs these on every PR. Run `pnpm verify` before you push. It runs all of the
 
 CI also runs these. `pnpm verify` does not:
 
-- Changesets: `pnpm changeset status --since=origin/dev` fails when a changed package has no changeset.
+- Changesets: CI fails when a changed package has no changeset. `pnpm changeset status --since=origin/dev` shows the release plan. It fails only when packages changed and the branch has no changeset at all.
 - Extension build: `pnpm build:extension`. Run it after a change to dependencies, `wxt.config.ts` or bundler settings.
 - Package build: `pnpm build:packages`, to publish `@pr<N>` snapshot packages. Run it after a change to a package's `package.json` or `tsdown` config.
 - E2E (Playwright): only on PRs from this repo, because it needs Anvil and secrets. To run it locally, see "Writing and running tests" in `README.md`.
