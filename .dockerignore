@@ -1,6 +1,5 @@
 .git
 .vscode
-.husky
 .next
 .turbo
 .i18next-parser
