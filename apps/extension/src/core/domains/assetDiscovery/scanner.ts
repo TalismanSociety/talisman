@@ -16,7 +16,7 @@ import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,
   debounceTime,
-  distinct,
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   firstValueFrom,
@@ -103,14 +103,14 @@ class AssetDiscoveryScanner {
             .map((account) => account.address)
             .sort()
         ),
-        distinct((addresses) => addresses.join(""))
+        distinctUntilChanged<string[]>(isEqual)
       )
       .subscribe(async (allAddresses) => {
         try {
-          if (prevAllAddresses) {
-            const addresses = allAddresses.filter(
-              (k) => !(prevAllAddresses as string[]).includes(k)
-            )
+          const previousAddresses = prevAllAddresses
+          prevAllAddresses = allAddresses
+          if (previousAddresses) {
+            const addresses = allAddresses.filter((k) => !previousAddresses.includes(k))
 
             if (addresses.length) {
               const networkIds = await getActiveNetworkIdsToScan()
@@ -123,8 +123,6 @@ class AssetDiscoveryScanner {
               await this.startScan({ networkIds, addresses, withApi: true })
             }
           }
-
-          prevAllAddresses = allAddresses // update reference
         } catch (err) {
           log.error("[AssetDiscovery] Failed to start scan after account creation", { err })
         }
@@ -147,15 +145,17 @@ class AssetDiscoveryScanner {
             .filter((k) => !!activeNetworks[k] && networksById[k])
             .sort()
         ),
-        distinct((allActiveNetworkIds) => allActiveNetworkIds.join(""))
+        distinctUntilChanged<string[]>(isEqual)
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
-          if (prevAllActiveNetworkIds) {
+          const previousNetworkIds = prevAllActiveNetworkIds
+          prevAllActiveNetworkIds = allActiveNetworkIds
+          if (previousNetworkIds) {
             const networkIds = allActiveNetworkIds
-              .filter((k) => !(prevAllActiveNetworkIds as string[]).includes(k))
+              .filter((k) => !previousNetworkIds.includes(k))
               // ignore (and consume) activations written by enableDiscoveredTokens:
-              // those networks were just scanned, re-scanning them would fire
+              // those networks are already being scanned; re-scanning would fire
               // thousands of redundant RPC calls
               .filter((k) => !this.#selfActivatedNetworkIds.delete(k))
 
@@ -172,8 +172,6 @@ class AssetDiscoveryScanner {
               await this.startScan({ networkIds, addresses, withApi: false })
             }
           }
-
-          prevAllActiveNetworkIds = allActiveNetworkIds
         } catch (err) {
           log.error("[AssetDiscovery] Failed to start scan after active networks list changed", {
             err,
@@ -187,9 +185,9 @@ class AssetDiscoveryScanner {
       .pipe(filter(isTruthy), debounceTime(10_000))
       .subscribe(async () => {
         try {
+          const networkIds = await getNetworkIdsToForceScan()
           const accounts = await keyringStore.getAccounts()
           const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
-          const networkIds = await getNetworkIdsToForceScan()
 
           if (!addresses.length || !networkIds.length) return
 
@@ -326,6 +324,7 @@ class AssetDiscoveryScanner {
 
     try {
       await this.dequeue()
+      await this.enableDiscoveredTokens()
 
       const scope = await this.getEffectiveCurrentScanScope()
       if (!scope) return
@@ -468,17 +467,17 @@ class AssetDiscoveryScanner {
                   balance: res,
                 }))
 
+              if (newBalances.length) {
+                await db.assetDiscovery.bulkPut(newBalances)
+                if (abortController.signal.aborted) return
+                await this.enableDiscoveredTokens(newBalances)
+              }
+
               localCursors[networkId] = {
                 address: checks[checks.length - 1].address,
                 tokenId: checks[checks.length - 1].tokenId,
               }
               await flushScanState()
-
-              if (abortController.signal.aborted) return
-
-              if (newBalances.length) {
-                await db.assetDiscovery.bulkPut(newBalances)
-              }
             }
           } catch (err) {
             log.warn(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
@@ -543,9 +542,10 @@ class AssetDiscoveryScanner {
     await this.startScan({ networkIds, addresses, withApi: true })
   }
 
-  private async enableDiscoveredTokens(): Promise<void> {
+  private async enableDiscoveredTokens(discoveredBalances?: DiscoveredBalance[]): Promise<void> {
     try {
-      const [discoveredBalances] = await Promise.all([db.assetDiscovery.toArray()])
+      discoveredBalances ??= await db.assetDiscovery.toArray()
+      if (!discoveredBalances.length) return
 
       const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
       const tokens = (
@@ -567,6 +567,7 @@ class AssetDiscoveryScanner {
       await activeNetworksStore.set(
         Object.fromEntries(networkIdsToActivate.map((networkId) => [networkId, true]))
       )
+      await db.assetDiscovery.bulkDelete(discoveredBalances.map(({ id }) => id))
     } catch (err) {
       log.error("[AssetDiscovery] Failed to automatically enable discovered assets", {
         err,
@@ -575,11 +576,14 @@ class AssetDiscoveryScanner {
   }
 }
 
+const getEvmNetworksForDiscovery = () =>
+  firstValueFrom(
+    chaindataProvider.getNetworks$("ethereum").pipe(filter((networks) => networks.length > 0))
+  )
+
 const getActiveNetworkIdsToScan = async () => {
-  const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.getNetworks("ethereum"),
-    activeNetworksStore.get(),
-  ])
+  const evmNetworks = await getEvmNetworksForDiscovery()
+  const activeEvmNetworks = await activeNetworksStore.get()
 
   return evmNetworks
     .filter((n) => n.forceScan || (!n.isTestnet && isNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
@@ -587,10 +591,8 @@ const getActiveNetworkIdsToScan = async () => {
 }
 
 const getNetworkIdsToForceScan = async () => {
-  const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.getNetworks("ethereum"),
-    activeNetworksStore.get(),
-  ])
+  const evmNetworks = await getEvmNetworksForDiscovery()
+  const activeEvmNetworks = await activeNetworksStore.get()
 
   return evmNetworks
     .filter((n) => n.forceScan && activeEvmNetworks[n.id] !== false) // note: forceScan must also work on testnets

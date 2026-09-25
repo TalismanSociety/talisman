@@ -6,10 +6,10 @@ import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -503,7 +503,7 @@ const FieldValueValidator: FC<{ hotkey: string }> = ({ hotkey }) => {
 
   return (
     <div className="flex max-w-full items-center gap-4 overflow-hidden">
-      <AccountIcon address={hotkey} className="text-[1.5em]" />
+      <BittensorHotkeyAvatar hotkey={hotkey} className="text-[1.5em]" />
       <BittensorValidatorName hotkey={hotkey} className="truncate text-body" />
       <button
         type="button"

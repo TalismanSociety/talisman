@@ -3,19 +3,18 @@ import { isAddressEqual, isSs58Address } from "@talismn/crypto"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useBittensorValidatorsMap } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { type FC, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { useBittensorHotkeyExists } from "../hooks/useBittensorHotkeyExists"
 import {
   type NeuronRole,
   type SubnetNeuron,
   useBittensorSubnetNeurons,
 } from "../hooks/useBittensorSubnetNeurons"
+import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
 import {
   ConvictionKeeperBadge,
   getConvictionKeeperKind,
@@ -146,7 +145,7 @@ export const ConvictionLockHotkeyPicker: FC<{
                   "bg-grey-800 text-body-secondary"
               )}
             >
-              <AccountIcon address={offSubnetMatch} className="size-16 shrink-0 text-xl" />
+              <BittensorHotkeyAvatar hotkey={offSubnetMatch} className="size-16 shrink-0 text-xl" />
               <div className="flex grow items-center justify-between gap-4 overflow-hidden text-body text-sm">
                 {offSubnetName ? (
                   <Tooltip>

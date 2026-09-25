@@ -1,9 +1,3 @@
-import type {
-  DecryptPayload,
-  DecryptResult,
-  EncryptPayload,
-  EncryptResult,
-} from "@core/domains/encrypt/types"
 import type { VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
 import type { SendRequest } from "@core/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
@@ -21,8 +15,7 @@ import type {
 // Minimal reimplementation of @polkadot/extension-base/page's Injected/Accounts/Metadata/Signer.
 // Importing them drags PostMessageProvider and its dependency chain (@polkadot/util logger →
 // bn.js, eventemitter3) into page.js — ~25% of the bundle — to power an `injected.provider`
-// that is dead weight here: the background constructs RpcState with no providers, so
-// `listProviders` always returns {} and `startProvider`/`send`/`subscribe` always throw.
+// that Talisman does not offer: there is no polkadot-js `injected.provider`.
 // Dapp-facing message semantics below are identical to the upstream classes.
 //
 // All methods are arrow-function fields: upstream methods never touch `this` (module-level
@@ -57,6 +50,12 @@ class Accounts implements InjectedAccounts {
   }
 }
 
+// Shown in the dapp's console when it calls `metadata.provide`.
+const PROVIDE_METADATA_WARNING =
+  "[Talisman] Provided metadata is ignored. Talisman only trusts runtime metadata it downloads " +
+  "itself from the chain, because the metadata used to decode a transaction decides what the " +
+  "user is shown before signing. Talisman will refresh its own copy for this chain instead."
+
 class Metadata implements InjectedMetadata {
   readonly #sendRequest: SendRequest
 
@@ -69,18 +68,14 @@ class Metadata implements InjectedMetadata {
   }
 
   public provide = (definition: MetadataDef): Promise<boolean> => {
+    // biome-ignore lint/suspicious/noConsole: dapp-facing notice, no logger in page context
+    console.warn(PROVIDE_METADATA_WARNING)
     return this.#sendRequest("pub(metadata.provide)", definition)
   }
 }
 
 // upstream Signer shares one id sequence across signPayload/signRaw - keep it module-level
 let nextSignerId = 0
-
-// Shown in the dapp's console when the deprecated message encrypt/decrypt endpoints are hit.
-const ENCRYPT_DEPRECATION_WARNING =
-  "[Talisman] Message encrypt/decrypt is deprecated and will be removed in a future release. " +
-  "sr25519 message encryption was an experiment for the defunct SUMI chain, is not part of the " +
-  "injected-web3 spec, and should not be relied upon."
 
 export class TalismanSigner {
   readonly #sendRequest: SendRequest
@@ -125,28 +120,6 @@ export class TalismanSigner {
     const result = await this.#sendRequest("pub(vrf.sign)", payload)
 
     return { ...result, id }
-  }
-
-  /**
-   * @deprecated Talisman's sr25519 message encryption was an experiment for the now-defunct SUMI
-   * chain. It is not part of the injected-web3 spec and will be removed in a future release — do
-   * not build on it.
-   */
-  public encryptMessage = async (payload: EncryptPayload): Promise<EncryptResult> => {
-    // biome-ignore lint/suspicious/noConsole: dapp-facing deprecation notice, no logger in page context
-    console.warn(ENCRYPT_DEPRECATION_WARNING)
-    return await this.#sendRequest("pub(encrypt.encrypt)", payload)
-  }
-
-  /**
-   * @deprecated Talisman's sr25519 message encryption was an experiment for the now-defunct SUMI
-   * chain. It is not part of the injected-web3 spec and will be removed in a future release — do
-   * not build on it.
-   */
-  public decryptMessage = async (payload: DecryptPayload): Promise<DecryptResult> => {
-    // biome-ignore lint/suspicious/noConsole: dapp-facing deprecation notice, no logger in page context
-    console.warn(ENCRYPT_DEPRECATION_WARNING)
-    return await this.#sendRequest("pub(encrypt.decrypt)", payload)
   }
 }
 

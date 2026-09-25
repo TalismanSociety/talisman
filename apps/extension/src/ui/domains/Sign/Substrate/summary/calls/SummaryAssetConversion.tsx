@@ -6,33 +6,49 @@ import type {
   SubNativeToken,
   Token,
 } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { papiStringify } from "@talismn/scale"
 import { useNetworkById, useTokens } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
-import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
+import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
+import {
+  SummaryAlert,
+  SummaryContainer,
+  SummaryContent,
+  SummarySeparator,
+} from "../shared/SummaryContainer"
 import { SummaryLineBreak } from "../shared/SummaryLineBreak"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
 import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
 const SwapExactTokensForTokens: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["AssetConversion"]["swap_exact_tokens_for_tokens"]
-> = ({ decodedCall, sapi, mode }) => {
+> = ({ decodedCall, sapi, payload, mode }) => {
   const { t } = useTranslation()
   const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokens = useTokens()
 
   const [tokenIn, tokenOut] = useMemo(() => {
     if (!chain) throw new Error("Missing data")
+
+    // the path may route through intermediate pools: `amount_out_min` is denominated in its last hop
+    const [locationIn] = decodedCall.args.path
+    const locationOut = decodedCall.args.path.at(-1)
+    if (!locationIn || !locationOut) throw new Error("Missing data")
+
     return [
-      getTokenFromlocation(chain, tokens, decodedCall.args.path[0]),
-      getTokenFromlocation(chain, tokens, decodedCall.args.path[1]),
+      getTokenFromlocation(chain, tokens, locationIn),
+      getTokenFromlocation(chain, tokens, locationOut),
     ]
   }, [chain, decodedCall.args.path, tokens])
 
   if (!tokenIn?.id || !tokenOut?.id || !chain) throw new Error("Missing data")
+
+  const recipient = decodedCall.args.send_to
+  const isSelfRecipient = isAddressEqual(recipient, payload.address)
 
   if (mode === "compact")
     return (
@@ -48,8 +64,9 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
           ),
           LineBreak: <SummaryLineBreak mode={mode} />,
           TokensOut: <SummaryTokenSymbolDisplay tokenId={tokenOut.id} />,
+          Recipient: <SummaryAddressDisplay address={recipient} networkId={chain.id} mode={mode} />,
         }}
-        defaults="Swap <TokensIn /><LineBreak /> for <TokensOut />"
+        defaults="Swap <TokensIn /><LineBreak /> for <TokensOut /> to <Recipient />"
       />
     )
 
@@ -72,8 +89,9 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
               mode={mode}
             />
           ),
+          Recipient: <SummaryAddressDisplay address={recipient} networkId={chain.id} mode={mode} />,
         }}
-        defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut />"
+        defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut /><br/>to <Recipient />"
       />
     )
 
@@ -97,10 +115,21 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
                 mode={mode}
               />
             ),
+            Recipient: (
+              <SummaryAddressDisplay address={recipient} networkId={chain.id} mode={mode} />
+            ),
           }}
-          defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut />"
+          defaults="Swap <TokensIn /><br/>for a minimum of <TokensOut /><br/>to <Recipient />"
         />
       </SummaryContent>
+      {!isSelfRecipient && (
+        <>
+          <SummarySeparator />
+          <SummaryAlert>
+            {t("The swap output will be paid to another account, not to the signing account.")}
+          </SummaryAlert>
+        </>
+      )}
     </SummaryContainer>
   )
 }

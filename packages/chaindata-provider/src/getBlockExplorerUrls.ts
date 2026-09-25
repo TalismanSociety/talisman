@@ -1,4 +1,4 @@
-import { startCase, uniq } from "lodash-es"
+import { uniq } from "lodash-es"
 
 import type { Network } from "./chaindata"
 
@@ -52,6 +52,8 @@ const getExplorerUrl = (
   }
 
   const url = new URL(explorerUrl)
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null
+
   const host = getExplorerHost(url)
   const path = getQueryPath(query, host)
 
@@ -67,7 +69,7 @@ const getExplorerUrl = (
       url.hash = path
       break
     default: {
-      // preserve any base path from the explorer URL (e.g., /chain in https://bittensor.ai/chain)
+      // preserve any base path from the explorer URL (e.g., /explorer in https://bittensor.ai/explorer)
       const basePath = url.pathname.replace(/\/$/, "")
       url.pathname = basePath + path
       break
@@ -88,12 +90,18 @@ type ExplorerHost =
   | "blockscout.com"
   | "moonscan.io"
   | "bittensor.ai"
+  | "evm.taostats.io"
+  | "bittensor.ai/evm"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
   const hostname = explorerUrl.hostname.toLowerCase()
 
   if (explorerUrl.hostname.endsWith("polkadot.js.org")) return "polkadot.js"
+  // the Bittensor EVM explorers use different routes than their substrate counterparts
+  if (hostname === "evm.taostats.io") return "evm.taostats.io"
+  if (hostname.endsWith("bittensor.ai") && /^\/explorer\/evm\/?$/.test(explorerUrl.pathname))
+    return "bittensor.ai/evm"
 
   // last 2 parts of the hostname
   const parts = hostname.split(".")
@@ -117,7 +125,16 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "taostats.io":
           return `/transaction/${query.id}`
         case "subscan.io":
+          // subscan's /tx/ path only resolves EVM transactions; substrate
+          // extrinsic hashes need /extrinsic/ (no network uses subscan as its
+          // EVM explorer, all subscan explorers in chaindata are substrate)
           return `/extrinsic/${query.id}`
+        case "bittensor.ai":
+          // bittensor.ai resolves extrinsics by hash (a substrate tx "hash"
+          // is the extrinsic hash); chaindata carries the /explorer base path
+          return `/extrinsic/${query.id}`
+        case "bittensor.ai/evm":
+          return `/transactions/${query.id}`
         default:
           return `/tx/${query.id}`
       }
@@ -135,6 +152,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "taostats.io":
         case "bittensor.ai":
           return `/account/${query.address}`
+        case "bittensor.ai/evm":
+          return `/contracts/${query.address}`
         default:
           return `/address/${query.address}`
       }
@@ -143,6 +162,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
       switch (host) {
         case "avail.so":
         case "polkadot.js":
+        case "bittensor.ai/evm": // no page for externally owned accounts
           return null
         case "statescan.io":
           return `/accounts/${query.address}`
@@ -160,6 +180,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return isNumber ? `/blocks/${query.id}` : null
         case "taostats.io":
           return isNumber ? `/block/${query.id}/extrinsics` : null
+        case "bittensor.ai/evm":
+          return isNumber ? `/blocks/${query.id}` : null
         default:
           return isNumber ? `/block/${query.id}` : null
       }
@@ -168,6 +190,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
       switch (host) {
         case "avail.so":
         case "polkadot.js":
+        case "bittensor.ai/evm":
           return null // unsupported
         case "statescan.io":
           return `/extrinsics/${query.blockNumber}-${query.extrinsicIndex}`
@@ -180,6 +203,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
     case "extrinsic-unknown": {
       switch (host) {
         case "subscan.io":
+        case "bittensor.ai":
           return `/extrinsic/${query.hash}`
         default:
           return null
@@ -190,18 +214,27 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
   }
 }
 
-export const getBlockExplorerLabel = (blockExplorerUrl: string): string => {
-  const url = new URL(blockExplorerUrl)
-  const host = getExplorerHost(url)
+/**
+ * Allowlist of explorer host → branded name, used verbatim in "View on {name}"
+ * CTAs. Only explorers whose branding we've verified belong here; everything
+ * else falls back to the generic "Explorer". Keys are effective domains as
+ * returned by getExplorerHost. This map must never encode per-network
+ * overrides — the label depends on the explorer URL and nothing else.
+ */
+const EXPLORER_BRANDS: Record<string, string> = {
+  "subscan.io": "Subscan",
+  "statescan.io": "Statescan",
+  "etherscan.io": "Etherscan",
+  "moonscan.io": "Moonscan",
+  "polygonscan.com": "PolygonScan",
+  "arbiscan.io": "Arbiscan",
+  "basescan.org": "BaseScan",
+  "bscscan.com": "BscScan",
+  "bittensor.ai": "Bittensor.ai",
+  "bittensor.ai/evm": "Bittensor.ai",
+}
 
-  switch (host) {
-    case "polkadot.js":
-      return "Polkadot.js"
-    case "bittensor.ai":
-      return "Bittensor.ai"
-    default: {
-      const parts = url.hostname.split(".")
-      return parts.length === 2 ? startCase(parts[0]) : host
-    }
-  }
+export const getBlockExplorerLabel = (blockExplorerUrl: string): string => {
+  const host = getExplorerHost(new URL(blockExplorerUrl))
+  return EXPLORER_BRANDS[host] ?? "Explorer"
 }

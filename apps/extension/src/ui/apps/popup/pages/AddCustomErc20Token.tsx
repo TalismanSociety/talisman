@@ -1,11 +1,13 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
-import type { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
+import type { WatchAssetRequestIdOnly, WatchAssetWarning } from "@core/domains/ethereum/types"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
@@ -23,6 +25,27 @@ const FakePill: FC<PropsWithChildren> = ({ children }) => {
   )
 }
 
+const useWatchAssetWarningMessage = () => {
+  const { t } = useTranslation()
+  return (warning: WatchAssetWarning) => {
+    switch (warning.type) {
+      case "unverified-contract":
+        return t("Failed to verify the contract information")
+      case "symbol-mismatch":
+        return t(
+          "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
+          { symbol: warning.symbol, contractSymbol: warning.contractSymbol }
+        )
+      case "missing-coingecko-id":
+        return t("This token's address is not registered on CoinGecko")
+      case "duplicate-symbol":
+        return t("Another {{symbol}} token already exists on this network", {
+          symbol: warning.symbol,
+        })
+    }
+  }
+}
+
 export const AddCustomErc20Token = () => {
   const { t } = useTranslation()
   useBalancesHydrate() // preload
@@ -35,6 +58,10 @@ export const AddCustomErc20Token = () => {
   }, [request])
 
   const network = useNetworkById(request?.token?.networkId, "ethereum")
+  const getWarningMessage = useWatchAssetWarningMessage()
+  const { scan, isPending: isScanPending } = useTokenRiskScan(request?.token, "dapp-add-token")
+  const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
+  const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
 
   const approve = useCallback(async () => {
     setError(undefined)
@@ -64,7 +91,7 @@ export const AddCustomErc20Token = () => {
         <AppPill url={request.url} />
       </PopupHeader>
       <PopupContent>
-        <div className="flex h-full w-full flex-col pt-16 text-center">
+        <div className="flex min-h-full w-full flex-col pt-16 text-center">
           <div>
             <img
               className="inline-block h-28 w-28 rounded-full"
@@ -73,7 +100,7 @@ export const AddCustomErc20Token = () => {
               crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
             />
           </div>
-          <h1 className="pt-8 pb-12 font-bold text-md">{t("New Token")}</h1>
+          <h1 className="pt-8 pb-8 font-bold text-md">{t("New Token")}</h1>
           <div className="text-body-secondary">
             <p>{t("You are adding the token")}</p>
             <div className="flex items-center justify-center gap-2">
@@ -93,9 +120,17 @@ export const AddCustomErc20Token = () => {
               </FakePill>
             </div>
           </div>
-          <div className="mt-16">
+          <div className="mt-10">
             <CustomErc20TokenViewDetails token={request.token} network={network} />
           </div>
+          <TokenSecurityCard
+            token={request.token}
+            scan={scan}
+            symbol={request.token.symbol}
+            isAcknowledged={isRiskAcknowledged}
+            onAcknowledgedChange={setIsRiskAcknowledged}
+            className="mt-8"
+          />
           <div className="grow"></div>
           {!!request.warnings?.length && (
             <SignAlertMessage type="error" className="mt-8">
@@ -103,7 +138,7 @@ export const AddCustomErc20Token = () => {
                 // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 <div key={i}>
                   {request.warnings.length > 1 ? "- " : ""}
-                  {warning}
+                  {getWarningMessage(warning)}
                 </div>
               ))}
             </SignAlertMessage>
@@ -114,7 +149,7 @@ export const AddCustomErc20Token = () => {
         {error && <div className="text-alert-error">{error}</div>}
         <div className="grid w-full grid-cols-2 gap-8">
           <Button onClick={cancel}>{t("Reject")}</Button>
-          <Button primary onClick={approve}>
+          <Button primary processing={isScanPending} disabled={isRiskBlocking} onClick={approve}>
             {t("Approve")}
           </Button>
         </div>

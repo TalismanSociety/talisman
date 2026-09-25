@@ -1,28 +1,41 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { EditIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon } from "@talismn/icons"
+import { serializeTransaction } from "@talismn/solana"
 import { isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Skeleton } from "@ui/components/Skeleton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useSendFundsTransactionBtc } from "@ui/domains/SendFunds/useSendFundsTransactionBtc"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
+import {
+  RiskAnalysisPillButton,
+  useShowRiskAnalysisPillButton,
+} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { QuoteDuration } from "@ui/domains/Swap/components/QuoteDuration"
 import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
+import { QuoteNote } from "@ui/domains/Swap/components/QuoteNote"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
-import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
 import { useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -34,12 +47,17 @@ import {
   type SwapConfirmError,
 } from "../swap-errors"
 import type {
+  BaseQuote,
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { getAdditionalFeePlanck, SwapAdditionalFees } from "./SwapAdditionalFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
-export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId }) => {
+export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
+  containerId,
+  children,
+}) => {
   const { t } = useTranslation()
   const {
     swapView,
@@ -186,8 +204,8 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       // slippage, fetch a fresh quote so the route reflects the user's current slippage.
       // The main quote manager intentionally omits slippage from its cache key so that
       // editing slippage on the confirm screen doesn't destabilise quote selection.
-      let exchangeQuote: unknown = exchange?.data ?? null
-      if (!exchangeQuote && supportsSlippage) {
+      let freshQuote: BaseQuote | null = null
+      if (!exchange && supportsSlippage) {
         const freshQuotes = await swapModule.getQuote(
           {
             fromTokenId,
@@ -208,7 +226,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           : []
 
         // Prefer the route matching the user's selected protocol/subProtocol
-        exchangeQuote =
+        freshQuote =
           quotesArray.find(
             (q) =>
               q.protocol === selectedQuote?.protocol &&
@@ -230,13 +248,17 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
       const transaction = await swapModule.getTransaction({
         fromTokenId,
         fromAddress,
-        exchange: exchangeQuote ?? selectedQuote,
+        fromAmount,
+        exchange: exchange?.data ?? freshQuote ?? selectedQuote,
         context,
+        toAddress,
       })
 
       if (signal.aborted) throw new Error("Aborted")
 
-      return { exchange, transaction }
+      const fees = exchange?.fees ?? freshQuote?.fees ?? selectedQuote?.fees ?? []
+
+      return { exchange, transaction, fees }
     },
     enabled:
       !!swapModule &&
@@ -293,7 +315,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   })
 
   const txInfo = useSwapTxInfo({
-    exchange: exchange?.data as { id: string } | undefined,
+    exchange: exchange ?? undefined,
     fromTokenId,
     toTokenId,
     fromAmount,
@@ -364,8 +386,39 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     return transaction
   }, [approveTx, needsApproval, transaction])
 
+  // covers the approval as well as the swap itself, as both are provider-supplied
+  const riskAnalysisEth = useEvmTransactionRiskAnalysis({
+    networkId: fromToken?.platform === "ethereum" ? fromToken.networkId : undefined,
+    tx: activeTransaction?.platform === "ethereum" ? activeTransaction.transaction : undefined,
+    disableCriticalPane: true,
+    subjectId: needsApproval && approveTx ? "approval" : "swap",
+  })
+
+  const serializedSolTx = useMemo(
+    () =>
+      activeTransaction?.platform === "solana"
+        ? serializeTransaction(activeTransaction.transaction)
+        : null,
+    [activeTransaction]
+  )
+
+  const riskAnalysisSol = useSolTransactionRiskAnalysis({
+    from: fromAddress,
+    networkId: fromToken?.platform === "solana" ? fromToken.networkId : null,
+    tx: serializedSolTx,
+    disableCriticalPane: true,
+  })
+
+  const riskAnalysis =
+    fromToken?.platform === "ethereum"
+      ? riskAnalysisEth
+      : fromToken?.platform === "solana"
+        ? riskAnalysisSol
+        : undefined
+
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const feeToken = useToken(activeFeeTokenId ?? undefined)
+  const feeTokenBalance = useBalance(fromAddress, activeFeeTokenId)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
   const feePlanck = useMemo(() => {
@@ -445,7 +498,7 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   ])
 
   const hasFeeError = useMemo(() => {
-    if (!activeTransaction) return false
+    if (!activeTransaction) return Boolean(exchangeError)
     switch (activeTransaction.platform) {
       case "ethereum": {
         if (exchangeError) return true
@@ -475,10 +528,20 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
     swapEthTx.txDetails,
   ])
 
+  // the approval only spends its own gas, additional fees are drawn by the swap transaction
+  const additionalFeePlanck = useMemo(() => {
+    if (needsApproval || !feeToken) return 0n
+    return getAdditionalFeePlanck(
+      exchangeAndTransactionQuery.data?.fees ?? [],
+      feeToken.id,
+      feeToken.decimals
+    )
+  }, [exchangeAndTransactionQuery.data?.fees, feeToken, needsApproval])
+
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
     feeTokenId: activeFeeTokenId,
-    feePlanck,
+    feePlanck: feePlanck === null ? null : BigInt(feePlanck) + additionalFeePlanck,
     isFeeLoading,
     fromTokenId,
     fromAmount,
@@ -561,95 +624,141 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
   )
 
   return (
-    <>
-      <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
-        <QuoteProvider />
-        <QuoteDuration />
-        <QuoteExchangeRate />
-        {supportsSlippage ? (
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
+      <ScrollContainer
+        className="w-full grow"
+        innerClassName="flex flex-col items-center gap-8 px-12 pb-8 *:shrink-0"
+      >
+        {children}
+        <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
+          <QuoteProvider />
+          <QuoteDuration />
+          <QuoteExchangeRate />
+          <QuoteNote />
+          {supportsSlippage ? (
+            <div className="flex h-11 items-center justify-between gap-8">
+              <div className="whitespace-nowrap text-body-secondary text-xs">
+                {t("Slippage Tolerance")}
+              </div>
+              <button
+                type="button"
+                onClick={slippageDrawer.open}
+                className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
+              >
+                <EditIcon />
+                <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
+                  {slippagePercent.toFixed(2)}%
+                </div>
+              </button>
+            </div>
+          ) : null}
+          {fromToken?.platform === "ethereum" ? (
+            <div className="flex h-11 items-center justify-between gap-8">
+              <div className="text-body-secondary text-xs">{t("Priority")}</div>
+              <div>
+                {activeEthTx.transaction &&
+                activeEthTx.txDetails &&
+                activeFeeTokenId &&
+                activeEthTx.priority ? (
+                  <EthFeeSelect
+                    className="h-10"
+                    disabled={isApproving}
+                    tx={activeEthTx.transaction}
+                    tokenId={activeFeeTokenId}
+                    drawerContainerId={containerId}
+                    gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
+                    priority={activeEthTx.priority}
+                    txDetails={activeEthTx.txDetails}
+                    networkUsage={activeEthTx.networkUsage}
+                    setCustomSettings={activeEthTx.setCustomSettings}
+                    onChange={activeEthTx.setPriority}
+                  />
+                ) : hasFeeError ? (
+                  <div className="text-body-secondary text-xs">-</div>
+                ) : (
+                  <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
+                )}
+              </div>
+            </div>
+          ) : null}
           <div className="flex h-11 items-center justify-between gap-8">
             <div className="whitespace-nowrap text-body-secondary text-xs">
-              {t("Slippage Tolerance")}
+              {t("Estimated TX Fee")}
+              {activeFeeTokenId && (feePlanck || feeTokenBalance) ? (
+                <Tooltip placement="top">
+                  <TooltipTrigger asChild>
+                    <span className="ml-2">
+                      <InfoIcon className="inline align-text-top" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <FeeTooltip
+                      tokenId={activeFeeTokenId}
+                      estimatedFee={feePlanck ? BigInt(feePlanck) : undefined}
+                      maxFee={activeEthTx.txDetails?.maxFee}
+                      l1DataFee={activeEthTx.txDetails?.estimatedL1DataFee}
+                      balance={feeTokenBalance?.transferable.planck}
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
             </div>
-            <button
-              type="button"
-              onClick={slippageDrawer.open}
-              className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
-            >
-              <EditIcon />
-              <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
-                {slippagePercent.toFixed(2)}%
-              </div>
-            </button>
+            {hasFeeError ? (
+              <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
+            ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
+              <TokensAndFiat
+                className="text-body-secondary text-xs"
+                tokensClassName="text-body"
+                fiatClassName="text-body-secondary"
+                tokenId={activeFeeTokenId}
+                planck={feePlanck}
+              />
+            ) : (
+              <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
+            )}
           </div>
-        ) : null}
-        {fromToken?.platform === "ethereum" ? (
-          <div className="flex h-11 items-center justify-between gap-8">
-            <div className="text-body-secondary text-xs">{t("Priority")}</div>
-            <div>
-              {activeEthTx.transaction &&
-              activeEthTx.txDetails &&
-              activeFeeTokenId &&
-              activeEthTx.priority ? (
-                <EthFeeSelect
-                  className="h-10"
-                  disabled={isApproving}
-                  tx={activeEthTx.transaction}
-                  tokenId={activeFeeTokenId}
-                  drawerContainerId={containerId}
-                  gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
-                  priority={activeEthTx.priority}
-                  txDetails={activeEthTx.txDetails}
-                  networkUsage={activeEthTx.networkUsage}
-                  setCustomSettings={activeEthTx.setCustomSettings}
-                  onChange={activeEthTx.setPriority}
-                />
-              ) : (
-                <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
-              )}
-            </div>
-          </div>
-        ) : null}
-        <div className="flex h-11 items-center justify-between gap-8">
-          <div className="whitespace-nowrap text-body-secondary text-xs">
-            {t("Estimated TX Fee")}
-          </div>
-          {hasFeeError ? (
-            <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
-          ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
-            <TokensAndFiat
-              className="text-body-secondary text-xs"
-              tokensClassName="text-body"
-              fiatClassName="text-body-secondary"
-              tokenId={activeFeeTokenId}
-              planck={feePlanck}
-            />
-          ) : (
-            <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
-          )}
+          <SwapAdditionalFees
+            fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
+            isLoading={isExchangeLoading}
+          />
+          <SimulationRow />
         </div>
-      </div>
+      </ScrollContainer>
 
-      <div className="absolute bottom-0 left-0 w-full bg-black/40 px-12 py-8 pb-12">
+      <div className="w-full shrink-0 bg-black/40 px-12 py-8 pb-12">
         {!!errorMessage && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
           >
-            {errorMessage}
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>{errorMessage}</div>
+          </div>
+        )}
+
+        {!errorMessage && selectedQuote?.notice && (
+          <div
+            role="note"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
+          >
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>{selectedQuote.notice}</div>
           </div>
         )}
 
         {!errorMessage && needsApproval && (
           <div
             role="alert"
-            className="mb-10 w-full rounded-sm bg-black-tertiary px-8 py-4 text-body-secondary text-tiny"
+            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
           >
-            {needsRevoke
-              ? t(
-                  "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
-                )
-              : t("This token requires approval before it can be swapped.")}
+            <InfoIcon className="mt-px size-6 shrink-0" />
+            <div>
+              {needsRevoke
+                ? t(
+                    "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+                  )
+                : t("This token requires approval before it can be swapped.")}
+            </div>
           </div>
         )}
 
@@ -686,6 +795,20 @@ export const SwapConfirmActions: FC<{ containerId: string }> = ({ containerId })
           onClose={slippageDrawer.close}
         />
       ) : null}
-    </>
+    </RiskAnalysisProvider>
+  )
+}
+
+const SimulationRow = () => {
+  const { t } = useTranslation()
+  const showRiskAnalysis = useShowRiskAnalysisPillButton()
+
+  if (!showRiskAnalysis) return null
+
+  return (
+    <div className="flex h-11 items-center justify-between gap-8">
+      <div className="whitespace-nowrap text-body-secondary text-xs">{t("Risk Assessment")}</div>
+      <RiskAnalysisPillButton className="h-10" size="xs" />
+    </div>
   )
 }

@@ -50,7 +50,6 @@ import type {
   YieldxyzPositionRefreshRequest,
   YieldxyzProvider,
 } from "@core/domains/earn/exports"
-import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import type {
   AddEthereumChainRequestId,
   AnyEthRequestChainId,
@@ -58,7 +57,7 @@ import type {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import type { Account, Mnemonic } from "@core/domains/keyring/exports"
-import type { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import type { MetadataUpdateStatus } from "@core/domains/metadata/types"
 import type { RequestSetVerifierCertificateMnemonic } from "@core/domains/mnemonics/types"
 import type { NftData } from "@core/domains/nfts/exports"
 import type { ResponseQueryCacheGet } from "@core/domains/queryCache/types"
@@ -70,7 +69,6 @@ import type {
 } from "@core/domains/signing/types"
 import type {
   AuthorisedSiteUpdate,
-  AuthorizedSite,
   AuthorizedSites,
   AuthRequestAddresses,
   AuthRequestId,
@@ -83,6 +81,7 @@ import type {
   ResponseSolanaSubmit,
   SolRpcRequest,
 } from "@core/domains/solana/exports"
+import type { TalismanMetadataDef } from "@core/domains/substrate/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
@@ -94,7 +93,6 @@ import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
 import type { TokenRatesStorage } from "@talismn/token-rates"
 import type { HexString, Loadable } from "@talismn/util"
-import type { MetadataDef } from "inject/substrate/types"
 import type { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
@@ -113,14 +111,11 @@ export default interface MessageTypes {
     cb: (val: ChangePasswordStatusUpdate) => void
   ) => UnsubscribeFn
   checkPassword: (password: string) => Promise<boolean>
-  authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: (argument?: string) => Promise<boolean>
   promptLogin: () => Promise<boolean>
-  approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
-  rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // quick unlock messages -------------------------------------------------------
@@ -148,11 +143,6 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
-
-  // encrypt messages -------------------------------------------------------
-  approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
-  approveDecrypt: (id: DecryptRequestId) => Promise<boolean>
-  cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
@@ -215,10 +205,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
 
   // authorized sites message types ------------------------------------------
-  authorizedSites: () => Promise<AuthorizedSites>
   authorizedSitesSubscribe: (cb: (sites: AuthorizedSites) => void) => UnsubscribeFn
-  authorizedSite: (id: string) => Promise<AuthorizedSite>
-  authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
   authorizedSitesDisconnectAll: (type: ProviderType) => Promise<boolean>
@@ -334,7 +321,7 @@ export default interface MessageTypes {
   subChainMetadata: (
     genesisHash: HexString,
     specVersion?: number
-  ) => Promise<MetadataDef | undefined>
+  ) => Promise<TalismanMetadataDef | undefined>
 
   nftsSubscribe: (cb: (data: NftData) => void) => UnsubscribeFn
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>

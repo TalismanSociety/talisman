@@ -66,29 +66,34 @@ To develop for Firefox instead:
 pnpm dev:extension:firefox
 ```
 
-Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's `about:debugging` page.
+Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's `about:debugging` page. The dev build needs Firefox 147 or later, because it loads its scripts from the local dev server.
 
 ## Apps and packages
 
-- `apps/extension`: the non-custodial Talisman Wallet browser extension (built with [WXT](https://wxt.dev/)/Vite)
-- `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
-- `packages/util`: library containing shared non-react code. It is not meant to be npm published.
+- `apps/extension`: the non-custodial Talisman Wallet browser extension (built with [WXT](https://wxt.dev/)/Vite). See [ARCHITECTURE.md](apps/extension/ARCHITECTURE.md).
+- `apps/balances-bench`: benchmark harness for `@talismn/balances`
+- `packages/*`: the `@talismn/*` libraries used by the extension, published to npm. Each has a README.
+- `config/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
+
+AI agents: start with [AGENTS.md](AGENTS.md).
 
 All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/).
 
 ## Writing and running tests
 
 - Testing is carried out with [Vitest](https://vitest.dev/).
-- Tests can be written in `*.spec.ts` files, inside a `__tests__` folder.
+- Put tests in `*.test.ts(x)` or `*.spec.ts(x)` files, next to the code or in a `__tests__` folder.
 - Follow the pattern in `apps/extension/src/core/handlers/Extension.spec.ts` or `apps/extension/src/core/domains/signing/__tests__/requestsStore.spec.ts`
-- Tests are run with `pnpm test`
+- Run unit tests with `pnpm test`, or `pnpm test <path>` for one file.
+- End-to-end tests use [Playwright](https://playwright.dev/) (`playwright/`). Build the extension, start the local EVM devnet with `pnpm devnet:up`, then run `pnpm test:e2e`.
+- E2E tests load `apps/extension/dist/chrome-mv3`, else `chrome-mv3-dev`, and warn when the other build is newer. Set `E2E_EXTENSION_PATH=<build dir>` to choose the build.
 
 ## Code quality
 
 We use [Biome](https://biomejs.dev/) for linting and formatting across the monorepo.
 
-- **Format code**: `pnpm chore:format`
-- **Lint code**: `pnpm lint`
+- **Format code**: `pnpm format`
+- **Lint and format check**: `pnpm check` (`pnpm check:fix` applies fixes)
 - **Pre-commit hook**: Automatically runs Biome checks on staged files
 
 If you're using VS Code, install the [Biome extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) for automatic formatting on save.
@@ -223,3 +228,13 @@ pnpm changeset
 ## Security disclosures
 
 If you find a security issue or exploit, please email us at **security@talisman.xyz**. Please _DO NOT_ create an issue or PR in this repo for security issues.
+
+## License
+
+The source code in this repository is licensed under the [Talisman License](LICENSE), a source-available license which permits use, copying, and modification for non-commercial purposes only. Commercial use requires a separate license from the [Paraverse Foundation](https://talisman.xyz).
+
+Exceptions: [`packages/orb`](packages/orb) and [`packages/substrate-vrf`](packages/substrate-vrf) are licensed under MIT (see the LICENSE file in each package).
+
+This license applies to this repository only; other repositories in the [TalismanSociety](https://github.com/TalismanSociety) organization are licensed under their own terms.
+
+By contributing to this repository, you agree to the contribution terms set out in the [Contribution Guidelines](CONTRIBUTING.md).

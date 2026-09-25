@@ -25,7 +25,6 @@ vi.mock("@ui/state/tokenRates", () => ({
   useTokenRates: () => ({ USD: { price: 2_000 } }),
 }))
 
-// eslint-disable-next-line import/first
 import { InputFromAmount } from "../components/InputFromAmount"
 
 describe("InputFromAmount", () => {

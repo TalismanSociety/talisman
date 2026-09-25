@@ -46,7 +46,7 @@ const STALE_QUOTE_PATTERNS = ["please select the quote again", "quote expired", 
 const isStaleQuoteError = (msg: string): boolean =>
   STALE_QUOTE_PATTERNS.some((p) => msg.toLowerCase().includes(p))
 
-const isAbortError = (err: unknown): boolean => {
+const isQueryAbortError = (err: unknown): boolean => {
   if (err instanceof DOMException && err.name === "AbortError") return true
   if (err instanceof Error && err.message === "Aborted") return true
   return false
@@ -59,7 +59,7 @@ const isAbortError = (err: unknown): boolean => {
  */
 export const classifySwapError = (rawError: unknown): SwapConfirmError | null => {
   if (!rawError) return null
-  if (isAbortError(rawError)) return null
+  if (isQueryAbortError(rawError)) return null
 
   if (rawError instanceof InsufficientGasBalanceError)
     return {
@@ -85,7 +85,7 @@ export const classifySwapError = (rawError: unknown): SwapConfirmError | null =>
  */
 export const classifyFeeEstimationError = (rawError: unknown): SwapConfirmError | null => {
   if (!rawError) return null
-  if (isAbortError(rawError)) return null
+  if (isQueryAbortError(rawError)) return null
 
   const message =
     (rawError as { shortMessage?: string }).shortMessage ??

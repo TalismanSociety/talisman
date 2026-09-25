@@ -77,7 +77,7 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
       },
       {
         runtimeApi: "BetaBasketRuntimeApi",
-        methods: ["get_root_basket_positions"],
+        methods: ["get_root_basket_claim_previews"],
       },
     ]
   )

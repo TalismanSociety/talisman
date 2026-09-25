@@ -1,6 +1,4 @@
-import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "@core/domains/encrypt/types"
 import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
-import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX, AUTH_SOL_SIGN_IN_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
@@ -46,11 +44,9 @@ import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
 import { PopupEarnRoutes } from "./pages/Earn"
-import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
 import { ManageAccountsPage } from "./pages/ManageAccounts"
-import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
@@ -99,9 +95,6 @@ const Popup = () => {
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />
           <Route path={`${SIGNING_TYPES.SOL_SIGN}/:id`} element={<SolanaSignRequest />} />
           <Route path={`${SIGNING_TYPES.VRF_SIGN}/:id`} element={<VrfSignRequest />} />
-          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />} />
-          <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />} />
-          <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />
           <Route path={`${ETH_NETWORK_ADD_PREFIX}/:id`} element={<AddEthereumNetwork />} />
           <Route path={`${WATCH_ASSET_PREFIX}/:id`} element={<AddCustomErc20Token />} />
           <Route path="try-talisman" element={<TryTalismanPage />} />

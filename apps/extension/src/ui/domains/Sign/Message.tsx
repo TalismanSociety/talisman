@@ -25,7 +25,7 @@ export const Message: FC<MessageProps> = ({ text, rows, className }) => {
         readOnly
         rows={rows}
         className={cn(
-          "scrollable scrollable-600 bg-grey-800 text-body-secondary",
+          "scrollable scrollable-600 min-h-48 bg-grey-800 text-body-secondary",
           "rounded p-6 text-left font-mono",
           className
         )}

@@ -31,7 +31,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   children,
   className,
   type = "warning",
-  iconSize = "xl",
+  iconSize = "base",
   processing,
 }) => {
   return (

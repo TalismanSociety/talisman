@@ -85,7 +85,6 @@ vi.mock("@ui/state/chaindata", () => {
 
 // ── Import after mocks ────────────────────────────────────────────
 
-// eslint-disable-next-line import/first
 import { useSwapContextProvider } from "../SwapProvider.internal"
 
 // ── Tests ─────────────────────────────────────────────────────────

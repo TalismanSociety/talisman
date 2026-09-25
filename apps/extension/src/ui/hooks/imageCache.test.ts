@@ -84,10 +84,7 @@ describe("imageCache", () => {
     const callCount = fetchMock.mock.calls.length
 
     // Second call should be a no-op
-    imageCache.ensureCached(TEST_URL)
-
-    // Give any potential async work time to execute
-    await new Promise((r) => setTimeout(r, 50))
+    await imageCache.ensureCached(TEST_URL)
 
     expect(fetchMock).toHaveBeenCalledTimes(callCount)
   })
@@ -157,9 +154,7 @@ describe("imageCache", () => {
 
   it("rejects http:// URLs", async () => {
     const httpUrl = "http://example.com/logo.png"
-    imageCache.ensureCached(httpUrl)
-
-    await new Promise((r) => setTimeout(r, 100))
+    await imageCache.ensureCached(httpUrl)
 
     expect(imageCache.getCachedUrl(httpUrl)).toBeNull()
     expect(vi.mocked(fetch)).not.toHaveBeenCalled()
@@ -167,9 +162,7 @@ describe("imageCache", () => {
 
   it("rejects URLs that fail isSafeImageUrl", async () => {
     const unsafeUrl = "https://example.com/script.js"
-    imageCache.ensureCached(unsafeUrl)
-
-    await new Promise((r) => setTimeout(r, 100))
+    await imageCache.ensureCached(unsafeUrl)
 
     expect(imageCache.getCachedUrl(unsafeUrl)).toBeNull()
     expect(vi.mocked(fetch)).not.toHaveBeenCalled()

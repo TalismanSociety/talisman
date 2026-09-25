@@ -14,3 +14,7 @@ export const getGithubTokenLogoUrl = (tokenId: KNOWN_TOKEN_ID): string => {
 export const getGithubTokenLogoUrlByCoingeckoId = (coingeckoId: string): string => {
   return `${githubChaindataBaseUrl}/assets/tokens/coingecko/${coingeckoId}.webp`
 }
+
+export const getGithubBittensorHotkeyAssetUrl = (fileName: string): string => {
+  return `${githubChaindataBaseUrl}/assets/bittensor/hotkeys/${fileName}`
+}

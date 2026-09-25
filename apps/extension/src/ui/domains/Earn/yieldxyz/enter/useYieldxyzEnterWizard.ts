@@ -229,10 +229,17 @@ const useYieldxyzEnterWizardProvider = ({
     }))
   }, [tokenIn, balance, dummyTx?.estimatedFee])
 
+  const maxNativeValue = useMemo(() => {
+    if (!tokenIn || !isTokenInTypes(tokenIn, ["evm-native", "substrate-native", "sol-native"]))
+      return 0n
+    return state.amountIn ?? 0n
+  }, [tokenIn, state.amountIn])
+
   const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
     action,
     address: state.address,
     networkId: tokenIn?.networkId ?? null,
+    maxNativeValue,
     refreshAction,
     submitActionTransaction,
     onCompleted,

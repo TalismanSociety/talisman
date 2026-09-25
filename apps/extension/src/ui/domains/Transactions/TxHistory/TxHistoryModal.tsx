@@ -1,11 +1,11 @@
 import { log } from "@common/log"
-import { isTxInfoSwap } from "@core/domains/transactions/exports"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
@@ -122,17 +122,7 @@ type TxHistoryActionsProps = {
 const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
   const { t } = useTranslation()
   const network = useNetworkById(tx.networkId)
-  const swapInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
-
-  const swapHref = useMemo(() => {
-    if (!swapInfo) return undefined
-    if (swapInfo.type === "swap-simpleswap" && swapInfo.exchangeId)
-      return `https://simpleswap.io/exchange?id=${swapInfo.exchangeId}`
-    if (swapInfo.type === "swap-stealthex" && swapInfo.exchangeId)
-      return `https://stealthex.io/exchange?id=${swapInfo.exchangeId}`
-    if (swapInfo.type === "swap-lifi") return `https://scan.li.fi/tx/${getTransactionId(tx)}`
-    return undefined
-  }, [swapInfo, tx])
+  const swapHref = useMemo(() => getSwapTrackerUrl(tx.txInfo, getTransactionId(tx)), [tx])
 
   const explorerLinks = useMemo(() => {
     if (!network) return []

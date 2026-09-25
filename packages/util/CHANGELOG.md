@@ -1,5 +1,12 @@
 # @talismn/util
 
+## 2.0.1
+
+### Patch Changes
+
+- ba2381a: Bump dev tooling dependencies
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+
 ## 2.0.0
 
 ### Major Changes

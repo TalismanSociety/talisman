@@ -35,7 +35,7 @@ export const BittensorClaimRewardsRow = () => {
 
   return (
     <div className="flex items-center justify-between gap-8 text-xs">
-      <div className="whitespace-nowrap">{t("Claim pending rewards")}</div>
+      <div className="whitespace-nowrap">{t("Claim rewards")}</div>
       <div className="flex items-center gap-4 overflow-hidden">
         <TokensAndFiat
           isBalance

@@ -2,22 +2,19 @@ import { isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
-import { CopyIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
-import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { notify } from "@ui/components/Notifications"
+import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworks } from "@ui/state/chaindata"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import { keyBy } from "lodash-es"
-import { type FC, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as yup from "yup"
@@ -168,34 +165,5 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         </ModalDialog>
       </div>
     </Modal>
-  )
-}
-
-const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
-  address,
-  className,
-}) => {
-  const { t } = useTranslation()
-  const handleClick = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(address)
-      notify({
-        type: "success",
-        title: t(`Address copied`),
-        subtitle: shortenAddress(address, 6, 6),
-      })
-    } catch (err) {
-      notify({
-        type: "error",
-        title: t("Error"),
-        subtitle: (err as Error).message ?? "Failed to copy address",
-      })
-    }
-  }, [address, t])
-
-  return (
-    <IconButton className={className} onClick={handleClick} disabled={!address}>
-      <CopyIcon />
-    </IconButton>
   )
 }

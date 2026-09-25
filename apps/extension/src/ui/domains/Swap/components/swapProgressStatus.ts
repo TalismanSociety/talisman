@@ -75,6 +75,19 @@ export const getSwapProgressDetails = (
     case "failed":
     case "expired":
     case "refunded":
+      if (tx.txInfo?.type === "swap-forevermoney")
+        return {
+          title: t("Bridge failed"),
+          subtitle:
+            tx.swapStatus === "refunded"
+              ? t(
+                  "Delivery failed and your TAO is claimable by your EVM address on Bittensor EVM. Claim it on the ForeverMoney app."
+                )
+              : t(
+                  "CCIP could not execute the delivery. Open the CCIP explorer to retry it manually."
+                ),
+          animStatus: "failure",
+        }
       return {
         title: t("Swap failed"),
         subtitle:

@@ -708,6 +708,7 @@ const useBittensorBondWizardProvider = () => {
     slippage,
     claimOption,
     claimablePlancks: claimGate.claimablePlancks,
+    claimForfeitedPlancks: claimGate.forfeitedPlancks,
     dustThreshold: claimGate.dustThreshold,
     isBelowDustThreshold: claimGate.isBelowDustThreshold,
     claimHoldDurationMs: claimGate.holdDurationMs,

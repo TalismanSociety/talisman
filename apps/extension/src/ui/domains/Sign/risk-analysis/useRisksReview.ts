@@ -1,5 +1,5 @@
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 
 const getValidationResultType = (
@@ -20,11 +20,34 @@ const getValidationResultType = (
   return undefined
 }
 
+/**
+ * In-wallet flows analyse more than one transaction from the same hook instance: a swap follows its
+ * ERC20 approval, a yield.xyz action can have several steps. Acknowledgement is therefore tied to
+ * `subjectKey`, the identity of the analysed transaction, so that acknowledging one flagged
+ * transaction never clears the way for the next one — including a later transaction that shares the
+ * key of an earlier acknowledged one, which is why the acknowledgement is also dropped every time
+ * the key changes.
+ */
 export const useRisksReview = (
   platform: RiskAnalysisPlatform,
-  response: RiskAnalysisResponse | null | undefined
+  response: RiskAnalysisResponse | null | undefined,
+  subjectKey: string
 ) => {
-  const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
+  const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null)
+
+  const refPreviousSubjectKey = useRef(subjectKey)
+  useEffect(() => {
+    if (refPreviousSubjectKey.current === subjectKey) return
+    refPreviousSubjectKey.current = subjectKey
+    setAcknowledgedKey(null)
+  }, [subjectKey])
+
+  const isRiskAcknowledged = acknowledgedKey === subjectKey
+
+  const setIsRiskAcknowledged = useCallback(
+    (isAcknowledged: boolean) => setAcknowledgedKey(isAcknowledged ? subjectKey : null),
+    [subjectKey]
+  )
 
   const drawer = useOpenClose(false)
 
@@ -39,14 +62,14 @@ export const useRisksReview = (
     }
   }, [platform, response])
 
-  // open review drawer automatically if risk is required
-  const refIsInitialized = useRef(false)
+  // open review drawer automatically if risk is required, once per analysed transaction
+  const refAutoOpenedKey = useRef<string | null>(null)
   useEffect(() => {
-    if (!refIsInitialized.current && isRiskAcknowledgementRequired) {
-      refIsInitialized.current = true
+    if (refAutoOpenedKey.current !== subjectKey && isRiskAcknowledgementRequired) {
+      refAutoOpenedKey.current = subjectKey
       drawer.open()
     }
-  }, [drawer, isRiskAcknowledgementRequired])
+  }, [drawer, isRiskAcknowledgementRequired, subjectKey])
 
   return {
     isRiskAcknowledgementRequired,

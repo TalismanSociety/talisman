@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import type { Loadable } from "@talismn/util"
+import { isAbortError, type Loadable } from "@talismn/util"
 import { Observable, shareReplay, startWith, switchMap, timer } from "rxjs"
 
 import { registerInstall, requestAccessToken } from "./client"
@@ -94,7 +94,7 @@ export const gandalfAccessToken$ = timer(0, REFRESH_INTERVAL_MS).pipe(
             subscriber.next({ status: "success", data: accessToken })
             subscriber.complete()
           } catch (error) {
-            if (error instanceof Error && error.name === "AbortError") return
+            if (isAbortError(error)) return
 
             log.error("Gandalf: failed to obtain access token", error)
             subscriber.next({

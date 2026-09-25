@@ -13,8 +13,8 @@ import {
 } from "rxjs"
 
 import { createSubscription, unsubscribe } from "../handlers/subscriptions"
-import type { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
-import type { Port, RequestIdOnly } from "../types/base"
+import type { MessageTypesWithSubscriptions } from "../types"
+import type { Port } from "../types/base"
 
 // biome-ignore lint/suspicious/noExplicitAny: legacy
 export interface Store<T extends { [index: string]: any }> {
@@ -263,30 +263,4 @@ class SubscribableStorageProvider<
   }
 }
 
-class SubscribableByIdStorageProvider<
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
-  T extends { [index: string]: any },
-  SubscribeAllMessage extends MessageTypesWithSubscriptions,
-  SubscribeByIdMessage extends MessageTypesWithSubscriptionsById,
-> extends SubscribableStorageProvider<T, SubscribeAllMessage> {
-  public subscribeById(
-    id: string,
-    port: Port,
-    request: RequestIdOnly,
-    unsubscribeCallback?: () => void
-  ): boolean {
-    const cb = createSubscription<SubscribeByIdMessage>(id, port)
-
-    const subscription = this.observable.subscribe((data) => cb(data[request.id]))
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      subscription.unsubscribe()
-      if (unsubscribeCallback) unsubscribeCallback()
-    })
-
-    return true
-  }
-}
-
-export { StorageProvider, SubscribableByIdStorageProvider, SubscribableStorageProvider }
+export { StorageProvider, SubscribableStorageProvider }

@@ -2,6 +2,7 @@ import { taoToAlphaCeil } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useMemo } from "react"
 
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
@@ -295,7 +296,8 @@ const useBittensorAnyStakingPayload = ({
   withClaim,
   fullExit,
 }: useBittensorAnyStakingPayloadProps) => {
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "useBittensorAnyStakingPayload",
       sapi?.id,

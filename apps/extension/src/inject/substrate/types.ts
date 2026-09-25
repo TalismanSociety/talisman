@@ -4,13 +4,11 @@ import type {
   KeypairType,
   MetadataDefBase,
   MetadataDef as PjsMetadataDef,
-  ProviderList,
-  ProviderMeta,
 } from "@core/types/pjsInterop"
 
 import type { TalismanSigner as TalismanInjectedSigner } from "./Injected"
 
-export type { InjectedAccount, InjectedMetadataKnown, MetadataDefBase, ProviderList, ProviderMeta }
+export type { InjectedAccount, InjectedMetadataKnown, MetadataDefBase }
 
 // ---------------------------------------------------------------------------
 // Structural copies of the page-side types from `@polkadot/extension-inject/types`
@@ -48,65 +46,12 @@ export interface Web3AccountsOptions {
   ss58Format?: number
 }
 
-// structural equivalents of the `@polkadot/rpc-provider/types` provider types,
-// only referenced by `InjectedProvider` below (Talisman never exposes a provider:
-// the background constructs RpcState with no providers)
-// biome-ignore lint/suspicious/noExplicitAny: legacy, matches upstream
-type ProviderInterfaceCallback = (error: Error | null, result: any) => void
-type ProviderInterfaceEmitted = "connected" | "disconnected" | "error"
-// biome-ignore lint/suspicious/noExplicitAny: legacy, matches upstream
-type ProviderInterfaceEmitCb = (value?: any) => any
-interface EndpointStats {
-  bytesRecv: number
-  bytesSent: number
-  cached: number
-  errors: number
-  requests: number
-  subscriptions: number
-  timeout: number
-}
-interface ProviderStats {
-  active: {
-    requests: number
-    subscriptions: number
-  }
-  total: EndpointStats
-}
-interface ProviderInterface {
-  readonly hasSubscriptions: boolean
-  readonly isClonable: boolean
-  readonly isConnected: boolean
-  readonly stats?: ProviderStats
-  readonly ttl?: number | null
-  clone(): ProviderInterface
-  connect(): Promise<void>
-  disconnect(): Promise<void>
-  on(type: ProviderInterfaceEmitted, sub: ProviderInterfaceEmitCb): () => void
-  // biome-ignore lint/suspicious/noExplicitAny: legacy, matches upstream
-  send<T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T>
-  subscribe(
-    type: string,
-    method: string,
-    params: unknown[],
-    cb: ProviderInterfaceCallback
-  ): Promise<number | string>
-  unsubscribe(type: string, method: string, id: number | string): Promise<boolean>
-}
-
-export interface InjectedProvider extends ProviderInterface {
-  listProviders: () => Promise<ProviderList>
-  startProvider: (key: string) => Promise<ProviderMeta>
-}
-
-export interface InjectedProviderWithMeta {
-  provider: InjectedProvider
-  meta: ProviderMeta
-}
-
 declare type This = typeof globalThis
-export interface MetadataDef extends PjsMetadataDef {
-  metadataRpc?: `0x${string}`
-}
+/**
+ * Same shape as polkadot-js. Talisman never stores or decodes with metadata a dapp provides — see
+ * `InjectedMetadata.provide` — so there is no field here through which to supply runtime metadata.
+ */
+export type MetadataDef = PjsMetadataDef
 export interface InjectedMetadata {
   get: () => Promise<InjectedMetadataKnown[]>
   provide: (definition: MetadataDef) => Promise<boolean>
@@ -114,7 +59,6 @@ export interface InjectedMetadata {
 export interface Injected {
   accounts: InjectedAccounts
   metadata?: InjectedMetadata
-  provider?: InjectedProvider
   signer: TalismanInjectedSigner
 }
 export interface InjectedWindowProvider {

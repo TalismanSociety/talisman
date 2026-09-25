@@ -17,7 +17,7 @@ import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
 import { settingsStore } from "../domains/app/store.settings"
 
 const normalizeUrl = (url: string) => {
-  return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")
+  return url.replace(/(moz|chrome)-extension:\/\/[^/]+\//, "~/")
 }
 
 // cache latest value of useErrorTracking so that we don't need to check localStorage for every error sent to sentry

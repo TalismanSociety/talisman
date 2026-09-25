@@ -1,6 +1,7 @@
 {
   "name": "@talismn/icons",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "React icon components for Talisman apps",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -21,13 +22,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "react-icons": "^5.6.0"
+    "react-icons": "^5.7.0"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",

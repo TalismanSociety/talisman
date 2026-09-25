@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import pako from "pako"
+import * as pako from "pako"
 
 import { db } from "./db"
 
@@ -28,7 +28,7 @@ export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
       const blob = await db.blobs.get(id)
       if (!blob?.data) return null
 
-      return JSON.parse(pako.inflate(blob.data, { to: "string" })) as Data
+      return JSON.parse(pako.inflate(blob.data, { toText: true })) as Data
     } catch (err) {
       log.error("Error parsing blob data", { id, err })
       return null

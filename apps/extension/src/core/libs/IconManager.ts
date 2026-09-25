@@ -1,8 +1,5 @@
 import { requestStore } from "./requests/store"
 
-// Use chrome.action (MV3) or chrome.browserAction (MV2)
-const actionApi = chrome.action ?? chrome.browserAction
-
 class IconManager {
   constructor() {
     // update the icon when any of the request stores change
@@ -19,21 +16,15 @@ class IconManager {
 
     const text = counts.get("auth")
       ? "Sites"
-      : counts.get("metadata")
-        ? "Meta"
-        : signingCount
-          ? `${signingCount}`
-          : counts.get("eth-network-add")
-            ? "Network"
-            : counts.get("eth-watchasset")
-              ? "Assets"
-              : counts.get("encrypt")
-                ? "Encrypt"
-                : counts.get("decrypt")
-                  ? "Decrypt"
-                  : ""
+      : signingCount
+        ? `${signingCount}`
+        : counts.get("eth-network-add")
+          ? "Network"
+          : counts.get("eth-watchasset")
+            ? "Assets"
+            : ""
 
-    actionApi?.setBadgeText?.({ text })
+    chrome.action.setBadgeText({ text })
   }
 }
 

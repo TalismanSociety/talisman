@@ -78,13 +78,6 @@ export interface InjectedAccount {
   type?: KeypairType
 }
 
-export interface ProviderMeta {
-  network: string
-  node: "full" | "light"
-  source: string
-  transport: string
-}
-
 /** Same as `ExtDef` from `@polkadot/types/extrinsic/signedExtensions/types` (single-sourced from @talismn/sapi) */
 export type { ExtDef } from "@talismn/sapi"
 
@@ -112,60 +105,9 @@ export interface InjectedMetadataKnown {
   specVersion: number
 }
 
-export type ProviderList = Record<string, ProviderMeta>
-
 // ---------------------------------------------------------------------------
 // @polkadot/extension-base/background/types
 // ---------------------------------------------------------------------------
-
-/**
- * Same shape as `AccountJson` from `@polkadot/extension-base/background/types`,
- * i.e. `KeyringPair$Meta` from `@polkadot/keyring/types` (flattened here) with a
- * required address
- */
-export interface AccountJson {
-  address: string
-  // KeyringPair$MetaExtension
-  source?: string
-  // KeyringPair$MetaFlags
-  isDefaultAuthSelected?: boolean
-  isExternal?: boolean
-  isHardware?: boolean
-  isHidden?: boolean
-  isInjected?: boolean
-  isMultisig?: boolean
-  isProxied?: boolean
-  isRecent?: boolean
-  isTesting?: boolean
-  // KeyringPair$MetaHardware
-  accountIndex?: number
-  accountOffset?: number
-  addressOffset?: number
-  hardwareType?: "ledger"
-  // KeyringPair$MetaMultisig
-  threshold?: number
-  who?: string[]
-  // KeyringPair$MetaParent
-  parentAddress?: string
-  parentName?: string
-  // KeyringPair$Meta
-  contract?: { abi: string; genesisHash?: HexString | null }
-  genesisHash?: HexString | null
-  name?: string
-  suri?: string
-  tags?: string[]
-  type?: KeypairType
-  whenCreated?: number
-  whenEdited?: number
-  whenUsed?: number
-  [key: string]: unknown
-}
-
-export interface MetadataRequest {
-  id: string
-  request: MetadataDef
-  url: string
-}
 
 export interface RequestAuthorizeTab {
   origin: string
@@ -181,61 +123,11 @@ export interface RequestAccountUnsubscribe {
   id: string
 }
 
-export interface RequestRpcSend {
-  method: string
-  params: unknown[]
-}
-
-export interface RequestRpcSubscribe extends RequestRpcSend {
-  type: string
-}
-
-export interface RequestRpcUnsubscribe {
-  method: string
-  subscriptionId: number | string
-  type: string
-}
-
 export interface ResponseSigning {
   id: string
   signature: HexString
   signedTransaction?: HexString
 }
-
-export type ResponseRpcListProviders = ProviderList
-
-// ---------------------------------------------------------------------------
-// @polkadot/rpc-provider/types (referenced by the rpc entries of the map below)
-// ---------------------------------------------------------------------------
-
-export interface JsonRpcObject {
-  id: number
-  jsonrpc: "2.0"
-}
-
-export interface JsonRpcResponseBaseError {
-  code: number
-  data?: number | string
-  message: string
-}
-
-interface JsonRpcResponseSingle<T> {
-  error?: JsonRpcResponseBaseError
-  result: T
-}
-
-interface JsonRpcResponseSubscription<T> {
-  method?: string
-  params: {
-    error?: JsonRpcResponseBaseError
-    result: T
-    subscription: number | string
-  }
-}
-
-export type JsonRpcResponseBase<T> = JsonRpcResponseSingle<T> & JsonRpcResponseSubscription<T>
-
-export type JsonRpcResponse<T> = JsonRpcObject & JsonRpcResponseBase<T>
 
 /**
  * The dapp-facing (window.injectedWeb3) subset of `RequestSignatures` from
@@ -257,11 +149,4 @@ export interface RequestSignatures {
   "pub(metadata.provide)": [MetadataDef, boolean]
   "pub(phishing.redirectIfDenied)": [null, boolean]
   "pub(ping)": [null, boolean]
-  // upstream uses `void` for the request slot, `undefined` is equivalent here (and doesn't upset biome)
-  "pub(rpc.listProviders)": [undefined, ResponseRpcListProviders]
-  "pub(rpc.send)": [RequestRpcSend, JsonRpcResponse<unknown>]
-  "pub(rpc.startProvider)": [string, ProviderMeta]
-  "pub(rpc.subscribe)": [RequestRpcSubscribe, number, JsonRpcResponse<unknown>]
-  "pub(rpc.subscribeConnected)": [null, boolean, boolean]
-  "pub(rpc.unsubscribe)": [RequestRpcUnsubscribe, boolean]
 }

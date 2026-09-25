@@ -1,3 +1,4 @@
+import { createElement, Fragment } from "react"
 import { vi } from "vitest"
 
 import { mockedApi } from "./api"
@@ -33,6 +34,8 @@ vi.mock("react-i18next", () => ({
       },
     }
   },
+  // biome-ignore lint/suspicious/noExplicitAny: Trans props vary with the translation
+  Trans: ({ children, defaults }: any) => createElement(Fragment, null, children ?? defaults),
   initReactI18next: {
     type: "3rdParty",
     init: () => {},

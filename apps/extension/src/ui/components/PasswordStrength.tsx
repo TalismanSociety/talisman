@@ -1,4 +1,4 @@
-import { type Options, passwordStrength } from "check-password-strength"
+import { type Options, owaspSymbols, passwordStrength } from "check-password-strength"
 import { useMemo } from "react"
 
 const getColorClassName = (strength: number) => {
@@ -47,7 +47,10 @@ const STRENGTH_OPTIONS: Options<string> = [
 ]
 
 export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
-  const strength = useMemo(() => passwordStrength(password as string, STRENGTH_OPTIONS), [password])
+  const strength = useMemo(
+    () => passwordStrength(password as string, STRENGTH_OPTIONS, owaspSymbols),
+    [password]
+  )
 
   // Don't show if too weak (empty)
   if (!strength.id) return null

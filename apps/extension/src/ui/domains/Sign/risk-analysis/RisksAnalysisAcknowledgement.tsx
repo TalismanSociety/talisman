@@ -20,7 +20,7 @@ export const RisksAnalysisAcknowledgement: FC<{ riskAnalysis: RiskAnalysis }> = 
     <div className="flex w-full items-center justify-between text-sm">
       <div>{t("I acknowledge the risks")}</div>
       <div>
-        <Checkbox defaultChecked={riskAnalysis.review.isRiskAcknowledged} onChange={handleChange} />
+        <Checkbox checked={riskAnalysis.review.isRiskAcknowledged} onChange={handleChange} />
       </div>
     </div>
   )

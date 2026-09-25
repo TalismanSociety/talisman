@@ -114,7 +114,6 @@ export interface QuickUnlockCredentialInfo {
 export interface AppMessages {
   "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
   "pri(app.authenticate)": [RequestLogin, boolean]
-  "pri(app.authStatus)": [null, LoggedinType]
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
   "pri(app.lock)": [null, boolean]
   "pri(app.changePassword)": [ChangePasswordRequest, boolean]

@@ -8,7 +8,6 @@ import type { ChaindataMessages } from "../domains/chaindata/types"
 import type { ChainsMessages } from "../domains/chains/types"
 import type { DefiMessages } from "../domains/defi/types"
 import type { EarnMessages } from "../domains/earn/types"
-import type { EncryptMessages } from "../domains/encrypt/types"
 import type { EthMessages } from "../domains/ethereum/types"
 import type { GandalfMessages } from "../domains/gandalf/types"
 import type { MetadataMessages } from "../domains/metadata/types"
@@ -23,7 +22,7 @@ import type { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import type { SubstrateMessages } from "../domains/substrate/types"
 import type { TalismanMessages } from "../domains/talisman/types"
 import type { TokenRatesMessages } from "../domains/tokenRates/types"
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
+import type { NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 import type { RequestSignatures as PolkadotRequestSignatures } from "./pjsInterop"
 
 export declare type RequestTypes = {
@@ -48,10 +47,6 @@ declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefined
 
 export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = AllMessages[T][2]
 
-export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
-  [MessageType in MessageTypes]: AllMessages[MessageType][0]
-}>
-
 // lists all the messages (public and private) supported by the extension
 // PolkadotRequestSignatures only carries the legacy polkadot-js pub() dapp protocol,
 // the messages it overlapped with are defined in the Talisman domain maps below
@@ -62,7 +57,6 @@ type AllMessages = PolkadotRequestSignatures &
   AuthorisedSiteMessages &
   BalancesMessages &
   ChainsMessages &
-  EncryptMessages &
   EthMessages &
   MetadataMessages &
   MnemonicMessages &
@@ -109,9 +103,6 @@ export interface TransportRequestMessage<TMessageType extends MessageTypes> {
 }
 
 export declare type MessageTypesWithSubscriptions = keyof SubscriptionMessageTypes
-export declare type MessageTypesWithSubscriptionsById = keyof RequestIdOnlyMessageTypes &
-  MessageTypesWithSubscriptions
-
 export declare type MessageTypesWithNoSubscriptions = Exclude<
   MessageTypes,
   keyof SubscriptionMessageTypes

@@ -1,11 +1,13 @@
 import { log } from "@common/log"
 import { sentry } from "@core/config/sentry"
+import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
+import { parseSiweMessage } from "@core/domains/ethereum/siwe"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
-import { ParsedMessage } from "@spruceid/siwe-parser"
-import { hexToString, isHexString, stripHexPrefix } from "@talismn/util"
+import { isHexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { decodeEvmTypedData } from "@ui/domains/Ethereum/util/decodeEvmTypedData"
 import { Message } from "@ui/domains/Sign/Message"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -13,9 +15,10 @@ import { cn } from "@ui/util/cn"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
+import { EthSignBodyMessageOrder } from "./EthSignBodyMessageOrder"
+import { EthSignBodyMessagePermit } from "./EthSignBodyMessagePermit"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
@@ -23,6 +26,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
   const {
     isTypedData,
     typedMessage,
+    decodedTypedData,
     verifyingAddress,
     chainId,
     ethChainId,
@@ -40,6 +44,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
       return {
         isTypedData,
         typedMessage,
+        decodedTypedData: decodeEvmTypedData(typedMessage),
         verifyingAddress,
         chainId,
         ethChainId,
@@ -61,31 +66,20 @@ const useEthSignMessage = (request: EthSignRequest) => {
         sentry.captureException(err)
       }
     }
-    try {
-      if (isHexString(request.request)) {
-        const stripped = stripHexPrefix(request.request)
-        const buff = Buffer.from(stripped, "hex")
-        // if 32 bytes display as is, can be tested when approving NFT listings on tofunft.com
-        return buff.length === 32 ? request.request : buff.toString("utf8")
-      }
-    } catch (err) {
-      log.error(err)
-    }
-    return request.request
+    // a 32 bytes payload is a hash, not text - can be tested when approving NFT listings on tofunft.com
+    if (isHexString(request.request) && request.request.length === 66) return request.request
+    return decodePersonalSignMessage(request.request) ?? request.request
   }, [request.request, typedMessage])
 
-  const siwe = useMemo(() => {
-    try {
-      const text = hexToString(request.request)
-      return new ParsedMessage(text)
-    } catch {
-      return null
-    }
-  }, [request.request])
+  const siwe = useMemo(
+    () => (request.method === "personal_sign" ? parseSiweMessage(request.request) : null),
+    [request.method, request.request]
+  )
 
   return {
     siwe,
     isTypedData,
+    decodedTypedData,
     text,
     verifyingAddress,
     chainId,
@@ -101,13 +95,22 @@ export type EthSignBodyMessageProps = {
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
   const { t } = useTranslation()
-  const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
-    useEthSignMessage(request)
+  const {
+    siwe,
+    isTypedData,
+    decodedTypedData,
+    text,
+    verifyingAddress,
+    ethChainId,
+    isInvalidVerifyingContract,
+  } = useEthSignMessage(request)
   const ocViewDetails = useOpenClose()
 
   const evmNetwork = useNetworkById(ethChainId, "ethereum")
 
   if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
+
+  const decoded = evmNetwork ? decodedTypedData : undefined
 
   return (
     <div className="flex h-full w-full flex-col items-center pt-4 text-body-secondary">
@@ -116,12 +119,20 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
       </h1>
       <div className="my-8 flex w-full flex-col items-center leading-base">
         <div className="p-2">
-          {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
+          {decoded?.type === "permit"
+            ? t("This app is requesting permission to spend your tokens")
+            : decoded?.type === "order"
+              ? t("This app is requesting to trade your assets")
+              : isTypedData
+                ? t("You are signing typed data")
+                : t("You are signing a message")}{" "}
         </div>
-        <div className="flex max-w-full items-start p-1">
-          <div>{t("with")}</div>
-          <SignParamAccountButton address={account.address} withIcon />
-        </div>
+        {!decoded && (
+          <div className="flex max-w-full items-start p-1">
+            <div>{t("with")}</div>
+            <SignParamAccountButton address={account.address} withIcon />
+          </div>
+        )}
         {!!verifyingAddress && !!evmNetwork && (
           <div className="flex max-w-full items-start p-1">
             <div className="whitespace-nowrap">{t("for contract")}</div>{" "}
@@ -129,11 +140,24 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
+      {!!decoded && !!evmNetwork && (
+        <div className="mb-8 w-full">
+          {decoded.type === "permit" ? (
+            <EthSignBodyMessagePermit account={account} network={evmNetwork} permit={decoded} />
+          ) : (
+            <EthSignBodyMessageOrder account={account} network={evmNetwork} order={decoded} />
+          )}
+        </div>
+      )}
       <div className="mb-8 flex w-full flex-col items-center gap-4">
-        <RiskAnalysisPillButton />
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>
-      <Message className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")} text={text} />
+      {!decoded && (
+        <Message
+          className={cn("w-full grow", isTypedData && "whitespace-pre text-xs")}
+          text={text}
+        />
+      )}
 
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">

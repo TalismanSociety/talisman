@@ -5,20 +5,45 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
+import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useMemo } from "react"
+import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
+import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
+  getUniswapSafeTokenKey,
   serializeAssetRegistry,
   serializeSafeTokens,
 } from "./swaps.api.serialization"
 
 // ─── Constants ──────────────────────────────────────────────────────
 
-export const swapModules = [simpleswapSwapModule, stealthexSwapModule, lifiSwapModule]
+export const swapModules = [
+  simpleswapSwapModule,
+  stealthexSwapModule,
+  lifiSwapModule,
+  bittensorEvmSwapModule,
+  forevermoneySwapModule,
+]
+
+export type SwapModuleEntry = (typeof swapModules)[number]
+
+export const useSwapModules = (): SwapModuleEntry[] => {
+  const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE")
+
+  return useMemo(
+    () =>
+      swapModules.filter(
+        (m) => m.protocol !== forevermoneySwapModule.protocol || isForevermoneyEnabled
+      ),
+    [isForevermoneyEnabled]
+  )
+}
 
 // ─── Asset-fetching helpers ─────────────────────────────────────────
 
@@ -53,9 +78,11 @@ const withRetry = async <T>(
 export const useSwapAssets = (fromTokenId: string | null) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
+  const swapModules = useSwapModules()
+  const protocolsKey = swapModules.map((m) => m.protocol).join(",")
 
   const fromAssetsQuery = useQuery({
-    queryKey: ["swap-from-assets-v3", tokensCount],
+    queryKey: ["swap-from-assets-v3", tokensCount, protocolsKey],
     queryFn: async ({ signal }) => {
       const moduleResults: Array<[SupportedSwapProtocol, string[]]> = await Promise.all(
         swapModules.map(async (m) => {
@@ -86,7 +113,13 @@ export const useSwapAssets = (fromTokenId: string | null) => {
     : "not-needed"
 
   const toAssetsQuery = useQuery({
-    queryKey: ["swap-to-assets-v3", fromTokenId, tokensCount, toAssetsSupportMapState],
+    queryKey: [
+      "swap-to-assets-v3",
+      fromTokenId,
+      tokensCount,
+      toAssetsSupportMapState,
+      protocolsKey,
+    ],
     queryFn: async ({ signal }) => {
       const modules = swapModules.filter((m) =>
         fromTokenId && fromSupportMapInternal
@@ -126,16 +159,15 @@ export const useSwapAssets = (fromTokenId: string | null) => {
  */
 export const useSafeTokens = () => {
   return useQuery({
-    queryKey: ["swap-safe-tokens-v2"],
+    queryKey: ["swap-safe-tokens-v3"],
     queryFn: async () => {
       const fetchTokenSet = (url: string) =>
         fetch(url)
           .then((r) => r.json())
           .then(
             (data: { tokens: { chainId: number; address: string }[] }) =>
-              new Set(data.tokens.map((tk) => `${tk.chainId}:${tk.address.toLowerCase()}`))
+              new Set(data.tokens.map(getUniswapSafeTokenKey))
           )
-          .catch(() => new Set<string>())
 
       const results = await Promise.allSettled([
         fetchTokenSet("https://tokens.uniswap.org/"),
@@ -146,13 +178,16 @@ export const useSafeTokens = () => {
             const lifiTalismanTokens = swapsConfig?.lifiTalismanTokens ?? []
             return new Set(
               lifiTalismanTokens.map((tokenId: string) => {
-                const [chainId, _type, contractAddress] = tokenId.split(":")
-                return `${chainId}:${contractAddress}`
+                const [chainId, type, address] = tokenId.split(":")
+                return `${chainId}:${type === "evm-erc20" ? address.toLowerCase() : address}`
               })
             )
           })
           .catch(() => new Set<string>()),
       ])
+
+      const [defaultList] = results
+      if (defaultList.status === "rejected") throw defaultList.reason
 
       const merged = new Set<string>()
       for (const result of results)

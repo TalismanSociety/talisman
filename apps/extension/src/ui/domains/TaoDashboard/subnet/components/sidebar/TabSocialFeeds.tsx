@@ -1,8 +1,8 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { DistanceToNow } from "@ui/components/DistanceToNow"
+import { TextSkeleton } from "@ui/components/Skeleton"
 import { useSubnetSentiment, useSubnetTweets } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
 import { SentimentBadge } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
-import { TextSkeleton as Skeleton } from "@ui/domains/TaoDashboard/shared/Skeleton"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import { useSocialFeedsMountSignal } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import {
@@ -75,20 +75,20 @@ const SentimentSummarySkeleton = () => {
     <div className="flex h-29 flex-col justify-between gap-10 px-12 py-10">
       <div className="flex h-6.5 w-full shrink-0 items-center justify-between overflow-hidden">
         <div className="text-md">
-          <Skeleton className="w-37.5" />
+          <TextSkeleton className="w-37.5" />
         </div>
         <div>
-          <Skeleton className="h-12 w-15 rounded-full" />
+          <TextSkeleton className="h-12 w-15 rounded-full" />
         </div>
       </div>
       <div className="flex flex-col gap-5">
-        <Skeleton className="h-2 w-full rounded-full" />
+        <TextSkeleton className="h-2 w-full rounded-full" />
         <div className="flex h-8 w-full shrink-0 items-center justify-between overflow-hidden text-body-disabled text-xs">
           <div>
-            <Skeleton className="w-12.5" />
+            <TextSkeleton className="w-12.5" />
           </div>
           <div>
-            <Skeleton className="w-12.5" />
+            <TextSkeleton className="w-12.5" />
           </div>
         </div>
       </div>
@@ -213,24 +213,24 @@ const TweetCardSkeleton = () => {
     <div className="flex flex-col gap-6 rounded p-6">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <Skeleton className="size-12 rounded-full" />
+          <TextSkeleton className="size-12 rounded-full" />
           <div className="text-base text-body">
-            <Skeleton className="h-10 w-36" />
+            <TextSkeleton className="h-10 w-36" />
           </div>
         </div>
-        <Skeleton className="h-12 w-36 rounded-full" />
+        <TextSkeleton className="h-12 w-36 rounded-full" />
       </div>
       <div className="flex flex-col gap-2">
-        <Skeleton className="h-7 w-full" />
-        <Skeleton className="h-7 w-full" />
-        <Skeleton className="h-7 w-3/4" />
+        <TextSkeleton className="h-7 w-full" />
+        <TextSkeleton className="h-7 w-full" />
+        <TextSkeleton className="h-7 w-3/4" />
       </div>
       <div className="flex gap-8">
-        <Skeleton className="h-12 w-36 rounded-xs" />
-        <Skeleton className="h-12 w-48 rounded-xs" />
+        <TextSkeleton className="h-12 w-36 rounded-xs" />
+        <TextSkeleton className="h-12 w-48 rounded-xs" />
       </div>
       <div className="flex items-center">
-        <Skeleton className="h-7 w-24" />
+        <TextSkeleton className="h-7 w-24" />
       </div>
     </div>
   )

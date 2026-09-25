@@ -14,7 +14,7 @@ import type { WalletTransactionDot, WalletTransactionEth, WalletTransactionSol }
  *
  * Platform-specific verification:
  * - EVM: eth_getTransactionByHash — not found means dropped
- * - Substrate: chain reachability check — marks all unknown txs as dropped
+ * - Substrate: system_accountNextIndex — an unconsumed nonce means dropped
  * - Solana: getSignatureStatuses — null means dropped
  *
  * All checks are fail-safe: RPC errors leave the tx as "unknown".
@@ -122,18 +122,23 @@ const cleanupEvmTransactions = async (txs: WalletTransactionEth[]): Promise<void
 const cleanupSubstrateTransactions = async (txs: WalletTransactionDot[]): Promise<void> => {
   if (txs.length === 0) return
 
-  // Group by network: one reachability check per chain
-  const byNetwork = groupBy(txs, (tx) => tx.networkId)
-  for (const [networkId, networkTxs] of byNetwork) {
+  // An extrinsic can't be looked up by its hash once the watcher is gone, so the account nonce
+  // stands in for it. Group by account: one nonce lookup per account.
+  const byAccount = groupBy(txs, (tx) => `${tx.networkId}:${tx.account}`)
+  for (const accountTxs of byAccount.values()) {
+    const { networkId, account } = accountTxs[0]!
     try {
-      // Verify chain is reachable — if unavailable, skip and retry next startup
-      await chainConnector.send(networkId, "system_chain", [])
+      // counts the node's pool as well, so an extrinsic still waiting there raises this nonce too
+      const nextNonce = await chainConnector.send<number>(networkId, "system_accountNextIndex", [
+        account,
+      ])
+      if (!Number.isInteger(nextNonce)) continue
 
-      for (const tx of networkTxs) {
-        // The real-time watcher (90s window) should have caught any successful
-        // inclusion. Since it didn't, treat as dropped so the tx doesn't stay
-        // stuck as "unknown" forever. The user can verify on a block explorer.
-        await updateTransactionStatus(tx.id, "error")
+      for (const tx of accountTxs) {
+        // A nonce the chain hasn't consumed proves the extrinsic never executed. A consumed one
+        // proves nothing — this extrinsic or another one may have taken it — so leave the
+        // transaction "unknown" instead of reporting a transfer that succeeded as failed.
+        if (nextNonce <= tx.nonce) await updateTransactionStatus(tx.id, "error")
       }
     } catch {
       // Chain unavailable — skip

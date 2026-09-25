@@ -241,21 +241,23 @@ describe("cleanupDroppedTransactions", () => {
 
       await cleanupAllDroppedTransactions()
 
+      expect(mockChainConnectorSend).toHaveBeenCalledWith("polkadot", "system_accountNextIndex", [
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      ])
       const tx = await db.transactionsV2.get("sub-polkadot-5")
       expect(tx?.status).toBe("error")
     })
 
-    it("marks unknown substrate tx as error when nonce was consumed", async () => {
+    it("leaves substrate tx unknown when nonce was consumed", async () => {
       mockChainConnectorSend.mockResolvedValue(6) // next index = 6, nonce 5 consumed
       await db.transactionsV2.put(makeSubstrateTx(5))
 
       await cleanupAllDroppedTransactions()
 
-      // Even when the nonce was consumed (by this tx or a replacement),
-      // we mark as error because the real-time watcher should have caught
-      // a successful inclusion. Leaving it as "unknown" forever is worse UX.
+      // A consumed nonce doesn't tell us whether it was this extrinsic or another one,
+      // so the tx must not be reported as failed.
       const tx = await db.transactionsV2.get("sub-polkadot-5")
-      expect(tx?.status).toBe("error")
+      expect(tx?.status).toBe("unknown")
     })
 
     it("leaves substrate tx when chain is unavailable (fail-safe)", async () => {
@@ -266,6 +268,35 @@ describe("cleanupDroppedTransactions", () => {
 
       const tx = await db.transactionsV2.get("sub-polkadot-5")
       expect(tx?.status).toBe("unknown")
+    })
+
+    it("leaves substrate tx when the node returns a malformed nonce (fail-safe)", async () => {
+      mockChainConnectorSend.mockResolvedValue("0x05")
+      await db.transactionsV2.put(makeSubstrateTx(5))
+
+      await cleanupAllDroppedTransactions()
+
+      const tx = await db.transactionsV2.get("sub-polkadot-5")
+      expect(tx?.status).toBe("unknown")
+    })
+
+    it("queries the nonce once per account and network", async () => {
+      const otherAccount = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      mockChainConnectorSend.mockImplementation((_networkId, _method, [address]: [string]) =>
+        Promise.resolve(address === otherAccount ? 9 : 5)
+      )
+      await db.transactionsV2.bulkPut([
+        makeSubstrateTx(5),
+        makeSubstrateTx(3),
+        makeSubstrateTx(9, "unknown", "polkadot", otherAccount),
+      ])
+
+      await cleanupAllDroppedTransactions()
+
+      expect(mockChainConnectorSend).toHaveBeenCalledTimes(2)
+      expect((await db.transactionsV2.get("sub-polkadot-5"))?.status).toBe("error")
+      expect((await db.transactionsV2.get("sub-polkadot-3"))?.status).toBe("unknown")
+      expect((await db.transactionsV2.get("sub-polkadot-9"))?.status).toBe("error")
     })
   })
 

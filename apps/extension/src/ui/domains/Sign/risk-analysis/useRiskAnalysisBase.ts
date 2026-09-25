@@ -34,6 +34,13 @@ type UseRiskAnalysisBaseProps<
   queryKey: Key
   queryFn: Func
   enabled: boolean
+  /**
+   * The query key deliberately omits fields such as the nonce so that identical payloads share one
+   * scan. Flows that sign several transactions through the same hook instance must pass the
+   * identity of the current signing step here, otherwise two steps with identical payloads would
+   * also share their risk acknowledgement.
+   */
+  subjectId?: string
 }
 
 export type RiskAnalysisResult<Platform extends RiskAnalysisPlatform> = {
@@ -65,6 +72,7 @@ export const useRiskAnalysisBase = <
   queryKey,
   queryFn,
   enabled,
+  subjectId,
 }: UseRiskAnalysisBaseProps<Platform, Key>): Result => {
   const { t } = useTranslation()
   const [autoRiskScan] = useSetting("autoRiskScan")
@@ -108,7 +116,11 @@ export const useRiskAnalysisBase = <
     retry: false,
   })
 
-  const review = useRisksReview(platform, result)
+  // identifies the transaction being signed: the analysed payload, plus the signing step when the
+  // flow provides one, so that two steps with identical payloads never share an acknowledgement
+  const subjectKey = JSON.stringify([subjectId ?? null, queryKey])
+
+  const review = useRisksReview(platform, result, subjectKey)
 
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(platform, result, t) : null),
@@ -125,15 +137,15 @@ export const useRiskAnalysisBase = <
     }
   }, [error, isAvailable, refetch, result, review.drawer, setIsScanRequested])
 
-  const refAutoOpen = useRef(false)
+  const refAutoOpenedKey = useRef<string | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    if (refAutoOpen.current || !isScanRequested) return
+    if (refAutoOpenedKey.current === subjectKey || !isScanRequested) return
     if (result) {
-      refAutoOpen.current = true
+      refAutoOpenedKey.current = subjectKey
       review.drawer.open()
     }
-  }, [error, isScanRequested, result, review.drawer])
+  }, [error, isScanRequested, result, review.drawer, subjectKey])
 
   const isValidating = useMemo(
     () => isAvailable && shouldValidate && isLoading && enabled,

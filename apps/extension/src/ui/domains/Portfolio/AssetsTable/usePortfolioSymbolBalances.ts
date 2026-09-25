@@ -77,8 +77,7 @@ const sortSymbolBalancesBy = (
       if (!key.hasFiatRate && fiat !== null) key.hasFiatRate = true
       // `Preview Only` coingeckoIds have no conversion rate (null fiat) but still rank
       // above tokens without a coingeckoId — this groups `$0.00` tokens above `-` tokens.
-      // Testnet tokens with a coingeckoId are ignored: they sort last anyway and their
-      // conversion rates are never fetched
+      // Testnet tokens with a coingeckoId are ignored: they sort last anyway
       if (!key.hasCoingeckoId && typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet)
         key.hasCoingeckoId = true
       if (!key.isTestnet && b.network?.isTestnet) key.isTestnet = true

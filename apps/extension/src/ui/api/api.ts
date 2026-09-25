@@ -30,14 +30,11 @@ export const api: MessageTypes = {
       cb
     ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
-  authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: (argument?: string) => messageService.sendMessage("pri(app.popupOpen)", argument),
   promptLogin: () => messageService.sendMessage("pri(app.promptLogin)"),
-  approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
-  rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
@@ -77,17 +74,6 @@ export const api: MessageTypes = {
     }),
   approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
   approveSignVrf: (id) => messageService.sendMessage("pri(signing.approveSign.vrf)", { id }),
-
-  // encrypt messages -------------------------------------------------------
-  approveEncrypt: (id) =>
-    messageService.sendMessage("pri(encrypt.approveEncrypt)", {
-      id,
-    }),
-  approveDecrypt: (id) =>
-    messageService.sendMessage("pri(encrypt.approveDecrypt)", {
-      id,
-    }),
-  cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
 
   // mnemonic messages -------------------------------------------------------
   mnemonicsSubscribe: (cb) => messageService.subscribe("pri(mnemonics.subscribe)", null, cb),
@@ -160,11 +146,7 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accountProxies.updatePalletCache)", request),
 
   // authorized sites messages ------------------------------------------
-  authorizedSites: () => messageService.sendMessage("pri(sites.list)"),
   authorizedSitesSubscribe: (cb) => messageService.subscribe("pri(sites.subscribe)", null, cb),
-  authorizedSite: (id) => messageService.sendMessage("pri(sites.byid)", { id }),
-  authorizedSiteSubscribe: (id, cb) =>
-    messageService.subscribe("pri(sites.byid.subscribe)", { id }, cb),
   authorizedSiteForget: (id, type) => messageService.sendMessage("pri(sites.forget)", { id, type }),
   authorizedSiteUpdate: (id, authorisedSite) =>
     messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),

@@ -36,6 +36,8 @@ const Transfer: DecodedCallSummaryComponent<TransferArgs> = ({
 
     return {
       value: args.amount,
+      // `transfer_with_fee` debits the signer `amount + fee`, both in `currency_id`
+      fee: "fee" in args ? args.fee : undefined,
       tokenId: token.id,
       fromNetwork: chain.id,
       toNetwork: targetChain.id,

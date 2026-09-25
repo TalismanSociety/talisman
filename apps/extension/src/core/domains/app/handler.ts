@@ -378,9 +378,6 @@ export default class AppHandler extends ExtensionHandler {
       case "pri(app.authenticate)":
         return this.authenticate(request as RequestLogin)
 
-      case "pri(app.authStatus)":
-        return this.authStatus()
-
       case "pri(app.authStatus.subscribe)":
         return genericSubscription<"pri(app.authStatus.subscribe)">(
           id,

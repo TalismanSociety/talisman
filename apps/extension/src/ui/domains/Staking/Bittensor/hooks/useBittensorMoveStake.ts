@@ -1,7 +1,7 @@
 import type { ScaleApi } from "@talismn/sapi"
-import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 
 import { getBittensorMoveStakePayload } from "../utils/helpers"
 
@@ -84,7 +84,8 @@ const useBittensorMoveStakePayload = ({
   netuid,
   alphaAmount,
 }: UseBittensorMoveStakePayloadProps) => {
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "useBittensorMoveStakePayload",
       sapi?.id,

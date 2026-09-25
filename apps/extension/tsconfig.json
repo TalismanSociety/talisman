@@ -5,6 +5,7 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
+    "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "paths": {
       "@common": ["./src/common"],
@@ -13,14 +14,12 @@
       "@core/*": ["./src/core/*"],
       "@ui": ["./src/ui"],
       "@ui/*": ["./src/ui/*"],
-      "@tests": ["./src/tests"],
-      "@tests/*": ["./src/tests/*"],
       "inject/*": ["./src/inject/*"]
     }
   },
   "include": [
     ".wxt/wxt.d.ts",
-    "i18next-parser.config.cjs",
+    "i18next.config.ts",
     "src",
     "src/**/*.json",
     "entrypoints",

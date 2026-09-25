@@ -23,14 +23,6 @@ export declare type NoUndefinedValues<T> = {
   [K in KeysWithDefinedValues<T>]: T[K]
 }
 
-export declare type KeysWithIdOnlyValues<T> = {
-  [K in keyof T]: T[K] extends RequestIdOnly ? K : never
-}[keyof T]
-
-export declare type IdOnlyValues<T> = {
-  [K in KeysWithIdOnlyValues<T>]: T[K]
-}
-
 export interface BaseRequest<T extends string> {
   type: T
   id: BaseRequestId<T>

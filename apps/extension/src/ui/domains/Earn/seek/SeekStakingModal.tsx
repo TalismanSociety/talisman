@@ -56,7 +56,7 @@ import { type SeekStakingAction, useSeekStakingModal } from "./useSeekStakingMod
 
 type TFunc = ReturnType<typeof useTranslation>["t"]
 
-// Use literal t("...") calls (not t(map[action])) so i18next-parser can statically extract them.
+// Use literal t("...") calls (not t(map[action])) so i18next-cli can statically extract them.
 const getActionLabel = (t: TFunc, action: SeekStakingAction): string => {
   switch (action) {
     case "stake":

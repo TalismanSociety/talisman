@@ -1,0 +1,50 @@
+import path from "node:path"
+import react from "@vitejs/plugin-react"
+import { configDefaults, defineConfig } from "vitest/config"
+
+const packagesDir = path.resolve(import.meta.dirname, "../../packages")
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "rxjs/internal/": "rxjs/dist/cjs/internal/",
+      // Map workspace package internal paths to source (@talismn/* packages)
+      "@talismn/chaindata-provider/src/": path.join(packagesDir, "chaindata-provider/src/"),
+      "@talismn/chaindata-provider": path.join(packagesDir, "chaindata-provider/src"),
+      "@talismn/balances/src/": path.join(packagesDir, "balances/src/"),
+      "@talismn/balances": path.join(packagesDir, "balances/src"),
+      "@talismn/crypto": path.join(packagesDir, "crypto/src"),
+      "@talismn/util": path.join(packagesDir, "util/src"),
+      "@talismn/keyring": path.join(packagesDir, "keyring/src"),
+      "@talismn/sapi": path.join(packagesDir, "sapi/src"),
+      "@talismn/scale": path.join(packagesDir, "scale/src"),
+      "@talismn/bitcoin": path.join(packagesDir, "bitcoin/src"),
+      "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
+      "@talismn/solana": path.join(packagesDir, "solana/src"),
+      "@talismn/substrate-vrf": path.join(packagesDir, "substrate-vrf/src"),
+      "@talismn/token-rates": path.join(packagesDir, "token-rates/src"),
+      "@talismn/on-chain-id": path.join(packagesDir, "on-chain-id/src"),
+      "@talismn/orb": path.join(packagesDir, "orb/src"),
+      "@talismn/icons": path.join(packagesDir, "icons/src"),
+      // Map @core alias to local source
+      "@core": path.resolve(import.meta.dirname, "src/core"),
+      // Path aliases from tsconfig (baseUrl is src/)
+      "@ui": path.resolve(import.meta.dirname, "src/ui"),
+      "@common": path.resolve(import.meta.dirname, "src/common"),
+      inject: path.resolve(import.meta.dirname, "src/inject"),
+    },
+  },
+  test: {
+    environment: "./tests/vitest-env-jsdom.ts",
+    globals: true,
+    exclude: [...configDefaults.exclude, "**/.tmp/**"],
+    testTimeout: 20_000,
+    setupFiles: [
+      "fake-indexeddb/auto",
+      "./tests/setup.ts",
+      "./tests/mocks/index.ts",
+      "./tests/core/mocks/index.ts",
+    ],
+  },
+})

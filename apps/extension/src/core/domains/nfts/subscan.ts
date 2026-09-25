@@ -94,7 +94,6 @@ const postSubscanWithRetry = async <T>(
       },
       {
         timeout: 10_000,
-        throwOnTimeout: true,
         signal,
       }
     )

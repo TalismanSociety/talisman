@@ -9,6 +9,7 @@ import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { RiskAnalysisRow } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
@@ -69,6 +70,7 @@ export const EthSignMessageRequest = () => {
                 {errorMessage}
               </SignAlertMessage>
             )}
+            <RiskAnalysisRow className="mb-6" />
             {account && request && (
               // biome-ignore lint/complexity/noUselessFragments: legacy
               <>

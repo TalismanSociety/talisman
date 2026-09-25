@@ -1,15 +1,16 @@
-import { existsSync } from "node:fs"
+import { randomBytes } from "node:crypto"
 
-import { bytesToHex, randomBytes } from "@noble/hashes/utils"
 import type { BrowserContext, Locator, Page, Worker } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
+
+import { resolveExtensionBuild } from "./extensionBuild"
 
 type AccountType = "ethereum" | "substrate" | "solana"
 type WatchedAccountType = "ethereum" | "substrate" | "solana"
 type PrivateKeyAccountType = "ethereum" | "solana"
 
 const randomName = (prefix: string) => {
-  const suffix = bytesToHex(randomBytes(2)).slice(0, 3)
+  const suffix = randomBytes(2).toString("hex").slice(0, 3)
   return `${prefix} (${suffix})`
 }
 
@@ -42,7 +43,22 @@ const seedGandalfCredentials = async (background: Worker) => {
   )
 }
 
-export const test = base.extend<{
+const testWithExtensionBuild = base.extend<Record<never, never>, { extensionPath: string }>({
+  extensionPath: [
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
+    async ({}, utilize) => {
+      const { build, warning } = resolveExtensionBuild()
+      // biome-ignore lint/suspicious/noConsole: tells which build the tests run against
+      console.log(`E2E extension: ${build.path} (built ${build.builtAt.toISOString()})`)
+      // biome-ignore lint/suspicious/noConsole: intentional warning for test runs
+      if (warning) console.warn(`⚠️  ${warning}`)
+      await utilize(build.path)
+    },
+    { scope: "worker" },
+  ],
+})
+
+export const test = testWithExtensionBuild.extend<{
   context: BrowserContext
   extensionId: string
   onboardedPage: Page
@@ -66,17 +82,10 @@ export const test = base.extend<{
   walletPopup: (opts: { locator: Locator }) => Promise<Page>
   useDevChains: () => Promise<void>
 }>({
-  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
-  context: async ({}, utilize) => {
-    const prodPath = "./apps/extension/dist/chrome-mv3"
-    const devPath = "./apps/extension/dist/chrome-mv3-dev"
-    const pathToExtension = existsSync(prodPath) ? prodPath : devPath
+  context: async ({ extensionPath }, utilize) => {
     const context = await chromium.launchPersistentContext("", {
       headless: false,
-      args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
-      ],
+      args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
     })
 
     context.on("weberror", (err) => {
@@ -85,6 +94,7 @@ export const test = base.extend<{
     })
 
     await utilize(context)
+    await context.close()
   },
   // get the extension id
   extensionId: async ({ context }, utilize) => {

@@ -29,11 +29,11 @@ export const SendFundsTokenPicker = () => {
 
   return (
     <TokenPicker
-      ownedOnly
       address={from}
       initialSearch={tokenSymbol}
       selected={tokenId}
       networkFilterContainerId="main"
+      hideSameNetworkMirrors
       onSelect={handleTokenSelect}
       tokenFilter={tokenFilter}
     />

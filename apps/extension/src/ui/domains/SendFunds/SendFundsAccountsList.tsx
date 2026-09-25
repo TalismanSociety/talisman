@@ -1,4 +1,3 @@
-import type { LegacyAccountOrigin } from "@core/domains/accounts/types"
 import type { Balance } from "@talismn/balances"
 import { useBalances } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
@@ -9,7 +8,6 @@ import { AccountRow } from "./AccountRow"
 
 export type SendFundsAccount = {
   address: string
-  origin?: LegacyAccountOrigin
   name?: string
   genesisHash?: `0x${string}` | null
   balance?: Balance
@@ -59,7 +57,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
     return accounts
       .map((account) => ({
         ...account,
-        balance: balances.find({ address: account.address, tokenId }).sorted[0],
+        balance: balances.find({ address: account.address, tokenId }).each[0],
       }))
       .sort((a, b) => {
         // Pin the initially-selected account to the top

@@ -1,6 +1,7 @@
 {
   "name": "@talismn/chaindata-provider",
-  "version": "2.0.1",
+  "version": "2.0.4",
+  "description": "Networks and tokens supported by the Talisman wallet, synced from the chaindata repository",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -31,17 +32,17 @@
   "dependencies": {
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "dexie": "^4.4.4",
+    "dexie": "^4.4.6",
     "lodash-es": "4.18.1",
     "lz-string": "^1.5.0",
     "rxjs": "^7.8.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "@types/node": "^24.5.1",
-    "tsx": "^4.22.4",
+    "@types/node": "^24.13.3",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

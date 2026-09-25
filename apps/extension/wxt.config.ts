@@ -387,6 +387,9 @@ export default defineConfig({
   // Output directory - WXT appends browser name (e.g., dist/chrome-mv3)
   outDir: "dist",
 
+  // WXT defaults Firefox to MV2; every Talisman build is MV3
+  manifestVersion: 3,
+
   // Build hooks
   hooks: {
     // Before zipping, delete sourcemaps for production/canary builds
@@ -508,8 +511,7 @@ export default defineConfig({
         open_in_tab: true,
       },
 
-      // CSP - Chrome MV3 doesn't allow 'unsafe-eval', only 'wasm-unsafe-eval'
-      // Firefox MV2 is more permissive but we use the same CSP for simplicity
+      // CSP - MV3 doesn't allow 'unsafe-eval', only 'wasm-unsafe-eval'
       content_security_policy: {
         extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
       },
@@ -548,8 +550,6 @@ export default defineConfig({
   },
 
   // Vite configuration
-  // In dev mode: alias packages to source for hot reload
-  // In production: use pre-built tsup outputs from dist/ for smaller bundles
   vite: ({ mode, browser }) => {
     const isDev = mode === "development"
     // WXT passes browser via the ConfigEnv parameter (e.g., "firefox", "chrome")
@@ -569,7 +569,6 @@ export default defineConfig({
         "windows",
         "notifications",
         "alarms",
-        "browserAction",
         "action",
         "permissions",
         "webRequest",
@@ -618,7 +617,6 @@ export default defineConfig({
       { find: "@core", replacement: resolve(__dirname, "src/core") },
       { find: /^@core\/(.*)$/, replacement: resolve(__dirname, "src/core/$1") },
       { find: "@ui", replacement: resolve(__dirname, "src/ui") },
-      { find: "@tests", replacement: resolve(__dirname, "src/tests") },
       // Base-relative imports from src/
       { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
     ]
@@ -707,10 +705,8 @@ export default defineConfig({
             return null
           },
         } satisfies Plugin,
-        // Firefox: Replace chrome.* with browser.* in both dev and production
-        // In Firefox MV2, the 'browser' API provides Promise-based methods,
-        // while 'chrome' uses callbacks. Since the codebase uses 'chrome.*' directly,
-        // we transform the code to use 'browser' instead.
+        // Firefox: Replace chrome.* with browser.*, Firefox's native namespace,
+        // in both dev and production. The codebase calls 'chrome.*' directly.
         ...(isFirefox
           ? [
               {
@@ -865,12 +861,12 @@ export default defineConfig({
             // For Firefox, we also need to set up 'browser' before any code runs
             banner: (chunk) => {
               if (chunk.fileName === "background.js" || chunk.name === "background") {
-                // Firefox MV2: Create 'browser' var from globalThis.browser BEFORE any code runs
+                // Firefox: Create 'browser' var from globalThis.browser BEFORE any code runs
                 // This avoids TDZ issues with const browser declarations from polyfills
                 const firefoxShim = isFirefox
                   ? `
 // Firefox browser API shim - must be var (not const) to avoid TDZ issues
-// Firefox MV2 provides globalThis.browser with Promise-based APIs
+// Firefox provides globalThis.browser with Promise-based APIs
 var browser = globalThis.browser;
 `
                   : ""
@@ -948,8 +944,12 @@ if (typeof document === "undefined") {
       // which would break build reproducibility)
       "apps/**/dist/**",
       "packages/**/dist/**",
+      "config/**/dist/**",
       "**/coverage/**",
       "**/node_modules/**",
+      // dotSources=false stops `**` from matching the hidden `.papi` segment,
+      // so the pnpm peer-dep symlink under .papi/descriptors needs an explicit pattern
+      ".papi/**/node_modules/**",
       // Review/test artifacts
       "review/**",
       "test-results/**",

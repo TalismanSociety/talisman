@@ -15,7 +15,6 @@ import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
 import { DefiHandler } from "../domains/defi/handler"
 import { EarnHandler } from "../domains/earn/handler"
-import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
 import { GandalfHandler } from "../domains/gandalf/handler"
 import { keyringStore } from "../domains/keyring/store"
@@ -59,7 +58,6 @@ export default class Extension extends ExtensionHandler {
       balances: new BalancesHandler(stores),
       defi: new DefiHandler(stores),
       earn: new EarnHandler(stores),
-      encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
       mnemonics: new MnemonicHandler(stores),
@@ -202,20 +200,6 @@ export default class Extension extends ExtensionHandler {
     //   3. close the database connection only when it is no longer required
     //      (or re-use the connection when it's being accessed elsewhere in our code!)
     db.metadata.toArray()
-
-    db.on("ready", async () => {
-      // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
-      // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
-      // // if store has no chains yet, consider it's a fresh install or legacy version
-      // if ((await db.chains.count()) < 1) {
-      //
-      //   // delete old idb-managed metadata+metadataRpc db
-      //   indexedDB.deleteDatabase("talisman")
-      //
-      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider lib
-      //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
-      // }
-    })
 
     // marks all pending transaction as status unknown, then verifies
     // "unknown" txs against the chain and cleans up dropped ones

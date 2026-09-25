@@ -1,4 +1,4 @@
-import { firstValueFrom, ReplaySubject, Subject } from "rxjs"
+import { filter, firstValueFrom, type Observable, ReplaySubject, Subject, timeout } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   makeChaindata,
@@ -11,6 +11,8 @@ import {
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
 import type { Token } from "../chaindata"
+import log from "../log"
+import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import type { Chaindata, CustomChaindata } from "../state/schema"
 import { ChaindataProvider, type ChaindataStorage } from "./ChaindataProvider"
 
@@ -44,8 +46,9 @@ const EMPTY_STORAGE: ChaindataStorage = {
   miniMetadatas: [],
 }
 
-/** Wait a tick for async subjects to flush */
-const tick = () => new Promise((r) => setTimeout(r, 10))
+/** Wait for the first value that matches, however long the chunked pipeline takes */
+const until = <T>(source$: Observable<T>, predicate: (value: T) => boolean) =>
+  firstValueFrom(source$.pipe(filter(predicate), timeout(3_000)))
 
 // ── Tests ────────────────────────────────────────────────────────────
 
@@ -439,10 +442,8 @@ describe("ChaindataProvider", () => {
         // Push valid data from github → provider should recover
         const validData = makeChaindata()
         githubSubject.next(validData)
-        await tick()
 
-        // After github sync, skip(0) doesn't help; use latest from subscription
-        const networks = await firstValueFrom(provider.networks$)
+        const networks = await until(provider.networks$, (n) => n.length > 0)
         expect(networks.length).toBeGreaterThan(0)
       } finally {
         sub.unsubscribe()
@@ -464,9 +465,8 @@ describe("ChaindataProvider", () => {
         // Push valid data from github
         const validData = makeChaindata()
         githubSubject.next(validData)
-        await tick()
 
-        const tokens = await firstValueFrom(provider.tokens$)
+        const tokens = await until(provider.tokens$, (t) => t.length > 0)
         expect(tokens.length).toBeGreaterThan(0)
       } finally {
         sub.unsubscribe()
@@ -491,9 +491,11 @@ describe("ChaindataProvider", () => {
         // Push data from github
         const chaindata = makeChaindata()
         githubSubject.next(chaindata)
-        await tick()
 
-        const networks = await firstValueFrom(provider.networks$)
+        const networks = await until(
+          provider.networks$,
+          (n) => n.length === chaindata.networks.length
+        )
         expect(networks.length).toBe(chaindata.networks.length)
         expect(networks.some((n) => n.id === "polkadot")).toBe(true)
 
@@ -527,9 +529,8 @@ describe("ChaindataProvider", () => {
         // Push expanded data from github
         const expanded = makeChaindata()
         githubSubject.next(expanded)
-        await tick()
 
-        networks = await firstValueFrom(provider.networks$)
+        networks = await until(provider.networks$, (n) => n.length === expanded.networks.length)
         expect(networks.length).toBe(expanded.networks.length)
       } finally {
         sub.unsubscribe()
@@ -929,7 +930,39 @@ describe("ChaindataProvider", () => {
   // ── Reference stability (chunked pipeline regression tests) ─────
 
   describe("reference stability", () => {
-    it("does not re-emit tokens$/networks$ when github pushes deep-equal data", async () => {
+    it("skips the storage update when github re-serves the stored data", async () => {
+      const validation = await parseChaindataFileChunked(makeChaindata())
+      if (!validation.success) throw new Error("fixture failed schema validation")
+      const provider = new ChaindataProvider({ persistedStorage: validation.data })
+
+      const tokenEmissions: unknown[] = []
+      const networkEmissions: unknown[] = []
+      const sub1 = provider.tokens$.subscribe((t) => tokenEmissions.push(t))
+      const sub2 = provider.networks$.subscribe((n) => networkEmissions.push(n))
+      const debug = vi.spyOn(log, "debug")
+
+      try {
+        await firstValueFrom(provider.tokens$)
+        expect(tokenEmissions).toHaveLength(1)
+        debug.mockClear()
+
+        // github serves schema-validated data, like fetchChaindata does
+        githubSubject.next(structuredClone(validation.data))
+
+        await vi.waitFor(() =>
+          expect(debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed"))
+        )
+
+        expect(tokenEmissions).toHaveLength(1)
+        expect(networkEmissions).toHaveLength(1)
+      } finally {
+        sub1.unsubscribe()
+        sub2.unsubscribe()
+        debug.mockRestore()
+      }
+    })
+
+    it("does not re-emit tokens$/networks$ when a storage update re-validates to equal data", async () => {
       const data = makeChaindata()
       const provider = new ChaindataProvider({ persistedStorage: data })
 
@@ -937,20 +970,33 @@ describe("ChaindataProvider", () => {
       const networkEmissions: unknown[] = []
       const sub1 = provider.tokens$.subscribe((t) => tokenEmissions.push(t))
       const sub2 = provider.networks$.subscribe((n) => networkEmissions.push(n))
+      const debug = vi.spyOn(log, "debug")
 
       try {
         await firstValueFrom(provider.tokens$)
         expect(tokenEmissions).toHaveLength(1)
+        debug.mockClear()
 
-        // push deep-equal (but reference-distinct) data — like github re-serving the same file
+        // the raw fixture lacks the keys the schema adds, so it differs from the validated
+        // storage and goes through a storage update, re-validation and a full merge
         githubSubject.next(makeChaindata())
-        await tick()
+
+        await vi.waitFor(() =>
+          expect(debug).toHaveBeenCalledWith(expect.stringContaining("Updating chaindata in DB"))
+        )
+        await vi.waitFor(() =>
+          expect(debug).toHaveBeenCalledWith(
+            expect.stringContaining("Combined chaindata merge"),
+            expect.anything()
+          )
+        )
 
         expect(tokenEmissions).toHaveLength(1)
         expect(networkEmissions).toHaveLength(1)
       } finally {
         sub1.unsubscribe()
         sub2.unsubscribe()
+        debug.mockRestore()
       }
     })
 
@@ -969,9 +1015,8 @@ describe("ChaindataProvider", () => {
           t.id === "1-evm-native" ? { ...t, symbol: "WETH" } : t
         ) as typeof updated.tokens
         githubSubject.next(updated)
-        await tick()
 
-        const tokensAfter = await firstValueFrom(provider.tokens$)
+        const tokensAfter = await until(provider.tokens$, (t) => t !== tokensBefore)
         const dotAfter = tokensAfter.find((t) => t.id === "polkadot-substrate-native")
         const ethAfter = tokensAfter.find((t) => t.id === "1-evm-native")
 

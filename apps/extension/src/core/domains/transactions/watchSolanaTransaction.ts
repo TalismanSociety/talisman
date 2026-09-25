@@ -61,27 +61,32 @@ async function watchUntilFinalized(
       // TODO ideally we should check that the current block height (which is not the slot) is still < lastValidBlockHeight
       // but that would be one additional RPC call per poll
 
+      const isFinalized = confirmationStatus === "finalized"
+
       if (err) {
         txStatus = "error"
-        await updateTransactionStatus(signature, txStatus)
+        await updateTransactionStatus(signature, txStatus, undefined, isFinalized)
         if (notificationTxUrl) await createNotification("error", networkName, notificationTxUrl)
         return // we re done
-      } else if (confirmationStatus === "confirmed" && txStatus !== "success") {
+      } else if (isFinalized || confirmationStatus === "confirmed") {
+        // the first poll can already report "finalized", so success is reported from here too
+        const isFirstInclusion = txStatus !== "success"
         txStatus = "success"
 
-        const txDetails = await tryGetTransactionDetails(rpc, signature)
-        await updateTransactionStatus(signature, txStatus, txDetails?.slot)
+        if (isFirstInclusion || isFinalized) {
+          const txDetails = await tryGetTransactionDetails(rpc, signature)
+          await updateTransactionStatus(signature, txStatus, txDetails?.slot, isFinalized)
+        }
 
-        if (notificationTxUrl) await createNotification("success", networkName, notificationTxUrl)
+        if (isFirstInclusion) {
+          if (notificationTxUrl) await createNotification("success", networkName, notificationTxUrl)
 
-        // Start watching exchange status for swap transactions
-        if (txInfo) watchSwapStatus(signature)
+          // Start watching exchange status for swap transactions
+          if (txInfo) watchSwapStatus(signature)
+        }
 
-        // continue polling until finalized
-      } else if (confirmationStatus === "finalized") {
-        const txDetails = await tryGetTransactionDetails(rpc, signature)
-        await updateTransactionStatus(signature, txStatus, txDetails?.slot, true)
-        return // we re done
+        if (isFinalized) return // we re done
+        // else continue polling until finalized
       }
 
       // Wait before next poll

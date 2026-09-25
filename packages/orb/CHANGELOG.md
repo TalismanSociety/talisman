@@ -1,5 +1,14 @@
 # @talismn/orb
 
+## 1.0.2
+
+### Patch Changes
+
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+- Updated dependencies [67dab7c]
+- Updated dependencies [54d4e62]
+  - @talismn/crypto@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

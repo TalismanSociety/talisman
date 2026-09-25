@@ -57,7 +57,7 @@ export const FormFieldSetRow: FC<
         </TooltipTrigger>
         {!!description && <TooltipContent>{description}</TooltipContent>}
       </Tooltip>
-      <div className={cn("max-w-full truncate text-body", valueClassName)}>{children}</div>
+      <div className={cn("h-full max-w-full truncate text-body", valueClassName)}>{children}</div>
     </div>
   )
 }

@@ -201,6 +201,46 @@ describe("PasswordStore autolock timer", () => {
       // No existing alarm → should create one
       expect(chromeMock.alarms.create).toHaveBeenCalledWith(ALARM_NAME, { delayInMinutes: 15 })
     })
+
+    // a corrupted setting must not read as "never lock"
+    it.each([
+      ["NaN", Number.NaN],
+      ["null", null as unknown as number],
+      ["a negative duration", -1],
+      ["a non-number", "15" as unknown as number],
+    ])("falls back to the default duration when minutes is %s", async (_label, minutes) => {
+      store.isLoggedIn.next("TRUE")
+
+      await store.resetAutolockTimer(minutes)
+
+      expect(chromeMock.alarms.create).toHaveBeenCalledWith(ALARM_NAME, { delayInMinutes: 15 })
+    })
+
+    it("still honours an explicit 0 (user disabled auto-lock)", async () => {
+      store.isLoggedIn.next("TRUE")
+
+      await store.resetAutolockTimer(0)
+
+      expect(chromeMock.alarms.create).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("onboarding", () => {
+    it("schedules the alarm when the first password is set", async () => {
+      // mirrors the Extension wiring: the autolock timer is (re)scheduled on every
+      // isLoggedIn transition, which is what covers onboarding — it never calls
+      // resetAutolockTimer itself.
+      store.isLoggedIn.subscribe(() => {
+        store.resetAutolockTimer(15, { preserveExisting: true })
+      })
+
+      await store.setPassword("hashed-password")
+
+      expect(store.isLoggedIn.value).toBe("TRUE")
+      await vi.waitFor(() =>
+        expect(chromeMock.alarms.create).toHaveBeenCalledWith(ALARM_NAME, { delayInMinutes: 15 })
+      )
+    })
   })
 
   describe("alarm listener (auto-lock trigger)", () => {

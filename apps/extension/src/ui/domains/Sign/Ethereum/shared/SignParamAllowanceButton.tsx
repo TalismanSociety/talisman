@@ -27,13 +27,10 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { formatUnits, getContract, hexToBigInt, parseAbi, parseUnits } from "viem"
+import { formatUnits, getContract, parseAbi, parseUnits } from "viem"
 import * as yup from "yup"
 import { useErc20Token } from "../hooks/useErc20Token"
-
-export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-)
+import { ERC20_UNLIMITED_ALLOWANCE, isUnlimitedAllowance } from "./allowance"
 
 const INPUT_PROPS: FormFieldInputContainerProps = {
   className: "bg-grey-700 px-6",
@@ -104,7 +101,7 @@ const EditAllowanceForm: FC<{
 
   const defaultValues = useMemo(
     () => ({
-      limit: allowance === ERC20_UNLIMITED_ALLOWANCE ? "" : formatUnits(allowance, token.decimals),
+      limit: isUnlimitedAllowance(allowance) ? "" : formatUnits(allowance, token.decimals),
     }),
     [allowance, token.decimals]
   )
@@ -214,14 +211,13 @@ export const SignParamAllowanceButton: FC<{
   const currency = useSelectedCurrency()
 
   const fiat = useMemo(() => {
-    const balAllowance =
-      allowance !== ERC20_UNLIMITED_ALLOWANCE
-        ? new BalanceFormatter(allowance.toString(), token.decimals, tokenRates)
-        : undefined
+    const balAllowance = !isUnlimitedAllowance(allowance)
+      ? new BalanceFormatter(allowance.toString(), token.decimals, tokenRates)
+      : undefined
     return balAllowance?.fiat(currency)
   }, [allowance, currency, token.decimals, tokenRates])
 
-  const isInfinite = useMemo(() => allowance === ERC20_UNLIMITED_ALLOWANCE, [allowance])
+  const isInfinite = useMemo(() => isUnlimitedAllowance(allowance), [allowance])
   const tokens = useMemo(() => formatUnits(allowance, token.decimals), [allowance, token])
 
   const handleSubmit = useCallback(

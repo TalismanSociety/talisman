@@ -206,7 +206,7 @@ globalThis.chrome = chromeWithAsyncWindows as unknown as typeof chrome
 ;(globalThis as unknown as { browser: Browser }).browser =
   chromeWithAsyncWindows as unknown as Browser
 
-process.env.VERSION = process.env.npm_package_version
+process.env.VERSION = process.env.npm_package_version ?? "0.0.0"
 
 // Somehow not available in jsdom
 globalThis.structuredClone = cloneDeep

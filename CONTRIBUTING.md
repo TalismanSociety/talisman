@@ -33,7 +33,7 @@ When submitting a pull request, please follow these guidelines:
 
 - Clearly describe the changes you have made and why they are necessary.
 - Provide tests to demonstrate the changes you have made.
-- Follow our coding standards.
+- Follow our coding standards: the extension layout in [ARCHITECTURE.md](apps/extension/ARCHITECTURE.md), and `pnpm check` for lint and format.
 - Keep your pull request focused on a single issue or feature.
 - Be responsive to feedback from other contributors and maintainers.
 
@@ -43,4 +43,4 @@ All pull requests will be reviewed by one or more maintainers. We aim to respond
 
 ### License
 
-By contributing to the Talisman Wallet, you agree to license your contributions under the [Talisman License](https://github.com/TalismanSociety/talisman/tree/dev/apps/extension/LICENSE). As set out in that license, you grant the Paraverse Foundation a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, copy, modify, distribute, sublicense, and otherwise exploit your contributions under any license terms it may choose.
+By contributing to the Talisman Wallet, you agree to license your contributions under the [Talisman License](https://github.com/TalismanSociety/talisman/blob/dev/LICENSE). As set out in that license, you grant the Paraverse Foundation a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, copy, modify, distribute, sublicense, and otherwise exploit your contributions under any license terms it may choose.

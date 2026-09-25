@@ -62,7 +62,7 @@ export const PopupContent: FC<ContainerProps & { withBottomNav?: boolean }> = ({
     <ScrollContainer
       {...props}
       ref={scrollableRef}
-      className={cn("w-full grow overflow-hidden px-8", className)}
+      className={cn("w-full grow overflow-hidden px-12", className)}
     >
       {children}
       {!!withBottomNav && (

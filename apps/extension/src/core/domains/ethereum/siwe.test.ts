@@ -1,7 +1,7 @@
 import { stringToHex } from "viem"
 import { describe, expect, it } from "vitest"
 
-import { isSiweDomainMismatch } from "./siwe"
+import { isSiweDomainMismatch, parseSiweMessage } from "./siwe"
 
 // minimal valid EIP-4361 message for the given domain
 const siweMessage = (domain: string) =>
@@ -41,6 +41,12 @@ describe("isSiweDomainMismatch", () => {
     ).toBe(true)
   })
 
+  it("detects the domain of a SIWE message sent as raw text", () => {
+    expect(
+      isSiweDomainMismatch("personal_sign", siweMessage("evil.com"), "https://example.com/login")
+    ).toBe(true)
+  })
+
   it("returns false for a non-SIWE personal_sign message", () => {
     expect(
       isSiweDomainMismatch("personal_sign", hex("just a plain message"), "https://example.com")
@@ -65,5 +71,21 @@ describe("isSiweDomainMismatch", () => {
     expect(isSiweDomainMismatch("personal_sign", hex(siweMessage("evil.com")), undefined)).toBe(
       false
     )
+  })
+})
+
+describe("parseSiweMessage", () => {
+  it("parses hex and raw text SIWE messages to the same domain", () => {
+    expect(parseSiweMessage(hex(siweMessage("example.com")))?.domain).toBe("example.com")
+    expect(parseSiweMessage(siweMessage("example.com"))?.domain).toBe("example.com")
+  })
+
+  it("returns null for an odd-length hex payload, so no surface treats it as a sign-in", () => {
+    expect(parseSiweMessage(`${hex(siweMessage("evil.com"))}0`)).toBeNull()
+  })
+
+  it("returns null for a non-SIWE message", () => {
+    expect(parseSiweMessage(hex("just a plain message"))).toBeNull()
+    expect(parseSiweMessage(undefined)).toBeNull()
   })
 })

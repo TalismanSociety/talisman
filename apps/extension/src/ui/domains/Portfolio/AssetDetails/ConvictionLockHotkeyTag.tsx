@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { useBittensorValidator } from "@ui/state/bittensor"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -26,7 +26,7 @@ export const ConvictionLockHotkeyTag: FC<{
             className
           )}
         >
-          <AccountIcon address={hotkey} className="shrink-0 text-[1.2em]" />
+          <BittensorHotkeyAvatar hotkey={hotkey} className="shrink-0 text-[1.2em]" />
           <span className={cn("truncate", status === "loading" && "animate-pulse")}>
             {identity?.name ?? shortenAddress(hotkey, 6, 6)}
           </span>

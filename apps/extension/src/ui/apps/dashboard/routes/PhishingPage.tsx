@@ -5,6 +5,7 @@ import { Button } from "@ui/components/Button"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 
 type PhishingPageProps = {
   url: string
@@ -12,6 +13,8 @@ type PhishingPageProps = {
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const isBlockaid = searchParams.get("source") === "blockaid"
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
     window.location.replace(url)
@@ -35,16 +38,20 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
               <AlertTriangleIcon className="inline-block text-[4.8125rem] text-alert-warn" />
               <h1 className="m-0 text-alert-warn text-bold text-xl">{t("Warning")}</h1>
               <div className="font-light text-lg text-white">
-                <Trans t={t}>
-                  <span className="block break-all">{displayUrl}</span> has been reported as a{" "}
+                <Trans values={{ displayUrl }} t={t}>
+                  <span className="block break-all">{"{{displayUrl}}"}</span> has been reported as a{" "}
                   <span className="block text-alert-warn">malicious site</span>
                 </Trans>
               </div>
               <div className="leading-10">
-                <Trans t={t}>
-                  This URL has been reported as a known phishing site on a community maintained
-                  list.
-                </Trans>
+                {isBlockaid ? (
+                  t("Blockaid has flagged this website as malicious.")
+                ) : (
+                  <Trans t={t}>
+                    This URL has been reported as a known phishing site on a community maintained
+                    list.
+                  </Trans>
+                )}
               </div>
               <div className="w-full">
                 <a href={TALISMAN_WEB_APP_URL}>

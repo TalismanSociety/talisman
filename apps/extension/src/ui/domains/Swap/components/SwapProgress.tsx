@@ -7,6 +7,7 @@ import {
 import { ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
 import { getCanonicalTransaction } from "@ui/domains/Transactions/getCanonicalTransaction"
 import { type ReplacementCallbackArgs, TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useAnyNetwork } from "@ui/state/chaindata"
@@ -21,18 +22,14 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
 
-const getSwapTrackerUrl = (txInfo: WalletTransactionInfo, txHash: string): string | null => {
-  switch (txInfo.type) {
-    case "swap-simpleswap":
-      return txInfo.exchangeId ? `https://simpleswap.io/exchange?id=${txInfo.exchangeId}` : null
-    case "swap-stealthex":
-      return txInfo.exchangeId ? `https://stealthex.io/exchange?id=${txInfo.exchangeId}` : null
-    case "swap-lifi":
-      return `https://scan.li.fi/tx/${txHash}`
-    default:
-      return null
-  }
-}
+const getSwapProgressTrackerUrl = (
+  txInfo: WalletTransactionInfo,
+  txHash: string,
+  network: Network | undefined | null
+): string | null =>
+  txInfo.type === "swap-bittensor-evm"
+    ? getBlockExplorerUrl(network, txHash)
+    : getSwapTrackerUrl(txInfo, txHash)
 
 /**
  * Non-suspending hook — uses Dexie's useLiveQuery (returns undefined while loading).
@@ -106,7 +103,10 @@ export const SwapProgress: FC<SwapProgressProps> = ({
   }, [tx])
 
   const explorerUrl = useMemo(() => getBlockExplorerUrl(network, txHash), [network, txHash])
-  const swapTrackerUrl = useMemo(() => getSwapTrackerUrl(txInfo, txHash), [txInfo, txHash])
+  const swapTrackerUrl = useMemo(
+    () => getSwapProgressTrackerUrl(txInfo, txHash, network),
+    [txInfo, txHash, network]
+  )
 
   const handleTrackClick = useCallback(() => {
     if (swapTrackerUrl) window.open(swapTrackerUrl, "_blank", "noopener")

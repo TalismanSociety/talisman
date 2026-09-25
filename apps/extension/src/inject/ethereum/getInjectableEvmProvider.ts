@@ -1,13 +1,12 @@
-import { log } from "@common/log"
-import type { SendRequest } from "@core/types"
-import { EventEmitter } from "inject/shared/EventEmitter"
-
 import {
   ETH_ERROR_EIP1193_USER_REJECTED,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProviderRpcError,
   type WrappedEthProviderRpcError,
-} from "./EthProviderRpcError"
+} from "@common/EthProviderRpcError"
+import { log } from "@common/log"
+import type { SendRequest } from "@core/types"
+import { EventEmitter } from "inject/shared/EventEmitter"
 
 interface RequestArguments {
   readonly method: string
@@ -141,21 +140,28 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     } catch (err) {
       const { code, message, rpcData } = err as WrappedEthProviderRpcError
 
-      if (code > 0) {
-        // standard wallet error (user rejected, etc.)
-        throw err
-      } else {
-        // popup closed case, untyped because thrown by window manager
-        if (message === "Cancelled")
-          throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
+      // popup closed case, untyped because thrown by window manager
+      if (message === "Cancelled")
+        throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1193_USER_REJECTED)
 
-        // RPC node error, wrap it
-        throw new EthProviderRpcError(
-          "Internal JSON-RPC error.",
-          ETH_ERROR_EIP1474_INTERNAL_ERROR,
-          rpcData
-        )
+      // the port layer stamps -32603 on codeless internal errors, so that code may carry
+      // machinery text rather than a message meant for the dapp - treat it as untyped
+      if (typeof code === "number" && code !== ETH_ERROR_EIP1474_INTERNAL_ERROR) {
+        if (code > 0) {
+          // standard wallet error (user rejected, etc.)
+          throw err
+        }
+
+        // EIP-1474 error: relay the code and message so dapps can tell a deliberate
+        // refusal (e.g. wrong network) from an unrelated failure
+        throw new EthProviderRpcError(message, code, rpcData)
       }
+
+      throw new EthProviderRpcError(
+        "Internal JSON-RPC error.",
+        ETH_ERROR_EIP1474_INTERNAL_ERROR,
+        rpcData
+      )
     }
   }
 

@@ -7,6 +7,7 @@ import { Err, Ok, type Result } from "ts-results"
 import { StorageProvider } from "../../libs/Store"
 import { createNotification } from "../../notifications"
 import { sessionStorage } from "../../util/sessionStorageCompat"
+import { DEFAULT_AUTO_LOCK_MINUTES, isUsableAutoLockDuration } from "./autoLock"
 
 /* ----------------------------------------------------------------
 Contains sensitive data.
@@ -74,8 +75,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     // minutes === undefined means settings haven't loaded yet — preserve any existing alarm.
     if (minutes === undefined) return
 
-    // minutes === 0 means the user explicitly disabled auto-lock — clear and stop.
-    if (minutes <= 0) {
+    // Only 0 disables auto-lock. Any other unusable value is a corrupted setting, and must
+    // fall back to the default rather than schedule an alarm that never fires.
+    const delayInMinutes = isUsableAutoLockDuration(minutes) ? minutes : DEFAULT_AUTO_LOCK_MINUTES
+
+    if (delayInMinutes === 0) {
       await chrome.alarms.clear(ALARM_NAME)
       return
     }
@@ -85,12 +89,12 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     // from extending the unlock window.
     if (preserveExisting) {
       const existing = await chrome.alarms.get(ALARM_NAME)
-      if (existing && existing.scheduledTime <= Date.now() + minutes * 60_000) return
+      if (existing && existing.scheduledTime <= Date.now() + delayInMinutes * 60_000) return
     }
 
     // Replace the existing alarm with a fresh one-shot alarm.
     await chrome.alarms.clear(ALARM_NAME)
-    await chrome.alarms.create(ALARM_NAME, { delayInMinutes: minutes })
+    await chrome.alarms.create(ALARM_NAME, { delayInMinutes })
   }
 
   async reset() {

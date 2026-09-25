@@ -23,7 +23,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@talismn/balances": "workspace:^",
     "@talismn/chain-connectors": "workspace:^",
@@ -32,6 +32,6 @@
     "@talismn/scale": "workspace:^"
   },
   "devDependencies": {
-    "tsx": "^4.22.4"
+    "tsx": "^4.23.13"
   }
 }

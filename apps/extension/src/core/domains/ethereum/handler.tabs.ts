@@ -1,4 +1,17 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@common/constants"
+import {
+  ETH_ERROR_EIP1193_CHAIN_DISCONNECTED,
+  ETH_ERROR_EIP1193_DISCONNECTED,
+  ETH_ERROR_EIP1193_UNAUTHORIZED,
+  ETH_ERROR_EIP1193_UNSUPPORTED_METHOD,
+  ETH_ERROR_EIP1193_USER_REJECTED,
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  ETH_ERROR_EIP1474_INVALID_INPUT,
+  ETH_ERROR_EIP1474_INVALID_PARAMS,
+  ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
+  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
+  EthProviderRpcError,
+} from "@common/EthProviderRpcError"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import {
@@ -10,7 +23,6 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { assert, throwAfter } from "@talismn/util"
-import i18next from "i18next"
 import {
   createClient,
   getAddress,
@@ -45,19 +57,6 @@ import type {
   EthWalletPermissions,
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
-import {
-  ETH_ERROR_EIP1193_CHAIN_DISCONNECTED,
-  ETH_ERROR_EIP1193_DISCONNECTED,
-  ETH_ERROR_EIP1193_UNAUTHORIZED,
-  ETH_ERROR_EIP1193_UNSUPPORTED_METHOD,
-  ETH_ERROR_EIP1193_USER_REJECTED,
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  ETH_ERROR_EIP1474_INVALID_INPUT,
-  ETH_ERROR_EIP1474_INVALID_PARAMS,
-  ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
-  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
-  EthProviderRpcError,
-} from "./EthProviderRpcError"
 import { getEvmErrorCause } from "./errors"
 import {
   isValidAddEthereumRequestParam,
@@ -66,7 +65,9 @@ import {
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
+import { assertPersonalSignMessageDecodable } from "./personalSignMessage"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
+import { assertTypedDataTargetsChain } from "./typedData"
 import type {
   AnyEthRequest,
   AnyEvmError,
@@ -75,6 +76,7 @@ import type {
   EthRequestArguments,
   EthRequestResult,
   EthRequestSignArguments,
+  WatchAssetWarning,
   Web3WalletPermission,
   Web3WalletPermissionTarget,
 } from "./types"
@@ -536,6 +538,11 @@ export class EthTabsHandler extends TabsHandler {
     // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
 
+    if (method === "personal_sign") assertPersonalSignMessageDecodable(message)
+
+    if (["eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method))
+      assertTypedDataTargetsChain(message, site.ethChainId)
+
     const account = await keyringStore.getAccount(from)
 
     if (!account) {
@@ -590,24 +597,15 @@ export class EthTabsHandler extends TabsHandler {
         token.contractAddress.toLowerCase() !== address.toLowerCase()
     )
 
-    const warnings: string[] = []
+    const warnings: WatchAssetWarning[] = []
     if (!tokenInfo) {
-      warnings.push(i18next.t("Failed to verify the contract information"))
+      warnings.push({ type: "unverified-contract" })
     } else {
       if (tokenInfo.symbol !== symbol)
-        warnings.push(
-          i18next.t(
-            "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
-            { symbol, contractSymbol: tokenInfo.symbol }
-          )
-        )
-      if (!tokenInfo.coingeckoId)
-        warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
+        warnings.push({ type: "symbol-mismatch", symbol, contractSymbol: tokenInfo.symbol })
+      if (!tokenInfo.coingeckoId) warnings.push({ type: "missing-coingecko-id" })
     }
-    if (symbolFound)
-      warnings.push(
-        i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
-      )
+    if (symbolFound) warnings.push({ type: "duplicate-symbol", symbol })
 
     const token: EvmErc20Token = {
       id: tokenId,

@@ -2,18 +2,10 @@ import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MsgSignButtonDot } from "./MsgSignButtonDot"
-import { MsgSignButtonEth } from "./MsgSignButtonEth"
 import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
 import { MsgSignButtonSol } from "./MsgSignButtonSol"
 import type { MsgSignButtonProps } from "./types"
 
-/**
- * Works only for Solana for now
- *
- * @param param0
- * @returns
- */
 export const MsgSignButton: FC<MsgSignButtonProps> = ({
   payload,
   containerId,
@@ -28,26 +20,6 @@ export const MsgSignButton: FC<MsgSignButtonProps> = ({
     return <MsgSignButtonFallback label={label ?? t("Sign")} className={cn("w-full", className)} />
 
   switch (payload.platform) {
-    case "polkadot":
-      return (
-        <MsgSignButtonDot
-          containerId={containerId}
-          label={label}
-          payload={payload}
-          onSubmit={onSubmit}
-          className={className}
-        />
-      )
-    case "ethereum":
-      return (
-        <MsgSignButtonEth
-          containerId={containerId}
-          label={label}
-          payload={payload}
-          onSubmit={onSubmit}
-          className={className}
-        />
-      )
     case "solana":
       return (
         <MsgSignButtonSol

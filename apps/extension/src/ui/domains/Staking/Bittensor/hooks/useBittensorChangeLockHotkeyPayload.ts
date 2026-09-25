@@ -1,6 +1,7 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData } from "@tanstack/react-query"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 
 import { getBittensorChangeLockHotkeyPayload } from "../utils/changeLockHotkeyTx"
 
@@ -31,7 +32,8 @@ export const useBittensorChangeLockHotkeyPayload = ({
     isLoading: isLoadingPayload,
     isError: isErrorPayload,
     error: errorPayload,
-  } = useQuery({
+  } = useSignerPayloadQuery({
+    sapi,
     queryKey: [
       "useBittensorChangeLockHotkeyPayload",
       sapi?.id,

@@ -1,45 +1,9 @@
-import { log } from "@common/log"
-import { assert } from "@talismn/util"
-import { db } from "../../db"
 import { ExtensionHandler } from "../../libs/Handler"
-import { requestStore } from "../../libs/requests/store"
 import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { metadataUpdatesStore } from "./metadataUpdates"
-import type { RequestMetadataApprove, RequestMetadataReject } from "./types"
 
 export default class MetadataHandler extends ExtensionHandler {
-  private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {
-    try {
-      const queued = requestStore.getRequest(id)
-
-      assert(queued, "Unable to find request")
-
-      const { request, resolve } = queued
-
-      await db.metadata.put(request)
-
-      resolve(true)
-
-      return true
-    } catch (err) {
-      log.error("Failed to update metadata", { err })
-      throw new Error("Failed to update metadata")
-    }
-  }
-
-  private metadataReject({ id }: RequestMetadataReject): boolean {
-    const queued = requestStore.getRequest(id)
-
-    assert(queued, "Unable to find request")
-
-    const { reject } = queued
-
-    reject(new Error("Rejected"))
-
-    return true
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -51,12 +15,6 @@ export default class MetadataHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // metadata handlers --------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(metadata.approve)":
-        return await this.metadataApprove(request as RequestMetadataApprove)
-
-      case "pri(metadata.reject)":
-        return this.metadataReject(request as RequestMetadataReject)
-
       case "pri(metadata.updates.subscribe)": {
         const { id: genesisHash } = request as RequestType<"pri(metadata.updates.subscribe)">
         return metadataUpdatesStore.subscribe(id, port, genesisHash)

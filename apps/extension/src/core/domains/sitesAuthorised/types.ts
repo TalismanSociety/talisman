@@ -107,10 +107,7 @@ export interface AuthorisedSiteMessages {
   "pri(sites.requests.approveSolSignIn)": [AuthSolanaSignInApprove, boolean]
 
   // authorised sites message signatures
-  "pri(sites.list)": [null, AuthUrls]
   "pri(sites.subscribe)": [null, boolean, AuthUrls]
-  "pri(sites.byid)": [RequestIdOnly, AuthorizedSite]
-  "pri(sites.byid.subscribe)": [RequestIdOnly, boolean, AuthorizedSite]
   "pri(sites.forget)": [RequestAuthorizedSiteForget, boolean]
   "pri(sites.update)": [RequestAuthorizedSiteUpdate, boolean]
   "pri(sites.disconnect.all)": [RequestAuthorizedSiteBatchOp, boolean]

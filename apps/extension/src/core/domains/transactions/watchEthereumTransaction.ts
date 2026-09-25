@@ -88,8 +88,13 @@ export const watchEthereumTransaction = async (
             hash,
             confirmations: 2,
           })
-          if (confirmedReceipt.status === "success" && confirmedReceipt.transactionHash === hash)
-            updateTransactionStatus(hash, "success", confirmedReceipt.blockNumber, true)
+          if (confirmedReceipt.transactionHash === hash)
+            updateTransactionStatus(
+              hash,
+              confirmedReceipt.status === "success" ? "success" : "error",
+              confirmedReceipt.blockNumber,
+              true
+            )
         }
 
         // if tx orignates from a dapp, in case it's a swap for a new token, launch an asset discovery scan

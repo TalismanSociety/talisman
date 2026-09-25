@@ -1,12 +1,12 @@
 import type { DTaoClaimTarget } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
+import { getRuntimeBlockTimeMs } from "@ui/hooks/sapi/useBlockTimeMs"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useMemo } from "react"
 
 import { getBittensorClaimGate, rootClaimThresholdToPlancks } from "../utils/claimGate"
 import { ROOT_NETUID } from "../utils/constants"
-import { getBlockTimeMs } from "../utils/helpers"
-import { useBittensorBasketPayout } from "./useBittensorBasketPayout"
+import { useBittensorBasketClaimPreview } from "./useBittensorBasketClaimPreview"
 import { useBittensorClaimablePlancks } from "./useBittensorClaimablePlancks"
 import { useSubtensorStorageBigInt } from "./useSubtensorStorageBigInt"
 
@@ -23,18 +23,20 @@ export const useBittensorRootClaimGate = (
 
   // the entitlement can shrink or disappear while the modal is open (NAV drift, or claimed
   // from another device): submission gates on a fresh per-block chain read, with the cached
-  // balances stream only seeding the display until it settles
+  // balances stream only seeding the display until it settles.
+  // Readiness requires a fetch completed for THIS mount: a preview cached from a previous
+  // modal open (eg right after claiming) would otherwise open the gate on an entitlement
+  // that is already gone and let the user pay a fee for a no-op
   const streamedClaimablePlancks = useBittensorClaimablePlancks(target)
-  const { data: freshPayoutPlancks, isSuccess: isFreshPayoutReady } = useBittensorBasketPayout(
-    sapi,
-    target
-  )
+  const previewQuery = useBittensorBasketClaimPreview(sapi, target)
+  const isFreshPreviewReady = previewQuery.isSuccess && previewQuery.isFetchedAfterMount
+  const freshPreview = previewQuery.data
 
   // claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust: block them
   // instead of letting the user pay a fee for a no-op.
-  // Readiness requires a fetch completed for THIS mount: a value cached from a previous
-  // modal open could hide an on-chain change (e.g. the hold window being enabled) and
-  // let the gate build a transaction the chain now rejects.
+  // Same readiness rule: a value cached from a previous modal open could hide an on-chain
+  // change (e.g. the hold window being enabled) and let the gate build a transaction the
+  // chain now rejects.
   const dustThresholdQuery = useSubtensorStorageBigInt(sapi, "RootClaimableThreshold", [
     ROOT_NETUID,
   ])
@@ -48,26 +50,31 @@ export const useBittensorRootClaimGate = (
   const isHoldIntervalReady = holdIntervalQuery.isSuccess && holdIntervalQuery.isFetchedAfterMount
   const holdIntervalBlocks = holdIntervalQuery.data ?? 0n
 
-  const holdDurationMs = useMemo(
-    () =>
-      sapi && holdIntervalBlocks > 0n ? Number(holdIntervalBlocks) * getBlockTimeMs(sapi) : null,
-    [sapi, holdIntervalBlocks]
-  )
+  const holdDurationMs = useMemo(() => {
+    const blockTimeMs = sapi ? getRuntimeBlockTimeMs(sapi) : null
+    return blockTimeMs && holdIntervalBlocks > 0n ? Number(holdIntervalBlocks) * blockTimeMs : null
+  }, [sapi, holdIntervalBlocks])
 
-  const { claimablePlancks, isClaimUnavailable, isBelowDustThreshold, canSubmit } =
-    getBittensorClaimGate({
-      hasAccount: !!account,
-      streamedClaimablePlancks,
-      freshPayoutPlancks,
-      isFreshPayoutReady,
-      dustThreshold,
-      isDustThresholdReady,
-      isHoldIntervalReady,
-    })
+  const {
+    claimablePlancks,
+    forfeitedPlancks,
+    isClaimUnavailable,
+    isBelowDustThreshold,
+    canSubmit,
+  } = getBittensorClaimGate({
+    hasAccount: !!account,
+    streamedClaimablePlancks,
+    freshPreview,
+    isFreshPreviewReady,
+    dustThreshold,
+    isDustThresholdReady,
+    isHoldIntervalReady,
+  })
 
   return {
     account,
     claimablePlancks,
+    forfeitedPlancks,
     dustThreshold,
     isClaimUnavailable,
     isBelowDustThreshold,

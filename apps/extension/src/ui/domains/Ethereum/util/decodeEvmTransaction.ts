@@ -1,10 +1,17 @@
 import {
+  BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
+  BITTENSOR_EVM_CHAIN_IDS,
+} from "@core/domains/bittensor/constants"
+import {
+  abiBittensorBalanceTransfer,
   abiErc20,
   abiErc721,
   abiErc1155,
   abiMoonConvictionVoting,
   abiMoonStaking,
   abiMoonXTokens,
+  abiPermit2,
+  PERMIT2_ADDRESS,
 } from "@core/util/abi"
 import { isContractAddress } from "@core/util/isContractAddress"
 import {
@@ -49,12 +56,74 @@ const STANDARD_CONTRACTS = [
   },
 ] as const
 
+// ERC1155 metadata uris may be shared by every token of the collection, with an `{id}` placeholder
+// that clients substitute with the token id, as 64 lowercase hex characters
+const expandErc1155Uri = (uri: string, tokenId: bigint) =>
+  uri.replace("{id}", tokenId.toString(16).padStart(64, "0"))
+
+// on Permit2 the token is an argument of the call, not the contract being called
+const getPermit2TokenAddress = (functionName: string, args: readonly unknown[] | undefined) => {
+  if (functionName === "approve") return args?.[0] as `0x${string}` | undefined
+  if (functionName === "transferFrom") return args?.[3] as `0x${string}` | undefined
+  return undefined
+}
+
+const readErc20Metadata = async (publicClient: PublicClient, address: `0x${string}`) => {
+  const contract = getContract({
+    address,
+    abi: parseAbi(abiErc20),
+    client: { public: publicClient },
+  })
+
+  // metadata is optional, a token that doesn't implement it is still spendable
+  const [name, symbol, decimals] = await Promise.allSettled([
+    contract.read.name(),
+    contract.read.symbol(),
+    contract.read.decimals(),
+  ])
+
+  return {
+    name: name.status === "fulfilled" ? name.value : undefined,
+    symbol: symbol.status === "fulfilled" ? symbol.value : undefined,
+    decimals: decimals.status === "fulfilled" ? decimals.value : undefined,
+  }
+}
+
+const decodeBittensorPrecompile = (
+  publicClient: PublicClient,
+  targetAddress: TransactionRequestBase["to"],
+  data: TransactionRequestBase["data"]
+) => {
+  const chainId = publicClient.chain?.id
+  if (!chainId || !BITTENSOR_EVM_CHAIN_IDS.includes(chainId)) return null
+  if (!targetAddress || !data) return null
+  if (targetAddress.toLowerCase() !== BITTENSOR_BALANCE_TRANSFER_PRECOMPILE) return null
+
+  try {
+    const abi = abiBittensorBalanceTransfer
+    const contractCall = decodeFunctionData({ abi, data })
+    return {
+      contractType: "BittensorBalanceTransfer" as const,
+      contractCall,
+      targetAddress,
+      isContractCall: true,
+      abi,
+    }
+  } catch {
+    return null
+  }
+}
+
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
 ) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx
+
+  // bittensor precompiles have no bytecode, so they must be matched before the contract check
+  const bittensorPrecompile = decodeBittensorPrecompile(publicClient, targetAddress, data)
+  if (bittensorPrecompile) return { ...bittensorPrecompile, value }
 
   const isContractCall = targetAddress
     ? await isContractAddress(publicClient, targetAddress)
@@ -75,6 +144,31 @@ export const decodeEvmTransaction = async (
             abi,
           }
         }
+      }
+    }
+
+    // Permit2 allowances look nothing like ERC20 ones: the token is an argument, and its `approve`
+    // selector differs from ERC20's - without this branch the whole contract is undecodable
+    if (targetAddress.toLowerCase() === PERMIT2_ADDRESS.toLowerCase()) {
+      try {
+        const abi = parseAbi(abiPermit2)
+        const contractCall = decodeFunctionData({ abi, data })
+
+        const tokenAddress = getPermit2TokenAddress(contractCall.functionName, contractCall.args)
+
+        return {
+          contractType: "Permit2",
+          contractCall,
+          abi,
+          targetAddress,
+          isContractCall: true,
+          value,
+          asset: tokenAddress
+            ? { ...(await readErc20Metadata(publicClient, tokenAddress)), tokenAddress }
+            : undefined,
+        }
+      } catch {
+        // unknown selector, fall through to the generic decoding
       }
     }
 
@@ -150,6 +244,42 @@ export const decodeEvmTransaction = async (
             isContractCall: true,
             value,
             asset,
+          }
+        }
+        if (contractType === "ERC1155") {
+          const contractCall = decodeFunctionData({ abi, data })
+
+          const { functionName, args } = contractCall
+          const tokenIds =
+            functionName === "safeBatchTransferFrom"
+              ? (args[2] as readonly bigint[])
+              : functionName === "safeTransferFrom"
+                ? [args[2] as bigint]
+                : []
+
+          const contract = getContract({
+            address: targetAddress,
+            abi,
+            client: { public: publicClient },
+          })
+
+          // metadata is optional, and a single uri may cover every token id of the collection
+          const uri = tokenIds.length
+            ? await contract.read.uri([tokenIds[0]]).catch(() => undefined)
+            : undefined
+
+          return {
+            contractType,
+            contractCall,
+            abi,
+            targetAddress,
+            isContractCall: true,
+            value,
+            asset: {
+              tokenId: tokenIds[0],
+              tokenURI: uri ? expandErc1155Uri(uri, tokenIds[0]) : undefined,
+              decimals: 0,
+            },
           }
         }
       } catch {

@@ -1,6 +1,7 @@
 {
   "name": "@talismn/sapi",
-  "version": "2.0.1",
+  "version": "2.0.2",
+  "description": "Scale API: build, decode, estimate and submit Polkadot SDK transactions over polkadot-api",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -21,7 +22,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsdown -l error",
     "typecheck": "tsc --noEmit"

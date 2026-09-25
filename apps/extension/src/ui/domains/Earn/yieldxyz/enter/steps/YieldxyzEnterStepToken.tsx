@@ -31,8 +31,6 @@ export const YieldxyzEnterStepToken: FC = () => {
     >
       <TokenPicker
         tokenFilter={tokenFilter}
-        allowUntransferable={false}
-        ownedOnly
         selected={pickerTokenId ?? undefined}
         onSelect={onPickerTokenChanged}
       />

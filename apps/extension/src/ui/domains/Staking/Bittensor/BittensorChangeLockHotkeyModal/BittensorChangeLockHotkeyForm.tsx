@@ -2,11 +2,11 @@ import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AddressPillButton } from "@ui/domains/SendFunds/SendFundsAmountForm/AddressPillButton"
+import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { useTranslation } from "react-i18next"
 
@@ -100,7 +100,7 @@ export const BittensorChangeLockHotkeyForm = () => {
               <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
                 {selectedHotkey ? (
                   <>
-                    <AccountIcon className="shrink-0 text-lg!" address={selectedHotkey} />
+                    <BittensorHotkeyAvatar hotkey={selectedHotkey} className="shrink-0 text-lg!" />
                     <div className="grow truncate leading-base">{destinationHotkeyName}</div>
                   </>
                 ) : (

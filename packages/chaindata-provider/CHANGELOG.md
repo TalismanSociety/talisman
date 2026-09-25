@@ -1,5 +1,33 @@
 # @talismn/chaindata-provider
 
+## 2.0.4
+
+### Patch Changes
+
+- cab105b: Bump viem, @solana/kit, zod, dexie and @metaplex-foundation/umi
+- 724a30e: read Bittensor claimable rewards from the spec 468 claim preview api (redeemable amount, dust rows excluded); chaindata pub folder bumped to v14 for the minimetadata change
+- d3dcfc4: generate init data
+
+## 2.0.3
+
+### Patch Changes
+
+- 67dab7c: Resolve Bittensor EVM explorer links (evm.taostats.io, bittensor.ai/explorer/evm)
+- ba2381a: Bump dev tooling dependencies
+- 65d5779: Bump bignumber.js, dexie, zod, react-icons, color and p-queue
+- dde2de8: generate init data
+- Updated dependencies [ba2381a]
+- Updated dependencies [65d5779]
+  - @talismn/util@2.0.1
+
+## 2.0.2
+
+### Patch Changes
+
+- aa5a15e: Add `getGithubBittensorHotkeyAssetUrl` to resolve chaindata's Bittensor hotkey logo assets
+- 88f2fca: Derive block explorer labels from a brand allowlist and support bittensor.ai explorer routes
+- 8cb6e95: generate init data
+
 ## 2.0.1
 
 ### Patch Changes

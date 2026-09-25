@@ -31,7 +31,6 @@ vi.mock("@ui/state/bittensor", () => ({
   useBittensorValidatorsMap: () => ({ data: {} }),
 }))
 
-// eslint-disable-next-line import/first
 import { useBittensorSubnetNeurons } from "../useBittensorSubnetNeurons"
 
 // ── Test fixtures ─────────────────────────────────────────────────

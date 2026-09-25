@@ -3,6 +3,7 @@ import type { TokenRateCurrency } from "@talismn/token-rates"
 
 import { StorageProvider } from "../../libs/Store"
 import type { IdenticonType } from "../accounts/types"
+import { DEFAULT_AUTO_LOCK_MINUTES } from "./autoLock"
 
 export type LedgerTransportType = "usb" | "hid"
 
@@ -20,6 +21,8 @@ export interface SettingsStoreData {
   selectedCurrency: TokenRateCurrency
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
+  autoDappScan: boolean
+  autoTokenScan: boolean
   nftsViewMode: "list" | "tiles"
   nftsSortBy: "value" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
@@ -50,10 +53,12 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   hideBalances: false,
   hideDust: false,
   allowNotifications: true,
-  autoLockMinutes: 15,
+  autoLockMinutes: DEFAULT_AUTO_LOCK_MINUTES,
   selectableCurrencies: ["usd", "tao", "eth"],
   selectedCurrency: "usd",
   newFeaturesDismissed: "0",
+  autoDappScan: true,
+  autoTokenScan: true,
   nftsViewMode: "tiles",
   tokensSortBy: "total",
   earnPositionsSortBy: "total",

@@ -7,7 +7,7 @@ The non-custodial Talisman Wallet browser extension for Chrome and Firefox.
 This extension uses [WXT](https://wxt.dev/) (built on Vite) for development and production builds. WXT provides:
 
 - ⚡ **Fast rebuilds** (~10s) with hot module replacement
-- 📦 **Optimized production builds** (~30MB vs ~300MB with webpack)
+- 📦 **Optimized production builds**
 - 🔄 **Automatic browser reload** when code changes
 - 🎯 **Manifest V3** support for Chrome and Firefox
 
@@ -36,11 +36,13 @@ Then load the extension in Chrome:
 
 ```bash
 # Chrome development (with HMR)
-pnpm wxt:dev
+pnpm dev:extension
 
-# Firefox development
-pnpm wxt:dev:firefox
+# Firefox development (Firefox 147+, output in dist/firefox-mv3-dev)
+pnpm dev:extension:firefox
 ```
+
+Inside `apps/extension`, the same scripts are `pnpm dev` and `pnpm dev:firefox`.
 
 ### How Dev Mode Works
 
@@ -70,7 +72,7 @@ The Chrome profile is stored **outside the repository** for security, since it m
 
 ### Build Commands
 
-All build commands produce both an unpacked extension directory and a distributable zip file.
+All build commands produce both an unpacked extension directory and a distributable zip file. Run these commands inside `apps/extension`. From the repo root, use the `build:extension*` scripts (e.g. `pnpm build:extension:prod`).
 
 ```bash
 # Build for Chrome (local testing)
@@ -82,7 +84,7 @@ pnpm build:firefox
 # Production builds (Chrome Web Store / Firefox Add-ons)
 # Enables Sentry sourcemap upload
 pnpm build:prod
-pnpm build:prod:firefox  # Runs via Docker for reproducibility
+pnpm build:prod:firefox  # Local build; the release build runs via Docker (root: pnpm build:extension:prod:firefox)
 
 # Canary builds (internal testing)
 pnpm build:canary
@@ -97,14 +99,19 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 
 | Variable            | Required | Description                                     |
 | ------------------- | -------- | ----------------------------------------------- |
-| `SENTRY_AUTH_TOKEN` | Yes      | Sentry authentication token                     |
-| `SENTRY_ORG`        | Yes      | Sentry organization slug                        |
+| `SENTRY_AUTH_TOKEN` | Chrome   | Sentry token for sourcemap upload (build only warns without it) |
+| `SENTRY_DSN`        | Chrome   | Sentry DSN used at runtime                      |
+| `POSTHOG_AUTH_TOKEN`| Chrome   | PostHog analytics token                         |
+| `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
+
+See `.env.sample` for the full list, including dev-only variables.
 
 #### Sourcemap Handling
 
-- **Production/Canary builds**: Generate hidden sourcemaps (no inline reference in JS)
-- **Sentry upload**: Sourcemaps are uploaded to Sentry for error tracking
+- **Production/Canary Chrome builds**: Generate hidden sourcemaps (no inline reference in JS)
+- **Sentry upload**: Sourcemaps are uploaded to Sentry for error tracking (Chrome only)
+- **Firefox production/canary builds**: No sourcemaps
 - **Cleanup**: Sourcemaps are automatically deleted before zipping to keep them out of the final distribution
 
 ### Output Directories
@@ -112,28 +119,25 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 | Command             | Unpacked Directory     | Zip File                                     |
 | ------------------- | ---------------------- | -------------------------------------------- |
 | `dev`               | `dist/chrome-mv3-dev`  | -                                            |
-| `dev:firefox`       | `dist/firefox-mv2-dev` | -                                            |
-| `build` / `build:*` | `dist/chrome-mv3`      | `dist/talisman-wallet-{version}-chrome.zip`  |
-| `build:*:firefox`   | `dist/firefox-mv3`     | `dist/talisman-wallet-{version}-firefox.zip` |
+| `dev:firefox`       | `dist/firefox-mv3-dev` | -                                            |
+| `build` / `build:*` | `dist/chrome-mv3`      | `dist/talisman-{version}-{buildType}-{gitSha}-chrome.zip`  |
+| `build:*:firefox`   | `dist/firefox-mv3`     | `dist/talisman-{version}-{buildType}-{gitSha}-firefox.zip` |
 
 ### Build Variants
 
 | Build Type  | Name Suffix | Version Name Example   | Sentry Upload |
 | ----------- | ----------- | ---------------------- | ------------- |
-| Production  | (none)      | `3.1.16`               | ✅            |
-| Canary      | ` - Canary` | `3.1.16 - abc1234`     | ✅            |
-| Dev Server  | ` - Dev`    | `3.1.16 - abc1234 dev` | ❌            |
-| Local Build | (none)      | `3.1.16 - abc1234 dev` | ❌            |
+| Production  | (none)      | `3.1.16`                  | ✅ (Chrome)   |
+| Canary      | ` - Canary` | `3.1.16 canary - abc1234` | ✅ (Chrome)   |
+| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    | ❌            |
+| Local Build | (none)      | `3.1.16 dev - abc1234`    | ❌            |
 
 ### How Production Builds Work
 
 In production mode:
 
-- Workspace packages resolve to their **pre-built `dist/` directories** (via tsup)
-- Vite/Rollup performs full tree-shaking and minification
-- Result is ~10x smaller than development builds
-
-> **Note:** Use the root-level build commands (e.g., `pnpm build:extension`) which automatically build packages first. Running `pnpm build` directly in `apps/extension` requires packages to be pre-built.
+- Workspace packages are bundled from their **source directories** (`packages/*/src`), as in dev mode. No package build is needed.
+- Vite/Rolldown performs full tree-shaking and minification
 
 ## Project Structure
 
@@ -143,10 +147,10 @@ apps/extension/
 │   ├── background.ts      # Service worker entry
 │   ├── content.ts         # Content script entry
 │   ├── page.ts            # Injected page script entry
-│   ├── popup.html         # Popup UI
-│   ├── dashboard.html     # Full-page dashboard
-│   ├── onboarding.html    # Onboarding flow
-│   └── support.html       # Support page
+│   ├── popup/             # Popup UI (index.html + main.tsx)
+│   ├── dashboard/         # Full-page dashboard
+│   ├── onboarding/        # Onboarding flow
+│   └── support/           # Support page
 ├── public/                # Static assets (icons, fonts, etc.)
 ├── src/                   # Application source code
 │   ├── common/            # Shared utilities
@@ -165,18 +169,18 @@ The main configuration file controls:
 
 - **Manifest generation** - Extension metadata, permissions, icons
 - **Vite plugins** - React, SVG-to-component, markdown handling
-- **Path aliases** - Conditional dev/prod resolution for workspace packages
+- **Path aliases** - Workspace packages resolve to their source
 - **Build options** - Target browsers, chunk splitting, optimizations
 
 ### Environment-Specific Behavior
 
 | Feature            | Development     | Production/Canary                         |
 | ------------------ | --------------- | ----------------------------------------- |
-| Package resolution | Source (`src/`) | Built (`dist/`)                           |
-| Icon suffix        | `-dev`          | `-prod`                                   |
+| Package resolution | Source (`src/`) | Source (`src/`)                           |
+| Icon suffix        | `-dev`          | `-prod` / `-canary`                       |
 | Minification       | Disabled        | Enabled                                   |
-| Source maps        | Inline          | Hidden (uploaded to Sentry, then deleted) |
-| Sentry upload      | No              | Yes                                       |
+| Source maps        | Separate `.map` files | Chrome: hidden (uploaded to Sentry, then deleted). Firefox: none |
+| Sentry upload      | No              | Chrome only                               |
 
 ## Testing
 
@@ -184,7 +188,7 @@ The main configuration file controls:
 # Run unit tests
 pnpm test
 
-# Run E2E tests (Playwright)
+# Run E2E tests (Playwright, from the repo root)
 pnpm test:e2e
 ```
 

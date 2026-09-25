@@ -20,6 +20,7 @@ import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
+import { getSameNetworkMirrorTokenIds } from "@ui/util/getSameNetworkMirrorTokenIds"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash-es/sortBy"
 import { type FC, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
@@ -238,16 +239,23 @@ const TokenRow: FC<TokenRowProps> = ({
 
 const DEFAULT_FILTER = () => true
 
+/**
+ * "usable" (default) shows only active tokens on networks that a wallet account can sign for.
+ * "all" also includes inactive tokens and account-incompatible networks, e.g. when the tokens may be sent to an external recipient.
+ */
+export type TokenPickerScope = "usable" | "all"
+
 type TokensListProps = {
   address?: Address
   selected?: TokenId
   search?: string
   selectedNetworkId?: string | null
   allowUntransferable?: boolean
-  ownedOnly?: boolean
-  activeOnly?: boolean
+  tokenScope?: TokenPickerScope
   showEmptyBalances?: boolean
   isInitializing?: boolean
+  /** hides tokens which are a second view of another listed token's balance on the same network, e.g. Arc's ERC20 USDC */
+  hideSameNetworkMirrors?: boolean
   /** these tokens will always be sorted to the top of the list */
   priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
@@ -261,10 +269,10 @@ const TokensList: FC<TokensListProps> = ({
   search,
   selectedNetworkId,
   allowUntransferable,
-  ownedOnly,
-  activeOnly = true,
+  tokenScope = "usable",
   showEmptyBalances,
   isInitializing,
+  hideSameNetworkMirrors,
   priorityTokens,
   tokenFilter = DEFAULT_FILTER,
   onAvailableNetworksChange,
@@ -273,13 +281,13 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
-  const allTokens = useTokens({ activeOnly, includeTestnets: true })
+  const allTokens = useTokens({ activeOnly: tokenScope === "usable", includeTestnets: true })
   const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
   const isBalancesInitializing = useIsBalanceInitializing()
-  const balances = useBalances(ownedOnly ? "owned" : "all")
+  const balances = useBalances("owned")
   const currency = useSelectedCurrency()
 
   // Capture the selected token at mount time so the sort order stays stable.
@@ -305,20 +313,27 @@ const TokensList: FC<TokensListProps> = ({
     (token: Token) => {
       const network = networksMap[token.networkId]
       if (!network) return false
-      if (!account) return compatibleNetworkIds.has(token.networkId)
+      if (account) return isAccountCompatibleWithNetwork(network, account)
+      if (tokenScope === "all") return true
 
-      return isAccountCompatibleWithNetwork(network, account)
+      return compatibleNetworkIds.has(token.networkId)
     },
-    [account, compatibleNetworkIds, networksMap]
+    [account, tokenScope, compatibleNetworkIds, networksMap]
   )
 
   const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
 
   const accountCompatibleTokens = useMemo(() => {
-    return allTokens
+    const tokens = allTokens
       .filter(tokenFilter)
       .filter(filterAccountCompatibleTokens)
       .filter(isTransferableToken)
+    const mirrorTokenIds = hideSameNetworkMirrors
+      ? getSameNetworkMirrorTokenIds(tokens)
+      : new Set<TokenId>()
+
+    return tokens
+      .filter((token) => !mirrorTokenIds.has(token.id))
       .map((token) => {
         const network = networksMap[token.networkId]
         return {
@@ -334,6 +349,7 @@ const TokensList: FC<TokensListProps> = ({
     allTokens,
     activeTokenIds,
     filterAccountCompatibleTokens,
+    hideSameNetworkMirrors,
     networksMap,
     tokenFilter,
     tokenRatesMap,
@@ -532,11 +548,12 @@ type TokenPickerProps = {
   selected?: TokenId
   initialSearch?: string
   allowUntransferable?: boolean
-  ownedOnly?: boolean
-  activeOnly?: boolean
+  tokenScope?: TokenPickerScope
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
+  /** hides tokens which are a second view of another listed token's balance on the same network, e.g. Arc's ERC20 USDC */
+  hideSameNetworkMirrors?: boolean
   /** When provided, enables a network filter button next to the search input. Value is the container element ID for the network picker modal. */
   networkFilterContainerId?: string
   /** these tokens will always be sorted to the top of the list */
@@ -553,11 +570,11 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   selected,
   initialSearch = "",
   allowUntransferable,
-  ownedOnly,
-  activeOnly,
+  tokenScope,
   isInitializing,
   className,
   showEmptyBalances,
+  hideSameNetworkMirrors,
   networkFilterContainerId,
   priorityTokens,
   tokenFilter,
@@ -621,14 +638,14 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           search={deferredSearch}
           selectedNetworkId={selectedNetworkId}
           allowUntransferable={allowUntransferable}
-          ownedOnly={ownedOnly}
           isInitializing={isInitializing}
           priorityTokens={priorityTokens}
           tokenFilter={tokenFilter}
           onAvailableNetworksChange={networkFilterContainerId ? setAvailableNetworks : undefined}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}
-          activeOnly={activeOnly ?? !showEmptyBalances}
+          hideSameNetworkMirrors={hideSameNetworkMirrors}
+          tokenScope={tokenScope}
         />
       </ScrollContainer>
       {!!networkFilterContainerId && (

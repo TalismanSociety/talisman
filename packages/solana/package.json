@@ -1,6 +1,7 @@
 {
   "name": "@talismn/solana",
-  "version": "1.0.1",
+  "version": "1.0.3",
+  "description": "Types and utilities for Solana, built on @solana/kit",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "SEE LICENSE IN LICENSE",
@@ -27,12 +28,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@solana/kit": "6.10.0",
+    "@solana/kit": "8.3.0",
     "@talismn/crypto": "workspace:*"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "@types/node": "^24.5.1",
+    "@types/node": "^24.13.3",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

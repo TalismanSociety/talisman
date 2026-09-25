@@ -16,11 +16,12 @@ import {
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
-import { useField, useForm } from "@tanstack/react-form"
+import { useForm, useStore } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
+import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -28,10 +29,12 @@ import { notify } from "@ui/components/Notifications"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
+import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
 import { range } from "lodash-es"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
@@ -129,8 +132,22 @@ const AddCustomTokenForm = () => {
     },
   })
 
-  const fldNetworkId = useField({ form, name: "networkId" })
-  const fldContractAddress = useField({ form, name: "contractAddress" })
+  // Read from the form store instead of `useField`: a second `FieldApi` for a name already rendered
+  // by `<form.Field>` takes over `fieldInfo[name].instance`, and form-core then discards the async
+  // validation results of the `<form.Field>` instance which owns the validators.
+  const networkId = useStore(form.store, (s) => s.values.networkId)
+
+  // The token fields are only meaningful once the contract address resolved to a new token, which
+  // makes `token` the gate for both editing and validating them: validating them earlier would
+  // display "expected string, received undefined" errors next to the contract address error.
+  const hasTokenInfo = useStore(form.store, (s) => !!s.values.token)
+
+  const token = useStore(form.store, (s) => s.values.token as Token | undefined)
+  const symbol = useStore(form.store, (s) => s.values.symbol)
+  const { scan, isPending: isScanPending } = useTokenRiskScan(token, "add-token")
+  const [acknowledgedTokenId, setAcknowledgedTokenId] = useState<string | null>(null)
+  const isRiskAcknowledged = !!token && acknowledgedTokenId === token.id
+  const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
 
   // Fields populated from the token info fetch. They must all be cleared whenever the contract
   // address stops resolving to a new token, else they keep displaying the previous token's info.
@@ -185,7 +202,7 @@ const AddCustomTokenForm = () => {
               spellCheck={false}
               data-lpignore
               autoComplete="off"
-              disabled={!fldNetworkId.state.value}
+              disabled={!networkId}
               placeholder="0xdeadbeef...deadbeef"
               small
               after={
@@ -252,7 +269,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="symbol"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.symbol.safeParse(value)
               return parsed.success
                 ? undefined
@@ -269,7 +287,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="TKN"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -278,7 +296,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="decimals"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.decimals.safeParse(value)
               return parsed.success
                 ? undefined
@@ -296,7 +315,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 small
                 readOnly
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
               />
             </FormFieldContainer>
           )}
@@ -305,7 +324,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="coingeckoId"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.coingeckoId.safeParse(value)
               return parsed.success
                 ? undefined
@@ -329,7 +349,7 @@ const AddCustomTokenForm = () => {
                 autoComplete="off"
                 placeholder="(optional)"
                 small
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
                 before={
                   <AssetLogo
                     className="mr-2 rounded-full text-[1.875rem]"
@@ -344,7 +364,8 @@ const AddCustomTokenForm = () => {
         <form.Field
           name="name"
           validators={{
-            onChange: ({ value }) => {
+            onChange: ({ value, fieldApi }) => {
+              if (!fieldApi.form.getFieldValue("token")) return undefined
               const parsed = TokenBaseSchema.shape.name.safeParse(value)
               return parsed.success
                 ? undefined
@@ -360,7 +381,7 @@ const AddCustomTokenForm = () => {
                 value={field.state.value ?? ""}
                 onChange={(e) => field.handleChange(e.target.value)}
                 autoComplete="off"
-                disabled={!fldContractAddress.state.meta.isValid}
+                disabled={!hasTokenInfo}
                 small
               />
             </FormFieldContainer>
@@ -368,7 +389,20 @@ const AddCustomTokenForm = () => {
         />
       </div>
 
-      <div className="flex justify-end gap-8 py-8">
+      <TokenSecurityPanels token={token} scan={scan} symbol={symbol || token?.symbol || ""} />
+
+      <div className="mt-8 flex items-center justify-end gap-8 py-8">
+        {!!token && scan?.verdict === "Malicious" && (
+          <div className="text-body-secondary text-sm">
+            <Checkbox
+              checked={isRiskAcknowledged}
+              onChange={(e) => setAcknowledgedTokenId(e.target.checked ? token.id : null)}
+            >
+              {t("I acknowledge the risks")}
+            </Checkbox>
+          </div>
+        )}
+        <div className="grow" />
         <Button className="h-24 w-[15rem] text-base" type="button" onClick={() => navigate(-1)}>
           {t("Cancel")}
         </Button>
@@ -386,8 +420,8 @@ const AddCustomTokenForm = () => {
               icon={SaveIcon}
               className="h-24 w-[15rem] text-base"
               type="submit"
-              processing={isSubmitting || isValidating}
-              disabled={!canSubmit && !isSubmitting && !isValidating}
+              processing={isSubmitting || isValidating || isScanPending}
+              disabled={(!canSubmit && !isSubmitting && !isValidating) || isRiskBlocking}
             >
               {t("Save")}
             </Button>

@@ -1,3 +1,5 @@
+import type { bittensor } from "@polkadot-api/descriptors"
+
 /**
  * `RootClaimableThreshold` is stored as fixed-point rao with 32 fractional bits — the
  * `sudo_set_root_claim_threshold` extrinsic takes plain rao and stores it shifted left by
@@ -7,15 +9,28 @@
  */
 export const rootClaimThresholdToPlancks = (raw: bigint): bigint => (raw + (1n << 32n) - 1n) >> 32n
 
+/**
+ * `BetaBasketRuntimeApi.get_basket_claim_preview` (spec 468), the fields the gate reads:
+ * `accrued_tao` is the full entitlement at the pre-sale realizable quote, `redeemable_tao`
+ * what the claim pays once the dust rows are skipped, `forfeited_tao_est` the estimated
+ * value of those skipped rows, left in the fund for the remaining holders.
+ */
+export type BittensorBasketClaimPreview = Pick<
+  NonNullable<
+    (typeof bittensor)["descriptors"]["apis"]["BetaBasketRuntimeApi"]["get_basket_claim_preview"][1]
+  >,
+  "hotkey" | "accrued_tao" | "redeemable_tao" | "forfeited_tao_est"
+>
+
 export type BittensorClaimGateInputs = {
   hasAccount: boolean
   /** claimable per the cached balances stream, null once its entitlement row is gone */
   streamedClaimablePlancks: bigint | null
-  /** fresh chain read of the target pair's payout, refetched every block */
-  freshPayoutPlancks: bigint | undefined
+  /** fresh chain read of the target pair's claim preview, null when nothing is owed */
+  freshPreview: BittensorBasketClaimPreview | null | undefined
   /** false while the fresh read is loading or after it errors: both must block */
-  isFreshPayoutReady: boolean
-  /** claims below RootClaimableThreshold[ROOT] are skipped on-chain as dust */
+  isFreshPreviewReady: boolean
+  /** claims whose redeemable amount is below RootClaimableThreshold[ROOT] are skipped on-chain as dust */
   dustThreshold: bigint
   isDustThresholdReady: boolean
   isHoldIntervalReady: boolean
@@ -26,36 +41,47 @@ export type BittensorClaimGateInputs = {
  *
  * A claim whose entitlement dropped below `RootClaimableThreshold` — or was claimed from
  * another device — still succeeds on-chain as a silently-skipped paid no-op (E2E-verified:
- * `RootClaimed` with 0 TAO). Payouts are NAV quotes that move with subnet pool prices every
- * block, so only the fresh per-block read decides; the balances stream merely seeds the
- * display until it settles. While any input is unresolved (loading or RPC error) the gate
- * stays closed: reading absent values as zero would open gates the chain keeps closed and
- * skip the hold warning.
+ * `RootClaimed` with 0 TAO). Since spec 468 the chain compares the *redeemable* amount (the
+ * entitlement minus the fund rows too small to sell) to the threshold, pays that amount and
+ * burns the full entitlement, so the gate reads the chain's own claim preview: what it pays,
+ * and what the dust rows would forfeit. Payouts are NAV quotes that move with subnet pool
+ * prices every block, so only the fresh per-block read decides; the balances stream merely
+ * seeds the display until it settles. While any input is unresolved (loading or RPC error)
+ * the gate stays closed: reading absent values as zero would open gates the chain keeps
+ * closed and skip the hold warning.
  */
 export const getBittensorClaimGate = ({
   hasAccount,
   streamedClaimablePlancks,
-  freshPayoutPlancks,
-  isFreshPayoutReady,
+  freshPreview,
+  isFreshPreviewReady,
   dustThreshold,
   isDustThresholdReady,
   isHoldIntervalReady,
 }: BittensorClaimGateInputs) => {
-  const claimablePlancks = freshPayoutPlancks ?? streamedClaimablePlancks ?? 0n
+  const claimablePlancks = freshPreview?.redeemable_tao ?? streamedClaimablePlancks ?? 0n
 
-  const isClaimUnavailable =
-    streamedClaimablePlancks === null || (isFreshPayoutReady && freshPayoutPlancks === 0n)
+  const isEntitlementGone =
+    isFreshPreviewReady && (!freshPreview || freshPreview.accrued_tao === 0n)
+  const isClaimUnavailable = streamedClaimablePlancks === null || isEntitlementGone
 
+  // a zero redeemable amount is a no-op whatever the threshold: the entitlement is dust only
   const isBelowDustThreshold =
-    claimablePlancks > 0n && dustThreshold > 0n && claimablePlancks < dustThreshold
-
-  const canSubmit =
-    hasAccount &&
     !isClaimUnavailable &&
-    isFreshPayoutReady &&
-    isDustThresholdReady &&
-    isHoldIntervalReady &&
-    !isBelowDustThreshold
+    (claimablePlancks < dustThreshold || (isFreshPreviewReady && claimablePlancks === 0n))
 
-  return { claimablePlancks, isClaimUnavailable, isBelowDustThreshold, canSubmit }
+  // a claim the chain would skip or reject forfeits nothing: only warn about dust rows the
+  // submitted claim would actually leave behind
+  const isClaimExecutable = isFreshPreviewReady && !isClaimUnavailable && !isBelowDustThreshold
+  const forfeitedPlancks = isClaimExecutable ? (freshPreview?.forfeited_tao_est ?? 0n) : 0n
+
+  const canSubmit = hasAccount && isClaimExecutable && isDustThresholdReady && isHoldIntervalReady
+
+  return {
+    claimablePlancks,
+    forfeitedPlancks,
+    isClaimUnavailable,
+    isBelowDustThreshold,
+    canSubmit,
+  }
 }

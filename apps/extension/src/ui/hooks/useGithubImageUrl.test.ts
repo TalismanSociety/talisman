@@ -163,3 +163,27 @@ describe("useGithubImageUrl / getFileUrl (debug flow: gitraw -> jsdelivr)", () =
     expect(getFileUrl(JSDELIVR_SLASHED, FALLBACK, true)).toBe(FALLBACK)
   })
 })
+
+describe("useGithubImageUrl / getFileUrl (no fallback)", () => {
+  it("returns undefined for nullish input", async () => {
+    const getFileUrl = await loadGetFileUrl(false)
+
+    expect(getFileUrl(null)).toBeUndefined()
+    expect(getFileUrl(undefined)).toBeUndefined()
+  })
+
+  it("rotates through every source then ends on undefined", async () => {
+    const getFileUrl = await loadGetFileUrl(false)
+
+    expect(getFileUrl(GITRAW_SIMPLE)).toBe(JSDELIVR_SIMPLE)
+    expect(getFileUrl(JSDELIVR_SIMPLE, undefined, true)).toBe(GITRAW_SIMPLE)
+    expect(getFileUrl(GITRAW_SIMPLE, undefined, true)).toBeUndefined()
+  })
+
+  it("drops non-github urls on rotation", async () => {
+    const getFileUrl = await loadGetFileUrl(false)
+
+    expect(getFileUrl("https://example.com/logo.png")).toBe("https://example.com/logo.png")
+    expect(getFileUrl("https://example.com/logo.png", undefined, true)).toBeUndefined()
+  })
+})

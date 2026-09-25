@@ -34,7 +34,7 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
       symbol={token.symbol}
     >
       {isUniswapV2LpToken &&
-        balances.sorted
+        balances.each
           .filter((balance) => balance.total.planck > 0n)
           .map((balance, i, balances) => (
             <ChainTokenBalancesUniswapV2Row

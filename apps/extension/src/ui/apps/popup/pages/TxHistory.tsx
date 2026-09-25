@@ -27,7 +27,7 @@ export const TxHistoryPage = () => {
         <Header />
         <Suspense fallback={<SuspenseTracker name="TxHistoryPage" />}>
           <TxHistoryToolbar />
-          <PopupContent withBottomNav className="text-body-secondary text-xs">
+          <PopupContent withBottomNav className="px-8 text-body-secondary text-xs">
             <TxHistoryList />
           </PopupContent>
         </Suspense>

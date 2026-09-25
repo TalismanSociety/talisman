@@ -3,12 +3,11 @@ packages:
   - "apps/*"
   - "config/*"
   - "packages/*"
-  - "lib/*"
 
 # pnpm 11 only reads auth/registry settings from .npmrc; every other setting must
 # live here (camelCase). See .npmrc for the rationale behind shamefullyHoist.
 shamefullyHoist: true
-useNodeVersion: 24.8.0
+nodeVersion: 24.21.0
 nodeOptions: "--max-old-space-size=4096"
 savePrefix: ""
 
@@ -22,6 +21,7 @@ allowBuilds:
   keccak: false
   node-hid: false
   secp256k1: false
+  simple-git-hooks: false
   spawn-sync: false
   usb: false
   utf-8-validate: false
@@ -32,36 +32,21 @@ minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   # published by Talisman, no buffer time needed
   - "@talismn/siws"
-  # polkadot-api 2.2.0 and its graph were published 2026-07-20. Diffed 2.2.0 against
-  # 2.1.6: a watch-entries refactor plus dep bumps; ws-provider 0.9.1 is a dep bump
-  # only; json-rpc-provider-proxy 0.4.1 is the sync-provider backoff reset fix we
-  # want. The rest below are transitive bumps pinned by polkadot-api 2.2.0.
-  # Can all be removed after 2026-07-23.
-  - "polkadot-api"
-  - "@polkadot-api/cli"
-  - "@polkadot-api/json-rpc-provider-proxy"
-  - "@polkadot-api/known-chains"
-  - "@polkadot-api/sm-provider"
-  - "@polkadot-api/ws-middleware"
-  - "@polkadot-api/ws-provider"
 
 overrides:
   # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
-  # pins 6.35.3 while hw-app-eth/solana 7.x and our transports use 6.35.4, which
+  # pins 6.35.6 while hw-app-eth/solana 7.x use 6.35.7 and the web transports 6.35.5, which
   # otherwise produces two incompatible Transport types. The Transport API is
   # stable across 6.x. devices follows transport.
-  "@ledgerhq/devices": "8.15.1"
-  "@ledgerhq/hw-transport": "6.35.4"
+  "@ledgerhq/devices": "8.17.0"
+  "@ledgerhq/hw-transport": "6.35.7"
+  # errors 7 only removed two type aliases; webhid/webusb still declare ^6.37.
+  "@ledgerhq/errors": "7.0.0"
   # .papi/descriptors declares an open `polkadot-api: >=2.0.0` peer range (papi codegen
   # writes that file), which otherwise resolves to its own copy and ships a second
   # polkadot-api — and a second sync-provider — in the bundle. Keep in sync with the
   # polkadot-api version in the root package.json.
   "polkadot-api": "2.2.0"
-  # rolldown 1.2.1 drops a `return;` statement from the asm.js emitted by emscripten in
-  # @bitcoinerlab/miniscript (a ledger-bitcoin dependency). Control then falls through into
-  # the unwind path of __wasm_call_ctors, which throws a raw pointer at module load and
-  # kills the page. 1.2.0 is the last good release inside vite 8's `~1.2.0` range.
-  "vite>rolldown": "1.2.0"
   "braces@<3.0.3": ">=3.0.3"
   "cookie@<0.7.0": ">=0.7.0"
   "decode-uri-component": "0.2.2"
@@ -82,8 +67,10 @@ overrides:
   "ws@>=7.0.0 <7.5.11": ">=7.5.11"
   "ws@>=8.0.0 <8.21.0": ">=8.21.0"
   "axios@<1.16.0": ">=1.16.0"
-  "@babel/runtime@<7.26.10": ">=7.26.10"
-  "@babel/helpers@<7.26.10": ">=7.26.10"
+  # capped below 8: an open upper bound let 8.0.0 satisfy ^7 ranges, and runtime 8 drops the
+  # `regenerator` subpath that @metamask/ethjs-contract still requires
+  "@babel/runtime@<7.26.10": ">=7.26.10 <8.0.0"
+  "@babel/helpers@<7.26.10": ">=7.26.10 <8.0.0"
   "image-size@>=1.1.0 <1.2.1": ">=1.2.1"
   "on-headers@<1.1.0": ">=1.1.0"
   "form-data@>=4.0.0 <4.0.6": ">=4.0.6"
@@ -113,39 +100,52 @@ overrides:
   "playwright@<1.55.1": ">=1.55.1"
   "glob@>=10.2.0 <10.5.0": ">=10.5.0"
   "glob@>=11.0.0 <11.1.0": ">=11.1.0"
-  "js-yaml@>=4.0.0 <4.1.2": ">=4.1.2"
+  "js-yaml@>=4.0.0 <4.3.2": ">=4.3.2 <5.0.0"
   "valibot@>=0.31.0 <1.2.0": ">=1.2.0"
   "devalue@<5.8.1": ">=5.8.1"
   # --- 2026-06 security sweep: dev/build-chain transitive advisories ---
   "shell-quote@<1.8.4": ">=1.8.4 <2.0.0"
-  "undici@>=7.0.0 <7.24.0": ">=7.24.0 <8.0.0"
+  "undici@>=7.0.0 <7.29.0": ">=7.29.0 <8.0.0"
   "node-forge@<1.4.0": ">=1.4.0 <2.0.0"
   "@isaacs/brace-expansion@<=5.0.0": ">=5.0.1 <6.0.0"
-  "brace-expansion@>=1.0.0 <1.1.13": ">=1.1.13 <2.0.0"
-  "brace-expansion@>=2.0.0 <2.0.2": ">=2.0.2 <3.0.0"
+  "brace-expansion@>=1.0.0 <1.1.18": ">=1.1.18 <2.0.0"
+  "brace-expansion@>=2.0.0 <2.1.4": ">=2.1.4 <3.0.0"
+  # 3.x and 4.x have no patched release of their own; 5.0.9 is the fix line
+  "brace-expansion@>=3.0.0 <5.0.9": ">=5.0.9 <6.0.0"
   "minimatch@>=3.0.0 <3.1.4": ">=3.1.4 <4.0.0"
   "minimatch@>=5.0.0 <5.1.8": ">=5.1.8 <6.0.0"
   "minimatch@>=9.0.0 <9.0.7": ">=9.0.7 <10.0.0"
   "minimatch@>=10.0.0 <10.2.3": ">=10.2.3 <11.0.0"
   "picomatch@<2.3.2": ">=2.3.2 <3.0.0"
   "picomatch@>=4.0.0 <4.0.4": ">=4.0.4 <5.0.0"
-  "fast-uri@<3.1.1": ">=3.1.1 <4.0.0"
+  "fast-uri@<3.1.6": ">=3.1.6 <4.0.0"
   "ajv@>=8.0.0 <8.18.0": ">=8.18.0 <9.0.0"
   "smol-toml@<1.6.1": ">=1.6.1 <2.0.0"
-  "qs@>=6.7.0 <6.15.2": ">=6.15.2 <7.0.0"
+  "qs@>=6.7.0 <6.16.0": ">=6.16.0 <7.0.0"
   "flatted@<3.4.2": ">=3.4.2 <4.0.0"
   "defu@<=6.1.4": ">=6.1.5 <7.0.0"
   "@babel/core@<7.29.1": ">=7.29.1 <8.0.0"
+  # --- 2026-09 sweep: dev/build-chain transitive advisories ---
+  "nanoid@<3.3.18": ">=3.3.18 <4.0.0"
+  "fast-xml-parser@>=5.9.3 <5.10.1": ">=5.10.1 <6.0.0"
+  "browserslist@<4.28.7": ">=4.28.7 <5.0.0"
+  "baseline-browser-mapping@>=2.0.0 <2.11.0": ">=2.11.0 <3.0.0"
+  "image-size@>=2.0.0 <=2.0.2": ">=2.0.3 <3.0.0"
+  "adm-zip@<0.6.1": ">=0.6.1 <0.7.0"
+  "svgo@>=3.0.0 <3.3.5": ">=3.3.5 <4.0.0"
+  # 7.x has no patched release of its own; 8.0.0 is the fix line
+  "deepmerge-ts@<8.0.0": ">=8.0.0 <9.0.0"
+  "diff@<3.5.1": ">=3.5.1 <4.0.0"
   # single resolution for ws's optional native peer, avoids peer-hash graph forks
   "utf-8-validate": "6.0.4"
   # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
   # icons/orb devDeps) otherwise load a second copy and break rendering ("React Element from an
   # older version of React"). All of them work on 19.
-  "react": "19.2.7"
-  "react-dom": "19.2.7"
+  "react": "19.3.0"
+  "react-dom": "19.3.0"
   # dedupe @types/react too — icons/orb pin 18.3.12, extension 19.x; whichever hoists wins, and a
   # split makes react-icons' ReactNode (no bigint) clash with react 19's, breaking extension tsc.
-  "@types/react": "19.2.17"
+  "@types/react": "19.3.0"
 peerDependencyRules:
   ignoreMissing:
     - "react-native"
@@ -153,5 +153,3 @@ peerDependencyRules:
   allowAny:
     - "utf-8-validate"
     - "eciesjs"
-    # @solana-program/token-2022 declares a stale ^5.0 peer, kit 6.10 ships sysvars 6.10
-    - "@solana/sysvars"

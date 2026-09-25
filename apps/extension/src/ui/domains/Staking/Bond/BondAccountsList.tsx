@@ -159,7 +159,7 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
     return accounts
       .map((account) => ({
         ...account,
-        balance: balances.find({ address: account.address, tokenId }).sorted[0],
+        balance: balances.find({ address: account.address, tokenId }).each[0],
       }))
       .sort((a, b) => {
         // selected account first

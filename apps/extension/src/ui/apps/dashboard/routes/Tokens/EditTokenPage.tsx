@@ -12,7 +12,7 @@ import {
   type Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
-import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
@@ -30,12 +30,15 @@ import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
+import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
+import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork, useToken } from "@ui/state/chaindata"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -88,6 +91,8 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
+  const { scan: riskScan } = useTokenRiskScan(token, "token-settings")
+  const hasSecurityReport = !!getGoPlusReportUrl(token) || riskScan?.verdict !== "unknown"
   const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()
 
@@ -334,30 +339,31 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             />
           )}
         </div>
-        <div>
-          <FormFieldContainer label={t("Display balances")}>
-            <div className="flex gap-3">
-              <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
-                <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
-              </Toggle>
-              {isActiveSetByUser && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className="text-primary text-xs"
-                    type="button"
-                    onClick={resetToTalismanDefault}
-                  >
-                    <RotateCcwIcon />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div>{t("Reset to default")}</div>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          </FormFieldContainer>
-        </div>
-        <div className="flex justify-end gap-8 py-8">
+
+        {hasSecurityReport && (
+          <TokenSecurityPanels token={token} scan={riskScan} symbol={token.symbol} />
+        )}
+        <div className="mt-8 flex justify-end gap-8 py-8">
+          <div className="flex gap-3">
+            <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+              <span className={"text-grey-300"}>{t("Display balances")}</span>
+            </Toggle>
+            {isActiveSetByUser && (
+              <Tooltip>
+                <TooltipTrigger
+                  className="text-primary text-xs"
+                  type="button"
+                  onClick={resetToTalismanDefault}
+                >
+                  <RotateCcwIcon />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div>{t("Reset to default")}</div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div className="grow" />
           {isTokenCustom(token) && (
             <Button
               className="h-24 w-[15rem] text-base"
@@ -420,35 +426,6 @@ const OnChainIdDisplay = ({ onChainId }: { onChainId: string | number }) => {
 
   return (
     <FormFieldTextarea value={yaml} spellCheck={false} data-lpignore readOnly rows={rowsCount} />
-  )
-}
-
-const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
-  address,
-  className,
-}) => {
-  const { t } = useTranslation()
-  const handleClick = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(address)
-      notify({
-        type: "success",
-        title: t(`Address copied`),
-        subtitle: shortenAddress(address, 6, 6),
-      })
-    } catch (err) {
-      notify({
-        type: "error",
-        title: t("Error"),
-        subtitle: (err as Error).message ?? "Failed to copy address",
-      })
-    }
-  }, [address, t])
-
-  return (
-    <IconButton className={className} onClick={handleClick} disabled={!address}>
-      <CopyIcon />
-    </IconButton>
   )
 }
 
@@ -545,14 +522,14 @@ const ConfirmRemove: FC<{
       <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
           {isTokenKnown(saved) ? (
-            <Trans t={t}>
-              This will reset <span className="text-body">{saved?.symbol}</span> to its Talisman
+            <Trans values={{ symbol: saved?.symbol ?? "" }} t={t}>
+              This will reset <span className="text-body">{"{{symbol}}"}</span> to its Talisman
               default state. Are you sure you want to continue ?
             </Trans>
           ) : (
-            <Trans t={t}>
-              Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
-              from your token list ?
+            <Trans values={{ symbol: saved?.symbol ?? "" }} t={t}>
+              Are you sure you want to remove <span className="text-body">{"{{symbol}}"}</span> from
+              your token list ?
             </Trans>
           )}
         </div>
