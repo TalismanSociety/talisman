@@ -12,6 +12,7 @@ import {
 } from "../__fixtures__/chaindata"
 import type { Token } from "../chaindata"
 import log from "../log"
+import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import type { Chaindata, CustomChaindata } from "../state/schema"
 import { ChaindataProvider, type ChaindataStorage } from "./ChaindataProvider"
 
@@ -929,7 +930,39 @@ describe("ChaindataProvider", () => {
   // ── Reference stability (chunked pipeline regression tests) ─────
 
   describe("reference stability", () => {
-    it("does not re-emit tokens$/networks$ when github pushes deep-equal data", async () => {
+    it("skips the storage update when github re-serves the stored data", async () => {
+      const validation = await parseChaindataFileChunked(makeChaindata())
+      if (!validation.success) throw new Error("fixture failed schema validation")
+      const provider = new ChaindataProvider({ persistedStorage: validation.data })
+
+      const tokenEmissions: unknown[] = []
+      const networkEmissions: unknown[] = []
+      const sub1 = provider.tokens$.subscribe((t) => tokenEmissions.push(t))
+      const sub2 = provider.networks$.subscribe((n) => networkEmissions.push(n))
+      const debug = vi.spyOn(log, "debug")
+
+      try {
+        await firstValueFrom(provider.tokens$)
+        expect(tokenEmissions).toHaveLength(1)
+        debug.mockClear()
+
+        // github serves schema-validated data, like fetchChaindata does
+        githubSubject.next(structuredClone(validation.data))
+
+        await vi.waitFor(() =>
+          expect(debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed"))
+        )
+
+        expect(tokenEmissions).toHaveLength(1)
+        expect(networkEmissions).toHaveLength(1)
+      } finally {
+        sub1.unsubscribe()
+        sub2.unsubscribe()
+        debug.mockRestore()
+      }
+    })
+
+    it("does not re-emit tokens$/networks$ when a storage update re-validates to equal data", async () => {
       const data = makeChaindata()
       const provider = new ChaindataProvider({ persistedStorage: data })
 
@@ -944,9 +977,13 @@ describe("ChaindataProvider", () => {
         expect(tokenEmissions).toHaveLength(1)
         debug.mockClear()
 
-        // push deep-equal (but reference-distinct) data — like github re-serving the same file
+        // the raw fixture lacks the keys the schema adds, so it differs from the validated
+        // storage and goes through a storage update, re-validation and a full merge
         githubSubject.next(makeChaindata())
 
+        await vi.waitFor(() =>
+          expect(debug).toHaveBeenCalledWith(expect.stringContaining("Updating chaindata in DB"))
+        )
         await vi.waitFor(() =>
           expect(debug).toHaveBeenCalledWith(
             expect.stringContaining("Combined chaindata merge"),
