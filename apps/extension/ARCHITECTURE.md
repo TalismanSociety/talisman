@@ -50,21 +50,24 @@ Entrypoints do platform setup only (imports, zoom, sizing), then render the app.
 
 ## Adding a backend operation
 
-Data flows `ui/domains` → `ui/state` or `ui/hooks` → `ui/api` → `PortMessageService` → `core/handlers/Extension.ts` → `core/domains/<domain>/handler.ts`.
+Data flows `ui/domains` → `ui/state` or `ui/hooks` → `ui/api` → `PortMessageService` → `core/handlers/Extension.ts` → the domain's handler.
 
-1. Add the request and response types to `core/domains/<domain>/types.ts`, and the message key (`"pri(<domain>.<action>)"`) to that domain's `<Domain>Messages` interface, which `core/types/index.ts` merges.
-2. Handle it in the domain's `handler.ts` (`ExtensionHandler`). Dapp-facing messages (`"pub(...)"`) go in a `TabsHandler` instead (`handler.tabs.ts` in `ethereum` and `solana`, `core/handlers/Tabs.ts` for Polkadot).
-3. Expose it on the `api` object in `ui/api/api.ts` and type it in `ui/api/types.ts`.
-4. If the UI needs it as reactive state shared by several domains, wrap it in `ui/state/` with `@react-rxjs/core`'s `bind()`. Otherwise call `api` from a hook in the domain.
+1. Add the request and response types to `core/domains/<domain>/types.ts`, and the message key to that domain's `<Domain>Messages` interface, which `core/types/index.ts` merges. The key is `"pri(<route>.<action>)"`, and its value is the tuple `[Request, Response]`, or `[Request, Response, SubscriptionData]` for a subscription.
+2. Handle it in the domain's handler (`ExtensionHandler`). `<route>` is the handler's key in `#routes` in `core/handlers/Extension.ts`. It is not always the folder name: `ethereum` is `eth`, `sitesAuthorised` is `sites`. A handler for a new domain must go in `#routes`, else the background throws "Unable to handle message". Dapp-facing messages (`"pub(...)"`) go in a `TabsHandler` instead: `handler.tabs.ts` in `ethereum` and `solana`, registered in `#routes` in `core/handlers/Tabs.ts`, which also handles the Polkadot messages.
+3. For a subscription, return `genericSubscription` or `genericAsyncSubscription` (`core/handlers/subscriptions.ts`) from the handler. Handlers get the stores from `this.stores` (`core/handlers/stores.ts`).
+4. Expose it on the `api` object in `ui/api/api.ts` (`messageService.sendMessage`, or `messageService.subscribe` for a subscription) and type it in `ui/api/types.ts`.
+5. If the UI needs it as reactive state shared by several domains, wrap it in `ui/state/` with `@react-rxjs/core`'s `bind()`. Otherwise call `api` from a hook in the domain.
 
 ## Core (`src/core/`)
 
 ```
 core/
+├── config/      Sentry setup
 ├── db/          Dexie (IndexedDB) schema and upgrades
 ├── domains/     Business logic, one folder per domain (camelCase)
 ├── handlers/    Message routing: Extension.ts (pri), Tabs.ts (pub)
 ├── libs/        Base classes and singletons: Handler, Store, RequestStore, migrations
+├── notifications/ OS notifications
 ├── rpcs/        Chain connector instances (Polkadot SDK, EVM, Solana)
 ├── types/       Message protocol types
 └── util/        Helpers with no domain affinity
@@ -76,15 +79,15 @@ core/
 
 A domain has only the files it needs:
 
-- `handler.ts` — extends `ExtensionHandler`. Never imported by `ui/`.
+- `handler.ts` — extends `ExtensionHandler`. A domain with dapp-facing messages uses `handler.extension.ts` and `handler.tabs.ts` (`TabsHandler`). A large handler can be a `handler/` folder. Never imported by `ui/`.
 - `types.ts` — request and response types.
-- `store.ts` / `store.<name>.ts` — persistent state: a `Store` (chrome.storage) or a Dexie table.
+- `store.ts` / `store.<name>.ts` — persistent state: a `StorageProvider` or `SubscribableStorageProvider` from `core/libs/Store.ts` (chrome.storage), or a Dexie table.
 - `helpers.ts` — pure functions.
 - `exports.ts` — what `ui/` may import when the domain has more than helpers and types to share. It must not import `handler*.ts`.
 - `migrations/` — data migrations for the domain's stores. `legacy/` — old stores that only migrations read.
 - Tests colocated as `*.test.ts` or `*.spec.ts`, or in `__tests__/`.
 
-Do not add an `index.ts`. Import the file you need.
+Do not add an `index.ts`. Import the file you need. Some domains have an `index.ts` already: see [No new barrel files](#no-new-barrel-files).
 
 ## UI (`src/ui/`)
 
@@ -141,7 +144,7 @@ Move code up a level only when a second consumer appears. Do not pre-emptively g
 | `ui/hooks/` | — | `use*.ts` |
 | `ui/state/` | — | camelCase `.ts` |
 
-The case difference between `core/domains/accounts` and `ui/domains/Account` is intentional. Inside a UI domain, sub-folders that hold components are PascalCase (`Sign/Ethereum`); non-React module folders are kebab-case (`Swap/swap-modules`).
+The case difference between `core/domains/accounts` and `ui/domains/Account` is intentional. Inside a UI domain, give new sub-folders that hold components a PascalCase name (`Sign/Ethereum`), and new non-React module folders a kebab-case name (`Swap/swap-modules`). Many existing folders do not follow this rule (`Earn/yieldxyz`, `Sign/risk-analysis`). Do not rename them only for the rule.
 
 ## Inject (`src/inject/`)
 
@@ -167,7 +170,7 @@ Cross-domain UI state is an RxJS observable in `ui/state/`, exposed to React wit
 For React context (wizards, multi-step flows), use `provideContext` from `ui/util/provideContext.tsx` instead of a hand-written context and provider pair.
 
 ### No new barrel files
-Do not add `index.ts` re-exports. Import from the source module (`@ui/domains/Portfolio/PortfolioContainer`, not `@ui/domains/Portfolio`). A few barrels exist (`@ui/api`, `@ui/components/Notifications`, `core/db`); use them as other code does, and do not add to the list.
+Do not add `index.ts` re-exports. Import from the source module (`@ui/domains/Portfolio/PortfolioContainer`, not `@ui/domains/Portfolio`). About 35 barrels exist, for example `@ui/api`, `@ui/components/Notifications`, `core/db`, `core/notifications` and most `core/domains/*/index.ts` (`Extension.ts` imports the handlers through them). Use them as other code does. Do not add a new one.
 
 ### Feature flags
 Feature flags come from remote config (`core/domains/app/store.remoteConfig.ts`), never from `common/constants.ts` or build-time env.
