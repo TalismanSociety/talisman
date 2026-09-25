@@ -25,12 +25,7 @@ pnpm install
 pnpm dev:extension
 ```
 
-Then load the extension in Chrome:
-
-1. Navigate to `chrome://extensions`
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select `apps/extension/dist/chrome-mv3-dev`
+This opens Chrome with the extension loaded. With `NOBROWSER=1`, no browser opens: load `apps/extension/dist/chrome-mv3-dev` yourself with "Load unpacked" in `chrome://extensions` ("Developer mode" on).
 
 ### Development Commands
 

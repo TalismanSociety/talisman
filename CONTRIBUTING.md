@@ -33,7 +33,7 @@ When submitting a pull request, please follow these guidelines:
 
 - Clearly describe the changes you have made and why they are necessary.
 - Provide tests to demonstrate the changes you have made.
-- Follow our coding standards: the extension layout in [ARCHITECTURE.md](apps/extension/ARCHITECTURE.md), and `pnpm check` for lint and format.
+- Follow our coding standards: the extension layout in [ARCHITECTURE.md](apps/extension/ARCHITECTURE.md), and Biome for lint and format. Before you push, run `pnpm verify`: it runs the CI checks, and Biome fails on warnings as in CI.
 - Keep your pull request focused on a single issue or feature.
 - Be responsive to feedback from other contributors and maintainers.
 

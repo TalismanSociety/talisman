@@ -12,11 +12,11 @@ Talisman wallet monorepo (pnpm). `apps/extension` is the browser extension (WXT 
 
 CI runs these on every PR. Run `pnpm verify` before you push. It runs all of them in CI order; Biome checks only the files your commits change since `origin/dev`.
 
-- Lint and format: `pnpm biome check --error-on-warnings -- <changed files>`. CI checks changed files only. `pnpm check:fix` applies fixes.
+- Lint and format: `pnpm biome check --error-on-warnings --changed --since=origin/dev`. CI checks changed files only and fails on warnings; `pnpm check` does not. `pnpm check:fix` applies fixes.
 - Types: `pnpm typecheck`.
 - Unit tests: `pnpm test [path]`, from the repo root.
 - Unused code and dependencies: `pnpm knip`. Dependencies are hoisted, so an import of a package that is missing from its workspace's `package.json` works locally. Knip fails CI on it.
-- Direct dependency licenses: `pnpm check:licenses`.
+- Licenses: `pnpm check:licenses`. It checks all production dependencies, transitive ones included, and the direct devDependencies.
 
 ## Conventions
 
