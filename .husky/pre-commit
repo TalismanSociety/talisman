@@ -1,6 +1,14 @@
-# Auto-fix formatting, lint fixes and import sorting, then re-stage the fixed files
-pnpm biome check --staged --write --no-errors-on-unmatched
-git update-index --again
+# Auto-fix formatting, lint fixes and import sorting, then re-stage the fixed files.
+# Skipped when a staged file also has unstaged changes: re-staging it would commit them.
+partially_staged=$(git diff --cached --name-only -z --diff-filter=ACMR | xargs -0 -r git diff --name-only --)
+
+if [ -z "$partially_staged" ]; then
+  pnpm biome check --staged --write --no-errors-on-unmatched
+  git update-index --again
+else
+  echo "pre-commit: auto-fix skipped, these staged files have unstaged changes:"
+  echo "$partially_staged"
+fi
 
 # Block the commit on any issue CI's biome check would report
 pnpm biome check --staged --error-on-warnings --no-errors-on-unmatched
