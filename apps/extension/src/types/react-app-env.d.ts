@@ -14,7 +14,6 @@ declare namespace NodeJS {
 
     // dev utilities
     readonly PASSWORD?: string
-    readonly TEST_MNEMONIC?: string
     readonly EVM_LOGPROXY?: string
     readonly LOG_SUBSCRIPTION_CALLBACKS?: string
   }
