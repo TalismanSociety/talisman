@@ -1,10 +1,10 @@
 import type { DTaoClaimTarget } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
+import { getRuntimeBlockTimeMs } from "@ui/hooks/sapi/useBlockTimeMs"
 import { useMemo } from "react"
 
 import type { BittensorBasketClaimPreview } from "../utils/claimGate"
-import { getBlockTimeMs } from "../utils/helpers"
 
 /**
  * Fresh chain read of what claiming the target pair would pay (`get_basket_claim_preview`,
@@ -21,7 +21,7 @@ export const useBittensorBasketClaimPreview = (
   target: DTaoClaimTarget | null
 ) => {
   const isApiSupported = !!sapi?.isApiAvailable("BetaBasketRuntimeApi", "get_basket_claim_preview")
-  const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
+  const blockTimeMs = useMemo(() => (sapi ? getRuntimeBlockTimeMs(sapi) : null), [sapi])
 
   return useQuery({
     queryKey: ["useBittensorBasketClaimPreview", sapi?.id, target?.address, target?.hotkey],

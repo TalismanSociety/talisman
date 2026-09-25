@@ -25,6 +25,8 @@ describe("translation extraction", () => {
 
   beforeAll(async () => {
     directory = await mkdtemp(path.join(tmpdir(), "talisman-i18next-"))
+    const problems: string[] = []
+    const report = (message: string) => problems.push(message)
     const result = await runExtractor(
       {
         ...config,
@@ -34,9 +36,10 @@ describe("translation extraction", () => {
           output: path.join(directory, "{{language}}", "{{namespace}}.json"),
         },
       },
-      { quiet: true }
+      { quiet: true, logger: { info: () => {}, warn: report, error: report } }
     )
     expect(result.hasErrors).toBe(false)
+    expect(problems).toEqual([])
     expect(result.results.map(({ namespace }) => namespace)).toEqual(["common"])
     translations = JSON.parse(await readFile(path.join(directory, "en/common.json"), "utf8"))
   })

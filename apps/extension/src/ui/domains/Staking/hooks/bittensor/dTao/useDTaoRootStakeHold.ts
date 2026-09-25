@@ -2,12 +2,12 @@ import { type Balance, findDTaoRootStakeHold } from "@talismn/balances"
 import { type DotNetworkId, parseSubDTaoTokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
-import { getBlockTimeMs } from "@ui/domains/Staking/Bittensor/utils/helpers"
 import {
   getStorageDefault,
   getStorageItem,
   toBigIntStrict,
 } from "@ui/domains/Staking/Bittensor/utils/storageDefault"
+import { getRuntimeBlockTimeMs } from "@ui/hooks/sapi/useBlockTimeMs"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
@@ -95,7 +95,7 @@ const useDTaoRootStakeHold = (balance: Balance | null | undefined): DTaoRootStak
   )
 
   const { data: sapi } = useScaleApi(pair?.networkId ?? null)
-  const blockTimeMs = useMemo(() => (sapi ? getBlockTimeMs(sapi) : null), [sapi])
+  const blockTimeMs = useMemo(() => (sapi ? getRuntimeBlockTimeMs(sapi) : null), [sapi])
   const refetchInterval = Math.max(blockTimeMs ?? MIN_REFETCH_INTERVAL_MS, MIN_REFETCH_INTERVAL_MS)
 
   const { data: fresh, isSuccess } = useQuery({

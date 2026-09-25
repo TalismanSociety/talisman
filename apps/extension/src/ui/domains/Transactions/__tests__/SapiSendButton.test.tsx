@@ -7,6 +7,7 @@ const mockOnSubmitted = vi.fn()
 const mockUseAccountByAddress = vi.fn()
 const mockUseScaleApi = vi.fn()
 const mockPasswordDrawerOnVerified = vi.fn()
+const mockHardwareOnSigned = vi.fn()
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (value: string) => value }),
@@ -76,7 +77,14 @@ vi.mock("../../Sign/Qr/QrSubstrate", () => ({
 }))
 
 vi.mock("../../Sign/SignHardwareSubstrate", () => ({
-  SignHardwareSubstrate: () => <div data-testid="sign-hardware" />,
+  SignHardwareSubstrate: ({
+    onSigned,
+  }: {
+    onSigned: (result: { signature: string }) => unknown
+  }) => {
+    mockHardwareOnSigned.mockImplementation(onSigned)
+    return <div data-testid="sign-hardware" />
+  },
 }))
 
 // Mock PasswordCheckDrawer to capture its props
@@ -108,6 +116,8 @@ vi.mock("../PasswordCheckDrawer", () => ({
 
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 
+import { notify } from "@ui/components/Notifications"
+
 import { SapiSendButton } from "../SapiSendButton"
 
 const mockPayload: SignerPayloadJSON = {
@@ -129,7 +139,7 @@ describe("SapiSendButton", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockUseScaleApi.mockReturnValue({
-      data: { submit: mockSubmit },
+      data: { submit: mockSubmit, getStorage: async () => Number(mockPayload.blockNumber) },
     })
   })
 
@@ -246,6 +256,55 @@ describe("SapiSendButton", () => {
     })
   })
 
+  describe("with a withheld payload", () => {
+    beforeEach(() => {
+      mockUseAccountByAddress.mockReturnValue({ type: "keypair", address: mockPayload.address })
+    })
+
+    it("does not submit a payload that left its era while the password drawer was open", async () => {
+      mockUseScaleApi.mockReturnValue({
+        data: { submit: mockSubmit, getStorage: async () => Number(mockPayload.blockNumber) + 62 },
+      })
+      render(<SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} checkPassword />)
+      fireEvent.click(screen.getByTestId("send-button"))
+
+      fireEvent.click(screen.getByTestId("password-verify"))
+
+      await waitFor(() => expect(notify).toHaveBeenCalled())
+      expect(mockSubmit).not.toHaveBeenCalled()
+    })
+
+    it("does not submit when the chain head cannot be read", async () => {
+      mockUseScaleApi.mockReturnValue({
+        data: {
+          submit: mockSubmit,
+          getStorage: async () => {
+            throw new Error("rpc down")
+          },
+        },
+      })
+      render(<SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} />)
+
+      fireEvent.click(screen.getByTestId("send-button"))
+
+      await waitFor(() => expect(notify).toHaveBeenCalled())
+      expect(mockSubmit).not.toHaveBeenCalled()
+    })
+
+    it("keeps the password drawer open and disables the button", () => {
+      const { rerender } = render(
+        <SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} checkPassword />
+      )
+      fireEvent.click(screen.getByTestId("send-button"))
+      expect(screen.getByTestId("password-drawer")).toBeTruthy()
+
+      rerender(<SapiSendButton payload={undefined} onSubmitted={mockOnSubmitted} checkPassword />)
+
+      expect(screen.getByTestId("password-drawer")).toBeTruthy()
+      expect((screen.getByTestId("send-button") as HTMLButtonElement).disabled).toBe(true)
+    })
+  })
+
   describe("with ledger account", () => {
     beforeEach(() => {
       mockUseAccountByAddress.mockReturnValue({
@@ -266,6 +325,29 @@ describe("SapiSendButton", () => {
 
       expect(screen.getByTestId("sign-hardware")).toBeTruthy()
       expect(screen.queryByTestId("password-drawer")).toBeNull()
+    })
+
+    it("rejects a signature for a payload that left its era, so the Ledger step can reset", async () => {
+      mockUseScaleApi.mockReturnValue({
+        data: { submit: mockSubmit, getStorage: async () => Number(mockPayload.blockNumber) + 62 },
+      })
+      render(<SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} />)
+
+      await expect(mockHardwareOnSigned({ signature: "0x01" })).rejects.toThrow(
+        "Transaction expired"
+      )
+      expect(mockSubmit).not.toHaveBeenCalled()
+    })
+
+    it("keeps the hardware signing component mounted while the payload is withheld", () => {
+      const { rerender } = render(
+        <SapiSendButton payload={mockPayload} onSubmitted={mockOnSubmitted} />
+      )
+      const signHardware = screen.getByTestId("sign-hardware")
+
+      rerender(<SapiSendButton payload={undefined} onSubmitted={mockOnSubmitted} />)
+
+      expect(screen.getByTestId("sign-hardware")).toBe(signHardware)
     })
   })
 

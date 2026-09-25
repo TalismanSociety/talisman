@@ -1,8 +1,8 @@
 import path from "node:path"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vitest/config"
+import { configDefaults, defineConfig } from "vitest/config"
 
-const packagesDir = path.resolve(__dirname, "../../packages")
+const packagesDir = path.resolve(import.meta.dirname, "../../packages")
 
 export default defineConfig({
   plugins: [react()],
@@ -27,16 +27,17 @@ export default defineConfig({
       "@talismn/orb": path.join(packagesDir, "orb/src"),
       "@talismn/icons": path.join(packagesDir, "icons/src"),
       // Map @core alias to local source
-      "@core": path.resolve(__dirname, "src/core"),
+      "@core": path.resolve(import.meta.dirname, "src/core"),
       // Path aliases from tsconfig (baseUrl is src/)
-      "@ui": path.resolve(__dirname, "src/ui"),
-      "@common": path.resolve(__dirname, "src/common"),
-      inject: path.resolve(__dirname, "src/inject"),
+      "@ui": path.resolve(import.meta.dirname, "src/ui"),
+      "@common": path.resolve(import.meta.dirname, "src/common"),
+      inject: path.resolve(import.meta.dirname, "src/inject"),
     },
   },
   test: {
     environment: "./tests/vitest-env-jsdom.ts",
     globals: true,
+    exclude: [...configDefaults.exclude, "**/.tmp/**"],
     testTimeout: 20_000,
     setupFiles: [
       "fake-indexeddb/auto",

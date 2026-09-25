@@ -3,12 +3,14 @@ import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
-import type { ScaleApiSubmitMode } from "@talismn/sapi"
+import type { ScaleApi, ScaleApiSubmitMode } from "@talismn/sapi"
 import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -17,6 +19,21 @@ import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
 import { PasswordCheckDrawer } from "./PasswordCheckDrawer"
+
+// a signing step can outlive its payload (slow device, open password drawer): the node rejects a
+// payload outside its mortal era as a bad signature
+const MIN_ERA_BLOCKS_TO_SUBMIT = 4
+
+const isPayloadExpiring = async (sapi: ScaleApi, payload: SignerPayloadJSON) =>
+  (await fetchEraBlocksLeft(sapi, payload)) < MIN_ERA_BLOCKS_TO_SUBMIT
+
+const notifyPayloadExpired = (t: (key: string) => string) => {
+  notify({
+    type: "error",
+    title: t("Transaction expired"),
+    subtitle: t("Please try again."),
+  })
+}
 
 type LockedInputs = {
   payload: SignerPayloadJSON | undefined
@@ -88,6 +105,9 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     async ({ signature }: { signature: Hex }) => {
       const { payload, txInfo, txMode } = lockedInputs
       if (!payload || !signature || !sapi) return
+      // throwing resets the Ledger signing state and shows the message there
+      if (await isPayloadExpiring(sapi, payload))
+        throw new TalismanLedgerError("Custom", t("Transaction expired. Please try again."))
 
       try {
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
@@ -148,6 +168,10 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       if (!payload || !signature || !sapi) return
 
       try {
+        if (await isPayloadExpiring(sapi, payload)) {
+          notifyPayloadExpired(t)
+          return
+        }
         const { hash, innerHash } = await sapi.submit(payload, signature, txInfo, txMode)
         onSubmitted(hash, innerHash)
       } catch (err) {
@@ -215,6 +239,11 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     if (!submitPayload) return
     setIsSubmitting(true)
     try {
+      if (await isPayloadExpiring(sapi, submitPayload)) {
+        setIsSubmitting(false)
+        notifyPayloadExpired(t)
+        return
+      }
       const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
       setIsSubmitting(false)
       onSubmitted(hash)
@@ -277,8 +306,15 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
+export const SapiSendButton: FC<SapiSendButtonProps> = ({ payload, disabled, ...rest }) => {
   const { t } = useTranslation()
+
+  // while a payload is rebuilt or withheld, keep the signing flow mounted with the last one:
+  // unmounting it drops a Ledger, Vault or password step that is in progress
+  const [lastPayload, setLastPayload] = useState(payload)
+  if (payload && payload !== lastPayload) setLastPayload(payload)
+  const props = { ...rest, payload: payload ?? lastPayload, disabled: disabled || !payload }
+
   const account = useAccountByAddress(props.payload?.address)
 
   const signMethod = useMemo(() => {
@@ -295,8 +331,6 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
     }
   }, [account, props.loading])
 
-  // TODO if payload becomes undefined (while sapi.getPayload is loading), the component unmounts which causes UX issues.
-  // make it so we dont need a fallback disabled button here
   if (!props.payload)
     return (
       <Button className={cn("w-full", props.className)} primary disabled color={props.color}>

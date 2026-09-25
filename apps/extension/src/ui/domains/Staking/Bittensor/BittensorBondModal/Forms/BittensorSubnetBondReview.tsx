@@ -319,7 +319,9 @@ export const BittensorSubnetBondReview = () => {
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                     {subnetFee === 0
                       ? t("Talisman doesn’t apply any fee to this transaction.")
-                      : t(`Talisman applies a ${TALISMAN_FEE_BITTENSOR}% fee to each transaction.`)}
+                      : t("Talisman applies a {{fee}}% fee to each transaction.", {
+                          fee: TALISMAN_FEE_BITTENSOR,
+                        })}
                   </span>
                 </TooltipContent>
               </Tooltip>

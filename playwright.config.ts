@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 import dotenv from "dotenv"
 
-dotenv.config({ path: "apps/extension/.env" })
+dotenv.config({ path: "apps/extension/.env", quiet: true })
 
 /**
  * See https://playwright.dev/docs/test-configuration.

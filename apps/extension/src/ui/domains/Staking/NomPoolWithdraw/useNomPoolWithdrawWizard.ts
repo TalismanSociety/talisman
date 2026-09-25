@@ -6,6 +6,7 @@ import type { TokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
@@ -19,6 +20,7 @@ import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useActiveStakingEra } from "../hooks/nomPools/useActiveStakingEra"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
+import { useGetFeeEstimate } from "../shared/useGetFeeEstimate"
 
 type WizardStep = "review" | "follow-up"
 
@@ -108,7 +110,8 @@ export const useNomPoolWithdrawWizard = () => {
     data: payloadAndMetadata,
     isLoading: isLoadingPayload,
     error: errorPayload,
-  } = useQuery({
+  } = useSignerPayloadQuery({
+    sapi,
     queryKey: ["getExtrinsicPayload", "NominationPools.withdraw_unbonded", sapi?.id, address],
     queryFn: async () => {
       if (!sapi || !address) return null
@@ -131,13 +134,7 @@ export const useNomPoolWithdrawWizard = () => {
     data: feeEstimate,
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
-  } = useQuery({
-    queryKey: ["feeEstimate", payload],
-    queryFn: () => {
-      if (!sapi || !payload) return null
-      return sapi.getFeeEstimate(payload)
-    },
-  })
+  } = useGetFeeEstimate({ sapi, payload })
 
   const existentialDeposit = useExistentialDeposit(token?.id)
 
