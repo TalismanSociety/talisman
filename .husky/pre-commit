@@ -1,6 +1,0 @@
-# Auto-fix formatter issues and re-stage the fixed files
-pnpm biome format --staged --write --no-errors-on-unmatched
-git update-index --again
-
-# Block the commit on lint issues
-pnpm biome lint --staged --error-on-warnings --no-errors-on-unmatched

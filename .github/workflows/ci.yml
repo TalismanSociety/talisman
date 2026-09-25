@@ -38,7 +38,7 @@ jobs:
           BASE_REF="${{ github.base_ref || 'dev' }}"
           # Get changed files using two-dot diff (works with shallow clones)
           mapfile -t CHANGED_FILES < <(
-            git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
+            git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.mts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
           )
 
           if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then

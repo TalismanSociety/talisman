@@ -2,12 +2,12 @@ import path from "node:path"
 
 import { defineConfig } from "vitest/config"
 
-const packagesDir = path.resolve(__dirname, "..")
+const packagesDir = path.resolve(import.meta.dirname, "..")
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@talismn/scale": path.join(packagesDir, "scale/src"),
+      "@talismn/util": path.join(packagesDir, "util/src"),
     },
   },
   test: {

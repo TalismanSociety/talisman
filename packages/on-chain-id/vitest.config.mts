@@ -2,12 +2,14 @@ import path from "node:path"
 
 import { defineConfig } from "vitest/config"
 
-const packagesDir = path.resolve(__dirname, "..")
+const packagesDir = path.resolve(import.meta.dirname, "..")
 
 export default defineConfig({
   resolve: {
     alias: {
+      "@talismn/chain-connectors": path.join(packagesDir, "chain-connectors/src"),
       "@talismn/crypto": path.join(packagesDir, "crypto/src"),
+      "@talismn/util": path.join(packagesDir, "util/src"),
     },
   },
   test: {

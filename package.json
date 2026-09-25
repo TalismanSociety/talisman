@@ -9,7 +9,7 @@
   "packageManager": "pnpm@11.24.0+sha512.bd27e345e976dcb0be0b7a1228217b049a817e21b1f355c90dbe7dc46671895a8bc1e6d06c24554505ea93ea0b45f489a27ec1bfbc8de6a9659fca0f16fa0000",
   "scripts": {
     "postinstall": "pnpm papi:once",
-    "prepare": "husky",
+    "prepare": "[ \"$(git config core.hooksPath)\" != .husky/_ ] || git config --unset core.hooksPath; simple-git-hooks",
     "papi": "papi",
     "papi:once": "test -d .papi/descriptors/dist && echo 'existing papi descriptors found! run \"pnpm papi\" to regenerate them' || papi",
     "papi:update": "papi update",
@@ -56,7 +56,11 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "knip:production": "knip --production",
-    "check:licenses": "node scripts/check-direct-licenses.mjs"
+    "check:licenses": "node scripts/check-direct-licenses.mjs",
+    "verify": "pnpm check:licenses && pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched && pnpm knip && pnpm typecheck && pnpm test"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "./node_modules/.bin/biome check --staged --error-on-warnings --no-errors-on-unmatched"
   },
   "dependencies": {
     "polkadot-api": "2.2.0"
@@ -70,8 +74,8 @@
     "@vitest/coverage-v8": "^5.0.1",
     "@vitest/ui": "5.0.1",
     "dotenv": "17.4.2",
-    "husky": "^9.1.7",
     "knip": "6.36.0",
+    "simple-git-hooks": "2.14.0",
     "tsdown": "0.23.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"

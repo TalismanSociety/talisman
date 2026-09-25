@@ -5,6 +5,7 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
+    "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "paths": {
       "@common": ["./src/common"],

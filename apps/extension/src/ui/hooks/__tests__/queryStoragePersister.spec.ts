@@ -80,7 +80,7 @@ describe("createQueryStoragePersister", () => {
 
     expect(result).toEqual(cachedData)
     expect(queryFn).not.toHaveBeenCalled()
-    await new Promise((r) => setTimeout(r, 10))
+    await vi.waitFor(() => expect(query.setState).toHaveBeenCalled())
     expect(mockedApi.queryCacheSet).not.toHaveBeenCalled()
   })
 
@@ -151,16 +151,15 @@ describe("createQueryStoragePersister", () => {
     const before = Date.now()
     await persister(queryFn, context, query as never)
 
-    // Flush scheduled notifyManager tasks
-    await new Promise((r) => setTimeout(r, 10))
-    const after = Date.now()
-
-    expect(mockedApi.queryCacheSet).toHaveBeenCalledWith(
-      "default-age",
-      "data",
-      expect.any(Number),
-      expect.any(Number)
+    await vi.waitFor(() =>
+      expect(mockedApi.queryCacheSet).toHaveBeenCalledWith(
+        "default-age",
+        "data",
+        expect.any(Number),
+        expect.any(Number)
+      )
     )
+    const after = Date.now()
 
     // purgeAt should be ~24h from when the persist happened
     const [, , purgeAt, persistedDataUpdatedAt] = mockedApi.queryCacheSet.mock.calls[0]!
@@ -188,7 +187,7 @@ describe("createQueryStoragePersister", () => {
 
     const before = Date.now()
     const result = await persister(queryFn, context, query as never)
-    await new Promise((r) => setTimeout(r, 10))
+    await vi.waitFor(() => expect(mockedApi.queryCacheSet).toHaveBeenCalled())
     const after = Date.now()
 
     expect(result).toEqual({ fresh: true })
