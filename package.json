@@ -59,6 +59,9 @@
     "check:licenses": "node scripts/check-direct-licenses.mjs",
     "verify": "pnpm check:licenses && pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched && pnpm knip && pnpm typecheck && pnpm test"
   },
+  "lint-staged": {
+    "*": "biome check --write --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true"
+  },
   "dependencies": {
     "polkadot-api": "2.2.0"
   },
@@ -73,6 +76,7 @@
     "dotenv": "17.4.2",
     "husky": "^9.1.7",
     "knip": "6.36.0",
+    "lint-staged": "17.5.1",
     "tsdown": "0.23.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
