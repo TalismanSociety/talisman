@@ -100,7 +100,7 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 
-See `.env.sample` for the full list, including dev-only variables.
+Put local values in `apps/extension/.env`. `.env.sample` lists every variable that you can set there, including dev-only and e2e variables. The build scripts set `BUILD_TYPE`.
 
 #### Sourcemap Handling
 
