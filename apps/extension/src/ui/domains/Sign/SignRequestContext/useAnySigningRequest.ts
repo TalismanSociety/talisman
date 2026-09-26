@@ -7,14 +7,13 @@ import useStatus, { type SetStatusFn, type StatusOptions } from "@ui/hooks/useSt
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-interface UseAnySigningRequestProps<T extends AnySigningRequest> {
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
-  approveSignFn: (requestId: T["id"], ...args: any[]) => Promise<boolean>
+interface UseAnySigningRequestProps<T extends AnySigningRequest, TApproveArgs extends unknown[]> {
+  approveSignFn: (requestId: T["id"], ...args: TApproveArgs) => Promise<boolean>
   cancelSignFn: (requestId: T["id"]) => Promise<boolean>
   currentRequest?: T
 }
 
-type SignableRequest<T extends keyof SigningRequests> = Pick<
+type SignableRequest<T extends keyof SigningRequests, TApproveArgs extends unknown[]> = Pick<
   KnownRespondableRequest<T>,
   "request" | "id" | "account" | "url"
 > & {
@@ -22,24 +21,21 @@ type SignableRequest<T extends keyof SigningRequests> = Pick<
   status: StatusOptions
   isEthereumRequest: boolean
   message?: string
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
-  approve: (...args: any[]) => void
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
-  reject: (...args: any[]) => void
+  approve: (...args: TApproveArgs) => Promise<void>
+  reject: () => Promise<void>
   setReady: SetStatusFn["ready"]
 }
 
-export const useAnySigningRequest = <T extends AnySigningRequest>({
+export const useAnySigningRequest = <T extends AnySigningRequest, TApproveArgs extends unknown[]>({
   approveSignFn,
   cancelSignFn,
   currentRequest,
-}: UseAnySigningRequestProps<T>) => {
+}: UseAnySigningRequestProps<T, TApproveArgs>) => {
   const { status, message, setStatus } = useStatus()
   const { t } = useTranslation()
 
   const approve = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: legacy
-    async (...args: any) => {
+    async (...args: TApproveArgs) => {
       setStatus.processing("Approving request")
       if (!currentRequest) return
       try {
@@ -81,5 +77,5 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
     approve,
     reject,
     setReady,
-  } as SignableRequest<T["type"]>
+  } as SignableRequest<T["type"], TApproveArgs>
 }

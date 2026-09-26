@@ -38,21 +38,17 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     origin,
   })
 
-  const reject = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: legacy
-    (...args: any[]) => {
-      genericEvent("sign request cancel click", {
-        networkType: "evm",
-        type: "message",
-        network: network?.id,
-        riskAnalysisAction: riskAnalysis?.validationResult,
-        origin,
-      })
+  const reject = useCallback(() => {
+    genericEvent("sign request cancel click", {
+      networkType: "evm",
+      type: "message",
+      network: network?.id,
+      riskAnalysisAction: riskAnalysis?.validationResult,
+      origin,
+    })
 
-      baseRequest.reject(...args)
-    },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult]
-  )
+    return baseRequest.reject()
+  }, [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult])
 
   // flag to prevent capturing multiple submit attempts
   const refIsApproveCaptured = useRef(false)
