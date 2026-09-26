@@ -19,8 +19,11 @@ const ALLOWED: Record<string, string> = {
 const OVERRIDE_ENTRY = /^\s+(?:"([^"]+)"|'([^']+)'|([^\s:#]+)):\s*["']?([^"'#\n]*)["']?/
 
 const readOverrides = (yaml: string) => {
-  const block = yaml.match(/^overrides:\n((?:[ \t]+.*\n|[ \t]*\n)*)/m)?.[1] ?? ""
-  return block.split("\n").flatMap((line) => {
+  const lines = yaml.split(/\r?\n/)
+  const start = lines.indexOf("overrides:") + 1
+  const end = lines.findIndex((line, i) => i >= start && /^[^\s#]/.test(line))
+  const block = start > 0 ? lines.slice(start, end === -1 ? undefined : end) : []
+  return block.flatMap((line) => {
     const match = line.match(OVERRIDE_ENTRY)
     if (!match) return []
     const [, doubleQuoted, singleQuoted, bare, value] = match
@@ -36,6 +39,7 @@ describe("pnpm overrides", () => {
       "overrides:",
       "  # comment",
       '  "semver": "7.8.5"',
+      "# column-0 comment",
       '  "vite@<5.4.20": ">=5.4.20 <6.0.0"',
       "  lodash: '>=4.18.1'",
       "other: 1",
