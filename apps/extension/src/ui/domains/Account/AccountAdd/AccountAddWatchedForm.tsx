@@ -2,6 +2,7 @@ import { SUPPORTED_ACCOUNT_PLATFORMS } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { type AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -132,7 +133,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

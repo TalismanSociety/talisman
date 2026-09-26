@@ -5,7 +5,7 @@ import {
   LockIcon,
   UnlockIcon,
 } from "@talismn/icons"
-import { sleep } from "@talismn/util"
+import { getErrorMessage, sleep } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FadeIn } from "@ui/components/FadeIn"
@@ -182,7 +182,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Error importing account"),
-        subtitle: (err as Error)?.message,
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
     }
     setIsImporting(false)

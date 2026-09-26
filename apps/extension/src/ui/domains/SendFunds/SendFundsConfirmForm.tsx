@@ -1,5 +1,6 @@
 import { isTokenEth, isTokenOfType } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
@@ -358,7 +359,7 @@ const DefaultFeeSummary = () => {
             <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
           )}
           {error && (
-            <WithTooltip tooltip={(error as Error).message}>
+            <WithTooltip tooltip={getErrorMessage(error, t("Unknown error"))}>
               <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
             </WithTooltip>
           )}

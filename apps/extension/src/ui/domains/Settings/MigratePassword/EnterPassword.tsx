@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
@@ -48,7 +49,7 @@ export const EnterPasswordForm = () => {
         } else throw new Error(t("Incorrect password"))
       } catch (err) {
         setError("password", {
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

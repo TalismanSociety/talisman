@@ -15,7 +15,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
-import { sleep } from "@talismn/util"
+import { getErrorMessage, sleep } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
@@ -122,7 +122,7 @@ const AddCustomTokenForm = () => {
         notify({
           type: "error",
           title: t("Error"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
@@ -258,7 +258,7 @@ const AddCustomTokenForm = () => {
             } catch (err) {
               log.error("Failed to fetch token info", { value, err })
               clearTokenFields()
-              return (err as Error)?.message ?? t("Invalid contract address")
+              return getErrorMessage(err, t("Invalid contract address"))
             }
 
             return null

@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -60,7 +61,7 @@ export const MnemonicSetPvVerifierModal = () => {
       notify({
         type: "error",
         title: t("Failed to change PV verifier"),
-        subtitle: (err as Error)?.message ?? "",
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
     }
   }, [close, mnemonic, t])

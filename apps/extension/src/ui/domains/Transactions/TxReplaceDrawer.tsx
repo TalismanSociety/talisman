@@ -6,6 +6,7 @@ import type { WalletTransaction, WalletTransactionEth } from "@core/domains/tran
 import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -143,7 +144,7 @@ const EvmDrawerContent: FC<{
       notify({
         title: `Failed to ${type}`,
         type: "error",
-        subtitle: (err as Error)?.message.includes("nonce too low")
+        subtitle: getErrorMessage(err).includes("nonce too low")
           ? t("Transaction already confirmed")
           : t(`Failed to {{type}}`, { type }),
       })
@@ -172,7 +173,7 @@ const EvmDrawerContent: FC<{
           title: t(`Failed to {{type}}`, { type }),
           type: "error",
           subtitle:
-            (err as Error)?.message === "nonce too low"
+            getErrorMessage(err) === "nonce too low"
               ? t("Transaction already confirmed")
               : t(`Failed to {{type}}`, { type }),
         })

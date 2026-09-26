@@ -14,7 +14,7 @@ import {
   subNativeTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
+import { getErrorMessage, sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
@@ -209,7 +209,7 @@ const useNetworkCreateFormProvider = () => {
         notify({
           type: "error",
           title: t("Error"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

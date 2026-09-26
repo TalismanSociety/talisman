@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import { ArrowRightIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -78,7 +79,7 @@ export const ConnectSignetSelectAccounts = () => {
       notifyUpdate(notificationId, {
         type: "error",
         title: "Failed to import accounts",
-        subtitle: e instanceof Error ? e.message : undefined,
+        subtitle: getErrorMessage(e, t("Unknown error")),
       })
     } finally {
       setImporting(false)

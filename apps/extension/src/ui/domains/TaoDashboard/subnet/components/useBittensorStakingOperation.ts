@@ -3,6 +3,7 @@ import { fromHex, toHex } from "@polkadot-api/utils"
 import { TAO_DECIMALS } from "@talismn/balances"
 import { blake2b256 } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
+import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -112,7 +113,7 @@ const findStakeEventInBlock = async (
     return null
   } catch (error) {
     // Check if this is an error due to pruned/unavailable state
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorMessage = getErrorMessage(error)
     const errorCode = (error as { code?: number })?.code
     if (
       errorCode === 4003 ||
@@ -374,7 +375,7 @@ const simulateSwapAtBlock = async (
   } catch (error) {
     // Check if this is an error due to pruned/unavailable state (non-archive node)
     // Error code 4003 is returned when the block state has been discarded
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorMessage = getErrorMessage(error)
     const errorCode = (error as { code?: number })?.code
     if (
       errorCode === 4003 ||

@@ -1,4 +1,5 @@
 import type { KnownRequestIdOnly } from "@core/libs/requests/types"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
@@ -32,7 +33,11 @@ export const AddEthereumNetwork = () => {
       await api.ethNetworkAddApprove(request.id)
       window.close()
     } catch (err) {
-      notify({ type: "error", title: t("Failed to add network"), subtitle: (err as Error).message })
+      notify({
+        type: "error",
+        title: t("Failed to add network"),
+        subtitle: getErrorMessage(err, t("Unknown error")),
+      })
     }
   }, [request, t])
 

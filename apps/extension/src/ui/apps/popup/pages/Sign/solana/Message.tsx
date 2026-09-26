@@ -1,6 +1,7 @@
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
 import { base58 } from "@talismn/crypto"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import {
   PopupContent,
@@ -70,7 +71,7 @@ export const SolSignMessageRequest: FC<{
       setState({
         processing: false,
 
-        error: (error as Error).message || "Failed to approve sign request",
+        error: getErrorMessage(error, "Failed to approve sign request"),
       })
     }
   }

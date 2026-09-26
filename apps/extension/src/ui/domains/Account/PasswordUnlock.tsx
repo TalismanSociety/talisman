@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
@@ -77,11 +78,11 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
         await checkPassword(password)
       } catch (err) {
         setError("password", {
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [checkPassword, setError]
+    [checkPassword, setError, t]
   )
 
   const status = useOpenCloseStatus()

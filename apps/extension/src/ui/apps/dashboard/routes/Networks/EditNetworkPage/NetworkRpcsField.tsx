@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
+
 import {
   closestCenter,
   DndContext,
@@ -12,6 +13,7 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import { DotNetworkSchema, isNetworkDot, SolNetworkSchema } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import {
@@ -186,7 +188,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
                 }
               }
             } catch (err) {
-              return err instanceof Error ? err.message : String("Invalid RPC url")
+              return getErrorMessage(err, "Invalid RPC url")
             }
           },
         }}

@@ -14,7 +14,7 @@ export type TaoDataApiClientError = Error & {
   status?: number
 }
 
-const getErrorMessage = (error: unknown): string | undefined => {
+const getTaoDataApiErrorMessage = (error: unknown): string | undefined => {
   if (error instanceof Error && error.message) return error.message
 
   if (typeof error === "object" && error !== null) {
@@ -30,7 +30,7 @@ export const toTaoDataApiError = (
   error: unknown,
   fallbackMessage: string
 ): TaoDataApiClientError => {
-  const message = getErrorMessage(error) ?? fallbackMessage
+  const message = getTaoDataApiErrorMessage(error) ?? fallbackMessage
   const normalizedError = new Error(message) as TaoDataApiClientError
 
   if (typeof error === "object" && error !== null && "status" in error) {

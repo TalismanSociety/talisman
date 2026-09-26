@@ -1,7 +1,7 @@
 import type { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import type { LedgerSolDerivationPathType } from "@core/domains/solana/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { sleep } from "@talismn/util"
+import { getErrorMessage, sleep } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Dropdown } from "@ui/components/Dropdown"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
@@ -155,7 +155,7 @@ export const AddLedgerSelectAccount = () => {
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Connecting account", { count: accounts.length }),
-          subtitle: (err as Error).message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@talismn/util"
 import { PrfEvaluationError } from "@ui/util/webauthnPrf"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,7 +39,7 @@ export const useQuickUnlockErrorMessage = () => {
           // our own errors carry a useful explanation, anything else from the browser does not
           return err instanceof DOMException
             ? t("Quick unlock failed, please try again.")
-            : ((err as Error)?.message ?? t("Quick unlock failed, please try again."))
+            : getErrorMessage(err, t("Quick unlock failed, please try again."))
       }
     },
     [t]

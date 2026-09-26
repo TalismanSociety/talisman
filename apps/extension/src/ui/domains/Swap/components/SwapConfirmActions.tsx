@@ -2,7 +2,7 @@ import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
-import { isErrorOfName } from "@talismn/util"
+import { getErrorMessage, isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -141,7 +141,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             ? t("Insufficient gas for approval")
             : t("Approval failed"),
           type: "error",
-          subtitle: (cause as Error)?.message?.slice(0, 100),
+          subtitle: getErrorMessage(cause, t("Unknown error")).slice(0, 100),
         })
       } finally {
         setIsApproving(false)

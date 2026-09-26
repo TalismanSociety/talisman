@@ -1,5 +1,7 @@
 import { catchError, from, map, type Observable, of, startWith, switchMap, timer } from "rxjs"
 
+import { getErrorMessage } from "./getErrorMessage"
+
 // Designed to be serializable as it can be sent to the frontend
 type LoadableError = {
   name: string // can be used to identify the error type
@@ -53,16 +55,5 @@ export function getLoadable$<T>(
 
 const getGenericError = (error: unknown): LoadableError => ({
   name: "Error",
-  message: getGenericErrorMessage(error),
+  message: getErrorMessage(error),
 })
-
-const getGenericErrorMessage = (error: unknown): string => {
-  if (typeof error === "string") {
-    return error
-  } else if (error instanceof Error) {
-    return error.message
-  } else if (error && typeof error === "object" && "message" in error) {
-    return (error as { message: string }).message
-  }
-  return String(error) || "Unknown error"
-}

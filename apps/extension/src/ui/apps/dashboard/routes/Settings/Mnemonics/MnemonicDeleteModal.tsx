@@ -1,4 +1,5 @@
 import { AlertTriangleIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -67,7 +68,7 @@ export const MnemonicDeleteModal = () => {
       notify({
         type: "error",
         title: t("Failed to delete"),
-        subtitle: (err as Error)?.message ?? "",
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
     }
   }, [close, mnemonic, t])
