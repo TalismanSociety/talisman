@@ -52,9 +52,45 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 `pnpm dev` builds `apps/extension/dist/chrome-mv3-dev` and opens Chrome with a persistent profile in `~/.talisman-dev/chrome-data`. `NOBROWSER=1 pnpm dev` builds without opening a browser.
 
 - Env: `apps/extension/.env`, template `apps/extension/.env.sample`. A dev build needs no variables. `PASSWORD` unlocks the wallet, and `BITTENSOR_DEVNET_RPC` adds a local subtensor node.
-- The dev Chrome has CDP (remote debugging) on port 9223.
+- The dev Chrome has CDP (remote debugging) on port 9223. See "Verify in the browser".
 - The dev server uses port 8254. `pnpm dev:kill` stops it.
 - `pnpm dev` stops when stdin closes. From a non-interactive shell, run `tail -f /dev/null | pnpm dev`.
 - Blank page after a dev server restart: reload the extension (`chrome://extensions`, or `chrome.runtime.reload()` in the service worker). If it stays blank, run `rm -rf apps/extension/node_modules/.vite` and restart `pnpm dev`.
-- Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages ("Unknown connection from ..." in the service worker console). Run `pnpm dev:kill && pnpm dev`, then reload the extension.
+- Extension pages show "akcdepjilgckjbngkhjghfnmnnkdnmno is blocked": Developer mode is off in the dev profile. Turn it on in `chrome://extensions`, then restart `pnpm dev`.
+- Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages and content scripts: pages stay blank with no error in their console, and dapp requests hang with no popup. Only the service worker console shows "Unknown connection from ...". Run `pnpm dev:kill && pnpm dev`, then reload the extension.
 - A change to the service worker banner in `wxt.config.ts` needs a `pnpm dev` restart.
+
+## Verify in the browser
+
+CDP on port 9223 exists only while `pnpm dev` runs with its browser. Always pass the port: most tools default to 9222, which can be another browser. The dev extension id is `akcdepjilgckjbngkhjghfnmnnkdnmno`.
+
+Extension pages: use agent-browser, a browser automation CLI that comes with an agent skill. Install both once with `npm install -g agent-browser` (or `brew install agent-browser`) and `npx skills add vercel-labs/agent-browser`. The skill tells the agent to run `agent-browser skills get core`, which prints the usage guide for the installed version. You do not need `agent-browser install`: it downloads a Chrome, and here the tool attaches to the dev Chrome.
+
+Open each page in a new tab, because an existing tab cannot navigate to `chrome-extension://`.
+
+```sh
+agent-browser --session talisman --cdp 9223 tab new "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/dashboard.html#/portfolio"
+agent-browser --session talisman --cdp 9223 snapshot -i
+```
+
+The first extension page after `pnpm dev` starts takes 10 seconds or more to render. Later loads are fast. Before the first snapshot, wait for text you expect: `agent-browser --session talisman --cdp 9223 wait --text "…"`.
+
+Sign popups: agent-browser does not list the popup the extension opens, but the request also renders in a tab it opens itself. Find the popup URL (`popup.html#/…`) with `curl -s localhost:9223/json/list` (it can take a few seconds to appear while the service worker starts), open it with `tab new "<url>"`, then snapshot and click there. Approving or rejecting in either tab completes the request and closes both.
+
+The service worker: agent-browser cannot reach it, so use Playwright. Put the script in `.tmp/` and run it with `node` from the repo root. `browser.close()` disconnects and leaves Chrome running.
+
+```js
+import { chromium } from "@playwright/test"
+
+const EXTENSION = "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno"
+const browser = await chromium.connectOverCDP("http://localhost:9223")
+const background = browser
+  .contexts()[0]
+  .serviceWorkers()
+  .find((worker) => worker.url().startsWith(EXTENSION))
+console.log(await background?.evaluate(() => chrome.runtime.getManifest().version_name))
+
+await browser.close()
+```
+
+- The service worker is listed only while it runs. Open an extension page to wake it.
