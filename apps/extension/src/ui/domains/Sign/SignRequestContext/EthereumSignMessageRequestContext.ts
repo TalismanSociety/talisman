@@ -43,7 +43,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     (...args: any[]) => {
       genericEvent("sign request cancel click", {
         networkType: "evm",
-        type: "transaction",
+        type: "message",
         network: network?.id,
         riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
@@ -68,7 +68,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       refIsApproveCaptured.current = true
       genericEvent("sign request approve click", {
         networkType: "evm",
-        type: "transaction",
+        type: "message",
         network: network?.id,
         riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
@@ -91,7 +91,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         refIsApproveCaptured.current = true
         genericEvent("sign request approve click", {
           networkType: "evm",
-          type: "transaction",
+          type: "message",
           network: network?.id,
           riskAnalysisAction: riskAnalysis?.validationResult,
           origin,

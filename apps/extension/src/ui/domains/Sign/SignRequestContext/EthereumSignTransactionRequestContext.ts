@@ -72,7 +72,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     (...args: any[]) => {
       genericEvent("sign request cancel click", {
         networkType: "evm",
-        type: "message",
+        type: "transaction",
         network: network?.id,
         riskAnalysisAction: riskAnalysis.validationResult,
         origin,
@@ -97,7 +97,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       refIsApproveCaptured.current = true
       genericEvent("sign request approve click", {
         networkType: "evm",
-        type: "message",
+        type: "transaction",
         network: network?.id,
         riskAnalysisAction: riskAnalysis.validationResult,
         origin,
@@ -126,7 +126,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         refIsApproveCaptured.current = true
         genericEvent("sign request approve click", {
           networkType: "evm",
-          type: "message",
+          type: "transaction",
           network: network?.id,
           riskAnalysisAction: riskAnalysis.validationResult,
           origin,
