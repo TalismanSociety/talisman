@@ -1,4 +1,4 @@
-import { Sn45Api } from "./Sn45Api"
+import { Sn45Api } from "./Sn45Api.gen"
 
 const SN45_API_URL = "https://sn45api.talisman.xyz"
 // export const SN45_API_URL = "http://localhost:8787"

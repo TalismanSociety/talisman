@@ -38,9 +38,9 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 - Dependencies: pnpm settings are in `pnpm-workspace.yaml`. `minimumReleaseAge` rejects versions that are less than 3 days old, `savePrefix: ""` pins exact versions, and `allowBuilds` stops install scripts. Cap each override below the next major (`">=7.26.10 <8.0.0"`). Declare a dependency in the `package.json` of each workspace that imports it.
 - Logging in `apps/extension`: `log` from `@common/log`, never `console.*`.
 - UI text: `t("Plain English sentence")`. The English text is the translation key. `public/locales/` is downloaded from SimpleLocalize by `pnpm chore:download-translations`, so change the English source string only.
-- Generated code: change the generator input, then regenerate.
-  - OpenAPI clients `Sn45Api.ts`, `TaoDataApi.ts`, `RemoteConfigApi.ts`: `pnpm chore:generate-clients`.
-  - `stealthex.api.d.ts`: `pnpm --filter extension chore:codegen:stealthex-swaps`.
+- Generated code (`*.gen.ts`, not linted or formatted): change the generator input, then regenerate.
+  - OpenAPI clients `Sn45Api.gen.ts`, `TaoDataApi.gen.ts`, `RemoteConfigApi.gen.ts`: `pnpm chore:generate-clients`.
+  - `stealthex.api.gen.ts`: `pnpm --filter extension chore:codegen:stealthex-swaps`.
   - Bundled init data (chaindata, remote config): `pnpm chore:generate-init-data`.
 - Guard tests in `apps/extension/src/__tests__/` enforce repo-wide rules. When one fails, read that test: its header explains the rule.
 - Commit messages: gitmoji plus a short label, e.g. `🐛 fail fast on rate-limited rpc validation`.

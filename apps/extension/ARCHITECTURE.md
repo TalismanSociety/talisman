@@ -202,7 +202,7 @@ Do not add `index.ts` re-exports. Import from the source module (`@ui/domains/Po
 ### Feature flags
 Feature flags come from remote config (`core/domains/app/store.remoteConfig.ts`), never from `common/constants.ts` or build-time env.
 The flag list mirrors the schema of the remote-config service, which lives in another repo. Keep a flag that no code reads until that service removes it.
-Read a flag in the UI with `useFeatureFlag("FLAG_NAME")` from `@ui/state/remoteConfig`. To add a flag, add it to the remote-config service first. Then run `pnpm --filter extension chore:generate-clients:wrc` (updates `RemoteConfigApi.ts`, the source of the `FeatureFlag` type) and `pnpm chore:generate-init-data` (updates `core/domains/app/remoteConfig.default.json`).
+Read a flag in the UI with `useFeatureFlag("FLAG_NAME")` from `@ui/state/remoteConfig`. To add a flag, add it to the remote-config service first. Then run `pnpm --filter extension chore:generate-clients:wrc` (updates `RemoteConfigApi.gen.ts`, the source of the `FeatureFlag` type) and `pnpm chore:generate-init-data` (updates `core/domains/app/remoteConfig.default.json`).
 
 ## Tests
 
