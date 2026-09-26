@@ -64,7 +64,9 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 
 CDP on port 9223 exists only while `pnpm dev` runs with its browser. Always pass the port: most tools default to 9222, which can be another browser. The dev extension id is `akcdepjilgckjbngkhjghfnmnnkdnmno`.
 
-Extension pages: use agent-browser. Open each page in a new tab, because an existing tab cannot navigate to `chrome-extension://`.
+Extension pages: use agent-browser, a browser automation CLI that comes with an agent skill. Install both once with `npm install -g agent-browser` (or `brew install agent-browser`) and `npx skills add vercel-labs/agent-browser`. The skill tells the agent to run `agent-browser skills get core`, which prints the usage guide for the installed version. You do not need `agent-browser install`: it downloads a Chrome, and here the tool attaches to the dev Chrome.
+
+Open each page in a new tab, because an existing tab cannot navigate to `chrome-extension://`.
 
 ```sh
 agent-browser --session talisman --cdp 9223 tab new "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/dashboard.html#/portfolio"
