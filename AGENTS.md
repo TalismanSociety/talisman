@@ -52,9 +52,41 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 `pnpm dev` builds `apps/extension/dist/chrome-mv3-dev` and opens Chrome with a persistent profile in `~/.talisman-dev/chrome-data`. `NOBROWSER=1 pnpm dev` builds without opening a browser.
 
 - Env: `apps/extension/.env`, template `apps/extension/.env.sample`. A dev build needs no variables. `PASSWORD` unlocks the wallet, and `BITTENSOR_DEVNET_RPC` adds a local subtensor node.
-- The dev Chrome has CDP (remote debugging) on port 9223.
+- The dev Chrome has CDP (remote debugging) on port 9223. See "Verify in the browser".
 - The dev server uses port 8254. `pnpm dev:kill` stops it.
 - `pnpm dev` stops when stdin closes. From a non-interactive shell, run `tail -f /dev/null | pnpm dev`.
 - Blank page after a dev server restart: reload the extension (`chrome://extensions`, or `chrome.runtime.reload()` in the service worker). If it stays blank, run `rm -rf apps/extension/node_modules/.vite` and restart `pnpm dev`.
+- Extension pages show "akcdepjilgckjbngkhjghfnmnnkdnmno is blocked": Developer mode is off in the dev profile. Turn it on in `chrome://extensions`, then restart `pnpm dev`.
 - Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages ("Unknown connection from ..." in the service worker console). Run `pnpm dev:kill && pnpm dev`, then reload the extension.
 - A change to the service worker banner in `wxt.config.ts` needs a `pnpm dev` restart.
+
+## Verify in the browser
+
+CDP on port 9223 exists only while `pnpm dev` runs with its browser. Always pass the port: most tools default to 9222, which can be another browser. The dev extension id is `akcdepjilgckjbngkhjghfnmnnkdnmno`.
+
+Extension pages: use agent-browser. Open each page in a new tab, because an existing tab cannot navigate to `chrome-extension://`.
+
+```sh
+agent-browser --session talisman --cdp 9223 tab new "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/dashboard.html#/portfolio"
+agent-browser --session talisman --cdp 9223 snapshot -i
+```
+
+Sign popups and the service worker: agent-browser sees neither, so use Playwright. Put the script in `.tmp/` and run it with `node` from the repo root. `browser.close()` disconnects and leaves Chrome running.
+
+```js
+import { chromium } from "@playwright/test"
+
+const EXTENSION = "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno"
+const browser = await chromium.connectOverCDP("http://localhost:9223")
+const context = browser.contexts()[0]
+
+const popup = context.pages().find((page) => page.url().startsWith(`${EXTENSION}/popup.html`))
+const background = context.serviceWorkers().find((worker) => worker.url().startsWith(EXTENSION))
+console.log(await background?.evaluate(() => chrome.runtime.getManifest().version_name))
+
+await browser.close()
+```
+
+- A dapp request opens a sign popup as a new page: wait for it with `context.waitForEvent("page")`.
+- Closing a sign popup rejects the request. After Approve or Reject the popup closes itself, so give each action in it a timeout.
+- The service worker is listed only while it runs. Open an extension page to wake it.
