@@ -13,7 +13,7 @@ import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate, signVrf } from "../domains/signing/requests"
+import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
 import type {
   SubstrateSignResponse,
   VrfSignPayload,
@@ -147,7 +147,7 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, { payload: request }, account, port)
+    return requestSubstrateSign(url, { payload: request }, account, port)
   }
 
   private async extrinsicSign(
@@ -160,7 +160,7 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
-    return signSubstrate(url, { payload: request }, account, port)
+    return requestSubstrateSign(url, { payload: request }, account, port)
   }
 
   private async vrfSign(
@@ -180,7 +180,7 @@ export default class Tabs extends TabsHandler {
       "VRF signing requires a local sr25519 account"
     )
 
-    return signVrf(url, { payload: request }, account, port)
+    return requestVrfSign(url, { payload: request }, account, port)
   }
 
   private metadataProvide(request: MetadataDef): boolean {

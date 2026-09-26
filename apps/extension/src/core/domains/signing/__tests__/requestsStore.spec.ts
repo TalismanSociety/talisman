@@ -1,7 +1,7 @@
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { describe, expect, vi } from "vitest"
-import { signSubstrate } from "../../../domains/signing/requests"
+import { requestSubstrateSign } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
 import { windowManager } from "../../../libs/WindowManager"
 import type { SignerPayloadJSON } from "../../../types/pjsInterop"
@@ -62,7 +62,7 @@ describe("Signing requests store", () => {
     }
 
     expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
-    signSubstrate("http://test.com", { payload }, account, {} as chrome.runtime.Port)
+    requestSubstrateSign("http://test.com", { payload }, account, {} as chrome.runtime.Port)
 
     await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
     expect(windowManager.popupOpen).toBeCalled()

@@ -62,6 +62,9 @@ export const PERSIST_AGE_ONE_YEAR = 1000 * 60 * 60 * 24 * 365
  *   staleTime: 30_000,
  * })
  * ```
+ *
+ * Wrap query options that you build outside `useQuery(...)` in `queryOptions()`,
+ * else `data` has the type `{}`.
  */
 export function createQueryStoragePersister<TData = unknown, TPersisted = TData>(
   config?: QueryStorageConfig<TData, TPersisted>

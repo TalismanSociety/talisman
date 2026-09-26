@@ -1,4 +1,4 @@
-export type MysticalPhysicsV3 = {
+export type MysticalPhysics = {
   artifacts: number
   blur: number
   opacityMin: number
@@ -11,7 +11,7 @@ export type MysticalPhysicsV3 = {
   colors?: string[]
 }
 
-export const MYSTICAL_PHYSICS_V3: MysticalPhysicsV3 = {
+export const MYSTICAL_PHYSICS: MysticalPhysics = {
   artifacts: 3,
   blur: 0,
   opacityMin: 0.2,

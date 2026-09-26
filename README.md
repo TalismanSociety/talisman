@@ -53,9 +53,9 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 
    `pnpm dev:extension`
 
-1. Open Chrome and navigate to `chrome://extensions`.
-1. Turn on the `Developer mode` toggle on the top right of the page.
-1. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist/chrome-mv3-dev` directory.
+   This opens Chrome with the extension loaded, in a persistent profile (`~/.talisman-dev/chrome-data`).
+   With `NOBROWSER=1 pnpm dev:extension`, no browser opens: load `apps/extension/dist/chrome-mv3-dev` yourself with `Load unpacked` in `chrome://extensions` (turn on `Developer mode` first).
+
 1. Change some code! The extension will hot-reload automatically.
 
 ### Firefox Development
@@ -87,14 +87,17 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 - Run unit tests with `pnpm test`, or `pnpm test <path>` for one file.
 - End-to-end tests use [Playwright](https://playwright.dev/) (`playwright/`). Build the extension, start the local EVM devnet with `pnpm devnet:up`, then run `pnpm test:e2e`.
 - E2E tests load `apps/extension/dist/chrome-mv3`, else `chrome-mv3-dev`, and warn when the other build is newer. Set `E2E_EXTENSION_PATH=<build dir>` to choose the build.
+- E2E tests read `apps/extension/.env`. Add the `E2E_GANDALF_INSTALL_ID` and `E2E_GANDALF_PRIVATE_KEY` lines that `pnpm chore:register-gandalf-e2e` prints, else the tests are slow and flaky. Some tests need internet (MetaMask test dapp).
+- Visual regression snapshots are `*-chromium-linux.png`. Update them with the `Update Visual Regression Snapshots` workflow (`.github/workflows/update-snapshots.yml`), not on macOS. CI runs them, but they cannot fail the build. To skip them locally, add `--grep-invert "Visual Regression"`.
+- `pnpm test:api` checks the Bittensor HTTP APIs. It sends `TDA_API_KEY` and `SN45_API_KEY` when they are set. The `api-health.yml` workflow runs it every day.
 
 ## Code quality
 
 We use [Biome](https://biomejs.dev/) for linting and formatting across the monorepo.
 
 - **Format code**: `pnpm format`
-- **Lint and format check**: `pnpm check` (`pnpm check:fix` applies fixes)
-- **Pre-commit hook**: Automatically runs Biome checks on staged files
+- **Lint and format check**: `pnpm check` (`pnpm check:fix` applies fixes). `pnpm check` does not fail on warnings, but CI and the pre-commit hook do. To check your changes as CI does, run `pnpm biome check --error-on-warnings --changed --since=origin/dev --no-errors-on-unmatched`.
+- **Pre-commit hook**: runs `biome check --staged --error-on-warnings` on the staged files. It only checks: it does not change or stage files. Run `pnpm check:fix`, then stage the fixes.
 
 If you're using VS Code, install the [Biome extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) for automatic formatting on save.
 
@@ -162,26 +165,15 @@ When building UI features, please follow the following spec to ensure they're tr
    )
    ```
 
-1. If you see one of the following errors in your console:
+1. The wallet loads its translations from `apps/extension/public/locales/`. These files are committed, and only `pnpm chore:download-translations` writes them (it needs `SIMPLE_LOCALIZE_API_KEY`).
 
-   ```
-   locales/en/common.json:1
-   Failed to load resource: net::ERR_FILE_NOT_FOUND
-   ```
-
-   ```
-   i18next::translator: missingKey en common <i18n-key>
-   ```
-
-   Then update the english translation files with this command:
-
-   ```sh
-   pnpm chore:update-translations
-   ```
+   - `i18next::translator: missingKey en common <i18n-key>` is expected for a new string. The English text is the key, so the wallet shows it. CI uploads new strings to SimpleLocalize, and the next download adds them to `public/locales/`.
+   - `locales/en/common.json` with `net::ERR_FILE_NOT_FOUND`: a file in `public/locales/` is missing. Restore it with `git checkout -- apps/extension/public/locales`.
 
 ### Scripts
 
-- `chore:update-translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
+- `chore:update-translations` : extracts the i18n strings from the code into `apps/extension/.i18next-parser/locales/`. CI uploads that folder to SimpleLocalize. The wallet does not read it.
+- `chore:download-translations` : downloads the translations from SimpleLocalize into `apps/extension/public/locales/`
 
 #### Development
 

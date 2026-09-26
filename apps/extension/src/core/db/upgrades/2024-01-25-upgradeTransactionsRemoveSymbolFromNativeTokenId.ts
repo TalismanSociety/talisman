@@ -1,9 +1,9 @@
 import type { Transaction as DbTransaction } from "dexie"
 
-import type { LegacyWalletTransaction } from "../../domains/transactions"
+import type { LegacyWalletTransaction } from "../../domains/transactions/types"
 
 // For DB version 8, Wallet version 1.21.0
-export const upgradeRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) => {
+export const upgradeTransactionsRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) => {
   await tx
     .table<LegacyWalletTransaction, string>("transactions")
     .toCollection()
