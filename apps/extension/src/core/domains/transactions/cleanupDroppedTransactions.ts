@@ -6,7 +6,7 @@ import { db } from "../../db"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
-import { updateTransactionStatus } from "./helpers"
+import { updateTransactionStatus } from "./store.transactions"
 import type { WalletTransactionDot, WalletTransactionEth, WalletTransactionSol } from "./types"
 
 /**

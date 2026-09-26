@@ -15,7 +15,7 @@ import type {
 } from "viem"
 import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
-import type { WalletTransactionInfo } from "../transactions"
+import type { WalletTransactionInfo } from "../transactions/types"
 
 export type { EvmAddress }
 

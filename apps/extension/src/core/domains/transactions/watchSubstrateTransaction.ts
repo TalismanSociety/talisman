@@ -18,7 +18,11 @@ import { getMetadataDef } from "../../util/getMetadataDef"
 import { settingsStore } from "../app/store.settings"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction } from "../signing/signSubstratePayload"
-import { addSubstrateTransaction, getTransactionStatus, updateTransactionStatus } from "./helpers"
+import {
+  addSubstrateTransaction,
+  getTransactionStatus,
+  updateTransactionStatus,
+} from "./store.transactions"
 import type { WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 

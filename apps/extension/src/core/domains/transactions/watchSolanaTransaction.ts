@@ -8,7 +8,7 @@ import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { addSolTransaction, updateTransactionStatus } from "./helpers"
+import { addSolTransaction, updateTransactionStatus } from "./store.transactions"
 import type { TransactionStatus, WalletTransactionInfo, WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 

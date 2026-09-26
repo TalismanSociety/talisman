@@ -14,7 +14,8 @@ import { getMetadataDef } from "../../util/getMetadataDef"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction, signSubstratePayload } from "../signing/signSubstratePayload"
-import { dismissTransaction, watchSubstrateTransaction } from "../transactions"
+import { dismissTransaction } from "../transactions/store.transactions"
+import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
 
 export class SubHandler extends ExtensionHandler {
   private submit: MessageHandler<"pri(substrate.rpc.submit)"> = async ({
