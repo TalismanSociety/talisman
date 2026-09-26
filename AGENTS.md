@@ -57,7 +57,7 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 - `pnpm dev` stops when stdin closes. From a non-interactive shell, run `tail -f /dev/null | pnpm dev`.
 - Blank page after a dev server restart: reload the extension (`chrome://extensions`, or `chrome.runtime.reload()` in the service worker). If it stays blank, run `rm -rf apps/extension/node_modules/.vite` and restart `pnpm dev`.
 - Extension pages show "akcdepjilgckjbngkhjghfnmnnkdnmno is blocked": Developer mode is off in the dev profile. Turn it on in `chrome://extensions`, then restart `pnpm dev`.
-- Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages ("Unknown connection from ..." in the service worker console). Run `pnpm dev:kill && pnpm dev`, then reload the extension.
+- Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages and content scripts: pages stay blank with no error in their console, and dapp requests hang with no popup. Only the service worker console shows "Unknown connection from ...". Run `pnpm dev:kill && pnpm dev`, then reload the extension.
 - A change to the service worker banner in `wxt.config.ts` needs a `pnpm dev` restart.
 
 ## Verify in the browser
