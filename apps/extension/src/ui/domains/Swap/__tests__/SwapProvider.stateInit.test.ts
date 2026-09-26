@@ -56,10 +56,6 @@ vi.mock("../hooks/useSwapErc20Approval", () => ({
   useSwapErc20Approval: () => ({}),
 }))
 
-vi.mock("../hooks/useFastBalance", () => ({
-  useFastBalance: () => undefined,
-}))
-
 vi.mock("../hooks/useSwapSlippage", () => ({
   useSwapSlippage: () => [0.5],
 }))

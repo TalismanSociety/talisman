@@ -88,8 +88,6 @@ vi.mock("../evm-gas-check", () => ({
   ),
 }))
 
-vi.mock("./bittensor-logo.svg?url", () => ({ default: "bittensor-logo.svg" }))
-
 const { bittensorEvmSwapModule } = await import("../bittensor-evm-swap-module")
 const { abiBittensorBalanceTransfer } = await import("@core/util/abi")
 const { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } = await import("@core/domains/bittensor/constants")
