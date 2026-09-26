@@ -199,6 +199,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
       if (signal.aborted) throw new Error("Aborted")
 
+      // the confirm screen shows the selected quote's output, the exchange must not deliver less
+      if (
+        exchange?.outputAmountBN !== undefined &&
+        selectedQuote &&
+        exchange.outputAmountBN < selectedQuote.outputAmountBN
+      )
+        throw new Error("Please select the quote again")
+
       // For modules that don't create an exchange (e.g. LI.FI returns null) but support
       // slippage, fetch a fresh quote so the route reflects the user's current slippage.
       // The main quote manager intentionally omits slippage from its cache key so that
