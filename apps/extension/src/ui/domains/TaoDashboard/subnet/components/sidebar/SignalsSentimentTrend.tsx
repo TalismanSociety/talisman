@@ -8,7 +8,7 @@ import {
 import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import {
-  useColorFromScore100Neg,
+  getColorFromScore100Neg,
   useScore1To100Neg,
   useScore2To100Neg,
 } from "@ui/domains/TaoDashboard/shared/util"
@@ -50,13 +50,13 @@ const SentimentTrend: FC<
   const scoreLabel = useSentimentLabelFromScore100Pos(data.score)
 
   const flowChangeScore = useScore2To100Neg(data.taoFlowVelocity)
-  const flowChangeColor = useColorFromScore100Neg(flowChangeScore)
+  const flowChangeColor = getColorFromScore100Neg(flowChangeScore)
 
   const volChangeScore = useScore2To100Neg(data.volMcapVelocity)
-  const volChangeColor = useColorFromScore100Neg(volChangeScore)
+  const volChangeColor = getColorFromScore100Neg(volChangeScore)
 
   const sentChangeScore = useScore1To100Neg(data.sentimentVelocity)
-  const sentChangeColor = useColorFromScore100Neg(sentChangeScore)
+  const sentChangeColor = getColorFromScore100Neg(sentChangeScore)
 
   return (
     <div className="flex h-41.25 items-stretch gap-14">

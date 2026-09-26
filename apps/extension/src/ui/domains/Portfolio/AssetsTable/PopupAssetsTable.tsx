@@ -23,12 +23,12 @@ import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
-import { useUniswapV2LpTokenTotalValueLocked } from "../hooks/useUniswapV2LpTokenTotalValueLocked"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolioEarnButton } from "../usePortfolioEarnButton"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
+import { getUniswapV2LpTokenTotalValueLocked } from "./getUniswapV2LpTokenTotalValueLocked"
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
@@ -94,7 +94,7 @@ const AssetRow: FC<{
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
+  const tvl = getUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBond } = useBondButton({ balances })
   const { canUnbond } = useUnbondButton({ balances })
