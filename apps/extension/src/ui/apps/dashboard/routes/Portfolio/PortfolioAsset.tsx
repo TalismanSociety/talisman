@@ -151,8 +151,7 @@ const usePortfolioAsset = () => {
   const { allBalances } = usePortfolioBalances()
 
   const balances = useMemo(
-    // TODO: Move the association between a token on multiple chains into the backend / subsquid.
-    // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
+    // Known limit: different tokens that share a symbol are grouped together.
     () => allBalances.find((b) => b.token?.symbol === symbol),
     [allBalances, symbol]
   )

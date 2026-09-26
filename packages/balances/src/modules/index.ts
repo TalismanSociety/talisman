@@ -28,7 +28,8 @@ export const BALANCE_MODULES = [
   SolToken2022BalanceModule,
 ]
 
-export type AnyBalanceModule = (typeof BALANCE_MODULES)[number] // TODO yeet ? should use IBalance
+/** @deprecated unused */
+export type AnyBalanceModule = (typeof BALANCE_MODULES)[number]
 
 export * from "../types/IBalanceModule"
 export * from "./abis"

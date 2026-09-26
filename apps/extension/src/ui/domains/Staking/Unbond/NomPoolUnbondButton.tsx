@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next"
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useUnbondModal } from "./useUnbondModal"
 
-// TODO: split into 2 components: one for bittensor and one for nompools
 export const NomPoolUnbondButton: FC<{
   tokenId: TokenId
   address: string

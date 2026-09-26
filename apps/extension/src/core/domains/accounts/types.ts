@@ -38,9 +38,8 @@ export enum LegacyAccountOrigin {
   Signet = "SIGNET",
 }
 
-// TODO migrate
 /**
- * @deprecated
+ * @deprecated used only by account migrations
  */
 export enum SubstrateLedgerAppType {
   Legacy = "substrate-legacy",

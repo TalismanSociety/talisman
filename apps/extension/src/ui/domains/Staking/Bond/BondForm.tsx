@@ -81,26 +81,26 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, formatter } = useBondWizard()
+  const { tokenRates, amountToStake } = useBondWizard()
 
   if (!tokenRates) return null
 
   return (
     <DisplayContainer>
-      <Fiat amount={formatter?.fiat(currency) ?? 0} noCountUp />
+      <Fiat amount={amountToStake?.fiat(currency) ?? 0} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenDisplay = () => {
-  const { token, formatter } = useBondWizard()
+  const { token, amountToStake } = useBondWizard()
 
   if (!token) return null
 
   return (
     <DisplayContainer>
       <Tokens
-        amount={formatter?.tokens ?? 0}
+        amount={amountToStake?.tokens ?? 0}
         decimals={token.decimals}
         symbol={token.symbol}
         noCountUp
@@ -110,9 +110,9 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { token, formatter, setPlancks } = useBondWizard()
+  const { token, amountToStake, setPlancks } = useBondWizard()
 
-  const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
+  const formattedValue = useMemo(() => amountToStake?.tokens ?? "", [amountToStake?.tokens])
 
   const [value, setValue] = useState(formattedValue)
   const refSkipSync = useRef(false)
@@ -153,8 +153,8 @@ const TokenInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!formatter) refTokensInput.current?.focus()
-  }, [formatter, refTokensInput])
+    if (!amountToStake) refTokensInput.current?.focus()
+  }, [amountToStake, refTokensInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refTokensInput)
@@ -180,13 +180,13 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, formatter, setPlancks } = useBondWizard()
+  const { token, tokenRates, amountToStake, setPlancks } = useBondWizard()
   const currency = useSelectedCurrency()
 
   const formattedValue = useMemo(() => {
-    const val = formatter?.fiat(currency) ?? ""
+    const val = amountToStake?.fiat(currency) ?? ""
     return val ? String(Number(val.toFixed(2))) : val
-  }, [currency, formatter])
+  }, [currency, amountToStake])
 
   const [value, setValue] = useState(formattedValue)
   const refSkipSync = useRef(false)
@@ -230,8 +230,8 @@ const FiatInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!formatter) refFiatInput.current?.focus()
-  }, [formatter, refFiatInput])
+    if (!amountToStake) refFiatInput.current?.focus()
+  }, [amountToStake, refFiatInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refFiatInput)

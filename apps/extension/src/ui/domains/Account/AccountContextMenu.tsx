@@ -87,9 +87,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
 
   const chain = useNetworkByGenesisHash(getAccountGenesisHash(account))
 
-  // TODO: These modal providers used to be used in multiple places,
-  // hence the hectic API we've got going on here.
-  // We should clean them up to just support this one component's use-case.
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const canCopyAddress = !!account
   const copyAddress = useCallback(() => {
