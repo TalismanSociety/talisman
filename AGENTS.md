@@ -71,6 +71,8 @@ agent-browser --session talisman --cdp 9223 tab new "chrome-extension://akcdepji
 agent-browser --session talisman --cdp 9223 snapshot -i
 ```
 
+The first extension page after `pnpm dev` starts takes 10 seconds or more to render. Later loads are fast. Before the first snapshot, wait for text you expect: `agent-browser --session talisman --cdp 9223 wait --text "…"`.
+
 Sign popups: agent-browser does not list the popup the extension opens, but the request also renders in a tab it opens itself. Find the popup URL (`popup.html#/…`) with `curl -s localhost:9223/json/list` (it can take a few seconds to appear while the service worker starts), open it with `tab new "<url>"`, then snapshot and click there. Approving or rejecting in either tab completes the request and closes both.
 
 The service worker: agent-browser cannot reach it, so use Playwright. Put the script in `.tmp/` and run it with `node` from the repo root. `browser.close()` disconnects and leaves Chrome running.
