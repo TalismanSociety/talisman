@@ -5,7 +5,7 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../.
 import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 
-export class ChainsHandler extends ExtensionHandler {
+export class PolkadotVaultHandler extends ExtensionHandler {
   private async validateVaultVerifierCertificateMnemonic() {
     const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
     assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
@@ -20,20 +20,21 @@ export class ChainsHandler extends ExtensionHandler {
     request: RequestTypes[TMessageType]
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(chains.generateQr.addNetworkSpecs)": {
+      case "pri(polkadotVault.generateQr.addNetworkSpecs)": {
         await this.validateVaultVerifierCertificateMnemonic()
 
-        const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
+        const { genesisHash } =
+          request as RequestType<"pri(polkadotVault.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
         // serialize as hex for transfer
         return u8aToHex(data)
       }
 
-      case "pri(chains.generateQr.updateNetworkMetadata)": {
+      case "pri(polkadotVault.generateQr.updateNetworkMetadata)": {
         await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash, specVersion } =
-          request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
+          request as RequestType<"pri(polkadotVault.generateQr.updateNetworkMetadata)">
         const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
         // serialize as hex for transfer
         return u8aToHex(data)

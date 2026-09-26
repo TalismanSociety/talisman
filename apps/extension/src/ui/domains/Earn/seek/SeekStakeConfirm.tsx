@@ -20,7 +20,7 @@ import {
   RiskAnalysisPillButton,
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
+import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"

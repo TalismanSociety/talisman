@@ -14,7 +14,7 @@ import { isJsonPayload } from "../../util/isJsonPayload"
 import { urlToOrigin } from "../../util/urlToDomain"
 import { getHostName } from "../app/helpers"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { watchSubstrateTransaction } from "../transactions"
+import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
 import { assembleSubstrateTransaction, signSubstratePayload } from "./signSubstratePayload"
 import type {
   KnownSigningRequestApprove,

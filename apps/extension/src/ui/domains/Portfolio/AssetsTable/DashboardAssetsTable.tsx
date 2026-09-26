@@ -10,7 +10,7 @@ import { useLocation } from "react-router-dom"
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { AssetRow } from "./DashboardAssetRow"
+import { DashboardAssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
 const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
@@ -151,7 +151,7 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
             }}
           >
             {!!symbolBalances[item.index] && (
-              <AssetRow balances={symbolBalances[item.index][1]} noCountUp={noCountUp} />
+              <DashboardAssetRow balances={symbolBalances[item.index][1]} noCountUp={noCountUp} />
             )}
           </div>
         ))}

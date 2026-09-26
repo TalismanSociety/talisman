@@ -12,13 +12,17 @@ import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
 import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
-import { getMetadataDef } from "../../util/getMetadataDef"
 import { settingsStore } from "../app/store.settings"
+import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction } from "../signing/signSubstratePayload"
-import { addSubstrateTransaction, getTransactionStatus, updateTransactionStatus } from "./helpers"
+import {
+  addSubstrateTransaction,
+  getTransactionStatus,
+  updateTransactionStatus,
+} from "./store.transactions"
 import type { WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 
@@ -87,11 +91,11 @@ const getHeaderInfo = async (
   // chain_getBlockHash returns the node's best-chain block at that height, which under
   // chain_subscribeAllHeads may be a different fork than the header we received: fetch that
   // block's header and make sure it is the same one before using the hash
-  const hash = await chainConnector.send<HexString | null>(chainId, "chain_getBlockHash", [
+  const hash = await chainConnectorDot.send<HexString | null>(chainId, "chain_getBlockHash", [
     blockNumber,
   ])
   if (!hash) return null
-  const check = await chainConnector.send<JsonHeader | null>(chainId, "chain_getHeader", [hash])
+  const check = await chainConnectorDot.send<JsonHeader | null>(chainId, "chain_getHeader", [hash])
   if (
     !check ||
     check.parentHash !== header.parentHash ||
@@ -109,16 +113,14 @@ const getExtrinsincResult = async (
   extrinsicHash: string
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
-    const blockData = await chainConnector.send<{
+    const blockData = await chainConnectorDot.send<{
       block: { header: JsonHeader; extrinsics: HexString[] }
     }>(chainId, "chain_getBlock", [blockHash])
 
     const eventsStorageKey = getStorageKeyHash("System", "Events")
-    const response = await chainConnector.send<{ changes: [string, HexString | null][] }[] | null>(
-      chainId,
-      "state_queryStorageAt",
-      [[eventsStorageKey], blockHash]
-    )
+    const response = await chainConnectorDot.send<
+      { changes: [string, HexString | null][] }[] | null
+    >(chainId, "state_queryStorageAt", [[eventsStorageKey], blockHash])
 
     const eventsFrame = response?.[0]?.changes[0][1]
     const events = eventsFrame ? decodeSystemEvents(eventsFrame) : []
@@ -177,7 +179,7 @@ const watchExtrinsicStatus = async (
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizedHeads = await chainConnector.subscribe(
+  const unsubscribeFinalizedHeads = await chainConnectorDot.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
@@ -219,7 +221,7 @@ const watchExtrinsicStatus = async (
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
   // => need to wait for block to be finalized before considering it a success
-  const unsubscribeAllHeads = await chainConnector.subscribe(
+  const unsubscribeAllHeads = await chainConnectorDot.subscribe(
     chainId,
     "chain_subscribeAllHeads",
     "chain_allHead",

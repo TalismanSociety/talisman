@@ -19,7 +19,7 @@ import {
 
 import type { InjectedAccount } from "../../types/pjsInterop"
 import { getEthDerivationPath } from "../ethereum/helpers"
-import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
+import { getAccountKeypairType } from "../keyring/getAccountKeypairType"
 import type { AccountsCatalogStore } from "./store.catalog"
 
 export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]

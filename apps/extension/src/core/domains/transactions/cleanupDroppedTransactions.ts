@@ -3,10 +3,10 @@ import type { Signature } from "@solana/kit"
 import type { SolNetworkId } from "@talismn/chaindata-provider"
 
 import { db } from "../../db"
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
-import { updateTransactionStatus } from "./helpers"
+import { updateTransactionStatus } from "./store.transactions"
 import type { WalletTransactionDot, WalletTransactionEth, WalletTransactionSol } from "./types"
 
 /**
@@ -129,7 +129,7 @@ const cleanupSubstrateTransactions = async (txs: WalletTransactionDot[]): Promis
     const { networkId, account } = accountTxs[0]!
     try {
       // counts the node's pool as well, so an extrinsic still waiting there raises this nonce too
-      const nextNonce = await chainConnector.send<number>(networkId, "system_accountNextIndex", [
+      const nextNonce = await chainConnectorDot.send<number>(networkId, "system_accountNextIndex", [
         account,
       ])
       if (!Number.isInteger(nextNonce)) continue

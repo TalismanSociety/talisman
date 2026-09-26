@@ -8,7 +8,7 @@ import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { settingsStore } from "../app/store.settings"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
-import { addEvmTransaction, updateTransactionStatus } from "./helpers"
+import { addEvmTransaction, updateTransactionStatus } from "./store.transactions"
 import type { WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 

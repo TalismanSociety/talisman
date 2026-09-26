@@ -166,11 +166,11 @@ export const api: MessageTypes = {
   metadataUpdatesSubscribe: (genesisHash, cb) =>
     messageService.subscribe("pri(metadata.updates.subscribe)", { id: genesisHash }, cb),
 
-  // chain message types
+  // polkadot vault message types
   generateChainSpecsQr: (genesisHash) =>
-    messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
+    messageService.sendMessage("pri(polkadotVault.generateQr.addNetworkSpecs)", { genesisHash }),
   generateChainMetadataQr: (genesisHash, specVersion) =>
-    messageService.sendMessage("pri(chains.generateQr.updateNetworkMetadata)", {
+    messageService.sendMessage("pri(polkadotVault.generateQr.updateNetworkMetadata)", {
       genesisHash,
       specVersion,
     }),

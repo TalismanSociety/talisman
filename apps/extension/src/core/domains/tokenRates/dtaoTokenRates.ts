@@ -1,7 +1,7 @@
 import type { TokenList } from "@talismn/chaindata-provider"
 import { fetchDTaoTokenRates, type TokenRatesList } from "@talismn/token-rates"
 
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { BITTENSOR_NETWORK_ID, BITTENSOR_NETWORK_IDS } from "../bittensor/constants"
 import { TAO_DATA_API_URL } from "../bittensor/tao-data/exports"
 import { gandalfFetch } from "../gandalf/fetch"
@@ -24,7 +24,7 @@ export const fetchDTaoTokenRatesForWallet = async (
   const results = await Promise.all(
     BITTENSOR_NETWORK_IDS.map((networkId) =>
       fetchDTaoTokenRates({
-        connector: chainConnector,
+        connector: chainConnectorDot,
         networkId,
         tokens,
         tokenRates,

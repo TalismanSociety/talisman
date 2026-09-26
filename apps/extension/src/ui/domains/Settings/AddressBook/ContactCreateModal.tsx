@@ -24,7 +24,7 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
-import { ContactNetworkPickerButton } from "./ContactNetworkModal"
+import { ContactNetworkPickerButton } from "./ContactNetworkPickerButton"
 import { useChainsFilteredByAddressPrefix } from "./hooks"
 import type { ContactModalProps } from "./types"
 

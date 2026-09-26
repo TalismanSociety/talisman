@@ -1,7 +1,7 @@
 // biome-ignore lint/style/useNodejsImportProtocol: legacy
 import assert from "assert"
 import { TabsHandler } from "../../../libs/Handler"
-import { chainConnector } from "../../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../../../types"
 import type { Port } from "../../../types/base"
@@ -23,7 +23,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
 
-    return await chainConnector.send(chain.id, method, params)
+    return await chainConnectorDot.send(chain.id, method, params)
   }
 
   private async rpcTalismanByGenesisHashSubscribe(
@@ -38,7 +38,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
 
-    const unsubscribe = await chainConnector.subscribe(
+    const unsubscribe = await chainConnectorDot.subscribe(
       chain.id,
       subscribeMethod,
       responseMethod,
