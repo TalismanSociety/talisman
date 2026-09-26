@@ -1,1 +1,0 @@
-export { ChainsHandler } from "./handler"

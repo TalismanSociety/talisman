@@ -12,7 +12,6 @@ import { BalancesHandler } from "../domains/balances"
 import { BitcoinExtensionHandler } from "../domains/bitcoin/handler.extension"
 import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
-import { ChainsHandler } from "../domains/chains"
 import { DefiHandler } from "../domains/defi/handler"
 import { EarnHandler } from "../domains/earn/handler"
 import { EthHandler } from "../domains/ethereum"
@@ -21,6 +20,7 @@ import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
+import { PolkadotVaultHandler } from "../domains/polkadotVault/handler"
 import { QueryCacheHandler } from "../domains/queryCache/handler"
 import { SendFundsHandler } from "../domains/sendFunds/handler"
 import { SigningHandler } from "../domains/signing"
@@ -29,7 +29,7 @@ import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { cleanupAllDroppedTransactions } from "../domains/transactions/cleanupDroppedTransactions"
-import { updateTransactionsRestart } from "../domains/transactions/helpers"
+import { updateTransactionsRestart } from "../domains/transactions/store.transactions"
 import { resumePendingBitcoinTransactions } from "../domains/transactions/watchBitcoinTransaction"
 import { resumeSwapWatchers } from "../domains/transactions/watchSwapStatus"
 import { talismanAnalytics } from "../libs/Analytics"
@@ -52,7 +52,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       accountProxies: new AccountProxiesHandler(stores),
-      chains: new ChainsHandler(stores),
+      polkadotVault: new PolkadotVaultHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),

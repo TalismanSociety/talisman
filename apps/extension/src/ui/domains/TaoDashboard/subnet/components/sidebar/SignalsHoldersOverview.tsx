@@ -32,7 +32,7 @@ interface TierData {
   percent: number
 }
 
-export const SignalsHolderOverview: FC<{ netuid: number }> = ({ netuid }) => {
+export const SignalsHoldersOverview: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<TimePeriod>("1w")
   const { data, isLoading } = useSubnetHolders(netuid, period)

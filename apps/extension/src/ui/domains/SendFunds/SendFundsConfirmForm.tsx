@@ -29,7 +29,7 @@ import {
   RiskAnalysisPillButton,
   useShowRiskAnalysisPillButton,
 } from "../Sign/risk-analysis/RiskAnalysisPillButton"
-import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
+import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
 import { BtcCoinControl } from "./BtcCoinControl"

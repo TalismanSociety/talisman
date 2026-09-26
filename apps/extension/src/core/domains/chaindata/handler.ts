@@ -2,8 +2,8 @@ import { isNativeToken, isNetworkOfPlatform } from "@talismn/chaindata-provider"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chainConnector } from "../../rpcs/chain-connector"
 import { chainConnectorBtc } from "../../rpcs/chain-connector-btc"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -82,5 +82,5 @@ const clearRpcProviderCache = async (networkId: string) => {
   chainConnectorEvm.clearRpcProvidersCache(networkId)
   chainConnectorSol.clearRpcProvidersCache(networkId)
   chainConnectorBtc.clearRpcProvidersCache(networkId)
-  await chainConnector.reset(networkId)
+  await chainConnectorDot.reset(networkId)
 }

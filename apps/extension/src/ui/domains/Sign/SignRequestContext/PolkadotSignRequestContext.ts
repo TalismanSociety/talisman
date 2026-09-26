@@ -15,7 +15,7 @@ import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo } from "react"
 
 import { useSubstratePayloadMetadataSuspense } from "../hooks/useSubstratePayloadMetadata"
-import { useAnySigningRequest } from "./AnySignRequestContext"
+import { useAnySigningRequest } from "./useAnySigningRequest"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,

@@ -7,7 +7,7 @@ import { db } from "../../db"
 import { createNotification } from "../../notifications"
 import { chainConnectorBtc } from "../../rpcs/chain-connector-btc"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { updateTransactionStatus } from "./helpers"
+import { updateTransactionStatus } from "./store.transactions"
 import type { WalletTransactionInfo, WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
 

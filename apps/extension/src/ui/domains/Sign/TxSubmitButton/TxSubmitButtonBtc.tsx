@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerBitcoin } from "../SignLedgerBitcoin"
-import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
+import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({

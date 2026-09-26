@@ -5,7 +5,6 @@ import type { BalancesMessages } from "../domains/balances/types"
 import type { BitcoinMessages } from "../domains/bitcoin/types"
 import type { BittensorMessages } from "../domains/bittensor/types"
 import type { ChaindataMessages } from "../domains/chaindata/types"
-import type { ChainsMessages } from "../domains/chains/types"
 import type { DefiMessages } from "../domains/defi/types"
 import type { EarnMessages } from "../domains/earn/types"
 import type { EthMessages } from "../domains/ethereum/types"
@@ -13,6 +12,7 @@ import type { GandalfMessages } from "../domains/gandalf/types"
 import type { MetadataMessages } from "../domains/metadata/types"
 import type { MnemonicMessages } from "../domains/mnemonics/types"
 import type { NftsMessages } from "../domains/nfts"
+import type { PolkadotVaultMessages } from "../domains/polkadotVault/types"
 import type { QueryCacheMessages } from "../domains/queryCache/types"
 import type { SendFundsMessages } from "../domains/sendFunds/types"
 import type { SigningMessages } from "../domains/signing/types"
@@ -56,7 +56,7 @@ type AllMessages = PolkadotRequestSignatures &
   AppMessages &
   AuthorisedSiteMessages &
   BalancesMessages &
-  ChainsMessages &
+  PolkadotVaultMessages &
   EthMessages &
   MetadataMessages &
   MnemonicMessages &

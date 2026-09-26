@@ -11,12 +11,12 @@ import { useMemo } from "react"
 import { getStakingEraDurationMs } from "../../helpers"
 import type { NomPoolMember } from "../../types"
 import { useBabeNetwork } from "./useBabeNetwork"
-import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
+import { useDefaultNomPoolId } from "./useDefaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
 export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const token = useToken(tokenId)
-  const poolId = useDetaultNomPoolId(token?.networkId)
+  const poolId = useDefaultNomPoolId(token?.networkId)
   // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
   const network = useNetworkById(poolId ? token?.networkId : null)
   const babeNetwork = useBabeNetwork(poolId ? token?.networkId : null)

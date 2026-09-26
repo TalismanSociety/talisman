@@ -1,7 +1,7 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { InfoIcon } from "@talismn/icons"
 import { Accordion, AccordionIcon } from "@ui/components/Accordion"
-import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { AccountsStack } from "@ui/domains/Account/AccountsStack"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"

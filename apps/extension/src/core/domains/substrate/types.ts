@@ -1,7 +1,7 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { HexString } from "@talismn/util"
 import type { MetadataDef as PjsMetadataDef, SignerPayloadJSON } from "../../types/pjsInterop"
-import type { WalletTransactionInfo } from "../transactions"
+import type { WalletTransactionInfo } from "../transactions/types"
 
 export interface TalismanMetadataDef extends PjsMetadataDef {
   metadataRpc?: `0x${string}`

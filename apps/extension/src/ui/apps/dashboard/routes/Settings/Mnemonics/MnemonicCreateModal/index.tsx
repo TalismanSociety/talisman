@@ -3,7 +3,7 @@ import { Modal } from "@ui/components/Modal"
 import { Acknowledgement } from "./Acknowledgement"
 import { Complete } from "./Complete"
 import { MnemonicCreateModalProvider, Stages, useMnemonicCreateModal } from "./context"
-import { MnemonicCreateForm } from "./MnenomicForm"
+import { MnemonicCreateForm } from "./MnemonicCreateForm"
 import { Verify } from "./Verify"
 
 export { MnemonicCreateModalProvider, useMnemonicCreateModal }

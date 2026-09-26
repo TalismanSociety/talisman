@@ -54,7 +54,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
   </div>
 )
 
-export const SignViewXTokensTransfer: FC<{
+export const SignViewCrossChainTransfer: FC<{
   value: bigint
   tokenLogo?: string
   tokenSymbol: string

@@ -3,7 +3,7 @@ import { gt } from "semver"
 
 import type { GeneralReport } from "../../libs/GeneralReport"
 import { StorageProvider } from "../../libs/Store"
-import { TalismanNotOnboardedError } from "./utils"
+import { TalismanNotOnboardedError } from "./errors"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"

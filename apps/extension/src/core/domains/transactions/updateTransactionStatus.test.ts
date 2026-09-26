@@ -2,7 +2,7 @@ import type { WalletTransactionEth } from "@core/domains/transactions/types"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { db } from "../../db"
-import { updateTransactionStatus } from "./helpers"
+import { updateTransactionStatus } from "./store.transactions"
 
 // --- Helpers ---
 

@@ -2,7 +2,7 @@ import type { KeypairCurve } from "@talismn/crypto"
 import type { SignerPayloadJSON } from "@talismn/sapi"
 import { assert } from "@talismn/util"
 
-import { getMetadataDef } from "../../util/getMetadataDef"
+import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assemblePjsTransaction, type SignPjsPayloadResult, signPjsPayload } from "./signPjsPayload"
 

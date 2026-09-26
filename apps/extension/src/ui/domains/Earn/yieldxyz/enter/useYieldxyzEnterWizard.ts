@@ -15,8 +15,8 @@ import { useDummyTransaction } from "../../hooks/useDummyTransaction"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
-import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
+import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzTransactionManager"
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {

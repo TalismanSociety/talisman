@@ -23,7 +23,7 @@ import {
 import { invalidateNonceQueries, useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
+import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
 import { useOpenClose } from "@ui/hooks/useOpenClose"

@@ -13,6 +13,7 @@ import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
 import type { SettingsStoreData } from "../domains/app/store.settings"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
+import { getMetadataDef } from "../domains/metadata/getMetadataDef"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
 import type {
   SubstrateSignResponse,
@@ -40,7 +41,6 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
-import { getMetadataDef } from "../util/getMetadataDef"
 import { urlToDomain } from "../util/urlToDomain"
 import type { TabStore } from "./stores"
 import { genericAsyncSubscription } from "./subscriptions"
