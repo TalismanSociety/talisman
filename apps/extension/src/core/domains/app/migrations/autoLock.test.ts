@@ -7,7 +7,7 @@ vi.mock("../../../config/sentry", () => ({
 }))
 
 vi.mock("../../../rpcs/chaindata", () => ({ chaindataProvider: {} }))
-vi.mock("../../chains/legacy/store.activeChains", () => ({ activeChainsStore: {} }))
+vi.mock("../../chaindata/legacy/store.activeChains", () => ({ activeChainsStore: {} }))
 vi.mock("../../ethereum/legacy/store.activeEvmNetworks", () => ({ activeEvmNetworksStore: {} }))
 vi.mock("../legacy/store.addressBook", () => ({ addressBookStore: {} }))
 

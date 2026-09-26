@@ -4,7 +4,8 @@ import { sleep } from "@talismn/util"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
-import { isTxInfoSwap, updateSwapStatus } from "./helpers"
+import { isTxInfoSwap } from "./exports"
+import { updateSwapStatus } from "./store.transactions"
 import {
   FINAL_SWAP_STATUSES,
   type SwapStatus,

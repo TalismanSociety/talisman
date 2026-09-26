@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressButton"
 import { BittensorValidatorName } from "../DashboardTokenBalances/BittensorValidatorName"
-import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
+import { SendFundsTokenButton } from "../SendFundsTokenButton"
 import { TokenContextMenu } from "../TokenContextMenu"
 
 type TokenBalancesListProps = {

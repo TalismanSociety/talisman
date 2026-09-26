@@ -11,7 +11,7 @@ import type { BaseError } from "viem"
 
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
-import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
+import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({

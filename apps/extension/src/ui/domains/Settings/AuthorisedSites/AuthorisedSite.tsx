@@ -51,7 +51,7 @@ const ConfirmForgetDialog: FC<{
 
 const Rule = () => <div className="mx-[1em] inline-block h-[1em] w-0.5 bg-current"></div>
 
-export const AuthorizedSite: FC<{
+export const AuthorisedSite: FC<{
   id: string
   provider: ProviderType
 }> = ({ id, provider }) => {

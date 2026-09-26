@@ -3,7 +3,7 @@ import type { SolNetworkId } from "@talismn/chaindata-provider"
 // import { SolTransactionJson } from "@talismn/solana"
 
 import type { SigningRequestID } from "../signing/types"
-import type { WalletTransactionInfo } from "../transactions"
+import type { WalletTransactionInfo } from "../transactions/types"
 
 export type SolRpcRequest = {
   id: string

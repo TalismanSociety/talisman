@@ -108,7 +108,7 @@ A website that connects to the wallet through the injected providers.
 _Avoid_: tab, site (except in "site authorisation")
 
 **Site authorisation**:
-The user's permission for a dapp to see some accounts. Code mixes spellings: `AuthorizedSite`, `sitesAuthorisedStore`, domain `sitesAuthorised`.
+The user's permission for a dapp to see some accounts. Spell it `authorise` (Australian English, see `AGENTS.md`): domain `sitesAuthorised`, `sitesAuthorisedStore`. `AuthorizedSite` and the other US-spelled names are legacy.
 _Avoid_: connection
 
 **Request**:

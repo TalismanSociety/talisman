@@ -15,9 +15,8 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { useBittensorClaimModal } from "../hooks/useBittensorClaimModal"
 import { useBittensorClaimWizard } from "../hooks/useBittensorClaimWizard"
 

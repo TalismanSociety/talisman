@@ -2,7 +2,7 @@ import { isNativeToken, isNetworkOfPlatform } from "@talismn/chaindata-provider"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -80,5 +80,5 @@ export class ChaindataHandler extends ExtensionHandler {
 const clearRpcProviderCache = async (networkId: string) => {
   chainConnectorEvm.clearRpcProvidersCache(networkId)
   chainConnectorSol.clearRpcProvidersCache(networkId)
-  await chainConnector.reset(networkId)
+  await chainConnectorDot.reset(networkId)
 }

@@ -11,8 +11,8 @@ import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
 
 export const ChangeValidatorForm = () => {

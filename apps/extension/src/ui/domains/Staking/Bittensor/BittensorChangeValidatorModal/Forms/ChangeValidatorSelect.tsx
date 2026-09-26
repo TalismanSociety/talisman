@@ -18,8 +18,8 @@ import { useTranslation } from "react-i18next"
 import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import {
   ValidatorRowSkeleton,
   ValidatorRows,

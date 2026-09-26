@@ -9,7 +9,7 @@ type IRuntimeVersionBase = {
 
 import { withRetry } from "viem"
 
-import { chainConnector } from "../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 
 // properly typed on the few fields that matter to us
 type IRuntimeVersion = IRuntimeVersionBase & {
@@ -20,6 +20,6 @@ type IRuntimeVersion = IRuntimeVersionBase & {
 
 export const getRuntimeVersion = (chainId: string) => {
   return withRetry(() =>
-    chainConnector.send<IRuntimeVersion>(chainId, "state_getRuntimeVersion", [], true)
+    chainConnectorDot.send<IRuntimeVersion>(chainId, "state_getRuntimeVersion", [], true)
   )
 }

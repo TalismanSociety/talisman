@@ -1,9 +1,9 @@
-import { chainConnector } from "./chain-connector"
+import { chainConnectorDot } from "./chain-connector-dot"
 import { chainConnectorEvm } from "./chain-connector-evm"
 import { chainConnectorSol } from "./chain-connector-sol"
 
 export const chainConnectors = {
-  substrate: chainConnector,
+  substrate: chainConnectorDot,
   evm: chainConnectorEvm,
   solana: chainConnectorSol,
 }

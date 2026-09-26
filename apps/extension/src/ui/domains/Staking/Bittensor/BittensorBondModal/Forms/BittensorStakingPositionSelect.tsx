@@ -15,8 +15,8 @@ import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react
 import { useTranslation } from "react-i18next"
 
 import { BittensorConvictionLockIndicator } from "../../components/BittensorConvictionLockIndicator"
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {

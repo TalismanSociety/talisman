@@ -22,7 +22,7 @@ import { getUniswapV2LpTokenTotalValueLocked } from "./getUniswapV2LpTokenTotalV
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
+export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   balances,
   noCountUp,
 }) => {

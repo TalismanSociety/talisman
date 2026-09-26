@@ -8,8 +8,8 @@ import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AuthorizedSite } from "./AuthorisedSite"
-import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
+import { AuthorisedSite } from "./AuthorisedSite"
+import { AuthorisedSitesBatchActions } from "./AuthorisedSitesBatchActions"
 
 export const AuthorisedSites = () => {
   const { t } = useTranslation()
@@ -76,7 +76,7 @@ export const AuthorisedSites = () => {
       <Spacer small />
       <div className="flex flex-col gap-4">
         {siteIds.map((id) => (
-          <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
+          <AuthorisedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
         {providerType === "polkadot" && !hasPolkadotSites && (
           <div className="w-full rounded bg-grey-850 p-8 text-body-secondary">

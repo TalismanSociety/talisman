@@ -17,8 +17,8 @@ vi.mock("../../rpcs/chain-connector-evm", () => ({
 }))
 
 const mockChainConnectorSend = vi.fn()
-vi.mock("../../rpcs/chain-connector", () => ({
-  chainConnector: {
+vi.mock("../../rpcs/chain-connector-dot", () => ({
+  chainConnectorDot: {
     send: (...args: unknown[]) => mockChainConnectorSend(...args),
   },
 }))
