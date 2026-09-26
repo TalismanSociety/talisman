@@ -6,9 +6,8 @@ import { useNetworkById } from "@ui/state/chaindata"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-
-import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzPendingAction } from "../hooks/useYieldxyzPendingAction"
+import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzTransactionManager"
 import { useYieldxyzManageModal } from "./useYieldxyzManageModal"
 
 export type YieldxyzManageWizardInputs = {

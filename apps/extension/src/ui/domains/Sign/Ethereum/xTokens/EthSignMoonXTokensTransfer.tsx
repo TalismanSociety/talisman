@@ -8,7 +8,7 @@ import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
+import { SignViewCrossChainTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 import { getContractCallArg } from "../getContractCallArg"
 import { useEvmTokenInfo } from "../hooks/useEvmTokenInfo"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
@@ -153,7 +153,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       title={t("Transfer")}
       header={<SignViewIconHeader icon="transfer" />}
     >
-      <SignViewXTokensTransfer
+      <SignViewCrossChainTransfer
         value={amount}
         tokenDecimals={decimals}
         tokenSymbol={symbol}

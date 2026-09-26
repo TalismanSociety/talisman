@@ -7,8 +7,8 @@ import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
-import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
 
 export const ChangeValidatorReview = () => {

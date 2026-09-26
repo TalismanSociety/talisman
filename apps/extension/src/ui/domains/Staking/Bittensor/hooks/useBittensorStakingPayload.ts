@@ -4,9 +4,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useMemo } from "react"
-
+import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorDefaultMinStake"
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
-import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorMinStake"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
 import type { RemarkType } from "../utils/constants"
 import {

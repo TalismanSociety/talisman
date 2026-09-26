@@ -19,7 +19,7 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
-import { ContactNetworkPickerButton } from "./ContactNetworkModal"
+import { ContactNetworkPickerButton } from "./ContactNetworkPickerButton"
 import type { ExistingContactModalProps } from "./types"
 
 type FormValues = {

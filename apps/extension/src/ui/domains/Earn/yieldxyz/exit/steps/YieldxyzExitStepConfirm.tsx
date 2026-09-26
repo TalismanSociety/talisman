@@ -10,7 +10,7 @@ import {
   RiskAnalysisPillButton,
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
+import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { cn } from "@ui/util/cn"
 import { useEffect, useMemo, useState } from "react"

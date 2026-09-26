@@ -2,10 +2,9 @@ import { useRiskAnalysisSubmitGate } from "@ui/domains/Sign/risk-analysis/useRis
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-
-import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
+import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import { TxSubmitButtonSol } from "./TxSubmitButtonSol"
 import type { TxSubmitButtonProps } from "./types"
 

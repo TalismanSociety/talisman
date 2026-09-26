@@ -11,8 +11,8 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
-import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
+import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzTransactionManager"
 import { useYieldxyzExitModal } from "./useYieldxyzExitModal"
 
 export type YieldxyzExitWizardInit = YieldxyzPositionEnhanced

@@ -17,7 +17,7 @@ import { useRequest } from "@ui/state/requests"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useRef, useState } from "react"
 
-import { useAnySigningRequest } from "./AnySignRequestContext"
+import { useAnySigningRequest } from "./useAnySigningRequest"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
   useBalancesHydrate() // preload

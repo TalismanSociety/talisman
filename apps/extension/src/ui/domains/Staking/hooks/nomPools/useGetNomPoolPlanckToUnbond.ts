@@ -10,7 +10,7 @@ type GetNomPoolPlanksToUnbond = {
   isEnabled: boolean
 }
 
-export const useGetNomPoolPlanksToUnbond = ({
+export const useGetNomPoolPlanckToUnbond = ({
   pool,
   sapi,
   isEnabled,

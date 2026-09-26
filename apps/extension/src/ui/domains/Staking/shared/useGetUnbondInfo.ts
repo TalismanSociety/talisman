@@ -2,7 +2,7 @@ import { isBittensorNetworkId } from "@core/domains/bittensor/exports"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 
-import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
+import { useGetNomPoolPlanckToUnbond } from "../hooks/nomPools/useGetNomPoolPlanckToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
@@ -15,7 +15,7 @@ type GetUnbondInfo = {
 
 export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: pool } = useNomPoolByMember(chainId, address)
-  const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanksToUnbond({
+  const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanckToUnbond({
     sapi,
     pool,
     isEnabled: !isBittensorNetworkId(chainId),

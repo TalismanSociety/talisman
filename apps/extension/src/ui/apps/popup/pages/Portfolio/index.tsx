@@ -2,7 +2,7 @@ import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
-import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
+import PasswordMigrationAlertPopupDrawer from "@ui/domains/Settings/PasswordMigrationAlertPopupDrawer"
 import { cn } from "@ui/util/cn"
 import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
@@ -27,7 +27,7 @@ const PortfolioRoutes = () => (
     </Routes>
     <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>
       <BraveWarningPopupBanner />
-      <MigratePasswordAlert />
+      <PasswordMigrationAlertPopupDrawer />
     </Suspense>
   </>
 )

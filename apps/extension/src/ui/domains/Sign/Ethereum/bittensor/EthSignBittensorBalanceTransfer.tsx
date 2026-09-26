@@ -10,7 +10,7 @@ import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
+import { SignViewCrossChainTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
@@ -43,7 +43,7 @@ export const EthSignBittensorBalanceTransfer: FC = () => {
       title={t("Transfer")}
       header={<SignViewIconHeader icon="transfer" />}
     >
-      <SignViewXTokensTransfer
+      <SignViewCrossChainTransfer
         value={decodedTx.value}
         tokenDecimals={nativeToken.decimals}
         tokenSymbol={nativeToken.symbol}
