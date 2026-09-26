@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join, relative, sep } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
@@ -27,10 +27,16 @@ const ALLOWED: Record<string, string> = {
 
 const QUERY_CALL = /\b(?:useQuery|useSuspenseQuery|queryOptions)\s*(?:<[^()]*>)?\s*\(/g
 
+const SKIPPED_SPANS =
+  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`/y
+
 const callArgsAt = (code: string, openParen: number): string => {
   let depth = 0
   for (let i = openParen; i < code.length; i++) {
-    if (code[i] === "(") depth++
+    SKIPPED_SPANS.lastIndex = i
+    const span = SKIPPED_SPANS.exec(code)
+    if (span) i += span[0].length - 1
+    else if (code[i] === "(") depth++
     else if (code[i] === ")" && --depth === 0) return code.slice(openParen + 1, i)
   }
   return code.slice(openParen + 1)
@@ -60,11 +66,16 @@ describe("substrate payload queries", () => {
     expect(findPayloadQueries(`useQuery({ queryFn: () => sapi.getFeeEstimate(payload) })`)).toEqual(
       []
     )
+    expect(
+      findPayloadQueries(
+        `useQuery({\n  queryKey: ["a)"],\n  // 1) build\n  queryFn: () => sapi.getExtrinsicPayload(),\n})`
+      )
+    ).toEqual([1])
   })
 
   it("use useSignerPayloadQuery", () => {
     const offenders = listSourceFiles(UI_DIR)
-      .map((file) => relative(REPO_ROOT, file))
+      .map((file) => relative(REPO_ROOT, file).split(sep).join("/"))
       .filter((file) => !(file in ALLOWED))
       .flatMap((file) =>
         findPayloadQueries(readFileSync(join(REPO_ROOT, file), "utf8")).map(
