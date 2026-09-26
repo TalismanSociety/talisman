@@ -1,4 +1,5 @@
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { v4 as uuidV4 } from "uuid"
 
@@ -50,8 +51,7 @@ const runActionOnTrees = (trees: Partial<Trees>) => (action: RequestAccountsCata
 
   // force compilation error if any action types don't have a case
   const exhaustiveCheck: never = type
-  // biome-ignore lint/suspicious/noConsole: legacy
-  DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
+  DEBUG && log.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
   return
 }
 

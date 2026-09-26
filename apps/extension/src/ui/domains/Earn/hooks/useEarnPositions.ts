@@ -1,4 +1,5 @@
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import type { TokenRatesList } from "@talismn/token-rates"
@@ -144,8 +145,7 @@ export const useEarnPositions = (): Loadable<EarnPosition[]> => {
   useEffect(() => {
     if (!DEBUG || hasLoggedRef.current || !excludedDefi.length) return
     hasLoggedRef.current = true
-    // biome-ignore lint/suspicious/noConsole: development-only logging
-    console.info(
+    log.log(
       "[EarnPositions] Excluded %d defi positions that duplicate actionable earn positions:",
       excludedDefi.length,
       excludedDefi.map((p) => ({

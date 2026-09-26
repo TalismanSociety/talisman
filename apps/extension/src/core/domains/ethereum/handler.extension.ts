@@ -1,5 +1,6 @@
 import { DEBUG } from "@common/constants"
 import { ETH_ERROR_EIP1193_USER_REJECTED, EthProviderRpcError } from "@common/EthProviderRpcError"
+import { log } from "@common/log"
 import { personalSign, SignTypedDataVersion, signTypedData } from "@metamask/eth-sig-util"
 import { isEthereumAddress } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
@@ -59,8 +60,7 @@ export class EthHandler extends ExtensionHandler {
         })
         return true
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        DEBUG && console.error("signAndSendApproveHardware", { err })
+        DEBUG && log.error("signAndSendApproveHardware", { err })
         throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
       }
     }

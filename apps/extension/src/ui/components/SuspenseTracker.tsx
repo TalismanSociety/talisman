@@ -1,5 +1,5 @@
-// biome-ignore-all lint/suspicious/noConsole: debug logging
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import { type FC, useEffect } from "react"
 
 const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {
@@ -7,7 +7,7 @@ const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {
     const start = performance.now()
 
     return () => {
-      console.log(`[SuspenseTracker] ${name} - ${(performance.now() - start).toFixed()} ms`)
+      log.log(`[SuspenseTracker] ${name} - ${(performance.now() - start).toFixed()} ms`)
     }
   }, [name])
 

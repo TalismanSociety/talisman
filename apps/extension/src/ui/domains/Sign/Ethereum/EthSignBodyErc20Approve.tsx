@@ -1,6 +1,7 @@
 import { TOKEN_APPROVALS_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { EvmAddress } from "@core/domains/ethereum/types"
+import { getErrorMessage } from "@talismn/util"
 import { notify } from "@ui/components/Notifications"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -51,10 +52,14 @@ export const EthSignBodyErc20Approve: FC = () => {
         await updateCallArg("amount", limit)
       } catch (err) {
         log.error("Failed to override allowance", { err })
-        notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
+        notify({
+          title: "Error",
+          subtitle: getErrorMessage(err, t("Unknown error")),
+          type: "error",
+        })
       }
     },
-    [updateCallArg]
+    [updateCallArg, t]
   )
 
   if (!spender || !account || !network || !erc20Token) return <SignViewBodyShimmer />

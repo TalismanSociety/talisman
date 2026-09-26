@@ -21,7 +21,7 @@ export const QuickUnlockSetting = () => {
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const getErrorMessage = useQuickUnlockErrorMessage()
+  const getQuickUnlockErrorMessage = useQuickUnlockErrorMessage()
 
   const abortRef = useRef<AbortController>(null)
 
@@ -50,7 +50,10 @@ export const QuickUnlockSetting = () => {
             setError(
               t(
                 "{{reason}} A passkey may have been created, you can remove it from your system settings.",
-                { reason: getErrorMessage(err) ?? t("Quick unlock could not be enabled.") }
+                {
+                  reason:
+                    getQuickUnlockErrorMessage(err) ?? t("Quick unlock could not be enabled."),
+                }
               )
             )
             return
@@ -63,7 +66,7 @@ export const QuickUnlockSetting = () => {
         }
       } catch (err) {
         // resolves to null if the user cancelled the quick unlock prompt, or if we abandoned it
-        const message = getErrorMessage(err)
+        const message = getQuickUnlockErrorMessage(err)
 
         // a passkey was created before we found out the authenticator can't evaluate a PRF, and
         // removing it again is only best-effort
@@ -79,7 +82,7 @@ export const QuickUnlockSetting = () => {
         setProcessing(false)
       }
     },
-    [getErrorMessage, t]
+    [getQuickUnlockErrorMessage, t]
   )
 
   // keep the setting visible while enrolled even if the authenticator became unavailable

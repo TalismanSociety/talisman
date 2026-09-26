@@ -37,6 +37,7 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 - Chain scripts: put them in `.tmp/` and run them from the repo root. Use `createClient(getWsProvider(url))` (`polkadot-api`, `polkadot-api/ws`) and `client.getUnsafeApi()`. Give papi codecs `Uint8Array.from(buf)`, never a Node `Buffer`: the codecs ignore `byteOffset`, so a pooled `Buffer` decodes the wrong bytes without an error.
 - Dependencies: pnpm settings are in `pnpm-workspace.yaml`. `minimumReleaseAge` rejects versions that are less than 3 days old, `savePrefix: ""` pins exact versions, and `allowBuilds` stops install scripts. Cap each override below the next major (`">=7.26.10 <8.0.0"`). Declare a dependency in the `package.json` of each workspace that imports it.
 - Logging in `apps/extension`: `log` from `@common/log`, never `console.*`.
+- Error messages: `getErrorMessage(err, fallback?)` from `@talismn/util`, never `(err as Error).message`.
 - Spelling: Australian English (authorise, colour, initialise, favourite) in names, comments, docs and new UI text. External names keep their source spelling: CSS `color`, HTTP `Authorization`, EIP-1193 `Unauthorized`, viem `authorizationList`. US-spelled names like `AuthorizedSite` are legacy.
 - UI text: `t("Plain English sentence")`. The English text is the translation key. `public/locales/` is downloaded from SimpleLocalize by `pnpm chore:download-translations`, so change the English source string only.
 - Generated code (`*.gen.ts`, not linted or formatted): change the generator input, then regenerate.

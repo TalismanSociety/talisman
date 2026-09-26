@@ -1,5 +1,6 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -85,11 +86,11 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       } catch (err) {
         setError("name", {
           type: "validate",
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [onConfirm, setError]
+    [onConfirm, setError, t]
   )
 
   // "manual" field registration so we can hook our own ref to it

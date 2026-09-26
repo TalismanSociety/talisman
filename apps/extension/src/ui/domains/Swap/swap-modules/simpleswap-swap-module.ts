@@ -1,4 +1,5 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
+import { log } from "@common/log"
 import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
@@ -138,8 +139,7 @@ const simpleSwapSdk = {
       )
       return await allCurrenciesRes.json()
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(new Error("Failed to fetch all simpleswap currencies", { cause }))
+      log.error(new Error("Failed to fetch all simpleswap currencies", { cause }))
       return null
     }
   },
@@ -160,8 +160,7 @@ const simpleSwapSdk = {
       const allPairs = await fetch(`https://api.simpleswap.io/get_pairs?${search.toString()}`)
       return await allPairs.json()
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(new Error("Failed to fetch simpleswap pairs", { cause }))
+      log.error(new Error("Failed to fetch simpleswap pairs", { cause }))
       return null
     }
   },
@@ -542,8 +541,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
     // verify that the created exchange has the same assets we are trying to swap
     if (exchange.currency_from !== currency_from || exchange.currency_to !== currency_to) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.trace(
+      log.warn(
         "exchange.currency_from",
         exchange.currency_from,
         "currency_from",
@@ -565,8 +563,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
     return { protocol: "simpleswap", data: exchange }
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create exchange", { cause }))
+    log.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
 }

@@ -189,8 +189,7 @@ async function buildEvmDepositTransaction(params: {
       account: fromAddress as `0x${string}`,
     })
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create evm transaction", { cause }))
+    log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
 }
@@ -233,8 +232,7 @@ async function buildSubstrateDepositPayload(params: {
 
     return payload
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create substrate payload", { cause }))
+    log.error(new Error("Failed to create substrate payload", { cause }))
     throw cause
   }
 }
@@ -302,8 +300,7 @@ async function buildSolanaDepositTransaction(params: {
       instructions,
     })
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create solana transaction", { cause }))
+    log.error(new Error("Failed to create solana transaction", { cause }))
     throw cause
   }
 }

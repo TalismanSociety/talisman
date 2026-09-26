@@ -22,7 +22,7 @@ import {
   evmNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, normalizeAddress } from "@talismn/crypto"
-import { assert, throwAfter } from "@talismn/util"
+import { assert, getErrorMessage, throwAfter } from "@talismn/util"
 import {
   createClient,
   getAddress,
@@ -258,8 +258,7 @@ export class EthTabsHandler extends TabsHandler {
               }
             }
           } catch (err) {
-            // biome-ignore lint/suspicious/noConsole: legacy
-            console.error("Failed to initialize eth subscription", err)
+            log.error("Failed to initialize eth subscription", err)
           }
         })
         .catch((error) => {
@@ -313,8 +312,7 @@ export class EthTabsHandler extends TabsHandler {
           sendToClient({ type: "accountsChanged", data: accounts })
         }
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error("site subscription callback error", { err })
+        log.error("site subscription callback error", { err })
       }
     })
 
@@ -625,8 +623,8 @@ export class EthTabsHandler extends TabsHandler {
       await requestWatchAsset(url, request.params, token, warnings, port)
     } catch (err) {
       if (err instanceof EthProviderRpcError) throw err // 4001, thrown by the cancel handler
-      const message = (err as Error)?.message
-      if (message?.includes("already exists"))
+      const message = getErrorMessage(err)
+      if (message.includes("already exists"))
         throw new EthProviderRpcError(message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
       log.error("Failed to add watch asset", { err })
       // popup closed or port disconnected

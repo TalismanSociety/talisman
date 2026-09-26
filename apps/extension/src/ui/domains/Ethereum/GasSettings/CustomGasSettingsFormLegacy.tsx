@@ -8,7 +8,7 @@ import type {
 import { yupResolver } from "@hookform/resolvers/yup"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
-import { formatDecimals } from "@talismn/util"
+import { formatDecimals, getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -257,10 +257,14 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         onConfirm(gasSettings)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
-        notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
+        notify({
+          title: "Error",
+          subtitle: getErrorMessage(err, t("Unknown error")),
+          type: "error",
+        })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId]
+    [genericEvent, onConfirm, txDetails.evmNetworkId, t]
   )
 
   const {

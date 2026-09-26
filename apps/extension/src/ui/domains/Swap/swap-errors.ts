@@ -1,4 +1,5 @@
 import type { TokenId } from "@talismn/chaindata-provider"
+import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"
 import { InsufficientGasBalanceError } from "./swap-modules/evm-gas-check"
 
@@ -69,10 +70,7 @@ export const classifySwapError = (rawError: unknown): SwapConfirmError | null =>
       available: rawError.available,
     }
 
-  const message =
-    (rawError as { shortMessage?: string }).shortMessage ??
-    (rawError as Error).message ??
-    "Unknown error"
+  const message = (rawError as { shortMessage?: string }).shortMessage ?? getErrorMessage(rawError)
 
   if (isStaleQuoteError(message)) return { type: "quote-stale" }
 
@@ -87,10 +85,7 @@ export const classifyFeeEstimationError = (rawError: unknown): SwapConfirmError 
   if (!rawError) return null
   if (isQueryAbortError(rawError)) return null
 
-  const message =
-    (rawError as { shortMessage?: string }).shortMessage ??
-    (rawError as Error).message ??
-    "Unknown error"
+  const message = (rawError as { shortMessage?: string }).shortMessage ?? getErrorMessage(rawError)
 
   return { type: "transaction-likely-to-fail", message }
 }

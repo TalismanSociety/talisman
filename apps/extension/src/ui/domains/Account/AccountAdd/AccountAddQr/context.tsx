@@ -1,5 +1,6 @@
 import { detectAddressEncoding } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
@@ -213,7 +214,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error importing account"),
-          subtitle: (error as Error)?.message,
+          subtitle: getErrorMessage(error, t("Unknown error")),
         })
       }
     },

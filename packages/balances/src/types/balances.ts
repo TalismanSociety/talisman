@@ -285,8 +285,6 @@ export class Balances {
     return new Balances(this.#toArray().filter((balance) => !idSet.has(balance.id)))
   }
 
-  // TODO: Add some more useful aggregator methods
-
   #toArray = (): Balance[] => {
     if (!this.#cachedArray) this.#cachedArray = [...this.#balancesMap.values()]
     return this.#cachedArray
@@ -312,7 +310,6 @@ export class Balances {
 
   /**
    * Get the summed value of balances in this collection.
-   * TODO: Sum up token amounts AND fiat amounts
    *
    * @example
    * // Get the sum of all transferable balances in usd.

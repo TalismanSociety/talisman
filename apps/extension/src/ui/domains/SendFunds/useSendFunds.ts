@@ -15,7 +15,7 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { formatDecimals, isNotNil } from "@talismn/util"
+import { formatDecimals, getErrorMessage, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -446,10 +446,7 @@ const useSendFundsProvider = () => {
         return {
           isValid: false,
           error: t("Failed to validate transaction"),
-          errorDetails:
-            (transaction.error as Error)?.message ??
-            transaction.error?.toString() ??
-            t("Unknown error"),
+          errorDetails: getErrorMessage(transaction.error, t("Unknown error")),
         }
 
       return { isValid: true, error: undefined }

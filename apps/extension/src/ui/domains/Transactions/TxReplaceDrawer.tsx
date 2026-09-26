@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { EthTransactionDetails } from "@core/domains/signing/types"
@@ -5,6 +6,7 @@ import type { WalletTransaction, WalletTransactionEth } from "@core/domains/tran
 import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -138,12 +140,11 @@ const EvmDrawerContent: FC<{
       })
       onClose?.(newHash)
     } catch (err) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error("handleSend", { err })
+      log.error("handleSend", { err })
       notify({
         title: `Failed to ${type}`,
         type: "error",
-        subtitle: (err as Error)?.message.includes("nonce too low")
+        subtitle: getErrorMessage(err).includes("nonce too low")
           ? t("Transaction already confirmed")
           : t(`Failed to {{type}}`, { type }),
       })
@@ -167,13 +168,12 @@ const EvmDrawerContent: FC<{
         })
         onClose?.(newHash)
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error("handleSend", { err })
+        log.error("handleSend", { err })
         notify({
           title: t(`Failed to {{type}}`, { type }),
           type: "error",
           subtitle:
-            (err as Error)?.message === "nonce too low"
+            getErrorMessage(err) === "nonce too low"
               ? t("Transaction already confirmed")
               : t(`Failed to {{type}}`, { type }),
         })

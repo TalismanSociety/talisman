@@ -1,12 +1,14 @@
 import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { ActionDto, PendingActionDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { notify } from "@ui/components/Notifications"
 import { useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   fetchYieldxyzAction,
-  getErrorMessage,
+  getYieldxyzErrorMessage,
   sortTransactionsByStepIndex,
   submitYieldxyzTransactionHash,
 } from "./yieldxyzActionApi"
@@ -22,6 +24,7 @@ export const useYieldxyzPendingAction = ({
   yieldId,
   pendingAction,
 }: UseYieldxyzPendingActionProps) => {
+  const { t } = useTranslation()
   const [state, setState] = useState<{
     isLoading: boolean
     error: Error | null
@@ -56,12 +59,12 @@ export const useYieldxyzPendingAction = ({
       notify({
         type: "error",
         title: "Error",
-        subtitle: (err as Error).message ?? err?.toString(),
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
       setState({ isLoading: false, error: err as Error, action: null })
       throw err
     }
-  }, [address, yieldId, pendingAction])
+  }, [address, yieldId, pendingAction, t])
 
   const refreshAction = useCallback(async () => {
     setState((prev) => {
@@ -84,36 +87,39 @@ export const useYieldxyzPendingAction = ({
     }
   }, [])
 
-  const submitActionTransaction = useCallback(async (transactionId: string, hash: string) => {
-    setState((prev) => {
-      if (!prev.action) return prev
-      return { ...prev, isLoading: true, error: null }
-    })
-
-    try {
-      const transaction = await submitYieldxyzTransactionHash(transactionId, hash)
-      // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
+  const submitActionTransaction = useCallback(
+    async (transactionId: string, hash: string) => {
       setState((prev) => {
         if (!prev.action) return prev
-        const updatedAction = {
-          ...prev.action,
-          transactions: prev.action.transactions
-            .map((tx) => (tx.id === transaction.id ? transaction : tx))
-            .sort(sortTransactionsByStepIndex),
-        }
-        return { isLoading: false, error: null, action: updatedAction }
+        return { ...prev, isLoading: true, error: null }
       })
-    } catch (err) {
-      log.error("Failed to submit Yieldxyz transaction", err)
-      notify({
-        type: "error",
-        title: "Error",
-        subtitle: (err as Error).message ?? err?.toString(),
-      })
-      setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
-      throw err
-    }
-  }, [])
+
+      try {
+        const transaction = await submitYieldxyzTransactionHash(transactionId, hash)
+        // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
+        setState((prev) => {
+          if (!prev.action) return prev
+          const updatedAction = {
+            ...prev.action,
+            transactions: prev.action.transactions
+              .map((tx) => (tx.id === transaction.id ? transaction : tx))
+              .sort(sortTransactionsByStepIndex),
+          }
+          return { isLoading: false, error: null, action: updatedAction }
+        })
+      } catch (err) {
+        log.error("Failed to submit Yieldxyz transaction", err)
+        notify({
+          type: "error",
+          title: "Error",
+          subtitle: getErrorMessage(err, t("Unknown error")),
+        })
+        setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
+        throw err
+      }
+    },
+    [t]
+  )
 
   return { ...state, canCreateAction, createAction, refreshAction, submitActionTransaction }
 }
@@ -137,7 +143,7 @@ const fetchYieldxyzCreatePendingAction = async (
     signal,
   })
 
-  if (!req.ok) throw new Error(await getErrorMessage(req))
+  if (!req.ok) throw new Error(await getYieldxyzErrorMessage(req))
 
   return req.json()
 }

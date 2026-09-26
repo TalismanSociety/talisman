@@ -1,5 +1,6 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
 import type { WatchAssetRequestIdOnly, WatchAssetWarning } from "@core/domains/ethereum/types"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
@@ -69,9 +70,9 @@ export const AddCustomErc20Token = () => {
       await api.ethWatchAssetRequestApprove(id)
       window.close()
     } catch (err) {
-      setError((err as Error).message)
+      setError(getErrorMessage(err, t("Unknown error")))
     }
-  }, [id])
+  }, [id, t])
 
   const cancel = useCallback(async () => {
     setError(undefined)

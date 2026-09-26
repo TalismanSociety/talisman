@@ -4,6 +4,7 @@ import {
   SubPsp22TokenSchema,
   subPsp22TokenId,
 } from "@talismn/chaindata-provider"
+import { getErrorMessage } from "@talismn/util"
 import { values } from "lodash-es"
 
 import log from "../../log"
@@ -72,7 +73,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     } catch (error) {
       log.error(
         `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${networkId}`,
-        (error as Error)?.message ?? error
+        getErrorMessage(error),
+        { error }
       )
     }
   }

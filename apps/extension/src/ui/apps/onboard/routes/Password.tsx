@@ -1,5 +1,6 @@
 import { IS_FIREFOX } from "@common/constants"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
@@ -101,7 +102,7 @@ export const PasswordPage = () => {
       try {
         await createPassword(password, passwordConfirm)
       } catch (e) {
-        setError("password", { message: (e as Error).message })
+        setError("password", { message: getErrorMessage(e, t("Unknown error")) })
         return
       }
       sendAnalyticsEvent({
@@ -111,7 +112,7 @@ export const PasswordPage = () => {
       })
       navigateNext()
     },
-    [setError, createPassword, navigateNext]
+    [setError, createPassword, navigateNext, t]
   )
 
   return (

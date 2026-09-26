@@ -147,8 +147,6 @@ export const addSubstrateTransaction = async (
       })
     })
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error("addSubstrateTransaction", { err })
     log.error("addSubstrateTransaction", { err, hash, payload, options })
   }
 }
@@ -206,8 +204,7 @@ export const updateTransactionStatus = async (
       return true
     })
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error("updateTransactionStatus", { err })
+    log.error("updateTransactionStatus", { err })
     return false
   }
 }
@@ -245,8 +242,7 @@ export const updateTransactionsRestart = async () => {
 
     return true
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error("updateTransactionsRestart", { err })
+    log.error("updateTransactionsRestart", { err })
     return false
   }
 }

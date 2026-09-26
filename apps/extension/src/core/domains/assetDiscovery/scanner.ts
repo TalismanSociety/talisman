@@ -11,7 +11,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
-import { isTruthy, throwAfter } from "@talismn/util"
+import { getErrorMessage, isTruthy, throwAfter } from "@talismn/util"
 import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -652,7 +652,7 @@ const getEvmTokenBalancesWithoutAggregator = async (
               throwAfter(20_000, "Timeout"),
             ])
           } catch (err) {
-            if ((err as Error).message === "Timeout") retries++
+            if (getErrorMessage(err) === "Timeout") retries++
             else throw err
           }
         }

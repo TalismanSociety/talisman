@@ -1,4 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
+
 import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
@@ -10,6 +11,7 @@ import {
   NetworkBaseSchema,
 } from "@talismn/chaindata-provider"
 import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -404,7 +406,7 @@ const CopyChainIdButton: FC<{ chainId: string; className?: string }> = ({ chainI
       notify({
         type: "error",
         title: "Error",
-        subtitle: (err as Error).message ?? "Failed to chain ID",
+        subtitle: getErrorMessage(err, "Failed to chain ID"),
       })
     }
   }, [chainId])
@@ -441,7 +443,7 @@ const ConfirmRemove: FC<{
       notify({
         type: "error",
         title: t("Error"),
-        subtitle: (err as Error).message ?? t("Failed to remove"),
+        subtitle: getErrorMessage(err, t("Failed to remove")),
       })
       setConfirming(false)
     }
