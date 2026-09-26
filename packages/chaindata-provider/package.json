@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chaindata-provider",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Networks and tokens supported by the Talisman wallet, synced from the chaindata repository",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",

@@ -1,5 +1,26 @@
 # @talismn/balances
 
+## 3.0.5
+
+### Patch Changes
+
+- bf998fe: deprecate the unused AnyBalanceModule type, remove stale TODOs and read error messages with getErrorMessage
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+- Updated dependencies [9ff568c]
+- Updated dependencies [9ff568c]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/chaindata-provider@2.0.5
+  - @talismn/util@2.1.0
+  - @talismn/chain-connectors@1.0.5
+  - @talismn/crypto@1.1.1
+  - @talismn/sapi@2.0.3
+  - @talismn/scale@2.0.2
+  - @talismn/token-rates@4.0.5
+
 ## 3.0.4
 
 ### Patch Changes

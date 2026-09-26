@@ -1,6 +1,6 @@
 {
   "name": "@talismn/util",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Non-UI helpers shared by the Talisman packages and apps",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",

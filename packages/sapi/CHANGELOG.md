@@ -1,5 +1,16 @@
 # @talismn/sapi
 
+## 2.0.3
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [f029165]
+  - @talismn/scale@2.0.2
+
 ## 2.0.2
 
 ### Patch Changes
