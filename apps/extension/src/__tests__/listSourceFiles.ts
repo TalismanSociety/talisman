@@ -3,7 +3,7 @@ import { join, resolve } from "node:path"
 
 export const REPO_ROOT = resolve(import.meta.dirname, "../../../..")
 
-const SKIPPED_DIRS = new Set(["node_modules", "dist", ".turbo"])
+const SKIPPED_DIRS = new Set(["node_modules", "dist", ".turbo", ".tmp", ".wxt"])
 
 const TEST_FILE = /\.(test|spec)\.tsx?$/
 
