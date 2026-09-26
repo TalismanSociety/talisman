@@ -12,10 +12,6 @@ import { REPO_ROOT } from "./listSourceFiles"
  *
  * Cap each range override below the next major: `">=7.26.10 <8.0.0"` (`<0.8.0` for `0.7.x`).
  */
-const ALLOWED: Record<string, string> = {
-  "bn.js@<4.12.3": "see the comment in pnpm-workspace.yaml",
-}
-
 const OVERRIDE_ENTRY = /^\s+(?:"([^"]+)"|'([^']+)'|([^\s:#]+)):\s*["']?([^"'#\n]*)["']?/
 
 const readOverrides = (yaml: string) => {
@@ -59,19 +55,10 @@ describe("pnpm overrides", () => {
   it("cap version ranges below the next major", () => {
     const overrides = readOverrides(readFileSync(join(REPO_ROOT, "pnpm-workspace.yaml"), "utf8"))
     const uncapped = overrides
-      .filter(({ key, value }) => isUncapped(value) && !(key in ALLOWED))
+      .filter(({ value }) => isUncapped(value))
       .map(({ key, value }) => `${key}: ${value}`)
 
     expect(overrides.length).toBeGreaterThan(0)
     expect(uncapped).toEqual([])
-  })
-
-  it("allow only overrides that are still uncapped", () => {
-    const overrides = readOverrides(readFileSync(join(REPO_ROOT, "pnpm-workspace.yaml"), "utf8"))
-    const stale = Object.keys(ALLOWED).filter(
-      (key) => !overrides.some((override) => override.key === key && isUncapped(override.value))
-    )
-
-    expect(stale).toEqual([])
   })
 })
