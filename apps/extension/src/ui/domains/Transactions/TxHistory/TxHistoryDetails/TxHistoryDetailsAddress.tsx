@@ -1,10 +1,14 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
-import { encodeAnyAddress } from "@talismn/crypto"
+import { encodeAnyAddress, isBitcoinXpub } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
+import {
+  Address,
+  getAccountBtcAddressType,
+  getBitcoinDisplayAddress,
+} from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -19,15 +23,16 @@ export const TxHistoryDetailsAddress: FC<{
   const account = useAccountByAddress(address)
   const network = useNetworkById(networkId)
 
-  const formatted = useMemo(
-    () =>
-      address
-        ? encodeAnyAddress(address, {
-            ss58Format: network?.platform === "polkadot" ? network.prefix : undefined,
-          })
-        : "",
-    [address, network]
-  )
+  const formatted = useMemo(() => {
+    if (!address) return ""
+    // bitcoin account identities are xpubs and must never be shown, copied or
+    // sent to an explorer: display the individual payments address instead
+    if (isBitcoinXpub(address))
+      return getBitcoinDisplayAddress(address, getAccountBtcAddressType(account)) ?? ""
+    return encodeAnyAddress(address, {
+      ss58Format: network?.platform === "polkadot" ? network.prefix : undefined,
+    })
+  }, [address, account, network])
 
   const blockExplorerUrl = useMemo(() => {
     if (!formatted || !network) return null
@@ -55,7 +60,7 @@ export const TxHistoryDetailsAddress: FC<{
           )}
         >
           <AccountIcon
-            address={formatted}
+            address={address}
             genesisHash={getAccountGenesisHash(account)}
             className="text-md"
           />

@@ -1,7 +1,14 @@
 import { bech32, bech32m } from "bech32"
 import bs58check from "bs58check"
 
+import { isBitcoinXpub } from "./bitcoinXpub"
+
+/** Matches anything bitcoin: on-chain addresses AND account-identity xpubs */
 export const isBitcoinAddress = (address: string) =>
+  isBitcoinOnChainAddress(address) || isBitcoinXpub(address)
+
+/** Matches only spendable on-chain addresses (bc1q/bc1p/1.../3...), NOT xpubs — use for recipient validation */
+export const isBitcoinOnChainAddress = (address: string) =>
   isBech32mAddress(address) || isBech32Address(address) || isBase58CheckAddress(address)
 
 export function isBech32mAddress(address: string) {

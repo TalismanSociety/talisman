@@ -26,7 +26,8 @@ const useExplorerNetworks = (address: string, search: string): Network[] => {
     () =>
       networks.filter(
         (chain) =>
-          !!chain.blockExplorerUrls.length &&
+          // not all explorers support all query types (e.g. xpub lookups)
+          !!getBlockExplorerUrls(chain, { type: "address", address }).length &&
           !!chain.name &&
           // account is undefined for contacts
           (account

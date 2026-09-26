@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom"
 import * as yup from "yup"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
+import { ConnectLedgerBitcoin } from "./Shared/ConnectLedgerBitcoin"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSolana } from "./Shared/ConnectLedgerSolana"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
@@ -98,7 +99,7 @@ export const AddLedgerSelectNetwork = () => {
         .object({
           platform: yup
             .mixed<AccountPlatform>()
-            .oneOf(["ethereum", "polkadot", "solana"])
+            .oneOf(["ethereum", "polkadot", "solana", "bitcoin"])
             .defined(),
           chainId: yup.string(),
           substrateAppType: yup.mixed(isAddSubstrateLedgerAppType),
@@ -195,6 +196,7 @@ export const AddLedgerSelectNetwork = () => {
   const showConnect =
     platform === "solana" ||
     platform === "ethereum" ||
+    platform === "bitcoin" ||
     (platform === "polkadot" && substrateAppType)
 
   return (
@@ -324,6 +326,9 @@ export const AddLedgerSelectNetwork = () => {
           )}
           {platform === "solana" && (
             <ConnectLedgerSolana className="mt-14" onReadyChanged={setIsLedgerReady} />
+          )}
+          {platform === "bitcoin" && (
+            <ConnectLedgerBitcoin className="mt-14" onReadyChanged={setIsLedgerReady} />
           )}
         </div>
       </div>

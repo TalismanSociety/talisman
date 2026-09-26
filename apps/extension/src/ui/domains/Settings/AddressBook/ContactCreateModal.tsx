@@ -3,6 +3,7 @@ import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
+  isBitcoinOnChainAddress,
   isSs58Address,
 } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
@@ -65,6 +66,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               case "polkadot":
               case "ethereum":
               case "solana":
+                break
+              case "bitcoin":
+                // xpubs identify accounts, not spendable destinations
+                if (!isBitcoinOnChainAddress(value))
+                  return ctx.createError({ message: t("Unsupported address type") })
                 break
               default:
                 return ctx.createError({ message: t("Unsupported address type") })

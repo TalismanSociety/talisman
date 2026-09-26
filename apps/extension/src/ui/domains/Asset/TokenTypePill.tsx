@@ -15,6 +15,7 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
       case "substrate-native":
       case "evm-native":
       case "sol-native":
+      case "btc-native":
         return t("NATIVE")
       case "evm-erc20":
         return "ERC20"

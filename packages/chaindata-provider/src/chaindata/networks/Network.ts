@@ -1,5 +1,6 @@
 import z from "zod/v4"
 
+import { BtcNetworkSchema } from "./BtcNetwork"
 import { DotNetworkSchema } from "./DotNetwork"
 import { EthNetworkSchema } from "./EthNetwork"
 import { SolNetworkSchema } from "./SolNetwork"
@@ -8,6 +9,7 @@ export const NetworkSchema = z.discriminatedUnion("platform", [
   DotNetworkSchema,
   EthNetworkSchema,
   SolNetworkSchema,
+  BtcNetworkSchema,
 ])
 
 export type Network = z.infer<typeof NetworkSchema>

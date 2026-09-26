@@ -1,12 +1,12 @@
 import type {
   WalletTransaction,
+  WalletTransactionBtc,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
 import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import type { HexString } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
@@ -29,23 +29,23 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
-  const network = useNetworkById(tx.networkId, "ethereum")
+  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
-    (newHash?: HexString) => {
+    (newHash?: string) => {
       setReplaceType(undefined)
-      if (newHash && network) {
-        gotoProgress({ txId: newHash, networkId: network.id })
+      if (newHash) {
+        gotoProgress({ txId: newHash, networkId: tx.networkId })
       }
     },
-    [gotoProgress, network]
+    [gotoProgress, tx.networkId]
   )
 
-  if (!network) return null
   if (tx.status !== "pending") return null
-  if (network?.preserveGasEstimate) return null
+  if (tx.platform !== "ethereum" && tx.platform !== "bitcoin") return null
+  if (tx.platform === "ethereum" && (!evmNetwork || evmNetwork.preserveGasEstimate)) return null
 
   return (
     <>
@@ -258,6 +258,31 @@ const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose
   return <SendFundsProgressBase tx={tx} className={className} onClose={onClose} href={href} />
 }
 
+type SendFundsProgressBitcoinProps = {
+  tx: WalletTransactionBtc
+  onClose?: () => void
+  className?: string
+}
+
+const SendFundsProgressBitcoin: FC<SendFundsProgressBitcoinProps> = ({
+  tx,
+  onClose,
+  className,
+}) => {
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+
+  return (
+    <SendFundsProgressBase
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
+      href={href}
+    />
+  )
+}
+
 type SendFundsProgressEvmProps = {
   tx: WalletTransactionEth
   onClose?: () => void
@@ -312,6 +337,8 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
       return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
     case "solana":
       return <SendFundsProgressSolana tx={tx} onClose={onClose} className={className} />
+    case "bitcoin":
+      return <SendFundsProgressBitcoin tx={tx} onClose={onClose} className={className} />
   }
 
   return null

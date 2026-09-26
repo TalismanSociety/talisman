@@ -26,6 +26,21 @@ import type {
   BalanceSubscriptionResponse,
   RequestBalance,
 } from "@core/domains/balances/types"
+import type {
+  RequestBitcoinAccountPreview,
+  RequestBitcoinFeeEstimates,
+  RequestBitcoinGetUnusedAddress,
+  RequestBitcoinGetUtxos,
+  RequestBitcoinReplacePreview,
+  RequestBitcoinSignMessage,
+  RequestBitcoinSubmit,
+  ResponseBitcoinAccountPreview,
+  ResponseBitcoinGetUnusedAddress,
+  ResponseBitcoinGetUtxos,
+  ResponseBitcoinReplacePreview,
+  ResponseBitcoinSignMessage,
+  ResponseBitcoinSubmit,
+} from "@core/domains/bitcoin/exports"
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
 import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
 import type { DefiPosition } from "@core/domains/defi/exports"
@@ -72,6 +87,7 @@ import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
 import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "@core/types/pjsInterop"
 import type { IBalance } from "@talismn/balances"
+import type { BtcFeeEstimates } from "@talismn/bitcoin"
 import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import type { KeypairCurve } from "@talismn/crypto"
 import type { NsLookupType } from "@talismn/on-chain-id"
@@ -290,6 +306,16 @@ export default interface MessageTypes {
     txInfo?: WalletTransactionInfo
   ) => Promise<ResponseSolanaSubmit>
   solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
+
+  btcGetUnusedAddress: (
+    req: RequestBitcoinGetUnusedAddress
+  ) => Promise<ResponseBitcoinGetUnusedAddress>
+  btcGetUtxos: (req: RequestBitcoinGetUtxos) => Promise<ResponseBitcoinGetUtxos>
+  btcGetFeeEstimates: (req: RequestBitcoinFeeEstimates) => Promise<BtcFeeEstimates>
+  btcSubmit: (req: RequestBitcoinSubmit) => Promise<ResponseBitcoinSubmit>
+  btcReplacePreview: (req: RequestBitcoinReplacePreview) => Promise<ResponseBitcoinReplacePreview>
+  btcSignMessage: (req: RequestBitcoinSignMessage) => Promise<ResponseBitcoinSignMessage>
+  btcAccountPreview: (req: RequestBitcoinAccountPreview) => Promise<ResponseBitcoinAccountPreview>
 
   // substrate chain metadata
   subChainMetadata: (

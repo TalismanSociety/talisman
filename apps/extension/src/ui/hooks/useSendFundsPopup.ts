@@ -2,7 +2,7 @@ import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
 import { type Address, Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { detectAddressEncoding } from "@talismn/crypto"
+import { getAccountPlatformFromAddress } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -11,11 +11,14 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+// compare by account platform, not raw encoding: a bitcoin account identity is an
+// xpub (bip32-xpub) while a recipient is an on-chain address (bech32/base58) — both
+// belong to the bitcoin platform and are therefore compatible
 const isCompatibleAddress = (from: Address, to: Address) => {
   try {
-    return detectAddressEncoding(from) === detectAddressEncoding(to)
+    return getAccountPlatformFromAddress(from) === getAccountPlatformFromAddress(to)
   } catch (err) {
-    log.error("Error detecting address encoding", { from, to, err })
+    log.error("Error detecting address platform", { from, to, err })
     return false
   }
 }

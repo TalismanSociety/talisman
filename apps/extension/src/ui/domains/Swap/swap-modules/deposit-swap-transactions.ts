@@ -39,7 +39,7 @@ export type DepositInfo = {
 
 export type DepositSwapAsset = {
   chainId: number | string
-  platform: "ethereum" | "polkadot" | "solana"
+  platform: "ethereum" | "polkadot" | "solana" | "bitcoin"
   contractAddress?: string
   assetHubAssetId?: string
   decimals: number
@@ -339,6 +339,19 @@ export async function buildDepositTransaction(params: {
         rpc: context.rpc,
       })
       return transaction ? { platform: "solana", transaction } : null
+    }
+    case "bitcoin": {
+      // bitcoin deposits are a plain send to the exchange's address — normalize the
+      // target here; the UI builds and signs the PSBT from the sender's utxos
+      return {
+        platform: "bitcoin",
+        networkId: fromAsset.chainId.toString(),
+        depositAddress: params.deposit.depositAddress,
+        depositAmountSats: parseUserInputToPlanck(
+          params.deposit.depositAmount,
+          fromAsset.decimals
+        ).toString(),
+      }
     }
     default:
       return null

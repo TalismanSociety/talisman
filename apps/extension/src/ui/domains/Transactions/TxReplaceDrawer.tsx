@@ -1,10 +1,14 @@
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { EthTransactionDetails } from "@core/domains/signing/types"
-import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
+import type {
+  WalletTransaction,
+  WalletTransactionBtc,
+  WalletTransactionEth,
+} from "@core/domains/transactions/types"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
-import type { HexString } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -24,7 +28,10 @@ import { useTranslation } from "react-i18next"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
+import { BtcFeeSelect } from "../SendFunds/BtcFeeSelect"
+import { type BtcFeePriority, PRIORITY_TO_ESTIMATE } from "../SendFunds/useSendFundsTransactionBtc"
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
+import { TxSubmitButtonBtc } from "../Sign/TxSubmitButton/TxSubmitButtonBtc"
 import type { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -38,7 +45,8 @@ type TxReplaceDrawerProps = {
   tx?: WalletTransaction
   type?: TxReplaceType // will open if set
   containerId?: string
-  onClose?: (newTxHash?: HexString) => void
+  // hash for evm replacements, txid for bitcoin ones
+  onClose?: (newTxHash?: string) => void
 }
 
 const EvmEstimatedFeeTooltip: FC<{
@@ -93,7 +101,7 @@ const EvmDrawerContent: FC<{
   type: TxReplaceType
   fullHeight?: boolean
   containerId?: string
-  onClose?: (newTxHash?: HexString) => void
+  onClose?: (newTxHash?: string) => void
 }> = ({ tx, type, fullHeight, containerId, onClose }) => {
   const { t } = useTranslation()
   const analyticsProps = useMemo(
@@ -307,6 +315,180 @@ const EvmDrawerContent: FC<{
   )
 }
 
+const BtcDrawerContent: FC<{
+  tx: WalletTransactionBtc
+  type: TxReplaceType
+  fullHeight?: boolean
+  containerId?: string
+  onClose?: (newTxId?: string) => void
+}> = ({ tx, type, fullHeight, containerId, onClose }) => {
+  const { t } = useTranslation()
+  const analyticsProps = useMemo(
+    () => ({ networkId: tx.networkId, networkType: "bitcoin" }),
+    [tx.networkId]
+  )
+  useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
+
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const [priority, setPriority] = useState<BtcFeePriority>("fast")
+  const [customRate, setCustomRate] = useState<number | null>(null)
+
+  // estimates are frozen for the drawer session: a background refresh would change the
+  // preview query key and rip the signing UI out from under the user (ledger especially)
+  const qFees = useQuery({
+    queryKey: ["btcFeeEstimates", tx.networkId],
+    queryFn: () => api.btcGetFeeEstimates({ networkId: tx.networkId }),
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: Number.POSITIVE_INFINITY,
+    retry: 1,
+  })
+
+  const feeRate =
+    priority === "custom" ? (customRate ?? undefined) : qFees.data?.[PRIORITY_TO_ESTIMATE[priority]]
+
+  const qPreview = useQuery({
+    queryKey: ["btcReplacePreview", tx.hash, type, feeRate],
+    queryFn: () =>
+      api.btcReplacePreview({
+        networkId: tx.networkId,
+        txid: tx.hash,
+        type,
+        feeRateSatVb: feeRate as number,
+      }),
+    enabled: !!feeRate && tx.status === "pending",
+    retry: 1,
+    refetchOnWindowFocus: false,
+  })
+
+  const handleSubmit = useCallback(
+    (newTxId: string) => {
+      api.analyticsCapture({
+        eventName: `transaction ${type}`,
+        options: { networkId: tx.networkId, networkType: "bitcoin" },
+      })
+      onClose?.(newTxId)
+    },
+    [onClose, tx.networkId, type]
+  )
+
+  const { canReplace, Icon, iconClassName, title, description, approveText } = useMemo(() => {
+    const canReplace = tx.status === "pending"
+
+    if (canReplace && type === "speed-up")
+      return {
+        canReplace,
+        Icon: RocketIcon,
+        iconClassName: "text-primary",
+        title: t("Speed Up Transaction"),
+        description: t(
+          "This will attempt to speed up your pending transaction by replacing it with an identical one paying a higher fee."
+        ),
+        approveText: t("Speed Up"),
+      }
+
+    if (canReplace && type === "cancel")
+      return {
+        canReplace,
+        Icon: XOctagonIcon,
+        iconClassName: "text-brand-orange",
+        title: t("Cancel Transaction"),
+        description: t(
+          "This will attempt to cancel your pending transaction by sending its funds back to your own account with a higher fee."
+        ),
+        approveText: t("Try to Cancel"),
+      }
+
+    return {
+      canReplace,
+      Icon: AlertCircleIcon,
+      iconClassName: "text-alert-warn",
+      title: t("Transaction already confirmed"),
+      description: t("This transaction has already been confirmed and can no longer be replaced."),
+      approveText: undefined,
+    }
+  }, [tx.status, type, t])
+
+  // a preview error (e.g. "no longer pending") must disable submission even when a
+  // previously cached preview is still around
+  const submitTx = useMemo(
+    () =>
+      qPreview.data && !qPreview.isError
+        ? ({
+            platform: "bitcoin",
+            networkId: tx.networkId,
+            address: tx.account,
+            payload: qPreview.data.psbtBase64,
+            maxFeeSats: qPreview.data.feeSats,
+            tree: qPreview.data.tree,
+            replacesTxid: tx.hash,
+            txInfo: tx.txInfo,
+          } as const)
+        : null,
+    [qPreview.data, qPreview.isError, tx]
+  )
+
+  return (
+    <>
+      <Icon className={cn("text-[40px]", iconClassName)} />
+      <div className="mt-12 font-bold text-base">{title}</div>
+      <p className="mt-10 text-center text-body-secondary text-sm">{description}</p>
+      {!!fullHeight && <div className="grow"></div>}
+      <div
+        className={cn(
+          "mt-16 w-full space-y-2 text-body-secondary text-xs",
+          !canReplace && "pointer-events-none opacity-50"
+        )}
+      >
+        <div className="flex w-full items-center justify-between">
+          <div>{t("New Fee")}</div>
+          <div>{t("Priority")}</div>
+        </div>
+        <div className="flex h-12 w-full items-center justify-between">
+          <div>
+            {qPreview.error ? (
+              <span className="text-alert-error">{(qPreview.error as Error).message}</span>
+            ) : qPreview.data && network ? (
+              <TokensAndFiat planck={qPreview.data.feeSats} tokenId={network.nativeTokenId} />
+            ) : null}
+          </div>
+          <div>
+            <BtcFeeSelect
+              priority={priority}
+              onChange={setPriority}
+              feeEstimates={qFees.data}
+              customRate={customRate}
+              onCustomRateChange={setCustomRate}
+              drawerContainerId={containerId ?? "main"}
+              className="bg-grey-750"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className={cn("mt-8 grid w-full gap-4", canReplace ? "grid-cols-2" : "grid-cols-1")}>
+        <Button className="h-24" onClick={() => onClose?.()}>
+          {t("Close")}
+        </Button>
+        {canReplace &&
+          (submitTx ? (
+            <TxSubmitButtonBtc
+              tx={submitTx}
+              containerId={containerId ?? "main"}
+              label={approveText}
+              className="h-24"
+              onSubmit={handleSubmit}
+            />
+          ) : (
+            <Button className="h-24" primary disabled processing={qPreview.isLoading}>
+              {approveText}
+            </Button>
+          ))}
+      </div>
+    </>
+  )
+}
+
 export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerId, onClose }) => {
   const inputs = useMemo(() => (tx && type ? { tx, type } : undefined), [tx, type])
   const { isOpenReady, data } = useOpenCloseWithData(!!inputs, inputs)
@@ -321,6 +503,15 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
         >
           {data?.type && data?.tx?.platform === "ethereum" ? (
             <EvmDrawerContent
+              fullHeight
+              containerId="tx-main"
+              tx={data.tx}
+              type={data.type}
+              onClose={onClose}
+            />
+          ) : null}
+          {data?.type && data?.tx?.platform === "bitcoin" ? (
+            <BtcDrawerContent
               fullHeight
               containerId="tx-main"
               tx={data.tx}
@@ -343,6 +534,14 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
     >
       {data?.type && data?.tx?.platform === "ethereum" ? (
         <EvmDrawerContent
+          containerId={containerId}
+          tx={data.tx}
+          type={data.type}
+          onClose={onClose}
+        />
+      ) : null}
+      {data?.type && data?.tx?.platform === "bitcoin" ? (
+        <BtcDrawerContent
           containerId={containerId}
           tx={data.tx}
           type={data.type}

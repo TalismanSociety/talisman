@@ -8,11 +8,9 @@ export const addressEncodingFromCurve = (curve: KeypairCurve): AddressEncoding =
     case "ecdsa":
       return "ss58"
     case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
-      // NOTE: Bitcoin has multiple address formats, so this isn't necessarily correct
-      // The format MAY be bech32m, but it might also be bech32 or base58check.
-      // bech32m is the most recent format.
-      return "bech32m"
+      // single-key bitcoin accounts (WIF imports) are always P2WPKH; taproot addresses
+      // only exist on HD accounts, whose identity is an xpub rather than a curve-derived address
+      return "bech32"
     case "ethereum":
       return "ethereum"
     case "solana":

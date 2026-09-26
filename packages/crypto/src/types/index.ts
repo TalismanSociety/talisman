@@ -18,8 +18,7 @@ export type KeypairCurve =
   | "ed25519" // polkadot - EdDSA / Ed25519 - substrate derivation
   | "sr25519" // polkadot - EdDSA / Sr25519 - substrate derivation
   | "ethereum" // ethereum - ECDSA / secp256k1 - bip32 derivation
-  | "bitcoin-ed25519" // bitcoin - X / Ed25519
-  | "bitcoin-ecdsa" // bitcoin - ECDSA / secp256k1
+  | "bitcoin-ecdsa" // bitcoin - ECDSA / secp256k1 - bip32 derivation (schnorr signatures for taproot are derived from the same keys)
   | "solana" // solana - EdDSA / Ed25519 - ed25519 derivation
 
 // SS58: polkadot-sdk (stands for Substrate Standard 58, expects a network specific prefix)
@@ -33,6 +32,7 @@ export type AddressEncoding =
   | "bech32m" // bitcoin (taproot, bc1p...)
   | "bech32" // bitcoin (native segwit, bc1...)
   | "base58check" // bitcoin (legacy p2pkh (original format, 1...) and p2sh (wrapped segwit, 3...))
+  | "bip32-xpub" // bitcoin account-level extended public key (xpub/ypub/zpub/tpub/upub/vpub) - identity of HD accounts, not an on-chain address
   | "base58solana" // base58 with 32 bytes
 
 export type Keypair = {

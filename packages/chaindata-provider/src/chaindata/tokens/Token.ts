@@ -1,5 +1,6 @@
 import z from "zod/v4"
 
+import { type BtcNativeTokenIdSpecs, BtcNativeTokenSchema } from "./BtcNativeToken"
 import { type EvmErc20TokenIdSpecs, EvmErc20TokenSchema } from "./EvmErc20Token"
 import { type EvmNativeTokenIdSpecs, EvmNativeTokenSchema } from "./EvmNativeToken"
 import { type EvmUniswapV2TokenIdSpecs, EvmUniswapV2TokenSchema } from "./EvmUniswapV2Token"
@@ -34,6 +35,7 @@ export const TokenSchemaBase = z.discriminatedUnion("type", [
   SolNativeTokenSchema,
   SolSplTokenSchema,
   SolToken2022TokenSchema,
+  BtcNativeTokenSchema,
 ])
 
 export const TokenTypeSchema = z.enum(TokenSchemaBase.options.map((t) => t.shape.type.value))
@@ -72,7 +74,9 @@ export type TokenIdSpecs<T extends TokenType> = T extends "evm-erc20"
                         ? SolSplToken
                         : T extends "sol-token2022"
                           ? SolToken2022Token
-                          : never
+                          : T extends "btc-native"
+                            ? BtcNativeTokenIdSpecs
+                            : never
 
 // transform to control in which order properties are output as JSON when parsed from schema
 export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {

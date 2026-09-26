@@ -1,6 +1,12 @@
 import { SUPPORTED_ACCOUNT_PLATFORMS } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { type AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
+import {
+  type AccountPlatform,
+  getAccountPlatformFromAddress,
+  getXpubPrefix,
+  isBitcoinOnChainAddress,
+  isBitcoinXpub,
+} from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -14,13 +20,38 @@ import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import * as yup from "yup"
 
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
+
+type BitcoinAddressType = "p2wpkh" | "p2tr"
+
+type BtcXpubKind =
+  // script type is encoded in the SLIP-132 prefix (zpub/vpub)
+  | { kind: "detected"; addressType: BitcoinAddressType }
+  // plain xpub/tpub: could be a BIP84 or BIP86 account key — the user must choose
+  | { kind: "ambiguous" }
+  // ypub/upub: nested segwit trees are not tracked by this wallet
+  | { kind: "unsupported" }
+
+const getBtcXpubKind = (address: string): BtcXpubKind | null => {
+  if (!isBitcoinXpub(address)) return null
+  const prefix = getXpubPrefix(address)
+  if (prefix === "zpub" || prefix === "vpub") return { kind: "detected", addressType: "p2wpkh" }
+  if (prefix === "ypub" || prefix === "upub") return { kind: "unsupported" }
+  return { kind: "ambiguous" }
+}
+
+// a single on-chain address has no HD tree — the script type is cosmetic here (balances
+// are read directly for the address), so infer it from the bech32(m) witness version
+const getPlainBtcAddressType = (address: string): BitcoinAddressType => {
+  const lower = address.toLowerCase()
+  return lower.startsWith("bc1p") || lower.startsWith("tb1p") ? "p2tr" : "p2wpkh"
+}
 
 export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation()
@@ -52,6 +83,21 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 path: "address",
                 message: t("Invalid address"),
               })
+
+            // bitcoin can be watched either by account xpub (tracks a whole HD tree) or
+            // by a single on-chain address (tracks just that address)
+            if (platform === "bitcoin") {
+              if (!isBitcoinXpub(address) && !isBitcoinOnChainAddress(address))
+                return ctx.createError({
+                  path: "address",
+                  message: t("Enter a bitcoin address or account xpub"),
+                })
+              if (getBtcXpubKind(address)?.kind === "unsupported")
+                return ctx.createError({
+                  path: "address",
+                  message: t("Nested SegWit keys (ypub) are not supported"),
+                })
+            }
           } catch {
             return ctx.createError({
               path: "address",
@@ -82,8 +128,23 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
     defaultValues: { platform: defaultPlatform },
   })
 
-  const { platform, searchAddress } = watch()
+  const { platform, searchAddress, address: watchedAddress } = watch()
   const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
+
+  const btcXpubKind = useMemo(
+    () => (platform === "bitcoin" && watchedAddress ? getBtcXpubKind(watchedAddress) : null),
+    [platform, watchedAddress]
+  )
+
+  // user's script-type choice for ambiguous (plain xpub) keys, reset when the key
+  // changes — the "previous value in state" adjust-during-render pattern, which stays
+  // correct if a concurrent render is discarded (a ref mutation would not)
+  const [btcAddressType, setBtcAddressType] = useState<BitcoinAddressType>("p2wpkh")
+  const [prevAddress, setPrevAddress] = useState(watchedAddress)
+  if (prevAddress !== watchedAddress) {
+    setPrevAddress(watchedAddress)
+    if (btcAddressType !== "p2wpkh") setBtcAddressType("p2wpkh")
+  }
 
   useEffect(() => {
     if (!isNsLookup) {
@@ -101,7 +162,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   }, [nsLookup, isNsLookup, searchAddress, setValue, isNsFetching])
 
   const submit = useCallback(
-    async ({ name, address, isPortfolio }: FormData) => {
+    async ({ name, address, platform, isPortfolio }: FormData) => {
       const notificationId = notify(
         {
           type: "processing",
@@ -112,13 +173,35 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
       )
 
       try {
+        const kind = getBtcXpubKind(address)
+        // plain bitcoin on-chain address: watch that single address (no HD tree)
+        const isBtcPlainAddress =
+          platform === "bitcoin" && !kind && isBitcoinOnChainAddress(address)
         const [addr] = await api.accountAddExternal([
-          {
-            type: "watch-only",
-            name,
-            address,
-            isPortfolio,
-          },
+          kind
+            ? {
+                type: "watch-only-bitcoin",
+                name,
+                address,
+                isPortfolio,
+                // SLIP-132 prefix determines the script type; a plain xpub is
+                // ambiguous (BIP84 vs BIP86) so the user picks in the form
+                addressType: kind.kind === "detected" ? kind.addressType : btcAddressType,
+              }
+            : isBtcPlainAddress
+              ? {
+                  type: "watch-only-bitcoin",
+                  name,
+                  address,
+                  isPortfolio,
+                  addressType: getPlainBtcAddressType(address),
+                }
+              : {
+                  type: "watch-only",
+                  name,
+                  address,
+                  isPortfolio,
+                },
         ])
 
         onSuccess(addr)
@@ -136,7 +219,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, t]
+    [btcAddressType, onSuccess, t]
   )
 
   const handlePlatformChange = useCallback(
@@ -177,6 +260,13 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 "Note that the address will be watch-only and will not be able to sign transactions."
               )}
             </p>
+            {platform === "bitcoin" && (
+              <p className="text-body-disabled text-xs">
+                {t(
+                  "Enter an account xpub (zpub for Native SegWit, xpub for Taproot) to track its whole address tree, or a single on-chain address to track just that address."
+                )}
+              </p>
+            )}
           </div>
           <div>
             <FormFieldContainer error={errors.name?.message}>
@@ -205,6 +295,41 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 }
               />
             </FormFieldContainer>
+            {btcXpubKind?.kind === "detected" && (
+              <p className="mb-4 text-body-disabled text-xs">
+                {t("Native SegWit key detected — bc1q addresses will be tracked.")}
+              </p>
+            )}
+            {btcXpubKind?.kind === "ambiguous" && (
+              <div className="mb-4 flex w-full flex-col gap-4 rounded bg-grey-850 p-8">
+                <div className="text-body-secondary text-sm">
+                  {t("This xpub doesn't specify an address type. Which one does it use?")}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {(
+                    [
+                      ["p2wpkh", t("Native SegWit"), "bc1q…"],
+                      ["p2tr", t("Taproot"), "bc1p…"],
+                    ] as const
+                  ).map(([type, label, sample]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setBtcAddressType(type)}
+                      className={cn(
+                        "cursor-pointer rounded-sm border-none px-6 py-4 text-left outline-hidden",
+                        btcAddressType === type
+                          ? "bg-grey-700 text-body"
+                          : "bg-grey-750 text-body-secondary hover:bg-grey-700"
+                      )}
+                    >
+                      <div className="text-sm">{label}</div>
+                      <div className="text-body-disabled text-xs">{sample}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex h-[58px] w-full items-center rounded bg-grey-850 px-12">
               <div className="grow space-y-4">
                 <div className="text-body leading-none">{t("Include in my portfolio")}</div>

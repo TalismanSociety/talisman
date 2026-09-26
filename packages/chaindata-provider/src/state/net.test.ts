@@ -32,8 +32,9 @@ describe("net / fetchChaindata", () => {
 
     expect(mockFetch).toHaveBeenCalledOnce()
     expect(mockFetch).toHaveBeenCalledWith(PRIMARY_URL, { signal: undefined })
-    expect(result.networks).toHaveLength(3)
-    expect(result.tokens).toHaveLength(3)
+    // 3 fetched + 2 builtin bitcoin networks/tokens (see builtinBitcoin.ts)
+    expect(result.networks).toHaveLength(5)
+    expect(result.tokens).toHaveLength(5)
     expect(result.miniMetadatas).toHaveLength(1)
   })
 
@@ -61,7 +62,8 @@ describe("net / fetchChaindata", () => {
     expect(mockFetch).toHaveBeenCalledTimes(2)
     expect(mockFetch).toHaveBeenNthCalledWith(1, PRIMARY_URL, { signal: undefined })
     expect(mockFetch).toHaveBeenNthCalledWith(2, FALLBACK_URL, { signal: undefined })
-    expect(result.networks).toHaveLength(3)
+    // 3 fetched + 2 builtin bitcoin networks (see builtinBitcoin.ts)
+    expect(result.networks).toHaveLength(5)
   })
 
   it("throws when a non-GitHub URL returns an error (no fallback available)", async () => {
@@ -216,6 +218,7 @@ describe("net / fetchChaindata with slashed branch", () => {
       `https://cdn.jsdelivr.net/gh/TalismanSociety/chaindata@feat/test-branch/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`,
       { signal: undefined }
     )
-    expect(result.networks).toHaveLength(3)
+    // 3 fetched + 2 builtin bitcoin networks (see builtinBitcoin.ts)
+    expect(result.networks).toHaveLength(5)
   })
 })

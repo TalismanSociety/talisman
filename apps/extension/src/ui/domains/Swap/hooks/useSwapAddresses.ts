@@ -3,13 +3,15 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import {
+  type Account,
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  isAccountPlatformBitcoin,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
-import { isAddressEqual } from "@talismn/crypto"
+import { deriveBitcoinAddressFromXpub, isAddressEqual, isBitcoinXpub } from "@talismn/crypto"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -21,6 +23,17 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
  * Replaces the old 5 separate address states with a simple {from, to} pair.
  * Platform-specific logic is derived from the Talisman Token type at consumption time.
  */
+// resolves a payable bitcoin receive address from an owned bitcoin account
+const getBitcoinPayoutAddress = (account: Account, networkId?: string): string | null => {
+  const hrp = networkId === "bitcoin-signet" ? "tb" : "bc"
+  if (account.type === "hd-bitcoin" || account.type === "ledger-bitcoin")
+    return deriveBitcoinAddressFromXpub(account.keys.payments.xpub, "p2wpkh", 0, 0, hrp)
+  if (account.type === "watch-only-bitcoin")
+    return deriveBitcoinAddressFromXpub(account.address, account.addressType, 0, 0, hrp)
+  // WIF keypair account: address is already a plain bc1q
+  return isBitcoinXpub(account.address) ? null : account.address
+}
+
 export function useSwapAddresses({
   fromAddress,
   setFromAddress,
@@ -117,11 +130,17 @@ export function useSwapAddresses({
   // Handles manually-set addresses that the auto-select effect skips.
   useEffect(() => {
     if (!fromAddress || !fromNetwork) return
-    if (!isAddressCompatibleWithNetwork(fromNetwork, fromAddress)) {
+    // a bitcoin account's identity is an xpub, which isn't a decodable on-chain
+    // address — check via the owned account when we have it, falling back to the
+    // address-only check for pasted/external addresses
+    const compatible = fromAccount
+      ? isAccountCompatibleWithNetwork(fromNetwork, fromAccount)
+      : isAddressCompatibleWithNetwork(fromNetwork, fromAddress)
+    if (!compatible) {
       fromAddressManuallySet.current = false
       setFromAddress(null)
     }
-  }, [fromAddress, fromNetwork, setFromAddress])
+  }, [fromAddress, fromNetwork, fromAccount, setFromAddress])
 
   // ─── Auto-set to address when toTokenId changes ────────────────────
   useEffect(() => {
@@ -157,13 +176,36 @@ export function useSwapAddresses({
         if (!isAccountPlatformSolana(fromAccount)) return setToAddress(null)
         return setToAddress(fromAddress)
       }
+      case "bitcoin": {
+        // bitcoin account identities are xpubs, but the exchange needs a payable
+        // address — resolve the account's first payments (bc1q) receive address
+        if (
+          toAddress &&
+          !isBitcoinXpub(toAddress) &&
+          (!toNetwork || isAddressCompatibleWithNetwork(toNetwork, toAddress))
+        )
+          return
+
+        const btcAccount = ownedAccounts.find(isAccountPlatformBitcoin)
+        const payoutAddress = btcAccount && getBitcoinPayoutAddress(btcAccount, toNetwork?.id)
+        return setToAddress(payoutAddress ?? null)
+      }
       default: {
         // biome-ignore lint/suspicious/noConsole: legacy
         console.error(`platform ${toPlatform} not handled in updateSelectedAccountsOnAssetChange`)
         return setToAddress(null)
       }
     }
-  }, [fromAccount, fromAddress, setToAddress, toTokenId, toPlatform, toAddress, toNetwork])
+  }, [
+    fromAccount,
+    fromAddress,
+    setToAddress,
+    toTokenId,
+    toPlatform,
+    toAddress,
+    toNetwork,
+    ownedAccounts,
+  ])
 
   // ─── Callbacks for FromToAccountSelector ──────────────────────────
 

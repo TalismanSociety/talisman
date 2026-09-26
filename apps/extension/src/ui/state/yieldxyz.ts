@@ -241,6 +241,9 @@ export const getYieldxyzTokenId = (
       log.warn("Unsupported solana token for yieldxyz:", token)
       return null
     }
+    case "bitcoin":
+      // yield.xyz has no bitcoin products
+      return null
   }
 }
 
