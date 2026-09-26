@@ -258,8 +258,7 @@ export class EthTabsHandler extends TabsHandler {
               }
             }
           } catch (err) {
-            // biome-ignore lint/suspicious/noConsole: legacy
-            console.error("Failed to initialize eth subscription", err)
+            log.error("Failed to initialize eth subscription", err)
           }
         })
         .catch((error) => {
@@ -313,8 +312,7 @@ export class EthTabsHandler extends TabsHandler {
           sendToClient({ type: "accountsChanged", data: accounts })
         }
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error("site subscription callback error", { err })
+        log.error("site subscription callback error", { err })
       }
     })
 

@@ -12,7 +12,7 @@ import { listSourceFiles, REPO_ROOT } from "./listSourceFiles"
  * The count of bare "legacy" suppressions may only go down. When you remove some, lower
  * `LEGACY_SUPPRESSIONS` to the new count. Never raise it: fix the code, or write the real reason.
  */
-const LEGACY_SUPPRESSIONS = 300
+const LEGACY_SUPPRESSIONS = 257
 
 const LEGACY_REASON = /biome-ignore(?:-all|-start)?[^:\n]*:\s*legacy\s*(?:\*\/|$)/gim
 

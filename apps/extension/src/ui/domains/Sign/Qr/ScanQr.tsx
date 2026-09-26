@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { decodeSs58Address } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { Toggle } from "@ui/components/Toggle"
@@ -61,8 +62,7 @@ export const ScanQr = <T extends Types>({
         if (type === "signature") return onScan(parseSignature(data))
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error("Scanning error", { cause })
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error(error)
+        log.error(error)
         onError?.(error)
       }
     },

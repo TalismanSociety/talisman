@@ -66,8 +66,7 @@ if (DEBUG) {
   hostObj.refreshRemoteConfig = async () => {
     const config = await fetchRemoteConfig()
     await remoteConfigStore.replace(config)
-    // biome-ignore lint/suspicious/noConsole: dev helper
-    console.log("[remoteConfig] refreshed", config)
+    log.log("[remoteConfig] refreshed", config)
     return config
   }
 }

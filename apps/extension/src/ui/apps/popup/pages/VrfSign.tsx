@@ -1,4 +1,5 @@
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import type { SigningRequestID } from "@core/domains/signing/types"
 import { hexToU8a, isAsciiPrintable, u8aToString } from "@talismn/util"
 import { api } from "@ui/api"
@@ -56,8 +57,7 @@ export const VrfSignRequest = () => {
       await api.approveSignVrf(req.id)
       setStatus.success("Approved")
     } catch (err) {
-      // biome-ignore lint/suspicious/noConsole: dev only
-      DEBUG && console.error(err)
+      DEBUG && log.error(err)
       setStatus.error("Failed to approve VRF sign request")
     }
   }, [req, setStatus])

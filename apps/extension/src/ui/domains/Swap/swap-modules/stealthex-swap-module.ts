@@ -1,4 +1,5 @@
 import { UNKNOWN_TOKEN_URL } from "@common/constants"
+import { log } from "@common/log"
 import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
@@ -418,8 +419,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       talismanFee,
     }
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(`Failed to get StealthEX quote`, cause)
+    log.error(`Failed to get StealthEX quote`, cause)
     return null
   }
 }
@@ -528,8 +528,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
     return { protocol: "stealthex", data: exchange }
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create exchange", { cause }))
+    log.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
 }

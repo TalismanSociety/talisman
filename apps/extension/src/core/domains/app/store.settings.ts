@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 import type { TokenRateCurrency } from "@talismn/token-rates"
 
 import { StorageProvider } from "../../libs/Store"
@@ -83,8 +84,7 @@ if (DEBUG) {
   hostObj.toggleBalanceFetching = () => {
     settingsStore.mutate((prev) => {
       const next = !prev.disableBalanceFetching
-      // biome-ignore lint/suspicious/noConsole: dev helper
-      console.log(`[balances] fetching ${next ? "DISABLED" : "ENABLED"}`)
+      log.log(`[balances] fetching ${next ? "DISABLED" : "ENABLED"}`)
       return { ...prev, disableBalanceFetching: next }
     })
   }
@@ -92,8 +92,7 @@ if (DEBUG) {
   // Warn loudly on every startup if balance fetching has been disabled
   settingsStore.get().then((settings) => {
     if (settings.disableBalanceFetching) {
-      // biome-ignore lint/suspicious/noConsole: dev helper
-      console.warn(
+      log.warn(
         "%c ⚠️ BALANCE FETCHING IS DISABLED ⚠️ %c\nLive balance updates are turned off. Cached/stale balances will be shown instead.\nRun %ctoggleBalanceFetching()%c in this console to re-enable.",
         "background: #ff4400; color: white; font-size: 16px; font-weight: bold; padding: 8px 12px; border-radius: 4px;",
         "font-size: 13px; padding: 4px 0;",

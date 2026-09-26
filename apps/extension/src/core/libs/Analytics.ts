@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 
 import { analyticsStore } from "../domains/analytics/store"
 import type { PostHogCaptureProperties } from "../domains/analytics/types"
@@ -21,8 +22,7 @@ class TalismanAnalytics {
       await analyticsStore.capture(eventName, captureProperties)
     } catch (cause) {
       const error = new Error("Failed to capture posthog event", { cause })
-      // biome-ignore lint/suspicious/noConsole: legacy
-      DEBUG && console.error(error)
+      DEBUG && log.error(error)
     }
   }
 

@@ -55,8 +55,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
       return posthogDistinctId
     } catch (cause) {
       const error = new Error("Failed to identify posthog client", { cause })
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(error)
+      log.error(error)
       sentry.captureException(error)
     }
     return

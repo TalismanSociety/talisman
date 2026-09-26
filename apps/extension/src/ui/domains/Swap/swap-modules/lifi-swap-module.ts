@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import type {
@@ -218,8 +219,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
       const token = await lifiSdk.getToken(lifiClient, lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
+      log.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
     }
   }
 
@@ -401,8 +401,7 @@ const getRoutes = async (
   } catch (cause) {
     if (signal.aborted || isAbortError(cause)) return null
 
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.warn("Failed to fetch lifi routes", cause)
+    log.warn("Failed to fetch lifi routes", cause)
     return {
       routes: [],
       unavailableRoutes: { failed: [], filteredOut: [] },
@@ -676,8 +675,7 @@ const getTransaction = async (
 
     return { platform: "ethereum", transaction }
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create evm transaction", { cause }))
+    log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
 }

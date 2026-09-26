@@ -1,4 +1,5 @@
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import type { UnsubscribeFn } from "@core/types"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
@@ -33,8 +34,7 @@ export const useMessageSubscription = <S, R = S>(
       s.unsubscribe()
       const { subject, unsubscribe } = subscriptions[key]
       if (!subject.observed && unsubscribe) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        DEBUG && console.debug(`[frontend] unsubscribing ${key}`)
+        DEBUG && log.debug(`[frontend] unsubscribing ${key}`)
 
         // unsubscribe from backend updates to prevent unnecessary network connections
         unsubscribe()
@@ -50,8 +50,7 @@ export const useMessageSubscription = <S, R = S>(
     if (!unsubscribe) {
       const cb = subscribe(subject)
 
-      // biome-ignore lint/suspicious/noConsole: legacy
-      DEBUG && console.debug(`[frontend] subscribing ${key}`)
+      DEBUG && log.debug(`[frontend] subscribing ${key}`)
 
       if (typeof cb === "function") subscriptions[key].unsubscribe = cb
       // this error should only happen when developping a new hook, let it bubble up

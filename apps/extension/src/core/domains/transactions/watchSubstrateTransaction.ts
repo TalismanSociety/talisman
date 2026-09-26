@@ -344,8 +344,7 @@ export const watchSubstrateTransaction = async (
     return hash
   } catch (cause) {
     const error = new Error("Failed to watch extrinsic", { cause })
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.warn(error)
+    log.warn(error)
     sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
     return
   }

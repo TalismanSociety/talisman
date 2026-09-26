@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { ArrowRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -73,8 +74,7 @@ export const ConnectSignetSelectAccounts = () => {
 
       onSuccess(address)
     } catch (e) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error(e)
+      log.error(e)
       notifyUpdate(notificationId, {
         type: "error",
         title: "Failed to import accounts",

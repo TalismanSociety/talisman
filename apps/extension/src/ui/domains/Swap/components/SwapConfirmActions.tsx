@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
@@ -121,8 +122,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const onApprovalSubmitted = useCallback(
     async (txId: string) => {
       if (!publicClient) {
-        // biome-ignore lint/suspicious/noConsole: intentional warning for debugging null publicClient
-        console.warn("publicClient unavailable for approval receipt polling, skipping wait")
+        log.warn("publicClient unavailable for approval receipt polling, skipping wait")
         incrementApprovalCounter()
         return
       }

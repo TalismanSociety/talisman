@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { EthTransactionDetails } from "@core/domains/signing/types"
@@ -138,8 +139,7 @@ const EvmDrawerContent: FC<{
       })
       onClose?.(newHash)
     } catch (err) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.error("handleSend", { err })
+      log.error("handleSend", { err })
       notify({
         title: `Failed to ${type}`,
         type: "error",
@@ -167,8 +167,7 @@ const EvmDrawerContent: FC<{
         })
         onClose?.(newHash)
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error("handleSend", { err })
+        log.error("handleSend", { err })
         notify({
           title: t(`Failed to {{type}}`, { type }),
           type: "error",
