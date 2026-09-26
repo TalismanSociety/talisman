@@ -1,5 +1,21 @@
 # @talismn/on-chain-id
 
+## 1.0.5
+
+### Patch Changes
+
+- 4309dca: move the deprecated tag from lookupEnsAddresses to lookupAznsAddresses
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+- Updated dependencies [9ff568c]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/util@2.1.0
+  - @talismn/chain-connectors@1.0.5
+  - @talismn/crypto@1.1.1
+
 ## 1.0.4
 
 ### Patch Changes

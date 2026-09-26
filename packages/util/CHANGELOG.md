@@ -1,5 +1,17 @@
 # @talismn/util
 
+## 2.1.0
+
+### Minor Changes
+
+- bf998fe: add getErrorMessage to read the message of any thrown value; getLoadable errors from values without a message now read "Unknown error"
+
+### Patch Changes
+
+- 9ff568c: deprecate isBooleanTrue in favor of isTruthy
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+
 ## 2.0.1
 
 ### Patch Changes

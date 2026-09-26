@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chain-connectors",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "RPC connectors for Polkadot SDK, EVM and Solana networks",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",

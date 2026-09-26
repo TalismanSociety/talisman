@@ -1,6 +1,6 @@
 {
   "name": "@talismn/token-rates",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Fiat and crypto prices for tokens, from the Talisman coins API",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
