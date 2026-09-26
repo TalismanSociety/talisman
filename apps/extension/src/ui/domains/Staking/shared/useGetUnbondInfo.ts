@@ -15,7 +15,7 @@ type GetUnbondInfo = {
 
 export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   const { data: pool } = useNomPoolByMember(chainId, address)
-  const { data: nomPoolPlanksToUnbond } = useGetNomPoolPlanckToUnbond({
+  const { data: nomPoolPlanckToUnbond } = useGetNomPoolPlanckToUnbond({
     sapi,
     pool,
     isEnabled: !isBittensorNetworkId(chainId),
@@ -42,7 +42,7 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
   } = useGetFeeEstimate({ sapi, payload })
 
   return {
-    plancksToUnbond: nomPoolPlanksToUnbond,
+    plancksToUnbond: nomPoolPlanckToUnbond,
     pool,
     poolId: pool?.pool_id,
     payload,

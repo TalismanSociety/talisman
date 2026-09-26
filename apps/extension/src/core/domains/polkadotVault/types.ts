@@ -2,23 +2,22 @@ import type { HexString } from "@talismn/util"
 
 import type { SignerPayloadGenesisHash } from "../signing/types"
 
-export type RequestChainGenerateQrAddNetworkSpecs = {
+export type RequestPolkadotVaultGenerateQrAddNetworkSpecs = {
   genesisHash: SignerPayloadGenesisHash // ussing the imported type from above enables us to stay up to date with upstream changes
 }
 
-export type RequestChainGenerateQrUpdateNetworkMetadata = {
+export type RequestPolkadotVaultGenerateQrUpdateNetworkMetadata = {
   genesisHash: SignerPayloadGenesisHash
   specVersion?: number
 }
 
 export interface PolkadotVaultMessages {
-  // chain message signatures
   "pri(polkadotVault.generateQr.addNetworkSpecs)": [
-    RequestChainGenerateQrAddNetworkSpecs,
+    RequestPolkadotVaultGenerateQrAddNetworkSpecs,
     HexString,
   ]
   "pri(polkadotVault.generateQr.updateNetworkMetadata)": [
-    RequestChainGenerateQrUpdateNetworkMetadata,
+    RequestPolkadotVaultGenerateQrUpdateNetworkMetadata,
     HexString,
   ]
 }

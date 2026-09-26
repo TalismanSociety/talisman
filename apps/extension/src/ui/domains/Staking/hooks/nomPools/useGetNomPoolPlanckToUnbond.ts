@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import type { NomPoolMember } from "../../types"
 
-type GetNomPoolPlanksToUnbond = {
+type GetNomPoolPlanckToUnbond = {
   pool: NomPoolMember | null | undefined
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
@@ -14,7 +14,7 @@ export const useGetNomPoolPlanckToUnbond = ({
   pool,
   sapi,
   isEnabled,
-}: GetNomPoolPlanksToUnbond) => {
+}: GetNomPoolPlanckToUnbond) => {
   return useQuery({
     queryKey: ["pointsToBalance", sapi?.id, papiStringify(pool)],
     queryFn: async () => {
