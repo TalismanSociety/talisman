@@ -9,7 +9,7 @@ type IRuntimeVersionBase = {
 
 import { withRetry } from "viem"
 
-import { chainConnectorDot } from "../rpcs/chain-connector-dot"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 
 // properly typed on the few fields that matter to us
 type IRuntimeVersion = IRuntimeVersionBase & {

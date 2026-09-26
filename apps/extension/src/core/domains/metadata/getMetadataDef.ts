@@ -6,14 +6,14 @@ import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale
 import { assert, type HexString, isHexString } from "@talismn/util"
 import { withRetry } from "viem"
 
-import { sentry } from "../config/sentry"
-import { db } from "../db"
-import { decodeMetadataRpc, encodeMetadataRpc } from "../domains/metadata/helpers"
-import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
-import type { TalismanMetadataDef } from "../domains/substrate/types"
-import { chainConnectorDot } from "../rpcs/chain-connector-dot"
-import { chaindataProvider } from "../rpcs/chaindata"
+import { sentry } from "../../config/sentry"
+import { db } from "../../db"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
+import { chaindataProvider } from "../../rpcs/chaindata"
+import type { TalismanMetadataDef } from "../substrate/types"
 import { getRuntimeVersion } from "./getRuntimeVersion"
+import { decodeMetadataRpc, encodeMetadataRpc } from "./helpers"
+import { metadataUpdatesStore } from "./metadataUpdates"
 
 const CACHE_RESULTS = new Map<string, TalismanMetadataDef>()
 const CACHE_PROMISES = new Map<string, Promise<TalismanMetadataDef | undefined>>()

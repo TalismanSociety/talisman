@@ -12,16 +12,16 @@ import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
 import { keyringStore } from "../../domains/keyring/store"
-import { getMetadataRpcFromDef } from "../../domains/metadata/helpers"
-import type { SignerPayloadGenesisHash } from "../../domains/signing/types"
-import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
-import { chaindataProvider } from "../../rpcs/chaindata"
 import {
   fetchMetadataDefFromChain,
   getChainAndGenesisHashFromIdOrHash,
   getLegacyMetadataRpc,
-} from "../../util/getMetadataDef"
-import { getRuntimeVersion } from "../../util/getRuntimeVersion"
+} from "../../domains/metadata/getMetadataDef"
+import { getRuntimeVersion } from "../../domains/metadata/getRuntimeVersion"
+import { getMetadataRpcFromDef } from "../../domains/metadata/helpers"
+import type { SignerPayloadGenesisHash } from "../../domains/signing/types"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
+import { chaindataProvider } from "../../rpcs/chaindata"
 import { $addNetworkSpecsPayload, $networkSpecs, $updateNetworkMetadataPayload } from "./codecs"
 
 const getEncryptionForChain = (chain: DotNetwork) => {

@@ -20,7 +20,7 @@ vi.mock("../../rpcs/chain-connector-dot", () => ({
   chainConnectorDot: { send: mocks.mockSend },
 }))
 
-vi.mock("../../util/getMetadataDef", () => ({
+vi.mock("../metadata/getMetadataDef", () => ({
   getMetadataDef: mocks.mockGetMetadataDef,
 }))
 
