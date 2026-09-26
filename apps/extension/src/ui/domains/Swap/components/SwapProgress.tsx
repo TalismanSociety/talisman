@@ -1,6 +1,6 @@
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
-  getBlockExplorerUrls,
+  getBlockExplorerUrl,
   type Network,
   networkIdFromTokenId,
 } from "@talismn/chaindata-provider"
@@ -17,18 +17,13 @@ import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { getSwapProgressDetails, type SwapStatusDetails } from "./swapProgressStatus"
 
-const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  if (!network) return null
-  return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
-}
-
 const getSwapProgressTrackerUrl = (
   txInfo: WalletTransactionInfo,
   txHash: string,
   network: Network | undefined | null
 ): string | null =>
   txInfo.type === "swap-bittensor-evm"
-    ? getBlockExplorerUrl(network, txHash)
+    ? getBlockExplorerUrl(network, { type: "transaction", id: txHash })
     : getSwapTrackerUrl(txInfo, txHash)
 
 /**
@@ -102,7 +97,10 @@ export const SwapProgress: FC<SwapProgressProps> = ({
     return undefined
   }, [tx])
 
-  const explorerUrl = useMemo(() => getBlockExplorerUrl(network, txHash), [network, txHash])
+  const explorerUrl = useMemo(
+    () => getBlockExplorerUrl(network, { type: "transaction", id: txHash }),
+    [network, txHash]
+  )
   const swapTrackerUrl = useMemo(
     () => getSwapProgressTrackerUrl(txInfo, txHash, network),
     [txInfo, txHash, network]

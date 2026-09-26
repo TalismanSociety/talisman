@@ -4,7 +4,7 @@ import type {
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -20,10 +20,6 @@ import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TxReplaceDrawer, type TxReplaceType } from "../Transactions"
-
-const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  return getBlockExplorerUrls(network!, { type: "transaction", id: hash })[0] ?? null
-}
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
@@ -144,7 +140,7 @@ type SendFundsProgressBaseProps = {
   className?: string
   blockNumber?: string
   onClose?: () => void
-  href?: string
+  href?: string | null
 }
 
 const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
@@ -223,7 +219,10 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   className,
 }) => {
   const chain = useNetworkById(tx.networkId)
-  const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
+  const href = useMemo(
+    () => getBlockExplorerUrl(chain, { type: "transaction", id: tx.hash }),
+    [chain, tx.hash]
+  )
 
   return (
     <SendFundsProgressBase
@@ -245,13 +244,7 @@ type SendFundsProgressSolanaProps = {
 const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose, className }) => {
   const network = useNetworkById(tx.networkId, "solana")
   const href = useMemo(
-    () =>
-      network
-        ? getBlockExplorerUrls(network, {
-            type: "transaction",
-            id: tx.signature,
-          })[0]
-        : undefined,
+    () => getBlockExplorerUrl(network, { type: "transaction", id: tx.signature }),
     [network, tx.signature]
   )
 
@@ -270,7 +263,10 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   onClose,
 }) => {
   const network = useNetworkById(tx.networkId, "ethereum")
-  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+  const href = useMemo(
+    () => getBlockExplorerUrl(network, { type: "transaction", id: tx.hash }),
+    [network, tx.hash]
+  )
 
   return (
     <SendFundsProgressBase
@@ -301,7 +297,7 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(network, txId)
+    const href = getBlockExplorerUrl(network, { type: "transaction", id: txId })
     return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 

@@ -160,7 +160,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
 
   const activeTokens = useActiveTokensState()
   const network = useAnyNetwork(token.networkId)
-  const blockExplorerUrl = useBlockExplorerUrl(token)
+  const blockExplorerUrl = useTokenExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
 
   if (!network) return null
@@ -237,7 +237,7 @@ const CustomPill = () => {
   )
 }
 
-const useBlockExplorerUrl = (token: Token) => {
+const useTokenExplorerUrl = (token: Token) => {
   const network = useAnyNetwork(token.networkId)
 
   return useMemo(() => {

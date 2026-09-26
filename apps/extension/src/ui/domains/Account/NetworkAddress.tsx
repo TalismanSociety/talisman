@@ -1,4 +1,4 @@
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -28,7 +28,7 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
 
   const blockExplorerUrl = useMemo(() => {
     if (!network || !address) return null
-    return getBlockExplorerUrls(network, { type: "address", address })[0] ?? null
+    return getBlockExplorerUrl(network, { type: "address", address })
   }, [address, network])
 
   const effectiveMode = useMemo(() => {

@@ -2,7 +2,7 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -85,7 +85,7 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
 
   const handleNetworkClick = useCallback(
     (network: Network) => () => {
-      const url = getBlockExplorerUrls(network, { type: "address", address })[0]
+      const url = getBlockExplorerUrl(network, { type: "address", address })
       if (!url) return
       window.open(url, "_blank")
       onClose()
