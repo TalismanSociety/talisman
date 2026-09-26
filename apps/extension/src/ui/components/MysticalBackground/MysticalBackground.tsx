@@ -2,22 +2,22 @@ import { cn } from "@ui/util/cn"
 import { type CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
 import { useMeasure } from "react-use"
 
-import { MYSTICAL_PHYSICS_V3, type MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import { MYSTICAL_PHYSICS, type MysticalPhysics } from "./MysticalPhysics"
 import {
   type CelestialArtifactProps,
   type ParentSize,
   useCelestialArtifact,
 } from "./useCelestialArtifact"
 
-export const MysticalBackgroundV3 = ({
+export const MysticalBackground = ({
   className,
   config,
 }: {
-  config?: Partial<MysticalPhysicsV3>
+  config?: Partial<MysticalPhysics>
   className?: string
 }) => {
   const [refSize, size] = useMeasure<HTMLDivElement>()
-  const mergedConfig = useMemo(() => ({ ...MYSTICAL_PHYSICS_V3, ...(config ?? {}) }), [config])
+  const mergedConfig = useMemo(() => ({ ...MYSTICAL_PHYSICS, ...(config ?? {}) }), [config])
 
   const style = useMemo<CSSProperties>(
     () => ({
@@ -34,7 +34,7 @@ export const MysticalBackgroundV3 = ({
   )
 }
 
-const CelestialArtifacts = ({ size, config }: { size: ParentSize; config: MysticalPhysicsV3 }) => {
+const CelestialArtifacts = ({ size, config }: { size: ParentSize; config: MysticalPhysics }) => {
   const artifactKeys = useMemo(() => [...Array(config.artifacts).keys()], [config.artifacts])
   if (!size.width || !size.height) return null
 
