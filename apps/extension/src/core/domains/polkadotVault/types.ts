@@ -11,10 +11,13 @@ export type RequestChainGenerateQrUpdateNetworkMetadata = {
   specVersion?: number
 }
 
-export interface ChainsMessages {
+export interface PolkadotVaultMessages {
   // chain message signatures
-  "pri(chains.generateQr.addNetworkSpecs)": [RequestChainGenerateQrAddNetworkSpecs, HexString]
-  "pri(chains.generateQr.updateNetworkMetadata)": [
+  "pri(polkadotVault.generateQr.addNetworkSpecs)": [
+    RequestChainGenerateQrAddNetworkSpecs,
+    HexString,
+  ]
+  "pri(polkadotVault.generateQr.updateNetworkMetadata)": [
     RequestChainGenerateQrUpdateNetworkMetadata,
     HexString,
   ]

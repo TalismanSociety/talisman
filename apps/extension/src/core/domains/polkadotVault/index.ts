@@ -1,0 +1,1 @@
+export { PolkadotVaultHandler } from "./handler"

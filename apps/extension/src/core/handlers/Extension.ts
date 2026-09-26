@@ -11,7 +11,6 @@ import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunde
 import { BalancesHandler } from "../domains/balances"
 import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
-import { ChainsHandler } from "../domains/chains"
 import { DefiHandler } from "../domains/defi/handler"
 import { EarnHandler } from "../domains/earn/handler"
 import { EthHandler } from "../domains/ethereum"
@@ -20,6 +19,7 @@ import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
+import { PolkadotVaultHandler } from "../domains/polkadotVault"
 import { QueryCacheHandler } from "../domains/queryCache/handler"
 import { SendFundsHandler } from "../domains/sendFunds/handler"
 import { SigningHandler } from "../domains/signing"
@@ -50,7 +50,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       accountProxies: new AccountProxiesHandler(stores),
-      chains: new ChainsHandler(stores),
+      polkadotVault: new PolkadotVaultHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),
