@@ -12,7 +12,7 @@ import type {
   VrfSigningRequest,
 } from "./types"
 
-export const signAndSendEth = (
+export const requestEthSendTransaction = (
   url: string,
   request: RpcTransactionRequest,
   ethChainId: EthNetworkId,
@@ -32,7 +32,7 @@ export const signAndSendEth = (
   )
 }
 
-export const signEth = (
+export const requestEthSign = (
   url: string,
   method:
     | "personal_sign"
@@ -60,7 +60,7 @@ export const signEth = (
   )
 }
 
-export const signSubstrate = (
+export const requestSubstrateSign = (
   url: string,
   request: SubstrateSigningRequest["request"],
   account: Account,
@@ -77,7 +77,7 @@ export const signSubstrate = (
   )
 }
 
-export const signVrf = (
+export const requestVrfSign = (
   url: string,
   request: VrfSigningRequest["request"],
   account: Account,
@@ -94,7 +94,7 @@ export const signVrf = (
   )
 }
 
-export const signSolana = <
+export const requestSolanaSign = <
   T extends SolSignRequest["type"],
   Req = Extract<SolSignRequest, { type: T }>,
   Res = Extract<SolSignResult, { type: T }>,
