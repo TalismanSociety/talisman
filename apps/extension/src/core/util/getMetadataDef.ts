@@ -11,7 +11,7 @@ import { db } from "../db"
 import { decodeMetadataRpc, encodeMetadataRpc } from "../domains/metadata/helpers"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
 import type { TalismanMetadataDef } from "../domains/substrate/types"
-import { chainConnector } from "../rpcs/chain-connector"
+import { chainConnectorDot } from "../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 
@@ -163,7 +163,7 @@ export const fetchMetadataDefFromChain = async (
 ): Promise<TalismanMetadataDef | undefined> => {
   const [metadataRpc, chainProperties] = await Promise.all([
     fetchMethod(chain.id),
-    chainConnector.send(chain.id, "system_properties", [], true),
+    chainConnectorDot.send(chain.id, "system_properties", [], true),
   ]).catch((rpcError) => {
     // not a useful error, do not log to sentry
     if ((rpcError as Error).message === "RPC connect timeout reached") {
@@ -223,8 +223,8 @@ if (DEBUG) {
 
 const getLatestMetadataRpc = (chainId: DotNetworkId) =>
   fetchBestMetadata((method, params, isCacheable) =>
-    chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true })
+    chainConnectorDot.send(chainId, method, params, isCacheable, { expectErrors: true })
   )
 
 export const getLegacyMetadataRpc = (chainId: DotNetworkId) =>
-  chainConnector.send<HexString>(chainId, "state_getMetadata", [], true)
+  chainConnectorDot.send<HexString>(chainId, "state_getMetadata", [], true)

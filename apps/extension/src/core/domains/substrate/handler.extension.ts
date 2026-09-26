@@ -5,7 +5,7 @@ import { mortal, toPjsHex } from "@talismn/sapi"
 import { Binary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
 import { u8aToHex } from "@talismn/util"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
@@ -45,7 +45,7 @@ export class SubHandler extends ExtensionHandler {
     const { signedTransaction, hash } = await assembleSubstrateTransaction(payload, signature)
 
     try {
-      await chainConnector.send(chain.id, "author_submitExtrinsic", [signedTransaction])
+      await chainConnectorDot.send(chain.id, "author_submitExtrinsic", [signedTransaction])
     } catch (err) {
       if (hash) dismissTransaction(hash)
       throw err
@@ -70,7 +70,7 @@ export class SubHandler extends ExtensionHandler {
       const { builder } = parseMetadataRpc(metadataRpc)
       const storageCodec = builder.buildStorage("MevShield", "NextKey")
       const stateKey = storageCodec.keys.enc()
-      const hexValue = await chainConnector.send<string | null>(
+      const hexValue = await chainConnectorDot.send<string | null>(
         chain.id,
         "state_getStorage",
         [stateKey],
@@ -124,13 +124,13 @@ export class SubHandler extends ExtensionHandler {
       // Fetch fresh block reference for the outer tx to avoid stale birth block.
       // The UI payload's blockNumber can be minutes old; with a mortal era of only 8 blocks,
       // a stale reference causes "AncientBirthBlock" when birth(current) == current.
-      const freshBlockHash = await chainConnector.send<`0x${string}`>(
+      const freshBlockHash = await chainConnectorDot.send<`0x${string}`>(
         chain.id,
         "chain_getFinalizedHead",
         [],
         false
       )
-      const freshHeader = await chainConnector.send<{ number: `0x${string}` }>(
+      const freshHeader = await chainConnectorDot.send<{ number: `0x${string}` }>(
         chain.id,
         "chain_getHeader",
         [freshBlockHash],
@@ -174,7 +174,9 @@ export class SubHandler extends ExtensionHandler {
 
       try {
         // submit only outer tx
-        await chainConnector.send(chain.id, "author_submitExtrinsic", [outerTx.signedTransaction])
+        await chainConnectorDot.send(chain.id, "author_submitExtrinsic", [
+          outerTx.signedTransaction,
+        ])
       } catch (err) {
         if (signedInnerHash) dismissTransaction(signedInnerHash)
         if (signedOuterHash) dismissTransaction(signedOuterHash)
@@ -190,7 +192,7 @@ export class SubHandler extends ExtensionHandler {
     params,
     isCacheable,
   }) => {
-    return chainConnector.send(chainId, method, params, isCacheable)
+    return chainConnectorDot.send(chainId, method, params, isCacheable)
   }
 
   private metadata: MessageHandler<"pri(substrate.metadata.get)"> = ({

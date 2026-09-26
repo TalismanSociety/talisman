@@ -4,7 +4,7 @@ import { checksumEthereumAddress, encodeAddressSs58 } from "@talismn/crypto"
 import { Binary, parseMetadataRpc, toHex } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { addressToAccountId } from "../assetDiscovery/substrate"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
@@ -29,7 +29,9 @@ const queryStorageAt = async (
   if (signal.aborted) throw new Error("Aborted")
 
   const result = await Promise.race([
-    chainConnector.send<QueryStorageResultItem[]>(networkId, "state_queryStorageAt", [storageKeys]),
+    chainConnectorDot.send<QueryStorageResultItem[]>(networkId, "state_queryStorageAt", [
+      storageKeys,
+    ]),
     throwAfter(RPC_TIMEOUT_MS, "Timeout"),
   ])
 

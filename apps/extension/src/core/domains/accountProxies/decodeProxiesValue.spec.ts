@@ -16,8 +16,8 @@ vi.mock("@talismn/scale", async (importOriginal) => {
   }
 })
 
-vi.mock("../../rpcs/chain-connector", () => ({
-  chainConnector: { send: mocks.mockSend },
+vi.mock("../../rpcs/chain-connector-dot", () => ({
+  chainConnectorDot: { send: mocks.mockSend },
 }))
 
 vi.mock("../../util/getMetadataDef", () => ({

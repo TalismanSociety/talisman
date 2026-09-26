@@ -14,7 +14,7 @@ import { passwordStore } from "../../domains/app/store.password"
 import { keyringStore } from "../../domains/keyring/store"
 import { getMetadataRpcFromDef } from "../../domains/metadata/helpers"
 import type { SignerPayloadGenesisHash } from "../../domains/signing/types"
-import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import {
   fetchMetadataDefFromChain,
@@ -75,7 +75,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
 
-  const systemProperties = await chainConnector.send(chain.id, "system_properties", [])
+  const systemProperties = await chainConnectorDot.send(chain.id, "system_properties", [])
 
   const decimals = Array.isArray(systemProperties?.tokenDecimals)
     ? systemProperties?.tokenDecimals[0]
