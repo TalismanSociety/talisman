@@ -1,7 +1,9 @@
-import { type Dirent, readdirSync, readFileSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
+
+import { listSourceFiles, REPO_ROOT } from "./listSourceFiles"
 
 /**
  * Guard against the bug class that broke every Solana transfer (see
@@ -22,35 +24,12 @@ import { describe, expect, it } from "vitest"
  */
 const BANNED_PACKAGES = ["@solana/kit", "viem", "@blockaid/client"]
 
-const REPO_ROOT = resolve(import.meta.dirname, "../../../..")
-
 const SCAN_DIRS = [
   join(REPO_ROOT, "apps/extension/src"),
   join(REPO_ROOT, "packages/solana/src"),
   join(REPO_ROOT, "packages/balances/src"),
   join(REPO_ROOT, "packages/chain-connectors/src"),
 ]
-
-const listSourceFiles = (dir: string): string[] => {
-  const out: string[] = []
-  let entries: Dirent[]
-  try {
-    entries = readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out // directory may be absent in a partial checkout
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".turbo")
-        continue
-      out.push(...listSourceFiles(full))
-    } else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) {
-      out.push(full)
-    }
-  }
-  return out
-}
 
 // Names value-imported from `pkg` (skips `import type {...}` and inline `type X` specifiers,
 // since a type-only binding cannot appear in an `instanceof` expression).
