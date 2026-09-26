@@ -32,9 +32,7 @@ const config: KnipConfig = {
     // Public injected web3 API types exposed to dapps (mirror @polkadot/extension-inject)
     "**/inject/substrate/types.ts": ["types"],
     // Generated API clients export everything by design
-    "**/bittensor/sn45/Sn45Api.ts": ["exports", "types"],
-    "**/bittensor/tao-data/TaoDataApi.ts": ["exports", "types"],
-    "**/app/remote-config/RemoteConfigApi.ts": ["exports", "types"],
+    "**/*.gen.ts": ["exports", "types"],
   },
 
   workspaces: {

@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import type { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { useNetworksMapById } from "@ui/state/chaindata"
-import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { useNetworkDisplayNamesMapById } from "@ui/state/networkDisplay"
 import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 

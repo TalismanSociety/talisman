@@ -12,5 +12,5 @@ This keyring is not ecosystem specific. As such, it does not provide any signing
 
 ![](./docs/keyring-diagram.png)
 
-> ⚠️ This package relies on the browser's native crypto API for encryption and decryption. It is designed for use in modern browsers—Talisman wallet runs on Chromium v102+ and Firefox v109+ at the time of writing.
+> ⚠️ This package relies on the browser's native crypto API for encryption and decryption. It is designed for use in modern browsers—Talisman wallet runs on Chromium v121+ and Firefox v128+ at the time of writing.
 > Using this library in environments with weaker crypto API implementations, particularly for random number generation, may introduce security risks.

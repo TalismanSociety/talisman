@@ -20,7 +20,7 @@ import type {
 import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { keyringStore } from "../keyring/store"
-import { signSolana } from "../signing/requests"
+import { requestSolanaSign } from "../signing/requests"
 import type { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
@@ -162,7 +162,7 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
     message,
   }
 
-  const result = (await signSolana(url, port, account, request)) as SolSignResult
+  const result = (await requestSolanaSign(url, port, account, request)) as SolSignResult
 
   if (result.type !== "message")
     throw new Error("Unexpected response type from Solana sign request")
@@ -192,7 +192,7 @@ const handleSolanaSignTransaction: TabMessageHandler<
     send,
   }
 
-  const result = (await signSolana(url, port, account, request)) as SolSignResult
+  const result = (await requestSolanaSign(url, port, account, request)) as SolSignResult
 
   if (result.type !== "transaction")
     throw new Error("Unexpected response type from Solana sign request")

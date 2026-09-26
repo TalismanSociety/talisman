@@ -8,7 +8,7 @@ import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
 import { getNetworks$, getTokens$ } from "./chaindata"
-import { networkDisplayNamesMapById$ } from "./networks"
+import { networkDisplayNamesMapById$ } from "./networkDisplay"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together

@@ -3,7 +3,7 @@ import type { Token } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import groupBy from "lodash-es/groupBy"
 
-export const useUniswapV2LpTokenTotalValueLocked = (
+export const getUniswapV2LpTokenTotalValueLocked = (
   token?: Token,
   tokenPrice?: number | null,
   balances?: Balances

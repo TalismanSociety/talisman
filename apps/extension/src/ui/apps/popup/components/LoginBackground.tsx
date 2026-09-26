@@ -1,12 +1,12 @@
 import {
-  MYSTICAL_PHYSICS_V3,
-  MysticalBackgroundV3 as MysticalBackground,
-  type MysticalPhysicsV3,
-} from "@ui/components/MysticalBackgroundV3"
+  MYSTICAL_PHYSICS,
+  MysticalBackground,
+  type MysticalPhysics,
+} from "@ui/components/MysticalBackground"
 import { useMemo } from "react"
 
-const BG_CONFIG: MysticalPhysicsV3 = {
-  ...MYSTICAL_PHYSICS_V3,
+const BG_CONFIG: MysticalPhysics = {
+  ...MYSTICAL_PHYSICS,
   artifacts: 4,
   radiusMax: 0.7,
   ellipsisRatio: 0.4,

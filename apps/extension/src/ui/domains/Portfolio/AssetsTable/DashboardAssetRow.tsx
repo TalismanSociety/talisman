@@ -16,9 +16,9 @@ import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { useUniswapV2LpTokenTotalValueLocked } from "../hooks/useUniswapV2LpTokenTotalValueLocked"
 import { usePortfolioEarnButton } from "../usePortfolioEarnButton"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
+import { getUniswapV2LpTokenTotalValueLocked } from "./getUniswapV2LpTokenTotalValueLocked"
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
@@ -42,7 +42,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   }, [genericEvent, navigate, token])
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
-  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
+  const tvl = getUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBond } = useBondButton({ balances })
   const { canUnbond } = useUnbondButton({ balances })

@@ -14,7 +14,7 @@ import { getMessageSenderFn } from "../../../tests/core/util"
 import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
-import { signSubstrate, signVrf } from "../domains/signing/requests"
+import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
 import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
@@ -218,7 +218,7 @@ describe("Extension", () => {
     test("signs a payload using cached chain metadata", async () => {
       const payload = getPayload()
 
-      const requestPromise = signSubstrate(
+      const requestPromise = requestSubstrateSign(
         "http://test.com",
         { payload },
         account,
@@ -256,11 +256,11 @@ describe("Extension", () => {
       requestStore.clearRequests()
     })
 
-    const requestVrfSign = (payload: VrfSignPayload, url = DAPP_URL) =>
+    const sendVrfSign = (payload: VrfSignPayload, url = DAPP_URL) =>
       tabs.handle(v4(), "pub(vrf.sign)", payload, {} as chrome.runtime.Port, url)
 
     const signVrfOnce = async (account: Account, data: `0x${string}`, url = DAPP_URL) => {
-      const requestPromise = requestVrfSign({ address: account.address, data }, url)
+      const requestPromise = sendVrfSign({ address: account.address, data }, url)
 
       await waitFor(() => expect(requestStore.getCounts().get("vrf-sign")).toBe(1))
 
@@ -338,9 +338,7 @@ describe("Extension", () => {
     ])("rejects data with %s", async (_, data) => {
       const account = await getAccount()
 
-      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
-        /Invalid data/
-      )
+      await expect(sendVrfSign({ address: account.address, data })).rejects.toThrow(/Invalid data/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
@@ -349,7 +347,7 @@ describe("Extension", () => {
       const account = await getAccount()
 
       await expect(
-        requestVrfSign({ address: account.address, data: "0x00", context: "" })
+        sendVrfSign({ address: account.address, data: "0x00", context: "" })
       ).rejects.toThrow(/Invalid context/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
@@ -359,7 +357,7 @@ describe("Extension", () => {
       const account = await getAccount()
 
       await expect(
-        requestVrfSign({ address: account.address, data: "0x00", extra: "0x00" } as VrfSignPayload)
+        sendVrfSign({ address: account.address, data: "0x00", extra: "0x00" } as VrfSignPayload)
       ).rejects.toThrow(/Invalid extra/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
@@ -368,9 +366,7 @@ describe("Extension", () => {
       const account = await getAccount()
       const data = `0x${"00".repeat(64 * 1024 + 1)}`
 
-      await expect(requestVrfSign({ address: account.address, data })).rejects.toThrow(
-        /Invalid data/
-      )
+      await expect(sendVrfSign({ address: account.address, data })).rejects.toThrow(/Invalid data/)
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
     })
 
@@ -384,7 +380,7 @@ describe("Extension", () => {
       expect(account).toBeDefined()
       if (!account) throw new Error("Account not found")
 
-      await expect(requestVrfSign({ address: account.address, data: "0x00" })).rejects.toThrow(
+      await expect(sendVrfSign({ address: account.address, data: "0x00" })).rejects.toThrow(
         /VRF signing requires a local sr25519 account/
       )
       expect(requestStore.getCounts().get("vrf-sign")).toBe(0)
@@ -396,7 +392,7 @@ describe("Extension", () => {
       const account = accounts.find((acc) => acc.name === "Test Ethereum Account")
       if (!account) throw new Error("Account not found")
 
-      const requestPromise = signVrf(
+      const requestPromise = requestVrfSign(
         DAPP_URL,
         { payload: { address: account.address, data: "0x00" } },
         account,
@@ -416,7 +412,7 @@ describe("Extension", () => {
     test("refuses to VRF-sign a substrate signing request", async () => {
       const account = await getAccount()
       // a raw payload's `data` also parses as a VrfSignPayload
-      signSubstrate(
+      requestSubstrateSign(
         DAPP_URL,
         { payload: { address: account.address, data: "0x00", type: "bytes" } },
         account,

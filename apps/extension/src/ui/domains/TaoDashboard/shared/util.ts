@@ -35,10 +35,6 @@ export const convertScore2To100Pos = (score2: number | null | undefined): number
   return Math.round(((score2 + 2) / 4) * 100)
 }
 
-const _useScore2To100Pos = (score2: number | null | undefined): number => {
-  return useMemo(() => convertScore2To100Pos(score2), [score2])
-}
-
 /** converts a [-2,2] score to a [-100,100] score */
 export const convertScore2To100Neg = (score2: number | null | undefined): number => {
   if (score2 === null || score2 === undefined) return 0
@@ -56,10 +52,6 @@ export const convertScore1To100Pos = (score1: number | null | undefined): number
   return Math.round(((score1 + 1) / 2) * 100)
 }
 
-const _useScore1To100Pos = (score1: number | null | undefined): number => {
-  return useMemo(() => convertScore1To100Pos(score1), [score1])
-}
-
 /** converts a [-1,1] score to a [-100,100] score */
 export const convertScore1To100Neg = (score1: number | null | undefined): number => {
   if (score1 === null || score1 === undefined) return 0
@@ -71,14 +63,7 @@ export const useScore1To100Neg = (score1: number | null | undefined): number => 
   return useMemo(() => convertScore1To100Neg(score1), [score1])
 }
 
-const _useColorFromScore100Pos = (score: number | null | undefined): string | null => {
-  if (score === null || score === undefined) return null
-  if (score > 50) return "text-buy"
-  if (score < 50) return "text-sell"
-  return null
-}
-
-export const useColorFromScore100Neg = (score: number | null | undefined): string | null => {
+export const getColorFromScore100Neg = (score: number | null | undefined): string | null => {
   if (!score) return null
   if (score > 0) return "text-buy"
   if (score < 0) return "text-sell"

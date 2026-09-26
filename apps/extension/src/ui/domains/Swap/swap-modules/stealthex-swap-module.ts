@@ -42,7 +42,7 @@ import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
   SchemaExchange as StealthexExchange,
-} from "./stealthex.api.d.ts"
+} from "./stealthex.api.gen"
 import stealthexLogo from "./stealthex-logo.svg?url"
 
 const apiUrl = "https://stealthex.talisman.xyz"
