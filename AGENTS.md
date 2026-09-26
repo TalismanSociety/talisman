@@ -71,22 +71,22 @@ agent-browser --session talisman --cdp 9223 tab new "chrome-extension://akcdepji
 agent-browser --session talisman --cdp 9223 snapshot -i
 ```
 
-Sign popups and the service worker: agent-browser sees neither, so use Playwright. Put the script in `.tmp/` and run it with `node` from the repo root. `browser.close()` disconnects and leaves Chrome running.
+Sign popups: agent-browser does not list the popup the extension opens, but the request also renders in a tab it opens itself. Find the popup URL (`popup.html#/…`) with `curl -s localhost:9223/json/list` (it can take a few seconds to appear while the service worker starts), open it with `tab new "<url>"`, then snapshot and click there. Approving or rejecting in either tab completes the request and closes both.
+
+The service worker: agent-browser cannot reach it, so use Playwright. Put the script in `.tmp/` and run it with `node` from the repo root. `browser.close()` disconnects and leaves Chrome running.
 
 ```js
 import { chromium } from "@playwright/test"
 
 const EXTENSION = "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno"
 const browser = await chromium.connectOverCDP("http://localhost:9223")
-const context = browser.contexts()[0]
-
-const popup = context.pages().find((page) => page.url().startsWith(`${EXTENSION}/popup.html`))
-const background = context.serviceWorkers().find((worker) => worker.url().startsWith(EXTENSION))
+const background = browser
+  .contexts()[0]
+  .serviceWorkers()
+  .find((worker) => worker.url().startsWith(EXTENSION))
 console.log(await background?.evaluate(() => chrome.runtime.getManifest().version_name))
 
 await browser.close()
 ```
 
-- A dapp request opens a sign popup as a new page: wait for it with `context.waitForEvent("page")`.
-- Closing a sign popup rejects the request. After Approve or Reject the popup closes itself, so give each action in it a timeout.
 - The service worker is listed only while it runs. Open an extension page to wake it.
