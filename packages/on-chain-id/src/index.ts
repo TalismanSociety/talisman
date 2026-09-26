@@ -31,9 +31,9 @@ export class OnChainId {
 
   lookupAddresses = (...args: DropFirst<Parameters<typeof lookupAddresses>>) =>
     lookupAddresses(this.#config, ...args)
-  /** @deprecated */
   lookupEnsAddresses = (...args: DropFirst<Parameters<typeof lookupEnsAddresses>>) =>
     lookupEnsAddresses(this.#config, ...args)
+  /** @deprecated */
   lookupAznsAddresses = (...args: DropFirst<Parameters<typeof lookupAznsAddresses>>) =>
     lookupAznsAddresses(this.#config, ...args)
 }

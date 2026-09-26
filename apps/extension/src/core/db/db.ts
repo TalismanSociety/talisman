@@ -6,7 +6,7 @@ import type { LegacyWalletTransaction, WalletTransaction } from "../domains/tran
 import type { DbBlobId, DbBlobItem } from "./blobs"
 import type { ImageCacheEntry } from "./imageCache"
 import type { QueryCacheItem } from "./queryCache"
-import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
+import { upgradeTransactionsRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeTransactionsRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
@@ -23,7 +23,7 @@ class TalismanDatabase extends Dexie {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(8).upgrade(upgradeRemoveSymbolFromNativeTokenId)
+    this.version(8).upgrade(upgradeTransactionsRemoveSymbolFromNativeTokenId)
 
     this.version(10)
       .stores({

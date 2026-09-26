@@ -26,9 +26,9 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useContacts } from "@ui/state/addressBook"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
+import { useContacts } from "@ui/state/contacts"
 import { cn } from "@ui/util/cn"
 import {
   type ButtonHTMLAttributes,

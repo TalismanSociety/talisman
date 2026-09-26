@@ -46,7 +46,7 @@ import { TalismanNotOnboardedError } from "../app/utils"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
-import { signAndSendEth, signEth } from "../signing/requests"
+import { requestEthSendTransaction, requestEthSign } from "../signing/requests"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
@@ -552,7 +552,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return signEth(url, method, params, message, site.ethChainId.toString(), account, port)
+    return requestEthSign(url, method, params, message, site.ethChainId.toString(), account, port)
   }
 
   private addWatchAssetRequest = async (
@@ -702,7 +702,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return signAndSendEth(url, txRequest, site.ethChainId.toString(), account, port)
+    return requestEthSendTransaction(url, txRequest, site.ethChainId.toString(), account, port)
   }
 
   private async getPermissions(url: string): Promise<Web3WalletPermission[]> {

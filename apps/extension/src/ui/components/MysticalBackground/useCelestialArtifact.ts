@@ -1,11 +1,11 @@
 import Color from "color"
 import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 
-import type { MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import type { MysticalPhysics } from "./MysticalPhysics"
 
 export type CelestialArtifactProps = {
   /** Configures the MysticalBackground parameters */
-  config: MysticalPhysicsV3
+  config: MysticalPhysics
 
   /** The size (in pixels) of the element we're rendering on */
   parentSize: ParentSize

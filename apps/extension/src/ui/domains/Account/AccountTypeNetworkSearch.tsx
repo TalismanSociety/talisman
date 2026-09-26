@@ -16,7 +16,10 @@ import {
   useNetworksMapById,
   useTokensMap,
 } from "@ui/state/chaindata"
-import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
+import {
+  useNetworkDisplayNamesMapById,
+  useNetworkDisplayTypesMapById,
+} from "@ui/state/networkDisplay"
 import { cn } from "@ui/util/cn"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"

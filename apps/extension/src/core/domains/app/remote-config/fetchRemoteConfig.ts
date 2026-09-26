@@ -1,5 +1,5 @@
 import { REMOTE_CONFIG_API_URL } from "@common/constants"
-import { RemoteConfigApi } from "./RemoteConfigApi"
+import { RemoteConfigApi } from "./RemoteConfigApi.gen"
 
 const remoteConfigApi = new RemoteConfigApi({
   baseUrl: REMOTE_CONFIG_API_URL,
