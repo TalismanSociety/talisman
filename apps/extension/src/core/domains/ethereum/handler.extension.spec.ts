@@ -491,10 +491,14 @@ describe("EthHandler", () => {
     })
 
     it("rejects with an EIP-1193 user rejection", async () => {
-      const { id } = await queueWatchAsset()
+      const { id, response } = await queueWatchAsset()
 
       await send("pri(eth.watchasset.requests.cancel)", { id })
 
+      await expect(response).rejects.toMatchObject({
+        message: "Rejected",
+        code: ETH_ERROR_EIP1193_USER_REJECTED,
+      })
       expect(requestStore.getAllRequests(WATCH_ASSET_PREFIX)).toHaveLength(0)
     })
   })

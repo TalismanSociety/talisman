@@ -112,11 +112,18 @@ describe("getSignerPayloadJSON", () => {
     expect(payload.blockHash).toBe(FINALIZED_HASH)
   })
 
-  it("does not validate the block hash of the lagging-finality fallback", async () => {
-    const { payload } = await buildRemark({ finalized: 42, current: 100, fallbackHash: null })
-      .result
+  // the `!blockHash` guard runs before the lagging-finality fallback replaces the hash
+  it.fails("never returns a payload without a block hash", async () => {
+    const blockHash = await buildRemark({
+      finalized: 42,
+      current: 100,
+      fallbackHash: null,
+    }).result.then(
+      ({ payload }) => payload.blockHash,
+      () => "rejected"
+    )
 
-    expect(payload.blockHash).toBeNull()
+    expect(blockHash).not.toBeNull()
   })
 
   it("ignores the tip of the signer config", async () => {

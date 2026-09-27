@@ -66,6 +66,11 @@ const WALLET_PAYLOAD: SignerPayloadJSON = {
   withSignedTransaction: true,
 } as SignerPayloadJSON
 
+// same values as WALLET_PAYLOAD, keys in reverse order
+const REORDERED_WALLET_PAYLOAD = Object.fromEntries(
+  Object.entries(WALLET_PAYLOAD).reverse()
+) as SignerPayloadJSON
+
 const POLKADOT = {
   id: "polkadot",
   genesisHash: MORTAL.payload.genesisHash,
@@ -230,6 +235,15 @@ describe("SigningHandler", () => {
       })
     })
 
+    // isPayloadModified compares JSON.stringify output, so key order alone counts as a change
+    it.fails("withholds the signed transaction when the approval sends a reordered payload", async () => {
+      const { id, response } = await queueSubstrateSign(WALLET_PAYLOAD)
+
+      await send("pri(signing.approveSign)", { id, payload: REORDERED_WALLET_PAYLOAD })
+
+      await expect(response).resolves.toMatchObject({ signedTransaction: undefined })
+    })
+
     describe("raw bytes", () => {
       const secretKey = secretFromSeed(new Uint8Array(32).fill(7))
       const publicKey = getPublicKey(secretKey)
@@ -354,6 +368,19 @@ describe("SigningHandler", () => {
       const { id, response } = await queueSubstrateSign(WALLET_PAYLOAD, externalAccount)
 
       await send(type, { id, signature: METADATA_HASH.signature, payload: { ...WALLET_PAYLOAD } })
+
+      await expect(response).resolves.toMatchObject({ signedTransaction: undefined })
+    })
+
+    // isPayloadModified compares JSON.stringify output, so key order alone counts as a change
+    it.fails("withholds the signed transaction when the payload is only reordered", async () => {
+      const { id, response } = await queueSubstrateSign(WALLET_PAYLOAD, externalAccount)
+
+      await send(type, {
+        id,
+        signature: METADATA_HASH.signature,
+        payload: REORDERED_WALLET_PAYLOAD,
+      })
 
       await expect(response).resolves.toMatchObject({ signedTransaction: undefined })
     })
