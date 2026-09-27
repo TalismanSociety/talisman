@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useState } from "react"
@@ -139,8 +140,7 @@ export const useSwapQuoteManager = (params: {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: errorsDataKey is an intentional stable proxy for queryResults error state
   const liveQuoteErrorMessages: string[] = useMemo(
-    () =>
-      queryResults.filter((r) => r.error instanceof Error).map((r) => (r.error as Error).message),
+    () => queryResults.filter((r) => r.error instanceof Error).map((r) => getErrorMessage(r.error)),
     [errorsDataKey]
   )
 

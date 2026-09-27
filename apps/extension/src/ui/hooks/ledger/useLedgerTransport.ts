@@ -3,7 +3,7 @@ import type { LedgerTransportType } from "@core/domains/app/store.settings"
 import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import { sleep } from "@talismn/util"
+import { getErrorMessage, sleep } from "@talismn/util"
 import { useSettingValue } from "@ui/state/settings"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { useCallback, useEffect, useRef } from "react"
@@ -27,7 +27,7 @@ const safelyCreateTransport = async (type: LedgerTransportType, attempt = 1) => 
     }
   } catch (err) {
     // in onboarding wizards, might need to wait for previous page/component to finish closing previous transport
-    if ((err as Error).message.includes(LEDGER_IN_PROGRESS_ERROR)) {
+    if (getErrorMessage(err).includes(LEDGER_IN_PROGRESS_ERROR)) {
       await sleep(200) // it should be almost instant but just in case, wait 1 second max (5 x 200ms)
       return safelyCreateTransport(type, attempt + 1)
     }

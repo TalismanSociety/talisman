@@ -6,6 +6,7 @@ import {
   serializeTransaction,
   transactionFromBytes,
 } from "@talismn/solana"
+import { getErrorMessage } from "@talismn/util"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -73,8 +74,12 @@ export const useYieldxyzTransactionSol = (props: UseYieldxyzTransactionProps | n
     transaction: solTx,
     estimatedFee: estimatedFee != null ? String(estimatedFee) : null,
     isLoading: feeQuery.isLoading,
-    error: providerError ?? (feeQuery.error ? (feeQuery.error as Error).message : undefined),
-    errorDetails: providerError ?? (feeQuery.error ? (feeQuery.error as Error).message : undefined),
+    error:
+      providerError ??
+      (feeQuery.error ? getErrorMessage(feeQuery.error, t("Unknown error")) : undefined),
+    errorDetails:
+      providerError ??
+      (feeQuery.error ? getErrorMessage(feeQuery.error, t("Unknown error")) : undefined),
     riskAnalysis,
   }
 }

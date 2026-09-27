@@ -1,8 +1,7 @@
 import type { MonoTypeOperatorFunction, Observable } from "rxjs"
 import { defer, map } from "rxjs"
-
+import { getBalanceId } from "../../classes"
 import type { IBalance } from "../../types"
-import { getBalanceId } from "../../types"
 import { getBalanceFingerprint } from "../../types/fingerprint"
 import type { FetchBalanceResults } from "../../types/IBalanceModule"
 

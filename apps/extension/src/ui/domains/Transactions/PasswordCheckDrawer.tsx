@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
@@ -80,7 +81,7 @@ const PasswordCheckDrawerContent: FC<
         notify({
           type: "error",
           title: t("Password check failed"),
-          subtitle: (err as Error)?.message?.slice(0, 200) ?? t("Unknown error"),
+          subtitle: getErrorMessage(err, t("Unknown error")).slice(0, 200),
         })
       }
     },

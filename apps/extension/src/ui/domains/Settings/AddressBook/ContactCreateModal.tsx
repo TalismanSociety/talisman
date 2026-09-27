@@ -7,6 +7,7 @@ import {
   isSs58Address,
 } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
@@ -195,7 +196,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         })
         close()
       } catch (error) {
-        setError("address", { message: (error as Error).message }, { shouldFocus: true })
+        setError(
+          "address",
+          { message: getErrorMessage(error, t("Unknown error")) },
+          { shouldFocus: true }
+        )
       }
     },
     [close, setError, t]

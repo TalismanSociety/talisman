@@ -11,7 +11,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
-import { isTruthy, throwAfter } from "@talismn/util"
+import { getErrorMessage, isTruthy, throwAfter } from "@talismn/util"
 import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -30,8 +30,8 @@ import { isWalletReady$ } from "../../libs/isWalletReady"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { appStore } from "../app/store.app"
-import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
-import { activeTokensStore } from "../balances/store.activeTokens"
+import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeNetworks"
+import { activeTokensStore } from "../chaindata/store.activeTokens"
 import type { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
 import { fetchMissingTokens } from "./fetchMissingTokens"
@@ -652,7 +652,7 @@ const getEvmTokenBalancesWithoutAggregator = async (
               throwAfter(20_000, "Timeout"),
             ])
           } catch (err) {
-            if ((err as Error).message === "Timeout") retries++
+            if (getErrorMessage(err) === "Timeout") retries++
             else throw err
           }
         }

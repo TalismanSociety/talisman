@@ -1,6 +1,6 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@common/constants"
 import { log } from "@common/log"
-import { assert, sleep } from "@talismn/util"
+import { assert, getErrorMessage, sleep } from "@talismn/util"
 import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -182,7 +182,7 @@ export default class AppHandler extends ExtensionHandler {
 
       return true
     } catch (error) {
-      updateProgress(ChangePasswordStatusUpdateStatus.ERROR, (error as Error).message)
+      updateProgress(ChangePasswordStatusUpdateStatus.ERROR, getErrorMessage(error))
       return false
     }
   }

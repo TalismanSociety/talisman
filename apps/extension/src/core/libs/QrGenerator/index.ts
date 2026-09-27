@@ -7,7 +7,7 @@ import {
   mnemonicToEntropy,
   signSubstrate,
 } from "@talismn/crypto"
-import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
+import { assert, getErrorMessage, hexToU8a, u8aConcat, u8aToU8a } from "@talismn/util"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
@@ -61,7 +61,7 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
       signature: signSubstrate("sr25519", secretKey, unsigned),
     }
   } catch (error) {
-    throw new Error(`Failed to sign : ${(error as Error).message}`)
+    throw new Error(`Failed to sign : ${getErrorMessage(error)}`)
   }
 }
 

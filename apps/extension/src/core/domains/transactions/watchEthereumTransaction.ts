@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { assert, sleep, throwAfter } from "@talismn/util"
 import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
@@ -121,8 +122,7 @@ export const watchEthereumTransaction = async (
           txUrl,
           err as Error
         )
-      // biome-ignore lint/suspicious/noConsole: legacy
-      else console.error("Failed to watch transaction", { err })
+      else log.error("Failed to watch transaction", { err })
     }
   } catch (err) {
     sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })

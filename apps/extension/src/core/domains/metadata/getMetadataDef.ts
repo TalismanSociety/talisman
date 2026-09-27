@@ -3,7 +3,7 @@ import { log } from "@common/log"
 import type { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi"
 import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
-import { assert, type HexString, isHexString } from "@talismn/util"
+import { assert, getErrorMessage, type HexString, isHexString } from "@talismn/util"
 import { withRetry } from "viem"
 
 import { sentry } from "../../config/sentry"
@@ -125,7 +125,7 @@ const getMetadataDefInner = async (
 
     return newData
   } catch (cause) {
-    if ((cause as Error).message !== "RPC connect timeout reached") {
+    if (getErrorMessage(cause) !== "RPC connect timeout reached") {
       const error = new Error("Failed to update metadata", { cause })
       log.error(error)
       sentry.captureException(error, { extra: { genesisHash, chainId: chain?.id ?? "UNKNOWN" } })
@@ -166,7 +166,7 @@ export const fetchMetadataDefFromChain = async (
     chainConnectorDot.send(chain.id, "system_properties", [], true),
   ]).catch((rpcError) => {
     // not a useful error, do not log to sentry
-    if ((rpcError as Error).message === "RPC connect timeout reached") {
+    if (getErrorMessage(rpcError) === "RPC connect timeout reached") {
       log.error(rpcError)
       metadataUpdatesStore.set(genesisHash as HexString, false)
       return [undefined, undefined]

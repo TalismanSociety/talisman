@@ -3,7 +3,7 @@ import type { BtcNativeToken } from "@talismn/chaindata-provider"
 import { deriveBitcoinAddressFromXpub } from "@talismn/crypto"
 import { describe, expect, it, vi } from "vitest"
 
-import { Balance } from "../../types"
+import { Balance } from "../../classes"
 import type { BtcAccountsMeta, TokensWithAddresses } from "../../types/IBalanceModule"
 import { fetchBtcBalancesWithState } from "./fetchBalances"
 

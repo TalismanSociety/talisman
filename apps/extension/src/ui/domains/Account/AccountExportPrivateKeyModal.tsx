@@ -7,6 +7,7 @@ import {
 } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -95,7 +96,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
         {
           type: "error",
           title: t("Copy failed"),
-          subtitle: (err as Error).message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         },
         { toastId }
       )
@@ -138,7 +139,9 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>
         <div className="flex h-28 w-full items-center gap-6 rounded bg-field p-8 leading-none">
-          {!!error && <div className="text-alert-error">{(error as Error).message}</div>}
+          {!!error && (
+            <div className="text-alert-error">{getErrorMessage(error, t("Unknown error"))}</div>
+          )}
           {isLoading && (
             <>
               <div className="text-lg">

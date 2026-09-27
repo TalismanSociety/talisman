@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { type Address, BalanceFormatter } from "@talismn/balances"
 import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
-import { formatDecimals, tokensToPlanck } from "@talismn/util"
+import { formatDecimals, getErrorMessage, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -125,10 +125,14 @@ const EditAllowanceForm: FC<{
         await onSubmit(newLimit)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
-        notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
+        notify({
+          title: "Error",
+          subtitle: getErrorMessage(err, t("Unknown error")),
+          type: "error",
+        })
       }
     },
-    [genericEvent, onSubmit, token.decimals]
+    [genericEvent, onSubmit, token.decimals, t]
   )
 
   // don't bubble up submit event to the parent approval form

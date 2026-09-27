@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-
-import { Balance, getRawLocks, getRawTotalPlanck } from "./balances"
-import type { AmountWithLabel, BalanceJson } from "./balancetypes"
+import type { AmountWithLabel, BalanceJson } from "../types/balancetypes"
+import { Balance, getRawLocks, getRawTotalPlanck } from "."
 
 const makeBalanceJson = (partial: Partial<BalanceJson> & Record<string, unknown>): BalanceJson =>
   ({

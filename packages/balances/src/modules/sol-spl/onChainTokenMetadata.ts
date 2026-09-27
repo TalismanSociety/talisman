@@ -2,6 +2,7 @@ import { address as solAddress } from "@solana/kit"
 import { getMintDecoder } from "@solana-program/token"
 import type { IChainConnectorSol } from "@talismn/chain-connectors"
 import { parseSolSplTokenId, SolSplTokenSchema } from "@talismn/chaindata-provider"
+import { getErrorMessage } from "@talismn/util"
 import z from "zod/v4"
 
 import log from "../../log"
@@ -61,7 +62,7 @@ export const fetchOnChainTokenData = async (
 
     return parsed.data
   } catch (err) {
-    const msg = (err as Error).message
+    const msg = getErrorMessage(err)
 
     if (isTokenDataError(msg))
       return TokenCacheSchema.parse({

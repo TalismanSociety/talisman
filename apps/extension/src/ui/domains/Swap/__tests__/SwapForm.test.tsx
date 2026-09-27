@@ -70,10 +70,6 @@ vi.mock("../components/SelectTokenButton", () => ({
   SelectTokenButton: () => <div />,
 }))
 
-vi.mock("../components/SeparatedAccountSelector", () => ({
-  SeparatedAccountSelector: () => <div />,
-}))
-
 vi.mock("../components/SwapProviderPickerButton", () => ({
   SwapProviderPickerButton: () => <div />,
 }))
@@ -84,10 +80,6 @@ vi.mock("../components/ToAmountDisplay", () => ({
 
 vi.mock("../hooks/useSwapModal", () => ({
   useSwapModal: () => ({ isOpen: false, args: null, open: vi.fn(), close: vi.fn() }),
-}))
-
-vi.mock("../hooks/useSwapTokensModal", () => ({
-  useSwapTokensModal: () => ({ isOpen: false, args: null, open: vi.fn(), close: vi.fn() }),
 }))
 
 vi.mock("../components/TokenAndAmountContainer", () => ({

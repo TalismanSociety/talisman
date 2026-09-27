@@ -2,8 +2,10 @@ import { log } from "@common/log"
 import type { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
 import type { KnownRespondableRequest } from "@core/libs/requests/types"
 import { isEthereumRequest } from "@core/types/requests"
+import { getErrorMessage } from "@talismn/util"
 import useStatus, { type SetStatusFn, type StatusOptions } from "@ui/hooks/useStatus"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
   // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -33,6 +35,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
   currentRequest,
 }: UseAnySigningRequestProps<T>) => {
   const { status, message, setStatus } = useStatus()
+  const { t } = useTranslation()
 
   const approve = useCallback(
     // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -46,12 +49,12 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         log.error("failed to approve", { err })
         setStatus.error(
           isEthereumRequest(currentRequest)
-            ? (err as Error).message
+            ? getErrorMessage(err, t("Unknown error"))
             : "Failed to approve sign request"
         )
       }
     },
-    [approveSignFn, currentRequest, setStatus]
+    [approveSignFn, currentRequest, setStatus, t]
   )
 
   // handle request rejection

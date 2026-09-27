@@ -12,7 +12,8 @@ import { useBondWizard } from "./hooks/useBondWizard"
 
 export const BondReview = () => {
   const { t } = useTranslation()
-  const { token, formatter, account, onSubmitted, payload, txMetadata, poolId } = useBondWizard()
+  const { token, amountToStake, account, onSubmitted, payload, txMetadata, poolId } =
+    useBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -37,7 +38,7 @@ export const BondReview = () => {
             <TokensAndFiat
               isBalance
               tokenId={token?.id}
-              planck={formatter?.planck}
+              planck={amountToStake?.planck}
               noCountUp
               tokensClassName="text-body"
               fiatClassName="text-body-secondary"

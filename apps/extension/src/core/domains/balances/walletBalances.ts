@@ -15,10 +15,10 @@ import {
   type BitcoinAddressIndexData,
   bitcoinAddressIndexStore,
 } from "../bitcoin/store.addressIndex"
+import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "../chaindata/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { balancesProvider } from "./balancesProvider"
-import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
-import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import { balancesStore$ } from "./store.balances"
 
 // dual-tree metadata for HD bitcoin accounts: the ordinals xpub is not derivable from

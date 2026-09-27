@@ -1,5 +1,6 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
@@ -59,8 +60,7 @@ const withRetry = async <T>(
     } catch (cause) {
       if (signal.aborted) return []
       if (attempt === retries) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.warn(`Asset fetch failed ${retries} times, ignoring`, cause)
+        log.warn(`Asset fetch failed ${retries} times, ignoring`, cause)
         return []
       }
       await new Promise((resolve) => setTimeout(resolve, 100 * attempt))

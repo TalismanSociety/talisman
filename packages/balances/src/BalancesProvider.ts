@@ -49,6 +49,7 @@ import {
 import { withRetry } from "viem"
 
 import { BALANCE_MODULES, type ChainConnectors, findDTaoConvictionLock } from "."
+import { getBalanceId, getRawLocks, getRawTotalPlanck } from "./classes"
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
@@ -59,10 +60,7 @@ import {
 import {
   type Address,
   deriveMiniMetadataId,
-  getBalanceId,
   getBalanceStorageFingerprint,
-  getRawLocks,
-  getRawTotalPlanck,
   type IBalance,
   isEqualBalancesResult,
   isEqualMiniMetadatas,

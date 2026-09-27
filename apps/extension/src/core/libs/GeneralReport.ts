@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
+import { log } from "@common/log"
 import { Balances } from "@talismn/balances"
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -91,8 +92,7 @@ export const spawnTaskToCreateNewReport = async ({
       await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
     } catch (cause) {
       const error = new Error("Failed to build general report", { cause })
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.warn(error)
+      log.warn(error)
       sentry.captureException(error)
     } finally {
       // set this flag back to false so we don't block the next report
@@ -176,8 +176,7 @@ async function getGeneralReport({
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
-    // biome-ignore lint/suspicious/noConsole: legacy
-    DEBUG && console.error(error)
+    DEBUG && log.error(error)
     throw error
   }
 

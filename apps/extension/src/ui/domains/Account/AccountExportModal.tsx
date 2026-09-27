@@ -6,6 +6,7 @@ import {
 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
@@ -114,11 +115,11 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [exportAccount, setError, onSuccess, password]
+    [exportAccount, setError, onSuccess, password, t]
   )
 
   useEffect(() => {

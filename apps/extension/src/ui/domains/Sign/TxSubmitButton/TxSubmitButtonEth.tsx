@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -38,11 +39,11 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         notify({
           title: `Failed to submit`,
           type: "error",
-          subtitle: (cause as BaseError).shortMessage ?? (cause as Error)?.message,
+          subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
         })
       }
     },
-    [onSubmit, tx]
+    [onSubmit, tx, t]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -61,12 +62,12 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
       notify({
         title: `Failed to submit`,
         type: "error",
-        subtitle: (cause as BaseError).shortMessage ?? (cause as Error)?.message,
+        subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
       })
     } finally {
       setIsSubmitting(false)
     }
-  }, [onSubmit, tx])
+  }, [onSubmit, tx, t])
 
   if (!isAccountPlatformEthereum(account))
     return <TxSubmitButtonFallback label={label} className={className} />

@@ -16,15 +16,15 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { formatDecimals, isNotNil } from "@talismn/util"
+import { formatDecimals, getErrorMessage, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
-import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
-import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorAcceptsLockedAlpha"
-import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorMinJoinBond"
+import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
+import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
+import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -451,10 +451,7 @@ const useSendFundsProvider = () => {
         return {
           isValid: false,
           error: t("Failed to validate transaction"),
-          errorDetails:
-            (transaction.error as Error)?.message ??
-            transaction.error?.toString() ??
-            t("Unknown error"),
+          errorDetails: getErrorMessage(transaction.error, t("Unknown error")),
         }
 
       return { isValid: true, error: undefined }

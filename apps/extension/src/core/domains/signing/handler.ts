@@ -1,4 +1,5 @@
 import { TEST } from "@common/constants"
+import { log } from "@common/log"
 import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
 import { sr25519SignVrf } from "@talismn/substrate-vrf"
 import type { HexString } from "@talismn/util"
@@ -95,8 +96,7 @@ export default class SigningHandler extends ExtensionHandler {
             notifications: true,
           })
         } else if (!TEST) {
-          // biome-ignore lint/suspicious/noConsole: legacy
-          console.warn(
+          log.warn(
             "Unable to find chain for genesis hash, transaction will not be watched",
             payload.genesisHash
           )
@@ -199,8 +199,7 @@ export default class SigningHandler extends ExtensionHandler {
           notifications: true,
         })
       } else if (!TEST) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.warn(
+        log.warn(
           "Unable to find chain for genesis hash, transaction will not be watched",
           payload.genesisHash
         )

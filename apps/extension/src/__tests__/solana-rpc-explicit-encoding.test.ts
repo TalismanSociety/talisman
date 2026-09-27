@@ -1,7 +1,9 @@
-import { type Dirent, readdirSync, readFileSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
+
+import { lineAt, listSourceFiles, REPO_ROOT } from "./listSourceFiles"
 
 /**
  * Guard against silent base58 account-data fetches.
@@ -24,35 +26,12 @@ const GUARDED_METHODS = [
   "getTokenAccountsByDelegate",
 ]
 
-const REPO_ROOT = resolve(import.meta.dirname, "../../../..")
-
 const SCAN_DIRS = [
   join(REPO_ROOT, "apps/extension/src"),
   join(REPO_ROOT, "packages/solana/src"),
   join(REPO_ROOT, "packages/balances/src"),
   join(REPO_ROOT, "packages/chain-connectors/src"),
 ]
-
-const listSourceFiles = (dir: string): string[] => {
-  const out: string[] = []
-  let entries: Dirent[]
-  try {
-    entries = readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out // directory may be absent in a partial checkout
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".turbo")
-        continue
-      out.push(...listSourceFiles(full))
-    } else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) {
-      out.push(full)
-    }
-  }
-  return out
-}
 
 // Extracts the argument list of a `.method(...)` call, handling nested parens/braces.
 const callArgsAt = (code: string, openParen: number): string | null => {
@@ -79,7 +58,7 @@ describe("solana rpc account fetches use explicit encoding", () => {
           for (let m = re.exec(code); m; m = re.exec(code)) {
             const args = callArgsAt(code, m.index + m[0].length - 1)
             if (args === null || !/\bencoding\s*:/.test(args)) {
-              const line = code.slice(0, m.index).split("\n").length
+              const line = lineAt(code, m.index)
               violations.push(
                 `${file.replace(`${REPO_ROOT}/`, "")}:${line}: \`.${method}(...)\` without explicit \`encoding\``
               )

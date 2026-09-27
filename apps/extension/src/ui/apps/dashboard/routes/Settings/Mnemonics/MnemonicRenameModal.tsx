@@ -1,5 +1,6 @@
 import type { Mnemonic } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -67,11 +68,11 @@ const MnemonicRenameForm: FC<{
       } catch (err) {
         setError("name", {
           type: "validate",
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [mnemonic.id, onConfirm, setError]
+    [mnemonic.id, onConfirm, setError, t]
   )
 
   // "manual" field registration so we can hook our own ref to it

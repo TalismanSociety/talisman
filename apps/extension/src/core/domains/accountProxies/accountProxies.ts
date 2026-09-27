@@ -18,7 +18,7 @@ import {
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
-import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeNetworks"
 import { keyringStore } from "../keyring/store"
 import {
   addressToAccountId,

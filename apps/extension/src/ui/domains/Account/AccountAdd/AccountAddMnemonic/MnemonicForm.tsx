@@ -7,7 +7,7 @@ import {
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { type AccountPlatform, isAddressEqual } from "@talismn/crypto"
-import { isTruthy } from "@talismn/util"
+import { getErrorMessage, isTruthy } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -195,7 +195,7 @@ export const AccountAddMnemonicForm = () => {
           notifyUpdate(notificationId, {
             type: "error",
             title: t("Error importing account"),
-            subtitle: (err as Error)?.message ?? "",
+            subtitle: getErrorMessage(err, t("Unknown error")),
           })
         }
       }

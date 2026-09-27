@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -63,11 +64,11 @@ export const AccountRename: FC<{
       } catch (err) {
         setError("name", {
           type: "validate",
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [address, onConfirm, setError]
+    [address, onConfirm, setError, t]
   )
 
   // "manual" field registration so we can hook our own ref to it

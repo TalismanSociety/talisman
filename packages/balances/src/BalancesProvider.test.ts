@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
-import { getBalanceId, type IBalance } from "./types"
+import { getBalanceId } from "./classes"
+import type { IBalance } from "./types"
 
 const makeBalance = (partial: Partial<IBalance> & Record<string, unknown> = {}): IBalance =>
   ({

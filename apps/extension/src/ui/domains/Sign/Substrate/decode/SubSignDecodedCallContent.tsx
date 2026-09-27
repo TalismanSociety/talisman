@@ -147,7 +147,6 @@ const formatArgs = (args: unknown): unknown => {
         value: encodeAddressSs58(Binary.fromHex(anyArgs.value.id)),
       }
 
-    //console.log("decodedArgs Object", { args })
     const obj = args as Record<string, unknown>
     return Object.fromEntries(
       Object.entries(obj)

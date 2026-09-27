@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { isNetworkActive } from "@core/domains/balances/store.activeNetworks"
+import { isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { isAddressEqual } from "@talismn/crypto"

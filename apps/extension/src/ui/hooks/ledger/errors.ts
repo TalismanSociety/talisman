@@ -177,8 +177,7 @@ export const getTalismanLedgerError = (
       )
   }
 
-  // biome-ignore lint/suspicious/noConsole: legacy
-  DEBUG && console.warn("unmanaged ledger error", { error })
+  DEBUG && log.warn("unmanaged ledger error", { error })
 
   // If available, display the actual error message so our help-desk can understand what s going on
   return new TalismanLedgerError("Unknown", cause.message ?? "Failed to connect to your Ledger", {

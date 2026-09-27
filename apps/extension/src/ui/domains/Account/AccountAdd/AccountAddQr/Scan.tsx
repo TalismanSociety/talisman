@@ -1,4 +1,5 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
+import { log } from "@common/log"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
@@ -129,8 +130,7 @@ export const Scan = () => {
                   ? t("QR code is not valid")
                   : (error.message ?? "Unknown error"),
               })
-              // biome-ignore lint/suspicious/noConsole: legacy
-              console.error("QR code scanning error", error)
+              log.error("QR code scanning error", error)
             }}
           />
           {state.scanError && (

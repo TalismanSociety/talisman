@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
@@ -46,8 +47,7 @@ export const useGetSeekStaked = (): {
           })
           return balance as bigint
         } catch (error) {
-          // biome-ignore lint/suspicious/noConsole: legacy
-          console.error(`Failed to fetch balance for ${account.address}:`, error)
+          log.error(`Failed to fetch balance for ${account.address}:`, error)
           return 0n
         }
       })

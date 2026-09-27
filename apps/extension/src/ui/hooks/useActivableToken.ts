@@ -1,4 +1,4 @@
-import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import type { Token } from "@talismn/chaindata-provider"
 import { useActiveTokensState } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"

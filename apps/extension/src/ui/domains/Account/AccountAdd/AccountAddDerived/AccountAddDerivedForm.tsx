@@ -8,6 +8,7 @@ import type { RequestAddAccountDerive } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import {
@@ -255,7 +256,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
@@ -116,7 +117,7 @@ const QuickUnlockButton = ({
   const { t } = useTranslation()
   const enrolled = useIsQuickUnlockEnrolled()
   const [processing, setProcessing] = useState(false)
-  const getErrorMessage = useQuickUnlockErrorMessage()
+  const getQuickUnlockErrorMessage = useQuickUnlockErrorMessage()
   const triggeredRef = useRef(false)
   const abortRef = useRef<AbortController>(null)
 
@@ -177,7 +178,7 @@ const QuickUnlockButton = ({
         const message =
           name === "NotAllowedError"
             ? t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
-            : getErrorMessage(err)
+            : getQuickUnlockErrorMessage(err)
         if (!message) return
 
         // log the error category only, it must never carry credential or password data
@@ -187,7 +188,7 @@ const QuickUnlockButton = ({
         setProcessing(false)
       }
     },
-    [getErrorMessage, onError, processing, t]
+    [getQuickUnlockErrorMessage, onError, processing, t]
   )
 
   const handleClick = useCallback(() => handleQuickUnlock(true), [handleQuickUnlock])
@@ -282,7 +283,7 @@ const Login = ({
           if (qs.get("closeAfterLogin") === "true") window.close()
         } else throw new Error(t("Talisman access denied"))
       } catch (err) {
-        setError("password", { message: (err as Error)?.message ?? t("Unknown error") })
+        setError("password", { message: getErrorMessage(err, t("Unknown error")) })
         setFocus("password", { shouldSelect: true })
       }
     },
