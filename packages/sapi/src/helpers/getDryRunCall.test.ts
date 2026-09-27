@@ -20,11 +20,11 @@ const ERR = "01"
 const NO_ACTUAL_WEIGHT = "00"
 const PAYS_FEE = "00"
 const NO_EVENTS_NO_XCM = "000000"
-// DispatchError::Module (3), Balances (5), InsufficientBalance (2) padded to 4 bytes
-const INSUFFICIENT_BALANCE = "030502000000"
+// DispatchError::Token (7), FundsUnavailable (0): described without a metadata lookup
+const FUNDS_UNAVAILABLE = "0700"
 
 const EXECUTED = `0x${OK}${OK}${NO_ACTUAL_WEIGHT}${PAYS_FEE}${NO_EVENTS_NO_XCM}`
-const FAILED = `0x${OK}${ERR}${NO_ACTUAL_WEIGHT}${PAYS_FEE}${INSUFFICIENT_BALANCE}${NO_EVENTS_NO_XCM}`
+const FAILED = `0x${OK}${ERR}${NO_ACTUAL_WEIGHT}${PAYS_FEE}${FUNDS_UNAVAILABLE}${NO_EVENTS_NO_XCM}`
 const UNIMPLEMENTED = `0x${ERR}00`
 
 const dryRunWith = async (respond: () => unknown) => {
@@ -68,17 +68,14 @@ describe("getDryRunCall", () => {
     expect(result).toMatchObject({
       available: true,
       ok: false,
-      errorMessage: "Balances: InsufficientBalance",
+      errorMessage: "Funds are unavailable",
     })
     expect(result.data).toMatchObject({
       value: {
         execution_result: {
           success: false,
           value: {
-            error: {
-              type: "Module",
-              value: { type: "Balances", value: { type: "InsufficientBalance" } },
-            },
+            error: { type: "Token", value: { type: "FundsUnavailable" } },
           },
         },
       },

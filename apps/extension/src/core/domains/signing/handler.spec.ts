@@ -66,6 +66,11 @@ const WALLET_PAYLOAD: SignerPayloadJSON = {
   withSignedTransaction: true,
 } as SignerPayloadJSON
 
+const withoutSignedTransaction = ({
+  withSignedTransaction: _,
+  ...payload
+}: SignerPayloadJSON): SignerPayloadJSON => payload as SignerPayloadJSON
+
 // same values as WALLET_PAYLOAD, keys in reverse order
 const REORDERED_WALLET_PAYLOAD = Object.fromEntries(
   Object.entries(WALLET_PAYLOAD).reverse()
@@ -217,6 +222,22 @@ describe("SigningHandler", () => {
       })
     })
 
+    it("returns no signed transaction to a dapp that did not ask for one", async () => {
+      useSecretKey(hexToU8a(METADATA_HASH.secretKey), METADATA_HASH.curve)
+      const { id, response } = await queueSubstrateSign(withoutSignedTransaction(DAPP_PAYLOAD))
+
+      await send("pri(signing.approveSign)", {
+        id,
+        payload: withoutSignedTransaction(WALLET_PAYLOAD),
+      })
+
+      await expect(response).resolves.toEqual({
+        id,
+        signature: METADATA_HASH.signature,
+        signedTransaction: undefined,
+      })
+    })
+
     // older @polkadot/api rebuilds a returned extrinsic without chain-specific fields
     // (Avail's appId), which then fails with "1010: bad signature"
     it.each([
@@ -362,6 +383,21 @@ describe("SigningHandler", () => {
       await expect(response).resolves.toMatchObject({
         signedTransaction: METADATA_HASH.signedTransaction,
       })
+    })
+
+    it("returns no signed transaction to a dapp that did not ask for one", async () => {
+      const { id, response } = await queueSubstrateSign(
+        withoutSignedTransaction(DAPP_PAYLOAD),
+        externalAccount
+      )
+
+      await send(type, {
+        id,
+        signature: METADATA_HASH.signature,
+        payload: withoutSignedTransaction(WALLET_PAYLOAD),
+      })
+
+      await expect(response).resolves.toMatchObject({ signedTransaction: undefined })
     })
 
     it("withholds the signed transaction when the payload is unchanged", async () => {

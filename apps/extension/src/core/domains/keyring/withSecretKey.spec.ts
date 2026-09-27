@@ -31,11 +31,18 @@ describe("withSecretKey", () => {
     expect(keyringStore.getAccountSecretKey).toHaveBeenCalledWith(ADDRESS, "hashed")
   })
 
-  it("zeroes the secret key once the callback returns", async () => {
-    await withSecretKey(ADDRESS, (key) => {
-      expect(key.every((byte) => byte === 9)).toBe(true)
+  it("keeps the secret key intact across the callback's awaits, then zeroes it", async () => {
+    const seen: number[][] = []
+
+    const result = await withSecretKey(ADDRESS, async (key) => {
+      seen.push([...key])
+      await Promise.resolve()
+      seen.push([...key])
+      return "signed"
     })
 
+    expect(result.ok && result.val).toBe("signed")
+    expect(seen).toEqual([Array(32).fill(9), Array(32).fill(9)])
     expect(secretKey.every((byte) => byte === 0)).toBe(true)
   })
 
@@ -81,6 +88,21 @@ describe("withSecretKey", () => {
 
     expect(result.err && result.val).toBe("Unauthorised")
     expect(keyringStore.getAccountSecretKey).not.toHaveBeenCalled()
+    expect(cb).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ["the account lookup", () => vi.mocked(keyringStore.getAccount)],
+    ["the password lookup", () => vi.mocked(passwordStore.getPassword)],
+  ])("locks the wallet when %s throws", async (_, lookup) => {
+    const error = new Error("storage unavailable")
+    lookup().mockRejectedValue(error)
+    const cb = vi.fn()
+
+    const result = await withSecretKey(ADDRESS, cb)
+
+    expect(result.err && result.val).toBe(error)
+    expect(passwordStore.clearPassword).toHaveBeenCalledOnce()
     expect(cb).not.toHaveBeenCalled()
   })
 
