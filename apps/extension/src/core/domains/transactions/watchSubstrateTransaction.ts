@@ -3,7 +3,7 @@ import { compactNumber, Twox128 } from "@polkadot-api/substrate-bindings"
 import {
   type DotNetwork,
   type DotNetworkId,
-  getBlockExplorerUrls,
+  getBlockExplorerUrl,
 } from "@talismn/chaindata-provider"
 import { blake2b256 } from "@talismn/crypto"
 import { parseMetadataRpc } from "@talismn/scale"
@@ -328,8 +328,9 @@ export const watchSubstrateTransaction = async (
       async (result, blockNumber, _extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
 
-        const blockExplorerUrls = getBlockExplorerUrls(chain, { type: "transaction", id: hash })
-        const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
+        const txUrl =
+          getBlockExplorerUrl(chain, { type: "transaction", id: hash }) ??
+          chrome.runtime.getURL("dashboard.html#/tx-history")
 
         if (withNotifications) createNotification(type, chain.name ?? "chain", txUrl)
 
