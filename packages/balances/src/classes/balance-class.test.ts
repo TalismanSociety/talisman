@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest"
+import type { HydrateDb } from "../types/balances"
+import type { BalanceJson, IBalance } from "../types/balancetypes"
 import {
   Balance,
   excludeFromFeePayableLocks,
   excludeFromTransferableAmount,
   filterMirrorTokens,
   getBalanceId,
-  type HydrateDb,
   includeInTotalExtraAmount,
-} from "./balances"
-import type { BalanceJson, IBalance } from "./balancetypes"
+} from "."
 
 // ---------------------------------------------------------------------------
 // Helpers
