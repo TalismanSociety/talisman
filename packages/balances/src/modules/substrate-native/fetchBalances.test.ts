@@ -4,6 +4,8 @@ import { gunzipSync } from "node:zlib"
 
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { type SubNativeToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { parseMetadataRpc } from "@talismn/scale"
+import { u8aToHex } from "@talismn/util"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import type { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
@@ -31,10 +33,12 @@ const FIXTURES_DIR = path.resolve(
   import.meta.dirname,
   "../../../../../apps/extension/tests/fixtures"
 )
+const METADATA_RPC =
+  `0x${gunzipSync(readFileSync(path.join(FIXTURES_DIR, fixture.source.metadataFixture))).toString("hex")}` as const
 const MINI_METADATA = getMiniMetadata({
   networkId: NETWORK_ID,
   specVersion: 2003001,
-  metadataRpc: `0x${gunzipSync(readFileSync(path.join(FIXTURES_DIR, fixture.source.metadataFixture))).toString("hex")}`,
+  metadataRpc: METADATA_RPC,
 })
 
 type NativeAccount = (typeof fixture.accounts)[keyof typeof fixture.accounts]
@@ -234,6 +238,35 @@ describe("substrate-native fetchBalances", () => {
     expect(unlocking).toBeGreaterThan(0n)
     // no pool membership: the nompool pass has no keys and never reaches the node
     expect(send).toHaveBeenCalledTimes(1)
+  })
+
+  it("sums several unlocking chunks, not the ledger total", async () => {
+    const ledger = directStaker.entries.stakingLedger
+    const ledgerCodec = parseMetadataRpc(METADATA_RPC).builder.buildStorage(
+      "Staking",
+      "Ledger"
+    ).value
+    const twoChunks = u8aToHex(
+      ledgerCodec.enc({
+        stash: ledger.expected!.stash,
+        total: 800_000_000_000n,
+        active: 100_000_000_000n,
+        unlocking: [
+          { value: 500_000_000_000n, era: 326 },
+          { value: 200_000_000_000n, era: 327 },
+        ],
+      })
+    )
+    const { connector } = makeConnector({ [ledger.key]: twoChunks })
+
+    const { success } = await fetchNative([directStaker.address], connector)
+
+    expect(success[0]?.values).toContainEqual({
+      type: "locked",
+      source: "substrate-native-unbonding",
+      label: "Unbonding",
+      amount: "700000000000",
+    })
   })
 
   it("labels a NominationPools freeze as other-nominationpools (current behaviour)", async () => {

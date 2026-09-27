@@ -12,6 +12,7 @@ type Call = {
   contract: string
   argsHex: string
   resultHex: string
+  returnDataHex?: string
   expected: { kind: string; balance?: string }
 }
 
@@ -157,6 +158,20 @@ describe("substrate-psp22 fetchBalances", () => {
     const revert = callOf("revert")
     expect(revert.expected).toEqual({ kind: "revert", flags: 1 })
     const { connector } = makeConnector(() => revert.resultHex)
+
+    const result = await run([[makeToken(USDT), [USDT_HOLDER]]], connector)
+
+    expect(result.success).toEqual([])
+    expect(result.errors).toHaveLength(1)
+  })
+
+  // same bug, isolated from LangError decoding: valid balance data with only the REVERT flag set
+  it.fails("reports a call with the REVERT flag as an error, even with balance data", async () => {
+    const { resultHex, returnDataHex } = callOf("usdtHolder")
+    const returnData = `44${returnDataHex!.slice(2)}`
+    const okFlags = `00000000${returnData}`
+    expect(resultHex.split(okFlags)).toHaveLength(2)
+    const { connector } = makeConnector(() => resultHex.replace(okFlags, `01000000${returnData}`))
 
     const result = await run([[makeToken(USDT), [USDT_HOLDER]]], connector)
 

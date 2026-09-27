@@ -85,8 +85,15 @@ describe("evm-native fetchBalances", () => {
     expect(requests.filter((r) => r.method === "eth_getBalance").map((r) => r.params)).toEqual(
       ADDRESSES.map((address) => [address, "latest"])
     )
-    // only the failed multicall3 aggregates: no eth_call is retried after the fallback
-    expect(node.ethCalls().every(({ to }) => to.toLowerCase() === MULTICALL3)).toBe(true)
+    // multicall3 is tried first, and no eth_call is retried after the fallback
+    expect(node.contractCalls()).toEqual(
+      ADDRESSES.map((address) =>
+        callKey(
+          MULTICALL3,
+          encodeFunctionData({ abi: multicall3Abi, functionName: "getEthBalance", args: [address] })
+        )
+      )
+    )
     expect(requests.findLastIndex((r) => r.method === "eth_call")).toBeLessThan(
       requests.findIndex((r) => r.method === "eth_getBalance")
     )
