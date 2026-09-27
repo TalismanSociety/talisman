@@ -1,6 +1,6 @@
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import type { Address as TAddress } from "@talismn/balances"
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next"
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
-const useBlockExplorerUrl = (
+const useAddressExplorerUrl = (
   address: TAddress | null | undefined,
   networkId: NetworkId | null | undefined,
   shouldFormatAddress = true
@@ -32,7 +32,7 @@ const useBlockExplorerUrl = (
 
   return useMemo(() => {
     if (!resolvedAddress || !network?.blockExplorerUrls.length) return null
-    return getBlockExplorerUrls(network, { type: "address", address: resolvedAddress })[0] ?? null
+    return getBlockExplorerUrl(network, { type: "address", address: resolvedAddress })
   }, [network, resolvedAddress])
 }
 
@@ -87,7 +87,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
 }) => {
   const chain = useNetworkById(networkId as string, "polkadot")
   const account = useAccountByAddress(address)
-  const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
+  const blockExplorerUrl = useAddressExplorerUrl(address, networkId, !!account)
 
   const resolvedAddress = useMemo(() => {
     return chain && address ? encodeAnyAddress(address, { ss58Format: chain.prefix }) : address

@@ -1,6 +1,7 @@
 export * from "./chaindata"
 export { MINIMETADATA_VERSION } from "./constants"
 export * from "./getBlockExplorerUrls"
+export * from "./isAccountPlatformCompatibleWithNetwork"
 export * from "./legacy/Chain"
 export * from "./legacy/EvmNetwork"
 export * from "./legacy/TalismanChaindataDatabase"

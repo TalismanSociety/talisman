@@ -1,4 +1,4 @@
-import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { isBitcoinXpub } from "@talismn/crypto"
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
@@ -21,8 +21,7 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   const isXpub = useMemo(() => !!address && isBitcoinXpub(address), [address])
 
   const blockExplorerUrl = useMemo(
-    () =>
-      network ? (getBlockExplorerUrls(network, { type: "address", address })[0] ?? null) : null,
+    () => getBlockExplorerUrl(network, { type: "address", address }),
     [address, network]
   )
 

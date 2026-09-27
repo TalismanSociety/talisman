@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import type { Network } from "./chaindata"
-import { getBlockExplorerLabel, getBlockExplorerUrls } from "./getBlockExplorerUrls"
+import {
+  getBlockExplorerLabel,
+  getBlockExplorerUrl,
+  getBlockExplorerUrls,
+} from "./getBlockExplorerUrls"
 
 const ETHEREUM = {
   id: "ethereum",
@@ -154,6 +158,15 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://taostats.io/block/6036407/extrinsics")
+  })
+
+  it("first url only, null without a network", () => {
+    const query = { type: "transaction", id: "0x1234" } as const
+
+    expect(getBlockExplorerUrl(ETHEREUM, query)).toBe(getBlockExplorerUrls(ETHEREUM, query)[0])
+    expect(getBlockExplorerUrl(undefined, query)).toBeNull()
+    expect(getBlockExplorerUrl(null, query)).toBeNull()
+    expect(getBlockExplorerUrl({ ...ETHEREUM, blockExplorerUrls: [] }, query)).toBeNull()
   })
 
   it("solana slots", () => {

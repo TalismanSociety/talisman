@@ -40,6 +40,11 @@ export const getBlockExplorerUrls = (network: Network, query: BlockExplorerQuery
   )
 }
 
+export const getBlockExplorerUrl = (
+  network: Network | null | undefined,
+  query: BlockExplorerQuery
+): string | null => (network ? (getBlockExplorerUrls(network, query)[0] ?? null) : null)
+
 const getExplorerUrl = (
   explorerUrl: string,
   query: BlockExplorerQuery,

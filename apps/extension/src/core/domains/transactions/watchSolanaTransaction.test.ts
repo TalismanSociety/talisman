@@ -14,7 +14,7 @@ vi.mock("@talismn/solana", async (importOriginal) => ({
 
 vi.mock("@talismn/chaindata-provider", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@talismn/chaindata-provider")>()),
-  getBlockExplorerUrls: () => ["https://explorer.test/tx/sig1"],
+  getBlockExplorerUrl: () => "https://explorer.test/tx/sig1",
 }))
 
 vi.mock("../../rpcs/chaindata", () => ({

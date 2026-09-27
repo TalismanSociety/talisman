@@ -1,5 +1,5 @@
 import type { WalletTransaction } from "@core/domains/transactions/types"
-import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { notifyUpdate } from "@ui/components/Notifications"
 import type { NotificationProps } from "@ui/components/Notifications/Notification"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -41,9 +41,7 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
       {
         toastId: hash,
         onClick: () => {
-          const explorerUrl = network
-            ? getBlockExplorerUrls(network, { type: "transaction", id: hash })[0]
-            : null
+          const explorerUrl = getBlockExplorerUrl(network, { type: "transaction", id: hash })
           if (explorerUrl) window.open(explorerUrl, "_blank")
         },
         autoClose: transaction.confirmed ? 5000 : false,

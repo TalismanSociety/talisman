@@ -1,6 +1,6 @@
 import type { TransactionScanResponse } from "@blockaid/client/resources/evm/transaction.mjs"
 import { log } from "@common/log"
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { isEqual } from "lodash-es"
@@ -103,9 +103,7 @@ const StateChangeFooter: FC<{
   const assetLink = useMemo(() => {
     if (!network) return null
     if (change.asset_type === "NATIVE") return null
-    return (
-      getBlockExplorerUrls(network, { type: "address", address: change.asset.address })[0] ?? null
-    )
+    return getBlockExplorerUrl(network, { type: "address", address: change.asset.address })
   }, [change, network])
 
   const counterparty = useMemo(() => {
@@ -123,7 +121,7 @@ const StateChangeFooter: FC<{
 
   const counterpartyLink = useMemo(() => {
     if (!network || !counterparty) return null
-    return getBlockExplorerUrls(network, { type: "address", address: counterparty })[0] ?? null
+    return getBlockExplorerUrl(network, { type: "address", address: counterparty })
   }, [network, counterparty])
 
   return (

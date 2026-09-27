@@ -3,6 +3,7 @@ import {
   type BtcNetworkId,
   type ChaindataProvider,
   type DotNetworkId,
+  isAccountPlatformCompatibleWithNetwork,
   isNetworkDot,
   type Network,
   type NetworkId,
@@ -10,11 +11,7 @@ import {
   type Token,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import {
-  type AccountPlatform,
-  getAccountPlatformFromAddress,
-  normalizeAddress,
-} from "@talismn/crypto"
+import { getAccountPlatformFromAddress, normalizeAddress } from "@talismn/crypto"
 import {
   getSharedObservable,
   isNotNil,
@@ -939,30 +936,6 @@ export class BalancesProvider {
   }
 }
 
-const isAccountPlatformCompatibleWithNetwork = (network: Network, platform: AccountPlatform) => {
-  switch (network.platform) {
-    case "ethereum":
-      return platform === "ethereum"
-    case "solana":
-      return platform === "solana"
-    case "bitcoin":
-      return platform === "bitcoin"
-    case "polkadot": {
-      switch (network.account) {
-        case "secp256k1":
-          return platform === "ethereum"
-        case "*25519":
-          return platform === "polkadot"
-        default:
-          throw new Error(`Unsupported polkadot network account type ${network.account}`)
-      }
-    }
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
-}
-
 /**
  * If this is the address of an account, use isAccountCompatibleWithChain instead.
  * Otherwise it could lead to a loss of funds
@@ -971,7 +944,6 @@ const isAccountPlatformCompatibleWithNetwork = (network: Network, platform: Acco
  * @returns
  */
 const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
-  // TODO try with return true to check if wallet filters correctly upfront
   const accountPlatform = getAccountPlatformFromAddress(address)
   return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }

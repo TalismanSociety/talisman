@@ -1,6 +1,10 @@
 import { log } from "@common/log"
 import { type BitcoinNetworkName, isBitcoinAddressValidForNetwork } from "@talismn/bitcoin"
-import type { DotNetwork, Network } from "@talismn/chaindata-provider"
+import {
+  type DotNetwork,
+  isAccountPlatformCompatibleWithNetwork,
+  type Network,
+} from "@talismn/chaindata-provider"
 import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
@@ -215,33 +219,6 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
         account.type === "contact" &&
         isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName)
       )
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
-}
-
-export const isAccountPlatformCompatibleWithNetwork = (
-  network: Network,
-  platform: AccountPlatform
-) => {
-  switch (network.platform) {
-    case "ethereum":
-      return platform === "ethereum"
-    case "solana":
-      return platform === "solana"
-    case "bitcoin":
-      return platform === "bitcoin"
-    case "polkadot": {
-      switch (network.account) {
-        case "secp256k1":
-          return platform === "ethereum"
-        case "*25519":
-          return platform === "polkadot"
-        default:
-          throw new Error(`Unsupported polkadot network account type ${network.account}`)
-      }
-    }
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")

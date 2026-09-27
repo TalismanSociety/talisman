@@ -625,10 +625,22 @@ export default defineConfig({
     // This bundles directly from TypeScript source, avoiding the need to pre-build packages with tsup
     // Benefits: simpler build process, single Vite/Rollup pass for potentially better reproducibility
     const aliases = [...baseAliases, ...createPackageSourceAliases()]
+    const unexpectedBrowserExternals = new Set<string>()
 
     // Cast to WxtViteConfig to handle Vite version mismatches between dependencies
     return {
       plugins: [
+        // A Node builtin without a polyfill becomes an empty module that breaks at runtime
+        {
+          name: "fail-on-browser-externals",
+          apply: "build",
+          buildEnd() {
+            if (unexpectedBrowserExternals.size)
+              this.error(
+                `Node builtins without a browser polyfill:\n${[...unexpectedBrowserExternals].join("\n")}`
+              )
+          },
+        } satisfies Plugin,
         // Watch monorepo packages directory in dev mode for hot reload
         // WXT's external file watching has a bug that skips step 0 (background script),
         // so we need to explicitly add the packages directory to Vite's watcher
@@ -674,9 +686,10 @@ export default defineConfig({
             "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
           },
         }),
-        // Node.js polyfills for browser compatibility (buffer, crypto, etc.)
+        // Buffer and process globals, still used by Ledger, MetaMask and ethereumjs libs
+        // stream: ledger-bitcoin pins @bitcoinerlab/descriptors 1, whose bs58check 2 hashes via cipher-base
         nodePolyfills({
-          include: ["buffer", "crypto", "stream", "util", "process"],
+          include: ["buffer", "process", "stream"],
           globals: {
             Buffer: true,
             global: true,
@@ -821,12 +834,10 @@ export default defineConfig({
             if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
               return
             }
-            // Ignore "externalized for browser compatibility" warnings
-            // These are expected for Node.js modules (vm, http, https, zlib) in browser builds
-            if (
-              warning.code === "PLUGIN_WARNING" &&
-              warning.message?.includes("externalized for browser compatibility")
-            ) {
+            // mlkem and micro-ftch only reach Node builtins on code paths that never run in a browser
+            if (warning.message?.includes("externalized for browser compatibility")) {
+              if (!/\/node_modules\/(mlkem|micro-ftch)\//.test(warning.message))
+                unexpectedBrowserExternals.add(warning.message)
               return
             }
             warn(warning)

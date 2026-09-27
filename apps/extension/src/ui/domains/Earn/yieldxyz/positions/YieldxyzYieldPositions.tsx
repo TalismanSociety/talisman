@@ -2,7 +2,7 @@ import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, MoreHorizontalIcon, ZapPlusIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import {
@@ -292,7 +292,7 @@ const PositionContextMenuButton: FC<{
 
   const blockExplorerUrl = useMemo(() => {
     if (!contractAddress || !network?.blockExplorerUrls.length) return null
-    return getBlockExplorerUrls(network, { type: "address", address: contractAddress })[0] ?? null
+    return getBlockExplorerUrl(network, { type: "address", address: contractAddress })
   }, [network, contractAddress])
 
   return (
