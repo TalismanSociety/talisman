@@ -98,9 +98,7 @@ describe("substrate-psp22 fetchBalances", () => {
     expect(result).toEqual({ success: [balanceRow(USDT, EMPTY, "0")], errors: [] })
   })
 
-  // bug: decodeBalance reads the first 16 bytes of MessageResult<u128> return data, Ok tag
-  // included, so every non-zero balance comes out ×256 (and loses its top byte)
-  it.fails.each([
+  it.each([
     ["USDT", USDT, USDT_HOLDER, "usdtHolder"],
     ["USDC", USDC, USDC_HOLDER, "usdcHolder"],
   ])(
@@ -114,6 +112,22 @@ describe("substrate-psp22 fetchBalances", () => {
       })
     }
   )
+
+  it("decodes the bare u128 an ink! 3 contract returns", async () => {
+    const { resultHex, returnDataHex, expected } = callOf("usdtHolder")
+    const taggedData = `44${returnDataHex!.slice(2)}`
+    expect(resultHex.split(taggedData)).toHaveLength(2)
+    const { connector } = makeConnector(() =>
+      resultHex.replace(taggedData, `40${returnDataHex!.slice(4)}`)
+    )
+
+    const result = await run([[makeToken(USDT), [USDT_HOLDER]]], connector)
+
+    expect(result).toEqual({
+      success: [balanceRow(USDT, USDT_HOLDER, expected.balance!)],
+      errors: [],
+    })
+  })
 
   it("returns one balance per token and address", async () => {
     const result = await run([
@@ -143,9 +157,7 @@ describe("substrate-psp22 fetchBalances", () => {
     expect(result.errors.map((e) => e.error.message)).toEqual(["Failed to fetch balance"])
   })
 
-  // bug: the thrown Error is not a BalanceFetchError, so the reducer's error.tokenId and
-  // error.address are undefined and the failure can't be matched to its balance
-  it.fails("names the token and address of a failed call in its error", async () => {
+  it("names the token and address of a failed call in its error", async () => {
     const result = await run([[makeToken(USDT_HOLDER), [EMPTY]]])
 
     expect(result.errors.map(({ tokenId, address }) => ({ tokenId, address }))).toEqual([
@@ -153,8 +165,7 @@ describe("substrate-psp22 fetchBalances", () => {
     ])
   })
 
-  // bug: the REVERT flag is ignored, so the Err(LangError) return data 0x0101 decodes as balance 257
-  it.fails("reports a reverted call as an error, not a balance", async () => {
+  it("reports a reverted call as an error, not a balance", async () => {
     const revert = callOf("revert")
     expect(revert.expected).toEqual({ kind: "revert", flags: 1 })
     const { connector } = makeConnector(() => revert.resultHex)
@@ -165,8 +176,8 @@ describe("substrate-psp22 fetchBalances", () => {
     expect(result.errors).toHaveLength(1)
   })
 
-  // same bug, isolated from LangError decoding: valid balance data with only the REVERT flag set
-  it.fails("reports a call with the REVERT flag as an error, even with balance data", async () => {
+  // valid balance data with only the REVERT flag set
+  it("reports a call with the REVERT flag as an error, even with balance data", async () => {
     const { resultHex, returnDataHex } = callOf("usdtHolder")
     const returnData = `44${returnDataHex!.slice(2)}`
     const okFlags = `00000000${returnData}`
@@ -188,7 +199,13 @@ describe("substrate-psp22 fetchBalances", () => {
     const result = await run([[makeToken(USDT), [USDT_HOLDER, EMPTY]]], connector)
 
     expect(result.success).toEqual([balanceRow(USDT, EMPTY, "0")])
-    expect(result.errors.map((e) => e.error.message)).toEqual(["rpc down"])
+    expect(result.errors).toMatchObject([
+      {
+        tokenId: subPsp22TokenId(NETWORK_ID, USDT),
+        address: USDT_HOLDER,
+        error: { message: "Failed to fetch balance", cause: { message: "rpc down" } },
+      },
+    ])
   })
 
   it("reports an owner that is not a 32-byte account as an error without calling the chain", async () => {
@@ -199,7 +216,15 @@ describe("substrate-psp22 fetchBalances", () => {
 
     expect(send).toHaveBeenCalledTimes(1)
     expect(result.success).toEqual([balanceRow(USDT, EMPTY, "0")])
-    expect(result.errors.map((e) => e.error.message)).toEqual([`Invalid address: ${evmAddress}`])
+    expect(result.errors).toMatchObject([
+      {
+        address: evmAddress,
+        error: {
+          message: "Failed to fetch balance",
+          cause: { message: `Invalid address: ${evmAddress}` },
+        },
+      },
+    ])
   })
 
   it("returns nothing and sends nothing for an empty request", async () => {
