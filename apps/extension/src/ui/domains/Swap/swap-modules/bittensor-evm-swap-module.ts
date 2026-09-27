@@ -36,6 +36,7 @@ import type {
   SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { getEvmNetwork } from "./evm-network"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "bittensor-evm"
@@ -156,12 +157,6 @@ const estimateSubstrateFeeRao = async (
 }
 
 // --- EVM helpers ---
-
-const getEvmNetwork = async (evmNetworkId: string) => {
-  const network = await firstValueFrom(getNetworkById$(evmNetworkId))
-  if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
-  return network
-}
 
 const encodePrecompileTransfer = (destPubkey: `0x${string}`) =>
   encodeFunctionData({

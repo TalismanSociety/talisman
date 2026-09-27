@@ -17,7 +17,7 @@ import { throwAfter } from "@talismn/util"
 import { noop } from "lodash-es"
 import { firstValueFrom } from "rxjs"
 
-import { activeNetworksStore } from "../balances/store.activeNetworks"
+import { activeNetworksStore } from "../chaindata/store.activeNetworks"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { BITTENSOR_DEVNET_RPC, BITTENSOR_DEVNET_NETWORK_ID as NETWORK_ID } from "./constants"
 

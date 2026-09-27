@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { activeNetworksStore } from "../../balances/store.activeNetworks"
+import { activeNetworksStore } from "../../chaindata/store.activeNetworks"
 import { __internal, addressToAccountId, getSystemAccountStorageKey } from "../substrate"
 import { substrateAssetDiscoveryStore } from "../substrateStore"
 

@@ -1,4 +1,4 @@
-import { isNetworkActive } from "@core/domains/balances/store.activeNetworks"
+import { isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import {
   Combobox,
   ComboboxButton,

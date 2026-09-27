@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import type { Signature } from "@solana/kit"
 import type { SolRpc } from "@talismn/chain-connectors"
-import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo, type SolTransaction } from "@talismn/solana"
 
 import { sentry } from "../../config/sentry"
@@ -29,8 +29,9 @@ export const watchSolanaTransaction = async (
     const { signature } = parseTransactionInfo(transaction)
     if (!signature) throw new Error("Transaction does not have a signature")
 
-    const blockExplorerUrls = getBlockExplorerUrls(network, { type: "transaction", id: signature })
-    const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
+    const txUrl =
+      getBlockExplorerUrl(network, { type: "transaction", id: signature }) ??
+      chrome.runtime.getURL("dashboard.html#/tx-history")
 
     await addSolTransaction(networkId, transaction, { siteUrl, txInfo })
 

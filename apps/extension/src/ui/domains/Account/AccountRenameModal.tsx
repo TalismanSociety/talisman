@@ -1,36 +1,22 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { bind } from "@react-rxjs/core"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountRename } from "./AccountRename"
 
-const localAccount$ = new BehaviorSubject<Account | null>(null)
-
-const setLocalAccount = (account: Account | null) => {
-  localAccount$.next(account)
-}
-
-const [useLocalAccount] = bind(localAccount$)
+const [useAccountRenameOpenClose] = createGlobalOpenClose<Account | null>()
 
 export const useAccountRenameModal = () => {
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRenameModal")
+  const { isOpen, open: innerOpen, close, args } = useAccountRenameOpenClose()
 
   const { selectedAccount } = usePortfolioNavigation()
-  const account = useLocalAccount() ?? selectedAccount
+  const account = args ?? selectedAccount
 
-  const open = useCallback(
-    (account?: Account) => {
-      setLocalAccount(account ?? null)
-      innerOpen()
-    },
-    [innerOpen]
-  )
+  const open = useCallback((account?: Account) => innerOpen(account ?? null), [innerOpen])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {

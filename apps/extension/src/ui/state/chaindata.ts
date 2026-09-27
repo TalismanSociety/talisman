@@ -1,5 +1,5 @@
-import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
-import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import { bind, type StateObservable } from "@react-rxjs/core"
 import type {
   DotNetwork,

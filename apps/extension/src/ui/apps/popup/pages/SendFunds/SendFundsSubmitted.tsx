@@ -1,8 +1,10 @@
 import type { AnalyticsPage } from "@ui/api/analytics"
-import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
+import { TxProgress } from "@ui/domains/Transactions/TxProgress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
+
+import { useSendFundsWizard } from "./context"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -13,6 +15,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const SendFundsSubmitted = () => {
   const [searchParams] = useSearchParams()
+  const { gotoProgress } = useSendFundsWizard()
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -30,7 +33,14 @@ export const SendFundsSubmitted = () => {
 
   return (
     <div id="main" className="relative h-full w-full px-12 py-8">
-      <SendFundsProgress txId={txId} networkId={networkId} onClose={handleClose} />
+      <TxProgress
+        hash={txId}
+        networkIdOrHash={networkId}
+        wording="transfer"
+        className="pt-24"
+        onClose={handleClose}
+        onReplacementComplete={gotoProgress}
+      />
     </div>
   )
 }
