@@ -29,9 +29,7 @@ import {
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
 import type {
   ApprovalInfo,
@@ -46,6 +44,7 @@ import type {
   SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { getEvmNetwork, getEvmPublicClient } from "./evm-network"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
@@ -87,15 +86,6 @@ export type ForevermoneyExchange = ForevermoneyQuoteData & {
 const toWholeRao = (wei: bigint) => (wei / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WEI_PER_RAO
 
 const withFeeBuffer = (fee: bigint) => (fee * FEE_BUFFER_NUMERATOR) / FEE_BUFFER_DENOMINATOR
-
-const getEvmNetwork = async (evmNetworkId: string) => {
-  const network = await firstValueFrom(getNetworkById$(evmNetworkId))
-  if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
-  return network
-}
-
-const getEvmClient = async (evmNetworkId: string): Promise<PublicClient> =>
-  getExtensionPublicClient(await getEvmNetwork(evmNetworkId))
 
 const isSubstrateAddress = (address: string) => {
   if (isEthereumAddress(address)) return false
@@ -202,7 +192,7 @@ const assertWithinRateLimit = async (
 }
 
 const assertVaultOpen = async (route: ForevermoneyRoute) => {
-  const client = await getEvmClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
+  const client = await getEvmPublicClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
   const [isPaused, migrationTarget, laneAllowed] = await Promise.all([
     client.readContract({
       abi: abiForevermoneyAlphaVault,
@@ -282,7 +272,7 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
 
   const isOutbound = route.direction === "evm-to-spoke"
   const amountWei = toWholeRao(fromAmount)
-  const client = await getEvmClient(route.sourceNetworkId)
+  const client = await getEvmPublicClient(route.sourceNetworkId)
 
   await runChecks(client, route, amountWei)
 
@@ -349,8 +339,8 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
   const amountWei = toWholeRao(fromAmount)
   const [sourceClient, destinationClient] = await Promise.all([
-    getEvmClient(route.sourceNetworkId),
-    getEvmClient(route.destinationNetworkId),
+    getEvmPublicClient(route.sourceNetworkId),
+    getEvmPublicClient(route.destinationNetworkId),
   ])
 
   await runChecks(sourceClient, route, amountWei)

@@ -1,5 +1,4 @@
-// biome-ignore lint/style/useNodejsImportProtocol: legacy
-import assert from "assert"
+import { assert } from "@talismn/util"
 import { TabsHandler } from "../../../libs/Handler"
 import { chainConnectorDot } from "../../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../../rpcs/chaindata"

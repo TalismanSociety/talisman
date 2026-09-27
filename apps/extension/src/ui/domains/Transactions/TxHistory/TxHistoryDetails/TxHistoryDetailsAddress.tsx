@@ -1,5 +1,5 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -30,9 +30,8 @@ export const TxHistoryDetailsAddress: FC<{
   )
 
   const blockExplorerUrl = useMemo(() => {
-    if (!formatted || !network) return null
-    const urls = getBlockExplorerUrls(network, { type: "address", address: formatted })
-    return urls[0] ?? null
+    if (!formatted) return null
+    return getBlockExplorerUrl(network, { type: "address", address: formatted })
   }, [formatted, network])
 
   const handleClick = useCallback(() => {

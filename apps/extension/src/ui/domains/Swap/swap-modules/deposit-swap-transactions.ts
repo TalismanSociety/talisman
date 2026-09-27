@@ -12,19 +12,18 @@ import {
   TOKEN_PROGRAM_ADDRESS,
 } from "@solana-program/token"
 import type { SolRpc } from "@talismn/chain-connectors"
-import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { buildUnsignedTransaction, type SolTransaction } from "@talismn/solana"
 import { api } from "@ui/api"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$, getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
+import { getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
 import type { QuoteFee, SwapModuleTransaction, SwapTransactionContext } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { findEvmPublicClient } from "./evm-network"
 
 /**
  * Common info needed to build a deposit transaction for a centralized swap.
@@ -45,17 +44,6 @@ export type DepositSwapAsset = {
   decimals: number
 }
 
-// --- Internal helper to get a viem PublicClient for an EVM network ---
-
-const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
-  if (!evmNetworkId) return undefined
-  const evmNetwork = await firstValueFrom(getNetworkById$(evmNetworkId))
-  const nativeToken = await firstValueFrom(getToken$(evmNetwork?.nativeTokenId))
-  if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
-    return undefined
-  return getExtensionPublicClient(evmNetwork)
-}
-
 // --- Exported functions ---
 
 export async function estimateDepositGas(
@@ -73,7 +61,7 @@ export async function estimateDepositGas(
       : undefined
 
     if (network && nativeToken) {
-      const client = await getPublicClient(network.id)
+      const client = await findEvmPublicClient(network.id)
       if (!client) return null
       const gasPrice = await client.getGasPrice()
       // the to address and amount dont matter, we just need to place any address here for the estimation
@@ -165,7 +153,7 @@ async function buildEvmDepositTransaction(params: {
 
     const depositAmount = parseUserInputToPlanck(deposit.depositAmount, fromAsset.decimals)
 
-    const publicClient = await getPublicClient(evmNetwork.id)
+    const publicClient = await findEvmPublicClient(evmNetwork.id)
     if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
     if (!fromAsset.contractAddress)

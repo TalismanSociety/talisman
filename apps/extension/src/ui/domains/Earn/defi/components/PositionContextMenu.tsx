@@ -1,5 +1,5 @@
 import type { DefiPosition } from "@core/domains/defi/exports"
-import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import {
   ContextMenu,
@@ -21,9 +21,7 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
 
   const blockExplorerUrl = useMemo(() => {
     if (!position.poolAddress || !network?.blockExplorerUrls.length) return null
-    return (
-      getBlockExplorerUrls(network, { type: "address", address: position.poolAddress })[0] ?? null
-    )
+    return getBlockExplorerUrl(network, { type: "address", address: position.poolAddress })
   }, [network, position.poolAddress])
 
   // dont display the menu if there is no action to provide

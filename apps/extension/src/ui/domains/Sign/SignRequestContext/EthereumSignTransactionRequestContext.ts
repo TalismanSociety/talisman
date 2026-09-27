@@ -67,21 +67,17 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     cancelSignFn: api.ethCancelSign,
   })
 
-  const reject = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: legacy
-    (...args: any[]) => {
-      genericEvent("sign request cancel click", {
-        networkType: "evm",
-        type: "message",
-        network: network?.id,
-        riskAnalysisAction: riskAnalysis.validationResult,
-        origin,
-      })
+  const reject = useCallback(() => {
+    genericEvent("sign request cancel click", {
+      networkType: "evm",
+      type: "transaction",
+      network: network?.id,
+      riskAnalysisAction: riskAnalysis.validationResult,
+      origin,
+    })
 
-      baseRequest.reject(...args)
-    },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis]
-  )
+    return baseRequest.reject()
+  }, [baseRequest, origin, genericEvent, network?.id, riskAnalysis])
 
   // flag to prevent capturing multiple submit attempts
   const refIsApproveCaptured = useRef(false)
@@ -97,7 +93,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       refIsApproveCaptured.current = true
       genericEvent("sign request approve click", {
         networkType: "evm",
-        type: "message",
+        type: "transaction",
         network: network?.id,
         riskAnalysisAction: riskAnalysis.validationResult,
         origin,
@@ -126,7 +122,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         refIsApproveCaptured.current = true
         genericEvent("sign request approve click", {
           networkType: "evm",
-          type: "message",
+          type: "transaction",
           network: network?.id,
           riskAnalysisAction: riskAnalysis.validationResult,
           origin,

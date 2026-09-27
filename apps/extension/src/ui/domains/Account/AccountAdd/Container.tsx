@@ -1,5 +1,5 @@
 import { IS_FIREFOX } from "@common/constants"
-import { isAccountPlatformCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import { isAccountPlatformCompatibleWithNetwork } from "@talismn/chaindata-provider"
 import type { AccountPlatform } from "@talismn/crypto"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"

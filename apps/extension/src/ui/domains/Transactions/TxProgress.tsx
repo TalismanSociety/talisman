@@ -4,7 +4,7 @@ import type {
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
-import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
@@ -21,10 +21,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import type { TxReplaceType } from "./types"
 
-const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  if (!network) return null
-  return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
-}
 /** "transfer" words the send funds flow */
 export type TxProgressWording = "transaction" | "transfer"
 
@@ -291,7 +287,10 @@ const TxProgressDot: FC<TxProgressOptions & { tx: WalletTransactionDot }> = ({
   ...options
 }) => {
   const chain = useNetworkById(tx.networkId)
-  const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
+  const href = useMemo(
+    () => getBlockExplorerUrl(chain, { type: "transaction", id: tx.hash }),
+    [chain, tx.hash]
+  )
 
   return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
 }
@@ -301,7 +300,10 @@ const TxProgressEth: FC<TxProgressOptions & { tx: WalletTransactionEth }> = ({
   ...options
 }) => {
   const network = useNetworkById(tx.networkId, "ethereum")
-  const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
+  const href = useMemo(
+    () => getBlockExplorerUrl(network, { type: "transaction", id: tx.hash }),
+    [network, tx.hash]
+  )
 
   return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
 }
@@ -311,7 +313,10 @@ const TxProgressSol: FC<TxProgressOptions & { tx: WalletTransactionSol }> = ({
   ...options
 }) => {
   const network = useNetworkById(tx.networkId, "solana")
-  const href = useMemo(() => getBlockExplorerUrl(network, tx.signature), [network, tx.signature])
+  const href = useMemo(
+    () => getBlockExplorerUrl(network, { type: "transaction", id: tx.signature }),
+    [network, tx.signature]
+  )
 
   return <TxProgressBase {...options} tx={tx} href={href} />
 }
@@ -327,7 +332,7 @@ export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, ...opti
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(network, hash)
+    const href = getBlockExplorerUrl(network, { type: "transaction", id: hash })
     return <TxProgressBase {...options} href={href} />
   }
 
