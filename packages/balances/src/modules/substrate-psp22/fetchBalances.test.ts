@@ -190,6 +190,27 @@ describe("substrate-psp22 fetchBalances", () => {
     expect(result.errors).toHaveLength(1)
   })
 
+  it("reports return data that is not a u128 balance as an error", async () => {
+    const { resultHex, returnDataHex } = callOf("revert")
+    const langError = `08${returnDataHex!.slice(2)}`
+    const revertFlags = `01000000${langError}`
+    expect(resultHex.split(revertFlags)).toHaveLength(2)
+    const { connector } = makeConnector(() =>
+      resultHex.replace(revertFlags, `00000000${langError}`)
+    )
+
+    const result = await run([[makeToken(USDT), [USDT_HOLDER]]], connector)
+
+    expect(result.success).toEqual([])
+    expect(result.errors).toMatchObject([
+      {
+        tokenId: subPsp22TokenId(NETWORK_ID, USDT),
+        address: USDT_HOLDER,
+        error: { cause: { message: "Unexpected balance_of return data" } },
+      },
+    ])
+  })
+
   it("keeps the other balances when one call is rejected", async () => {
     const { connector } = makeConnector((args) => {
       if (args === callOf("usdtHolder").argsHex) throw new Error("rpc down")
