@@ -21,6 +21,9 @@ import { Trans, useTranslation } from "react-i18next"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import type { TxReplaceType } from "./types"
 
+/** "transfer" words the send funds flow */
+export type TxProgressWording = "transaction" | "transfer"
+
 // txId is an evm tx hash or a bitcoin txid, hence the loose type
 export type ReplacementCallbackArgs = {
   txId: string
@@ -29,6 +32,7 @@ export type ReplacementCallbackArgs = {
 }
 
 type TxReplaceActionsProps = {
+  wording?: TxProgressWording
   tx: WalletTransaction | null | undefined
   className?: string
   containerId?: string
@@ -37,6 +41,7 @@ type TxReplaceActionsProps = {
 
 export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
   tx,
+  wording = "transaction",
   className,
   containerId,
   onReplacementComplete,
@@ -60,7 +65,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
 
   const isInvisible = useMemo(() => {
     if (!tx) return true
-    if (tx.platform === "ethereum" && evmNetwork?.preserveGasEstimate) return true
+    if (tx.platform === "ethereum" && (!evmNetwork || evmNetwork.preserveGasEstimate)) return true
     if (tx.status !== "pending" || (tx.platform !== "ethereum" && tx.platform !== "bitcoin"))
       return true
     return false
@@ -89,7 +94,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
           icon={XCircleIcon}
           className="p-4!"
         >
-          {t("Cancel Transaction")}
+          {wording === "transfer" ? t("Cancel Transfer") : t("Cancel Transaction")}
         </PillButton>
       </div>
       {!!tx && (
@@ -104,7 +109,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
   )
 }
 
-const useTxStatusDetails = (tx?: WalletTransaction) => {
+const useTxStatusDetails = (tx: WalletTransaction | undefined, wording: TxProgressWording) => {
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useMemo<{
     title: string
@@ -143,28 +148,41 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
         return {
           title: t("Failure"),
           subtitle: isReplacementCancel
-            ? t("Failed to cancel transaction")
+            ? wording === "transfer"
+              ? t("Failed to cancel transfer")
+              : t("Failed to cancel transaction")
             : t("Transaction failed."),
           animStatus: "failure",
         }
       case "success":
         return {
           title: isReplacementCancel ? t("Transaction cancelled") : t("Success"),
-          subtitle: isReplacementCancel
-            ? t("Your transaction was cancelled")
-            : t("Your transaction was successful!"),
+          subtitle:
+            wording === "transfer"
+              ? isReplacementCancel
+                ? t("Your transfer was cancelled")
+                : t("Your transfer was successful!")
+              : isReplacementCancel
+                ? t("Your transaction was cancelled")
+                : t("Your transaction was successful!"),
           animStatus: isReplacementCancel ? "failure" : "success",
         }
       case "pending":
         return {
-          title: isReplacementCancel ? t("Cancelling transaction") : t("Transaction in progress"),
+          title: isReplacementCancel
+            ? t("Cancelling transaction")
+            : wording === "transfer"
+              ? t("Transfer in progress")
+              : t("Transaction in progress"),
           subtitle: isReplacementCancel
-            ? t("Attempting to cancel transaction")
+            ? wording === "transfer"
+              ? t("Attempting to cancel transfer")
+              : t("Attempting to cancel transaction")
             : t("This may take a few minutes."),
           animStatus: "processing",
         }
     }
-  }, [tx, t])
+  }, [tx, t, wording])
 
   return {
     title,
@@ -175,6 +193,7 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
 
 type TxProgressBaseProps = {
   tx?: WalletTransaction
+  wording?: TxProgressWording
   className?: string
   blockNumber?: string
   onClose?: () => void
@@ -185,6 +204,8 @@ type TxProgressBaseProps = {
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({
   tx,
+  wording = "transaction",
+  className,
   blockNumber,
   href,
   onClose,
@@ -192,10 +213,10 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
   onReplacementComplete,
 }) => {
   const { t } = useTranslation()
-  const { title, subtitle, animStatus } = useTxStatusDetails(tx)
+  const { title, subtitle, animStatus } = useTxStatusDetails(tx, wording)
 
   return (
-    <div className="flex h-full w-full flex-col items-center">
+    <div className={cn("flex h-full w-full flex-col items-center", className)}>
       <div className="mt-8 font-bold text-body text-lg">{title}</div>
       <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
       <ProcessAnimation status={animStatus} className="mt-18.75 mb-8 h-36.25" />
@@ -236,6 +257,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
           {tx?.status === "pending" && (
             <TxReplaceActions
               tx={tx}
+              wording={wording}
               containerId={containerId}
               onReplacementComplete={onReplacementComplete}
             />
@@ -254,20 +276,17 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
   )
 }
 
-type TxProgressDotProps = {
-  tx: WalletTransactionDot
+type TxProgressOptions = {
   onClose?: () => void
   className?: string
   containerId?: string
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+  wording?: TxProgressWording
 }
 
-const TxProgressDot: FC<TxProgressDotProps> = ({
+const TxProgressDot: FC<TxProgressOptions & { tx: WalletTransactionDot }> = ({
   tx,
-  onClose,
-  className,
-  containerId,
-  onReplacementComplete,
+  ...options
 }) => {
   const chain = useNetworkById(tx.networkId)
   const href = useMemo(
@@ -275,33 +294,12 @@ const TxProgressDot: FC<TxProgressDotProps> = ({
     [chain, tx.hash]
   )
 
-  return (
-    <TxProgressBase
-      tx={tx}
-      className={className}
-      onClose={onClose}
-      blockNumber={tx.blockNumber}
-      href={href}
-      containerId={containerId}
-      onReplacementComplete={onReplacementComplete}
-    />
-  )
+  return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
 }
 
-type TxProgressEthProps = {
-  tx: WalletTransactionEth
-  onClose?: () => void
-  className?: string
-  containerId?: string
-  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
-}
-
-const TxProgressEth: FC<TxProgressEthProps> = ({
+const TxProgressEth: FC<TxProgressOptions & { tx: WalletTransactionEth }> = ({
   tx,
-  className,
-  onClose,
-  containerId,
-  onReplacementComplete,
+  ...options
 }) => {
   const network = useNetworkById(tx.networkId, "ethereum")
   const href = useMemo(
@@ -309,47 +307,25 @@ const TxProgressEth: FC<TxProgressEthProps> = ({
     [network, tx.hash]
   )
 
-  return (
-    <TxProgressBase
-      tx={tx}
-      className={className}
-      onClose={onClose}
-      blockNumber={tx.blockNumber}
-      href={href}
-      containerId={containerId}
-      onReplacementComplete={onReplacementComplete}
-    />
-  )
+  return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
 }
 
-type TxProgressSolProps = {
-  tx: WalletTransactionSol
-  onClose?: () => void
-  className?: string
-}
-
-const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
+const TxProgressSol: FC<TxProgressOptions & { tx: WalletTransactionSol }> = ({
+  tx,
+  ...options
+}) => {
   const network = useNetworkById(tx.networkId, "solana")
   const href = useMemo(
     () => getBlockExplorerUrl(network, { type: "transaction", id: tx.signature }),
     [network, tx.signature]
   )
 
-  return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
+  return <TxProgressBase {...options} tx={tx} href={href} />
 }
 
-type TxProgressBtcProps = {
-  tx: WalletTransactionBtc
-  onClose?: () => void
-  className?: string
-  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
-}
-
-const TxProgressBtc: FC<TxProgressBtcProps> = ({
+const TxProgressBtc: FC<TxProgressOptions & { tx: WalletTransactionBtc }> = ({
   tx,
-  className,
-  onClose,
-  onReplacementComplete,
+  ...options
 }) => {
   const network = useNetworkById(tx.networkId, "bitcoin")
   const href = useMemo(
@@ -357,84 +333,33 @@ const TxProgressBtc: FC<TxProgressBtcProps> = ({
     [network, tx.hash]
   )
 
-  return (
-    <TxProgressBase
-      tx={tx}
-      className={className}
-      onClose={onClose}
-      blockNumber={tx.blockNumber}
-      href={href}
-      onReplacementComplete={onReplacementComplete}
-    />
-  )
+  return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
 }
 
-type TxProgressProps = {
+type TxProgressProps = TxProgressOptions & {
   hash: string // hash or signature (for solana)
   networkIdOrHash: string
-  onClose?: () => void
-  className?: string
-  containerId?: string
-  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-export const TxProgress: FC<TxProgressProps> = ({
-  hash,
-  networkIdOrHash,
-  onClose,
-  className,
-  containerId,
-  onReplacementComplete,
-}) => {
+export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, ...options }) => {
   const tx = useTransaction(hash)
   const network = useAnyNetwork(networkIdOrHash)
 
   // tx is null if not found in db
   if (tx === null) {
     const href = getBlockExplorerUrl(network, { type: "transaction", id: hash })
-    return (
-      <TxProgressBase
-        href={href}
-        className={className}
-        onClose={onClose}
-        containerId={containerId}
-        onReplacementComplete={onReplacementComplete}
-      />
-    )
+    return <TxProgressBase {...options} href={href} />
   }
 
   switch (tx?.platform) {
     case "ethereum":
-      return (
-        <TxProgressEth
-          tx={tx}
-          onClose={onClose}
-          className={className}
-          containerId={containerId}
-          onReplacementComplete={onReplacementComplete}
-        />
-      )
+      return <TxProgressEth {...options} tx={tx} />
     case "polkadot":
-      return (
-        <TxProgressDot
-          tx={tx}
-          onClose={onClose}
-          className={className}
-          containerId={containerId}
-          onReplacementComplete={onReplacementComplete}
-        />
-      )
+      return <TxProgressDot {...options} tx={tx} />
     case "solana":
-      return <TxProgressSol tx={tx} onClose={onClose} className={className} />
+      return <TxProgressSol {...options} tx={tx} />
     case "bitcoin":
-      return (
-        <TxProgressBtc
-          tx={tx}
-          onClose={onClose}
-          className={className}
-          onReplacementComplete={onReplacementComplete}
-        />
-      )
+      return <TxProgressBtc {...options} tx={tx} />
     default:
       return null
   }

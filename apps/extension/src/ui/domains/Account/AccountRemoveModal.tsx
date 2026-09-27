@@ -1,44 +1,29 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
-import { isEqual } from "lodash-es"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
-import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
-const accountToRemove$ = new BehaviorSubject<Account | null>(null)
-const [useAccount] = bind(
-  accountToRemove$.pipe(distinctUntilChanged<Account | null>(isEqual)),
-  null
-)
+const [useAccountRemoveOpenClose] = createGlobalOpenClose<Account | null>()
 
 export const useAccountRemoveModal = () => {
-  const _account = useAccount()
-
   const { selectedAccount } = usePortfolioNavigation()
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")
+  const { isOpen, open: innerOpen, close, args } = useAccountRemoveOpenClose()
 
-  const open = useCallback(
-    (account?: Account) => {
-      accountToRemove$.next(account ?? null)
-      innerOpen()
-    },
-    [innerOpen]
-  )
+  const open = useCallback((account?: Account) => innerOpen(account ?? null), [innerOpen])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     close()
   }, [selectedAccount, close])
 
-  const account = _account ?? selectedAccount
+  const account = args ?? selectedAccount
 
   return {
     account,

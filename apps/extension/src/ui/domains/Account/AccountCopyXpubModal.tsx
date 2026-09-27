@@ -1,32 +1,19 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { bind } from "@react-rxjs/core"
 import { encodeXpubForDisplay } from "@talismn/crypto"
 import { AlertCircleIcon, CopyIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { isEqual } from "lodash-es"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 
-const account$ = new BehaviorSubject<Account | null>(null)
-const [useAccount] = bind(account$.pipe(distinctUntilChanged<Account | null>(isEqual)), null)
+const [useAccountCopyXpubOpenClose] = createGlobalOpenClose<Account>()
 
 export const useAccountCopyXpubModal = () => {
-  const account = useAccount()
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountCopyXpubModal")
-
-  const open = useCallback(
-    (account: Account) => {
-      account$.next(account)
-      innerOpen()
-    },
-    [innerOpen]
-  )
+  const { isOpen, open, close, args: account } = useAccountCopyXpubOpenClose()
 
   return { account, isOpen, open, close }
 }

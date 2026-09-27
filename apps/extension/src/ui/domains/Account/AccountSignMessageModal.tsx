@@ -1,32 +1,19 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { bind } from "@react-rxjs/core"
 import { CopyIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { shortenAddress } from "@ui/util/shortenAddress"
-import { isEqual } from "lodash-es"
 import { type FC, useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 
-const account$ = new BehaviorSubject<Account | null>(null)
-const [useAccount] = bind(account$.pipe(distinctUntilChanged<Account | null>(isEqual)), null)
+const [useAccountSignMessageOpenClose] = createGlobalOpenClose<Account>()
 
 export const useAccountSignMessageModal = () => {
-  const account = useAccount()
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountSignMessageModal")
-
-  const open = useCallback(
-    (account: Account) => {
-      account$.next(account)
-      innerOpen()
-    },
-    [innerOpen]
-  )
+  const { isOpen, open, close, args: account } = useAccountSignMessageOpenClose()
 
   return { account, isOpen, open, close }
 }
