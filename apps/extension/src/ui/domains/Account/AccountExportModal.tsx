@@ -5,7 +5,6 @@ import {
   isAccountPlatformPolkadot,
 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { bind } from "@react-rxjs/core"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -15,42 +14,29 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import downloadJson from "@ui/util/downloadJson"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import * as yup from "yup"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const localAccount$ = new BehaviorSubject<Account | null>(null)
-
-const setLocalAccount = (account: Account | null) => {
-  localAccount$.next(account)
-}
-
-const [useLocalAccount] = bind(localAccount$)
+const [useAccountExportOpenClose] = createGlobalOpenClose<Account | null>()
 
 const canExportAccountFunc = (account?: Account | null) =>
   isAccountOfType(account, "keypair") &&
   (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
 
 export const useAccountExportModal = () => {
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
+  const { isOpen, open: innerOpen, close, args } = useAccountExportOpenClose()
 
   const { selectedAccount } = usePortfolioNavigation()
-  const account = useLocalAccount() ?? selectedAccount
+  const account = args ?? selectedAccount
 
-  const open = useCallback(
-    (account?: Account) => {
-      setLocalAccount(account ?? null)
-      innerOpen()
-    },
-    [innerOpen]
-  )
+  const open = useCallback((account?: Account) => innerOpen(account ?? null), [innerOpen])
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
