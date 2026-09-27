@@ -1,4 +1,4 @@
-import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

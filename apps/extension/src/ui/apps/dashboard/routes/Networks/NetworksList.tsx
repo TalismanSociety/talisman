@@ -1,5 +1,5 @@
-import type { ActiveNetworks } from "@core/domains/balances/store.activeNetworks"
-import { activeNetworksStore, isNetworkActive } from "@core/domains/balances/store.activeNetworks"
+import type { ActiveNetworks } from "@core/domains/chaindata/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"

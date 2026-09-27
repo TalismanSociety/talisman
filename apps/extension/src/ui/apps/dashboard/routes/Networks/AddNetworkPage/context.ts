@@ -1,6 +1,6 @@
 import { log } from "@common/log"
-import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
-import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { activeNetworksStore } from "@core/domains/chaindata/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
 import {
   type DotNetwork,

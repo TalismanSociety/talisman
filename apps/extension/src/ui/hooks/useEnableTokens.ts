@@ -1,6 +1,6 @@
 import { log } from "@common/log"
-import type { ActiveTokens } from "@core/domains/balances/store.activeTokens"
-import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
+import type { ActiveTokens } from "@core/domains/chaindata/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useActiveTokensState, useTokensMap } from "@ui/state/chaindata"
 import { useCallback } from "react"

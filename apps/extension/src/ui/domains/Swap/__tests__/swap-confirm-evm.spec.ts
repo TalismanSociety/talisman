@@ -8,11 +8,11 @@ const mockSetActiveNetwork = vi.fn()
 const mockSetActiveToken = vi.fn()
 const mockSaveIdForMonitoring = vi.fn()
 
-vi.mock("@core/domains/balances/store.activeNetworks", () => ({
+vi.mock("@core/domains/chaindata/store.activeNetworks", () => ({
   activeNetworksStore: { setActive: (...args: unknown[]) => mockSetActiveNetwork(...args) },
 }))
 
-vi.mock("@core/domains/balances/store.activeTokens", () => ({
+vi.mock("@core/domains/chaindata/store.activeTokens", () => ({
   activeTokensStore: { setActive: (...args: unknown[]) => mockSetActiveToken(...args) },
 }))
 
