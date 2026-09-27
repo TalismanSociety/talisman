@@ -343,6 +343,12 @@ describe("useSendFunds", () => {
       })
     })
 
+    it("an account without a balance for the token", () => {
+      state.transferable = {}
+
+      expect(render().current).toMatchObject({ isValid: false, error: "Insufficient DOT" })
+    })
+
     it("a fee token balance below the fee", () => {
       state.wizard = { from: "alice", to: "bob", tokenId: USDT.id, amount: "1000000" }
       state.feeTokenId = AH_DOT.id
@@ -384,6 +390,36 @@ describe("useSendFunds", () => {
     await recipientBalanceLoaded()
 
     expect(result.current.isValid).toBe(true)
+  })
+
+  it("waits for the tip before accepting", () => {
+    state.transaction = dotTransaction({ tip: "1000", isLoadingTip: true })
+
+    expect(render().current).toMatchObject({ isValid: false, error: undefined })
+  })
+
+  describe("a fee that leaves the fee token below its existential deposit", () => {
+    const maxAmount = DOT_UNIT - DOT_UNIT / 200n
+
+    beforeEach(() => {
+      state.transferable = { [DOT.id]: DOT_UNIT + DOT_UNIT / 200n }
+      state.transaction = dotTransaction({ maxAmount: maxAmount.toString() })
+    })
+
+    it("is rejected when keeping the account alive", () => {
+      sendDot(maxAmount)
+
+      expect(render().current).toMatchObject({
+        isValid: false,
+        error: "Insufficient DOT to pay for fees",
+      })
+    })
+
+    it("is accepted when sending the whole balance", () => {
+      sendDot(0n, { amount: undefined, sendMax: true })
+
+      expect(render().current).toMatchObject({ isValid: true, error: undefined })
+    })
   })
 
   it("waits for the dry run before accepting", () => {
@@ -530,6 +566,12 @@ describe("useSendFunds", () => {
       state.dtao.holdGate = { isBlocked: true, message: "Root stake is on hold" }
 
       expect(render().current).toMatchObject({ isValid: false, error: "Root stake is on hold" })
+    })
+
+    it("blocks silently until the root stake hold is known", () => {
+      state.dtao.holdGate = { isBlocked: true, message: null }
+
+      expect(render().current).toMatchObject({ isValid: false, error: undefined })
     })
   })
 })

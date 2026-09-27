@@ -51,6 +51,8 @@ const POLKADOT = {
 // Timestamp.set, the inherent every block starts with
 const OTHER_EXTRINSIC = "0x280403000b90f7a1b09a01" as HexString
 const TX_WATCH_TIMEOUT = 90_000
+// twox128("System") ++ twox128("Events")
+const SYSTEM_EVENTS_KEY = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
 // DigestItem::PreRuntime(*b"BABE", [1, 2, 3, 4])
 const BABE_PRE_RUNTIME_LOG = "0x06424142451001020304" as HexString
 
@@ -88,7 +90,7 @@ type Block = {
     digest: { logs: HexString[] }
   }
   extrinsics: HexString[]
-  events: HexString
+  events: HexString | null
 }
 
 const makeBlock = (number: number, extrinsics: HexString[], outcomes: EventOutcome[]): Block => ({
@@ -142,8 +144,16 @@ const fakeChain = () => {
         return bestChain.get(params[0] as number)?.hash ?? null
       case "chain_getHeader":
         return [...bestChain.values()].find(({ hash }) => hash === params[0])?.header ?? null
-      case "state_queryStorageAt":
-        return block && [{ changes: [["0x26aa394eea5630e07c48ae0c9558cef7", block.events]] }]
+      case "state_queryStorageAt": {
+        const [keys] = params as [string[]]
+        return (
+          block && [
+            {
+              changes: keys.map((key) => [key, key === SYSTEM_EVENTS_KEY ? block.events : null]),
+            },
+          ]
+        )
+      }
       default:
         throw new Error(`Unexpected ${method}`)
     }
@@ -268,6 +278,38 @@ describe("watchSubstrateTransaction", () => {
 
     expect(await storedTx()).toMatchObject({ status: "pending" })
     expect(chain.unsubscribed).toEqual([])
+  })
+
+  it("ignores a block whose events the node does not return", async () => {
+    const chain = fakeChain()
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+
+    await chain.newHead({ ...withOurs(100, "ExtrinsicSuccess"), events: null })
+
+    expect(await storedTx()).toMatchObject({ status: "pending" })
+    expect(chain.unsubscribed).toEqual([])
+  })
+
+  it("confirms an extrinsic first seen in a finalised head", async () => {
+    const chain = fakeChain()
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+
+    await expectStoredTx({ status: "success", blockNumber: "100", confirmed: true })
+    expect(chain.unsubscribed).toContain("chain_unsubscribeFinalizedHeads")
+  })
+
+  // bug: the finalised path clears the timeout, and the timeout is the only place that
+  // unsubscribes from new heads when no new head matched first
+  it.fails("stops watching new heads once the extrinsic is first seen finalised", async () => {
+    const chain = fakeChain()
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+    await vi.advanceTimersByTimeAsync(TX_WATCH_TIMEOUT)
+
+    expect(chain.unsubscribed).toContain("chain_unsubscribeAllHeads")
   })
 
   it("reads the outcome of the extrinsic's own index, not of its neighbours", async () => {
