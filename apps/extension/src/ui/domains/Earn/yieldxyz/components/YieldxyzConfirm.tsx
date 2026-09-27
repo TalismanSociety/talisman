@@ -1,6 +1,7 @@
 import type { ActionDto } from "@core/domains/earn/exports"
 import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
@@ -13,11 +14,11 @@ import {
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { cn } from "@ui/util/cn"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { type FC, type ReactNode, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { TransactionRequest } from "viem"
 
-import { FormFieldSetRow } from "../../shared/FormFieldSet"
+import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shared/FormFieldSet"
 import type { useYieldxyzTransaction } from "../hooks/useYieldxyzTransaction"
 import { YieldxyzTransactionDetails } from "./YieldxyzTransactionDetails"
 import { YieldxyzTransactionsStepper } from "./YieldxyzTransactionsStepper"
@@ -32,22 +33,39 @@ export type YieldxyzConfirmWizard = {
   onSubmit: (txId: string) => Promise<void>
 }
 
-/** network, transaction details, fee and risk rows, shown at the end of every confirm step */
-export const YieldxyzConfirmNetworkRows: FC<{
+export const YieldxyzConfirmBody: FC<{
   wizard: YieldxyzConfirmWizard
   networkId: NetworkId
-}> = ({ wizard, networkId }) => {
+  children: ReactNode
+}> = ({ wizard, networkId, children }) => {
   const { t } = useTranslation()
+  const transactionsCount = wizard.action?.transactions.length ?? 0
 
   return (
-    <>
-      <FormFieldSetRow label={t("Network")} variant="small">
-        <NetworkDisplay networkId={networkId} />
-      </FormFieldSetRow>
-      <TransactionDetails transaction={wizard.transaction} />
-      <NetworkFeeRow wizard={wizard} />
-      <SimulationRow />
-    </>
+    <div className="flex size-full flex-col gap-8 overflow-hidden">
+      <ScrollContainer className="w-full grow" innerClassName="flex flex-col gap-8 *:shrink-0">
+        <div className="line-clamp-2 w-full text-center font-bold text-md">
+          {transactionsCount > 1
+            ? t("Approve {{count}} transactions", { count: transactionsCount })
+            : t("Approve transaction")}
+        </div>
+        <div className="flex w-full grow flex-col items-center justify-center gap-6">
+          <StepsProgress wizard={wizard} />
+          <TransactionError wizard={wizard} />
+        </div>
+        <FormFieldSet>
+          {children}
+          <FormFieldSetSeparator />
+          <FormFieldSetRow label={t("Network")} variant="small">
+            <NetworkDisplay networkId={networkId} />
+          </FormFieldSetRow>
+          <TransactionDetails transaction={wizard.transaction} />
+          <NetworkFeeRow wizard={wizard} />
+          <SimulationRow />
+        </FormFieldSet>
+      </ScrollContainer>
+      <SubmitButton wizard={wizard} />
+    </div>
   )
 }
 
@@ -64,7 +82,7 @@ const SimulationRow = () => {
   )
 }
 
-export const YieldxyzTransactionError: FC<{ wizard: YieldxyzConfirmWizard }> = ({
+const TransactionError: FC<{ wizard: YieldxyzConfirmWizard }> = ({
   wizard: { transaction, isProcessing },
 }) => {
   return (
@@ -85,7 +103,7 @@ export const YieldxyzTransactionError: FC<{ wizard: YieldxyzConfirmWizard }> = (
   )
 }
 
-export const YieldxyzStepsProgress: FC<{ wizard: YieldxyzConfirmWizard }> = ({
+const StepsProgress: FC<{ wizard: YieldxyzConfirmWizard }> = ({
   wizard: { action, stepIndex, isProcessing },
 }) => {
   if (!action || stepIndex === null) return null
@@ -99,7 +117,7 @@ export const YieldxyzStepsProgress: FC<{ wizard: YieldxyzConfirmWizard }> = ({
   )
 }
 
-export const YieldxyzConfirmSubmitButton: FC<{ wizard: YieldxyzConfirmWizard }> = ({
+const SubmitButton: FC<{ wizard: YieldxyzConfirmWizard }> = ({
   wizard: { transaction, isProcessing, onSubmit, stepIndex: txIndex, action },
 }) => {
   const { t } = useTranslation()
