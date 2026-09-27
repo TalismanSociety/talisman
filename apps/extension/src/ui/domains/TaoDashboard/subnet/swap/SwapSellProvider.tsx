@@ -3,6 +3,7 @@ import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
+import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
 import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
@@ -11,6 +12,7 @@ import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useBalances } from "@ui/state/balances"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
@@ -94,6 +96,12 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     if (!address || !tokenIdOut) return null
     return balances.get(getBalanceId({ address, tokenId: tokenIdOut })) ?? null
   }, [balances, address, tokenIdOut])
+
+  // the balance pool drops zero balances, so an account without free TAO has no record:
+  // read it fresh, falling back to the pool record while the query loads
+  const { data: freshTransferableTao } = useGetBittensorTransferableBalance({ networkId, address })
+  const knownTransferableTao = freshTransferableTao ?? balanceTokenOut?.transferable.planck ?? null
+  const existentialDeposit = useExistentialDeposit(tokenIdOut)
 
   // conviction locks constrain the coldkey's TOTAL alpha on the subnet:
   // this position's sellable amount is min(position stake, subnet-wide available)
@@ -227,8 +235,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     // the wallet sends, so the fee always comes from free TAO
     if (
       typeof combinedFeeEstimate === "bigint" &&
-      balanceTokenOut &&
-      combinedFeeEstimate > balanceTokenOut.transferable.planck
+      typeof knownTransferableTao === "bigint" &&
+      existentialDeposit &&
+      existentialDeposit.planck + combinedFeeEstimate > knownTransferableTao
     )
       return t("Insufficient TAO to cover fee")
 
@@ -257,7 +266,8 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return null
   }, [
     balanceTokenIn,
-    balanceTokenOut,
+    knownTransferableTao,
+    existentialDeposit,
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
