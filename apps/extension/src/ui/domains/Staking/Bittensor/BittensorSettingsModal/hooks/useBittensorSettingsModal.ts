@@ -1,14 +1,16 @@
 import { log } from "@common/log"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback } from "react"
 
 import type { BittensorSettingsOpenOptions } from "./useBittensorSettingsWizard"
 import { useResetBittensorSettingsWizard } from "./useBittensorSettingsWizard"
 
+const [useBittensorSettingsOpenClose] = createGlobalOpenClose()
+
 export const useBittensorSettingsModal = () => {
   const reset = useResetBittensorSettingsWizard()
 
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("BittensorSettingsModal")
+  const { isOpen, open: innerOpen, close } = useBittensorSettingsOpenClose()
 
   const open = useCallback(
     (opts: BittensorSettingsOpenOptions) => {

@@ -1,3 +1,3 @@
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
-export const useLearnMoreModal = () => useGlobalOpenClose("LearnMore")
+export const [useLearnMoreModal] = createGlobalOpenClose()

@@ -8,14 +8,14 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useAccountsCatalog } from "@ui/state/accounts"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
-export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
+export const [useNewFolderModal] = createGlobalOpenClose()
 
 export const NewFolderModal = () => {
   const { t } = useTranslation()

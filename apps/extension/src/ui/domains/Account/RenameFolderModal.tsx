@@ -1,6 +1,5 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { bind } from "@react-rxjs/core"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -8,40 +7,26 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import * as yup from "yup"
 
 type FolderProps = {
-  id: string | null
-  name: string | null
-  treeName: AccountsCatalogTree | null
+  id: string
+  name: string
+  treeName: AccountsCatalogTree
 }
 
-const localFolder$ = new BehaviorSubject<FolderProps>({
-  id: null,
-  name: null,
-  treeName: null,
-})
-
-const setLocalFolder = (item: FolderProps) => {
-  localFolder$.next(item)
-}
-
-const [useLocalFolder] = bind(localFolder$)
+const [useRenameFolderOpenClose] = createGlobalOpenClose<FolderProps>()
 
 export const useRenameFolderModal = () => {
-  const { id, name, treeName } = useLocalFolder()
-  const { isOpen, open: _open, close } = useGlobalOpenClose("renameFolderModal")
+  const { isOpen, open: _open, close, args } = useRenameFolderOpenClose()
+  const { id = null, name = null, treeName = null } = args ?? {}
 
   const open = useCallback(
-    (id: string, name: string, treeName: AccountsCatalogTree) => {
-      setLocalFolder({ id, name, treeName })
-      _open()
-    },
+    (id: string, name: string, treeName: AccountsCatalogTree) => _open({ id, name, treeName }),
     [_open]
   )
 

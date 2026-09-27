@@ -1,14 +1,16 @@
 import type { Address } from "@core/types/base"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback } from "react"
 
 import { useResetNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"
 
+const [useNomPoolWithdrawOpenClose] = createGlobalOpenClose()
+
 export const useNomPoolWithdrawModal = () => {
   const reset = useResetNomPoolWithdrawWizard()
 
-  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("NomPoolWithdrawModal")
+  const { isOpen, open: innerOpen, close } = useNomPoolWithdrawOpenClose()
 
   const open = useCallback(
     ({ address, tokenId }: { address: Address; tokenId: TokenId }) => {
