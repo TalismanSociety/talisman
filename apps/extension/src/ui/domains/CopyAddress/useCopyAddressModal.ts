@@ -1,25 +1,17 @@
-import { bind } from "@react-rxjs/core"
 import { detectAddressEncoding, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback } from "react"
-import { BehaviorSubject } from "rxjs"
 
 import type { CopyAddressWizardInputs } from "./types"
 
-const copyAddressInputs$ = new BehaviorSubject<CopyAddressWizardInputs>({})
-
-const setCopyAddressInputs = (inputs: CopyAddressWizardInputs) => {
-  copyAddressInputs$.next(inputs)
-}
-
-const [useCopyAddressInputs] = bind(copyAddressInputs$)
+const [useCopyAddressOpenClose] = createGlobalOpenClose<CopyAddressWizardInputs>()
 
 export const useCopyAddressModal = () => {
-  const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
+  const { open: innerOpen, close, isOpen, args } = useCopyAddressOpenClose()
   const chainsMap = useNetworksMapById({ platform: "polkadot" })
-  const inputs = useCopyAddressInputs()
+  const inputs = args ?? {}
 
   const open = useCallback(
     (opts: CopyAddressWizardInputs = {}) => {
@@ -51,8 +43,7 @@ export const useCopyAddressModal = () => {
       }
 
       // display the wizard
-      setCopyAddressInputs(opts)
-      innerOpen()
+      innerOpen(opts)
     },
     [chainsMap, innerOpen]
   )

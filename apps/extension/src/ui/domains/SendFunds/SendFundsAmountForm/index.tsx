@@ -3,7 +3,7 @@ import {
   useSendFundsWizard,
 } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,10 +25,10 @@ const ReviewButton = () => {
   const { gotoReview } = useSendFundsWizard()
   const { isValid, tokensToBeReaped, recipientWarning, token, dtaoLockedTransferWarning } =
     useSendFunds()
-  const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
-  const recipientWarningDrawer = useGlobalOpenClose("sendFundsRecipientWarningDrawer")
-  const rootStakedTaoDrawer = useGlobalOpenClose("sendFundsRootStakedTaoWarningDrawer")
-  const convictionLockDrawer = useGlobalOpenClose("sendFundsConvictionLockWarningDrawer")
+  const forfeitDrawer = useOpenClose()
+  const recipientWarningDrawer = useOpenClose()
+  const rootStakedTaoDrawer = useOpenClose()
+  const convictionLockDrawer = useOpenClose()
   const [warnings, setWarnings] = useState<string[]>([])
   const [acceptedWarnings, setAcceptedWarnings] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState(false)

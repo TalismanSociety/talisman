@@ -1,41 +1,26 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
-import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 
 type FolderProps = {
-  id: string | null
-  name: string | null
-  treeName: AccountsCatalogTree | null
+  id: string
+  name: string
+  treeName: AccountsCatalogTree
 }
 
-const localFolder$ = new BehaviorSubject<FolderProps>({
-  id: null,
-  name: null,
-  treeName: null,
-})
-
-const setLocalFolder = (item: FolderProps) => {
-  localFolder$.next(item)
-}
-
-const [useLocalFolder] = bind(localFolder$)
+const [useDeleteFolderOpenClose] = createGlobalOpenClose<FolderProps>()
 
 export const useDeleteFolderModal = () => {
-  const { id, name, treeName } = useLocalFolder()
-  const { isOpen, open: _open, close } = useGlobalOpenClose("deleteFolderModal")
+  const { isOpen, open: _open, close, args } = useDeleteFolderOpenClose()
+  const { id = null, name = null, treeName = null } = args ?? {}
 
   const open = useCallback(
-    (id: string, name: string, treeName: AccountsCatalogTree) => {
-      setLocalFolder({ id, name, treeName })
-      _open()
-    },
+    (id: string, name: string, treeName: AccountsCatalogTree) => _open({ id, name, treeName }),
     [_open]
   )
 

@@ -4,14 +4,14 @@ import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")
+export const [useCurrenciesDrawerOpenClose] = createGlobalOpenClose()
 
 const CurrencyButton: FC<{
   currency: TokenRateCurrency

@@ -3,12 +3,12 @@ import { Drawer } from "@ui/components/Drawer"
 import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-export const useAutoLockDrawerOpenClose = () => useGlobalOpenClose("auto-lock-drawer")
+export const [useAutoLockDrawerOpenClose] = createGlobalOpenClose()
 
 const AutoLockEditor = () => {
   const { t } = useTranslation()
