@@ -2,17 +2,15 @@ import { AccountRole } from "@solana/kit"
 import { type SolSplToken, solSplTokenId } from "@talismn/chaindata-provider"
 import { uniq } from "lodash-es"
 import { firstValueFrom } from "rxjs"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { IBalance } from "../../types"
-import { getDetectedTokensIds$ } from "../shared/detectedTokens"
 import {
   createFakeSolanaRpc,
   NodeUnhealthyError,
   type SolanaRpcRequest,
 } from "../sol-native/__fixtures__/fakeSolanaRpc"
 import { solanaMainnet as fixture } from "./__fixtures__/solanaMainnet"
-import { fetchBalances } from "./fetchBalances"
 import { getTransferCallData } from "./getTransferCallData"
 import { fetchOnChainTokenData } from "./onChainTokenMetadata"
 
@@ -105,6 +103,16 @@ const accountInfoRequests = (requests: SolanaRpcRequest[]) =>
   requests.filter((r) => r.method === "getAccountInfo").map((r) => r.params[0])
 
 describe("sol-spl fetchBalances", () => {
+  let fetchBalances: typeof import("./fetchBalances").fetchBalances
+  let getDetectedTokensIds$: typeof import("../shared/detectedTokens").getDetectedTokensIds$
+
+  // the metaplex metadata cache and detected tokens live at module level
+  beforeEach(async () => {
+    vi.resetModules()
+    ;({ fetchBalances } = await import("./fetchBalances"))
+    ;({ getDetectedTokensIds$ } = await import("../shared/detectedTokens"))
+  })
+
   it("reads token accounts by owner and reports zero for mints without an account", async () => {
     const { connector, requests } = createFakeSolanaRpc(recordedChain())
 

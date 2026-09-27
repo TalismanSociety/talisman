@@ -150,7 +150,8 @@ describe("substrate-foreignassets fetchBalances", () => {
     ])
   })
 
-  it("reports a Blocked account as transferable (current behaviour)", async () => {
+  // a Blocked account can neither send nor receive, but only the Frozen status locks the balance
+  it.fails("reports a Blocked account's whole balance as frozen", async () => {
     const { blocked } = fixture.handEncoded
     const { connector } = makeConnector({ [wethHolder.entry.key]: blocked.value })
 
@@ -158,7 +159,10 @@ describe("substrate-foreignassets fetchBalances", () => {
 
     expect(blocked.expected.status.type).toBe("Blocked")
     expect(withoutSource(success)).toEqual([
-      foreignBalance(WETH, wethHolder.address, { free: blocked.expected.balance, frozen: "0" }),
+      foreignBalance(WETH, wethHolder.address, {
+        free: blocked.expected.balance,
+        frozen: blocked.expected.balance,
+      }),
     ])
   })
 

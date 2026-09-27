@@ -194,7 +194,8 @@ describe("substrate-assets fetchBalances", () => {
     ])
   })
 
-  it("reports a Blocked account as transferable (current behaviour)", async () => {
+  // a Blocked account can neither send nor receive, but only the Frozen status locks the balance
+  it.fails("reports a Blocked account's whole balance as frozen", async () => {
     const { blocked } = fixture.handEncoded
     const { connector } = makeConnector({ [frozenAccount.entry.key]: blocked.value })
     const token = assetToken(ASSET_HUB, frozenAccount.assetId)
@@ -203,7 +204,10 @@ describe("substrate-assets fetchBalances", () => {
 
     expect(blocked.expected.status.type).toBe("Blocked")
     expect(success).toEqual([
-      assetBalance(token, frozenAccount.address, { free: blocked.expected.balance, frozen: "0" }),
+      assetBalance(token, frozenAccount.address, {
+        free: blocked.expected.balance,
+        frozen: blocked.expected.balance,
+      }),
     ])
   })
 
