@@ -5,7 +5,10 @@ import { getErrorMessage, sleep } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Dropdown } from "@ui/components/Dropdown"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
-import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
+import {
+  LedgerEthereumAccountPicker,
+  LedgerSolanaAccountPicker,
+} from "@ui/domains/Account/LedgerAccountPicker"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { toPairs } from "lodash-es"
@@ -17,7 +20,6 @@ import * as yup from "yup"
 
 import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
 import { LedgerPolkadotLegacyAccountPicker } from "../../LedgerPolkadotLegacyAccountPicker"
-import { LedgerSolanaAccountPicker } from "../../LedgerSolanaAccountPicker"
 import { AddSubstrateLedgerAppType, type LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const ledgerEthDerivationPathOptions: Record<LedgerEthDerivationPathType, string> = {
