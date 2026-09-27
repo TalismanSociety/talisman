@@ -561,14 +561,6 @@ const useBittensorBondWizardProvider = () => {
     minTaoStakeForInput,
   ])
 
-  // Bittensor's runtime can pay remove_stake fees from staked Alpha when free TAO is insufficient,
-  // but this requires the Alpha fee mechanism to be active on-chain (detected via TransactionFeePaidWithAlpha event).
-  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
-  const supportsAlphaFees = useMemo(
-    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
-    [sapi]
-  )
-
   // Accounts with zero free TAO have no native balance record at all (the balance pool
   // drops zero balances), so a missing record can't distinguish "zero TAO" from "not
   // loaded yet": read the balance fresh from chain, falling back to the pool record
@@ -582,10 +574,9 @@ const useBittensorBondWizardProvider = () => {
   const unstakeInputErrorMessage = useMemo(() => {
     if (rootStakeHoldGate.message) return rootStakeHoldGate.message
 
-    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees.
-    // Root staking has no alpha-fee mechanism at all, so root unbonds always need free TAO.
+    // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
+    // the wallet sends, so the fee always comes from free TAO
     if (
-      (netuid === ROOT_NETUID || !supportsAlphaFees) &&
       amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
@@ -636,8 +627,6 @@ const useBittensorBondWizardProvider = () => {
     return null
   }, [
     rootStakeHoldGate.message,
-    supportsAlphaFees,
-    netuid,
     amountIn,
     existentialDeposit?.planck,
     feeEstimate,

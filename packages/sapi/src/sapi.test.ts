@@ -46,8 +46,7 @@ describe("getScaleApi", () => {
     expect(api.isApiAvailable("NotAnApi", "dry_run_call")).toBe(false)
   })
 
-  // hasEvent checks `typeof pallet.events === "number"`, but unified metadata holds `{ type }`
-  it.fails("finds events the metadata declares", () => {
+  it("finds events the metadata declares", () => {
     const api = getTestScaleApi("polkadot")
 
     expect(api.hasEvent("Balances", "Transfer")).toBe(true)
