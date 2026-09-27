@@ -1,11 +1,17 @@
 import { log } from "@common/log"
+import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
+import type { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import type { Account } from "@core/domains/keyring/exports"
 import type { LedgerSolDerivationPathType } from "@core/domains/solana/exports"
 import { getSolLedgerDerivationPath } from "@core/domains/solana/exports"
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import type { LedgerAccountDefSolana } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import type {
+  LedgerAccountDefEthereum,
+  LedgerAccountDefSolana,
+} from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
@@ -16,22 +22,56 @@ import { useTranslation } from "react-i18next"
 import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
-const useLedgerSolanaAccounts = (
+type LedgerAccountDefEvmOrSol = LedgerAccountDefEthereum | LedgerAccountDefSolana
+
+type LedgerAccountPickerConfig<TDef extends LedgerAccountDefEvmOrSol, TPathType> = {
+  type: TDef["type"]
+  platform: "ethereum" | "solana"
+  getDerivationPath: (derivationPathType: TPathType, accountIndex: number) => string
+  /** returns a hook that reads the encoded address at a derivation path */
+  useGetAddress: () => (derivationPath: string) => Promise<string>
+}
+
+const ETHEREUM: LedgerAccountPickerConfig<LedgerAccountDefEthereum, LedgerEthDerivationPathType> = {
+  type: "ledger-ethereum",
+  platform: "ethereum",
+  getDerivationPath: getEthLedgerDerivationPath,
+  useGetAddress: () => {
+    const { getAddress } = useLedgerEthereum()
+    return useCallback(async (path: string) => (await getAddress(path)).address, [getAddress])
+  },
+}
+
+const SOLANA: LedgerAccountPickerConfig<LedgerAccountDefSolana, LedgerSolDerivationPathType> = {
+  type: "ledger-solana",
+  platform: "solana",
+  getDerivationPath: getSolLedgerDerivationPath,
+  useGetAddress: () => {
+    const { getAddress } = useLedgerSolana()
+    return useCallback(
+      async (path: string) => encodeAddressSolana((await getAddress(path)).address),
+      [getAddress]
+    )
+  },
+}
+
+const useLedgerAccounts = <TDef extends LedgerAccountDefEvmOrSol, TPathType>(
+  config: LedgerAccountPickerConfig<TDef, TPathType>,
   name: string,
-  derivationPathType: LedgerSolDerivationPathType,
-  selectedAccounts: LedgerAccountDefSolana[],
+  derivationPathType: TPathType,
+  selectedAccounts: TDef[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
-  const [derivedAccounts, setDerivedAccounts] = useState<(LedgerSolanaAccount | undefined)[]>([
+  const [derivedAccounts, setDerivedAccounts] = useState<(LedgerAccount<TDef> | undefined)[]>([
     ...Array(itemsPerPage),
   ])
 
   const refIsBusy = useRef(false)
 
-  const { getAddress } = useLedgerSolana()
+  const getAddress = config.useGetAddress()
 
   const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({
     status: "connecting",
@@ -44,12 +84,12 @@ const useLedgerSolanaAccounts = (
     refAddressCache.current = {} // reset if app changes
   }, [])
 
-  const solNetworks = useNetworks({
-    platform: "solana",
+  const networks = useNetworks({
+    platform: config.platform,
     activeOnly: true,
     includeTestnets: false,
   })
-  const withBalances = useMemo(() => !!solNetworks.length, [solNetworks])
+  const withBalances = useMemo(() => !!networks.length, [networks])
 
   // keep page index as ref to allow for cancelling current page load when changing page
   const refPageIndex = useRef(pageIndex)
@@ -71,30 +111,27 @@ const useLedgerSolanaAccounts = (
       const skip = pageIndex * itemsPerPage
 
       try {
-        const newAccounts: (LedgerSolanaAccount | undefined)[] = [...Array(itemsPerPage)]
+        const newAccounts: (LedgerAccount<TDef> | undefined)[] = [...Array(itemsPerPage)]
         setDerivedAccounts([...newAccounts])
 
         for (let i = 0; i < itemsPerPage; i++) {
           if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
 
           const accountIndex = skip + i
-          const path = getSolLedgerDerivationPath(derivationPathType, accountIndex)
+          const path = config.getDerivationPath(derivationPathType, accountIndex)
 
-          const { address } = refAddressCache.current[path] ?? {
-            address: encodeAddressSolana((await getAddress(path)).address),
-          }
-
+          const { address } = refAddressCache.current[path] ?? { address: await getAddress(path) }
           if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
           if (!address) throw new Error("Unable to get address")
           refAddressCache.current[path] = { address }
 
           newAccounts[i] = {
-            type: "ledger-solana",
+            type: config.type,
             derivationPath: path,
             accountIndex,
             name: `${name.trim()} ${accountIndex + 1}`,
             address,
-          } as LedgerSolanaAccount
+          } as unknown as LedgerAccount<TDef>
 
           setDerivedAccounts([...newAccounts])
         }
@@ -115,7 +152,7 @@ const useLedgerSolanaAccounts = (
         refIsBusy.current = false
       }
     },
-    [derivationPathType, getAddress, itemsPerPage, name, t]
+    [config, derivationPathType, getAddress, itemsPerPage, name, t]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -123,16 +160,17 @@ const useLedgerSolanaAccounts = (
     () =>
       withBalances && derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts.filter(isNotNil).map(
-            ({ address }): Account => ({
-              type: "ledger-solana",
-              address,
-              name: "",
-              createdAt: Date.now(),
-              derivationPath: "",
-            })
+            ({ address }) =>
+              ({
+                type: config.type,
+                address,
+                name: "",
+                createdAt: Date.now(),
+                derivationPath: "",
+              }) as Account
           )
         : [],
-    [derivedAccounts, itemsPerPage, withBalances]
+    [config, derivedAccounts, itemsPerPage, withBalances]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -177,23 +215,27 @@ const useLedgerSolanaAccounts = (
   }
 }
 
-type LedgerSolanaAccountPickerProps = {
+type LedgerAccount<TDef extends LedgerAccountDefEvmOrSol> = DerivedAccountBase & TDef
+
+type LedgerAccountPickerProps<TDef extends LedgerAccountDefEvmOrSol, TPathType> = {
   name: string
-  derivationPathType: LedgerSolDerivationPathType
-  onChange?: (accounts: LedgerAccountDefSolana[]) => void
+  derivationPathType: TPathType
+  onChange?: (accounts: TDef[]) => void
 }
 
-type LedgerSolanaAccount = DerivedAccountBase & LedgerAccountDefSolana
-
-export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
+const LedgerAccountPicker = <TDef extends LedgerAccountDefEvmOrSol, TPathType>({
+  config,
   name,
   derivationPathType,
   onChange,
+}: LedgerAccountPickerProps<TDef, TPathType> & {
+  config: LedgerAccountPickerConfig<TDef, TPathType>
 }) => {
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSolana[]>([])
-  const { accounts, withBalances, connectionStatus } = useLedgerSolanaAccounts(
+  const [selectedAccounts, setSelectedAccounts] = useState<TDef[]>([])
+  const { accounts, withBalances, connectionStatus } = useLedgerAccounts(
+    config,
     name,
     derivationPathType,
     selectedAccounts,
@@ -201,19 +243,17 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
     itemsPerPage
   )
 
-  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { name, address, derivationPath } = acc as LedgerSolanaAccount
-    setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.derivationPath === derivationPath)
-        ? prev.filter((pa) => pa.derivationPath !== derivationPath)
-        : prev.concat({
-            type: "ledger-solana",
-            name,
-            address,
-            derivationPath,
-          })
-    )
-  }, [])
+  const handleToggleAccount = useCallback(
+    (acc: DerivedAccountBase) => {
+      const { name, address, derivationPath } = acc as LedgerAccount<TDef>
+      setSelectedAccounts((prev) =>
+        prev.some((pa) => pa.derivationPath === derivationPath)
+          ? prev.filter((pa) => pa.derivationPath !== derivationPath)
+          : prev.concat({ type: config.type, name, address, derivationPath } as TDef)
+      )
+    },
+    [config.type]
+  )
 
   useEffect(() => {
     if (onChange) onChange(selectedAccounts)
@@ -240,3 +280,11 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
     </>
   )
 }
+
+export const LedgerEthereumAccountPicker: FC<
+  LedgerAccountPickerProps<LedgerAccountDefEthereum, LedgerEthDerivationPathType>
+> = (props) => <LedgerAccountPicker config={ETHEREUM} {...props} />
+
+export const LedgerSolanaAccountPicker: FC<
+  LedgerAccountPickerProps<LedgerAccountDefSolana, LedgerSolDerivationPathType>
+> = (props) => <LedgerAccountPicker config={SOLANA} {...props} />
