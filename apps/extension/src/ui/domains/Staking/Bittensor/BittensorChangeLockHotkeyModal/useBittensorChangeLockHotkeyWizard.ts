@@ -1,7 +1,7 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"

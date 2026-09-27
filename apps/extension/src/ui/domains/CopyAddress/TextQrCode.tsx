@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useEffect, useState } from "react"
@@ -52,8 +53,7 @@ export const TextQrCode = ({
 
   useEffect(() => {
     if (!error) return
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error("Failed to generate QR code", error, { data })
+    log.error("Failed to generate QR code", error, { data })
   }, [data, error])
 
   if (error)

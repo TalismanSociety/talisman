@@ -1,4 +1,4 @@
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

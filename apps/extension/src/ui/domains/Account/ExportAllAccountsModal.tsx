@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
@@ -92,11 +93,11 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [setError, onSuccess, password]
+    [setError, onSuccess, password, t]
   )
 
   useEffect(() => {

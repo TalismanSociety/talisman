@@ -4,6 +4,7 @@
 // Adapted from polkadot.js
 
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 import type { Observable } from "rxjs"
 
 import type {
@@ -80,8 +81,7 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
         port.postMessage({ id, subscription: data, timestamp: Date.now() })
       } catch (error) {
         DEBUG &&
-          // biome-ignore lint/suspicious/noConsole: legacy
-          console.error(
+          log.error(
             "Error on posting message for subscription - subscription might be closed. ",
             { error },
             { id, subscription: subscriptions[id] },

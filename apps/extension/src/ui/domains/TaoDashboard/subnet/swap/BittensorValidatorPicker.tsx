@@ -6,13 +6,13 @@ import {
   ValidatorRows,
   ValidatorSortMethodButton,
 } from "@ui/domains/Staking/Bittensor/components/ValidatorPicker"
+import type { BondOption as BondOptionType } from "@ui/domains/Staking/Bittensor/hooks/types"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import {
   sortValidatorOptions,
   type ValidatorSortValue,
 } from "@ui/domains/Staking/Bittensor/utils/validatorSorting"
-import type { BondOption as BondOptionType } from "@ui/domains/Staking/hooks/bittensor/types"
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { cn } from "@ui/util/cn"
 import {
   type FC,

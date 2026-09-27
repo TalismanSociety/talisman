@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import type { Route } from "@lifi/types"
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -84,7 +85,7 @@ vi.mock("@ui/state/chaindata", () => ({
   ),
 }))
 
-const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
@@ -193,7 +194,7 @@ const getTransaction = (
 /** The module logs the provider error before it rethrows it. */
 const expectRejection = async (transaction: Promise<unknown>, message: string) => {
   await expect(transaction).rejects.toThrow(message)
-  expect(consoleError).toHaveBeenCalledWith(
+  expect(logError).toHaveBeenCalledWith(
     expect.objectContaining({
       message: "Failed to create evm transaction",
       cause: expect.objectContaining({ message: expect.stringContaining(message) }),
@@ -224,8 +225,8 @@ const seedAssetCache = () => lifiSwapModule.getFromAssets(new AbortController().
 // --- Tests ---
 
 describe("lifi getTransaction — provider transaction guards", () => {
-  beforeEach(() => consoleError.mockClear())
-  afterAll(() => consoleError.mockRestore())
+  beforeEach(() => logError.mockClear())
+  afterAll(() => logError.mockRestore())
 
   it("builds the transaction when the provider response matches the swap", async () => {
     await seedAssetCache()

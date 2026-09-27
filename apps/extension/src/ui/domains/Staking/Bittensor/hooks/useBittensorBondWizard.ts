@@ -13,9 +13,9 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/hooks/bittensor/dTao/useDTaoRootStakeHold"
-import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorColdkeyLock"
-import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/hooks/bittensor/useGetBittensorTransferableBalance"
+import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
+import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
+import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"

@@ -1,6 +1,7 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -129,11 +130,11 @@ const RenameFolder = ({
       } catch (err) {
         setError("name", {
           type: "validate",
-          message: (err as Error)?.message ?? "",
+          message: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
-    [id, onConfirm, setError, treeName]
+    [id, onConfirm, setError, treeName, t]
   )
 
   // "manual" field registration so we can hook our own ref to it

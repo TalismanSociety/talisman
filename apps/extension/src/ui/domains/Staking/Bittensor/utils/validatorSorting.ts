@@ -1,4 +1,4 @@
-import type { BondOption } from "@ui/domains/Staking/hooks/bittensor/types"
+import type { BondOption } from "@ui/domains/Staking/Bittensor/hooks/types"
 
 export type ValidatorSortValue = "featured" | "name" | "totalStaked" | "totalStakers" | "apr"
 

@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import {
   ContextMenu,
@@ -87,7 +88,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Request failed"),
-        subtitle: (err as Error)?.message ?? "",
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
     }
     setIsRefreshing(false)

@@ -9,6 +9,7 @@ import {
   type KeypairCurve,
   parseSecretKey,
 } from "@talismn/crypto"
+import { getErrorMessage } from "@talismn/util"
 import { useField, useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -137,7 +138,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error importing account"),
-          subtitle: (err as Error)?.message ?? "",
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

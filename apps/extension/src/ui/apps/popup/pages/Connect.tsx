@@ -2,6 +2,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import type { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { InfoIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
@@ -82,7 +83,11 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       await api.authrequestApprove(authRequest.id, connected)
       window.close()
     } catch (err) {
-      notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
+      notify({
+        type: "error",
+        title: t("Failed to connect"),
+        subtitle: getErrorMessage(err, t("Unknown error")),
+      })
     }
   }, [authRequest, connected, t])
 

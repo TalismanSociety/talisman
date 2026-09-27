@@ -32,8 +32,8 @@ import {
   type ActiveNetworks,
   activeNetworksStore,
   isNetworkActive,
-} from "../balances/store.activeNetworks"
-import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
+} from "../chaindata/store.activeNetworks"
+import { activeTokensStore, filterActiveTokens } from "../chaindata/store.activeTokens"
 import { fetchDTaoTokenRatesForWallet } from "./dtaoTokenRates"
 
 /** carried dtao rates whose token id stays out of the active token list longer than this are pruned */

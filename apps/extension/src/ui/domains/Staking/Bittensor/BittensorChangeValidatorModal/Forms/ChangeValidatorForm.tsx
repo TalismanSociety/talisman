@@ -9,11 +9,10 @@ import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
+import { useCombinedBittensorValidatorsData } from "../../hooks/useCombinedBittensorValidatorsData"
 
 export const ChangeValidatorForm = () => {
   const { t } = useTranslation()

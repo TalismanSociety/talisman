@@ -1,4 +1,5 @@
 import type { AddAccountDeriveOptions } from "@core/domains/keyring/exports"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -49,7 +50,7 @@ export const AccountAddMnemonicAccountsForm = () => {
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Failed to import", { count: accountsToImport.length }),
-        subtitle: (err as Error).message,
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
       setIsSubmitting(false)
     }

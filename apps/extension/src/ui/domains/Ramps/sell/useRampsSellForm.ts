@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
-import { isTruthy } from "@talismn/util"
+import { getErrorMessage, isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { notify } from "@ui/components/Notifications"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
@@ -47,7 +47,7 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
         notify({
           type: "error",
           title: t("Error"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

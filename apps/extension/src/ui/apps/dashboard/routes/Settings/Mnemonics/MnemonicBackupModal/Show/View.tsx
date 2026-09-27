@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -27,7 +28,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
         notify({
           type: "error",
           title: t("Failed to change status"),
-          subtitle: (err as Error)?.message ?? "",
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

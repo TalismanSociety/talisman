@@ -1,5 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountPortfolio } from "@core/domains/keyring/exports"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { useCallback, useMemo } from "react"
@@ -44,7 +45,7 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Error"),
-        subtitle: (err as Error).message,
+        subtitle: getErrorMessage(err, t("Unknown error")),
       })
       return false
     }

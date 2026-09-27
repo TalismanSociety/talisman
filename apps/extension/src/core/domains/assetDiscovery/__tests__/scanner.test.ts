@@ -103,8 +103,8 @@ const settle = async () => {
 }
 
 let scanner: typeof import("../scanner").assetDiscoveryScanner
-let activeNetworks: typeof import("../../balances/store.activeNetworks").activeNetworksStore
-let activeTokens: typeof import("../../balances/store.activeTokens").activeTokensStore
+let activeNetworks: typeof import("../../chaindata/store.activeNetworks").activeNetworksStore
+let activeTokens: typeof import("../../chaindata/store.activeTokens").activeTokensStore
 let scanStore: typeof import("../store").assetDiscoveryStore
 let db: typeof import("../../../db").db
 
@@ -117,8 +117,8 @@ beforeEach(async () => {
   mocks.networks$ = new BehaviorSubject<EthNetwork[]>([])
   loadNetworks([])
   mocks.getClient.mockReset().mockResolvedValue({ getBalance: vi.fn(async () => 1n) })
-  ;({ activeNetworksStore: activeNetworks } = await import("../../balances/store.activeNetworks"))
-  ;({ activeTokensStore: activeTokens } = await import("../../balances/store.activeTokens"))
+  ;({ activeNetworksStore: activeNetworks } = await import("../../chaindata/store.activeNetworks"))
+  ;({ activeTokensStore: activeTokens } = await import("../../chaindata/store.activeTokens"))
   ;({ assetDiscoveryStore: scanStore } = await import("../store"))
   ;({ db } = await import("../../../db"))
   await activeNetworks.replace({})

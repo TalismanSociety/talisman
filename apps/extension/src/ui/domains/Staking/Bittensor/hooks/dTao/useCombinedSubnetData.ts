@@ -1,5 +1,5 @@
 import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
-import { useGetSubnetPools } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetSubnetPools"
+import { useGetSubnetPools } from "@ui/domains/Staking/Bittensor/hooks/dTao/useGetSubnetPools"
 import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useTokens } from "@ui/state/chaindata"
 import { assign, keyBy } from "lodash-es"

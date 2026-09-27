@@ -1,5 +1,5 @@
 import type { TransactionScanResponse } from "@blockaid/client/resources/evm/transaction.mjs"
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkById } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { toPairs, values } from "lodash-es"
@@ -70,14 +70,12 @@ const ExposureFooter: FC<{
 
   const assetLink = useMemo(() => {
     if (!network) return null
-    return (
-      getBlockExplorerUrls(network, { type: "address", address: exposure.asset.address })[0] ?? null
-    )
+    return getBlockExplorerUrl(network, { type: "address", address: exposure.asset.address })
   }, [exposure, network])
 
   const counterpartyLink = useMemo(() => {
     if (!network) return null
-    return getBlockExplorerUrls(network, { type: "address", address: exposure.spender })[0] ?? null
+    return getBlockExplorerUrl(network, { type: "address", address: exposure.spender })
   }, [network, exposure])
 
   return (

@@ -1,7 +1,8 @@
+import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
-import { isErrorOfName } from "@talismn/util"
+import { getErrorMessage, isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -121,8 +122,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const onApprovalSubmitted = useCallback(
     async (txId: string) => {
       if (!publicClient) {
-        // biome-ignore lint/suspicious/noConsole: intentional warning for debugging null publicClient
-        console.warn("publicClient unavailable for approval receipt polling, skipping wait")
+        log.warn("publicClient unavailable for approval receipt polling, skipping wait")
         incrementApprovalCounter()
         return
       }
@@ -141,7 +141,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             ? t("Insufficient gas for approval")
             : t("Approval failed"),
           type: "error",
-          subtitle: (cause as Error)?.message?.slice(0, 100),
+          subtitle: getErrorMessage(cause, t("Unknown error")).slice(0, 100),
         })
       } finally {
         setIsApproving(false)

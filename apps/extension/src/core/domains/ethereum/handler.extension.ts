@@ -1,5 +1,6 @@
 import { DEBUG } from "@common/constants"
 import { ETH_ERROR_EIP1193_USER_REJECTED, EthProviderRpcError } from "@common/EthProviderRpcError"
+import { log } from "@common/log"
 import { personalSign, SignTypedDataVersion, signTypedData } from "@metamask/eth-sig-util"
 import { isEthereumAddress } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
@@ -15,8 +16,8 @@ import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from ".
 import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { getHostName } from "../app/helpers"
-import { activeNetworksStore } from "../balances/store.activeNetworks"
-import { activeTokensStore } from "../balances/store.activeTokens"
+import { activeNetworksStore } from "../chaindata/store.activeNetworks"
+import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
@@ -59,8 +60,7 @@ export class EthHandler extends ExtensionHandler {
         })
         return true
       } catch (err) {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        DEBUG && console.error("signAndSendApproveHardware", { err })
+        DEBUG && log.error("signAndSendApproveHardware", { err })
         throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
       }
     }

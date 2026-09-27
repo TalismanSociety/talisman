@@ -52,7 +52,6 @@ const setWizardState = (state: SetStateAction<WizardState>) => {
 
 const [useWizardState] = bind(wizardState$)
 
-// TODO: this is meant to handle a pool picker too
 const useInnerOpenClose = (key: "isAccountPickerOpen") => {
   const state = useWizardState()
   const isOpen = state[key]
@@ -121,8 +120,7 @@ export const useBondWizard = () => {
     chainId: token?.networkId,
   })
 
-  // TODO rename to amountToStake
-  const formatter = useMemo(
+  const amountToStake = useMemo(
     () =>
       typeof plancks === "bigint"
         ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
@@ -167,11 +165,11 @@ export const useBondWizard = () => {
       !!account &&
       !!token &&
       !!poolId &&
-      !!formatter &&
+      !!amountToStake &&
       typeof minJoinBond === "bigint" &&
       plancks &&
       plancks > 0n,
-    [account, formatter, minJoinBond, plancks, poolId, token]
+    [account, amountToStake, minJoinBond, plancks, poolId, token]
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
@@ -219,16 +217,16 @@ export const useBondWizard = () => {
     if (!currentPoolId && poolState && !poolState.isOpen)
       return t("This nomination pool is not open")
 
-    if (!formatter || typeof minJoinBond !== "bigint") return null
+    if (!amountToStake || typeof minJoinBond !== "bigint") return null
 
-    if (balance && formatter.planck && formatter.planck > balance.transferable.planck)
+    if (balance && amountToStake.planck && amountToStake.planck > balance.transferable.planck)
       return t("Insufficient balance")
 
     if (
       balance &&
       feeEstimate &&
-      formatter.planck &&
-      formatter.planck + feeEstimate > balance.transferable.planck
+      amountToStake.planck &&
+      amountToStake.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
@@ -236,8 +234,8 @@ export const useBondWizard = () => {
       balance &&
       feeEstimate &&
       existentialDeposit?.planck &&
-      formatter.planck &&
-      existentialDeposit.planck + formatter.planck + feeEstimate > balance.transferable.planck
+      amountToStake.planck &&
+      existentialDeposit.planck + amountToStake.planck + feeEstimate > balance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
 
@@ -245,14 +243,15 @@ export const useBondWizard = () => {
       balance &&
       feeEstimate &&
       existentialDeposit?.planck &&
-      formatter.planck &&
-      existentialDeposit.planck + formatter.planck + feeEstimate * 10n > balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
+      amountToStake.planck &&
+      existentialDeposit.planck + amountToStake.planck + feeEstimate * 10n >
+        balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
       )
 
-    if (!hasJoinedNomPool && formatter.planck < minJoinBond)
+    if (!hasJoinedNomPool && amountToStake.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
         amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
         symbol: token?.symbol,
@@ -263,7 +262,7 @@ export const useBondWizard = () => {
     t,
     currentPoolId,
     poolState,
-    formatter,
+    amountToStake,
     minJoinBond,
     balance,
     feeEstimate,
@@ -278,7 +277,7 @@ export const useBondWizard = () => {
     token,
     tokenRates,
     poolId,
-    formatter,
+    amountToStake,
     displayMode,
     accountPicker,
     isFormValid,

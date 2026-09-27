@@ -1,4 +1,5 @@
 import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/constants"
+import { log } from "@common/log"
 import { ArrowRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -58,8 +59,7 @@ export const ConnectSignetPage = () => {
                 : "Please try again.",
         })
 
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error("Failed to connect to Signet", { err })
+        log.error("Failed to connect to Signet", { err })
       } finally {
         setIsConnecting(false)
       }

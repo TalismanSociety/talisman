@@ -1,4 +1,4 @@
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useCombinedSubnetData } from "@ui/domains/Staking/Bittensor/hooks/dTao/useCombinedSubnetData"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
 import type { UTCTimestamp } from "lightweight-charts"
 import { useMemo } from "react"

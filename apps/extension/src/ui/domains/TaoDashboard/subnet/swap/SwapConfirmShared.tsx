@@ -5,13 +5,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { MevShieldInfoDrawer } from "@ui/domains/Staking/Bittensor/BittensorBondModal/Drawers/BittensorMevShieldInfoDrawer"
 import { BittensorSlippageDrawer } from "@ui/domains/Staking/Bittensor/BittensorBondModal/Drawers/BittensorSlippageDrawer"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useGetSubnetFee } from "@ui/domains/Staking/Bittensor/hooks/useGetSubnetFee"
 import {
   HIGH_PRICE_IMPACT,
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_PRICE_IMPACT,
 } from "@ui/domains/Staking/Bittensor/utils/constants"
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"

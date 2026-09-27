@@ -10,10 +10,10 @@ import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap }
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
+import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "../chaindata/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { balancesProvider } from "./balancesProvider"
-import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
-import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import { balancesStore$ } from "./store.balances"
 
 const walletAddressesByTokenId$ = combineLatest({

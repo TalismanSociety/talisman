@@ -29,9 +29,7 @@ import {
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
 import type {
   ApprovalInfo,
@@ -46,6 +44,7 @@ import type {
   SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { getEvmNetwork, getEvmPublicClient } from "./evm-network"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
@@ -143,15 +142,6 @@ const getBridgeAmounts = async (
 }
 
 const withFeeBuffer = (fee: bigint) => (fee * FEE_BUFFER_NUMERATOR) / FEE_BUFFER_DENOMINATOR
-
-const getEvmNetwork = async (evmNetworkId: string) => {
-  const network = await firstValueFrom(getNetworkById$(evmNetworkId))
-  if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
-  return network
-}
-
-const getEvmClient = async (evmNetworkId: string): Promise<PublicClient> =>
-  getExtensionPublicClient(await getEvmNetwork(evmNetworkId))
 
 const isSubstrateAddress = (address: string) => {
   if (isEthereumAddress(address)) return false
@@ -336,7 +326,7 @@ const assertWithinRateLimit = async (
 }
 
 const assertVaultOpen = async (route: ForevermoneyRoute) => {
-  const client = await getEvmClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
+  const client = await getEvmPublicClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
   const [isPaused, migrationTarget, laneAllowed] = await Promise.all([
     client.readContract({
       abi: abiForevermoneyAlphaVault,
@@ -424,7 +414,7 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
   const isOutbound = route.direction === "evm-to-spoke"
   const [amounts, client] = await Promise.all([
     getBridgeAmounts(route, fromAmount),
-    getEvmClient(route.sourceNetworkId),
+    getEvmPublicClient(route.sourceNetworkId),
   ])
 
   await runChecks(client, route, amounts)
@@ -493,8 +483,8 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
 
   const [amounts, sourceClient, destinationClient] = await Promise.all([
     getBridgeAmounts(route, fromAmount),
-    getEvmClient(route.sourceNetworkId),
-    getEvmClient(route.destinationNetworkId),
+    getEvmPublicClient(route.sourceNetworkId),
+    getEvmPublicClient(route.destinationNetworkId),
   ])
 
   await runChecks(sourceClient, route, amounts)

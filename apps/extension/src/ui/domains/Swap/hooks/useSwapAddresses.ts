@@ -1,3 +1,4 @@
+import { log } from "@common/log"
 import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
@@ -158,8 +159,7 @@ export function useSwapAddresses({
         return setToAddress(fromAddress)
       }
       default: {
-        // biome-ignore lint/suspicious/noConsole: legacy
-        console.error(`platform ${toPlatform} not handled in updateSelectedAccountsOnAssetChange`)
+        log.error(`platform ${toPlatform} not handled in updateSelectedAccountsOnAssetChange`)
         return setToAddress(null)
       }
     }

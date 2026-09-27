@@ -1,11 +1,12 @@
 import { getDerivationPathForCurve } from "@core/domains/accounts/helpers"
 import type { Account, AddAccountDeriveOptions } from "@core/domains/keyring/exports"
 import { isAddressEqual, type KeypairCurve } from "@talismn/crypto"
-import { isNotNil } from "@talismn/util"
+import { getErrorMessage, isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state/accounts"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
@@ -32,6 +33,7 @@ const useDerivedAccounts = (
   itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
+  const { t } = useTranslation()
   const [derivedAccounts, setDerivedAccounts] = useState<DerivedFromMnemonicAccount[]>([
     ...Array(itemsPerPage),
   ])
@@ -74,9 +76,9 @@ const useDerivedAccounts = (
 
       setDerivedAccounts(newAccounts)
     } catch (err) {
-      setError((err as Error).message)
+      setError(getErrorMessage(err, t("Unknown error")))
     }
-  }, [itemsPerPage, mnemonic, name, pageIndex, curve])
+  }, [itemsPerPage, mnemonic, name, pageIndex, curve, t])
 
   const withBalances = useMemo(() => !!derivedAccounts.filter(isNotNil).length, [derivedAccounts])
 

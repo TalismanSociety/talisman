@@ -1,5 +1,6 @@
 import { sentry } from "@core/config/sentry"
 import { passwordStore } from "@core/domains/app/store.password"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
@@ -7,6 +8,7 @@ import useStatus, { statusOptions } from "@ui/hooks/useStatus"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { dismissMigratePasswordModal } from "./useMigratePasswordModal"
 
@@ -17,6 +19,7 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const [passwordTrimmed, setPasswordTrimmed] = useState<boolean>()
   const [error, setError] = useState<Error>()
   const { setStatus, status, message } = useStatus()
+  const { t } = useTranslation()
   const allBackedUp = useMnemonicsAllBackedUp()
   const mnemonics = useMnemonics()
 
@@ -55,9 +58,9 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
       setStatus.success()
     } catch (err) {
       setError(err as Error)
-      setStatus.error((err as Error).message)
+      setStatus.error(getErrorMessage(err, t("Unknown error")))
     }
-  }, [allBackedUp, newPassword, password, passwordTrimmed, setStatus])
+  }, [allBackedUp, newPassword, password, passwordTrimmed, setStatus, t])
 
   useEffect(() => {
     if (status === statusOptions.INITIALIZED && allBackedUp) {

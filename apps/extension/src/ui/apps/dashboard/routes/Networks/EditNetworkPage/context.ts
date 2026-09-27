@@ -6,6 +6,7 @@ import {
   type Network,
   type NetworkPlatform,
 } from "@talismn/chaindata-provider"
+import { getErrorMessage } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
@@ -104,7 +105,7 @@ const useNetworkFormProvider = ({ network }: { network: Network }) => {
         notify({
           type: "error",
           title: t("Error"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },

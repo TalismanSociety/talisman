@@ -11,6 +11,7 @@ import {
   type SolTransaction,
   serializeTransaction,
 } from "@talismn/solana"
+import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import {
@@ -95,7 +96,7 @@ export const SolSignTransactionRequest: FC<{
     } catch (error) {
       setState({
         processing: false,
-        error: (error as Error).message || "Failed to approve sign request",
+        error: getErrorMessage(error, "Failed to approve sign request"),
       })
     }
   }, [id, network?.id, riskAnalysis.tokenIds, enableTokens])
@@ -117,7 +118,7 @@ export const SolSignTransactionRequest: FC<{
       } catch (error) {
         setState({
           processing: false,
-          error: (error as Error).message || "Failed to approve sign request",
+          error: getErrorMessage(error, "Failed to approve sign request"),
         })
       }
     },

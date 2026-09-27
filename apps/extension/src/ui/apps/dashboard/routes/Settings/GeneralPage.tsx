@@ -17,7 +17,7 @@ import {
   UserIcon,
   XIcon,
 } from "@talismn/icons"
-import { isNotNil } from "@talismn/util"
+import { getErrorMessage, isNotNil } from "@talismn/util"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
@@ -176,9 +176,9 @@ const LedgerTransportTypeSelect = () => {
           break
       }
     } catch (err) {
-      setCheckStatus({ ok: false, error: (err as Error).message })
+      setCheckStatus({ ok: false, error: getErrorMessage(err, t("Unknown error")) })
     }
-  }, [ledgerTransportType])
+  }, [ledgerTransportType, t])
 
   useEffect(() => {
     return () => {

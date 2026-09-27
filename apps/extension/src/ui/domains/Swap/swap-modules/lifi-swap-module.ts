@@ -1,7 +1,7 @@
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import type {
-  EthNetworkId,
   EvmErc20Token,
   SolNetworkId,
   SolSplToken,
@@ -22,8 +22,7 @@ import {
   transactionFromBytes,
 } from "@talismn/solana"
 import { isAbortError } from "@talismn/util"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
+import { getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
@@ -40,6 +39,7 @@ import {
   type SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
@@ -103,16 +103,6 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
 // LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
 // instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
 const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl })
-
-// --- Helper to get a viem PublicClient for an EVM network ---
-const getPublicClient = async (evmNetworkId: EthNetworkId | string | undefined) => {
-  if (!evmNetworkId) return undefined
-  const evmNetwork = await firstValueFrom(getNetworkById$(evmNetworkId))
-  const nativeToken = await firstValueFrom(getToken$(evmNetwork?.nativeTokenId))
-  if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
-    return undefined
-  return getExtensionPublicClient(evmNetwork)
-}
 
 // --- Internal asset type for LI.FI (not exposed) ---
 type LifiInternalAsset = {
@@ -218,8 +208,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
       const token = await lifiSdk.getToken(lifiClient, lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
-      // biome-ignore lint/suspicious/noConsole: legacy
-      console.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
+      log.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
     }
   }
 
@@ -401,8 +390,7 @@ const getRoutes = async (
   } catch (cause) {
     if (signal.aborted || isAbortError(cause)) return null
 
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.warn("Failed to fetch lifi routes", cause)
+    log.warn("Failed to fetch lifi routes", cause)
     return {
       routes: [],
       unavailableRoutes: { failed: [], filteredOut: [] },
@@ -658,7 +646,7 @@ const getTransaction = async (
     const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
     if (!evmNetwork) throw new Error("Unknown chain")
 
-    const publicClient = await getPublicClient(evmNetwork.id)
+    const publicClient = await findEvmPublicClient(evmNetwork.id)
     if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
     const transaction = await prepareTransactionRequestWithGasCheck(
@@ -676,8 +664,7 @@ const getTransaction = async (
 
     return { platform: "ethereum", transaction }
   } catch (cause) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    console.error(new Error("Failed to create evm transaction", { cause }))
+    log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
 }

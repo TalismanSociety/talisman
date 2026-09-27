@@ -9,8 +9,8 @@ import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
 
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { useDTaoRootStakeHoldGate } from "../../hooks/bittensor/dTao/useDTaoRootStakeHold"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
+import { useDTaoRootStakeHoldGate } from "./dTao/useDTaoRootStakeHold"
 import { useBittensorChangeValidatorModal } from "./useBittensorChangeValidatorModal"
 import { useBittensorMoveStake } from "./useBittensorMoveStake"
 import {

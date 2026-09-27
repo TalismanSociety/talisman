@@ -5,6 +5,7 @@ import {
 } from "@core/domains/ethereum/helpers"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { HexString } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
@@ -16,12 +17,14 @@ import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useAnySigningRequest } from "./useAnySigningRequest"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
   useBalancesHydrate() // preload
   const { genericEvent } = useAnalytics()
+  const { t } = useTranslation()
   const signingRequest = useRequest(id)
   const network = useNetworkById(signingRequest?.ethChainId, "ethereum")
   const { enableTokens } = useEnableTokens()
@@ -64,21 +67,17 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     cancelSignFn: api.ethCancelSign,
   })
 
-  const reject = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: legacy
-    (...args: any[]) => {
-      genericEvent("sign request cancel click", {
-        networkType: "evm",
-        type: "message",
-        network: network?.id,
-        riskAnalysisAction: riskAnalysis.validationResult,
-        origin,
-      })
+  const reject = useCallback(() => {
+    genericEvent("sign request cancel click", {
+      networkType: "evm",
+      type: "transaction",
+      network: network?.id,
+      riskAnalysisAction: riskAnalysis.validationResult,
+      origin,
+    })
 
-      baseRequest.reject(...args)
-    },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis]
-  )
+    return baseRequest.reject()
+  }, [baseRequest, origin, genericEvent, network?.id, riskAnalysis])
 
   // flag to prevent capturing multiple submit attempts
   const refIsApproveCaptured = useRef(false)
@@ -94,7 +93,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       refIsApproveCaptured.current = true
       genericEvent("sign request approve click", {
         networkType: "evm",
-        type: "message",
+        type: "transaction",
         network: network?.id,
         riskAnalysisAction: riskAnalysis.validationResult,
         origin,
@@ -123,7 +122,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         refIsApproveCaptured.current = true
         genericEvent("sign request approve click", {
           networkType: "evm",
-          type: "message",
+          type: "transaction",
           network: network?.id,
           riskAnalysisAction: riskAnalysis.validationResult,
           origin,
@@ -139,11 +138,11 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error((err as Error).message)
+        baseRequest.setStatus.error(getErrorMessage(err, t("Unknown error")))
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent]
+    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent, t]
   )
 
   return {

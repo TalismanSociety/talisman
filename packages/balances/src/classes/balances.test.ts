@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { Balance, Balances, type HydrateDb } from "./balances"
-import type { BalanceJson, BalanceJsonList, IBalance } from "./balancetypes"
+import type { HydrateDb } from "../types/balances"
+import type { BalanceJson, BalanceJsonList, IBalance } from "../types/balancetypes"
+import { Balance, Balances } from "."
 
 /** Helper to create a minimal BalanceJson for testing */
 function makeBalanceJson(

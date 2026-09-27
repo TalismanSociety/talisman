@@ -13,6 +13,7 @@ import {
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
@@ -108,7 +109,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
         notify({
           type: "error",
           title: t("Error"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
         })
       }
     },
@@ -508,7 +509,7 @@ const ConfirmRemove: FC<{
       notify({
         type: "error",
         title: t("Error"),
-        subtitle: (err as Error).message ?? t("Failed to remove"),
+        subtitle: getErrorMessage(err, t("Failed to remove")),
       })
       setConfirming(false)
     }

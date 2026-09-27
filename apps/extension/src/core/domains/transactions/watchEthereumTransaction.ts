@@ -1,4 +1,5 @@
-import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { log } from "@common/log"
+import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { assert, sleep, throwAfter } from "@talismn/util"
 import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
@@ -29,11 +30,9 @@ export const watchEthereumTransaction = async (
     if (!client) throw new Error(`No client for network ${evmNetworkId} (${ethereumNetwork.name})`)
 
     const networkName = ethereumNetwork.name ?? "unknown network"
-    const blockExplorerUrls = getBlockExplorerUrls(ethereumNetwork, {
-      type: "transaction",
-      id: hash,
-    })
-    const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
+    const txUrl =
+      getBlockExplorerUrl(ethereumNetwork, { type: "transaction", id: hash }) ??
+      chrome.runtime.getURL("dashboard.html#/tx-history")
 
     // PENDING
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
@@ -121,8 +120,7 @@ export const watchEthereumTransaction = async (
           txUrl,
           err as Error
         )
-      // biome-ignore lint/suspicious/noConsole: legacy
-      else console.error("Failed to watch transaction", { err })
+      else log.error("Failed to watch transaction", { err })
     }
   } catch (err) {
     sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })

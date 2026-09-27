@@ -127,8 +127,7 @@ const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$]
     ]).pipe(
       map(([currency, hideDust, tokensSortBy, balances]) => {
         // group balances by token symbol
-        // TODO: Move the association between a token on multiple chains into the backend / subsquid.
-        // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
+        // Known limit: different tokens that share a symbol are grouped together.
         const groupedByToken = groupBalancesBySymbol(balances)
 
         const grouped = Object.entries(groupedByToken).map(

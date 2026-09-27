@@ -1,4 +1,5 @@
 import { DEBUG } from "@common/constants"
+import { log } from "@common/log"
 
 const getBase64ImageFromUrlRaw = async (url: string) => {
   try {
@@ -20,8 +21,7 @@ const getBase64ImageFromUrlRaw = async (url: string) => {
       reader.readAsDataURL(blob)
     })
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    if (DEBUG) console.error(err)
+    if (DEBUG) log.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined
   }
@@ -66,8 +66,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
       reader.readAsText(blob)
     })
   } catch (err) {
-    // biome-ignore lint/suspicious/noConsole: legacy
-    if (DEBUG) console.error(err)
+    if (DEBUG) log.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined
   }

@@ -1,5 +1,5 @@
-import { activeNetworksStore } from "@core/domains/balances/store.activeNetworks"
-import { activeTokensStore } from "@core/domains/balances/store.activeTokens"
+import { activeNetworksStore } from "@core/domains/chaindata/store.activeNetworks"
+import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { SupportedSwapProtocol, SwapExchange } from "../swap-modules/common.swap-module"
