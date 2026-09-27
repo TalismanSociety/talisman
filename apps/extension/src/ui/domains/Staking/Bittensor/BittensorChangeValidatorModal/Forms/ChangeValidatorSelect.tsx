@@ -14,9 +14,6 @@ import {
 } from "react"
 
 import { useTranslation } from "react-i18next"
-
-import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
-import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
@@ -25,7 +22,9 @@ import {
   ValidatorRows,
   ValidatorSortMethodButton,
 } from "../../components/ValidatorPicker"
+import type { BondOption as BondOptionType } from "../../hooks/types"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
+import { useCombinedBittensorValidatorsData } from "../../hooks/useCombinedBittensorValidatorsData"
 import { ROOT_NETUID } from "../../utils/constants"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
 

@@ -1,4 +1,4 @@
-import { isTokenActive } from "@core/domains/balances/store.activeTokens"
+import { isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"

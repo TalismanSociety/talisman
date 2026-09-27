@@ -1,8 +1,9 @@
 import { newTokenRates, type TokenRates } from "@talismn/token-rates"
 import { describe, expect, it } from "vitest"
 
-import { Balance, BalanceFormatter, Balances, BalanceValueGetter, type HydrateDb } from "./balances"
-import type { BalanceJson, IBalance } from "./balancetypes"
+import type { HydrateDb } from "../types/balances"
+import type { BalanceJson, IBalance } from "../types/balancetypes"
+import { Balance, BalanceFormatter, Balances, BalanceValueGetter } from "."
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -1,9 +1,8 @@
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
+import { useCombinedBittensorValidatorsData } from "../hooks/useCombinedBittensorValidatorsData"
 import { BittensorSelectButton } from "./BittensorSelectButton"
 
 export const BittensorDelegatorNameButton: FC<{

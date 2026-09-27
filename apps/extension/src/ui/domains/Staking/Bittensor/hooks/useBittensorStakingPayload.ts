@@ -4,8 +4,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useMemo } from "react"
-import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
 import type { RemarkType } from "../utils/constants"
 import {
@@ -23,6 +21,8 @@ import type { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
 import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
+import { useGetBittensorDefaultMinStake } from "./useGetBittensorDefaultMinStake"
+import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
 import { useGetSubnetFee } from "./useGetSubnetFee"
 
 type UseBittensorStakingPayloadProps = {

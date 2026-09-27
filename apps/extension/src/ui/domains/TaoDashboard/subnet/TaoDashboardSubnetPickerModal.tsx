@@ -1,7 +1,7 @@
 import { Modal } from "@ui/components/Modal"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useCombinedSubnetData } from "@ui/domains/Staking/Bittensor/hooks/dTao/useCombinedSubnetData"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { type FC, useCallback } from "react"

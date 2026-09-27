@@ -33,7 +33,7 @@ The list of known networks and tokens, published in the TalismanSociety/chaindat
 A network or token that the user added, or a known one whose settings the user changed.
 
 **Active network** / **Active token**:
-A network or token that the wallet subscribes to balances for. It is active when the user turned it on, or when it is a chaindata default (`isDefault`, non-testnet for networks) that the user did not turn off. The active stores hold the user's overrides only: read the effective state with `isNetworkActive` and `isTokenActive` (`core/domains/balances/store.active*.ts`). Asset discovery queries inactive tokens too, then activates the ones with a balance.
+A network or token that the wallet subscribes to balances for. It is active when the user turned it on, or when it is a chaindata default (`isDefault`, non-testnet for networks) that the user did not turn off. The active stores hold the user's overrides only: read the effective state with `isNetworkActive` and `isTokenActive` (`core/domains/chaindata/store.active*.ts`). Asset discovery queries inactive tokens too, then activates the ones with a balance.
 _Avoid_: enabled
 
 **Token**:

@@ -1,4 +1,4 @@
-import { activeTokensStore, isTokenActive } from "@core/domains/balances/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import {
   isTokenCustom,
   isTokenEvmUniswapV2,
