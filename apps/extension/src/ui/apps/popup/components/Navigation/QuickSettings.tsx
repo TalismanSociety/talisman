@@ -5,8 +5,8 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Toggle } from "@ui/components/Toggle"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { type FC, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,7 +22,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio",
 }
 
-export const useQuickSettingsOpenClose = () => useGlobalOpenClose("quick-settings")
+export const [useQuickSettingsOpenClose] = createGlobalOpenClose()
 
 export const QuickSettingsOverlay: FC = () => {
   const { isOpen, close } = useQuickSettingsOpenClose()

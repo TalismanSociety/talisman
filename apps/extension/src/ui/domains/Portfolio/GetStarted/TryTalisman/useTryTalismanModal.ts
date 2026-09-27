@@ -1,3 +1,3 @@
-import { useGlobalOpenClose } from "@ui/hooks/useGlobalOpenClose"
+import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
-export const useTryTalismanModal = () => useGlobalOpenClose("TryTalisman")
+export const [useTryTalismanModal] = createGlobalOpenClose()
