@@ -673,9 +673,9 @@ export default defineConfig({
             "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
           },
         }),
-        // Node.js polyfills for browser compatibility (buffer, crypto, etc.)
+        // Buffer and process globals, still used by Ledger, MetaMask and ethereumjs libs
         nodePolyfills({
-          include: ["buffer", "crypto", "stream", "util", "process"],
+          include: ["buffer", "process"],
           globals: {
             Buffer: true,
             global: true,
@@ -820,11 +820,10 @@ export default defineConfig({
             if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
               return
             }
-            // Ignore "externalized for browser compatibility" warnings
-            // These are expected for Node.js modules (vm, http, https, zlib) in browser builds
+            // mlkem and micro-ftch only reach Node builtins on code paths that never run in a browser
             if (
-              warning.code === "PLUGIN_WARNING" &&
-              warning.message?.includes("externalized for browser compatibility")
+              warning.message?.includes("externalized for browser compatibility") &&
+              /\/node_modules\/(mlkem|micro-ftch)\//.test(warning.message)
             ) {
               return
             }
