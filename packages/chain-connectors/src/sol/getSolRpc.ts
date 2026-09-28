@@ -60,9 +60,89 @@ const withRetryOn429 = (transport: RpcTransport): RpcTransport => {
   return wrapped as RpcTransport
 }
 
-// TODO leverage multiple rpcs with fallback
-export const getSolTransport = (_networkId: SolNetworkId, rpcs: string[]): RpcTransport =>
-  withRetryOn429(createDefaultRpcTransport({ url: rpcs[0] }))
+/**
+ * How long a request may wait on an RPC before moving on to the next one. The last RPC tried gets
+ * no timeout, so a slow but working node still answers when every other one has failed.
+ */
+const FAILOVER_TIMEOUT_MS = 20_000
 
-export const getSolRpc = (networkId: SolNetworkId, rpcs: string[]): SolRpc =>
-  createSolanaRpcFromTransport(getSolTransport(networkId, rpcs))
+const sendWithTimeout = async <TResponse>(
+  transport: RpcTransport,
+  config: Parameters<RpcTransport>[0],
+  timeoutMs: number
+): Promise<TResponse> => {
+  const controller = new AbortController()
+  const onAbort = () => controller.abort(config.signal?.reason)
+  config.signal?.addEventListener("abort", onAbort, { once: true })
+  const timeout = setTimeout(
+    () => controller.abort(new Error(`RPC request timed out after ${timeoutMs}ms`)),
+    timeoutMs
+  )
+
+  try {
+    return await transport<TResponse>({ ...config, signal: controller.signal })
+  } finally {
+    clearTimeout(timeout)
+    config.signal?.removeEventListener("abort", onAbort)
+  }
+}
+
+export type SolTransportOptions = {
+  /** Called with the url of the RPC that answered, after every successful request */
+  onRpcSuccess?: (url: string) => void
+}
+
+/**
+ * Sends each request to one RPC at a time, starting from the one that answered last, and moves on to
+ * the next when the request fails. A transport only throws for connection, timeout and HTTP errors:
+ * JSON-RPC errors come back in the response body and are returned as is. Solana RPC requests are
+ * idempotent, so resending one to another RPC is safe.
+ */
+const withFailover = (urls: string[], options: SolTransportOptions): RpcTransport => {
+  const transports = urls.map((url) => createDefaultRpcTransport({ url }))
+  let preferred = 0
+
+  const failover = async <TResponse>(config: Parameters<RpcTransport>[0]): Promise<TResponse> => {
+    if (!transports.length) throw new Error("No RPCs found for Solana network")
+
+    let lastError: unknown
+    for (let attempt = 0; attempt < transports.length; attempt++) {
+      const index = (preferred + attempt) % transports.length
+      const transport = transports[index] as RpcTransport
+      const isLastAttempt = attempt === transports.length - 1
+
+      try {
+        const response = isLastAttempt
+          ? await transport<TResponse>(config)
+          : await sendWithTimeout<TResponse>(transport, config, FAILOVER_TIMEOUT_MS)
+        preferred = index
+        options.onRpcSuccess?.(urls[index] as string)
+        return response
+      } catch (error) {
+        if (config.signal?.aborted) throw error
+        lastError = error
+      }
+    }
+    throw lastError
+  }
+  return failover as RpcTransport
+}
+
+/**
+ * Returns a transport over all of the network's RPCs, in the given order. A request fails over to
+ * the next RPC on error, and the RPC that answered is tried first for the next request. When every
+ * RPC fails and the last one answered HTTP 429, the whole list is retried with backoff.
+ */
+export const getSolTransport = (
+  _networkId: SolNetworkId,
+  rpcs: string[],
+  options: SolTransportOptions = {}
+): RpcTransport => {
+  return withRetryOn429(withFailover(rpcs, options))
+}
+
+export const getSolRpc = (
+  networkId: SolNetworkId,
+  rpcs: string[],
+  options?: SolTransportOptions
+): SolRpc => createSolanaRpcFromTransport(getSolTransport(networkId, rpcs, options))
