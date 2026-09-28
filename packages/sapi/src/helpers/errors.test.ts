@@ -57,21 +57,19 @@ describe("getDispatchErrorMessage", () => {
     )
   })
 
-  // ERRORS_ARITHMETIC swaps the two texts
-  it.fails("describes Arithmetic.Overflow", () => {
+  it("describes Arithmetic.Overflow", () => {
     expect(describeError({ type: "Arithmetic", value: { type: "Overflow" } })).toBe(
       "An overflow would occur"
     )
   })
 
-  it.fails("describes Arithmetic.Underflow", () => {
+  it("describes Arithmetic.Underflow", () => {
     expect(describeError({ type: "Arithmetic", value: { type: "Underflow" } })).toBe(
       "An underflow would occur"
     )
   })
 
-  // getModuleErrorMessage checks `typeof pallet.errors === "number"`, but unified metadata holds `{ type }`
-  it.fails("describes module errors with their metadata docs", () => {
+  it("describes module errors with their metadata docs", () => {
     expect(
       describeError({
         type: "Module",

@@ -43,9 +43,7 @@ describe("getFeeEstimate", () => {
     })
   })
 
-  // bug: the length passed to query_info omits the extrinsic's compact length prefix, while the
-  // runtime charges the length fee on the full encoding (the fallback below passes it right)
-  it.fails.each([
+  it.each([
     ["polkadot", polkadotEcdsa, POLKADOT_FAKE_SIGNED],
     ["moonbeam", moonbeam, MOONBEAM_FAKE_SIGNED],
   ] as const)("passes the full encoded length on %s", async (chain, fixture, fakeSigned) => {
