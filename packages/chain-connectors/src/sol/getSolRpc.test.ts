@@ -88,6 +88,30 @@ describe("getSolTransport", () => {
     expect(onRpcSuccess.mock.calls).toEqual([[RPC_B], [RPC_B]])
   })
 
+  it("tries every rpc once per request while concurrent requests change the preferred rpc", async () => {
+    let failFirstRequest: (error: Error) => void = () => {}
+    let callsToA = 0
+    const calls = stubFetch({
+      [RPC_A]: () => {
+        if (callsToA++ > 0) throw new TypeError("fetch failed")
+        return new Promise<Response>((_, reject) => {
+          failFirstRequest = reject
+        })
+      },
+      [RPC_B]: () => ok(42),
+    })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    const first = transport({ payload: PAYLOAD })
+    // distinct params, else kit coalesces both requests into one
+    const second = { ...PAYLOAD, params: [{ commitment: "finalized" }] }
+    await expect(transport({ payload: second })).resolves.toMatchObject({ result: 42n })
+    failFirstRequest(new TypeError("fetch failed"))
+
+    await expect(first).resolves.toMatchObject({ result: 42n })
+    expect(calls).toEqual([RPC_A, RPC_A, RPC_B, RPC_B])
+  })
+
   it("throws the last error when every rpc fails", async () => {
     stubFetch({ [RPC_A]: down, [RPC_B]: () => new Response("", { status: 503 }) })
     const transport = getSolTransport("solana", [RPC_A, RPC_B])
@@ -95,6 +119,22 @@ describe("getSolTransport", () => {
     await expect(transport({ payload: PAYLOAD })).rejects.toMatchObject({
       context: { statusCode: 503 },
     })
+  })
+
+  it("retries the rpcs when one was rate limited and a later one failed", async () => {
+    vi.useFakeTimers()
+    let callsToA = 0
+    const calls = stubFetch({
+      [RPC_A]: () => (callsToA++ ? ok(42) : new Response("", { status: 429 })),
+      [RPC_B]: () => new Response("", { status: 503 }),
+    })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    const request = transport({ payload: PAYLOAD })
+    await vi.advanceTimersByTimeAsync(500)
+
+    await expect(request).resolves.toMatchObject({ result: 42n })
+    expect(calls).toEqual([RPC_A, RPC_B, RPC_A])
   })
 
   it("moves on from an rpc that does not answer in time", async () => {
@@ -126,6 +166,87 @@ describe("getSolTransport", () => {
       "cancelled"
     )
     expect(calls).toEqual([RPC_A])
+  })
+
+  describe("sendTransaction", () => {
+    const SEND_TRANSACTION = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "sendTransaction",
+      params: ["AQID", { encoding: "base64" }],
+    }
+
+    const sentParams = () =>
+      vi.mocked(fetch).mock.calls.map(([, init]) => JSON.parse(init?.body as string).params)
+
+    it("resends without preflight after a failure where the rpc may have processed it", async () => {
+      stubFetch({ [RPC_A]: down, [RPC_B]: () => ok("signature") })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: SEND_TRANSACTION })
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+      ])
+    })
+
+    it("resends with preflight after a rate limit", async () => {
+      stubFetch({
+        [RPC_A]: () => new Response("", { status: 429 }),
+        [RPC_B]: () => ok("signature"),
+      })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: SEND_TRANSACTION })
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64" }],
+      ])
+    })
+
+    it("keeps preflight off when retrying after a rate limit", async () => {
+      vi.useFakeTimers()
+      let callsToA = 0
+      stubFetch({
+        [RPC_A]: () => {
+          if (callsToA++ === 0) throw new TypeError("fetch failed")
+          return ok("signature")
+        },
+        [RPC_B]: () => new Response("", { status: 429 }),
+      })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      const request = transport({ payload: SEND_TRANSACTION })
+      await vi.advanceTimersByTimeAsync(500)
+      await request
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+      ])
+    })
+
+    it("leaves other methods unchanged on failover", async () => {
+      stubFetch({ [RPC_A]: down, [RPC_B]: () => ok(42) })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: PAYLOAD })
+
+      expect(sentParams()).toEqual([[], []])
+    })
+  })
+
+  it("does not send a request that the caller already aborted", async () => {
+    const calls = stubFetch({ [RPC_A]: () => ok(42), [RPC_B]: () => ok(42) })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    await expect(
+      transport({ payload: PAYLOAD, signal: AbortSignal.abort(new Error("cancelled")) })
+    ).rejects.toThrow("cancelled")
+    expect(calls).toEqual([])
   })
 
   it("rejects requests when the network has no rpcs", async () => {
