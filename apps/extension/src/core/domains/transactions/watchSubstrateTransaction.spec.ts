@@ -369,16 +369,26 @@ describe("watchSubstrateTransaction", () => {
     expect(createNotification).toHaveBeenCalledTimes(1)
   })
 
-  it("stops watching finalised heads when the new heads subscription fails", async () => {
+  it("settles the extrinsic from finalised heads when the new heads subscription fails", async () => {
     const chain = fakeChain({ failingSubscription: "chain_subscribeAllHeads" })
-    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout")
-
     await expect(
       watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
-    ).resolves.toBeUndefined()
+    ).resolves.toBe(FIXTURE.hash)
 
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+
+    await expectStoredTx({ status: "success", blockNumber: "100", confirmed: true })
     expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
-    expect(setTimeoutSpy.mock.calls.map(([, delay]) => delay)).not.toContain(TX_WATCH_TIMEOUT)
+  })
+
+  it("still times out the watch when the new heads subscription fails", async () => {
+    const chain = fakeChain({ failingSubscription: "chain_subscribeAllHeads" })
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+
+    await vi.advanceTimersByTimeAsync(TX_WATCH_TIMEOUT)
+
+    await expectStoredTx({ status: "unknown" })
+    expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
   })
 
   it("reads the outcome of the extrinsic's own index, not of its neighbours", async () => {

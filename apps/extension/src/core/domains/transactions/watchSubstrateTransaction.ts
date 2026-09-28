@@ -281,9 +281,12 @@ const watchExtrinsicStatus = async (
     } catch (error) {
       sentry.captureException(error, { extra: { chainId } })
     }
-  }).catch((error) => {
-    unsubscribe("finalizedHeads")
-    throw error
+  }).catch((cause) => {
+    // finalised heads alone still settle the transaction, and the timeout still ends the watch
+    subscriptions.allHeads = false
+    const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", { cause })
+    log.error(err)
+    sentry.captureException(err, { extra: { chainId } })
   })
 
   if (!subscriptions.finalizedHeads && !subscriptions.allHeads) return
