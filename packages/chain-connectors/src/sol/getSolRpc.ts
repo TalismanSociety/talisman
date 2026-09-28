@@ -11,12 +11,19 @@ export type SolRpc = Rpc<SolanaRpcApi>
 const MAX_429_RETRIES = 5
 const BASE_BACKOFF_MS = 500
 
-/** Returns the delay to wait before retrying, or `null` if the error is not a retryable 429. */
-const get429RetryDelay = (error: unknown, attempt: number): number | null => {
+type HttpErrorContext = { statusCode?: number; headers?: Headers }
+
+const getRateLimitContext = (error: unknown): HttpErrorContext | null => {
   if (!isSolanaError(error)) return null
 
-  const context = error.context as { statusCode?: number; headers?: Headers }
-  if (context.statusCode !== 429) return null
+  const context = error.context as HttpErrorContext
+  return context.statusCode === 429 ? context : null
+}
+
+/** Returns the delay to wait before retrying, or `null` if the error is not a retryable 429. */
+const get429RetryDelay = (error: unknown, attempt: number): number | null => {
+  const context = getRateLimitContext(error)
+  if (!context) return null
 
   // honour the server's Retry-After header (delta-seconds) when present
   const retryAfter = Number(context.headers?.get("retry-after"))
@@ -60,9 +67,125 @@ const withRetryOn429 = (transport: RpcTransport): RpcTransport => {
   return wrapped as RpcTransport
 }
 
-// TODO leverage multiple rpcs with fallback
-export const getSolTransport = (_networkId: SolNetworkId, rpcs: string[]): RpcTransport =>
-  withRetryOn429(createDefaultRpcTransport({ url: rpcs[0] }))
+/**
+ * How long a request may wait on an RPC before moving on to the next one. The last RPC tried gets
+ * no timeout, so a slow but working node still answers when every other one has failed.
+ */
+const FAILOVER_TIMEOUT_MS = 20_000
 
-export const getSolRpc = (networkId: SolNetworkId, rpcs: string[]): SolRpc =>
-  createSolanaRpcFromTransport(getSolTransport(networkId, rpcs))
+const sendWithTimeout = async <TResponse>(
+  transport: RpcTransport,
+  config: RpcTransportConfig,
+  timeoutMs: number
+): Promise<TResponse> => {
+  const controller = new AbortController()
+  const onAbort = () => controller.abort(config.signal?.reason)
+  config.signal?.addEventListener("abort", onAbort, { once: true })
+  const timeout = setTimeout(
+    () => controller.abort(new Error(`RPC request timed out after ${timeoutMs}ms`)),
+    timeoutMs
+  )
+
+  try {
+    return await transport<TResponse>({ ...config, signal: controller.signal })
+  } finally {
+    clearTimeout(timeout)
+    config.signal?.removeEventListener("abort", onAbort)
+  }
+}
+
+type RpcTransportConfig = Parameters<RpcTransport>[0]
+
+const isSendTransactionPayload = (
+  payload: unknown
+): payload is { method: "sendTransaction"; params: unknown[] } =>
+  typeof payload === "object" &&
+  payload !== null &&
+  "method" in payload &&
+  payload.method === "sendTransaction" &&
+  "params" in payload &&
+  Array.isArray(payload.params)
+
+const withoutPreflight = (config: RpcTransportConfig): RpcTransportConfig => {
+  if (!isSendTransactionPayload(config.payload)) return config
+
+  const [transaction, sendConfig] = config.payload.params
+  return {
+    ...config,
+    payload: {
+      ...config.payload,
+      params: [transaction, { ...(sendConfig as object | undefined), skipPreflight: true }],
+    },
+  }
+}
+
+export type SolTransportOptions = {
+  /** Called with the url of the RPC that answered, after every successful request */
+  onRpcSuccess?: (url: string) => void
+}
+
+/**
+ * Sends each request to one RPC at a time, starting from the one that answered last, and moves on to
+ * the next when the request fails. A transport only throws for connection, timeout and HTTP errors:
+ * JSON-RPC errors come back in the response body and are returned as is.
+ *
+ * A failed RPC other than a rate limited one may still have forwarded a transaction. Resending it is
+ * safe, as the network processes a signature once, but its preflight simulation on the next RPC
+ * could then fail although it landed. So after such a failure, every resend of that transaction,
+ * including the retries after a rate limit, skips preflight.
+ */
+const withFailover = (urls: string[], options: SolTransportOptions): RpcTransport => {
+  const transports = urls.map((url) => createDefaultRpcTransport({ url }))
+  let preferred = 0
+  const mayHaveBeenProcessed = new WeakSet<RpcTransportConfig>()
+
+  const failover = async <TResponse>(config: RpcTransportConfig): Promise<TResponse> => {
+    if (!transports.length) throw new Error("No RPCs found for Solana network")
+
+    const start = preferred
+    let lastError: unknown
+    let rateLimitError: unknown
+    for (let attempt = 0; attempt < transports.length; attempt++) {
+      config.signal?.throwIfAborted()
+      const index = (start + attempt) % transports.length
+      const transport = transports[index] as RpcTransport
+      const isLastAttempt = attempt === transports.length - 1
+      const request = mayHaveBeenProcessed.has(config) ? withoutPreflight(config) : config
+
+      try {
+        const response = isLastAttempt
+          ? await transport<TResponse>(request)
+          : await sendWithTimeout<TResponse>(transport, request, FAILOVER_TIMEOUT_MS)
+        preferred = index
+        options.onRpcSuccess?.(urls[index] as string)
+        return response
+      } catch (error) {
+        if (config.signal?.aborted) throw error
+        lastError = error
+        if (!getRateLimitContext(error)) mayHaveBeenProcessed.add(config)
+        else rateLimitError ??= error
+      }
+    }
+    throw rateLimitError ?? lastError
+  }
+  return failover as RpcTransport
+}
+
+/**
+ * Returns a transport over all of the network's RPCs, in the given order. A request fails over to
+ * the next RPC on error, and the RPC that answered is tried first for the next request. When every
+ * RPC fails and one of them answered HTTP 429, the whole list is retried with backoff.
+ */
+export const getSolTransport = (
+  _networkId: SolNetworkId,
+  rpcs: string[],
+  options: SolTransportOptions = {}
+): RpcTransport => {
+  return withRetryOn429(withFailover(rpcs, options))
+}
+
+export const getSolRpc = (
+  networkId: SolNetworkId,
+  rpcs: string[],
+  options?: SolTransportOptions
+): SolRpc => createSolanaRpcFromTransport(getSolTransport(networkId, rpcs, options))
