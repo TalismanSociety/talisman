@@ -56,7 +56,7 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 - Env: `apps/extension/.env`, template `apps/extension/.env.sample`. A dev build needs no variables. `PASSWORD` unlocks the wallet, and `BITTENSOR_DEVNET_RPC` adds a local subtensor node.
 - The dev Chrome has CDP (remote debugging) on port 9223. See "Verify in the browser".
 - The dev server uses port 8254. `pnpm dev:kill` stops it.
-- `pnpm dev` stops when stdin closes. From a non-interactive shell, run `tail -f /dev/null | pnpm dev`.
+- `pnpm dev` stops when stdin closes. From a non-interactive shell, run `tail -f /dev/null | pnpm dev`. `pnpm dev:kill` does not stop that `tail`: it never writes, so it never gets SIGPIPE. When you are done, run `pnpm dev:kill && pkill -f "tail -f /dev/null"`.
 - Blank page after a dev server restart: reload the extension (`chrome://extensions`, or `chrome.runtime.reload()` in the service worker). If it stays blank, run `rm -rf apps/extension/node_modules/.vite` and restart `pnpm dev`.
 - Extension pages show "akcdepjilgckjbngkhjghfnmnnkdnmno is blocked": Developer mode is off in the dev profile. Turn it on in `chrome://extensions`, then restart `pnpm dev`.
 - Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages and content scripts: pages stay blank with no error in their console, and dapp requests hang with no popup. Only the service worker console shows "Unknown connection from ...". Run `pnpm dev:kill && pnpm dev`, then reload the extension.
