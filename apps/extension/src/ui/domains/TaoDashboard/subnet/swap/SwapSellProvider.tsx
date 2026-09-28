@@ -3,6 +3,7 @@ import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
+import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
 import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
@@ -11,6 +12,7 @@ import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useBalances } from "@ui/state/balances"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
@@ -94,6 +96,13 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     if (!address || !tokenIdOut) return null
     return balances.get(getBalanceId({ address, tokenId: tokenIdOut })) ?? null
   }, [balances, address, tokenIdOut])
+
+  // the balance pool drops zero balances, so an account without free TAO has no record:
+  // read it fresh, falling back to the pool record while the query loads
+  const { data: freshTransferableTao, isError: isErrorTransferableTao } =
+    useGetBittensorTransferableBalance({ networkId, address })
+  const knownTransferableTao = freshTransferableTao ?? balanceTokenOut?.transferable.planck ?? null
+  const existentialDeposit = useExistentialDeposit(tokenIdOut)
 
   // conviction locks constrain the coldkey's TOTAL alpha on the subnet:
   // this position's sellable amount is min(position stake, subnet-wide available)
@@ -210,14 +219,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
-  // Bittensor's runtime can pay unstake fees from staked Alpha when free TAO is insufficient,
-  // but only when the Alpha fee mechanism is active on-chain.
-  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
-  const supportsAlphaFees = useMemo(
-    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
-    [sapi]
-  )
-
   const inputErrorMessage = useMemo(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
@@ -231,11 +232,16 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
         : t("Insufficient balance")
     }
 
+    if (knownTransferableTao === null && isErrorTransferableTao)
+      return t("Failed to load TAO balance")
+
+    // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
+    // the wallet sends, so the fee always comes from free TAO
     if (
-      !supportsAlphaFees &&
       typeof combinedFeeEstimate === "bigint" &&
-      balanceTokenOut &&
-      combinedFeeEstimate > balanceTokenOut.transferable.planck
+      typeof knownTransferableTao === "bigint" &&
+      existentialDeposit &&
+      existentialDeposit.planck + combinedFeeEstimate > knownTransferableTao
     )
       return t("Insufficient TAO to cover fee")
 
@@ -263,9 +269,10 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
     return null
   }, [
-    supportsAlphaFees,
     balanceTokenIn,
-    balanceTokenOut,
+    knownTransferableTao,
+    isErrorTransferableTao,
+    existentialDeposit,
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
@@ -278,7 +285,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
-  const canSubmit = !!payload && isValid
+  const canSubmit = !!payload && isValid && typeof knownTransferableTao === "bigint"
 
   return {
     netuid,

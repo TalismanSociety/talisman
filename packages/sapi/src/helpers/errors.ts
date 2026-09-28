@@ -55,8 +55,8 @@ const ERRORS_TOKEN = {
 
 // https://github.com/paritytech/polkadot-sdk/blob/56d97c3ad8c86e602bc7ac368751210517c4309f/substrate/primitives/arithmetic/src/lib.rs#L76
 const ERRORS_ARITHMETIC = {
-  Overflow: "An underflow would occur",
-  Underflow: "An overflow would occur",
+  Overflow: "An overflow would occur",
+  Underflow: "An underflow would occur",
   DivisionByZero: "Division by zero",
 }
 
@@ -106,12 +106,12 @@ const getModuleErrorMessage = (chain: Chain, error: UnsafeModuleError): string =
   try {
     if (!chain.metadata) throw new Error("Could not fetch metadata")
 
-    const pallet = chain.metadata.pallets.find((p) => p.name === error.type)
-    if (typeof pallet?.errors !== "number") throw new Error("Unknown pallet")
+    const errorsType = chain.metadata.pallets.find((p) => p.name === error.type)?.errors?.type
+    if (typeof errorsType !== "number") throw new Error("Unknown pallet")
 
     const lookup = getLookupFn(chain.metadata)
 
-    const palletErrors = lookup(pallet.errors)
+    const palletErrors = lookup(errorsType)
     if (palletErrors.type !== "enum" || !palletErrors.innerDocs[error.value.type]?.length)
       throw new Error("Unknown error type")
 
