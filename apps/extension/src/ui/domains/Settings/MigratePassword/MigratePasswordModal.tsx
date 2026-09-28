@@ -38,11 +38,9 @@ export const MigratePasswordModal = () => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <div className="w-125.75">
-        <MigratePasswordProvider onComplete={close}>
-          <MigratePasswordModalContent />
-        </MigratePasswordProvider>
-      </div>
+      <MigratePasswordProvider onComplete={close}>
+        <MigratePasswordModalContent />
+      </MigratePasswordProvider>
     </Modal>
   )
 }
