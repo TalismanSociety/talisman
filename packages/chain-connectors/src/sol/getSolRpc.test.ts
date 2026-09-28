@@ -168,6 +168,16 @@ describe("getSolTransport", () => {
     expect(calls).toEqual([RPC_A])
   })
 
+  it("does not send a request that the caller already aborted", async () => {
+    const calls = stubFetch({ [RPC_A]: () => ok(42), [RPC_B]: () => ok(42) })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    await expect(
+      transport({ payload: PAYLOAD, signal: AbortSignal.abort(new Error("cancelled")) })
+    ).rejects.toThrow("cancelled")
+    expect(calls).toEqual([])
+  })
+
   it("rejects requests when the network has no rpcs", async () => {
     const transport = getSolTransport("solana", [])
     await expect(transport({ payload: PAYLOAD })).rejects.toThrow("No RPCs found")

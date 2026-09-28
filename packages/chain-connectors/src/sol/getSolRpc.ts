@@ -116,6 +116,7 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
     let lastError: unknown
     let rateLimitError: unknown
     for (let attempt = 0; attempt < transports.length; attempt++) {
+      config.signal?.throwIfAborted()
       const index = (start + attempt) % transports.length
       const transport = transports[index] as RpcTransport
       const isLastAttempt = attempt === transports.length - 1
