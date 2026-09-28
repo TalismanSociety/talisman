@@ -18,6 +18,13 @@ const isTalismanFee = (fee: QuoteFee) => fee.name === TALISMAN_FEE_NAME && fee.a
 const getOtherFees = (fees: QuoteFee[]) =>
   fees.filter((fee) => fee.additional || isTalismanFee(fee))
 
+const getFeeNames = (fees: QuoteFee[]) => [
+  ...new Set(fees.map((fee) => fee.name.replace(/ fees?$/i, ""))),
+]
+
+const formatNames = (names: string[]) =>
+  new Intl.ListFormat("en", { type: "conjunction" }).format(names)
+
 const toPlanck = (fee: QuoteFee, decimals: number) =>
   BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
 
@@ -34,6 +41,7 @@ export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
   const { t } = useTranslation()
   const otherFees = getOtherFees(fees)
   if (!otherFees.length) return null
+  const feeNames = getFeeNames(otherFees)
 
   return (
     <div className="flex h-11 items-center justify-between gap-8">
@@ -46,11 +54,9 @@ export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
-              {otherFees.map((fee) => (
-                <FeeBreakdownRow key={`${fee.tokenId}-${fee.name}`} fee={fee} />
-              ))}
-            </div>
+            {feeNames.length > 1
+              ? t("{{names}} fees", { names: formatNames(feeNames) })
+              : t("{{name}} fee", { name: feeNames[0] })}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -90,22 +96,6 @@ const FiatTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
   return <Fiat className="text-body text-xs" amount={total.toNumber()} noCountUp />
 }
 
-const FeeBreakdownRow: FC<{ fee: QuoteFee }> = ({ fee }) => {
-  const { t } = useTranslation()
-
-  return (
-    <div className="flex w-full justify-between gap-8">
-      <div>
-        {fee.name}{" "}
-        <span className="text-body-secondary">
-          {fee.additional ? t("(additional)") : t("(included)")}
-        </span>
-      </div>
-      <FeeAmount fee={fee} />
-    </div>
-  )
-}
-
 const FeeAmount: FC<{ fee: QuoteFee }> = ({ fee }) => {
   const { t } = useTranslation()
   const token = useToken(fee.tokenId)
@@ -117,8 +107,6 @@ const FeeAmount: FC<{ fee: QuoteFee }> = ({ fee }) => {
       fiatClassName="text-body-secondary"
       tokenId={fee.tokenId}
       planck={toPlanck(fee, token.decimals)}
-      noTooltip
-      noCountUp
     />
   ) : (
     <div className="text-body-secondary text-xs">{t("Unknown token")}</div>

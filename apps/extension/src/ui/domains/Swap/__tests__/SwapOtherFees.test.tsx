@@ -6,7 +6,10 @@ import { getAdditionalFeePlanck, SwapOtherFees } from "../components/SwapOtherFe
 import { type QuoteFee, TALISMAN_FEE_NAME } from "../swap-modules/common.swap-module"
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
+  useTranslation: () => ({
+    t: (value: string, options?: Record<string, string>) =>
+      value.replace(/{{(\w+)}}/g, (_, key: string) => options?.[key] ?? ""),
+  }),
 }))
 
 vi.mock("@ui/state/chaindata", () => ({
@@ -67,9 +70,7 @@ const talismanFee: QuoteFee = {
 }
 
 const getTotal = (container: HTMLElement) =>
-  [...container.querySelectorAll('[data-testid="amount"]')].find(
-    (element) => !element.closest('[data-testid="tooltip"]')
-  )?.textContent
+  container.querySelector('[data-testid="amount"]')?.textContent
 
 describe("SwapOtherFees", () => {
   it("renders nothing without additional or talisman fees", () => {
@@ -95,18 +96,18 @@ describe("SwapOtherFees", () => {
     expect(getTotal(container)).toBe("4020000000000000 8453:evm-native")
   })
 
-  it("breaks the fees down in the tooltip, talisman fee included and ccip fee additional", () => {
+  it("names the fees in the tooltip", () => {
     const { getByTestId } = render(
-      <SwapOtherFees fees={[talismanFee, ccipFee, gasFee]} isLoading={false} />
+      <SwapOtherFees fees={[ccipFee, talismanFee, gasFee]} isLoading={false} />
     )
 
-    const rows = [...getByTestId("tooltip").firstElementChild!.children].map(
-      (row) => row.textContent
-    )
-    expect(rows).toEqual([
-      "Talisman Fee (included)3000000000000000 8453:evm-native",
-      "Chainlink CCIP Fee (additional)1020000000000000 8453:evm-native",
-    ])
+    expect(getByTestId("tooltip").textContent).toBe("Chainlink CCIP and Talisman fees")
+  })
+
+  it("names a single fee in the tooltip", () => {
+    const { getByTestId } = render(<SwapOtherFees fees={[talismanFee]} isLoading={false} />)
+
+    expect(getByTestId("tooltip").textContent).toBe("Talisman fee")
   })
 
   it("totals in fiat when the fees are in different tokens", () => {
@@ -128,12 +129,12 @@ describe("SwapOtherFees", () => {
   })
 
   it("keeps the row when the fee token is unknown", () => {
-    const { getAllByText, getByText } = render(
+    const { getByText } = render(
       <SwapOtherFees fees={[{ ...ccipFee, tokenId: "1:erc20:0xunknown" }]} isLoading={false} />
     )
 
     expect(getByText("Other Fees")).toBeTruthy()
-    expect(getAllByText("Unknown token")).toHaveLength(2)
+    expect(getByText("Unknown token")).toBeTruthy()
   })
 })
 
