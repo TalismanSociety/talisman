@@ -131,12 +131,13 @@ export type SolTransportOptions = {
  *
  * A failed RPC other than a rate limited one may still have forwarded a transaction. Resending it is
  * safe, as the network processes a signature once, but its preflight simulation on the next RPC
- * could then fail although it landed. So a transaction is resent without preflight after such a
- * failure.
+ * could then fail although it landed. So after such a failure, every resend of that transaction,
+ * including the retries after a rate limit, skips preflight.
  */
 const withFailover = (urls: string[], options: SolTransportOptions): RpcTransport => {
   const transports = urls.map((url) => createDefaultRpcTransport({ url }))
   let preferred = 0
+  const mayHaveBeenProcessed = new WeakSet<RpcTransportConfig>()
 
   const failover = async <TResponse>(config: RpcTransportConfig): Promise<TResponse> => {
     if (!transports.length) throw new Error("No RPCs found for Solana network")
@@ -144,13 +145,12 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
     const start = preferred
     let lastError: unknown
     let rateLimitError: unknown
-    let mayHaveBeenProcessed = false
     for (let attempt = 0; attempt < transports.length; attempt++) {
       config.signal?.throwIfAborted()
       const index = (start + attempt) % transports.length
       const transport = transports[index] as RpcTransport
       const isLastAttempt = attempt === transports.length - 1
-      const request = mayHaveBeenProcessed ? withoutPreflight(config) : config
+      const request = mayHaveBeenProcessed.has(config) ? withoutPreflight(config) : config
 
       try {
         const response = isLastAttempt
@@ -162,7 +162,7 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
       } catch (error) {
         if (config.signal?.aborted) throw error
         lastError = error
-        if (!getRateLimitContext(error)) mayHaveBeenProcessed = true
+        if (!getRateLimitContext(error)) mayHaveBeenProcessed.add(config)
         else rateLimitError ??= error
       }
     }

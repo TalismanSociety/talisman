@@ -206,6 +206,29 @@ describe("getSolTransport", () => {
       ])
     })
 
+    it("keeps preflight off when retrying after a rate limit", async () => {
+      vi.useFakeTimers()
+      let callsToA = 0
+      stubFetch({
+        [RPC_A]: () => {
+          if (callsToA++ === 0) throw new TypeError("fetch failed")
+          return ok("signature")
+        },
+        [RPC_B]: () => new Response("", { status: 429 }),
+      })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      const request = transport({ payload: SEND_TRANSACTION })
+      await vi.advanceTimersByTimeAsync(500)
+      await request
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+      ])
+    })
+
     it("leaves other methods unchanged on failover", async () => {
       stubFetch({ [RPC_A]: down, [RPC_B]: () => ok(42) })
       const transport = getSolTransport("solana", [RPC_A, RPC_B])
