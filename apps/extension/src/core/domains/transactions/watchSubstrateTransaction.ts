@@ -263,6 +263,8 @@ const watchExtrinsicStatus = async (
       )
 
       if (err) return // err is true if extrinsic is not found in this block
+      // finality may have been reported while this head was being processed
+      if (!subscriptions.allHeads) return
 
       const { result, blockNumber, extIndex } = extResult
 
@@ -279,7 +281,12 @@ const watchExtrinsicStatus = async (
     } catch (error) {
       sentry.captureException(error, { extra: { chainId } })
     }
+  }).catch((error) => {
+    unsubscribe("finalizedHeads")
+    throw error
   })
+
+  if (!subscriptions.finalizedHeads && !subscriptions.allHeads) return
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   timeout = setTimeout(async () => {
