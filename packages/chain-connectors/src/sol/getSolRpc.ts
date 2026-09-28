@@ -105,9 +105,10 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
   const failover = async <TResponse>(config: Parameters<RpcTransport>[0]): Promise<TResponse> => {
     if (!transports.length) throw new Error("No RPCs found for Solana network")
 
+    const start = preferred
     let lastError: unknown
     for (let attempt = 0; attempt < transports.length; attempt++) {
-      const index = (preferred + attempt) % transports.length
+      const index = (start + attempt) % transports.length
       const transport = transports[index] as RpcTransport
       const isLastAttempt = attempt === transports.length - 1
 

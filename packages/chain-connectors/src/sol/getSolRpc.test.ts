@@ -88,6 +88,30 @@ describe("getSolTransport", () => {
     expect(onRpcSuccess.mock.calls).toEqual([[RPC_B], [RPC_B]])
   })
 
+  it("tries every rpc once per request while concurrent requests change the preferred rpc", async () => {
+    let failFirstRequest: (error: Error) => void = () => {}
+    let callsToA = 0
+    const calls = stubFetch({
+      [RPC_A]: () => {
+        if (callsToA++ > 0) throw new TypeError("fetch failed")
+        return new Promise<Response>((_, reject) => {
+          failFirstRequest = reject
+        })
+      },
+      [RPC_B]: () => ok(42),
+    })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    const first = transport({ payload: PAYLOAD })
+    // distinct params, else kit coalesces both requests into one
+    const second = { ...PAYLOAD, params: [{ commitment: "finalized" }] }
+    await expect(transport({ payload: second })).resolves.toMatchObject({ result: 42n })
+    failFirstRequest(new TypeError("fetch failed"))
+
+    await expect(first).resolves.toMatchObject({ result: 42n })
+    expect(calls).toEqual([RPC_A, RPC_A, RPC_B, RPC_B])
+  })
+
   it("throws the last error when every rpc fails", async () => {
     stubFetch({ [RPC_A]: down, [RPC_B]: () => new Response("", { status: 503 }) })
     const transport = getSolTransport("solana", [RPC_A, RPC_B])
