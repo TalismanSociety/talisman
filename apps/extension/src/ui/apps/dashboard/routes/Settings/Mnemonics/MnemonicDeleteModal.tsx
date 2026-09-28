@@ -4,8 +4,8 @@ import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useMnemonic, useMnemonics } from "@ui/state/mnemonics"
 import { provideContext } from "@ui/util/provideContext"
@@ -79,14 +79,15 @@ export const MnemonicDeleteModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog
+      <WizardModalDialog
+        className="h-auto"
         title={
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center gap-4">
             <AlertTriangleIcon className="inline text-brand-orange text-lg" />
             <span>{t("Delete Recovery Phrase")}</span>
           </div>
         }
-        onClose={close}
+        onCloseClick={close}
       >
         <p className="text-body-secondary">
           <Trans
@@ -115,7 +116,7 @@ export const MnemonicDeleteModal = () => {
             {t("Delete")}
           </Button>
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

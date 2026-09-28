@@ -1,7 +1,7 @@
 import { SaveIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import downloadJson from "@ui/util/downloadJson"
 import { type FC, useCallback } from "react"
@@ -33,7 +33,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [onClose])
 
   return (
-    <ModalDialog title="Backup" className="w-100" onClose={onClose}>
+    <WizardModalDialog title="Backup" className="h-auto" onCloseClick={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will save all your Talisman data into a file, which you can use to restore your
@@ -55,7 +55,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
           </Button>
         </div>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }
 

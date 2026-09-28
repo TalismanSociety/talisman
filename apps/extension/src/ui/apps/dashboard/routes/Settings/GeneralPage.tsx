@@ -25,9 +25,9 @@ import { CtaButton } from "@ui/components/CtaButton"
 import { Dropdown } from "@ui/components/Dropdown"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state/settings"
@@ -235,7 +235,11 @@ const LedgerTransportCheckModalDialog: FC<{
   if (!s) return null
 
   return (
-    <ModalDialog title={t("Ledger connectivity check")} onClose={onClose}>
+    <WizardModalDialog
+      className="h-auto"
+      title={t("Ledger connectivity check")}
+      onCloseClick={onClose}
+    >
       <div className="flex w-full items-center gap-6">
         <div
           className={cn(
@@ -281,6 +285,6 @@ const LedgerTransportCheckModalDialog: FC<{
           {t("Close")}
         </Button>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }

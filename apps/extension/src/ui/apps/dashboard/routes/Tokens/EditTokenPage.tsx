@@ -25,10 +25,10 @@ import { FormFieldTextarea } from "@ui/components/FormFieldTextarea"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
@@ -516,9 +516,10 @@ const ConfirmRemove: FC<{
   }, [token, t, saved, onClose, navigate])
 
   return (
-    <ModalDialog
+    <WizardModalDialog
+      className="h-auto"
       title={isTokenKnown(saved) ? t("Reset Token") : t("Remove Token")}
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
@@ -541,6 +542,6 @@ const ConfirmRemove: FC<{
           </Button>
         </div>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }

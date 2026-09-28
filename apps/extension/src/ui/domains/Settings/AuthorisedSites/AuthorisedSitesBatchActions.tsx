@@ -2,8 +2,8 @@ import type { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, type ReactNode, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -31,7 +31,11 @@ const BatchActionButton: FC<{
         {children}
       </button>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <ModalDialog onClose={close} title={confirmTitle} className="border border-grey-800">
+        <WizardModalDialog
+          onCloseClick={close}
+          title={confirmTitle}
+          className="h-auto border-grey-800"
+        >
           <p className="text-body-secondary">{confirmDescription}</p>
           <div className="mt-8 grid grid-cols-2 gap-8">
             <Button onClick={close}>{t("Cancel")}</Button>
@@ -39,7 +43,7 @@ const BatchActionButton: FC<{
               {confirmBtnText}
             </Button>
           </div>
-        </ModalDialog>
+        </WizardModalDialog>
       </Modal>
     </>
   )

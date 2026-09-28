@@ -2,7 +2,7 @@ import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -40,7 +40,7 @@ export const DeleteFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Delete Folder")} onClose={close}>
+      <WizardModalDialog className="h-auto" title={t("Delete Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <DeleteFolder
             id={id}
@@ -50,7 +50,7 @@ export const DeleteFolderModal = () => {
             onCancel={close}
           />
         )}
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

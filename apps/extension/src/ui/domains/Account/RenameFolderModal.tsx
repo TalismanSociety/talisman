@@ -6,7 +6,7 @@ import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
@@ -46,7 +46,7 @@ export const RenameFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Rename Folder")} onClose={close}>
+      <WizardModalDialog className="h-auto" title={t("Rename Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <RenameFolder
             id={id}
@@ -56,7 +56,7 @@ export const RenameFolderModal = () => {
             onCancel={close}
           />
         )}
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

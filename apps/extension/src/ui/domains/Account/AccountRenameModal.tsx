@@ -1,6 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,11 +38,11 @@ export const AccountRenameModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Rename account")} onClose={close}>
+      <WizardModalDialog className="h-auto" title={t("Rename account")} onCloseClick={close}>
         {account?.address ? (
           <AccountRename address={account.address} onConfirm={close} onCancel={close} />
         ) : null}
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

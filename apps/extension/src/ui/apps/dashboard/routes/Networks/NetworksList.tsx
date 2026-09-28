@@ -7,9 +7,9 @@ import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { ListButton } from "@ui/components/ListButton"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { Radio } from "@ui/components/Radio"
 import { Toggle } from "@ui/components/Toggle"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
@@ -255,13 +255,14 @@ const ResetAllNetworksModalContent: FC<{
   }, [networks, onClose])
 
   return (
-    <ModalDialog
+    <WizardModalDialog
+      className="h-auto"
       title={
         platform === "all"
           ? t("Reset all networks")
           : t("Reset {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <p className="mb-8 text-body-secondary text-sm">
         {platform === "all"
@@ -278,7 +279,7 @@ const ResetAllNetworksModalContent: FC<{
           {t("Reset")}
         </Button>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }
 
@@ -322,13 +323,14 @@ const DeactivateNetworksModalContent: FC<{
   }, [activeNetworkIds.length, isBalancesInitializing, mode, unusedNetworkIds.length])
 
   return (
-    <ModalDialog
+    <WizardModalDialog
+      className="h-auto"
       title={
         platform === "all"
           ? t("Deactivate networks")
           : t("Deactivate {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <p className="mb-8 text-body-secondary text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
@@ -396,6 +398,6 @@ const DeactivateNetworksModalContent: FC<{
           {t("Deactivate")}
         </Button>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }

@@ -6,7 +6,7 @@ import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type CSSProperties, type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -118,7 +118,7 @@ export const UnlockJsonAccountsButton: FC = () => {
         {t("Unlock")}
       </Button>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <ModalDialog title={t("Unlock accounts")} onClose={close}>
+        <WizardModalDialog className="h-auto" title={t("Unlock accounts")} onCloseClick={close}>
           <div className="w-full text-right text-body-secondary">
             <Trans
               t={t}
@@ -164,7 +164,7 @@ export const UnlockJsonAccountsButton: FC = () => {
               </Button>
             </div>
           </form>
-        </ModalDialog>
+        </WizardModalDialog>
       </Modal>
     </>
   )

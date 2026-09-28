@@ -1,7 +1,7 @@
 import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useSetting } from "@ui/state/settings"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -13,7 +13,7 @@ export const MigratePasswordError = () => {
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
 
   return (
-    <ModalDialog title={t("There was a problem")}>
+    <WizardModalDialog className="h-auto" title={t("There was a problem")}>
       <p className="text-body-secondary text-sm">
         <span className="block">
           {t("There was an error in updating your password.")}{" "}
@@ -78,6 +78,6 @@ export const MigratePasswordError = () => {
       >
         {t("Close")}
       </Button>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }

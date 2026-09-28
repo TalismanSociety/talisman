@@ -1,7 +1,7 @@
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -33,11 +33,10 @@ export const LearnMoreModal = () => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close} containerId="main">
-      <ModalDialog
-        centerTitle
+      <WizardModalDialog
         title={t("Learn More")}
-        onClose={close}
-        className="maw-h-[100dvh] h-150 w-100 max-w-dvw sm:h-212.5 sm:w-150"
+        onCloseClick={close}
+        className="max-w-dvw sm:h-212.5 sm:w-150"
       >
         <ScrollContainer className="h-full w-full">
           <LearnMoreContent
@@ -47,7 +46,7 @@ export const LearnMoreModal = () => {
             onMnemonicsClick={goTo("Manage mnemonics", "/settings/mnemonics")}
           />
         </ScrollContainer>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

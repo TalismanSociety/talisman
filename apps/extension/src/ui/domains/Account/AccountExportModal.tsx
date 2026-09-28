@@ -12,8 +12,8 @@ import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import downloadJson from "@ui/util/downloadJson"
 import { useCallback, useEffect, useMemo } from "react"
@@ -180,7 +180,11 @@ export const AccountExportModal = () => {
   const { isOpen, close } = useAccountExportModal()
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export account JSON")} className="w-125.75" onClose={close}>
+      <WizardModalDialog
+        title={t("Export account JSON")}
+        className="h-auto w-125.75"
+        onCloseClick={close}
+      >
         <PasswordUnlock
           title={
             <div className="mb-8 text-body-secondary">
@@ -190,7 +194,7 @@ export const AccountExportModal = () => {
         >
           <ExportAccountForm onSuccess={close} />
         </PasswordUnlock>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

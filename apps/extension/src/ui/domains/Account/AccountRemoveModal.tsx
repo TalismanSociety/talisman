@@ -2,7 +2,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -55,7 +55,7 @@ export const AccountRemoveModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Remove account")} onClose={close}>
+      <WizardModalDialog className="h-auto" title={t("Remove account")} onCloseClick={close}>
         <div className="text-body-secondary text-sm">
           <p className="text-sm">
             <Trans
@@ -79,7 +79,7 @@ export const AccountRemoveModal = () => {
             </Button>
           </div>
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

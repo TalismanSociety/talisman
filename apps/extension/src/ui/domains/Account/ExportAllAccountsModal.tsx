@@ -6,8 +6,8 @@ import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import downloadJson from "@ui/util/downloadJson"
@@ -25,10 +25,10 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
-      <ModalDialog
+      <WizardModalDialog
         title={t("Export all accounts as JSON")}
-        className="w-125.75 max-w-full overflow-hidden"
-        onClose={onClose}
+        className="h-auto w-125.75"
+        onCloseClick={onClose}
       >
         <PasswordUnlock
           title={
@@ -39,7 +39,7 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
         >
           <ExportAllAccountsForm onSuccess={onClose} />
         </PasswordUnlock>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

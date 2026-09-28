@@ -9,8 +9,8 @@ import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -163,7 +163,11 @@ export const AccountExportPrivateKeyModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export private key")} onClose={close} className="w-125.75">
+      <WizardModalDialog
+        title={t("Export private key")}
+        onCloseClick={close}
+        className="h-auto w-125.75"
+      >
         <div className="h-60.5">
           <PasswordUnlock
             className="h-full"
@@ -176,7 +180,7 @@ export const AccountExportPrivateKeyModal = () => {
             <ExportPrivateKeyResult onClose={close} />
           </PasswordUnlock>
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

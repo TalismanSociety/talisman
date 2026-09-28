@@ -1,7 +1,7 @@
 import { appStore } from "@core/domains/app/store.app"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useIsBrave } from "@ui/hooks/useIsBrave"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -47,9 +47,13 @@ const BraveWarningPopupBanner = () => {
         <BraveWarningCard className="m-0! rounded-b-none!" onLearnMoreClick={open} />
       </Drawer>
       <Modal isOpen={isOpen} anchor="bottom" onDismiss={close}>
-        <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>
+        <WizardModalDialog
+          className="h-auto"
+          title={t("Attention Brave Users")}
+          onCloseClick={close}
+        >
           <BraveWarningModal popup />
-        </ModalDialog>
+        </WizardModalDialog>
       </Modal>
     </>
   )

@@ -7,7 +7,7 @@ import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useAccountsCatalog } from "@ui/state/accounts"
 import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
@@ -23,9 +23,9 @@ export const NewFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("New Folder")} onClose={close} className="w-92">
+      <WizardModalDialog title={t("New Folder")} onCloseClick={close} className="h-auto w-92">
         <NewFolder onConfirm={close} onCancel={close} />
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

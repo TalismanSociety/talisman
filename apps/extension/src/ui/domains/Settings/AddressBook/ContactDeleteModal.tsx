@@ -2,7 +2,7 @@ import { api } from "@ui/api"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -36,7 +36,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Delete contact")}>
+      <WizardModalDialog className="h-auto" title={t("Delete contact")}>
         <div className="my-12 text-body-secondary">
           <Trans values={{ contactName }} t={t}>
             You are deleting contact '
@@ -52,7 +52,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
             {t("Confirm")}
           </Button>
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }

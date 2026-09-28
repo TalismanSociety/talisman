@@ -2,8 +2,8 @@ import type { ChangePasswordStatusUpdateType } from "@core/domains/app/types"
 import { ChangePasswordStatusUpdateStatus } from "@core/domains/app/types"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
-import { ModalDialog } from "@ui/components/ModalDialog"
 import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
+import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -34,7 +34,7 @@ export const ChangePasswordModal = ({
 
   return (
     <Modal isOpen={isOpen}>
-      <ModalDialog title={t("Changing password")} centerTitle className="w-100">
+      <WizardModalDialog title={t("Changing password")} className="h-auto">
         <ProcessAnimation status="processing" className="my-8 h-35" />
         <div className="flex flex-col gap-5">
           <p className="my-8 animate-pulse text-center">{progressDisplay}</p>
@@ -47,7 +47,7 @@ export const ChangePasswordModal = ({
             </div>
           </div>
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </Modal>
   )
 }
