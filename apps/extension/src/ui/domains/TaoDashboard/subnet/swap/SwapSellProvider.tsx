@@ -99,7 +99,8 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
   // the balance pool drops zero balances, so an account without free TAO has no record:
   // read it fresh, falling back to the pool record while the query loads
-  const { data: freshTransferableTao } = useGetBittensorTransferableBalance({ networkId, address })
+  const { data: freshTransferableTao, isError: isErrorTransferableTao } =
+    useGetBittensorTransferableBalance({ networkId, address })
   const knownTransferableTao = freshTransferableTao ?? balanceTokenOut?.transferable.planck ?? null
   const existentialDeposit = useExistentialDeposit(tokenIdOut)
 
@@ -231,6 +232,9 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
         : t("Insufficient balance")
     }
 
+    if (knownTransferableTao === null && isErrorTransferableTao)
+      return t("Failed to load TAO balance")
+
     // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
     // the wallet sends, so the fee always comes from free TAO
     if (
@@ -267,6 +271,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   }, [
     balanceTokenIn,
     knownTransferableTao,
+    isErrorTransferableTao,
     existentialDeposit,
     combinedFeeEstimate,
     maxValueIn,
@@ -280,7 +285,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
 
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
-  const canSubmit = !!payload && isValid
+  const canSubmit = !!payload && isValid && typeof knownTransferableTao === "bigint"
 
   return {
     netuid,
