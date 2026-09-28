@@ -121,15 +121,17 @@ const blockHash = ({ header }: Block) =>
 const withOurs = (number: number, outcome: EventOutcome) =>
   makeBlock(number, [OTHER_EXTRINSIC, FIXTURE.signedTransaction], ["ExtrinsicSuccess", outcome])
 
-const fakeChain = () => {
+const fakeChain = ({ slowSubscription }: { slowSubscription?: string } = {}) => {
   const blocks = new Map<string, Block>()
   const bestChain = new Map<number, { hash: HexString; header: Block["header"] }>()
   const heads: Record<string, Parameters<typeof chainConnectorDot.subscribe>[4]> = {}
   const unsubscribed: string[] = []
+  const slowSubscriptionEstablished = Promise.withResolvers<void>()
 
   vi.spyOn(chainConnectorDot, "subscribe").mockImplementation(
     async (_chainId, method, _response, _params, callback) => {
       heads[method] = callback
+      if (method === slowSubscription) await slowSubscriptionEstablished.promise
       return (unsubscribeMethod) => {
         unsubscribed.push(unsubscribeMethod)
       }
@@ -166,6 +168,7 @@ const fakeChain = () => {
 
   return {
     unsubscribed,
+    establishSlowSubscription: () => slowSubscriptionEstablished.resolve(),
     /** a header whose JSON form the watcher cannot re-encode, like Avail's */
     newExtendedHead: async (block: Block, nodeBlock = block) => {
       const hash = `0x${"ee".repeat(32)}` as HexString
@@ -300,16 +303,33 @@ describe("watchSubstrateTransaction", () => {
     expect(chain.unsubscribed).toContain("chain_unsubscribeFinalizedHeads")
   })
 
-  // bug: the finalised path clears the timeout, and the timeout is the only place that
-  // unsubscribes from new heads when no new head matched first
-  it.fails("stops watching new heads once the extrinsic is first seen finalised", async () => {
+  it("stops watching new heads once the extrinsic is first seen finalised", async () => {
     const chain = fakeChain()
     await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
 
     await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
-    await vi.advanceTimersByTimeAsync(TX_WATCH_TIMEOUT)
 
-    expect(chain.unsubscribed).toContain("chain_unsubscribeAllHeads")
+    expect(chain.unsubscribed).toEqual([
+      "chain_unsubscribeAllHeads",
+      "chain_unsubscribeFinalizedHeads",
+    ])
+  })
+
+  it("stops watching new heads when finality is seen before that subscription is established", async () => {
+    const chain = fakeChain({ slowSubscription: "chain_subscribeAllHeads" })
+    const watching = watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+    await vi.waitFor(() => expect(chainConnectorDot.subscribe).toHaveBeenCalledTimes(2))
+
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+    expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
+    chain.establishSlowSubscription()
+    await watching
+
+    await expectStoredTx({ status: "success", confirmed: true })
+    expect(chain.unsubscribed).toEqual([
+      "chain_unsubscribeFinalizedHeads",
+      "chain_unsubscribeAllHeads",
+    ])
   })
 
   it("reads the outcome of the extrinsic's own index, not of its neighbours", async () => {

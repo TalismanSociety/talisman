@@ -34,6 +34,8 @@ type ExtrinsicResult = {
   extIndex: number
 }
 
+type SubscriptionKey = "finalizedHeads" | "allHeads"
+
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
   blockNumber: number,
@@ -169,21 +171,41 @@ const watchExtrinsicStatus = async (
     allHeads: true,
   }
 
-  const unsubscribe = async (
-    key: "finalizedHeads" | "allHeads",
-    unsubscribeHandler: () => void
-  ) => {
+  const unsubscribeMethods: Record<SubscriptionKey, string> = {
+    finalizedHeads: "chain_unsubscribeFinalizedHeads",
+    allHeads: "chain_unsubscribeAllHeads",
+  }
+  // either handler can stop the other subscription, possibly before that one is established
+  const unsubscribeHandlers: Partial<Record<SubscriptionKey, (method: string) => void>> = {}
+
+  const unsubscribe = (key: SubscriptionKey) => {
     if (!subscriptions[key]) return
     subscriptions[key] = false
-    unsubscribeHandler()
+    unsubscribeHandlers[key]?.(unsubscribeMethods[key])
+  }
+
+  const subscribe = async (
+    key: SubscriptionKey,
+    subscribeMethod: string,
+    responseMethod: string,
+    callback: Parameters<typeof chainConnectorDot.subscribe>[4]
+  ) => {
+    const unsubscribeHandler = await chainConnectorDot.subscribe(
+      chainId,
+      subscribeMethod,
+      responseMethod,
+      [],
+      callback
+    )
+    unsubscribeHandlers[key] = unsubscribeHandler
+    if (!subscriptions[key]) unsubscribeHandler(unsubscribeMethods[key])
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizedHeads = await chainConnectorDot.subscribe(
-    chainId,
+  await subscribe(
+    "finalizedHeads",
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
-    [],
     async (error, data) => {
       if (error) {
         const err = new Error("Failed to watch extrinsic status (chain_subscribeFinalizedHeads)", {
@@ -209,9 +231,8 @@ const watchExtrinsicStatus = async (
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex, true)
 
-        await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-        )
+        unsubscribe("allHeads")
+        unsubscribe("finalizedHeads")
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
         sentry.captureException(error, { extra: { chainId } })
@@ -221,60 +242,50 @@ const watchExtrinsicStatus = async (
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
   // => need to wait for block to be finalized before considering it a success
-  const unsubscribeAllHeads = await chainConnectorDot.subscribe(
-    chainId,
-    "chain_subscribeAllHeads",
-    "chain_allHead",
-    [],
-    async (error, data) => {
-      if (error) {
-        const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", {
-          cause: error,
-        })
-        log.error(err)
-        sentry.captureException(err, { extra: { chainId } })
-        return
-      }
-
-      try {
-        const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
-        if (!headerInfo) return
-        const { val: extResult, err } = await getExtrinsincResult(
-          decodeSystemEvents,
-          headerInfo.hash,
-          chainId,
-          extrinsicHash
-        )
-
-        if (err) return // err is true if extrinsic is not found in this block
-
-        const { result, blockNumber, extIndex } = extResult
-
-        if (result === "success") foundInBlockHash = headerInfo.hash
-        cb(result, blockNumber, extIndex, false)
-
-        await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
-
-        // if error, no need to wait for a confirmation
-        if (result === "error") {
-          await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-          )
-          if (timeout !== null) clearTimeout(timeout)
-        }
-      } catch (error) {
-        sentry.captureException(error, { extra: { chainId } })
-      }
+  await subscribe("allHeads", "chain_subscribeAllHeads", "chain_allHead", async (error, data) => {
+    if (error) {
+      const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", {
+        cause: error,
+      })
+      log.error(err)
+      sentry.captureException(err, { extra: { chainId } })
+      return
     }
-  )
+
+    try {
+      const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
+      if (!headerInfo) return
+      const { val: extResult, err } = await getExtrinsincResult(
+        decodeSystemEvents,
+        headerInfo.hash,
+        chainId,
+        extrinsicHash
+      )
+
+      if (err) return // err is true if extrinsic is not found in this block
+
+      const { result, blockNumber, extIndex } = extResult
+
+      if (result === "success") foundInBlockHash = headerInfo.hash
+      cb(result, blockNumber, extIndex, false)
+
+      unsubscribe("allHeads")
+
+      // if error, no need to wait for a confirmation
+      if (result === "error") {
+        unsubscribe("finalizedHeads")
+        if (timeout !== null) clearTimeout(timeout)
+      }
+    } catch (error) {
+      sentry.captureException(error, { extra: { chainId } })
+    }
+  })
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   timeout = setTimeout(async () => {
-    await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
+    unsubscribe("allHeads")
     if (subscriptions.finalizedHeads) {
-      await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-      )
+      unsubscribe("finalizedHeads")
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
         const { val: extResult, err } = await getExtrinsincResult(
