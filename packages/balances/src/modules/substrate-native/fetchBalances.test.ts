@@ -121,11 +121,11 @@ const poolOf = (member: NativeAccount) =>
 
 /** staking = points_to_balance runtime api, unbonding = member_total_balance - staking */
 const nomPoolValues = (
-  member: typeof poolMember | typeof activeMember
+  member: typeof poolMember | typeof activeMember,
+  description: string = poolOf(member).entries.metadata.expectedText
 ): AmountWithLabel<string>[] => {
   const pool = poolOf(member)
   const poolId = String(pool.poolId)
-  const description = pool.entries.metadata.expectedText
   const staking = BigInt(member.runtimeApi.pointsToBalance)
   const unbonding = BigInt(member.runtimeApi.memberTotalBalance) - staking
   return [
@@ -329,18 +329,14 @@ describe("substrate-native fetchBalances", () => {
     ])
   })
 
-  // BUG: a pool without a NominationPools.Metadata entry (ValueQuery, absent until set) reads as
-  // null, and `changes.includes(null)` then drops the member's whole pooled stake
-  it.fails("keeps pooled stake when the pool has no metadata entry", async () => {
-    const { connector } = makeConnector({ [poolOf(activeMember).entries.metadata.key]: null })
+  it("keeps pooled stake, named after the pool id, when the pool has no metadata entry", async () => {
+    const pool = poolOf(activeMember)
+    const { connector } = makeConnector({ [pool.entries.metadata.key]: null })
 
     const { success } = await fetchNative([activeMember.address], connector)
 
-    expect(success[0]!.values).toContainEqual(
-      expect.objectContaining({
-        label: "nompools-staking",
-        amount: activeMember.runtimeApi.pointsToBalance,
-      })
+    expect(success[0]!.values).toEqual(
+      expect.arrayContaining(nomPoolValues(activeMember, `Pool ${pool.poolId}`))
     )
   })
 
