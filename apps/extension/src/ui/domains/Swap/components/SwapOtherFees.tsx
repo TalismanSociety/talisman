@@ -7,7 +7,7 @@ import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
-import type { FC } from "react"
+import type { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 import { type QuoteFee, TALISMAN_FEE_NAME } from "../swap-modules/common.swap-module"
 
@@ -17,13 +17,6 @@ const isTalismanFee = (fee: QuoteFee) => fee.name === TALISMAN_FEE_NAME && fee.a
 
 const getOtherFees = (fees: QuoteFee[]) =>
   fees.filter((fee) => fee.additional || isTalismanFee(fee))
-
-const getFeeNames = (fees: QuoteFee[]) => [
-  ...new Set(fees.map((fee) => fee.name.replace(/ fees?$/i, ""))),
-]
-
-const formatNames = (names: string[]) =>
-  new Intl.ListFormat("en", { type: "conjunction" }).format(names)
 
 const toPlanck = (fee: QuoteFee, decimals: number) =>
   BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
@@ -41,7 +34,6 @@ export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
   const { t } = useTranslation()
   const otherFees = getOtherFees(fees)
   if (!otherFees.length) return null
-  const feeNames = getFeeNames(otherFees)
 
   return (
     <div className="flex h-11 items-center justify-between gap-8">
@@ -54,9 +46,7 @@ export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            {feeNames.length > 1
-              ? t("{{names}} fees", { names: formatNames(feeNames) })
-              : t("{{name}} fee", { name: feeNames[0] })}
+            <OtherFeesBreakdown fees={otherFees} />
           </TooltipContent>
         </Tooltip>
       </div>
@@ -69,6 +59,17 @@ export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
   )
 }
 
+const OtherFeesBreakdown: FC<{ fees: QuoteFee[] }> = ({ fees }) => (
+  <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
+    {fees.map((fee) => (
+      <div key={`${fee.name}-${fee.tokenId}`} className="flex w-full justify-between gap-8">
+        <div>{fee.name}:</div>
+        <FeeAmount fee={fee} noTooltip noCountUp />
+      </div>
+    ))}
+  </div>
+)
+
 const OtherFeesTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
   const [firstFee] = fees
   const isSingleToken = fees.every((fee) => fee.tokenId === firstFee?.tokenId)
@@ -79,6 +80,9 @@ const OtherFeesTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
         ...firstFee,
         amount: fees.reduce((total, fee) => total.plus(fee.amount), BigNumber(0)),
       }}
+      className="text-body-secondary text-xs"
+      tokensClassName="text-body"
+      fiatClassName="text-body-secondary"
     />
   ) : (
     <FiatTotal fees={fees} />
@@ -96,18 +100,14 @@ const FiatTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
   return <Fiat className="text-body text-xs" amount={total.toNumber()} noCountUp />
 }
 
-const FeeAmount: FC<{ fee: QuoteFee }> = ({ fee }) => {
+const FeeAmount: FC<
+  { fee: QuoteFee } & Omit<ComponentProps<typeof TokensAndFiat>, "tokenId" | "planck">
+> = ({ fee, ...props }) => {
   const { t } = useTranslation()
   const token = useToken(fee.tokenId)
 
   return token ? (
-    <TokensAndFiat
-      className="text-body-secondary text-xs"
-      tokensClassName="text-body"
-      fiatClassName="text-body-secondary"
-      tokenId={fee.tokenId}
-      planck={toPlanck(fee, token.decimals)}
-    />
+    <TokensAndFiat {...props} tokenId={fee.tokenId} planck={toPlanck(fee, token.decimals)} />
   ) : (
     <div className="text-body-secondary text-xs">{t("Unknown token")}</div>
   )

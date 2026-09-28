@@ -14,7 +14,9 @@ vi.mock("react-i18next", () => ({
 
 vi.mock("@ui/state/chaindata", () => ({
   useToken: (tokenId?: string) =>
-    tokenId === "8453:evm-native" ? { id: tokenId, decimals: 18, symbol: "ETH" } : undefined,
+    tokenId === "8453:evm-native" || tokenId === "8453:erc20:0xwtao"
+      ? { id: tokenId, decimals: 18 }
+      : undefined,
 }))
 
 vi.mock("@ui/domains/Asset/TokensAndFiat", () => ({
@@ -70,7 +72,14 @@ const talismanFee: QuoteFee = {
 }
 
 const getTotal = (container: HTMLElement) =>
-  container.querySelector('[data-testid="amount"]')?.textContent
+  [...container.querySelectorAll('[data-testid="amount"]')].find(
+    (amount) => !amount.closest('[data-testid="tooltip"]')
+  )?.textContent
+
+const getBreakdown = (container: HTMLElement) =>
+  [...container.querySelectorAll('[data-testid="tooltip"] > div > div')].map(
+    (row) => row.textContent
+  )
 
 describe("SwapOtherFees", () => {
   it("renders nothing without additional or talisman fees", () => {
@@ -96,21 +105,18 @@ describe("SwapOtherFees", () => {
     expect(getTotal(container)).toBe("4020000000000000 8453:evm-native")
   })
 
-  it("names the fees in the tooltip", () => {
-    const { getByTestId } = render(
+  it("breaks the fees down in the tooltip, gas excluded", () => {
+    const { container } = render(
       <SwapOtherFees fees={[ccipFee, talismanFee, gasFee]} isLoading={false} />
     )
 
-    expect(getByTestId("tooltip").textContent).toBe("Chainlink CCIP and Talisman fees")
+    expect(getBreakdown(container)).toEqual([
+      "Chainlink CCIP Fee:1020000000000000 8453:evm-native",
+      "Talisman Fee:3000000000000000 8453:evm-native",
+    ])
   })
 
-  it("names a single fee in the tooltip", () => {
-    const { getByTestId } = render(<SwapOtherFees fees={[talismanFee]} isLoading={false} />)
-
-    expect(getByTestId("tooltip").textContent).toBe("Talisman fee")
-  })
-
-  it("totals in fiat when the fees are in different tokens", () => {
+  it("totals in fiat and breaks down per token when the fees are in different tokens", () => {
     const { container } = render(
       <SwapOtherFees
         fees={[{ ...talismanFee, tokenId: "8453:erc20:0xwtao", amount: BigNumber("2") }, ccipFee]}
@@ -119,6 +125,10 @@ describe("SwapOtherFees", () => {
     )
 
     expect(getTotal(container)).toBe("602.04")
+    expect(getBreakdown(container)).toEqual([
+      "Talisman Fee:2000000000000000000 8453:erc20:0xwtao",
+      "Chainlink CCIP Fee:1020000000000000 8453:evm-native",
+    ])
   })
 
   it("shows a skeleton while the exchange is loading", () => {
@@ -129,12 +139,12 @@ describe("SwapOtherFees", () => {
   })
 
   it("keeps the row when the fee token is unknown", () => {
-    const { getByText } = render(
+    const { getAllByText, getByText } = render(
       <SwapOtherFees fees={[{ ...ccipFee, tokenId: "1:erc20:0xunknown" }]} isLoading={false} />
     )
 
     expect(getByText("Other Fees")).toBeTruthy()
-    expect(getByText("Unknown token")).toBeTruthy()
+    expect(getAllByText("Unknown token")).toHaveLength(2)
   })
 })
 
