@@ -1,6 +1,7 @@
 import { address as solAddress } from "@solana/kit"
+import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token"
 import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
-import { LruMap } from "@talismn/util"
+import { isNotNil, LruMap } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
@@ -45,34 +46,59 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         )
         .send()
 
-      const valuePerTokenId = new Map<string, bigint>()
-      for (const d of tokenAccounts.value) {
-        try {
-          const mintAddress = d.account.data.parsed.info.mint
-          const value = BigInt(d.account.data.parsed.info.tokenAmount.amount ?? "0")
-          const tokenId = solSplTokenId(networkId, mintAddress)
+      const tokenAccountHoldings = await Promise.all(
+        tokenAccounts.value.map(async (d) => {
+          try {
+            const { mint: mintAddress, state, tokenAmount } = d.account.data.parsed.info
+            const value = BigInt(tokenAmount.amount ?? "0")
+            const [associatedTokenAccount] = await findAssociatedTokenPda({
+              mint: solAddress(mintAddress),
+              owner: solAddress(address),
+              tokenProgram: TOKEN_PROGRAM_ADDRESS,
+            })
+            // transfers only spend from the associated token account, see getTransferCallData
+            const isSpendable = d.pubkey === associatedTokenAccount && state !== "frozen"
+            return { mintAddress, value, isSpendable }
+          } catch {
+            log.warn("Failed to parse token amount", {
+              address,
+              d,
+            })
+            return null
+          }
+        })
+      )
 
-          // Only register mints with non-zero balance to avoid storing every
-          // airdropped/spam token an account has ever received with 0 balance.
-          if (!knownTokenIds.has(tokenId) && value !== 0n) unknownMints.add(mintAddress)
+      const holdingsPerTokenId = new Map<string, { total: bigint; spendable: bigint }>()
+      for (const { mintAddress, value, isSpendable } of tokenAccountHoldings.filter(isNotNil)) {
+        const tokenId = solSplTokenId(networkId, mintAddress)
 
-          valuePerTokenId.set(tokenId, (valuePerTokenId.get(tokenId) ?? 0n) + value)
-        } catch {
-          log.warn("Failed to parse token amount", {
-            address,
-            d,
-          })
-        }
+        // Only register mints with non-zero balance to avoid storing every
+        // airdropped/spam token an account has ever received with 0 balance.
+        if (!knownTokenIds.has(tokenId) && value !== 0n) unknownMints.add(mintAddress)
+
+        const { total, spendable } = holdingsPerTokenId.get(tokenId) ?? { total: 0n, spendable: 0n }
+        holdingsPerTokenId.set(tokenId, {
+          total: total + value,
+          spendable: spendable + (isSpendable ? value : 0n),
+        })
       }
 
-      const balances = [...valuePerTokenId].map(
-        ([tokenId, value]): IBalance => ({
+      const balances = [...holdingsPerTokenId].map(
+        ([tokenId, { total, spendable }]): IBalance => ({
           tokenId,
           networkId,
           address,
           source: MODULE_TYPE,
           status: "live",
-          value: value.toString(),
+          ...(spendable === total
+            ? { value: total.toString() }
+            : {
+                values: [
+                  { type: "free", label: "free", amount: total.toString() },
+                  { type: "locked", label: "locked", amount: (total - spendable).toString() },
+                ],
+              }),
         })
       )
 

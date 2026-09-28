@@ -4,6 +4,7 @@ import { uniq } from "lodash-es"
 import { firstValueFrom } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { Balance } from "../../classes"
 import type { IBalance } from "../../types"
 import {
   createFakeSolanaRpc,
@@ -52,6 +53,20 @@ type TokenAccount = (typeof recordedAccounts.value)[number]
 const amountsOf = (mint: string) =>
   fixture.expected.tokenAccounts.filter((a) => a.mint === mint).map((a) => BigInt(a.amount))
 
+/** what a transfer can spend: getTransferCallData only sends from the associated token account */
+const associatedAmountOf = (mint: string) =>
+  sum(
+    fixture.expected.tokenAccounts
+      .filter((a) => a.mint === mint && a.isAssociated)
+      .map((a) => BigInt(a.amount))
+  )
+
+const withState = (account: TokenAccount, state: "frozen"): TokenAccount => {
+  const copy = structuredClone(account)
+  copy.account.data.parsed.info.state = state
+  return copy
+}
+
 const withMint = (account: TokenAccount, mint: string): TokenAccount => {
   const copy = structuredClone(account)
   copy.account.data.parsed.info.mint = mint
@@ -88,6 +103,19 @@ const recordedChain =
     }
   }
 
+const sum = (values: bigint[]) => values.reduce((a, b) => a + b, 0n)
+
+const lockedBalance = (mint: string, total: bigint, locked: bigint): IBalance => {
+  const { value: _, ...balance } = liveBalance(mint, total)
+  return {
+    ...balance,
+    values: [
+      { type: "free", label: "free", amount: total.toString() },
+      { type: "locked", label: "locked", amount: locked.toString() },
+    ],
+  }
+}
+
 const liveBalance = (mint: string, value: bigint | string, address = OWNER): IBalance => ({
   tokenId: solSplTokenId(NETWORK_ID, mint),
   networkId: NETWORK_ID,
@@ -96,8 +124,6 @@ const liveBalance = (mint: string, value: bigint | string, address = OWNER): IBa
   status: "live",
   value: value.toString(),
 })
-
-const sum = (values: bigint[]) => values.reduce((a, b) => a + b, 0n)
 
 const accountInfoRequests = (requests: SolanaRpcRequest[]) =>
   requests.filter((r) => r.method === "getAccountInfo").map((r) => r.params[0])
@@ -147,7 +173,7 @@ describe("sol-spl fetchBalances", () => {
     ])
   })
 
-  it("sums every token account the owner holds for the same mint", async () => {
+  it("sums every token account of a mint, locking what is outside the associated one", async () => {
     const { connector } = createFakeSolanaRpc(recordedChain())
 
     const result = await fetchBalances({
@@ -156,10 +182,41 @@ describe("sol-spl fetchBalances", () => {
       connector,
     })
 
-    expect(result.success.slice(0, 3)).toEqual([
-      liveBalance(USDC, sum(amountsOf(USDC))),
-      liveBalance(USD1, sum(amountsOf(USD1))),
-      liveBalance(WSOL, sum(amountsOf(WSOL))),
+    // USDC: associated account + 3 others, USD1 and wSOL: no associated account at all
+    expect(associatedAmountOf(USDC)).toBe(4_230_165n)
+    expect(associatedAmountOf(USD1)).toBe(0n)
+    expect(result.success.slice(0, 3)).toEqual(
+      [USDC, USD1, WSOL].map((mint) =>
+        lockedBalance(mint, sum(amountsOf(mint)), sum(amountsOf(mint)) - associatedAmountOf(mint))
+      )
+    )
+    expect(result.success.slice(3)).toEqual([
+      liveBalance(RAY, associatedAmountOf(RAY)),
+      liveBalance(USDT, associatedAmountOf(USDT)),
+    ])
+    expect(result.success.map((balance) => new Balance(balance).transferable.planck)).toEqual(
+      [USDC, USD1, WSOL, RAY, USDT].map(associatedAmountOf)
+    )
+    expect(result.success.map((balance) => new Balance(balance).total.planck)).toEqual(
+      [USDC, USD1, WSOL, RAY, USDT].map((mint) => sum(amountsOf(mint)))
+    )
+  })
+
+  it("locks a frozen associated token account", async () => {
+    const usdt = recordedAccounts.value.filter((a) => a.account.data.parsed.info.mint === USDT)
+    const { connector } = createFakeSolanaRpc(
+      recordedChain({ tokenAccounts: { [OWNER]: usdt.map((a) => withState(a, "frozen")) } })
+    )
+
+    const result = await fetchBalances({
+      networkId: NETWORK_ID,
+      tokensWithAddresses: [[splToken(USDT), [OWNER]]],
+      connector,
+    })
+
+    expect(associatedAmountOf(USDT)).toBe(sum(amountsOf(USDT)))
+    expect(result.success).toEqual([
+      lockedBalance(USDT, sum(amountsOf(USDT)), sum(amountsOf(USDT))),
     ])
   })
 
