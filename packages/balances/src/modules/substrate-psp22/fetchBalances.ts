@@ -1,21 +1,20 @@
 import type { IBalance } from "../../types"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
-import type { BalanceFetchError } from "../shared"
+import { BalanceFetchError } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import type { MODULE_TYPE } from "./config"
 import { encodePsp22Message, makeContractCaller } from "./util"
 
-/**
- * Reads the first 16 bytes of the contract return data as a little-endian u128.
- *
- * Note: for contracts returning `MessageResult<u128, LangError>` the data starts with the
- * `Ok` tag byte - this replicates the legacy `registry.createType("Balance", data)` behavior.
- */
+const REVERT_FLAG = 1
+
+const decodeU128 = (bytes: Uint8Array): bigint =>
+  bytes.reduceRight((value, byte) => (value << 8n) | BigInt(byte), 0n)
+
+/** ink! 3 returns a bare u128, ink! 4+ a `MessageResult<u128, LangError>` with a leading Ok/Err tag */
 const decodeBalance = (data: Uint8Array): bigint => {
-  const bytes = data.subarray(0, 16)
-  let value = 0n
-  for (let i = bytes.length - 1; i >= 0; i--) value = (value << 8n) | BigInt(bytes[i] as number)
-  return value
+  if (data.length === 16) return decodeU128(data)
+  if (data.length === 17 && data[0] === 0) return decodeU128(data.subarray(1))
+  throw new Error("Unexpected balance_of return data")
 }
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
@@ -36,26 +35,34 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
-      const result = await contractCall(
-        address,
-        token.contractAddress,
-        encodePsp22Message.balanceOf(address)
-      )
+      try {
+        const result = await contractCall(
+          address,
+          token.contractAddress,
+          encodePsp22Message.balanceOf(address)
+        )
 
-      if (!result.result.success) throw new Error("Failed to fetch balance")
+        if (!result.result.success) throw new Error("Contract call failed")
+        if (result.result.value.flags & REVERT_FLAG) throw new Error("Contract call reverted")
 
-      const value = decodeBalance(result.result.value.data).toString()
+        const balance: IBalance = {
+          source: "substrate-psp22",
+          status: "live",
+          address,
+          networkId: token.networkId,
+          tokenId: token.id,
+          value: decodeBalance(result.result.value.data).toString(),
+        }
 
-      const balance: IBalance = {
-        source: "substrate-psp22",
-        status: "live",
-        address,
-        networkId: token.networkId,
-        tokenId: token.id,
-        value,
+        return balance
+      } catch (cause) {
+        throw new BalanceFetchError(
+          "Failed to fetch balance",
+          token.id,
+          address,
+          cause instanceof Error ? cause : undefined
+        )
       }
-
-      return balance
     })
   )
 
