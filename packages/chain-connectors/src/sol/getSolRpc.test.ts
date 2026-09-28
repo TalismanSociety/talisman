@@ -168,6 +168,54 @@ describe("getSolTransport", () => {
     expect(calls).toEqual([RPC_A])
   })
 
+  describe("sendTransaction", () => {
+    const SEND_TRANSACTION = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "sendTransaction",
+      params: ["AQID", { encoding: "base64" }],
+    }
+
+    const sentParams = () =>
+      vi.mocked(fetch).mock.calls.map(([, init]) => JSON.parse(init?.body as string).params)
+
+    it("resends without preflight after a failure where the rpc may have processed it", async () => {
+      stubFetch({ [RPC_A]: down, [RPC_B]: () => ok("signature") })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: SEND_TRANSACTION })
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64", skipPreflight: true }],
+      ])
+    })
+
+    it("resends with preflight after a rate limit", async () => {
+      stubFetch({
+        [RPC_A]: () => new Response("", { status: 429 }),
+        [RPC_B]: () => ok("signature"),
+      })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: SEND_TRANSACTION })
+
+      expect(sentParams()).toEqual([
+        ["AQID", { encoding: "base64" }],
+        ["AQID", { encoding: "base64" }],
+      ])
+    })
+
+    it("leaves other methods unchanged on failover", async () => {
+      stubFetch({ [RPC_A]: down, [RPC_B]: () => ok(42) })
+      const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+      await transport({ payload: PAYLOAD })
+
+      expect(sentParams()).toEqual([[], []])
+    })
+  })
+
   it("does not send a request that the caller already aborted", async () => {
     const calls = stubFetch({ [RPC_A]: () => ok(42), [RPC_B]: () => ok(42) })
     const transport = getSolTransport("solana", [RPC_A, RPC_B])

@@ -75,7 +75,7 @@ const FAILOVER_TIMEOUT_MS = 20_000
 
 const sendWithTimeout = async <TResponse>(
   transport: RpcTransport,
-  config: Parameters<RpcTransport>[0],
+  config: RpcTransportConfig,
   timeoutMs: number
 ): Promise<TResponse> => {
   const controller = new AbortController()
@@ -94,6 +94,31 @@ const sendWithTimeout = async <TResponse>(
   }
 }
 
+type RpcTransportConfig = Parameters<RpcTransport>[0]
+
+const isSendTransactionPayload = (
+  payload: unknown
+): payload is { method: "sendTransaction"; params: unknown[] } =>
+  typeof payload === "object" &&
+  payload !== null &&
+  "method" in payload &&
+  payload.method === "sendTransaction" &&
+  "params" in payload &&
+  Array.isArray(payload.params)
+
+const withoutPreflight = (config: RpcTransportConfig): RpcTransportConfig => {
+  if (!isSendTransactionPayload(config.payload)) return config
+
+  const [transaction, sendConfig] = config.payload.params
+  return {
+    ...config,
+    payload: {
+      ...config.payload,
+      params: [transaction, { ...(sendConfig as object | undefined), skipPreflight: true }],
+    },
+  }
+}
+
 export type SolTransportOptions = {
   /** Called with the url of the RPC that answered, after every successful request */
   onRpcSuccess?: (url: string) => void
@@ -102,36 +127,43 @@ export type SolTransportOptions = {
 /**
  * Sends each request to one RPC at a time, starting from the one that answered last, and moves on to
  * the next when the request fails. A transport only throws for connection, timeout and HTTP errors:
- * JSON-RPC errors come back in the response body and are returned as is. Solana RPC requests are
- * idempotent, so resending one to another RPC is safe.
+ * JSON-RPC errors come back in the response body and are returned as is.
+ *
+ * A failed RPC other than a rate limited one may still have forwarded a transaction. Resending it is
+ * safe, as the network processes a signature once, but its preflight simulation on the next RPC
+ * could then fail although it landed. So a transaction is resent without preflight after such a
+ * failure.
  */
 const withFailover = (urls: string[], options: SolTransportOptions): RpcTransport => {
   const transports = urls.map((url) => createDefaultRpcTransport({ url }))
   let preferred = 0
 
-  const failover = async <TResponse>(config: Parameters<RpcTransport>[0]): Promise<TResponse> => {
+  const failover = async <TResponse>(config: RpcTransportConfig): Promise<TResponse> => {
     if (!transports.length) throw new Error("No RPCs found for Solana network")
 
     const start = preferred
     let lastError: unknown
     let rateLimitError: unknown
+    let mayHaveBeenProcessed = false
     for (let attempt = 0; attempt < transports.length; attempt++) {
       config.signal?.throwIfAborted()
       const index = (start + attempt) % transports.length
       const transport = transports[index] as RpcTransport
       const isLastAttempt = attempt === transports.length - 1
+      const request = mayHaveBeenProcessed ? withoutPreflight(config) : config
 
       try {
         const response = isLastAttempt
-          ? await transport<TResponse>(config)
-          : await sendWithTimeout<TResponse>(transport, config, FAILOVER_TIMEOUT_MS)
+          ? await transport<TResponse>(request)
+          : await sendWithTimeout<TResponse>(transport, request, FAILOVER_TIMEOUT_MS)
         preferred = index
         options.onRpcSuccess?.(urls[index] as string)
         return response
       } catch (error) {
         if (config.signal?.aborted) throw error
         lastError = error
-        if (!rateLimitError && getRateLimitContext(error)) rateLimitError = error
+        if (!getRateLimitContext(error)) mayHaveBeenProcessed = true
+        else rateLimitError ??= error
       }
     }
     throw rateLimitError ?? lastError
