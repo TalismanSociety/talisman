@@ -121,6 +121,22 @@ describe("getSolTransport", () => {
     })
   })
 
+  it("retries the rpcs when one was rate limited and a later one failed", async () => {
+    vi.useFakeTimers()
+    let callsToA = 0
+    const calls = stubFetch({
+      [RPC_A]: () => (callsToA++ ? ok(42) : new Response("", { status: 429 })),
+      [RPC_B]: () => new Response("", { status: 503 }),
+    })
+    const transport = getSolTransport("solana", [RPC_A, RPC_B])
+
+    const request = transport({ payload: PAYLOAD })
+    await vi.advanceTimersByTimeAsync(500)
+
+    await expect(request).resolves.toMatchObject({ result: 42n })
+    expect(calls).toEqual([RPC_A, RPC_B, RPC_A])
+  })
+
   it("moves on from an rpc that does not answer in time", async () => {
     vi.useFakeTimers()
     const hang: Handler = (signal) =>

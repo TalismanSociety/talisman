@@ -11,12 +11,19 @@ export type SolRpc = Rpc<SolanaRpcApi>
 const MAX_429_RETRIES = 5
 const BASE_BACKOFF_MS = 500
 
-/** Returns the delay to wait before retrying, or `null` if the error is not a retryable 429. */
-const get429RetryDelay = (error: unknown, attempt: number): number | null => {
+type HttpErrorContext = { statusCode?: number; headers?: Headers }
+
+const getRateLimitContext = (error: unknown): HttpErrorContext | null => {
   if (!isSolanaError(error)) return null
 
-  const context = error.context as { statusCode?: number; headers?: Headers }
-  if (context.statusCode !== 429) return null
+  const context = error.context as HttpErrorContext
+  return context.statusCode === 429 ? context : null
+}
+
+/** Returns the delay to wait before retrying, or `null` if the error is not a retryable 429. */
+const get429RetryDelay = (error: unknown, attempt: number): number | null => {
+  const context = getRateLimitContext(error)
+  if (!context) return null
 
   // honour the server's Retry-After header (delta-seconds) when present
   const retryAfter = Number(context.headers?.get("retry-after"))
@@ -107,6 +114,7 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
 
     const start = preferred
     let lastError: unknown
+    let rateLimitError: unknown
     for (let attempt = 0; attempt < transports.length; attempt++) {
       const index = (start + attempt) % transports.length
       const transport = transports[index] as RpcTransport
@@ -122,9 +130,10 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
       } catch (error) {
         if (config.signal?.aborted) throw error
         lastError = error
+        if (!rateLimitError && getRateLimitContext(error)) rateLimitError = error
       }
     }
-    throw lastError
+    throw rateLimitError ?? lastError
   }
   return failover as RpcTransport
 }
@@ -132,7 +141,7 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
 /**
  * Returns a transport over all of the network's RPCs, in the given order. A request fails over to
  * the next RPC on error, and the RPC that answered is tried first for the next request. When every
- * RPC fails and the last one answered HTTP 429, the whole list is retried with backoff.
+ * RPC fails and one of them answered HTTP 429, the whole list is retried with backoff.
  */
 export const getSolTransport = (
   _networkId: SolNetworkId,
