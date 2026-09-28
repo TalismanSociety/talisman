@@ -98,26 +98,7 @@ describe("evm-uniswapv2 fetchBalances", () => {
     )
   })
 
-  // pinned: the ratio balance / totalSupply is rounded to 20 decimal places before it is scaled by
-  // each reserve, so holdings are fractional and lose precision for small shares (see it.fails below)
-  it("pins current holdings: 20 dp ratio scaled by each reserve", async () => {
-    stubEvmNode(fixture.rpc)
-
-    const result = await fetchLp(PAIRS)
-
-    expect(
-      result.success.map((balance) => [amount(balance, "holding0"), amount(balance, "holding1")])
-    ).toEqual([
-      ["14560275.55994011083485462307", "5407471061613900.13381791712012442366"],
-      ["144982180.16439681904596095997", "53844238075113276.75599510067067371586"],
-      ["95137.51864331240479283472", "35.25118631715674323602"],
-      ["999494492164070756.43758920992281153592", "370341449605636.86588052343094901647"],
-    ])
-  })
-
-  // bug: holdings are fractional planck strings (BalanceFormatter.planck throws on them) and the
-  // 20 dp ratio makes small shares wrong, e.g. 95137.5 instead of 115365 DAI wei for 1000 LP wei
-  it.fails("reports holdings as whole planck, like the pair's burn() would pay out", async () => {
+  it("reports holdings as whole planck, like the pair's burn() would pay out", async () => {
     stubEvmNode(fixture.rpc)
 
     const result = await fetchLp(PAIRS)
@@ -190,7 +171,7 @@ describe("evm-uniswapv2 fetchBalances", () => {
     )
   })
 
-  it("divides by one when the pool reports a zero total supply", async () => {
+  it("reports no holdings when the pool reports a zero total supply", async () => {
     const [zeroAddress] = holders(DAI_WETH)
     if (!zeroAddress) throw new Error("fixture has no DAI/WETH holder")
     stubEvmNode({
@@ -213,11 +194,7 @@ describe("evm-uniswapv2 fetchBalances", () => {
 
     const [balance] = result.success
     if (!balance) throw new Error("no balance")
-    const lp = balanceOf(DAI_WETH, zeroAddress)
-    expect([amount(balance, "holding0"), amount(balance, "holding1")]).toEqual([
-      (lp * BigInt(pool(DAI_WETH).reserve0)).toString(),
-      (lp * BigInt(pool(DAI_WETH).reserve1)).toString(),
-    ])
+    expect([amount(balance, "holding0"), amount(balance, "holding1")]).toEqual(["0", "0"])
   })
 
   it("rejects an address that is not an ethereum address", async () => {
