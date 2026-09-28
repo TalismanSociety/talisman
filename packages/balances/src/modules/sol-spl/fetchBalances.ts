@@ -1,6 +1,6 @@
 import { address as solAddress } from "@solana/kit"
 import { type SolSplToken, SolSplTokenSchema, solSplTokenId } from "@talismn/chaindata-provider"
-import { isNotNil, LruMap } from "@talismn/util"
+import { LruMap } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
@@ -45,34 +45,36 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         )
         .send()
 
-      const balances = tokenAccounts.value
-        .map((d): IBalance | null => {
-          try {
-            const mintAddress = d.account.data.parsed.info.mint
-            const value = d.account.data.parsed.info.tokenAmount.amount ?? "0"
-            const tokenId = solSplTokenId(networkId, mintAddress)
+      const valuePerTokenId = new Map<string, bigint>()
+      for (const d of tokenAccounts.value) {
+        try {
+          const mintAddress = d.account.data.parsed.info.mint
+          const value = BigInt(d.account.data.parsed.info.tokenAmount.amount ?? "0")
+          const tokenId = solSplTokenId(networkId, mintAddress)
 
-            // Only register mints with non-zero balance to avoid storing every
-            // airdropped/spam token an account has ever received with 0 balance.
-            if (!knownTokenIds.has(tokenId) && value !== "0") unknownMints.add(mintAddress)
+          // Only register mints with non-zero balance to avoid storing every
+          // airdropped/spam token an account has ever received with 0 balance.
+          if (!knownTokenIds.has(tokenId) && value !== 0n) unknownMints.add(mintAddress)
 
-            return {
-              tokenId,
-              networkId,
-              address,
-              source: MODULE_TYPE,
-              status: "live",
-              value,
-            }
-          } catch {
-            log.warn("Failed to parse token amount", {
-              address,
-              d,
-            })
-            return null
-          }
+          valuePerTokenId.set(tokenId, (valuePerTokenId.get(tokenId) ?? 0n) + value)
+        } catch {
+          log.warn("Failed to parse token amount", {
+            address,
+            d,
+          })
+        }
+      }
+
+      const balances = [...valuePerTokenId].map(
+        ([tokenId, value]): IBalance => ({
+          tokenId,
+          networkId,
+          address,
+          source: MODULE_TYPE,
+          status: "live",
+          value: value.toString(),
         })
-        .filter(isNotNil)
+      )
 
       // allows the wallet to detect new tokens, and enable them automatically
       setDetectedTokenIds(

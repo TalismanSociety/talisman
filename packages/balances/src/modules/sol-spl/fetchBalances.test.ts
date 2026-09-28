@@ -147,9 +147,7 @@ describe("sol-spl fetchBalances", () => {
     ])
   })
 
-  // bug: balances are keyed by (token, owner) with keyBy, so the last token account of a mint wins
-  // (wSOL reads 0 here) instead of the sum of all the owner's accounts for that mint
-  it.fails("sums every token account the owner holds for the same mint", async () => {
+  it("sums every token account the owner holds for the same mint", async () => {
     const { connector } = createFakeSolanaRpc(recordedChain())
 
     const result = await fetchBalances({
