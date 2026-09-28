@@ -43,7 +43,6 @@ export const getSignerPayloadJSON = async (
     getStorageValue<number>(chain, "System", "Number", []),
   ])
   if (!genesisHash) throw new Error("Genesis hash not found")
-  if (!blockHash) throw new Error("Block hash not found")
 
   let blockNumber = blockNumberFinalized
 
@@ -58,6 +57,7 @@ export const getSignerPayloadJSON = async (
     ])
     blockHash = binBlockHash
   }
+  if (!blockHash) throw new Error("Block hash not found")
 
   const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
   // signedExtensions is keyed by extension version, 0 is the default
