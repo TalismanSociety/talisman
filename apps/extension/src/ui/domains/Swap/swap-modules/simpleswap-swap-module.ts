@@ -26,6 +26,7 @@ import {
   type SwapModule,
   type SwapModuleTransaction,
   type SwappableAssetBaseType,
+  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import type { QuoteResponse } from "./common.swap-module.ts"
 import {
@@ -418,7 +419,7 @@ const getQuote = async (
     amount: BigNumber(fromAmount.toString())
       .times(10 ** -fromAsset.decimals)
       .times(talismanFee),
-    name: "Talisman Fee",
+    name: TALISMAN_FEE_NAME,
     tokenId: fromAsset.id,
   })
 

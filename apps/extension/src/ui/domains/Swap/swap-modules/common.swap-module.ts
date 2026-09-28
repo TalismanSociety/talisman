@@ -21,6 +21,9 @@ import type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
 export type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
 
+/** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
+export const TALISMAN_FEE_NAME = "Talisman Fee"
+
 export type QuoteFee = {
   name: string
   amount: BigNumber

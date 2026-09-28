@@ -31,17 +31,18 @@ import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
-import type {
-  ApprovalInfo,
-  BaseQuote,
-  ExchangeParams,
-  GetTransactionParams,
-  QuoteFee,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapExchange,
-  SwapModule,
-  SwapModuleTransaction,
+import {
+  type ApprovalInfo,
+  type BaseQuote,
+  type ExchangeParams,
+  type GetTransactionParams,
+  type QuoteFee,
+  type QuoteParams,
+  type SupportedSwapProtocol,
+  type SwapExchange,
+  type SwapModule,
+  type SwapModuleTransaction,
+  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getEvmNetwork, getEvmPublicClient } from "./evm-network"
@@ -395,12 +396,12 @@ const toQuoteFee = (name: string, tokenId: TokenId, wei: bigint): QuoteFee => ({
 })
 
 const toBridgeFee = (tokenId: TokenId, feeWei: bigint): QuoteFee => ({
-  ...toQuoteFee("Bridge Fee", tokenId, withFeeBuffer(feeWei)),
+  ...toQuoteFee("Chainlink CCIP Fee", tokenId, withFeeBuffer(feeWei)),
   additional: true,
 })
 
 const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmounts) =>
-  partnerFeeWei > 0n ? [toQuoteFee("Talisman Fee", route.fromTokenId, partnerFeeWei)] : []
+  partnerFeeWei > 0n ? [toQuoteFee(TALISMAN_FEE_NAME, route.fromTokenId, partnerFeeWei)] : []
 
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei

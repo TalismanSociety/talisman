@@ -51,7 +51,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
-import { getAdditionalFeePlanck, SwapAdditionalFees } from "./SwapAdditionalFees"
+import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -685,7 +685,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
-          <SwapAdditionalFees
+          <SwapOtherFees
             fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
             isLoading={isExchangeLoading}
           />
