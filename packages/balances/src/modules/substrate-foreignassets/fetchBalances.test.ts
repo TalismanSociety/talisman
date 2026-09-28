@@ -150,8 +150,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     ])
   })
 
-  // a Blocked account can neither send nor receive, but only the Frozen status locks the balance
-  it.fails("reports a Blocked account's whole balance as frozen", async () => {
+  it("reports a Blocked account's whole balance as frozen", async () => {
     const { blocked } = fixture.handEncoded
     const { connector } = makeConnector({ [wethHolder.entry.key]: blocked.value })
 
