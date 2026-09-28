@@ -52,7 +52,7 @@ export const buildQueries = (
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           changes[0],
-          `Failed to decode substrate-assets balance on chain ${networkId}`
+          `Failed to decode substrate-foreignassets balance on chain ${networkId}`
         ) ?? {
           balance: 0n,
           is_frozen: false,
@@ -85,7 +85,7 @@ export const buildQueries = (
         ]
 
         const balance: IBalance = {
-          source: "substrate-assets",
+          source: "substrate-foreignassets",
           status: "live",
           address,
           networkId,

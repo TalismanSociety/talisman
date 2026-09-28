@@ -86,12 +86,12 @@ const fetchForeign = (
   miniMetadata = MINI_METADATA
 ) => fetchBalances({ networkId: NETWORK_ID, tokensWithAddresses, connector, miniMetadata })
 
-/** the balance minus `source`, which is pinned separately (see the it.fails below) */
 const foreignBalance = (
   token: SubForeignAssetsToken,
   address: string,
   { free, frozen }: { free: string; frozen: string }
-): Omit<IBalance, "source"> => ({
+): IBalance => ({
+  source: "substrate-foreignassets",
   status: "live",
   address,
   networkId: NETWORK_ID,
@@ -101,7 +101,6 @@ const foreignBalance = (
     { type: "locked", label: "frozen", amount: frozen },
   ],
 })
-const withoutSource = (balances: IBalance[]) => balances.map(({ source: _, ...rest }) => rest)
 
 const balanceOf = (h: Holder) => h.entry.expected?.balance ?? "0"
 
@@ -119,7 +118,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     )
 
     expect(result.errors).toEqual([])
-    expect(withoutSource(result.success)).toEqual([
+    expect(result.success).toEqual([
       foreignBalance(ETH, ethHolder.address, { free: balanceOf(ethHolder), frozen: "0" }),
       foreignBalance(WETH, wethHolder.address, { free: balanceOf(wethHolder), frozen: "0" }),
       foreignBalance(WETH, wethEmptyAccount.address, { free: "0", frozen: "0" }),
@@ -142,7 +141,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     const { success } = await fetchForeign([[WETH, [wethHolder.address]]], connector)
 
     expect(frozen.expected.status.type).toBe("Frozen")
-    expect(withoutSource(success)).toEqual([
+    expect(success).toEqual([
       foreignBalance(WETH, wethHolder.address, {
         free: frozen.expected.balance,
         frozen: frozen.expected.balance,
@@ -157,7 +156,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     const { success } = await fetchForeign([[WETH, [wethHolder.address]]], connector)
 
     expect(blocked.expected.status.type).toBe("Blocked")
-    expect(withoutSource(success)).toEqual([
+    expect(success).toEqual([
       foreignBalance(WETH, wethHolder.address, {
         free: blocked.expected.balance,
         frozen: blocked.expected.balance,
@@ -171,7 +170,7 @@ describe("substrate-foreignassets fetchBalances", () => {
 
     const { success } = await fetchForeign([[frozenWeth, [wethHolder.address]]], connector)
 
-    expect(withoutSource(success)).toEqual([
+    expect(success).toEqual([
       foreignBalance(frozenWeth, wethHolder.address, {
         free: balanceOf(wethHolder),
         frozen: balanceOf(wethHolder),
@@ -179,17 +178,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     ])
   })
 
-  it("labels decoded balances with the substrate-assets source (current behaviour)", async () => {
-    const { connector } = makeConnector()
-
-    const { success } = await fetchForeign([[WETH, [wethHolder.address]]], connector)
-
-    expect(success.map(({ source }) => source)).toEqual(["substrate-assets"])
-  })
-
-  // BUG: buildQueries copies substrate-assets' `source`, while this module's own zero-balance
-  // fallback (and the token type) say substrate-foreignassets
-  it.fails("labels decoded balances with the substrate-foreignassets source", async () => {
+  it("labels decoded balances with the substrate-foreignassets source", async () => {
     const { connector } = makeConnector()
 
     const { success } = await fetchForeign([[WETH, [wethHolder.address]]], connector)
@@ -206,12 +195,7 @@ describe("substrate-foreignassets fetchBalances", () => {
     const result = await fetchForeign([[token, [address]]], connector)
 
     expect(result).toEqual({
-      success: [
-        {
-          ...foreignBalance(token, address, { free: "0", frozen: "0" }),
-          source: "substrate-foreignassets",
-        },
-      ],
+      success: [foreignBalance(token, address, { free: "0", frozen: "0" })],
       errors: [],
     })
     expect(send).not.toHaveBeenCalled()
