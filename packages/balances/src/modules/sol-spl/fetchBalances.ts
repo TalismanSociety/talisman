@@ -20,6 +20,10 @@ const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 // mint new tokens indefinitely, and an evicted entry only costs one re-fetch.
 const dynamicTokenMetadataCache = new LruMap<string, CachedToken>(1024)
 
+// Deriving an associated token account address hashes until it finds an off-curve point,
+// too costly to repeat for every token account on every poll.
+const associatedTokenAccountCache = new LruMap<string, string>(1024)
+
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
   tokensWithAddresses,
@@ -51,13 +55,11 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           try {
             const { mint: mintAddress, state, tokenAmount } = d.account.data.parsed.info
             const value = BigInt(tokenAmount.amount ?? "0")
-            const [associatedTokenAccount] = await findAssociatedTokenPda({
-              mint: solAddress(mintAddress),
-              owner: solAddress(address),
-              tokenProgram: TOKEN_PROGRAM_ADDRESS,
-            })
             // transfers only spend from the associated token account, see getTransferCallData
-            const isSpendable = d.pubkey === associatedTokenAccount && state !== "frozen"
+            const isSpendable =
+              value !== 0n &&
+              state !== "frozen" &&
+              d.pubkey === (await getAssociatedTokenAccount(address, mintAddress))
             return { mintAddress, value, isSpendable }
           } catch {
             log.warn("Failed to parse token amount", {
@@ -194,3 +196,17 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 }
 
 const getBalanceKey = (tokenId: string, address: string) => `${tokenId}:${address}`
+
+const getAssociatedTokenAccount = async (owner: string, mint: string) => {
+  const key = `${owner}:${mint}`
+  const cached = associatedTokenAccountCache.get(key)
+  if (cached) return cached
+
+  const [associatedTokenAccount] = await findAssociatedTokenPda({
+    mint: solAddress(mint),
+    owner: solAddress(owner),
+    tokenProgram: TOKEN_PROGRAM_ADDRESS,
+  })
+  associatedTokenAccountCache.set(key, associatedTokenAccount)
+  return associatedTokenAccount
+}

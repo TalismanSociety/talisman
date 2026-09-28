@@ -15,6 +15,11 @@ import { solanaMainnet as fixture } from "./__fixtures__/solanaMainnet"
 import { getTransferCallData } from "./getTransferCallData"
 import { fetchOnChainTokenData } from "./onChainTokenMetadata"
 
+vi.mock("@solana-program/token", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@solana-program/token")>()
+  return { ...original, findAssociatedTokenPda: vi.fn(original.findAssociatedTokenPda) }
+})
+
 vi.mock("../../log", () => ({
   default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn(), log: vi.fn() },
 }))
@@ -200,6 +205,37 @@ describe("sol-spl fetchBalances", () => {
     expect(result.success.map((balance) => new Balance(balance).total.planck)).toEqual(
       [USDC, USD1, WSOL, RAY, USDT].map((mint) => sum(amountsOf(mint)))
     )
+  })
+
+  it("derives an associated token account once, and never for an empty token account", async () => {
+    const { findAssociatedTokenPda } = await import("@solana-program/token")
+    const [emptyAccount] = recordedAccounts.value.filter(
+      (a) => a.account.data.parsed.info.tokenAmount.amount === "0"
+    )
+    if (!emptyAccount) throw new Error("fixture has no empty token account")
+    const { connector } = createFakeSolanaRpc(
+      recordedChain({
+        tokenAccounts: { [OWNER]: [...recordedAccounts.value, withMint(emptyAccount, MSOL)] },
+      })
+    )
+    const request = {
+      networkId: NETWORK_ID,
+      tokensWithAddresses: [USDC, USD1, WSOL, USDT, MSOL].map((mint): [SolSplToken, string[]] => [
+        splToken(mint),
+        [OWNER],
+      ]),
+      connector,
+    }
+    const derivedMints = () =>
+      vi.mocked(findAssociatedTokenPda).mock.calls.map(([{ mint }]) => mint as string)
+
+    await fetchBalances(request)
+    const firstPoll = derivedMints()
+    await fetchBalances(request)
+
+    expect(firstPoll).not.toContain(MSOL)
+    expect(firstPoll).toContain(USDC)
+    expect(derivedMints()).toEqual(firstPoll)
   })
 
   it("locks a frozen associated token account", async () => {
