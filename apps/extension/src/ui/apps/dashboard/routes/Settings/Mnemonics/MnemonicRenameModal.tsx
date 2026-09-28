@@ -6,7 +6,7 @@ import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useMnemonic, useMnemonics } from "@ui/state/mnemonics"
 import { provideContext } from "@ui/util/provideContext"
@@ -154,15 +154,11 @@ export const MnemonicRenameModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <WizardModalDialog
-        className="h-auto"
-        title={t("Rename recovery phrase")}
-        onCloseClick={close}
-      >
+      <ModalDialog className="h-auto" title={t("Rename recovery phrase")} onCloseClick={close}>
         {!!mnemonic && (
           <MnemonicRenameForm mnemonic={mnemonic} onConfirm={close} onCancel={close} />
         )}
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

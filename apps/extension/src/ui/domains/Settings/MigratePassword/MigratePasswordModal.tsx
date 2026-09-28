@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { statusOptions } from "@ui/hooks/useStatus"
 import { useTranslation } from "react-i18next"
 
@@ -18,9 +18,9 @@ const MigratePasswordModalContent = () => {
     useMigratePassword()
   if (status === statusOptions.PROCESSING)
     return (
-      <WizardModalDialog className="h-auto" title={t("Please wait...")}>
+      <ModalDialog className="h-auto" title={t("Please wait...")}>
         <ProcessAnimation status="processing" className="my-20 h-35" />
-      </WizardModalDialog>
+      </ModalDialog>
     )
   if (status === statusOptions.SUCCESS) return <MigratePasswordSuccess />
   if (status === statusOptions.ERROR) return <MigratePasswordError />

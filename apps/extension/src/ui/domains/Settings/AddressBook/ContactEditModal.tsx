@@ -9,7 +9,7 @@ import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworks } from "@ui/state/chaindata"
@@ -123,7 +123,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
       <div id="edit-contact-modal" className="h-150 w-100 overflow-hidden">
-        <WizardModalDialog title={t("Edit contact")} className="size-full">
+        <ModalDialog title={t("Edit contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">
               <FormFieldContainer error={errors.name?.message} label={t("Name")}>
@@ -162,7 +162,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
               </Button>
             </div>
           </form>
-        </WizardModalDialog>
+        </ModalDialog>
       </div>
     </Modal>
   )

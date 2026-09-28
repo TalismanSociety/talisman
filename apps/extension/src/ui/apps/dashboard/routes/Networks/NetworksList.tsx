@@ -7,9 +7,9 @@ import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { ListButton } from "@ui/components/ListButton"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Radio } from "@ui/components/Radio"
 import { Toggle } from "@ui/components/Toggle"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
@@ -255,7 +255,7 @@ const ResetAllNetworksModalContent: FC<{
   }, [networks, onClose])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       className="h-auto"
       title={
         platform === "all"
@@ -279,7 +279,7 @@ const ResetAllNetworksModalContent: FC<{
           {t("Reset")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -323,7 +323,7 @@ const DeactivateNetworksModalContent: FC<{
   }, [activeNetworkIds.length, isBalancesInitializing, mode, unusedNetworkIds.length])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       className="h-auto"
       title={
         platform === "all"
@@ -398,6 +398,6 @@ const DeactivateNetworksModalContent: FC<{
           {t("Deactivate")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

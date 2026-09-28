@@ -1,7 +1,7 @@
 import { Button } from "@ui/components/Button"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -49,7 +49,7 @@ export const BittensorChangeLockHotkeyForm = () => {
 
   if (activePicker === "hotkey")
     return (
-      <WizardModalDialog
+      <ModalDialog
         title={t("Select Hotkey")}
         onBackClick={() => setActivePicker(null)}
         onCloseClick={close}
@@ -62,11 +62,11 @@ export const BittensorChangeLockHotkeyForm = () => {
           lockOriginColdkey={currentOwnerColdkey}
           onSelect={selectHotkey}
         />
-      </WizardModalDialog>
+      </ModalDialog>
     )
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       title={t("Conviction Lock Hotkey")}
       onCloseClick={close}
       contentClassName="overflow-hidden flex flex-col gap-8"
@@ -191,6 +191,6 @@ export const BittensorChangeLockHotkeyForm = () => {
         onSelect={selectAccount}
         onDismiss={() => setActivePicker(null)}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

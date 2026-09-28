@@ -1,5 +1,5 @@
 import type { Token } from "@talismn/chaindata-provider"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +23,7 @@ export const YieldxyzEnterStepToken: FC = () => {
   if (!pickerTokenIds) throw new Error("PickerTokenIds is not defined")
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       className="size-full border-none"
       title={t("Select Token")}
       contentClassName="p-0"
@@ -34,6 +34,6 @@ export const YieldxyzEnterStepToken: FC = () => {
         selected={pickerTokenId ?? undefined}
         onSelect={onPickerTokenChanged}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

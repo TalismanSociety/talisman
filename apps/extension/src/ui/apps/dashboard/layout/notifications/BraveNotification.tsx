@@ -1,6 +1,6 @@
 import { BraveIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useIsBrave } from "@ui/hooks/useIsBrave"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -35,13 +35,9 @@ export const BraveWarningNotification = () => {
         onClose={handleHide}
       />
       <Modal isOpen={isOpen} onDismiss={close}>
-        <WizardModalDialog
-          className="h-auto"
-          title={t("Attention Brave Users")}
-          onCloseClick={close}
-        >
+        <ModalDialog className="h-auto" title={t("Attention Brave Users")} onCloseClick={close}>
           <BraveWarningModal />
-        </WizardModalDialog>
+        </ModalDialog>
       </Modal>
     </>
   )

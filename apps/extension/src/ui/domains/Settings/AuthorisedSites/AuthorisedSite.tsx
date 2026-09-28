@@ -3,7 +3,7 @@ import { Accordion, AccordionIcon } from "@ui/components/Accordion"
 import { Button } from "@ui/components/Button"
 import { Favicon } from "@ui/components/Favicon"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback, useState } from "react"
@@ -119,13 +119,13 @@ export const AuthorisedSite: FC<{
         </div>
       </Accordion>
       <Modal isOpen={showForget} onDismiss={hideForget}>
-        <WizardModalDialog className="h-auto" title={t("Forget Site")} onCloseClick={hideForget}>
+        <ModalDialog className="h-auto" title={t("Forget Site")} onCloseClick={hideForget}>
           <ConfirmForgetDialog
             siteLabel={origin ?? id}
             onConfirm={confirmForget}
             onCancel={hideForget}
           />
-        </WizardModalDialog>
+        </ModalDialog>
       </Modal>
     </div>
   )

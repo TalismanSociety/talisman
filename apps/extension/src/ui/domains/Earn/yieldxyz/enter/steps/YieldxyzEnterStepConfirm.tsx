@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useTranslation } from "react-i18next"
@@ -30,7 +30,7 @@ export const YieldxyzEnterStepConfirm = () => {
       }
       containerId="earn-modal"
     >
-      <WizardModalDialog
+      <ModalDialog
         className="size-full border-none"
         title={t("Enter Position")}
         onBackClick={canGoBack ? goBack : undefined}
@@ -57,7 +57,7 @@ export const YieldxyzEnterStepConfirm = () => {
             <YieldxyzProductYieldDisplay product={product} />
           </FormFieldSetRow>
         </YieldxyzConfirmBody>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

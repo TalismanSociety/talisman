@@ -2,8 +2,8 @@ import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { useMnemonic } from "@ui/state/mnemonics"
@@ -68,7 +68,7 @@ export const MnemonicSetPvVerifierModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <WizardModalDialog
+      <ModalDialog
         className="h-auto"
         title={t("Set as Polkadot Vault Verifier")}
         onCloseClick={close}
@@ -98,7 +98,7 @@ export const MnemonicSetPvVerifierModal = () => {
             {t("Confirm")}
           </Button>
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

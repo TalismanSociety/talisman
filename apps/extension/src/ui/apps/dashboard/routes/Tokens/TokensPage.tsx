@@ -6,12 +6,12 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { OptionSwitch } from "@ui/components/OptionSwitch"
 import { PillButton } from "@ui/components/PillButton"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Spacer } from "@ui/components/Spacer"
 import { TogglePill } from "@ui/components/TogglePill"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -191,7 +191,7 @@ const ResetStatesModalContent: FC<{
   }, [onClose])
 
   return (
-    <WizardModalDialog className="h-auto" title={t("Reset tokens")} onCloseClick={onClose}>
+    <ModalDialog className="h-auto" title={t("Reset tokens")} onCloseClick={onClose}>
       <div className="mb-8 text-body-secondary text-sm">
         {t("This will reset active state of all tokens to their Talisman defaults.")}
       </div>
@@ -202,6 +202,6 @@ const ResetStatesModalContent: FC<{
           {t("Reset")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

@@ -13,8 +13,8 @@ import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
@@ -205,7 +205,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
       <div id="create-contact-modal" className="h-150 w-100 overflow-hidden">
-        <WizardModalDialog title={t("Add new contact")} className="size-full">
+        <ModalDialog title={t("Add new contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">
               <FormFieldContainer error={errors.name?.message} label={t("Name")}>
@@ -256,7 +256,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               </Button>
             </div>
           </form>
-        </WizardModalDialog>
+        </ModalDialog>
       </div>
     </Modal>
   )

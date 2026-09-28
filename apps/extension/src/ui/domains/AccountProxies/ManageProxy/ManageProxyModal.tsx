@@ -3,8 +3,8 @@ import { AlertCircleIcon, TrashIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
@@ -99,7 +99,7 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   }
 
   return (
-    <WizardModalDialog title={t("Manage Proxies")} onCloseClick={onClose}>
+    <ModalDialog title={t("Manage Proxies")} onCloseClick={onClose}>
       <div className="flex grow flex-col gap-8">
         <div className="flex items-center justify-between gap-4">
           <AccountDisplay address={address} className="overflow-hidden text-base" />
@@ -139,7 +139,7 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
           )}
         </div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -212,7 +212,7 @@ const RemoveProxyConfirm: FC<{
   const { payload, isAffordabilityCheckUnavailable, insufficientBalance } = preview
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       title={t("Remove Proxy")}
       contentClassName="flex flex-col"
       onBackClick={onCancel}
@@ -249,6 +249,6 @@ const RemoveProxyConfirm: FC<{
           checkPassword
         />
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

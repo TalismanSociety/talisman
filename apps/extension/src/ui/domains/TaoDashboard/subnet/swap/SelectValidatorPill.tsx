@@ -1,8 +1,8 @@
 import { SettingsIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -48,7 +48,7 @@ export const SelectValidatorPill: FC<{
       </PillButton>
       <Modal isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-validator-picker-modal">
-          <WizardModalDialog
+          <ModalDialog
             title={t("Select validator")}
             onCloseClick={close}
             className="size-full border-none"
@@ -62,7 +62,7 @@ export const SelectValidatorPill: FC<{
               onSelect={handleSelect}
               onClose={close}
             />
-          </WizardModalDialog>
+          </ModalDialog>
         </PopupSizeModalContainer>
       </Modal>
     </>

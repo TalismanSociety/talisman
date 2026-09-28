@@ -22,10 +22,10 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
 import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
@@ -450,7 +450,7 @@ const ConfirmRemove: FC<{
   }, [network, t, saved, onClose, navigate])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       className="h-auto"
       title={isNetworkKnown(saved) ? t("Reset Token") : t("Remove Token")}
       onCloseClick={onClose}
@@ -476,6 +476,6 @@ const ConfirmRemove: FC<{
           </Button>
         </div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

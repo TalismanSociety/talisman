@@ -1,5 +1,5 @@
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { BittensorSlippageForm } from "@ui/domains/Staking/Bittensor/shared/BittensorSlippageForm"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import type { FC } from "react"
@@ -21,8 +21,8 @@ const Content: FC<{ netuid: number; onClose: () => void }> = ({ netuid, onClose 
   const status = useOpenCloseStatus()
 
   return (
-    <WizardModalDialog className="h-auto" title={t("Slippage Tolerance")} onCloseClick={onClose}>
+    <ModalDialog className="h-auto" title={t("Slippage Tolerance")} onCloseClick={onClose}>
       <BittensorSlippageForm netuid={netuid} onClose={onClose} autoFocus={status === "open"} />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

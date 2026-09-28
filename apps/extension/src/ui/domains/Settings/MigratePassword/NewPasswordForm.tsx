@@ -3,8 +3,8 @@ import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -53,7 +53,7 @@ export const NewPasswordForm = () => {
   const submit = useCallback(({ newPw }: FormData) => setNewPassword(newPw), [setNewPassword])
 
   return (
-    <WizardModalDialog className="h-auto" title={t("Enter new password")}>
+    <ModalDialog className="h-auto" title={t("Enter new password")}>
       <p className="mb-16 text-body-secondary text-sm">
         {t(
           "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
@@ -102,6 +102,6 @@ export const NewPasswordForm = () => {
           {t("Continue")}
         </Button>
       </form>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useTranslation } from "react-i18next"
 
@@ -29,7 +29,7 @@ export const YieldxyzExitStepConfirm = () => {
       }
       containerId="earn-modal"
     >
-      <WizardModalDialog
+      <ModalDialog
         className="size-full border-none"
         title={t("Exit Position")}
         onBackClick={() => goTo("amount")}
@@ -62,7 +62,7 @@ export const YieldxyzExitStepConfirm = () => {
             <YieldxyzProductYieldDisplay product={position.product} />
           </FormFieldSetRow>
         </YieldxyzConfirmBody>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

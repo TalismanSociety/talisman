@@ -5,7 +5,7 @@ import type { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"
 
-export const WizardModalDialog: FC<{
+export const ModalDialog: FC<{
   title?: ReactNode
   id?: string
   className?: string

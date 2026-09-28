@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import type { ReactNode } from "react"
 
 import { useMnemonicCreateModal } from "./context"
@@ -13,8 +13,8 @@ export const MnemonicCreateModalDialog = ({
   const { cancel } = useMnemonicCreateModal()
 
   return (
-    <WizardModalDialog title={title} className="h-auto w-160" onCloseClick={cancel}>
+    <ModalDialog title={title} className="h-auto w-160" onCloseClick={cancel}>
       {children}
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

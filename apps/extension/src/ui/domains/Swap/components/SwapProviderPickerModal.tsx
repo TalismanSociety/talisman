@@ -1,6 +1,6 @@
 import { planckToTokens } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state/chaindata"
@@ -36,7 +36,7 @@ export const SwapProviderPickerModal: FC<{
 
   return (
     <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={onClose}>
-      <WizardModalDialog title={t("Provider")} onBackClick={onClose}>
+      <ModalDialog title={t("Provider")} onBackClick={onClose}>
         <div className="flex flex-col gap-[12px]">
           {sortedQuotes.map(({ quote }, idx) => {
             const isSelected =
@@ -54,7 +54,7 @@ export const SwapProviderPickerModal: FC<{
             )
           })}
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

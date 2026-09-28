@@ -9,9 +9,9 @@ import {
 } from "@talismn/crypto"
 import { LoaderIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
@@ -251,7 +251,7 @@ const AccountPickerDialog = memo(
     const { t } = useTranslation()
 
     return (
-      <WizardModalDialog
+      <ModalDialog
         className="border-none"
         contentClassName="overflow-hidden! p-0! flex flex-col"
         title={title}
@@ -285,7 +285,7 @@ const AccountPickerDialog = memo(
             allowZeroBalance={allowZeroBalance}
           />
         </ScrollContainer>
-      </WizardModalDialog>
+      </ModalDialog>
     )
   }
 )

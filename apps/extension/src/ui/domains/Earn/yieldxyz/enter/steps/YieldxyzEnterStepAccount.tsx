@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,7 +14,7 @@ export const YieldxyzEnterStepAccount: FC = () => {
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       className="size-full border-none"
       title={t("Select Account")}
       contentClassName="p-0"
@@ -22,6 +22,6 @@ export const YieldxyzEnterStepAccount: FC = () => {
       onBackClick={canGoBack ? goBack : undefined}
     >
       <SenderAccountPicker address={address} tokenId={tokenIn?.id} onSelect={onAccountChanged} />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

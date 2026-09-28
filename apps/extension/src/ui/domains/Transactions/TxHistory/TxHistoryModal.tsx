@@ -4,7 +4,7 @@ import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -74,14 +74,14 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
 }) => {
   const { t } = useTranslation()
   return (
-    <WizardModalDialog
+    <ModalDialog
       id={TX_HISTORY_MODAL_CONTAINER_ID}
       title={t("Transaction Details")}
       className={cn("relative", tx.status === "pending" && "[&_header]:invisible")}
       onCloseClick={onClose}
     >
       {children}
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

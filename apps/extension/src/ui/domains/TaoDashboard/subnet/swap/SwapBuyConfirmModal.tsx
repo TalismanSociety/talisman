@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import type { FC } from "react"
@@ -40,7 +40,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <PopupSizeModalContainer id={CONTAINER_ID}>
-      <WizardModalDialog
+      <ModalDialog
         title={t("Confirm Buy")}
         className="size-full border-none"
         onCloseClick={onClose}
@@ -95,7 +95,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
           <SendButton onClose={onClose} />
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </PopupSizeModalContainer>
   )
 }

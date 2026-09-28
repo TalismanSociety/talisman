@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,7 +15,7 @@ const ShowMnemonic = () => {
   if (!mnemonic) return null
 
   return (
-    <WizardModalDialog className="h-auto" title="Secret recovery phrase">
+    <ModalDialog className="h-auto" title="Secret recovery phrase">
       <p className="text-body-secondary text-sm">
         {t("Your secret phrase protects your account. If you share it you may lose your funds.")}
       </p>
@@ -38,7 +38,7 @@ const ShowMnemonic = () => {
           {t("I've backed it up")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -49,7 +49,7 @@ export const BackUpMnemonicDialog = () => {
   const { setMnemonicBackupConfirmed } = useMigratePassword()
   if (showMnemonic) return <ShowMnemonic />
   return (
-    <WizardModalDialog className="h-auto" title="Don't lose access to your wallet">
+    <ModalDialog className="h-auto" title="Don't lose access to your wallet">
       <p className="text-body-secondary text-sm">{t("Have you backed up your recovery phrase?")}</p>
       <p className="text-body-secondary text-sm">
         {t(
@@ -69,6 +69,6 @@ export const BackUpMnemonicDialog = () => {
           {t("Backup now")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

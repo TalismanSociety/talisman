@@ -1,6 +1,6 @@
 import type { ActionDto } from "@core/domains/earn/exports"
 import { LoaderIcon } from "@talismn/icons"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,7 +34,7 @@ export const YieldxyzManageStepConfirm = () => {
       }
       containerId="earn-modal"
     >
-      <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
+      <ModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
         <YieldxyzConfirmBody wizard={wizard} networkId={position.networkId}>
           {!!balance && (
             <FormFieldSetRow label={t("Amount")}>
@@ -61,7 +61,7 @@ export const YieldxyzManageStepConfirm = () => {
             <YieldxyzProviderDisplay providerId={position.product.providerId} />
           </FormFieldSetRow>
         </YieldxyzConfirmBody>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

@@ -1,7 +1,7 @@
 import { UploadIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type ChangeEventHandler, type FC, useCallback, useState } from "react"
 import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
@@ -54,7 +54,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [state.backup])
 
   return (
-    <WizardModalDialog title="Restore" className="h-auto w-125" onCloseClick={onClose}>
+    <ModalDialog title="Restore" className="h-auto w-125" onCloseClick={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will replace all existing Talisman data with the data from your backup file.
@@ -80,7 +80,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
           </Button>
         </div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

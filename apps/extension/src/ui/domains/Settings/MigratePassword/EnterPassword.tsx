@@ -5,7 +5,7 @@ import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -63,7 +63,7 @@ export const EnterPasswordForm = () => {
   }, [setValue])
 
   return (
-    <WizardModalDialog className="h-auto" title="Security Upgrade">
+    <ModalDialog className="h-auto" title="Security Upgrade">
       <p className="mb-10 text-body-secondary text-sm">
         <Trans t={t}>
           We have upgraded our security measures, including an updated password policy and advanced
@@ -105,6 +105,6 @@ export const EnterPasswordForm = () => {
           {t("Continue")}
         </Button>
       </form>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

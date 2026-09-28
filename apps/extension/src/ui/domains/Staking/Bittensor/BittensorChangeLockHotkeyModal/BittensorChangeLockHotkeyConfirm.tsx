@@ -1,6 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
@@ -89,7 +89,7 @@ export const BittensorChangeLockHotkeyConfirm = () => {
           }
 
   return (
-    <WizardModalDialog
+    <ModalDialog
       title={t("Conviction Lock Hotkey")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={() => setStep("form")}
@@ -152,6 +152,6 @@ export const BittensorChangeLockHotkeyConfirm = () => {
         disabled={!payload}
         className="shrink-0"
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

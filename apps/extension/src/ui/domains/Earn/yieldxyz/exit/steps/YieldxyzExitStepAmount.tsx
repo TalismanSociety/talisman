@@ -1,6 +1,6 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -40,11 +40,7 @@ export const YieldxyzExitStepAmount = () => {
   if (!position?.product) return null
 
   return (
-    <WizardModalDialog
-      className="size-full border-none"
-      title={"Exit Position"}
-      onCloseClick={close}
-    >
+    <ModalDialog className="size-full border-none" title={"Exit Position"} onCloseClick={close}>
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
@@ -117,7 +113,7 @@ export const YieldxyzExitStepAmount = () => {
           {t("Review")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

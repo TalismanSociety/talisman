@@ -1,9 +1,9 @@
 import { getAccountGenesisHash, getAccountSignetUrl } from "@core/domains/keyring/exports"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -67,7 +67,7 @@ export const SwapSellPositionPickerModal: FC<Props> = ({
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
       <PopupSizeModalContainer id="swap-sell-position-picker-modal">
-        <WizardModalDialog
+        <ModalDialog
           className="size-full border-none"
           title={t("Select Position")}
           contentClassName="p-0"
@@ -107,7 +107,7 @@ export const SwapSellPositionPickerModal: FC<Props> = ({
               </div>
             </ScrollContainer>
           </div>
-        </WizardModalDialog>
+        </ModalDialog>
       </PopupSizeModalContainer>
     </Modal>
   )

@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { SenderAccountPicker } from "@ui/domains/Earn/shared/SenderAccountPicker"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -41,14 +41,14 @@ export const SelectSenderAccountPill: FC<{
       </button>
       <Modal isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-sender-account-pickermodal">
-          <WizardModalDialog
+          <ModalDialog
             title={t("Select account")}
             onCloseClick={close}
             className="size-full border-none"
             contentClassName="p-0"
           >
             <SenderAccountPicker address={address} tokenId={tokenId} onSelect={handleSelect} />
-          </WizardModalDialog>
+          </ModalDialog>
         </PopupSizeModalContainer>
       </Modal>
     </>

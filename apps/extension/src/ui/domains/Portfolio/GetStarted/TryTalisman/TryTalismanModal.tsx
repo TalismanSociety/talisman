@@ -1,7 +1,7 @@
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TryTalismanContent } from "./TryTalismanContent"
@@ -20,7 +20,7 @@ export const TryTalismanModal = () => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close} containerId="main">
-      <WizardModalDialog
+      <ModalDialog
         title={
           <Trans t={t}>
             Try <span className="text-primary">Talisman</span>
@@ -31,7 +31,7 @@ export const TryTalismanModal = () => {
         <ScrollContainer className="h-full w-full">
           <TryTalismanContent analytics={ANALYTICS_PAGE} />
         </ScrollContainer>
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }
