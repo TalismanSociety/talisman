@@ -34,7 +34,12 @@ export const YieldxyzManageStepConfirm = () => {
       }
       containerId="earn-modal"
     >
-      <ModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
+      <ModalDialog
+        variant="wizard"
+        className="size-full border-none"
+        title={actionTitle}
+        onCloseClick={close}
+      >
         <YieldxyzConfirmBody wizard={wizard} networkId={position.networkId}>
           {!!balance && (
             <FormFieldSetRow label={t("Amount")}>

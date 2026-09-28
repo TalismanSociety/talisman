@@ -99,7 +99,7 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   }
 
   return (
-    <ModalDialog title={t("Manage Proxies")} onCloseClick={onClose}>
+    <ModalDialog variant="wizard" title={t("Manage Proxies")} onCloseClick={onClose}>
       <div className="flex grow flex-col gap-8">
         <div className="flex items-center justify-between gap-4">
           <AccountDisplay address={address} className="overflow-hidden text-base" />
@@ -213,6 +213,7 @@ const RemoveProxyConfirm: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Remove Proxy")}
       contentClassName="flex flex-col"
       onBackClick={onCancel}

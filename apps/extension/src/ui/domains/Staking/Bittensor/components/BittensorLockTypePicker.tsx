@@ -156,6 +156,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
       <ModalDialog
+        variant="wizard"
         title={t("Lock Type")}
         onBackClick={onDismiss}
         contentClassName="overflow-hidden flex flex-col gap-6"

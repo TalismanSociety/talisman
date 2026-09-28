@@ -35,6 +35,7 @@ export const SwapConfirm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Confirm")}
       onBackClick={() => setSwapView("form")}

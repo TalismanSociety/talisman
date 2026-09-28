@@ -68,6 +68,7 @@ export const SwapSellPositionPickerModal: FC<Props> = ({
     <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
       <PopupSizeModalContainer id="swap-sell-position-picker-modal">
         <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           title={t("Select Position")}
           contentClassName="p-0"

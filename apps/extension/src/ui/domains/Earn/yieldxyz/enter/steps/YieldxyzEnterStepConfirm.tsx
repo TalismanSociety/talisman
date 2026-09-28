@@ -31,6 +31,7 @@ export const YieldxyzEnterStepConfirm = () => {
       containerId="earn-modal"
     >
       <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         title={t("Enter Position")}
         onBackClick={canGoBack ? goBack : undefined}

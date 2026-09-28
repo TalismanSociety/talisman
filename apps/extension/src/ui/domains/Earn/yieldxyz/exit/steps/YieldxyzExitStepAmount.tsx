@@ -40,7 +40,12 @@ export const YieldxyzExitStepAmount = () => {
   if (!position?.product) return null
 
   return (
-    <ModalDialog className="size-full border-none" title={"Exit Position"} onCloseClick={close}>
+    <ModalDialog
+      variant="wizard"
+      className="size-full border-none"
+      title={"Exit Position"}
+      onCloseClick={close}
+    >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">

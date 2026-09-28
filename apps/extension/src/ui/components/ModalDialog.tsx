@@ -5,15 +5,27 @@ import type { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"
 
-export const ModalDialog: FC<{
+type ModalDialogProps = {
   title?: ReactNode
   id?: string
   className?: string
   contentClassName?: string
-  onBackClick?: () => void
   onCloseClick?: () => void
   children?: ReactNode
-}> = ({ id, title, className, contentClassName, onBackClick, onCloseClick, children }) => {
+} & ({ variant?: "dialog"; onBackClick?: never } | { variant: "wizard"; onBackClick?: () => void })
+
+export const ModalDialog: FC<ModalDialogProps> = ({
+  id,
+  title,
+  variant = "dialog",
+  className,
+  contentClassName,
+  onBackClick,
+  onCloseClick,
+  children,
+}) => {
+  const isWizard = variant === "wizard"
+
   return (
     <div
       id={id}
@@ -24,15 +36,24 @@ export const ModalDialog: FC<{
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
       <header className="flex w-full shrink-0 items-center justify-between gap-8 overflow-hidden p-10">
-        <IconButton onClick={onBackClick} className={cn(onBackClick ? "visible" : "invisible")}>
-          <ChevronLeftIcon />
-        </IconButton>
-        <h1 className="grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
+        {isWizard && (
+          <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
+            <ChevronLeftIcon />
+          </IconButton>
+        )}
+        <h1
+          className={cn(
+            "grow overflow-hidden text-ellipsis whitespace-nowrap font-bold text-base",
+            isWizard && "text-center"
+          )}
+        >
           {title}
         </h1>
-        <IconButton onClick={onCloseClick} className={cn(onCloseClick ? "visible" : "invisible")}>
-          <XIcon />
-        </IconButton>
+        {(isWizard || !!onCloseClick) && (
+          <IconButton onClick={onCloseClick} className={cn(!onCloseClick && "invisible")}>
+            <XIcon />
+          </IconButton>
+        )}
       </header>
       <div
         className={cn("scrollable scrollable-800 grow overflow-auto p-10 pt-0", contentClassName)}

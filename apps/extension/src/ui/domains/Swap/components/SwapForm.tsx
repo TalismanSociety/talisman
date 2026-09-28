@@ -100,6 +100,7 @@ export const SwapForm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Multi-Chain Swap")}
       onCloseClick={close}
@@ -240,6 +241,7 @@ export const SwapFormShimmer = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Multi-Chain Swap")}
       onCloseClick={close}

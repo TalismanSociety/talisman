@@ -167,7 +167,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
 
   if (!canWrite) {
     return (
-      <ModalDialog title={t("Add Proxy")} onCloseClick={onClose}>
+      <ModalDialog variant="wizard" title={t("Add Proxy")} onCloseClick={onClose}>
         <p className="text-body-secondary">
           {t(
             "Adding proxies is not supported on this account type yet. Only local (keypair) accounts can sign proxy management extrinsics."
@@ -204,6 +204,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Add Proxy")}
       onCloseClick={onClose}
       contentClassName="overflow-hidden flex flex-col gap-8"
@@ -419,6 +420,7 @@ const AddProxyConfirm: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Add Proxy")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}

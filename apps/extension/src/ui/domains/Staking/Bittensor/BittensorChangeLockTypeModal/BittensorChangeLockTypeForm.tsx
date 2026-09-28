@@ -47,6 +47,7 @@ export const BittensorChangeLockTypeForm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Type")}
       onCloseClick={close}
       contentClassName="overflow-hidden flex flex-col gap-8"

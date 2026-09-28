@@ -56,6 +56,7 @@ export const BittensorNetworkPicker: FC<BittensorNetworkPickerProps> = ({
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
       <ModalDialog
+        variant="wizard"
         title={t("Select Network")}
         onBackClick={onDismiss}
         contentClassName="flex flex-col gap-8"

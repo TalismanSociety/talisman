@@ -50,6 +50,7 @@ export const BittensorChangeLockHotkeyForm = () => {
   if (activePicker === "hotkey")
     return (
       <ModalDialog
+        variant="wizard"
         title={t("Select Hotkey")}
         onBackClick={() => setActivePicker(null)}
         onCloseClick={close}
@@ -67,6 +68,7 @@ export const BittensorChangeLockHotkeyForm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Hotkey")}
       onCloseClick={close}
       contentClassName="overflow-hidden flex flex-col gap-8"

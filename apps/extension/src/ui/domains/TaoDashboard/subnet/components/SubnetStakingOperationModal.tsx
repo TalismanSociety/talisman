@@ -66,6 +66,7 @@ const ModalContent: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Swap Details")}
       onCloseClick={onClose}
       className="size-full"

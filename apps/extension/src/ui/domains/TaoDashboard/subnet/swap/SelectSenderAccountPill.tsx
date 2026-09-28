@@ -42,6 +42,7 @@ export const SelectSenderAccountPill: FC<{
       <Modal isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-sender-account-pickermodal">
           <ModalDialog
+            variant="wizard"
             title={t("Select account")}
             onCloseClick={close}
             className="size-full border-none"

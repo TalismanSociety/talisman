@@ -54,6 +54,7 @@ export const YieldxyzEnterStepAmount = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={"Enter Position"}
       onCloseClick={close}

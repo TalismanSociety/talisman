@@ -15,6 +15,7 @@ export const YieldxyzEnterStepAccount: FC = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Select Account")}
       contentClassName="p-0"

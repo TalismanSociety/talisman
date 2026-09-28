@@ -458,7 +458,12 @@ const SeekStakingForm: FC<{
   const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
 
   return (
-    <ModalDialog className="size-full border-none" title={modalTitle} onCloseClick={close}>
+    <ModalDialog
+      variant="wizard"
+      className="size-full border-none"
+      title={modalTitle}
+      onCloseClick={close}
+    >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
@@ -604,6 +609,7 @@ const SeekAccountPickerModal: FC<{
       className="relative z-50 size-full"
     >
       <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         contentClassName="p-0"
         title={t("Select Account")}

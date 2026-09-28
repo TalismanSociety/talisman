@@ -82,7 +82,7 @@ export const MnemonicDeleteModal = () => {
       <ModalDialog
         className="h-auto"
         title={
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-4">
             <AlertTriangleIcon className="inline text-brand-orange text-lg" />
             <span>{t("Delete Recovery Phrase")}</span>
           </div>

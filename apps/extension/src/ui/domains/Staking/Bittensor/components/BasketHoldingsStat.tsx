@@ -217,6 +217,7 @@ export const BasketHoldingsViewAllModal: FC<{
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
       <ModalDialog
+        variant="wizard"
         onBackClick={onDismiss}
         onCloseClick={onClose}
         className="border-none"

@@ -42,6 +42,7 @@ export const YieldxyzEnterStepProduct: FC = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Select Yield Opportunity")}
       contentClassName="p-0"

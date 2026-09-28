@@ -173,6 +173,7 @@ const TokenPickerModalContent: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0! relative"
       title={t("Select a token")}

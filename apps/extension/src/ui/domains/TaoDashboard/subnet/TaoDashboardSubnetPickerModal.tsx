@@ -39,6 +39,7 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="subnet-picker-modal">
         <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           title={t("Select Subnet")}
           contentClassName="p-0"

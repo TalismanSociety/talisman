@@ -49,6 +49,7 @@ export const SelectValidatorPill: FC<{
       <Modal isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-validator-picker-modal">
           <ModalDialog
+            variant="wizard"
             title={t("Select validator")}
             onCloseClick={close}
             className="size-full border-none"

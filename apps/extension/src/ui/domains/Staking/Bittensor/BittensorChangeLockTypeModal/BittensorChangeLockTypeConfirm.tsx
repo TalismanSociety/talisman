@@ -62,6 +62,7 @@ export const BittensorChangeLockTypeConfirm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Type")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={() => setStep("form")}

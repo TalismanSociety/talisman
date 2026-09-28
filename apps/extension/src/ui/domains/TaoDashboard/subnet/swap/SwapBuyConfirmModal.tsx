@@ -41,6 +41,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <PopupSizeModalContainer id={CONTAINER_ID}>
       <ModalDialog
+        variant="wizard"
         title={t("Confirm Buy")}
         className="size-full border-none"
         onCloseClick={onClose}

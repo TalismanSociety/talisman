@@ -65,6 +65,7 @@ const NetworkFilterPickerContent: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0!"
       title={t("Network Filter")}

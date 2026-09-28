@@ -90,6 +90,7 @@ export const BittensorChangeLockHotkeyConfirm = () => {
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Hotkey")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={() => setStep("form")}

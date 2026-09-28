@@ -82,6 +82,7 @@ export const SeekStakeConfirm: FC<{
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={SEEK_STAKING_MODAL_CONTAINER_ID}>
       <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         title={t("Enter Position")}
         onBackClick={onBackClick}

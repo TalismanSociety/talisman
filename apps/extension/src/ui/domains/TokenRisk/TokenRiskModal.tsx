@@ -20,6 +20,7 @@ export const TokenRiskModal: FC<{
     <Modal containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
       <PopupSizeModalContainer id="token-risk-modal">
         <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           contentClassName="flex flex-col overflow-hidden"
           title={t("Token risk scan")}

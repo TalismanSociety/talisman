@@ -252,6 +252,7 @@ const AccountPickerDialog = memo(
 
     return (
       <ModalDialog
+        variant="wizard"
         className="border-none"
         contentClassName="overflow-hidden! p-0! flex flex-col"
         title={title}

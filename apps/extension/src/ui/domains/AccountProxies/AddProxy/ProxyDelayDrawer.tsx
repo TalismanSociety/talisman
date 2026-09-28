@@ -27,6 +27,7 @@ const Content: FC<{ delay: string; onSave: (delay: string) => void; onClose: () 
 
   return (
     <ModalDialog
+      variant="wizard"
       title={t("Announcement Delay")}
       onCloseClick={onClose}
       className="h-auto rounded-t-xl"

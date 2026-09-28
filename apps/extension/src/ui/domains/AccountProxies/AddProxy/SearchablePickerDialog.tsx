@@ -57,6 +57,7 @@ const SearchablePickerContent: FC<{
 
   return (
     <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0!"
       title={title}
