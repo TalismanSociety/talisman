@@ -34,6 +34,9 @@ export const YieldxyzExitStepAmount = () => {
     message: string
   } | null>(null)
 
+  if (createActionError && (createActionError.amountOut !== amountOut || !canCreateAction))
+    setCreateActionError(null)
+
   const handleSubmit = async () => {
     setProcessing(true)
     setCreateActionError(null)
@@ -123,9 +126,7 @@ export const YieldxyzExitStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
-        {createActionError?.amountOut === amountOut && (
-          <TransactionError error={createActionError.message} />
-        )}
+        <TransactionError error={createActionError?.message} />
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>

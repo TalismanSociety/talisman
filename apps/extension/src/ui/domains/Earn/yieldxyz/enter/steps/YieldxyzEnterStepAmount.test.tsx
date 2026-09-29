@@ -83,6 +83,7 @@ describe("YieldxyzEnterStepAmount", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     wizard.amountIn = 1n
+    wizard.canCreateAction = true
     mockUseAppState.mockReturnValue([true])
   })
 
@@ -116,6 +117,34 @@ describe("YieldxyzEnterStepAmount", () => {
     await screen.findByText("Amount is below the minimum")
 
     wizard.amountIn = 2n
+    rerender(<YieldxyzEnterStepAmount />)
+
+    expect(screen.queryByText("Amount is below the minimum")).toBeNull()
+  })
+
+  it("keeps the createAction error hidden when the failed amount is entered again", async () => {
+    mockCreateAction.mockRejectedValue(new Error("Amount is below the minimum"))
+
+    const { rerender } = render(<YieldxyzEnterStepAmount />)
+    fireEvent.click(screen.getByText("Review"))
+    await screen.findByText("Amount is below the minimum")
+
+    wizard.amountIn = 2n
+    rerender(<YieldxyzEnterStepAmount />)
+    wizard.amountIn = 1n
+    rerender(<YieldxyzEnterStepAmount />)
+
+    expect(screen.queryByText("Amount is below the minimum")).toBeNull()
+  })
+
+  it("hides the createAction error once the amount becomes invalid", async () => {
+    mockCreateAction.mockRejectedValue(new Error("Amount is below the minimum"))
+
+    const { rerender } = render(<YieldxyzEnterStepAmount />)
+    fireEvent.click(screen.getByText("Review"))
+    await screen.findByText("Amount is below the minimum")
+
+    wizard.canCreateAction = false
     rerender(<YieldxyzEnterStepAmount />)
 
     expect(screen.queryByText("Amount is below the minimum")).toBeNull()

@@ -38,6 +38,9 @@ export const YieldxyzEnterStepAmount = () => {
   const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
   const disclaimerDrawer = useOpenClose()
 
+  if (createActionError && (createActionError.amountIn !== amountIn || !canCreateAction))
+    setCreateActionError(null)
+
   const proceedToReview = useCallback(async () => {
     setProcessing(true)
     setCreateActionError(null)
@@ -134,9 +137,7 @@ export const YieldxyzEnterStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
-        {createActionError?.amountIn === amountIn && (
-          <TransactionError error={createActionError.message} />
-        )}
+        <TransactionError error={createActionError?.message} />
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>

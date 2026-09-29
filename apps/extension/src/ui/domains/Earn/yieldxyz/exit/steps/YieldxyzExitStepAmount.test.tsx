@@ -77,6 +77,7 @@ describe("YieldxyzExitStepAmount", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     wizard.amountOut = 1n
+    wizard.canCreateAction = true
   })
 
   it("shows the createAction error and stays on the amount step", async () => {
@@ -97,6 +98,34 @@ describe("YieldxyzExitStepAmount", () => {
     await screen.findByText("Position is locked")
 
     wizard.amountOut = 2n
+    rerender(<YieldxyzExitStepAmount />)
+
+    expect(screen.queryByText("Position is locked")).toBeNull()
+  })
+
+  it("keeps the createAction error hidden when the failed amount is entered again", async () => {
+    mockCreateAction.mockRejectedValue(new Error("Position is locked"))
+
+    const { rerender } = render(<YieldxyzExitStepAmount />)
+    fireEvent.click(screen.getByText("Review"))
+    await screen.findByText("Position is locked")
+
+    wizard.amountOut = 2n
+    rerender(<YieldxyzExitStepAmount />)
+    wizard.amountOut = 1n
+    rerender(<YieldxyzExitStepAmount />)
+
+    expect(screen.queryByText("Position is locked")).toBeNull()
+  })
+
+  it("hides the createAction error once the amount becomes invalid", async () => {
+    mockCreateAction.mockRejectedValue(new Error("Position is locked"))
+
+    const { rerender } = render(<YieldxyzExitStepAmount />)
+    fireEvent.click(screen.getByText("Review"))
+    await screen.findByText("Position is locked")
+
+    wizard.canCreateAction = false
     rerender(<YieldxyzExitStepAmount />)
 
     expect(screen.queryByText("Position is locked")).toBeNull()
