@@ -1,7 +1,7 @@
 import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import { ERA_PERIOD, type ScaleApi } from "@talismn/sapi"
 import { type keepPreviousData, type QueryKey, useQuery } from "@tanstack/react-query"
-import { useEffect, useReducer } from "react"
+import { useEffect, useState } from "react"
 
 import { useBlockTimeMs } from "./useBlockTimeMs"
 
@@ -39,6 +39,16 @@ const getEraBlocksLeft = async (
   } catch {
     return WORST_CASE_ERA_BLOCKS_LEFT
   }
+}
+
+const useIsPast = (deadline: number | null) => {
+  const [passedDeadline, setPassedDeadline] = useState<number | null>(null)
+  useEffect(() => {
+    if (deadline === null) return
+    const timeout = setTimeout(() => setPassedDeadline(deadline), deadline - Date.now())
+    return () => clearTimeout(timeout)
+  }, [deadline])
+  return deadline !== null && (passedDeadline === deadline || Date.now() > deadline)
 }
 
 type UseSignerPayloadQueryOptions<T> = {
@@ -87,14 +97,7 @@ export const useSignerPayloadQuery = <T extends { payload: SignerPayloadJSON }>(
   const expiresAt = blockTimeMs && query.data ? getPayloadExpiresAt(query.data, blockTimeMs) : null
 
   // a stalled rebuild changes no tracked query state: re-render when the payload expires
-  const [, rerender] = useReducer((count: number) => count + 1, 0)
-  useEffect(() => {
-    if (expiresAt === null) return
-    const timeout = setTimeout(rerender, Math.max(0, expiresAt - Date.now()) + 1)
-    return () => clearTimeout(timeout)
-  }, [expiresAt])
-
-  const isExpired = expiresAt !== null && Date.now() > expiresAt
+  const isExpired = useIsPast(expiresAt)
 
   return {
     data: isExpired ? undefined : query.data,

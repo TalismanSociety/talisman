@@ -111,6 +111,27 @@ describe("useSignerPayloadQuery", () => {
     expect(result.current.isLoading).toBe(true)
   })
 
+  it("withholds the payload when its expiry timer fires before the deadline", async () => {
+    const realSetTimeout = globalThis.setTimeout
+    vi.spyOn(globalThis, "setTimeout").mockImplementation(((
+      fn: () => void,
+      ms = 0,
+      ...args: unknown[]
+    ) => realSetTimeout(fn, Math.max(0, ms - 5), ...args)) as typeof setTimeout)
+    const sapi = sapiWithBlockTime(20)
+    const queryFn = vi
+      .fn<() => Promise<BuiltPayload>>()
+      .mockResolvedValueOnce(buildPayload("0x01"))
+      .mockReturnValue(new Promise<BuiltPayload>(() => {}))
+    const { result } = renderHook(
+      () => useSignerPayloadQuery({ sapi, queryKey: ["early"], queryFn }),
+      { wrapper }
+    )
+    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+
+    await waitFor(() => expect(result.current.data).toBeUndefined(), { timeout: 2_000 })
+  })
+
   it("rebuilds the payload on the block-time interval without a loading state", async () => {
     const sapi = sapiWithBlockTime(20)
     let build = 0
