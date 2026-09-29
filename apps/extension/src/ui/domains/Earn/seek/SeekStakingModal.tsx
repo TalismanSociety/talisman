@@ -7,10 +7,10 @@ import { planckToTokens } from "@talismn/util"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
@@ -458,7 +458,12 @@ const SeekStakingForm: FC<{
   const displayError = ethTx.error ?? (!isAmountAction(action) ? (error ?? undefined) : undefined)
 
   return (
-    <WizardModalDialog className="size-full border-none" title={modalTitle} onCloseClick={close}>
+    <ModalDialog
+      variant="wizard"
+      className="size-full border-none"
+      title={modalTitle}
+      onCloseClick={close}
+    >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
@@ -558,7 +563,7 @@ const SeekStakingForm: FC<{
         onCloseClick={close}
         onSelect={handleSelectAccount}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -603,7 +608,8 @@ const SeekAccountPickerModal: FC<{
       onDismiss={onBackClick}
       className="relative z-50 size-full"
     >
-      <WizardModalDialog
+      <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         contentClassName="p-0"
         title={t("Select Account")}
@@ -616,7 +622,7 @@ const SeekAccountPickerModal: FC<{
           isAccountDisabled={isAccountDisabled}
           onSelect={onSelect}
         />
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

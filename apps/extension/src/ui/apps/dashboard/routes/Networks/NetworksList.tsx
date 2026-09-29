@@ -256,12 +256,13 @@ const ResetAllNetworksModalContent: FC<{
 
   return (
     <ModalDialog
+      className="h-auto"
       title={
         platform === "all"
           ? t("Reset all networks")
           : t("Reset {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <p className="mb-8 text-body-secondary text-sm">
         {platform === "all"
@@ -323,12 +324,13 @@ const DeactivateNetworksModalContent: FC<{
 
   return (
     <ModalDialog
+      className="h-auto"
       title={
         platform === "all"
           ? t("Deactivate networks")
           : t("Deactivate {{platform}} networks", { platform: getPlatformLabel(platform, t) })
       }
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <p className="mb-8 text-body-secondary text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}

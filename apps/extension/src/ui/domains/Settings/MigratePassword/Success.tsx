@@ -9,7 +9,7 @@ export const MigratePasswordSuccess = () => {
   const { t } = useTranslation()
   const { onComplete } = useMigratePassword()
   return (
-    <ModalDialog title={t("Security Upgrade Complete")}>
+    <ModalDialog className="h-auto" title={t("Security Upgrade Complete")}>
       <ProcessAnimation status="success" className="my-20 h-35" />
       <Button onClick={onComplete} fullWidth>
         {t("Close")}

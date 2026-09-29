@@ -46,7 +46,7 @@ export const RenameFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Rename Folder")} onClose={close}>
+      <ModalDialog className="h-auto" title={t("Rename Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <RenameFolder
             id={id}

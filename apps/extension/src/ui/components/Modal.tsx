@@ -71,7 +71,7 @@ export const Modal: FC<ModalProps> = ({
           as="div"
           className={cn(
             "pointer-events-auto overflow-hidden",
-            containerId ? "max-h-full max-w-full" : "max-h-dvh max-w-[dvw]",
+            containerId ? "max-h-full max-w-full" : "max-h-dvh max-w-dvw",
             className
           )}
           enter="ease-out duration-200"

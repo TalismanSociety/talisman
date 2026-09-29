@@ -40,7 +40,7 @@ export const DeleteFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Delete Folder")} onClose={close}>
+      <ModalDialog className="h-auto" title={t("Delete Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <DeleteFolder
             id={id}

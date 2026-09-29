@@ -1,7 +1,7 @@
 import { Button } from "@ui/components/Button"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -46,7 +46,8 @@ export const BittensorChangeLockTypeForm = () => {
   } = useBittensorChangeLockTypeWizard()
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Type")}
       onCloseClick={close}
       contentClassName="overflow-hidden flex flex-col gap-8"
@@ -155,6 +156,6 @@ export const BittensorChangeLockTypeForm = () => {
         onSelect={selectLockType}
         onDismiss={() => setActivePicker(null)}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

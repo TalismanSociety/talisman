@@ -1,5 +1,5 @@
 import { Drawer } from "@ui/components/Drawer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ProxyDelayForm } from "./ProxyDelayForm"
@@ -26,12 +26,13 @@ const Content: FC<{ delay: string; onSave: (delay: string) => void; onClose: () 
   const { t } = useTranslation()
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Announcement Delay")}
       onCloseClick={onClose}
       className="h-auto rounded-t-xl"
     >
       <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

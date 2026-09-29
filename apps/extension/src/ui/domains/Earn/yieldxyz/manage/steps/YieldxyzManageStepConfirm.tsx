@@ -2,7 +2,7 @@ import type { ActionDto } from "@core/domains/earn/exports"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -36,9 +36,14 @@ export const YieldxyzManageStepConfirm = () => {
 
   if (!action && errorAction)
     return (
-      <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
+      <ModalDialog
+        variant="wizard"
+        className="size-full border-none"
+        title={actionTitle}
+        onCloseClick={close}
+      >
         <ActionCreateError error={errorAction} onRetry={retryCreateAction} />
-      </WizardModalDialog>
+      </ModalDialog>
     )
 
   if (!position || !action) return null
@@ -52,7 +57,12 @@ export const YieldxyzManageStepConfirm = () => {
       }
       containerId="earn-modal"
     >
-      <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
+      <ModalDialog
+        variant="wizard"
+        className="size-full border-none"
+        title={actionTitle}
+        onCloseClick={close}
+      >
         <YieldxyzConfirmBody wizard={wizard} networkId={position.networkId}>
           {!!balance && (
             <FormFieldSetRow label={t("Amount")}>
@@ -79,7 +89,7 @@ export const YieldxyzManageStepConfirm = () => {
             <YieldxyzProviderDisplay providerId={position.product.providerId} />
           </FormFieldSetRow>
         </YieldxyzConfirmBody>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

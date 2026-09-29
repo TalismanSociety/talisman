@@ -1,4 +1,4 @@
-import { XIcon } from "@talismn/icons"
+import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { cn } from "@ui/util/cn"
 
 import type { FC, ReactNode } from "react"
@@ -6,53 +6,51 @@ import type { FC, ReactNode } from "react"
 import { IconButton } from "./IconButton"
 
 type ModalDialogProps = {
-  className?: string
   title?: ReactNode
-  centerTitle?: boolean
-  onClose?: () => void
-  children?: ReactNode
   id?: string
+  className?: string
   contentClassName?: string
-}
+  onCloseClick?: () => void
+  children?: ReactNode
+} & ({ variant?: "dialog"; onBackClick?: never } | { variant: "wizard"; onBackClick?: () => void })
 
-/**
- * @deprecated Prefer using WizardModalDialog for new features
- */
 export const ModalDialog: FC<ModalDialogProps> = ({
   id,
-  className,
   title,
-  centerTitle,
-  onClose,
-  children,
+  variant = "dialog",
+  className,
   contentClassName,
+  onBackClick,
+  onCloseClick,
+  children,
 }) => {
+  const isWizard = variant === "wizard"
+
   return (
     <div
       id={id}
       className={cn(
-        "flex max-h-dvh w-105 max-w-dvw flex-col overflow-hidden rounded border border-grey-850 bg-black",
+        "flex h-150 max-h-full w-100 max-w-full flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
-      <header className="z-10 flex w-full items-center justify-between gap-8 overflow-hidden p-10">
-        {!!centerTitle && !!onClose && (
-          // placeholder to keep the title centered
-          <IconButton className="invisible">
-            <XIcon />
+      <header className="flex w-full shrink-0 items-center justify-between gap-8 overflow-hidden p-10">
+        {isWizard && (
+          <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
+            <ChevronLeftIcon />
           </IconButton>
         )}
         <h1
           className={cn(
             "grow overflow-hidden text-ellipsis whitespace-nowrap font-bold text-base",
-            centerTitle && "text-center"
+            isWizard && "text-center"
           )}
         >
           {title}
         </h1>
-        {!!onClose && (
-          <IconButton onClick={onClose}>
+        {(isWizard || !!onCloseClick) && (
+          <IconButton onClick={onCloseClick} className={cn(!onCloseClick && "invisible")}>
             <XIcon />
           </IconButton>
         )}

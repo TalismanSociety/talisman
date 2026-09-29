@@ -118,7 +118,7 @@ export const UnlockJsonAccountsButton: FC = () => {
         {t("Unlock")}
       </Button>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <ModalDialog title={t("Unlock accounts")} onClose={close}>
+        <ModalDialog className="h-auto" title={t("Unlock accounts")} onCloseClick={close}>
           <div className="w-full text-right text-body-secondary">
             <Trans
               t={t}

@@ -1,7 +1,7 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
 import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
@@ -64,7 +64,8 @@ export const YieldxyzEnterStepAmount = () => {
   if (!product) return null
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={"Enter Position"}
       onCloseClick={close}
@@ -149,7 +150,7 @@ export const YieldxyzEnterStepAmount = () => {
         }}
         onCancel={disclaimerDrawer.close}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

@@ -77,8 +77,8 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
     <ModalDialog
       id={TX_HISTORY_MODAL_CONTAINER_ID}
       title={t("Transaction Details")}
-      className={cn("relative h-150 w-100", tx.status === "pending" && "[&_header]:invisible")}
-      onClose={onClose}
+      className={cn("relative", tx.status === "pending" && "[&_header]:invisible")}
+      onCloseClick={onClose}
     >
       {children}
     </ModalDialog>

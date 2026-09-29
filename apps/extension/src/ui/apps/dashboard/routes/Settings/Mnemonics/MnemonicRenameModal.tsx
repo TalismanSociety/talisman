@@ -154,7 +154,7 @@ export const MnemonicRenameModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Rename recovery phrase")} onClose={close}>
+      <ModalDialog className="h-auto" title={t("Rename recovery phrase")} onCloseClick={close}>
         {!!mnemonic && (
           <MnemonicRenameForm mnemonic={mnemonic} onConfirm={close} onCancel={close} />
         )}

@@ -1,7 +1,7 @@
 import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import {
@@ -81,7 +81,8 @@ export const SeekStakeConfirm: FC<{
 
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={SEEK_STAKING_MODAL_CONTAINER_ID}>
-      <WizardModalDialog
+      <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         title={t("Enter Position")}
         onBackClick={onBackClick}
@@ -152,7 +153,7 @@ export const SeekStakeConfirm: FC<{
             onSubmit={onSubmit}
           />
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

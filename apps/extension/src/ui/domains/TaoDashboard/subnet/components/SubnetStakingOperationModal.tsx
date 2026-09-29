@@ -3,9 +3,9 @@ import { ArrowRightIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { CodeBlock } from "@ui/components/CodeBlock"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
@@ -65,7 +65,8 @@ const ModalContent: FC<{
   const isFailed = transaction.status === "failed"
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Swap Details")}
       onCloseClick={onClose}
       className="size-full"
@@ -128,7 +129,7 @@ const ModalContent: FC<{
         </div>
         <SlippageFields transaction={tx} netuid={netuid} alphaToken={alphaToken} />
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

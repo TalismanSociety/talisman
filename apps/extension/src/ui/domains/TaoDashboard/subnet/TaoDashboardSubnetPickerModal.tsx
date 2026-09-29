@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useCombinedSubnetData } from "@ui/domains/Staking/Bittensor/hooks/dTao/useCombinedSubnetData"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -38,14 +38,15 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="subnet-picker-modal">
-        <WizardModalDialog
+        <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           title={t("Select Subnet")}
           contentClassName="p-0"
           onCloseClick={close}
         >
           <SubnetPicker networkId={networkId} selected={args?.netuid} onSelect={handleSelect} />
-        </WizardModalDialog>
+        </ModalDialog>
       </PopupSizeModalContainer>
     </Modal>
   )

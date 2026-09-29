@@ -6,10 +6,10 @@ import {
 } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, PieChartIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { Tooltip, TooltipContent, TooltipTrigger, useTooltipContext } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useTokens } from "@ui/state/chaindata"
@@ -216,7 +216,8 @@ export const BasketHoldingsViewAllModal: FC<{
 
   return (
     <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
-      <WizardModalDialog
+      <ModalDialog
+        variant="wizard"
         onBackClick={onDismiss}
         onCloseClick={onClose}
         className="border-none"
@@ -267,7 +268,7 @@ export const BasketHoldingsViewAllModal: FC<{
             )}
           </ScrollContainer>
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }
