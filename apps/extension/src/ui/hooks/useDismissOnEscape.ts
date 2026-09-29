@@ -1,14 +1,25 @@
-import { type RefObject, useEffect, useRef } from "react"
+import { createContext, type RefObject, useContext, useEffect, useMemo, useRef } from "react"
 
-type OnDismissRef = RefObject<(() => void) | undefined>
+type DismissLayer = {
+  parent: DismissLayer | null
+  onDismissRef: RefObject<(() => void) | undefined>
+}
 
-// open modals and drawers, in the order they opened: Escape only dismisses the last one
-const layers: OnDismissRef[] = []
+export const DismissLayerContext = createContext<DismissLayer | null>(null)
+
+// open modals and drawers, innermost last: Escape only dismisses the last one
+const layers: DismissLayer[] = []
+
+const isDescendant = (layer: DismissLayer, ancestor: DismissLayer) => {
+  for (let parent = layer.parent; parent; parent = parent.parent)
+    if (parent === ancestor) return true
+  return false
+}
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return
 
-  const onDismiss = layers.at(-1)?.current
+  const onDismiss = layers.at(-1)?.onDismissRef.current
   if (!onDismiss) return
 
   event.preventDefault()
@@ -19,20 +30,28 @@ const handleKeyDown = (event: KeyboardEvent) => {
  * Escape calls the `onDismiss` of the innermost open layer, like a click on its backdrop.
  * A layer without `onDismiss` blocks Escape, so it never reaches the layers beneath.
  * The listener sits on `window`, so popovers and listboxes that stop the event close first.
+ * Provide the returned layer through `DismissLayerContext` so nested layers rank above it.
  */
 export const useDismissOnEscape = (isOpen: boolean, onDismiss: (() => void) | undefined) => {
+  const parent = useContext(DismissLayerContext)
   const onDismissRef = useRef(onDismiss)
   onDismissRef.current = onDismiss
+
+  const layer = useMemo<DismissLayer>(() => ({ parent, onDismissRef }), [parent])
 
   useEffect(() => {
     if (!isOpen) return
 
-    layers.push(onDismissRef)
+    // child effects run first: nested layers that opened in the same render are already stacked
+    const firstDescendant = layers.findIndex((other) => isDescendant(other, layer))
+    layers.splice(firstDescendant === -1 ? layers.length : firstDescendant, 0, layer)
     if (layers.length === 1) window.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      layers.splice(layers.indexOf(onDismissRef), 1)
+      layers.splice(layers.indexOf(layer), 1)
       if (!layers.length) window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isOpen])
+  }, [isOpen, layer])
+
+  return layer
 }

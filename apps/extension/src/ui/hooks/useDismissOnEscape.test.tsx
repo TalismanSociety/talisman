@@ -73,6 +73,23 @@ describe("useDismissOnEscape", () => {
     expect(onDismissDrawer).toHaveBeenCalledOnce()
   })
 
+  it("dismisses a drawer that opens in the same render as its modal first", () => {
+    const onDismissModal = vi.fn()
+    const onDismissDrawer = vi.fn()
+    render(
+      <Modal isOpen onDismiss={onDismissModal}>
+        <Drawer anchor="bottom" isOpen onDismiss={onDismissDrawer}>
+          drawer
+        </Drawer>
+      </Modal>
+    )
+
+    pressEscape()
+
+    expect(onDismissDrawer).toHaveBeenCalledOnce()
+    expect(onDismissModal).not.toHaveBeenCalled()
+  })
+
   it("does not reach the modal beneath a layer that cannot be dismissed", () => {
     const onDismissModal = vi.fn()
     const { rerender } = render(
