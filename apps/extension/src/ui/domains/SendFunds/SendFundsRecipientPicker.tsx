@@ -21,6 +21,7 @@ import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -76,7 +77,7 @@ const UnknownAddressDrawer = ({
 
   return (
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
-      <div className="flex max-w-105 flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
+      <DrawerContent className="flex max-w-105 flex-col items-center gap-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="px-10 font-bold text-white">
             {t("Sending to the wrong network will result in a loss of funds")}
@@ -100,7 +101,7 @@ const UnknownAddressDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }
