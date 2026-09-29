@@ -7,6 +7,7 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useEffect, useMemo, useState } from "react"
@@ -141,7 +142,8 @@ const usePayload = ({
   tip: string | undefined
   isLocked: boolean
 }) => {
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: ["callData", token?.id, network?.id, from, to, value, sapi?.id, method, tip],
     queryFn: async () => {
       if (!token?.networkId || network?.platform !== "polkadot" || !from || !to || !sapi || !method)
@@ -170,10 +172,6 @@ const usePayload = ({
         tip: tip?.length ? BigInt(tip) : 0n,
       })
     },
-    // the payload embeds a mortality era: rebuild it periodically or the transaction
-    // becomes invalid once the era window (~6 min) elapses
-    refetchInterval: 60_000,
-    staleTime: 0,
     enabled: !isLocked,
   })
 }

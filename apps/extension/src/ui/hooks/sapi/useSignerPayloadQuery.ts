@@ -100,6 +100,7 @@ export const useSignerPayloadQuery = <T extends { payload: SignerPayloadJSON }>(
     data: isExpired ? undefined : query.data,
     isPlaceholderData: query.isPlaceholderData,
     isLoading: query.isLoading || isExpired,
+    isRefetching: query.isRefetching,
     isError: query.isError,
     error: query.error,
   }
