@@ -47,6 +47,7 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
   - Bundled init data (chaindata, remote config): `pnpm chore:generate-init-data`.
 - Guard tests in `apps/extension/src/__tests__/` enforce repo-wide rules. When one fails, read that test: its header explains the rule.
 - Commit messages: gitmoji plus a short label, e.g. `🐛 fail fast on rate-limited rpc validation`.
+- Manual QA: when a change needs checks that unit and E2E tests do not cover (UI, browser-only flows), add a `## Manual QA` section to the PR description: a todo list, one `- [ ]` item per check. Leave out the checks you already ran yourself, for example in the dev browser (see "Verify in the browser"), and say in the PR description what you verified.
 - Scratch files go in `.tmp/` (gitignored).
 
 ## Dev build
