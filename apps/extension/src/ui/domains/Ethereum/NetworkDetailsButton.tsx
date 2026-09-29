@@ -1,6 +1,7 @@
 import type { Network } from "@talismn/chaindata-provider"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { PillButton } from "@ui/components/PillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
@@ -29,7 +30,7 @@ const NetworkDetailsDrawer: FC<{
 
   return (
     <Drawer containerId="main" isOpen={isOpen} onDismiss={onClose} anchor="bottom">
-      <div className="flex max-h-full flex-col rounded-t-xl bg-grey-800 p-12 text-body-secondary text-sm">
+      <DrawerContent className="flex max-h-full flex-col text-body-secondary text-sm">
         <h3 className="text-sm">{title ?? t("Network Details")}</h3>
         <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">
           <ViewDetailsField label={t("Network Name")}>{name}</ViewDetailsField>
@@ -41,7 +42,7 @@ const NetworkDetailsDrawer: FC<{
         <Button className="mt-12" onClick={onClose}>
           {t("Close")}
         </Button>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

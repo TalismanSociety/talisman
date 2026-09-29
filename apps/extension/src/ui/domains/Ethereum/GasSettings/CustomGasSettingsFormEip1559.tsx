@@ -11,6 +11,7 @@ import type { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals, getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
@@ -40,7 +41,7 @@ import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
-  className: "bg-grey-700 px-6 gap-6 h-12.5",
+  className: "px-6 gap-6 h-12.5",
 }
 
 type FormData = {
@@ -336,146 +337,150 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   )
 
   return (
-    <form
-      onSubmit={submitWithoutBubbleUp}
-      className="flex flex-col rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm"
-    >
-      <div className="flex w-full font-bold text-white">
-        <div>
-          <IconButton>
-            <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
-          </IconButton>
+    <DrawerContent>
+      <form onSubmit={submitWithoutBubbleUp} className="flex flex-col text-body-secondary text-sm">
+        <div className="flex w-full font-bold text-white">
+          <div>
+            <IconButton>
+              <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
+            </IconButton>
+          </div>
+          <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
         </div>
-        <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
-      </div>
-      <div className="mt-12 mb-16">
-        {"Set your own custom gas fee to control the priority and cost of your transaction."}
-      </div>
-      <div className="grid grid-cols-2 gap-8 gap-y-14">
-        <Indicator label="Base Fee">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>{t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}</span>
-            </TooltipTrigger>
-            {baseFeeDisplay.startsWith("<") && !!txDetails.baseFeePerGas && (
-              <TooltipContent>
-                {t("{{baseFee}} GWEI", { baseFee: formatGwei(txDetails.baseFeePerGas) })}
-              </TooltipContent>
-            )}
-          </Tooltip>{" "}
-          <WithTooltip
-            className="inline-flex h-3.75 flex-col justify-center align-text-top"
-            tooltip={t("The base fee is set by the network and changes depending on network usage")}
+        <div className="mt-12 mb-16">
+          {"Set your own custom gas fee to control the priority and cost of your transaction."}
+        </div>
+        <div className="grid grid-cols-2 gap-8 gap-y-14">
+          <Indicator label="Base Fee">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>{t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}</span>
+              </TooltipTrigger>
+              {baseFeeDisplay.startsWith("<") && !!txDetails.baseFeePerGas && (
+                <TooltipContent>
+                  {t("{{baseFee}} GWEI", { baseFee: formatGwei(txDetails.baseFeePerGas) })}
+                </TooltipContent>
+              )}
+            </Tooltip>{" "}
+            <WithTooltip
+              className="inline-flex h-3.75 flex-col justify-center align-text-top"
+              tooltip={t(
+                "The base fee is set by the network and changes depending on network usage"
+              )}
+            >
+              <InfoIcon />
+            </WithTooltip>
+          </Indicator>
+          <Indicator label={t("Base Fee Trend")}>
+            <NetworkUsage
+              baseFeeTrend={txDetails.baseFeeTrend}
+              className="w-full justify-between"
+            />
+          </Indicator>
+          <FormFieldContainer
+            noErrorRow
+            label={
+              <span className="text-sm">
+                {t("Max Base Fee")}{" "}
+                <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed. Selecting a value that's too low could prevent your transaction from ever being included in a block.">
+                  <InfoIcon className="inline align-text-top" />
+                </WithTooltip>
+              </span>
+            }
           >
-            <InfoIcon />
-          </WithTooltip>
-        </Indicator>
-        <Indicator label={t("Base Fee Trend")}>
-          <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} className="w-full justify-between" />
-        </Indicator>
+            {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
+            <FormFieldInputText
+              after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
+              containerProps={INPUT_PROPS}
+              {...register("maxBaseFeeGwei")}
+            />
+          </FormFieldContainer>
+          <FormFieldContainer
+            noErrorRow
+            label={
+              <span className="text-sm">
+                {t("Max Priority Fee")}{" "}
+                <WithTooltip
+                  tooltip={t(
+                    "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed"
+                  )}
+                >
+                  <InfoIcon className="inline align-text-top" />
+                </WithTooltip>
+              </span>
+            }
+          >
+            {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
+            <FormFieldInputText
+              after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
+              containerProps={INPUT_PROPS}
+              {...register("maxPriorityFeeGwei")}
+            />
+          </FormFieldContainer>
+        </div>
+        <MessageRow type="warning" message={warningFee} />
         <FormFieldContainer
           noErrorRow
+          className="w-full"
           label={
             <span className="text-sm">
-              {t("Max Base Fee")}{" "}
-              <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed. Selecting a value that's too low could prevent your transaction from ever being included in a block.">
-                <InfoIcon className="inline align-text-top" />
-              </WithTooltip>
-            </span>
-          }
-        >
-          {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
-          <FormFieldInputText
-            after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
-            containerProps={INPUT_PROPS}
-            {...register("maxBaseFeeGwei")}
-          />
-        </FormFieldContainer>
-        <FormFieldContainer
-          noErrorRow
-          label={
-            <span className="text-sm">
-              {t("Max Priority Fee")}{" "}
+              {t("Gas Limit")}{" "}
               <WithTooltip
-                tooltip={t(
-                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed"
-                )}
+                tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
               >
                 <InfoIcon className="inline align-text-top" />
               </WithTooltip>
             </span>
           }
         >
-          {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
           <FormFieldInputText
-            after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
             containerProps={INPUT_PROPS}
-            {...register("maxPriorityFeeGwei")}
+            {...register("gasLimit", {
+              valueAsNumber: true,
+            })}
           />
         </FormFieldContainer>
-      </div>
-      <MessageRow type="warning" message={warningFee} />
-      <FormFieldContainer
-        noErrorRow
-        className="w-full"
-        label={
-          <span className="text-sm">
-            {t("Gas Limit")}{" "}
-            <WithTooltip
-              tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
-            >
-              <InfoIcon className="inline align-text-top" />
-            </WithTooltip>
-          </span>
-        }
-      >
-        <FormFieldInputText
-          containerProps={INPUT_PROPS}
-          {...register("gasLimit", {
-            valueAsNumber: true,
-          })}
-        />
-      </FormFieldContainer>
-      <MessageRow type="error" message={errorGasLimit} />
+        <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="flex h-13 w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
-        <div>
-          {t("Total Max Fee")}{" "}
-          <WithTooltip
-            tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit"
-            )}
-          >
-            <InfoIcon className="inline-block align-text-top" />
-          </WithTooltip>
-        </div>
-        <div>
-          {totalMaxFee && showMaxFeeTotal ? (
-            <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
-          ) : isLoadingGasSettingsValid ? (
-            <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
-          ) : (
-            <Tooltip>
-              <TooltipTrigger className="text-alert-error">
-                {t("Invalid transaction")}
-              </TooltipTrigger>
-              {!!gasSettingsError && (
-                <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+        <div className="flex h-13 w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
+          <div>
+            {t("Total Max Fee")}{" "}
+            <WithTooltip
+              tooltip={t(
+                "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit"
               )}
-            </Tooltip>
-          )}
+            >
+              <InfoIcon className="inline-block align-text-top" />
+            </WithTooltip>
+          </div>
+          <div>
+            {totalMaxFee && showMaxFeeTotal ? (
+              <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
+            ) : isLoadingGasSettingsValid ? (
+              <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
+            ) : (
+              <Tooltip>
+                <TooltipTrigger className="text-alert-error">
+                  {t("Invalid transaction")}
+                </TooltipTrigger>
+                {!!gasSettingsError && (
+                  <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+                )}
+              </Tooltip>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="mt-10 w-full">
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={!showMaxFeeTotal}
-          primary={showMaxFeeTotal}
-        >
-          {t("Save")}
-        </Button>
-      </div>
-    </form>
+        <div className="mt-10 w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!showMaxFeeTotal}
+            primary={showMaxFeeTotal}
+          >
+            {t("Save")}
+          </Button>
+        </div>
+      </form>
+    </DrawerContent>
   )
 }
