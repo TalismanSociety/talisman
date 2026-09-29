@@ -28,15 +28,17 @@ const Content: FC<{ delay: string; onSave: (delay: string) => void; onClose: () 
   const { t } = useTranslation()
 
   return (
-    <DrawerContent className="flex flex-col gap-8">
-      <header className="flex items-center gap-8">
+    <DrawerContent className="flex max-h-full flex-col gap-8">
+      <header className="flex shrink-0 items-center gap-8">
         <div className="size-12 shrink-0" />
-        <h1 className="grow text-center font-bold text-base">{t("Announcement Delay")}</h1>
+        <h1 className="grow truncate text-center font-bold text-base">{t("Announcement Delay")}</h1>
         <IconButton onClick={onClose}>
           <XIcon />
         </IconButton>
       </header>
-      <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
+      <div className="scrollable scrollable-800 min-h-0 grow overflow-auto">
+        <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
+      </div>
     </DrawerContent>
   )
 }
