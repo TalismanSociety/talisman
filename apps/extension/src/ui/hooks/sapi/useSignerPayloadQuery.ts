@@ -90,7 +90,15 @@ export const useSignerPayloadQuery = <T extends { payload: SignerPayloadJSON }>(
   const [, rerender] = useReducer((count: number) => count + 1, 0)
   useEffect(() => {
     if (expiresAt === null) return
-    const timeout = setTimeout(rerender, Math.max(0, expiresAt - Date.now()) + 1)
+    // a timer can fire before Date.now() passes its deadline: wait again until it has
+    let timeout: ReturnType<typeof setTimeout>
+    const rerenderOnceExpired = () => {
+      timeout = setTimeout(
+        () => (Date.now() > expiresAt ? rerender() : rerenderOnceExpired()),
+        Math.max(0, expiresAt - Date.now()) + 1
+      )
+    }
+    rerenderOnceExpired()
     return () => clearTimeout(timeout)
   }, [expiresAt])
 
