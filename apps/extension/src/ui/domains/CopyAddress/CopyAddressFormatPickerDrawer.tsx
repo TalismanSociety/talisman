@@ -3,6 +3,7 @@ import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -56,12 +57,12 @@ export const CopyAddressFormatPickerDrawer: FC<{
       anchor="bottom"
       onDismiss={onDismiss}
     >
-      {!!data && <DrawerContent format={data} onSelect={onSelect} />}
+      {!!data && <FormatPicker format={data} onSelect={onSelect} />}
     </Drawer>
   )
 }
 
-const DrawerContent: FC<{
+const FormatPicker: FC<{
   format: MigratedChainFormat
   onSelect: (legacyFormat: boolean) => void
 }> = ({ format, onSelect }) => {
@@ -76,7 +77,7 @@ const DrawerContent: FC<{
   )
 
   return (
-    <div className="flex w-full flex-col items-center gap-6 rounded-t-xl bg-grey-800 p-12">
+    <DrawerContent className="flex flex-col items-center gap-6">
       <div className="font-bold text-body text-md">{t("Select Address Format")}</div>
       <div className="text-center text-body-secondary text-sm">
         {t("Legacy format may be needed when sending from some exchanges.")} <LearnMore />
@@ -96,7 +97,7 @@ const DrawerContent: FC<{
         label={t("Legacy format")}
         onSelect={handleSelect(true)}
       />
-    </div>
+    </DrawerContent>
   )
 }
 
