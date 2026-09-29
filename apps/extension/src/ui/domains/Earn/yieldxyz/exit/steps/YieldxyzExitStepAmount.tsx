@@ -6,14 +6,13 @@ import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
-import { TransactionError } from "@ui/domains/Earn/shared/TransactionError"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { isEqual } from "lodash-es"
-import { useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
@@ -69,7 +68,7 @@ export const YieldxyzExitStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <ExitAmountEdit />
+          <ExitAmountEdit createActionError={createActionError?.message} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -126,7 +125,6 @@ export const YieldxyzExitStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
-        <TransactionError error={createActionError?.message} />
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>
@@ -192,7 +190,7 @@ const NetworkDisplay = () => {
   )
 }
 
-const ExitAmountEdit = () => {
+const ExitAmountEdit: FC<{ createActionError?: string }> = ({ createActionError }) => {
   const { position, amountOut, validationError, onAmountOutChanged, setMaxAmountOut } =
     useYieldxyzExitWizard()
 
@@ -219,7 +217,7 @@ const ExitAmountEdit = () => {
       value={amountOut}
       onValueChanged={onAmountOutChanged}
       onMaxClick={setMaxAmountOut}
-      error={validationError}
+      error={validationError ?? createActionError}
     />
   )
 }

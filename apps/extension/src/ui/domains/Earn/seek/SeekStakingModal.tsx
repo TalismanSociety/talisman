@@ -20,7 +20,6 @@ import {
   SenderAccountPicker,
   type SenderAccountPickerIsAccountDisabled,
 } from "@ui/domains/Earn/shared/SenderAccountPicker"
-import { TransactionError } from "@ui/domains/Earn/shared/TransactionError"
 import { invalidateNonceQueries, useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
@@ -43,6 +42,7 @@ import {
   SeekExpectedRewards,
   SeekNetworkFeeRows,
   SeekUnstakingPeriod,
+  TransactionError,
 } from "./SeekStakingModalShared"
 import { removeSeekStakingPositionCache } from "./seekStakingCache"
 import {

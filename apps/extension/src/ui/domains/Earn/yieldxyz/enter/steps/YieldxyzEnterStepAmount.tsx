@@ -5,7 +5,6 @@ import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
-import { TransactionError } from "@ui/domains/Earn/shared/TransactionError"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -14,7 +13,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
-import { useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
@@ -82,7 +81,7 @@ export const YieldxyzEnterStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <DepositAmountEdit />
+          <DepositAmountEdit createActionError={createActionError?.message} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -137,7 +136,6 @@ export const YieldxyzEnterStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
-        <TransactionError error={createActionError?.message} />
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>
@@ -212,7 +210,7 @@ const NetworkDisplay = () => {
   )
 }
 
-const DepositAmountEdit = () => {
+const DepositAmountEdit: FC<{ createActionError?: string }> = ({ createActionError }) => {
   const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
     useYieldxyzEnterWizard()
 
@@ -224,7 +222,7 @@ const DepositAmountEdit = () => {
       value={amountIn}
       onValueChanged={onAmountInChanged}
       onMaxClick={setMaxAmountIn}
-      error={validationError}
+      error={validationError ?? createActionError}
     />
   )
 }

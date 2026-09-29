@@ -42,12 +42,6 @@ vi.mock("@ui/components/Button", () => ({
   ),
 }))
 
-vi.mock("@ui/components/Tooltip", () => ({
-  Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
-  TooltipTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>,
-}))
-
 vi.mock("@ui/components/WizardModalDialog", () => ({
   WizardModalDialog: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
@@ -55,7 +49,9 @@ vi.mock("@ui/components/WizardModalDialog", () => ({
 vi.mock("@ui/domains/Asset/Fiat", () => ({ FiatFromUsd: () => null }))
 vi.mock("@ui/domains/Asset/Tokens", () => ({ Tokens: () => null }))
 vi.mock("@ui/domains/Earn/shared/AccountDisplay", () => ({ AccountDisplay: () => null }))
-vi.mock("@ui/domains/Earn/shared/GenericAmountEdit", () => ({ GenericAmountEdit: () => null }))
+vi.mock("@ui/domains/Earn/shared/GenericAmountEdit", () => ({
+  GenericAmountEdit: ({ error }: { error?: string | null }) => error ?? null,
+}))
 vi.mock("@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo", () => ({
   YieldxyzProviderDisplay: () => null,
 }))
