@@ -1,8 +1,10 @@
 import type { ActionDto } from "@core/domains/earn/exports"
-import { LoaderIcon } from "@talismn/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
+import { Button } from "@ui/components/Button"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
-import { useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountDisplay } from "../../../shared/AccountDisplay"
@@ -18,10 +20,31 @@ export const YieldxyzManageStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzManageModal()
   const wizard = useYieldxyzManageWizard()
-  const { position, action, network, transaction, balance, isLoadingAction } = wizard
+  const {
+    position,
+    action,
+    network,
+    transaction,
+    balance,
+    isLoadingAction,
+    errorAction,
+    retryCreateAction,
+  } = wizard
   const actionTitle = useActionTitle(action)
 
   if (!action && isLoadingAction) return <ActionCreatingShimmer />
+
+  if (!action && errorAction)
+    return (
+      <ModalDialog
+        variant="wizard"
+        className="size-full border-none"
+        title={actionTitle}
+        onCloseClick={close}
+      >
+        <ActionCreateError error={errorAction} onRetry={retryCreateAction} />
+      </ModalDialog>
+    )
 
   if (!position || !action) return null
 
@@ -85,6 +108,23 @@ const ActionCreatingShimmer = () => {
       </div>
     )
   }
+}
+
+const ActionCreateError: FC<{ error: Error; onRetry: () => void }> = ({ error, onRetry }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex flex-col items-center gap-2 pt-48 text-center leading-[140%]">
+      <AlertCircleIcon className="h-16 w-16 text-brand-orange" />
+      <div className="mt-4 font-bold text-base text-white opacity-70">
+        {t("Failed to prepare operation")}
+      </div>
+      <div className="text-brand-orange text-sm">{getErrorMessage(error, t("Unknown error"))}</div>
+      <Button small className="mt-8" onClick={onRetry}>
+        {t("Retry")}
+      </Button>
+    </div>
+  )
 }
 
 const useActionTitle = (action: ActionDto | null) => {

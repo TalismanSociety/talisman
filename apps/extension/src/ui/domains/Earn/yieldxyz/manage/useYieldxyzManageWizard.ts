@@ -47,15 +47,17 @@ const useYieldxyzManageWizardProvider = ({
   })
 
   const refInitialized = useRef(false)
+  const retryCreateAction = useCallback(() => {
+    refInitialized.current = true
+    createAction().catch(() => {
+      refInitialized.current = false // Allow retry
+    })
+  }, [createAction])
+
   useEffect(() => {
     // create the action on load, only once
-    if (canCreateAction && !refInitialized.current) {
-      refInitialized.current = true
-      createAction().catch(() => {
-        refInitialized.current = false // Allow retry
-      })
-    }
-  }, [canCreateAction, createAction])
+    if (canCreateAction && !refInitialized.current) retryCreateAction()
+  }, [canCreateAction, retryCreateAction])
 
   const onCompleted = useCallback(() => {
     // do not await the refresh or UI will flicker
@@ -87,6 +89,7 @@ const useYieldxyzManageWizardProvider = ({
     transaction,
     canCreateAction,
     createAction,
+    retryCreateAction,
   }
 }
 
