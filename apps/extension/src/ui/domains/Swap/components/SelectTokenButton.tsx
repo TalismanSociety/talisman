@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -172,7 +172,8 @@ const TokenPickerModalContent: FC<{
   )
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0! relative"
       title={t("Select a token")}
@@ -199,7 +200,7 @@ const TokenPickerModalContent: FC<{
         onBack={() => setWarningTokenId(null)}
         onAccept={acceptToken}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

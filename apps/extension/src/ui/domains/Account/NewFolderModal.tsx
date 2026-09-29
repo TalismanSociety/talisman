@@ -23,7 +23,7 @@ export const NewFolderModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("New Folder")} onClose={close} className="w-92">
+      <ModalDialog title={t("New Folder")} onCloseClick={close} className="h-auto w-92">
         <NewFolder onConfirm={close} onCancel={close} />
       </ModalDialog>
     </Modal>

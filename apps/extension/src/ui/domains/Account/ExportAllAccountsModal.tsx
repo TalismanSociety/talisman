@@ -27,8 +27,8 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
     <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
       <ModalDialog
         title={t("Export all accounts as JSON")}
-        className="w-125.75 max-w-full overflow-hidden"
-        onClose={onClose}
+        className="h-auto w-125.75"
+        onCloseClick={onClose}
       >
         <PasswordUnlock
           title={

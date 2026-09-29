@@ -191,7 +191,7 @@ const ResetStatesModalContent: FC<{
   }, [onClose])
 
   return (
-    <ModalDialog title={t("Reset tokens")} onClose={onClose}>
+    <ModalDialog className="h-auto" title={t("Reset tokens")} onCloseClick={onClose}>
       <div className="mb-8 text-body-secondary text-sm">
         {t("This will reset active state of all tokens to their Talisman defaults.")}
       </div>

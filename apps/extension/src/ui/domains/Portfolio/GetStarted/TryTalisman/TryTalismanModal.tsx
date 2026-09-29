@@ -21,14 +21,12 @@ export const TryTalismanModal = () => {
   return (
     <Modal isOpen={isOpen} onDismiss={close} containerId="main">
       <ModalDialog
-        centerTitle
         title={
           <Trans t={t}>
             Try <span className="text-primary">Talisman</span>
           </Trans>
         }
-        onClose={close}
-        className="h-150 w-100"
+        onCloseClick={close}
       >
         <ScrollContainer className="h-full w-full">
           <TryTalismanContent analytics={ANALYTICS_PAGE} />

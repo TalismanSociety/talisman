@@ -31,7 +31,7 @@ const BatchActionButton: FC<{
         {children}
       </button>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <ModalDialog onClose={close} title={confirmTitle} className="border border-grey-800">
+        <ModalDialog onCloseClick={close} title={confirmTitle} className="h-auto border-grey-800">
           <p className="text-body-secondary">{confirmDescription}</p>
           <div className="mt-8 grid grid-cols-2 gap-8">
             <Button onClick={close}>{t("Cancel")}</Button>

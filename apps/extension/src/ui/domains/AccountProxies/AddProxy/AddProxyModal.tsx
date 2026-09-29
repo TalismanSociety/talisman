@@ -9,11 +9,11 @@ import { AlertCircleIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PillButton } from "@ui/components/PillButton"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
@@ -167,7 +167,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
 
   if (!canWrite) {
     return (
-      <WizardModalDialog title={t("Add Proxy")} onCloseClick={onClose}>
+      <ModalDialog variant="wizard" title={t("Add Proxy")} onCloseClick={onClose}>
         <p className="text-body-secondary">
           {t(
             "Adding proxies is not supported on this account type yet. Only local (keypair) accounts can sign proxy management extrinsics."
@@ -175,7 +175,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
         </p>
         <div className="grow" />
         <Button onClick={onClose}>{t("Close")}</Button>
-      </WizardModalDialog>
+      </ModalDialog>
     )
   }
 
@@ -203,7 +203,8 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
   }
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Add Proxy")}
       onCloseClick={onClose}
       contentClassName="overflow-hidden flex flex-col gap-8"
@@ -369,7 +370,7 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
         delay={delay}
         onSave={setDelay}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -418,7 +419,8 @@ const AddProxyConfirm: FC<{
   }, [proxySets, network.id, delegate, proxyType, delay])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Add Proxy")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={onBack}
@@ -488,6 +490,6 @@ const AddProxyConfirm: FC<{
         className="shrink-0"
         checkPassword
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

@@ -13,7 +13,7 @@ export const MigratePasswordError = () => {
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
 
   return (
-    <ModalDialog title={t("There was a problem")}>
+    <ModalDialog className="h-auto" title={t("There was a problem")}>
       <p className="text-body-secondary text-sm">
         <span className="block">
           {t("There was an error in updating your password.")}{" "}

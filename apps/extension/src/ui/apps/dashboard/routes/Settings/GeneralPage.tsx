@@ -235,7 +235,7 @@ const LedgerTransportCheckModalDialog: FC<{
   if (!s) return null
 
   return (
-    <ModalDialog title={t("Ledger connectivity check")} onClose={onClose}>
+    <ModalDialog className="h-auto" title={t("Ledger connectivity check")} onCloseClick={onClose}>
       <div className="flex w-full items-center gap-6">
         <div
           className={cn(

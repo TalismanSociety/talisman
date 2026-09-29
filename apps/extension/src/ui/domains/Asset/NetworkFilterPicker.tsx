@@ -1,9 +1,9 @@
 import type { Network } from "@talismn/chaindata-provider"
 import { CheckmarkIcon, GlobeIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
@@ -64,7 +64,8 @@ const NetworkFilterPickerContent: FC<{
   )
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0!"
       title={t("Network Filter")}
@@ -87,7 +88,7 @@ const NetworkFilterPickerContent: FC<{
           />
         </ScrollContainer>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

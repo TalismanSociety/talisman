@@ -54,7 +54,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [state.backup])
 
   return (
-    <ModalDialog title="Restore" className="w-125" onClose={onClose}>
+    <ModalDialog title="Restore" className="h-auto w-125" onCloseClick={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will replace all existing Talisman data with the data from your backup file.

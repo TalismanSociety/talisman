@@ -63,7 +63,7 @@ export const EnterPasswordForm = () => {
   }, [setValue])
 
   return (
-    <ModalDialog title="Security Upgrade">
+    <ModalDialog className="h-auto" title="Security Upgrade">
       <p className="mb-10 text-body-secondary text-sm">
         <Trans t={t}>
           We have upgraded our security measures, including an updated password policy and advanced

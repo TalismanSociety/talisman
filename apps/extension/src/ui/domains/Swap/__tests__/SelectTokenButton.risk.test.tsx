@@ -102,14 +102,8 @@ vi.mock("@ui/components/Drawer", () => ({
     isOpen ? <div role="dialog">{children}</div> : null,
 }))
 
-vi.mock("@ui/components/WizardModalDialog", () => ({
-  WizardModalDialog: ({
-    children,
-    onBackClick,
-  }: {
-    children: ReactNode
-    onBackClick: () => void
-  }) => (
+vi.mock("@ui/components/ModalDialog", () => ({
+  ModalDialog: ({ children, onBackClick }: { children: ReactNode; onBackClick: () => void }) => (
     <div>
       <button type="button" onClick={onBackClick}>
         Dismiss picker

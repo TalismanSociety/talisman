@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useToken } from "@ui/state/chaindata"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,7 +38,8 @@ export const EarnDepositModal: FC = () => {
   return (
     <Modal containerId="main" isOpen={isOpen && !!args?.opportunities.length} onDismiss={close}>
       <PopupSizeModalContainer id="earn-provider-modal">
-        <WizardModalDialog
+        <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           title={t("Select Earn Opportunity")}
           contentClassName="p-0"
@@ -49,7 +50,7 @@ export const EarnDepositModal: FC = () => {
             onSelect={openOpportunity}
             disabledReason={disabledReason}
           />
-        </WizardModalDialog>
+        </ModalDialog>
       </PopupSizeModalContainer>
     </Modal>
   )

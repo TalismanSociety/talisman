@@ -36,7 +36,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Delete contact")}>
+      <ModalDialog className="h-auto" title={t("Delete contact")}>
         <div className="my-12 text-body-secondary">
           <Trans values={{ contactName }} t={t}>
             You are deleting contact '

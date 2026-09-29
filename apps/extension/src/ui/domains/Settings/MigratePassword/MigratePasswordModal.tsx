@@ -18,7 +18,7 @@ const MigratePasswordModalContent = () => {
     useMigratePassword()
   if (status === statusOptions.PROCESSING)
     return (
-      <ModalDialog title={t("Please wait...")}>
+      <ModalDialog className="h-auto" title={t("Please wait...")}>
         <ProcessAnimation status="processing" className="my-20 h-35" />
       </ModalDialog>
     )
@@ -38,11 +38,9 @@ export const MigratePasswordModal = () => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <div className="w-125.75">
-        <MigratePasswordProvider onComplete={close}>
-          <MigratePasswordModalContent />
-        </MigratePasswordProvider>
-      </div>
+      <MigratePasswordProvider onComplete={close}>
+        <MigratePasswordModalContent />
+      </MigratePasswordProvider>
     </Modal>
   )
 }

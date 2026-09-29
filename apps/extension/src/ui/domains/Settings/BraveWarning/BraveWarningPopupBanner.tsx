@@ -47,7 +47,7 @@ const BraveWarningPopupBanner = () => {
         <BraveWarningCard className="m-0! rounded-b-none!" onLearnMoreClick={open} />
       </Drawer>
       <Modal isOpen={isOpen} anchor="bottom" onDismiss={close}>
-        <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>
+        <ModalDialog className="h-auto" title={t("Attention Brave Users")} onCloseClick={close}>
           <BraveWarningModal popup />
         </ModalDialog>
       </Modal>

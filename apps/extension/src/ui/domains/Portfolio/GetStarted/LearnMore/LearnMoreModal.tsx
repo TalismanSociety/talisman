@@ -34,10 +34,9 @@ export const LearnMoreModal = () => {
   return (
     <Modal isOpen={isOpen} onDismiss={close} containerId="main">
       <ModalDialog
-        centerTitle
         title={t("Learn More")}
-        onClose={close}
-        className="maw-h-[100dvh] h-150 w-100 max-w-dvw sm:h-212.5 sm:w-150"
+        onCloseClick={close}
+        className="max-w-dvw sm:h-212.5 sm:w-150"
       >
         <ScrollContainer className="h-full w-full">
           <LearnMoreContent

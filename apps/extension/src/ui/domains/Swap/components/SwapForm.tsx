@@ -1,7 +1,7 @@
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useCallback, useEffect, useMemo } from "react"
@@ -99,7 +99,8 @@ export const SwapForm = () => {
   }, [fromBalance, fromAmount, fromTokenId, fromAddress, selectedQuote?.maxNativeTokenGasBuffer])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Multi-Chain Swap")}
       onCloseClick={close}
@@ -230,7 +231,7 @@ export const SwapForm = () => {
           </Drawer>
         </div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -239,7 +240,8 @@ export const SwapFormShimmer = () => {
   const { close } = useSwapModal()
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Multi-Chain Swap")}
       onCloseClick={close}
@@ -251,6 +253,6 @@ export const SwapFormShimmer = () => {
         </div>
         <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

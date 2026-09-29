@@ -451,8 +451,9 @@ const ConfirmRemove: FC<{
 
   return (
     <ModalDialog
+      className="h-auto"
       title={isNetworkKnown(saved) ? t("Reset Token") : t("Remove Token")}
-      onClose={onClose}
+      onCloseClick={onClose}
     >
       <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
