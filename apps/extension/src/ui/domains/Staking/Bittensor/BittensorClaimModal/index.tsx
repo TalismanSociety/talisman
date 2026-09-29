@@ -10,7 +10,7 @@ import { useBittensorClaimModal } from "./hooks/useBittensorClaimModal"
 import { BittensorClaimWizardProvider } from "./hooks/useBittensorClaimWizard"
 
 export const BittensorClaimModal = () => {
-  const { isOpen, close } = useBittensorClaimModal()
+  const { isOpen, args, openKey, close } = useBittensorClaimModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
@@ -21,11 +21,13 @@ export const BittensorClaimModal = () => {
           !IS_POPUP && "rounded border border-grey-850"
         )}
       >
-        <BittensorClaimWizardProvider>
-          <Suspense fallback={<SuspenseTracker name="BittensorClaimModal" />}>
-            <BittensorClaimModalRouter />
-          </Suspense>
-        </BittensorClaimWizardProvider>
+        {args && (
+          <BittensorClaimWizardProvider key={openKey}>
+            <Suspense fallback={<SuspenseTracker name="BittensorClaimModal" />}>
+              <BittensorClaimModalRouter />
+            </Suspense>
+          </BittensorClaimWizardProvider>
+        )}
       </div>
     </Modal>
   )

@@ -31,16 +31,13 @@ const BittensorConvictionLockRouter = () => {
 }
 
 export const BittensorConvictionLockModal: FC = () => {
-  const { isOpen, args, close } = useBittensorConvictionLockModal()
+  const { isOpen, args, openKey, close } = useBittensorConvictionLockModal()
 
   return (
     <Modal isOpen={isOpen && !!args} onDismiss={close}>
       <PopupSizeModalContainer id={BITTENSOR_LOCK_MODAL_CONTAINER_ID}>
         {!!args && (
-          <BittensorConvictionLockWizardProvider
-            // reset wizard state whenever it is opened for a different subnet/account
-            key={`${args.networkId}-${args.netuid}-${args.address ?? ""}`}
-          >
+          <BittensorConvictionLockWizardProvider key={openKey}>
             <Suspense fallback={<SuspenseTracker name="BittensorConvictionLockModal" />}>
               <BittensorConvictionLockRouter />
             </Suspense>
