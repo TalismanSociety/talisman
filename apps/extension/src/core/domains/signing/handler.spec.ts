@@ -256,8 +256,7 @@ describe("SigningHandler", () => {
       })
     })
 
-    // isPayloadModified compares JSON.stringify output, so key order alone counts as a change
-    it.fails("withholds the signed transaction when the approval sends a reordered payload", async () => {
+    it("withholds the signed transaction when the approval sends a reordered payload", async () => {
       const { id, response } = await queueSubstrateSign(WALLET_PAYLOAD)
 
       await send("pri(signing.approveSign)", { id, payload: REORDERED_WALLET_PAYLOAD })
@@ -408,8 +407,7 @@ describe("SigningHandler", () => {
       await expect(response).resolves.toMatchObject({ signedTransaction: undefined })
     })
 
-    // isPayloadModified compares JSON.stringify output, so key order alone counts as a change
-    it.fails("withholds the signed transaction when the payload is only reordered", async () => {
+    it("withholds the signed transaction when the payload is only reordered", async () => {
       const { id, response } = await queueSubstrateSign(WALLET_PAYLOAD, externalAccount)
 
       await send(type, {

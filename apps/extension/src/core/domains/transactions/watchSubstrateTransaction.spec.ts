@@ -121,15 +121,25 @@ const blockHash = ({ header }: Block) =>
 const withOurs = (number: number, outcome: EventOutcome) =>
   makeBlock(number, [OTHER_EXTRINSIC, FIXTURE.signedTransaction], ["ExtrinsicSuccess", outcome])
 
-const fakeChain = () => {
+const fakeChain = ({
+  slowSubscription,
+  failingSubscription,
+}: {
+  slowSubscription?: string
+  failingSubscription?: string
+} = {}) => {
   const blocks = new Map<string, Block>()
   const bestChain = new Map<number, { hash: HexString; header: Block["header"] }>()
   const heads: Record<string, Parameters<typeof chainConnectorDot.subscribe>[4]> = {}
   const unsubscribed: string[] = []
+  const slowSubscriptionEstablished = Promise.withResolvers<void>()
+  let heldBlockFetch: Promise<void> | undefined
 
   vi.spyOn(chainConnectorDot, "subscribe").mockImplementation(
     async (_chainId, method, _response, _params, callback) => {
+      if (method === failingSubscription) throw new Error(`${method} failed`)
       heads[method] = callback
+      if (method === slowSubscription) await slowSubscriptionEstablished.promise
       return (unsubscribeMethod) => {
         unsubscribed.push(unsubscribeMethod)
       }
@@ -138,8 +148,12 @@ const fakeChain = () => {
   vi.spyOn(chainConnectorDot, "send").mockImplementation(async (_chainId, method, params) => {
     const block = blocks.get(params.at(-1) as string)
     switch (method) {
-      case "chain_getBlock":
+      case "chain_getBlock": {
+        const held = heldBlockFetch
+        heldBlockFetch = undefined
+        await held
         return block && { block: { header: block.header, extrinsics: block.extrinsics } }
+      }
       case "chain_getBlockHash":
         return bestChain.get(params[0] as number)?.hash ?? null
       case "chain_getHeader":
@@ -166,6 +180,13 @@ const fakeChain = () => {
 
   return {
     unsubscribed,
+    establishSlowSubscription: () => slowSubscriptionEstablished.resolve(),
+    /** the next block fetch waits until the returned release function is called */
+    holdNextBlockFetch: () => {
+      const { promise, resolve } = Promise.withResolvers<void>()
+      heldBlockFetch = promise
+      return resolve
+    },
     /** a header whose JSON form the watcher cannot re-encode, like Avail's */
     newExtendedHead: async (block: Block, nodeBlock = block) => {
       const hash = `0x${"ee".repeat(32)}` as HexString
@@ -300,16 +321,74 @@ describe("watchSubstrateTransaction", () => {
     expect(chain.unsubscribed).toContain("chain_unsubscribeFinalizedHeads")
   })
 
-  // bug: the finalised path clears the timeout, and the timeout is the only place that
-  // unsubscribes from new heads when no new head matched first
-  it.fails("stops watching new heads once the extrinsic is first seen finalised", async () => {
+  it("stops watching new heads once the extrinsic is first seen finalised", async () => {
     const chain = fakeChain()
     await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
 
     await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+
+    expect(chain.unsubscribed).toEqual([
+      "chain_unsubscribeAllHeads",
+      "chain_unsubscribeFinalizedHeads",
+    ])
+  })
+
+  it("stops watching new heads when finality is seen before that subscription is established", async () => {
+    const chain = fakeChain({ slowSubscription: "chain_subscribeAllHeads" })
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout")
+    const watching = watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+    await vi.waitFor(() => expect(chainConnectorDot.subscribe).toHaveBeenCalledTimes(2))
+
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+    expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
+    chain.establishSlowSubscription()
+    await watching
+
+    await expectStoredTx({ status: "success", confirmed: true })
+    expect(chain.unsubscribed).toEqual([
+      "chain_unsubscribeFinalizedHeads",
+      "chain_unsubscribeAllHeads",
+    ])
+    expect(setTimeoutSpy.mock.calls.map(([, delay]) => delay)).not.toContain(TX_WATCH_TIMEOUT)
+  })
+
+  it("does not report a new head still being processed when finality arrives", async () => {
+    const chain = fakeChain()
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature, {
+      notifications: true,
+    })
+    const block = withOurs(100, "ExtrinsicSuccess")
+
+    const release = chain.holdNextBlockFetch()
+    const included = chain.newHead(block)
+    await chain.finalizedHead(block)
+    release()
+    await included
+
+    await expectStoredTx({ status: "success", confirmed: true })
+    expect(createNotification).toHaveBeenCalledTimes(1)
+  })
+
+  it("settles the extrinsic from finalised heads when the new heads subscription fails", async () => {
+    const chain = fakeChain({ failingSubscription: "chain_subscribeAllHeads" })
+    await expect(
+      watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+    ).resolves.toBe(FIXTURE.hash)
+
+    await chain.finalizedHead(withOurs(100, "ExtrinsicSuccess"))
+
+    await expectStoredTx({ status: "success", blockNumber: "100", confirmed: true })
+    expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
+  })
+
+  it("still times out the watch when the new heads subscription fails", async () => {
+    const chain = fakeChain({ failingSubscription: "chain_subscribeAllHeads" })
+    await watchSubstrateTransaction(POLKADOT, FIXTURE.payload, FIXTURE.signature)
+
     await vi.advanceTimersByTimeAsync(TX_WATCH_TIMEOUT)
 
-    expect(chain.unsubscribed).toContain("chain_unsubscribeAllHeads")
+    await expectStoredTx({ status: "unknown" })
+    expect(chain.unsubscribed).toEqual(["chain_unsubscribeFinalizedHeads"])
   })
 
   it("reads the outcome of the extrinsic's own index, not of its neighbours", async () => {

@@ -194,8 +194,7 @@ describe("substrate-assets fetchBalances", () => {
     ])
   })
 
-  // a Blocked account can neither send nor receive, but only the Frozen status locks the balance
-  it.fails("reports a Blocked account's whole balance as frozen", async () => {
+  it("reports a Blocked account's whole balance as frozen", async () => {
     const { blocked } = fixture.handEncoded
     const { connector } = makeConnector({ [frozenAccount.entry.key]: blocked.value })
     const token = assetToken(ASSET_HUB, frozenAccount.assetId)

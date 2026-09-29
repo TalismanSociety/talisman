@@ -40,7 +40,7 @@ export const buildQueries = (
 
           // Astar specific fields
           reason?: { type?: "Sufficient" }
-          status?: { type?: "Liquid" } | { type?: "Frozen" }
+          status?: { type?: "Liquid" | "Frozen" | "Blocked" }
           extra?: undefined
         }
 
@@ -56,7 +56,7 @@ export const buildQueries = (
           extra: undefined,
         }
 
-        const isFrozen = decoded?.status?.type === "Frozen"
+        const isFrozen = decoded?.status?.type === "Frozen" || decoded?.status?.type === "Blocked"
         const amount = (decoded?.balance ?? 0n).toString()
 
         // due to the following balance calculations, which are made in the `Balance` type:

@@ -4,6 +4,7 @@ import { encodeAnyAddress, signSubstrate } from "@talismn/crypto"
 import { sr25519SignVrf } from "@talismn/substrate-vrf"
 import type { HexString } from "@talismn/util"
 import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes, validateHexString } from "@talismn/util"
+import { isEqual } from "lodash-es"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -36,7 +37,7 @@ import { parseVrfSignPayload } from "./vrf"
 const isPayloadModified = (
   original: SignerPayloadJSON | SignerPayloadRaw,
   modified: SignerPayloadJSON | undefined
-) => !!modified && JSON.stringify(modified) !== JSON.stringify(original)
+) => !!modified && !isEqual(modified, original)
 
 // the store only drops a request through resolve/reject, so throwing alone would leave it queued
 const rejectApprovalFailure = (reject: (error: Error) => void, val: string | Error): never => {

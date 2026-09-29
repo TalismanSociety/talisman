@@ -28,25 +28,28 @@ export const buildNomPoolQueries = (
     return {
       stateKeys,
       decodeResult: (changes: (`0x${string}` | null)[]) => {
-        if (!nomPoolMemberInfo || !stateKeys.length || changes.includes(null)) return balance
+        const [poolPointsChange, poolStakeChange, poolMetaChange = null] = changes
+        if (!nomPoolMemberInfo || !stateKeys.length || !poolPointsChange || !poolStakeChange)
+          return balance
 
         const accountPoints = nomPoolMemberInfo?.points ?? "0"
 
         const { poolPoints = "0" } = decodePoolPoints(
           networkStorageCoders.bondedPools!,
-          changes[0]!,
+          poolPointsChange,
           networkId
         )
         const { poolTotalActiveStake = "0" } = decodePoolStake(
           networkStorageCoders.ledger!,
-          changes[1]!,
+          poolStakeChange,
           networkId
         )
-        const { metadata = "0" } = decodePoolMeta(
+        const { metadata } = decodePoolMeta(
           networkStorageCoders.metadata!,
-          changes[2]!,
+          poolMetaChange,
           networkId
         )
+        const description = metadata || `Pool ${nomPoolMemberInfo.poolId}`
 
         const amount =
           accountPoints === "0" || poolPoints === "0" || poolTotalActiveStake === "0"
@@ -67,7 +70,7 @@ export const buildNomPoolQueries = (
               type: "nompool",
               label: "nompools-staking",
               amount: amount.toString(),
-              meta: { type: "nompool", poolId: nomPoolMemberInfo.poolId, description: metadata },
+              meta: { type: "nompool", poolId: nomPoolMemberInfo.poolId, description },
             },
             {
               source: "nompools-staking",
@@ -76,7 +79,7 @@ export const buildNomPoolQueries = (
               amount: unbondingAmount.toString(),
               meta: {
                 poolId: nomPoolMemberInfo.poolId,
-                description: metadata ?? `Pool ${nomPoolMemberInfo.poolId}`,
+                description,
                 unbonding: true,
               },
             },
@@ -134,7 +137,7 @@ const decodePoolStake = (coder: ScaleStorageCoder, value: string, networkId: str
   return { poolTotalActiveStake: decoded?.active.toString() }
 }
 
-const decodePoolMeta = (coder: ScaleStorageCoder, value: string, networkId: string) => {
+const decodePoolMeta = (coder: ScaleStorageCoder, value: string | null, networkId: string) => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = Uint8Array
 
