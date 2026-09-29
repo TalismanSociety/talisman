@@ -1,6 +1,4 @@
 import type { TokenId } from "@talismn/chaindata-provider"
-import { AlertCircleIcon } from "@talismn/icons"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FormFieldSetRow } from "@ui/domains/Earn/shared/FormFieldSet"
 import { formatAprPercent } from "@ui/domains/Earn/shared/formatAprPercent"
@@ -42,24 +40,6 @@ export const SeekUnstakingPeriod: FC<{ withdrawDelay: bigint | null }> = ({ with
 
   const duration = intervalToDuration({ start: 0, end: Number(withdrawDelay) * 1000 })
   return formatDuration(duration, { locale })
-}
-
-export const TransactionError: FC<{ error?: string; errorDetails?: string }> = ({
-  error,
-  errorDetails,
-}) => {
-  if (!error) return null
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="text-center text-brand-orange text-xs">
-          <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
-        </div>
-      </TooltipTrigger>
-      {!!errorDetails && <TooltipContent>{errorDetails}</TooltipContent>}
-    </Tooltip>
-  )
 }
 
 const FeePlaceholder: FC<{ isLoading?: boolean }> = ({ isLoading }) => {
