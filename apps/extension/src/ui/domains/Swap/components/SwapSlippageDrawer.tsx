@@ -1,4 +1,5 @@
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,10 +14,10 @@ export const SwapSlippageDrawer: FC<{
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onClose} containerId={containerId}>
-      <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-black-secondary p-12">
+      <DrawerContent className="flex flex-col items-center gap-4">
         <div className="pb-8 font-bold text-body">{t("Slippage Tolerance")}</div>
         <SwapSlippageForm onClose={onClose} />
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

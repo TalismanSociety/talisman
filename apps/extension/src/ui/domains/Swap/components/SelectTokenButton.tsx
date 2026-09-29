@@ -3,6 +3,7 @@ import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -379,7 +380,7 @@ const SelectTokenWarningDrawer: FC<{
       // className="z-20"
     >
       {safeTokenId && token && (
-        <div className="flex flex-col items-center gap-12 rounded-t-xl bg-grey-800 p-12">
+        <DrawerContent className="flex flex-col items-center gap-12">
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-4">
               <AlertTriangleIcon className="text-alert-warn text-md" />
@@ -409,7 +410,7 @@ const SelectTokenWarningDrawer: FC<{
               {needsAcknowledgement ? t("Proceed") : t("I Understand")}
             </Button>
           </div>
-        </div>
+        </DrawerContent>
       )}
     </Drawer>
   )

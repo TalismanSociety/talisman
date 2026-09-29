@@ -32,7 +32,7 @@ export const SwapSlippageForm: FC<{ onClose: () => void }> = ({ onClose }) => {
 
       <FormFieldInputText
         small
-        containerProps={{ className: "bg-black px-6 text-right" }}
+        containerProps={{ className: "px-6 text-right" }}
         after={
           <div className="flex items-center gap-4">
             <div>%</div>
