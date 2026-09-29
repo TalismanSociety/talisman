@@ -113,8 +113,11 @@ describe("useSignerPayloadQuery", () => {
 
   it("withholds the payload when its expiry timer fires before the deadline", async () => {
     const realSetTimeout = globalThis.setTimeout
-    vi.spyOn(globalThis, "setTimeout").mockImplementation(((fn: () => void, ms = 0) =>
-      realSetTimeout(fn, Math.max(0, ms - 5))) as typeof setTimeout)
+    vi.spyOn(globalThis, "setTimeout").mockImplementation(((
+      fn: () => void,
+      ms = 0,
+      ...args: unknown[]
+    ) => realSetTimeout(fn, Math.max(0, ms - 5), ...args)) as typeof setTimeout)
     const sapi = sapiWithBlockTime(20)
     const queryFn = vi
       .fn<() => Promise<BuiltPayload>>()
