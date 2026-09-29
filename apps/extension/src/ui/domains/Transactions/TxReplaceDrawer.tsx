@@ -11,6 +11,7 @@ import { api } from "@ui/api"
 import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -339,16 +340,17 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
       anchor="bottom"
       containerId={containerId ?? "main"}
       onDismiss={onClose}
-      className="flex w-full flex-col items-center rounded-t-xl bg-grey-800 p-12"
     >
-      {data?.type && data?.tx?.platform === "ethereum" ? (
-        <EvmDrawerContent
-          containerId={containerId}
-          tx={data.tx}
-          type={data.type}
-          onClose={onClose}
-        />
-      ) : null}
+      <DrawerContent className="flex flex-col items-center">
+        {data?.type && data?.tx?.platform === "ethereum" ? (
+          <EvmDrawerContent
+            containerId={containerId}
+            tx={data.tx}
+            type={data.type}
+            onClose={onClose}
+          />
+        ) : null}
+      </DrawerContent>
     </Drawer>
   )
 }
