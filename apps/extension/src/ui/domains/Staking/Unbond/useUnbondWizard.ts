@@ -1,5 +1,4 @@
 import type { Address } from "@core/types/base"
-import { bind } from "@react-rxjs/core"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
@@ -9,13 +8,14 @@ import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { type SetStateAction, useCallback, useMemo } from "react"
+import { provideContext } from "@ui/util/provideContext"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useGetUnbondInfo } from "../shared/useGetUnbondInfo"
+import { useUnbondModal } from "./useUnbondModal"
 
 type WizardStep = "review" | "follow-up"
 
@@ -24,39 +24,19 @@ type WizardState = {
   address: Address | null
   tokenId: TokenId | null
   hash: Hex | null
-  poolId: number | string | undefined
 }
 
-const DEFAULT_STATE: WizardState = {
-  step: "review",
-  address: null,
-  tokenId: null,
-  hash: null,
-  poolId: undefined,
-}
-
-const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
-
-const setWizardState = (state: SetStateAction<WizardState>) => {
-  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
-  else wizardState$.next(state)
-}
-
-const [useWizardState] = bind(wizardState$)
-
-export const useResetNomPoolUnbondWizard = () => {
-  return useCallback(
-    (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
-      setWizardState({ ...DEFAULT_STATE, ...init }),
-    []
-  )
-}
-
-export const useUnbondWizard = () => {
+const useUnbondWizardProvider = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
+  const { args } = useUnbondModal()
 
-  const { address, step, hash, tokenId } = useWizardState()
+  const [{ address, step, hash, tokenId }, setWizardState] = useState<WizardState>(() => ({
+    step: "review",
+    address: args?.address ?? null,
+    tokenId: args?.tokenId ?? null,
+    hash: null,
+  }))
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -144,3 +124,5 @@ export const useUnbondWizard = () => {
     onSubmitted,
   }
 }
+
+export const [UnbondWizardProvider, useUnbondWizard] = provideContext(useUnbondWizardProvider)
