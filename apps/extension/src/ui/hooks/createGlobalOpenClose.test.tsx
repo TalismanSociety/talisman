@@ -1,6 +1,6 @@
 import { Subscribe } from "@react-rxjs/core"
-import { act, renderHook } from "@testing-library/react"
-import type { ReactNode } from "react"
+import { act, fireEvent, render, renderHook, screen } from "@testing-library/react"
+import { type ReactNode, useState } from "react"
 import { describe, expect, it } from "vitest"
 
 import { createGlobalOpenClose } from "./createGlobalOpenClose"
@@ -37,5 +37,59 @@ describe("createGlobalOpenClose", () => {
 
     act(() => result.current.close())
     expect(renders).toBe(before)
+  })
+
+  it("changes openKey on each open, even with the same args, and keeps it on close", () => {
+    const [useModal] = createGlobalOpenClose<{ id: string }>()
+    const { result } = renderHook(() => useModal(), { wrapper })
+    const args = { id: "1" }
+
+    act(() => result.current.open(args))
+    const firstKey = result.current.openKey
+
+    act(() => result.current.close())
+    expect(result.current.openKey).toBe(firstKey)
+
+    act(() => result.current.open(args))
+    expect(result.current).toMatchObject({ isOpen: true, args })
+    expect(result.current.openKey).not.toBe(firstKey)
+  })
+
+  it("changes openKey when reopened while still open", () => {
+    const [useModal] = createGlobalOpenClose()
+    const { result } = renderHook(() => useModal(), { wrapper })
+
+    act(() => result.current.open())
+    const firstKey = result.current.openKey
+
+    act(() => result.current.open())
+    expect(result.current.openKey).not.toBe(firstKey)
+  })
+
+  it("resets content keyed on openKey when reopened without closing", () => {
+    const [useModal] = createGlobalOpenClose<{ start: number }>()
+    const Counter = () => {
+      const { args } = useModal()
+      const [count, setCount] = useState(args?.start ?? 0)
+      return (
+        <button type="button" onClick={() => setCount((prev) => prev + 1)}>
+          {count}
+        </button>
+      )
+    }
+    const Host = () => {
+      const { args, openKey } = useModal()
+      return args ? <Counter key={openKey} /> : null
+    }
+    render(<Host />, { wrapper })
+    const { result } = renderHook(() => useModal(), { wrapper })
+    const args = { start: 5 }
+
+    act(() => result.current.open(args))
+    fireEvent.click(screen.getByRole("button"))
+    expect(screen.getByRole("button").textContent).toBe("6")
+
+    act(() => result.current.open(args))
+    expect(screen.getByRole("button").textContent).toBe("5")
   })
 })

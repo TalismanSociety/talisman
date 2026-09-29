@@ -27,7 +27,6 @@ import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
@@ -36,6 +35,7 @@ import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSu
 import { getBittensorFullExitUnstake } from "../utils/fullExitUnstake"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
 import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
+import { useBittensorBondModal } from "./useBittensorBondModal"
 import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
 import {
   type BittensorStakingPosition,
@@ -90,18 +90,11 @@ const DEFAULT_STATE: WizardState = {
   withClaim: true,
 }
 
-const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
-
-export const useResetBittensorBondWizard = () => {
-  const reset = useCallback((init: BittensorStakingWizardOpenOptions) => {
-    const stakeType =
-      typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
-    const step =
-      init.stakeDirection === "bond" && typeof init.netuid !== "number" ? "select-subnet" : "form"
-    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType, step }))
-  }, [])
-
-  return reset
+const getInitialWizardState = (init: BittensorStakingWizardOpenOptions): WizardState => {
+  const stakeType = typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
+  const step =
+    init.stakeDirection === "bond" && typeof init.netuid !== "number" ? "select-subnet" : "form"
+  return Object.assign({}, DEFAULT_STATE, init, { stakeType, step })
 }
 
 const useBalance = (
@@ -135,6 +128,7 @@ const useBittensorBondWizardProvider = () => {
   const { genericEvent } = useAnalytics()
   const allBalances = useBalances("owned")
   const remoteConfig = useRemoteConfig()
+  const { args } = useBittensorBondModal()
 
   const [
     {
@@ -152,7 +146,7 @@ const useBittensorBondWizardProvider = () => {
     },
     setWizardState,
   ] = useState(() => {
-    const defValue = wizardOpenState$.getValue()
+    const defValue = args ? getInitialWizardState(args) : DEFAULT_STATE
 
     // Synchronously adjust the default set to have the best hotkey for the user
     if (
@@ -363,7 +357,7 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const isHotkeyAutoSelected = useRef(!wizardOpenState$.getValue().hotkey)
+  const isHotkeyAutoSelected = useRef(!args?.hotkey)
 
   const setHotkey = useCallback((hotkey: string) => {
     isHotkeyAutoSelected.current = false

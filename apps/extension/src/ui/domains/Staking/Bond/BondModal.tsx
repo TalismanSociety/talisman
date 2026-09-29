@@ -11,7 +11,7 @@ import { BondFollowUp } from "./BondFollowUp"
 import { BondForm } from "./BondForm"
 import { BondReview } from "./BondReview"
 import { useBondModal } from "./hooks/useBondModal"
-import { useBondWizard } from "./hooks/useBondWizard"
+import { BondWizardProvider, useBondWizard } from "./hooks/useBondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
@@ -55,12 +55,16 @@ const ModalBody = () => {
 }
 
 export const BondModal = () => {
-  const { isOpen, close } = useBondModal()
+  const { isOpen, args, openKey, close } = useBondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="NomPoolBondModal" />}>
-        <ModalContent ModalHeader={ModalHeader} ModalBody={ModalBody} />
+        {args && (
+          <BondWizardProvider key={openKey}>
+            <ModalContent ModalHeader={ModalHeader} ModalBody={ModalBody} />
+          </BondWizardProvider>
+        )}
       </Suspense>
     </Modal>
   )

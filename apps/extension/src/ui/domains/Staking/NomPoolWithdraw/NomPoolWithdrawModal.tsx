@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { NomPoolWithdrawFollowUp } from "./NomPoolWithdrawFollowUp"
 import { NomPoolWithdrawReview } from "./NomPoolWithdrawReview"
 import { useNomPoolWithdrawModal } from "./useNomPoolWithdrawModal"
-import { useNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"
+import { NomPoolWithdrawWizardProvider, useNomPoolWithdrawWizard } from "./useNomPoolWithdrawWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
@@ -59,12 +59,16 @@ const Content = () => (
 )
 
 export const NomPoolWithdrawModal = () => {
-  const { isOpen, close } = useNomPoolWithdrawModal()
+  const { isOpen, args, openKey, close } = useNomPoolWithdrawModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="NomPoolWithdrawModal" />}>
-        <Content />
+        {args && (
+          <NomPoolWithdrawWizardProvider key={openKey}>
+            <Content />
+          </NomPoolWithdrawWizardProvider>
+        )}
       </Suspense>
     </Modal>
   )

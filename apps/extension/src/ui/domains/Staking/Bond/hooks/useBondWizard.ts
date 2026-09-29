@@ -1,21 +1,22 @@
 import type { Address } from "@core/types/base"
-import { bind } from "@react-rxjs/core"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { type SetStateAction, useCallback, useEffect, useMemo } from "react"
+import { provideContext } from "@ui/util/provideContext"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useGetStakeInfo } from "../../shared/useGetStakeInfo"
+import { useBondModal } from "./useBondModal"
 
 type WizardStep = "form" | "review" | "follow-up"
 
@@ -26,7 +27,6 @@ type WizardState = {
   poolId: number | string | null
   plancks: bigint | null
   displayMode: "token" | "fiat"
-  isAccountPickerOpen: boolean
   hash: Hex | null
   isDefaultOption: boolean
 }
@@ -38,56 +38,23 @@ const DEFAULT_STATE: WizardState = {
   poolId: 12,
   plancks: null,
   displayMode: "token",
-  isAccountPickerOpen: false,
   hash: null,
   isDefaultOption: true,
 }
 
-const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
-
-const setWizardState = (state: SetStateAction<WizardState>) => {
-  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
-  else wizardState$.next(state)
-}
-
-const [useWizardState] = bind(wizardState$)
-
-const useInnerOpenClose = (key: "isAccountPickerOpen") => {
-  const state = useWizardState()
-  const isOpen = state[key]
-
-  const setIsOpen = useCallback(
-    (value: boolean) => setWizardState((prev) => ({ ...prev, [key]: value })),
-    [key]
-  )
-
-  const open = useCallback(() => setIsOpen(true), [setIsOpen])
-  const close = useCallback(() => setIsOpen(false), [setIsOpen])
-
-  const toggle = useCallback(
-    () => setWizardState((prev) => ({ ...prev, [key]: !prev[key] })),
-    [key]
-  )
-
-  return { isOpen, setIsOpen, open, close, toggle }
-}
-
-export const useResetNomPoolBondWizard = () => {
-  const reset = useCallback(
-    (init: Pick<WizardState, "address" | "tokenId" | "poolId" | "step">) =>
-      setWizardState({ ...DEFAULT_STATE, ...init }),
-    []
-  )
-
-  return reset
-}
-
-export const useBondWizard = () => {
+const useBondWizardProvider = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
+  const { args } = useBondModal()
 
-  const { poolId, step, displayMode, hash, tokenId, address, plancks, isDefaultOption } =
-    useWizardState()
+  const [
+    { poolId, step, displayMode, hash, tokenId, address, plancks, isDefaultOption },
+    setWizardState,
+  ] = useState<WizardState>(() =>
+    args
+      ? { ...DEFAULT_STATE, address: args.address, tokenId: args.tokenId, poolId: args.poolId }
+      : DEFAULT_STATE
+  )
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -95,7 +62,7 @@ export const useBondWizard = () => {
   const feeToken = useFeeToken(token?.id)
   const tokenRates = useTokenRates(tokenId)
   const existentialDeposit = useExistentialDeposit(token?.id)
-  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
+  const accountPicker = useOpenClose()
 
   const { data: sapi } = useScaleApi(token?.networkId)
 
@@ -308,3 +275,5 @@ export const useBondWizard = () => {
     onSubmitted,
   }
 }
+
+export const [BondWizardProvider, useBondWizard] = provideContext(useBondWizardProvider)

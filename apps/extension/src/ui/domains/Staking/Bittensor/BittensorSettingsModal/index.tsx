@@ -10,7 +10,7 @@ import { useBittensorSettingsModal } from "./hooks/useBittensorSettingsModal"
 import { BittensorSettingsWizardProvider } from "./hooks/useBittensorSettingsWizard"
 
 export const BittensorSettingsModal = () => {
-  const { isOpen, close } = useBittensorSettingsModal()
+  const { isOpen, args, openKey, close } = useBittensorSettingsModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
@@ -21,11 +21,13 @@ export const BittensorSettingsModal = () => {
           !IS_POPUP && "rounded border border-grey-850"
         )}
       >
-        <BittensorSettingsWizardProvider>
-          <Suspense fallback={<SuspenseTracker name="BittensorSettingsModal" />}>
-            <BittensorSettingsModalRouter />
-          </Suspense>
-        </BittensorSettingsWizardProvider>
+        {args && (
+          <BittensorSettingsWizardProvider key={openKey}>
+            <Suspense fallback={<SuspenseTracker name="BittensorSettingsModal" />}>
+              <BittensorSettingsModalRouter />
+            </Suspense>
+          </BittensorSettingsWizardProvider>
+        )}
       </div>
     </Modal>
   )

@@ -6,11 +6,11 @@ import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 
 import { useBittensorSettingsPayload } from "../../hooks/useBittensorSettingsPayload"
 import { BITTENSOR_NETWORK_ID } from "../constants"
+import { useBittensorSettingsModal } from "./useBittensorSettingsModal"
 
 export type BittensorSettingsStep = "settings" | "follow-up"
 
@@ -21,7 +21,6 @@ type WizardState = {
   hash: Hex | null
   /** target accept-locked-alpha state (spec 421); null until seeded from chain */
   selectedAcceptLockedAlpha: boolean | null
-  onSubmittedCallback: (() => void) | null
 }
 
 export type BittensorSettingsOpenOptions = {
@@ -37,30 +36,23 @@ const DEFAULT_STATE: WizardState = {
   address: null,
   hash: null,
   selectedAcceptLockedAlpha: null,
-  onSubmittedCallback: null,
-}
-
-const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
-
-export const useResetBittensorSettingsWizard = () => {
-  const reset = useCallback((init: BittensorSettingsOpenOptions) => {
-    wizardOpenState$.next({
-      ...DEFAULT_STATE,
-      networkId: init.networkId,
-      address: init.address,
-      step: init.step ?? "settings",
-      onSubmittedCallback: init.onSubmitted ?? null,
-    })
-  }, [])
-
-  return reset
 }
 
 const useBittensorSettingsWizardProvider = () => {
-  const [
-    { networkId, address, step, hash, selectedAcceptLockedAlpha, onSubmittedCallback },
-    setWizardState,
-  ] = useState(() => wizardOpenState$.getValue())
+  const { args } = useBittensorSettingsModal()
+  const onSubmittedCallback = args?.onSubmitted
+
+  const [{ networkId, address, step, hash, selectedAcceptLockedAlpha }, setWizardState] =
+    useState<WizardState>(() =>
+      args
+        ? {
+            ...DEFAULT_STATE,
+            networkId: args.networkId,
+            address: args.address,
+            step: args.step ?? "settings",
+          }
+        : DEFAULT_STATE
+    )
 
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const account = useAccountByAddress(address)

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { UnbondFollowUp } from "./UnbondFollowUp"
 import { UnbondReview } from "./UnbondReview"
 import { useUnbondModal } from "./useUnbondModal"
-import { useUnbondWizard } from "./useUnbondWizard"
+import { UnbondWizardProvider, useUnbondWizard } from "./useUnbondWizard"
 
 const ModalHeader = () => {
   const { t } = useTranslation()
@@ -59,12 +59,16 @@ const Content = () => (
 )
 
 export const UnbondModal = () => {
-  const { isOpen, close } = useUnbondModal()
+  const { isOpen, args, openKey, close } = useUnbondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="UnbondModal" />}>
-        <Content />
+        {args && (
+          <UnbondWizardProvider key={openKey}>
+            <Content />
+          </UnbondWizardProvider>
+        )}
       </Suspense>
     </Modal>
   )
