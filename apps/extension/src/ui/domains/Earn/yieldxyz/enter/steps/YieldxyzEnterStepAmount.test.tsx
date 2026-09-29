@@ -40,10 +40,6 @@ vi.mock("@ui/components/Button", () => ({
   ),
 }))
 
-vi.mock("@ui/components/WizardModalDialog", () => ({
-  WizardModalDialog: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}))
-
 vi.mock("@ui/domains/Account/AccountPillButton", () => ({ AccountPillButton: () => null }))
 vi.mock("@ui/domains/Asset/TokensAndFiat", () => ({ TokensAndFiat: () => null }))
 vi.mock("@ui/domains/Earn/shared/AmountEdit", () => ({

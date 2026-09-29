@@ -30,15 +30,6 @@ vi.mock("@ui/components/Button", () => ({
   ),
 }))
 
-vi.mock("@ui/components/ModalDialog", () => ({
-  ModalDialog: ({ title, children }: { title?: ReactNode; children: ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {children}
-    </div>
-  ),
-}))
-
 vi.mock("@ui/domains/Sign/risk-analysis/context", () => ({
   RiskAnalysisProvider: ({ children }: { children: ReactNode }) => children,
 }))
