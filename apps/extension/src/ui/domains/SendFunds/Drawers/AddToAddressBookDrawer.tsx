@@ -157,14 +157,7 @@ const AddToAddressBookDrawerForm: FC<{
           <Button fullWidth onClick={onClose}>
             {t("Cancel")}
           </Button>
-          <Button
-            className="disabled:bg-grey-750"
-            type="submit"
-            fullWidth
-            primary
-            processing={isSubmitting}
-            disabled={!isValid}
-          >
+          <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
             {t("Save")}
           </Button>
         </footer>

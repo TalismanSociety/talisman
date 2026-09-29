@@ -177,7 +177,7 @@ const EditAllowanceForm: FC<{
             after={
               <div className="flex items-center gap-4">
                 <span className="text-body-disabled">{token.symbol}</span>
-                <PillButton disabled={!max} onClick={handleMaxClick} className="hover:bg-grey-750">
+                <PillButton disabled={!max} onClick={handleMaxClick}>
                   {t("Max")}
                 </PillButton>
               </div>
@@ -189,13 +189,7 @@ const EditAllowanceForm: FC<{
         </FormFieldContainer>
         <div className="mt-4 grid grid-cols-2 gap-12">
           <Button onClick={onCancel}>{t("Cancel")}</Button>
-          <Button
-            type="submit"
-            className="disabled:bg-grey-750"
-            primary
-            disabled={!isValid || !isDirty}
-            processing={isSubmitting}
-          >
+          <Button type="submit" primary disabled={!isValid || !isDirty} processing={isSubmitting}>
             {t("Set Limit")}
           </Button>
         </div>
