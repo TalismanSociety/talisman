@@ -54,7 +54,7 @@ export const useYieldxyzAction = ({ type, address, yieldId, args }: UseYieldxyzA
 
       setState({ isLoading: false, error: null, action: fetchedAction })
     } catch (err) {
-      log.error("Failed to fetch Yieldxyz enter action", err)
+      log.error(`Failed to fetch Yieldxyz ${type} action`, err)
       setState({ isLoading: false, error: err as Error, action: null })
       throw err
     }
@@ -105,7 +105,7 @@ export const useYieldxyzAction = ({ type, address, yieldId, args }: UseYieldxyzA
         log.error("Failed to submit Yieldxyz transaction", err)
         notify({
           type: "error",
-          title: "Error",
+          title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
         })
         setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
