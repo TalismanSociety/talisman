@@ -7,6 +7,7 @@ import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { notify } from "@ui/components/Notifications"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
@@ -35,7 +36,7 @@ const NoAccountWarning = ({
   const { t } = useTranslation()
   return (
     <Drawer isOpen anchor="bottom" containerId="main">
-      <div className="flex flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
+      <DrawerContent className="flex flex-col gap-8">
         <div className="w-full text-center">
           <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
@@ -53,7 +54,7 @@ const NoAccountWarning = ({
             {t("Yes")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

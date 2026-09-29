@@ -2,6 +2,7 @@ import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -42,7 +43,7 @@ const ConfirmDrawer = ({
 
   return (
     <Drawer isOpen={isOpen} anchor="bottom">
-      <div className="items-center rounded-t-xl bg-grey-800 p-12 pt-12">
+      <DrawerContent>
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
             <AlertTriangleIcon className="text-[3rem] text-brand-orange" />
@@ -78,7 +79,7 @@ const ConfirmDrawer = ({
             {t("Cancel")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }
