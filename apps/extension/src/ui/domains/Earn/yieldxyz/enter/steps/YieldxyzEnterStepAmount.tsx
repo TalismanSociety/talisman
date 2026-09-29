@@ -1,9 +1,11 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
+import { TransactionError } from "@ui/domains/Earn/shared/TransactionError"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -24,23 +26,30 @@ import { EarnDisclaimerDrawer } from "./EarnDisclaimerDrawer"
 export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { address, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
+  const { address, amountIn, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
     useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountIn: bigint | null
+    message: string
+  } | null>(null)
   const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
   const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
   const disclaimerDrawer = useOpenClose()
 
   const proceedToReview = useCallback(async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      setCreateActionError({ amountIn, message: getErrorMessage(err, t("Unknown error")) })
     } finally {
       setProcessing(false)
     }
-  }, [createAction, goTo])
+  }, [amountIn, createAction, goTo, t])
 
   const handleSubmit = async () => {
     if (!hasAckDisclaimer) {
@@ -125,6 +134,9 @@ export const YieldxyzEnterStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
+        {createActionError?.amountIn === amountIn && (
+          <TransactionError error={createActionError.message} />
+        )}
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>

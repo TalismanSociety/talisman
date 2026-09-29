@@ -1,10 +1,12 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
+import { TransactionError } from "@ui/domains/Earn/shared/TransactionError"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -23,15 +25,23 @@ import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
 export const YieldxyzExitStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzExitModal()
-  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzExitWizard()
+  const { position, amountOut, goTo, canCreateAction, createAction, network } =
+    useYieldxyzExitWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountOut: bigint | null
+    message: string
+  } | null>(null)
 
   const handleSubmit = async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      setCreateActionError({ amountOut, message: getErrorMessage(err, t("Unknown error")) })
     } finally {
       setProcessing(false)
     }
@@ -113,6 +123,9 @@ export const YieldxyzExitStepAmount = () => {
             )}
           </FormFieldSet>
         </div>
+        {createActionError?.amountOut === amountOut && (
+          <TransactionError error={createActionError.message} />
+        )}
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>
