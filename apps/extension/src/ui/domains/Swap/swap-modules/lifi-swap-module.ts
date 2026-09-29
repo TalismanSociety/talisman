@@ -37,6 +37,7 @@ import {
   type SupportedSwapProtocol,
   type SwapModule,
   type SwapModuleTransaction,
+  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
@@ -471,7 +472,7 @@ const getRouteQuote = async (
     amount: BigNumber(step.estimate.fromAmount.toString())
       .times(10 ** -fromAsset.decimals)
       .times(Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000),
-    name: "Talisman Fee",
+    name: TALISMAN_FEE_NAME,
     tokenId: fromTokenId,
   })
 

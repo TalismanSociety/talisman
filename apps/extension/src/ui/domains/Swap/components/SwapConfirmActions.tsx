@@ -51,7 +51,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
-import { getAdditionalFeePlanck, SwapAdditionalFees } from "./SwapAdditionalFees"
+import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -198,6 +198,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       })
 
       if (signal.aborted) throw new Error("Aborted")
+
+      // the confirm screen shows the selected quote's output, the exchange must not deliver less
+      if (
+        exchange?.outputAmountBN !== undefined &&
+        selectedQuote &&
+        exchange.outputAmountBN < selectedQuote.outputAmountBN
+      )
+        throw new Error("Please select the quote again")
 
       // For modules that don't create an exchange (e.g. LI.FI returns null) but support
       // slippage, fetch a fresh quote so the route reflects the user's current slippage.
@@ -677,7 +685,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
-          <SwapAdditionalFees
+          <SwapOtherFees
             fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
             isLoading={isExchangeLoading}
           />

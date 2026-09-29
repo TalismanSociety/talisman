@@ -49,7 +49,8 @@
     "ASSET_HUB_MIGRATION_BANNER": false,
     "BITTENSOR_MEV_SHIELD": true,
     "QUICK_UNLOCK": true,
-    "SWAPS_FOREVERMONEY_TAO_BRIDGE": true,
+    "SWAPS_FOREVERMONEY_TAO_BRIDGE": false,
+    "SWAPS_FOREVERMONEY_TAO_BRIDGE_V2": true,
     "BLOCKAID_DAPP_SCAN_V2": true,
     "BLOCKAID_TOKEN_SCAN": true
   },
@@ -272,6 +273,10 @@
     },
     "lifi": {
       "solanaChainId": 1151111081099710
+    },
+    "forevermoney": {
+      "feeRecipients": {},
+      "feeBps": 30
     }
   },
   "nominationPools": {

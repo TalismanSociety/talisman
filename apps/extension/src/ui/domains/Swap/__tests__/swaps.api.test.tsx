@@ -120,7 +120,7 @@ describe("useSwapAssets", () => {
     const { result } = renderHook(() => useSwapAssets(null), { wrapper })
 
     await waitFor(() => expect(result.current.isLoadingFromAssets).toBe(false))
-    expect(mockUseFeatureFlag).toHaveBeenCalledWith("SWAPS_FOREVERMONEY_TAO_BRIDGE")
+    expect(mockUseFeatureFlag).toHaveBeenCalledWith("SWAPS_FOREVERMONEY_TAO_BRIDGE_V2")
     expect(getFromAssetsMock).not.toHaveBeenCalledWith("forevermoney", expect.anything())
     expect(getFromAssetsMock).toHaveBeenCalledWith("lifi", expect.anything())
   })
