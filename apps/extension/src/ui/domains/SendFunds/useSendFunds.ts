@@ -119,7 +119,6 @@ export type ToWarning = "AZERO_ID" | undefined
 const useSendFundsProvider = () => {
   const { t } = useTranslation()
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
-  const [isLocked, setIsLocked] = useState(false)
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
@@ -540,8 +539,6 @@ const useSendFundsProvider = () => {
     isLoading,
     error,
     errorDetails,
-    isLocked,
-    setIsLocked,
     isValid,
     tokensToBeReaped,
     isEstimatingMaxAmount,

@@ -9,7 +9,7 @@ import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { getFrontEndSolanaConnector, useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import type { SendFundsTransactionProps } from "./types"
@@ -20,7 +20,6 @@ export const useSendFundsTransactionSol = ({
   to,
   value = "0", // default to "0" to force fee estimation
 }: SendFundsTransactionProps) => {
-  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "ethereum")
   const feeToken = useToken(network?.nativeTokenId)
@@ -33,7 +32,7 @@ export const useSendFundsTransactionSol = ({
   const qEstimatedFee = useGetSolanaFeeEstimate({
     networkId: token?.networkId,
     transaction: qPayload.data,
-    refetchInterval: !isLocked && 6_000, // refresh fee every 6 seconds
+    refetchInterval: 6_000, // refresh fee every 6 seconds
   })
 
   const maxAmount = useMemo(() => {
@@ -81,8 +80,6 @@ export const useSendFundsTransactionSol = ({
     estimatedFee: qEstimatedFee.data != null ? String(qEstimatedFee.data) : null,
     feeTokenId: feeToken?.id,
     riskAnalysis,
-
-    setIsLocked,
   }
 }
 
