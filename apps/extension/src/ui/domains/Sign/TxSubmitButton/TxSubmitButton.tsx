@@ -2,6 +2,7 @@ import { useRiskAnalysisSubmitGate } from "@ui/domains/Sign/risk-analysis/useRis
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
+import { TxSubmitButtonBtc } from "./TxSubmitButtonBtc"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
@@ -70,6 +71,16 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
     case "solana":
       return (
         <TxSubmitButtonSol
+          containerId={containerId}
+          label={label}
+          tx={tx}
+          onSubmit={onSubmit}
+          className={className}
+        />
+      )
+    case "bitcoin":
+      return (
+        <TxSubmitButtonBtc
           containerId={containerId}
           label={label}
           tx={tx}

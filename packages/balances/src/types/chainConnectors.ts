@@ -1,4 +1,5 @@
 import type {
+  IChainConnectorBtc,
   IChainConnectorDot,
   IChainConnectorEth,
   IChainConnectorSol,
@@ -8,4 +9,5 @@ export type ChainConnectors = {
   substrate?: IChainConnectorDot
   evm?: IChainConnectorEth
   solana?: IChainConnectorSol
+  bitcoin?: IChainConnectorBtc
 }

@@ -348,6 +348,7 @@ function createPackageSourceAliases(): Alias[] {
   return [
     // Map workspace packages to source for hot reload in dev (exact matches)
     { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
+    { find: "@talismn/bitcoin", replacement: resolve(packagesDir, "bitcoin/src") },
     {
       find: "@talismn/chain-connectors",
       replacement: resolve(packagesDir, "chain-connectors/src"),
@@ -686,8 +687,9 @@ export default defineConfig({
           },
         }),
         // Buffer and process globals, still used by Ledger, MetaMask and ethereumjs libs
+        // stream: ledger-bitcoin pins @bitcoinerlab/descriptors 1, whose bs58check 2 hashes via cipher-base
         nodePolyfills({
-          include: ["buffer", "process"],
+          include: ["buffer", "process", "stream"],
           globals: {
             Buffer: true,
             global: true,

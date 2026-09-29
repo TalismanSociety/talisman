@@ -162,7 +162,12 @@ const getHighestLocalNonce = async (
 
   let highest = -1
   for (const tx of pendingTxs) {
-    if (tx.platform !== "solana" && typeof tx.nonce === "number" && tx.nonce > highest) {
+    if (
+      tx.platform !== "solana" &&
+      tx.platform !== "bitcoin" &&
+      typeof tx.nonce === "number" &&
+      tx.nonce > highest
+    ) {
       highest = tx.nonce
     }
   }

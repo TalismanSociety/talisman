@@ -13,6 +13,8 @@ export const isAccountPlatformCompatibleWithNetwork = (
       return platform === "ethereum"
     case "solana":
       return platform === "solana"
+    case "bitcoin":
+      return platform === "bitcoin"
     case "polkadot": {
       switch (network.account) {
         case "secp256k1":

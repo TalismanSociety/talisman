@@ -36,6 +36,7 @@
     "@solana-program/token": "0.16.1",
     "@solana-program/token-2022": "0.16.1",
     "@solana/kit": "8.3.0",
+    "@talismn/bitcoin": "workspace:*",
     "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/crypto": "workspace:*",

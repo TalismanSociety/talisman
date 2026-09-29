@@ -2,13 +2,16 @@
 
 import type {
   AccountContact,
+  AccountHdBitcoin,
   AccountKeypair,
+  AccountLedgerBitcoin,
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
   AccountLedgerSolana,
   AccountPolkadotVault,
   AccountSignet,
   AccountWatchOnly,
+  AccountWatchOnlyBitcoin,
 } from "../types/account"
 import type { Mnemonic } from "../types/mnemonic"
 
@@ -29,3 +32,7 @@ export type AccountStorage =
   | AccountLedgerSolana
   | AccountPolkadotVault
   | AccountSignet
+  // hd-bitcoin stores no secret: child keys are re-derived from the mnemonic at sign time
+  | AccountHdBitcoin
+  | AccountLedgerBitcoin
+  | AccountWatchOnlyBitcoin

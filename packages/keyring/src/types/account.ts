@@ -67,14 +67,44 @@ export type AccountSignet = AccountBase & {
 //   address: string;
 // };
 
-// Idea: bitcoin account with UTXOs support
-// export type AccountHdBitcoin = AccountBase & {
-//   type: "hd-bitcoin";
-//   curve: KeypairCurve;
-//   mnemonicId: string;
-//   baseDerivationPath: string; // ex "m/84'/0'/0'" (change and address index will be generated dynamically when fetching keys)
-//   xPub: string;
-// };
+export type BitcoinAddressType = "p2wpkh" | "p2tr"
+
+export type BitcoinKeyPath = {
+  tree: "payments" | "ordinals"
+  change: 0 | 1
+  index: number
+}
+
+export type BitcoinAccountKeys = {
+  /** BIP84 P2WPKH tree, ex "m/84'/0'/0'" */
+  payments: { derivationPath: string; xpub: string }
+  /** BIP86 P2TR tree, ex "m/86'/0'/0'" */
+  ordinals: { derivationPath: string; xpub: string }
+}
+
+// bitcoin HD account: address = canonical payments xpub, on-chain addresses and
+// child keys are derived dynamically (never stored)
+export type AccountHdBitcoin = AccountBase & {
+  type: "hd-bitcoin"
+  mnemonicId: string
+  accountIndex: number
+  masterFingerprint: `0x${string}`
+  keys: BitcoinAccountKeys
+}
+
+export type AccountLedgerBitcoin = AccountBase & {
+  type: "ledger-bitcoin"
+  accountIndex: number
+  masterFingerprint: `0x${string}`
+  keys: BitcoinAccountKeys
+}
+
+// watches a single pasted xpub — one tree only, no ordinals counterpart
+export type AccountWatchOnlyBitcoin = AccountBase & {
+  type: "watch-only-bitcoin"
+  isPortfolio: boolean
+  addressType: BitcoinAddressType
+}
 
 // @dev: when adding a new type here, consider adding it's type to either OWNED_ACCOUNT_TYPES or EXTERNAL_ACCOUNT_TYPES in ../types/utils.ts
 export type Account =
@@ -86,5 +116,8 @@ export type Account =
   | AccountLedgerSolana
   | AccountPolkadotVault
   | AccountSignet
+  | AccountHdBitcoin
+  | AccountLedgerBitcoin
+  | AccountWatchOnlyBitcoin
 
 export type AccountType = Account["type"]

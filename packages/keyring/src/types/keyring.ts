@@ -3,12 +3,14 @@ import type { KeypairCurve } from "@talismn/crypto"
 import type {
   AccountBase,
   AccountContact,
+  AccountLedgerBitcoin,
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
   AccountLedgerSolana,
   AccountPolkadotVault,
   AccountSignet,
   AccountWatchOnly,
+  AccountWatchOnlyBitcoin,
 } from "./account"
 
 export type AddMnemonicOptions = {
@@ -22,26 +24,33 @@ export type UpdateMnemonicOptions = {
   confirmed?: boolean
 }
 
-type DeriveFromNewMnemonic = {
+type NewMnemonicSource = {
   type: "new-mnemonic"
   mnemonic: string
   mnemonicName: string
   confirmed: boolean
-  curve: KeypairCurve
-  derivationPath: string
 }
 
-type DeriveFromExistingMnemonic = {
+type ExistingMnemonicSource = {
   type: "existing-mnemonic"
   mnemonicId: string
+}
+
+export type MnemonicSource = NewMnemonicSource | ExistingMnemonicSource
+
+type DeriveFromMnemonicOptions = MnemonicSource & {
   curve: KeypairCurve
   derivationPath: string
 }
-
-type DeriveFromMnemonicOptions = DeriveFromNewMnemonic | DeriveFromExistingMnemonic
 
 export type AddAccountDeriveOptions = Omit<AccountBase, "createdAt" | "address"> &
   DeriveFromMnemonicOptions
+
+export type AddAccountBitcoinOptions = Omit<AccountBase, "createdAt" | "address"> &
+  MnemonicSource & {
+    /** defaults to the next unused index for this mnemonic */
+    accountIndex?: number
+  }
 
 export type AddAccountKeypairOptions = Omit<AccountBase, "createdAt" | "address"> & {
   curve: KeypairCurve
@@ -54,8 +63,10 @@ export type AddAccountExternalOptions =
   | Omit<AccountLedgerEthereum, "createdAt">
   | Omit<AccountLedgerPolkadot, "createdAt">
   | Omit<AccountLedgerSolana, "createdAt">
+  | Omit<AccountLedgerBitcoin, "createdAt">
   | Omit<AccountPolkadotVault, "createdAt">
   | Omit<AccountSignet, "createdAt">
+  | Omit<AccountWatchOnlyBitcoin, "createdAt">
 
 export type UpdateAccountOptions = {
   name?: string

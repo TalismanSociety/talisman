@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
 import * as yup from "yup"
-
+import { LedgerBitcoinAccountPicker } from "../../LedgerBitcoinAccountPicker"
 import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
 import { LedgerPolkadotLegacyAccountPicker } from "../../LedgerPolkadotLegacyAccountPicker"
 import { AddSubstrateLedgerAppType, type LedgerAccountDef, useAddLedgerAccount } from "./context"
@@ -262,6 +262,9 @@ export const AddLedgerSelectAccount = () => {
             derivationPathType={solDerivationPathType}
             onChange={handleAccountsChange}
           />
+        )}
+        {data.platform === "bitcoin" && (
+          <LedgerBitcoinAccountPicker name={t("Ledger Bitcoin")} onChange={handleAccountsChange} />
         )}
       </div>
       <div className="flex justify-end">

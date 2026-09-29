@@ -1,5 +1,6 @@
 import {
   type AnyMiniMetadata,
+  type BtcNetworkId,
   type ChaindataProvider,
   type DotNetworkId,
   isAccountPlatformCompatibleWithNetwork,
@@ -62,7 +63,7 @@ import {
   isEqualMiniMetadatas,
   type MiniMetadata,
 } from "./types"
-import type { TokensWithAddresses } from "./types/IBalanceModule"
+import type { BtcAccountsMeta, TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
 
@@ -155,7 +156,10 @@ export class BalancesProvider {
   }
 
   // this is the only public method
-  public getBalances$(addressesByTokenId: Record<TokenId, Address[]>): Observable<BalancesResult> {
+  public getBalances$(
+    addressesByTokenId: Record<TokenId, Address[]>,
+    options?: { btcAccounts?: BtcAccountsMeta }
+  ): Observable<BalancesResult> {
     return this.cleanupAddressesByTokenId$(addressesByTokenId).pipe(
       map(
         // split by network
@@ -182,7 +186,11 @@ export class BalancesProvider {
           ),
           results: combineLatest(
             toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
-              this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId])
+              this.getNetworkBalances$(
+                networkId,
+                addressesByTokenIdByNetworkId[networkId],
+                options?.btcAccounts
+              )
             )
           ).pipe(
             // each network is an independent emission train (per-block for substrate
@@ -220,9 +228,12 @@ export class BalancesProvider {
     )
   }
 
-  public fetchBalances(addressesByTokenId: Record<TokenId, Address[]>): Promise<IBalance[]> {
+  public fetchBalances(
+    addressesByTokenId: Record<TokenId, Address[]>,
+    options?: { btcAccounts?: BtcAccountsMeta }
+  ): Promise<IBalance[]> {
     return firstValueFrom(
-      this.getBalances$(addressesByTokenId).pipe(
+      this.getBalances$(addressesByTokenId, options).pipe(
         filter(({ status }) => status === "live"),
         map(({ balances }) => balances)
       )
@@ -235,7 +246,8 @@ export class BalancesProvider {
 
   private getNetworkBalances$(
     networkId: string,
-    addressesByTokenId: Record<TokenId, Address[]>
+    addressesByTokenId: Record<TokenId, Address[]>,
+    btcAccounts?: BtcAccountsMeta
   ): Observable<BalancesResult> {
     const network$ = this.#chaindataProvider.getNetworkById$(networkId)
     const tokensMapById$ = this.#chaindataProvider.getTokensMapById$()
@@ -274,6 +286,14 @@ export class BalancesProvider {
               }
               case "solana": {
                 return this.getSolanaNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
+              }
+              case "bitcoin": {
+                return this.getBitcoinNetworkModuleBalances$(
+                  networkId,
+                  tokensWithAddresses,
+                  mod,
+                  btcAccounts
+                )
               }
               case "polkadot": {
                 return this.getPolkadotNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
@@ -559,6 +579,80 @@ export class BalancesProvider {
                 this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
               }
             }),
+            map(
+              (results): BalancesResult => ({
+                status: "live",
+                // exclude zero balances
+                balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
+                failedBalanceIds: results.errors.map(({ tokenId, address }) =>
+                  getBalanceId({ tokenId, address })
+                ),
+              })
+            ),
+            tap((results) => {
+              this.updateStorage$(balanceIds, results)
+            }),
+            // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
+            shareReplay({ refCount: true, bufferSize: 1 }),
+            keepAlive(0)
+          )
+
+        // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
+        return defer(() =>
+          moduleBalances$.pipe(
+            startWith<BalancesResult>({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+              failedBalanceIds: [],
+            })
+          )
+        )
+      }
+    )
+  }
+
+  private getBitcoinNetworkModuleBalances$(
+    networkId: BtcNetworkId,
+    tokensWithAddresses: TokensWithAddresses,
+    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "bitcoin" }>,
+    btcAccounts?: BtcAccountsMeta
+  ): Observable<BalancesResult> {
+    return getSharedObservable(
+      `BalancesProvider.getBitcoinNetworkModuleBalances$`,
+      { networkId, mod, tokensWithAddresses, btcAccounts },
+      () => {
+        if (!tokensWithAddresses.length)
+          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
+
+        const moduleAddressesByTokenId = fromPairs(
+          tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
+        )
+
+        // all balance ids expected in result set
+        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => getBalanceId({ tokenId, address }))
+        )
+
+        if (!this.#chainConnectors.bitcoin) {
+          log.warn("[balances] no bitcoin connector for module", mod.type)
+          return defer(() =>
+            of<BalancesResult>({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+              failedBalanceIds: [],
+            })
+          )
+        }
+
+        const moduleBalances$ = mod
+          .subscribeBalances({
+            networkId,
+            tokensWithAddresses,
+            connector: this.#chainConnectors.bitcoin,
+            meta: btcAccounts,
+          })
+          .pipe(
+            catchError(() => EMPTY), // don't emit, let provider mark balances stale
             map(
               (results): BalancesResult => ({
                 status: "live",

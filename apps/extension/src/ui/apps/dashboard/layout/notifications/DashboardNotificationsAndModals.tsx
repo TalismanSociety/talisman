@@ -1,8 +1,10 @@
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { AccountCopyXpubModal } from "@ui/domains/Account/AccountCopyXpubModal"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AccountSignMessageModal } from "@ui/domains/Account/AccountSignMessageModal"
 import { DeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { AddProxyModal } from "@ui/domains/AccountProxies/AddProxy/AddProxyModal"
@@ -54,6 +56,8 @@ export const DashboardNotificationsAndModals = () => {
       {/* this actually needs renders in place at the bottom of the page */}
       <DashboardNotifications />
       {/* below components can be rendered from anywhere */}
+      <AccountCopyXpubModal />
+      <AccountSignMessageModal />
       <AccountExportModal />
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />

@@ -2,7 +2,7 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 
 // === StealthEX fee logic ===
 
-export type FeeRouteAsset = { platform: "ethereum" | "polkadot" | "solana" }
+export type FeeRouteAsset = { platform: "ethereum" | "polkadot" | "solana" | "bitcoin" }
 export type FeeRouteProps = { fromAsset: FeeRouteAsset; toAsset: FeeRouteAsset }
 
 // StealthEX always includes an affiliate fee of 0.4%
@@ -21,6 +21,8 @@ export const getStealthexTalismanTotalFee = ({ fromAsset, toAsset }: FeeRoutePro
         return 0.005 // 0.5% for sub↔sub
       case "solana":
         return 0.005 // 0.5% for sol↔sol
+      case "bitcoin":
+        return 0.005 // 0.5% for btc↔btc (unreachable in practice)
     }
   }
 
@@ -29,6 +31,7 @@ export const getStealthexTalismanTotalFee = ({ fromAsset, toAsset }: FeeRoutePro
   if (platforms.has("polkadot") && platforms.has("ethereum")) return 0.006 // 0.6% for sub↔evm
   if (platforms.has("solana") && platforms.has("ethereum")) return 0.006 // 0.6% for sol↔evm
   if (platforms.has("solana") && platforms.has("polkadot")) return 0.006 // 0.6% for sol↔sub
+  if (platforms.has("bitcoin")) return 0.006 // 0.6% for btc↔anything, aligned with other cross-platform routes
 
   return 0.01 // 1.0% fallback for unknown platforms
 }

@@ -36,6 +36,8 @@ const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind(
             }
             case "solana":
               return [network.id, t("Solana Blockchain")]
+            case "bitcoin":
+              return [network.id, t("Bitcoin Blockchain")]
           }
         })
       )
