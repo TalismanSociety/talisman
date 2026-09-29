@@ -1,4 +1,5 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
@@ -12,7 +13,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
-import { useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
@@ -24,23 +25,33 @@ import { EarnDisclaimerDrawer } from "./EarnDisclaimerDrawer"
 export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { address, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
+  const { address, amountIn, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
     useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountIn: bigint | null
+    message: string
+  } | null>(null)
   const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
   const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
   const disclaimerDrawer = useOpenClose()
 
+  if (createActionError && (createActionError.amountIn !== amountIn || !canCreateAction))
+    setCreateActionError(null)
+
   const proceedToReview = useCallback(async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      setCreateActionError({ amountIn, message: getErrorMessage(err, t("Unknown error")) })
     } finally {
       setProcessing(false)
     }
-  }, [createAction, goTo])
+  }, [amountIn, createAction, goTo, t])
 
   const handleSubmit = async () => {
     if (!hasAckDisclaimer) {
@@ -70,7 +81,7 @@ export const YieldxyzEnterStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <DepositAmountEdit />
+          <DepositAmountEdit createActionError={createActionError?.message} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -199,7 +210,7 @@ const NetworkDisplay = () => {
   )
 }
 
-const DepositAmountEdit = () => {
+const DepositAmountEdit: FC<{ createActionError?: string }> = ({ createActionError }) => {
   const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
     useYieldxyzEnterWizard()
 
@@ -211,7 +222,7 @@ const DepositAmountEdit = () => {
       value={amountIn}
       onValueChanged={onAmountInChanged}
       onMaxClick={setMaxAmountIn}
-      error={validationError}
+      error={validationError ?? createActionError}
     />
   )
 }

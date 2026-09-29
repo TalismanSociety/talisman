@@ -1,4 +1,5 @@
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -11,7 +12,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { isEqual } from "lodash-es"
-import { useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
@@ -23,15 +24,26 @@ import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
 export const YieldxyzExitStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzExitModal()
-  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzExitWizard()
+  const { position, amountOut, goTo, canCreateAction, createAction, network } =
+    useYieldxyzExitWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountOut: bigint | null
+    message: string
+  } | null>(null)
+
+  if (createActionError && (createActionError.amountOut !== amountOut || !canCreateAction))
+    setCreateActionError(null)
 
   const handleSubmit = async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      setCreateActionError({ amountOut, message: getErrorMessage(err, t("Unknown error")) })
     } finally {
       setProcessing(false)
     }
@@ -56,7 +68,7 @@ export const YieldxyzExitStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <ExitAmountEdit />
+          <ExitAmountEdit createActionError={createActionError?.message} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -178,7 +190,7 @@ const NetworkDisplay = () => {
   )
 }
 
-const ExitAmountEdit = () => {
+const ExitAmountEdit: FC<{ createActionError?: string }> = ({ createActionError }) => {
   const { position, amountOut, validationError, onAmountOutChanged, setMaxAmountOut } =
     useYieldxyzExitWizard()
 
@@ -205,7 +217,7 @@ const ExitAmountEdit = () => {
       value={amountOut}
       onValueChanged={onAmountOutChanged}
       onMaxClick={setMaxAmountOut}
-      error={validationError}
+      error={validationError ?? createActionError}
     />
   )
 }
