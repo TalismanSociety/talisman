@@ -38,4 +38,31 @@ describe("createGlobalOpenClose", () => {
     act(() => result.current.close())
     expect(renders).toBe(before)
   })
+
+  it("changes openKey on each open, even with the same args, and keeps it on close", () => {
+    const [useModal] = createGlobalOpenClose<{ id: string }>()
+    const { result } = renderHook(() => useModal(), { wrapper })
+    const args = { id: "1" }
+
+    act(() => result.current.open(args))
+    const firstKey = result.current.openKey
+
+    act(() => result.current.close())
+    expect(result.current.openKey).toBe(firstKey)
+
+    act(() => result.current.open(args))
+    expect(result.current).toMatchObject({ isOpen: true, args })
+    expect(result.current.openKey).not.toBe(firstKey)
+  })
+
+  it("changes openKey when reopened while still open", () => {
+    const [useModal] = createGlobalOpenClose()
+    const { result } = renderHook(() => useModal(), { wrapper })
+
+    act(() => result.current.open())
+    const firstKey = result.current.openKey
+
+    act(() => result.current.open())
+    expect(result.current.openKey).not.toBe(firstKey)
+  })
 })
