@@ -2,6 +2,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
@@ -63,7 +64,7 @@ export const SeekGetFeeDiscountsDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={onDismiss}>
-      <div className="flex w-full flex-col items-center gap-12 rounded-t-xl bg-grey-850 p-12">
+      <DrawerContent className="flex flex-col items-center gap-12">
         <div className="flex w-full items-center justify-between">
           <div className="flex-1 text-center font-bold text-body">{t("Get Fee Discounts")}</div>
           <button type="button" className="ml-auto" onClick={handleDismiss} aria-label="Close">
@@ -149,7 +150,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             {t("Buy")} {tokenSymbol}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

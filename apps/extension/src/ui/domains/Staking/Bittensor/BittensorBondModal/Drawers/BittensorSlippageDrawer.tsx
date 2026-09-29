@@ -1,4 +1,5 @@
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,9 +22,9 @@ const Content: FC<{ netuid: number | null; onClose: () => void }> = ({ netuid, o
   const { t } = useTranslation()
 
   return (
-    <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-black-secondary p-12">
+    <DrawerContent className="flex flex-col items-center gap-4">
       <div className="pb-8 font-bold text-body">{t("Slippage Tolerance")}</div>
-      <BittensorSlippageForm netuid={netuid} onClose={onClose} inputContainerClassName="bg-black" />
-    </div>
+      <BittensorSlippageForm netuid={netuid} onClose={onClose} />
+    </DrawerContent>
   )
 }
