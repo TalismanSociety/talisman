@@ -65,6 +65,12 @@ if (check("extension service worker is running", !!worker, worker?.url())) {
     `running "${versionName}", HEAD ${head}`
   )
 }
+const onboarded =
+  !!worker &&
+  (await worker.evaluate(() =>
+    chrome.storage.local.get("app").then(({ app }) => app?.onboarded)
+  )) === "TRUE"
+check("wallet is onboarded", onboarded, onboarded ? "" : "fresh profile: onboard it first")
 
 const page = await context.newPage()
 const failedModules = []
@@ -84,14 +90,25 @@ check(
   rendered,
   rendered ? "" : failedModules.join(", ") || "empty #root after 45s"
 )
-if (rendered) {
-  const onboarded = !page.url().includes("onboarding.html")
-  check("wallet is onboarded", onboarded, onboarded ? "" : "redirected to onboarding.html")
-  const locked = await page.getByText("Please unlock the Talisman").isVisible()
+if (rendered && onboarded) {
+  const state = await Promise.race([
+    page
+      .getByTestId("top-actions-buttons")
+      .waitFor({ timeout: 45_000 })
+      .then(() => "unlocked"),
+    page
+      .getByText("Please unlock the Talisman")
+      .waitFor({ timeout: 45_000 })
+      .then(() => "locked"),
+  ]).catch(() => "unknown")
   check(
     "wallet is unlocked",
-    !locked,
-    locked ? "set PASSWORD in apps/extension/.env, or unlock in the popup" : ""
+    state === "unlocked",
+    state === "locked"
+      ? "set PASSWORD in apps/extension/.env, or unlock in the popup"
+      : state === "unknown"
+        ? "neither the portfolio nor the lock screen showed within 45s"
+        : ""
   )
 }
 await page.close()
