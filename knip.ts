@@ -36,7 +36,10 @@ const config: KnipConfig = {
   },
 
   workspaces: {
-    ".": {},
+    ".": {
+      // CLI helpers of the verify agent skill
+      entry: [".claude/skills/verify/bin/*.mjs"],
+    },
 
     // Browser extension app (WXT — no native Knip plugin, needs manual entry config)
     "apps/extension": {
