@@ -5,6 +5,5 @@ export type SendFundsTransactionProps = {
   value: string | undefined
   sendMax: boolean
   allowReap: boolean
-  /** freezes the EVM transaction, the Solana fee and the Polkadot tip while the payload is out for signing */
-  isLocked?: boolean
+  isLocked: boolean
 }

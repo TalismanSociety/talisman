@@ -5,6 +5,7 @@ import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { WithTooltip } from "@ui/components/WithTooltip"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import {
@@ -18,7 +19,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -33,7 +33,6 @@ import {
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
-import { useLockedValue } from "./hooks/useLockedValue"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
   ExternalAddressWarningProvider,

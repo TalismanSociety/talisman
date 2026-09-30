@@ -8,13 +8,14 @@ import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
-import { useReportPayloadLock } from "@ui/domains/Sign/TxSubmitButton/useReportPayloadLock"
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
+import { type PayloadLockListener, useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
@@ -45,7 +46,7 @@ type LockedInputs = {
 
 const useLockedInputs = (
   { payload, shortMetadata, txInfo, txMode }: LockedInputs,
-  onLockChange: ((isLocked: boolean) => void) | undefined
+  onPayloadLockChange?: PayloadLockListener
 ) => {
   const memoizedInputs = useMemo(
     () => ({
@@ -58,9 +59,9 @@ const useLockedInputs = (
   )
 
   const [isLocked, setIsLockedState] = useState(false)
-  const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
+  const lockedInputs = useLockedValue<LockedInputs>(memoizedInputs, isLocked)
 
-  const reportPayloadLock = useReportPayloadLock(onLockChange)
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
 
   const setIsLocked = useCallback(
     (locked: boolean) => {
@@ -69,10 +70,6 @@ const useLockedInputs = (
     },
     [reportPayloadLock]
   )
-
-  useEffect(() => {
-    if (!isLocked) setLockedInputs(memoizedInputs)
-  }, [isLocked, memoizedInputs])
 
   return { setIsLocked, lockedInputs }
 }
@@ -90,7 +87,7 @@ type SapiSendButtonProps = {
   onSubmitted: (hash: Hex, innerHash?: Hex) => void
   mode?: ScaleApiSubmitMode
   checkPassword?: boolean
-  onPayloadLockChange?: (isLocked: boolean) => void
+  onPayloadLockChange?: PayloadLockListener
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -238,7 +235,6 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   mode,
   color,
   checkPassword,
-  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -248,14 +244,11 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   const isPasswordDismissedRef = useRef(false)
 
   // Lock inputs when password drawer opens to prevent stale payload submission
-  const { lockedInputs, setIsLocked } = useLockedInputs(
-    {
-      payload,
-      txInfo,
-      txMode: mode,
-    },
-    onPayloadLockChange
-  )
+  const { lockedInputs, setIsLocked } = useLockedInputs({
+    payload,
+    txInfo,
+    txMode: mode,
+  })
 
   const handleSubmit = useCallback(async () => {
     const submitPayload = checkPassword ? lockedInputs.payload : payload

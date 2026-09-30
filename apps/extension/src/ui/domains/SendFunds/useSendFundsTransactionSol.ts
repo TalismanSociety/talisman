@@ -19,7 +19,7 @@ export const useSendFundsTransactionSol = ({
   from,
   to,
   value = "0", // default to "0" to force fee estimation
-  isLocked = false,
+  isLocked,
 }: SendFundsTransactionProps) => {
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "ethereum")

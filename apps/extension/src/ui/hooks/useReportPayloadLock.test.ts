@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react"
+import { useLayoutEffect } from "react"
 import { describe, expect, it, vi } from "vitest"
 
 import { useReportPayloadLock } from "./useReportPayloadLock"
@@ -29,5 +30,15 @@ describe("useReportPayloadLock", () => {
     lateReport(false)
 
     expect(isLocked).toBe(true)
+  })
+
+  it("passes on a report made before its own mount effect ran, as a child signing step does", () => {
+    const onPayloadLockChange = vi.fn()
+    renderHook(() => {
+      const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
+      useLayoutEffect(() => reportPayloadLock(true), [reportPayloadLock])
+    })
+
+    expect(onPayloadLockChange).toHaveBeenCalledWith(true)
   })
 })

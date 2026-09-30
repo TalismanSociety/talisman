@@ -2,6 +2,7 @@ import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { SolTransaction } from "@talismn/solana"
+import type { PayloadLockListener } from "@ui/hooks/useReportPayloadLock"
 import type { TransactionRequest } from "viem"
 
 export type TxSubmitButtonTransactionDot = {
@@ -54,6 +55,6 @@ export type TxSubmitButtonProps<
    * @returns
    */
   onSubmit: (txId: string) => void
-  /** true while the payload is out for signing (hardware device, QR, password): it must not change */
-  onPayloadLockChange?: (isLocked: boolean) => void
+  /** true while a hardware or QR signer holds the payload */
+  onPayloadLockChange?: PayloadLockListener
 }

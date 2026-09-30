@@ -4,16 +4,15 @@ import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
+import { useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import type { TxSubmitButtonProps } from "./types"
-import { useReportPayloadLock } from "./useReportPayloadLock"
 
 export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   tx,
