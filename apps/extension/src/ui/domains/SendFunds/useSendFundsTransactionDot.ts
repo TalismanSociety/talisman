@@ -10,7 +10,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { useSubstrateDryRun } from "./hooks/useSubstrateDryRun"
 import { useTip } from "./hooks/useTip"
 
@@ -24,8 +24,8 @@ export const useSendFundsTransactionDot = ({
   value,
   sendMax,
   allowReap,
+  isLocked = false,
 }: SendFundsTransactionProps) => {
-  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "polkadot")
   const balance = useBalance(from as string, tokenId as string)
@@ -116,8 +116,6 @@ export const useSendFundsTransactionDot = ({
     isLoadingMetadata: qSapi.isLoading,
     isLoadingFee: qEstimateFee.isLoading,
     isLoadingDryRun: qDryRun.isLoading,
-
-    setIsLocked,
   }
 }
 

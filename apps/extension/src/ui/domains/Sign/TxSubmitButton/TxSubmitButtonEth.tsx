@@ -21,6 +21,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   label,
   className,
   onSubmit,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(tx.payload.from)
@@ -83,6 +84,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
           containerId={containerId}
           evmNetworkId={tx.networkId}
           onSigned={handleLedgerSignature}
+          onSentToDevice={onPayloadLockChange}
         />
       )
   }

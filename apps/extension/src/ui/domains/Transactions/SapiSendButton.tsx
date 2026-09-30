@@ -42,7 +42,10 @@ type LockedInputs = {
   txMode?: ScaleApiSubmitMode | undefined
 }
 
-const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInputs) => {
+const useLockedInputs = (
+  { payload, shortMetadata, txInfo, txMode }: LockedInputs,
+  onLockChange: ((isLocked: boolean) => void) | undefined
+) => {
   const memoizedInputs = useMemo(
     () => ({
       payload,
@@ -53,8 +56,16 @@ const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInput
     [payload, shortMetadata, txInfo, txMode]
   )
 
-  const [isLocked, setIsLocked] = useState(false)
+  const [isLocked, setIsLockedState] = useState(false)
   const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
+
+  const setIsLocked = useCallback(
+    (locked: boolean) => {
+      setIsLockedState(locked)
+      onLockChange?.(locked)
+    },
+    [onLockChange]
+  )
 
   useEffect(() => {
     if (!isLocked) setLockedInputs(memoizedInputs)
@@ -76,6 +87,7 @@ type SapiSendButtonProps = {
   onSubmitted: (hash: Hex, innerHash?: Hex) => void
   mode?: ScaleApiSubmitMode
   checkPassword?: boolean
+  onPayloadLockChange?: (isLocked: boolean) => void
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -88,16 +100,20 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   onSubmitted,
   mode,
   color,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
-  const { lockedInputs, setIsLocked } = useLockedInputs({
-    payload,
-    shortMetadata,
-    txInfo,
-    txMode: mode,
-  })
+  const { lockedInputs, setIsLocked } = useLockedInputs(
+    {
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode: mode,
+    },
+    onPayloadLockChange
+  )
 
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
@@ -148,16 +164,20 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   onSubmitted,
   mode,
   color,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
-  const { lockedInputs, setIsLocked } = useLockedInputs({
-    payload,
-    shortMetadata,
-    txInfo,
-    txMode: mode,
-  })
+  const { lockedInputs, setIsLocked } = useLockedInputs(
+    {
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode: mode,
+    },
+    onPayloadLockChange
+  )
 
   const account = useAccountByAddress(lockedInputs.payload?.address)
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
@@ -215,6 +235,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   mode,
   color,
   checkPassword,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -224,11 +245,14 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   const isPasswordDismissedRef = useRef(false)
 
   // Lock inputs when password drawer opens to prevent stale payload submission
-  const { lockedInputs, setIsLocked } = useLockedInputs({
-    payload,
-    txInfo,
-    txMode: mode,
-  })
+  const { lockedInputs, setIsLocked } = useLockedInputs(
+    {
+      payload,
+      txInfo,
+      txMode: mode,
+    },
+    onPayloadLockChange
+  )
 
   const handleSubmit = useCallback(async () => {
     const submitPayload = checkPassword ? lockedInputs.payload : payload

@@ -54,4 +54,6 @@ export type TxSubmitButtonProps<
    * @returns
    */
   onSubmit: (txId: string) => void
+  /** true while the payload is out for signing (hardware device, QR, password): it must not change */
+  onPayloadLockChange?: (isLocked: boolean) => void
 }

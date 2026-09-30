@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -8,6 +8,7 @@ const mockUseAccountByAddress = vi.fn()
 const mockUseScaleApi = vi.fn()
 const mockPasswordDrawerOnVerified = vi.fn()
 const mockHardwareOnSigned = vi.fn()
+const mockHardwareOnSentToDevice = vi.fn()
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (value: string) => value }),
@@ -79,10 +80,13 @@ vi.mock("../../Sign/Qr/QrSubstrate", () => ({
 vi.mock("../../Sign/SignHardwareSubstrate", () => ({
   SignHardwareSubstrate: ({
     onSigned,
+    onSentToDevice,
   }: {
     onSigned: (result: { signature: string }) => unknown
+    onSentToDevice: (sent: boolean) => void
   }) => {
     mockHardwareOnSigned.mockImplementation(onSigned)
+    mockHardwareOnSentToDevice.mockImplementation(onSentToDevice)
     return <div data-testid="sign-hardware" />
   },
 }))
@@ -348,6 +352,23 @@ describe("SapiSendButton", () => {
       rerender(<SapiSendButton payload={undefined} onSubmitted={mockOnSubmitted} />)
 
       expect(screen.getByTestId("sign-hardware")).toBe(signHardware)
+    })
+
+    it("reports the payload lock while the Ledger signs", () => {
+      const onPayloadLockChange = vi.fn()
+      render(
+        <SapiSendButton
+          payload={mockPayload}
+          onSubmitted={mockOnSubmitted}
+          onPayloadLockChange={onPayloadLockChange}
+        />
+      )
+
+      act(() => mockHardwareOnSentToDevice(true))
+      expect(onPayloadLockChange).toHaveBeenLastCalledWith(true)
+
+      act(() => mockHardwareOnSentToDevice(false))
+      expect(onPayloadLockChange).toHaveBeenLastCalledWith(false)
     })
   })
 

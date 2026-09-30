@@ -20,6 +20,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   label,
   className,
   onSubmit,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   // fee payer == first signer, equivalent to both legacy/versioned branches of the old code
@@ -89,6 +90,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           className={className}
           containerId={containerId}
           onSigned={handleLedgerSignature}
+          onSentToDevice={onPayloadLockChange}
         />
       )
     default:

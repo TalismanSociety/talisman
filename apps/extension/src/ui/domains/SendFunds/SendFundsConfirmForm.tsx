@@ -191,7 +191,8 @@ const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate } = useSendFunds()
+  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate, setIsLocked } =
+    useSendFunds()
   const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
@@ -268,6 +269,7 @@ const SendButton = () => {
         <TxSubmitButton
           label={t("Confirm")}
           onSubmit={handleSubmit}
+          onPayloadLockChange={setIsLocked}
           tx={tx}
           disabled={!isReady || !canConfirm || dtaoRootStakeHoldGate.isBlocked}
           containerId="main"

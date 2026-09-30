@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => ({
     feeTokenId: string
     transferable: Record<string, bigint>
     transaction: FakeTransaction | null
+    transactionInputs?: { isLocked?: boolean }
     recipientFree: bigint | null
     dtao: {
       available: bigint | null
@@ -104,8 +105,10 @@ vi.mock("./useFeeToken", () => ({
   useFeeToken: () => mocks.state.tokens[mocks.state.feeTokenId],
 }))
 vi.mock("./useSendFundsTransactionDot", () => ({
-  useSendFundsTransactionDot: () =>
-    mocks.state.transaction?.platform === "polkadot" ? mocks.state.transaction : null,
+  useSendFundsTransactionDot: (inputs: { isLocked?: boolean }) => {
+    mocks.state.transactionInputs = inputs
+    return mocks.state.transaction?.platform === "polkadot" ? mocks.state.transaction : null
+  },
 }))
 vi.mock("./useSendFundsTransactionEth", () => ({
   useSendFundsTransactionEth: () =>
@@ -265,6 +268,16 @@ describe("useSendFunds", () => {
       },
     })
     sendDot(10n * DOT_UNIT)
+  })
+
+  it("freezes the transaction hooks while the payload is out for signing", () => {
+    const result = render()
+
+    act(() => result.current.setIsLocked(true))
+    expect(state.transactionInputs?.isLocked).toBe(true)
+
+    act(() => result.current.setIsLocked(false))
+    expect(state.transactionInputs?.isLocked).toBe(false)
   })
 
   it("accepts a transfer the balance covers with its fee", async () => {

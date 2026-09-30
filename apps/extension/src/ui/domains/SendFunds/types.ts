@@ -5,4 +5,6 @@ export type SendFundsTransactionProps = {
   value: string | undefined
   sendMax: boolean
   allowReap: boolean
+  /** freezes fee, tip and payload refreshes while the payload is out for signing */
+  isLocked?: boolean
 }
