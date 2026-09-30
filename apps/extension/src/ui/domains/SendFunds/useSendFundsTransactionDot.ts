@@ -10,7 +10,7 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSubstrateDryRun } from "./hooks/useSubstrateDryRun"
 import { useTip } from "./hooks/useTip"
 
@@ -25,13 +25,14 @@ export const useSendFundsTransactionDot = ({
   sendMax,
   allowReap,
 }: SendFundsTransactionProps) => {
+  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "polkadot")
   const balance = useBalance(from as string, tokenId as string)
   const feeToken = useFeeToken(tokenId)
   const tipToken = useToken(network?.nativeTokenId)
 
-  const qTip = useTip(token?.networkId)
+  const qTip = useTip(token?.networkId, !isLocked)
 
   const qSapi = useScaleApi(token?.networkId)
 
@@ -44,11 +45,13 @@ export const useSendFundsTransactionDot = ({
     value,
     method: sendMax ? "all" : allowReap ? "allow-death" : "keep-alive",
     tip: qTip.data ?? "0",
+    isLocked,
   })
 
   const qEstimateFee = useEstimateFee({
     sapi: qSapi?.data,
     payload: qPayload.data?.payload,
+    isLocked,
   })
 
   const qDryRun = useSubstrateDryRun(qPayload.data?.payload)
@@ -113,6 +116,8 @@ export const useSendFundsTransactionDot = ({
     isLoadingMetadata: qSapi.isLoading,
     isLoadingFee: qEstimateFee.isLoading,
     isLoadingDryRun: qDryRun.isLoading,
+
+    setIsLocked,
   }
 }
 
@@ -125,6 +130,7 @@ const usePayload = ({
   value = "0", // default to "0" to force fee estimation
   method,
   tip,
+  isLocked,
 }: {
   sapi: ScaleApi | null | undefined
   token: Token | null | undefined
@@ -134,6 +140,7 @@ const usePayload = ({
   value: string | undefined
   method: BalanceTransferType
   tip: string | undefined
+  isLocked: boolean
 }) => {
   return useSignerPayloadQuery({
     sapi,
@@ -165,15 +172,18 @@ const usePayload = ({
         tip: tip?.length ? BigInt(tip) : 0n,
       })
     },
+    enabled: !isLocked,
   })
 }
 
 const useEstimateFee = ({
   sapi,
   payload,
+  isLocked,
 }: {
   sapi: ScaleApi | null | undefined
   payload: SignerPayloadJSON | undefined
+  isLocked: boolean
 }) => {
   return useQuery({
     queryKey: ["estimateFee", sapi?.id, payload],
@@ -185,5 +195,6 @@ const useEstimateFee = ({
       return { partialFee: fee.toString(), unsigned: payload }
     },
     refetchInterval: false,
+    enabled: !isLocked,
   })
 }

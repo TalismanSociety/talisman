@@ -5,7 +5,7 @@ import { isEthereumAddress } from "@talismn/crypto"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
@@ -17,6 +17,7 @@ export const useSendFundsTransactionEth = ({
   to,
   value = "0", // default to "0" to force fee estimation
 }: SendFundsTransactionProps) => {
+  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "ethereum")
   const feeToken = useToken(network?.nativeTokenId)
@@ -45,7 +46,7 @@ export const useSendFundsTransactionEth = ({
     }
   }, [from, to, token, value])
 
-  const result = useEthTransaction(tx, token?.networkId)
+  const result = useEthTransaction(tx, token?.networkId, isLocked, false)
 
   // force a risk analysis scan if the account isnt owned
   const targetAccount = useAccountByAddress(to)
@@ -93,5 +94,7 @@ export const useSendFundsTransactionEth = ({
     estimatedFee,
     maxFee,
     feeTokenId: feeToken?.id,
+
+    setIsLocked,
   }
 }
