@@ -1,4 +1,5 @@
 import { Transition, TransitionChild } from "@headlessui/react"
+import { DismissLayerContext, useDismissOnEscape } from "@ui/hooks/useDismissOnEscape"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
 import { cn } from "@ui/util/cn"
 import {
@@ -85,6 +86,7 @@ export const Drawer: FC<DrawerProps> = ({
   onDismiss,
 }) => {
   const [status, setStatus] = useState<OpenCloseStatus>("closed")
+  const dismissLayer = useDismissOnEscape(!!isOpen, onDismiss)
 
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
@@ -137,7 +139,9 @@ export const Drawer: FC<DrawerProps> = ({
         beforeLeave={() => setStatus("closing")}
         afterLeave={() => setStatus("closed")}
       >
-        <OpenCloseStatusProvider status={status}>{children}</OpenCloseStatusProvider>
+        <OpenCloseStatusProvider status={status}>
+          <DismissLayerContext value={dismissLayer}>{children}</DismissLayerContext>
+        </OpenCloseStatusProvider>
       </TransitionChild>
     </Transition>,
     container

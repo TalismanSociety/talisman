@@ -32,9 +32,7 @@ export const YieldxyzManageStepConfirm = () => {
   } = wizard
   const actionTitle = useActionTitle(action)
 
-  if (!action && isLoadingAction) return <ActionCreatingShimmer />
-
-  if (!action && errorAction)
+  if (!action && (isLoadingAction || errorAction))
     return (
       <ModalDialog
         variant="wizard"
@@ -42,7 +40,11 @@ export const YieldxyzManageStepConfirm = () => {
         title={actionTitle}
         onCloseClick={close}
       >
-        <ActionCreateError error={errorAction} onRetry={retryCreateAction} />
+        {!isLoadingAction && errorAction ? (
+          <ActionCreateError error={errorAction} onRetry={retryCreateAction} />
+        ) : (
+          <ActionCreatingShimmer />
+        )}
       </ModalDialog>
     )
 
@@ -95,19 +97,17 @@ export const YieldxyzManageStepConfirm = () => {
 }
 
 const ActionCreatingShimmer = () => {
-  {
-    const { t } = useTranslation()
+  const { t } = useTranslation()
 
-    return (
-      <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
-        <LoaderIcon className="h-16 w-16 animate-spin-slow" />
-        <div className="mt-4 font-bold text-base text-white opacity-70">
-          {t("Preparing operation")}
-        </div>
-        <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
+  return (
+    <div className="flex flex-col items-center gap-2 pt-48 text-body-secondary leading-[140%]">
+      <LoaderIcon className="h-16 w-16 animate-spin-slow" />
+      <div className="mt-4 font-bold text-base text-white opacity-70">
+        {t("Preparing operation")}
       </div>
-    )
-  }
+      <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
+    </div>
+  )
 }
 
 const ActionCreateError: FC<{ error: Error; onRetry: () => void }> = ({ error, onRetry }) => {

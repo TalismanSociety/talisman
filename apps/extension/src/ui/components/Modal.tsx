@@ -1,4 +1,5 @@
 import { Transition, TransitionChild } from "@headlessui/react"
+import { DismissLayerContext, useDismissOnEscape } from "@ui/hooks/useDismissOnEscape"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
 import { cn } from "@ui/util/cn"
 import {
@@ -29,6 +30,7 @@ export const Modal: FC<ModalProps> = ({
   onDismiss,
 }) => {
   const [status, setStatus] = useState<OpenCloseStatus>("closed")
+  const dismissLayer = useDismissOnEscape(!!isOpen, onDismiss)
 
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
@@ -86,7 +88,9 @@ export const Modal: FC<ModalProps> = ({
           afterLeave={() => setStatus("closed")}
         >
           <OpenCloseStatusProvider status={status}>
-            <Suspense fallback={null}>{children}</Suspense>
+            <DismissLayerContext value={dismissLayer}>
+              <Suspense fallback={null}>{children}</Suspense>
+            </DismissLayerContext>
           </OpenCloseStatusProvider>
         </TransitionChild>
       </div>

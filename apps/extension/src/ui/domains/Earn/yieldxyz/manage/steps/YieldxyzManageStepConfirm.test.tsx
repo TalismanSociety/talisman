@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockRetryCreateAction = vi.fn()
+const mockClose = vi.fn()
 const wizard = {
   position: {
     address: "0xabc",
@@ -30,6 +31,26 @@ vi.mock("@ui/components/Button", () => ({
   ),
 }))
 
+vi.mock("@ui/components/ModalDialog", () => ({
+  ModalDialog: ({
+    title,
+    onCloseClick,
+    children,
+  }: {
+    title: ReactNode
+    onCloseClick?: () => void
+    children: ReactNode
+  }) => (
+    <div>
+      <h1>{title}</h1>
+      <button type="button" onClick={onCloseClick}>
+        Close
+      </button>
+      {children}
+    </div>
+  ),
+}))
+
 vi.mock("@ui/domains/Sign/risk-analysis/context", () => ({
   RiskAnalysisProvider: ({ children }: { children: ReactNode }) => children,
 }))
@@ -42,7 +63,9 @@ vi.mock("../../components/YieldxyzProductTitleDisplay", () => ({
 }))
 vi.mock("../../components/YieldxyzProviderLogo", () => ({ YieldxyzProviderDisplay: () => null }))
 vi.mock("../../components/YieldxyzTokensAndFiat", () => ({ YieldxyzTokensAndFiat: () => null }))
-vi.mock("../useYieldxyzManageModal", () => ({ useYieldxyzManageModal: () => ({ close: vi.fn() }) }))
+vi.mock("../useYieldxyzManageModal", () => ({
+  useYieldxyzManageModal: () => ({ close: mockClose }),
+}))
 vi.mock("../useYieldxyzManageWizard", () => ({ useYieldxyzManageWizard: () => wizard }))
 
 import { YieldxyzManageStepConfirm } from "./YieldxyzManageStepConfirm"
@@ -72,6 +95,16 @@ describe("YieldxyzManageStepConfirm", () => {
 
     expect(screen.getByText("Preparing operation")).toBeTruthy()
     expect(screen.queryByText("Retry")).toBeNull()
+  })
+
+  it("shows the title and a close button while the action is created", () => {
+    wizard.isLoadingAction = true
+
+    render(<YieldxyzManageStepConfirm />)
+    fireEvent.click(screen.getByText("Close"))
+
+    expect(screen.getByRole("heading").textContent).toBe("Manage Position")
+    expect(mockClose).toHaveBeenCalledOnce()
   })
 
   it("keeps the confirm step when a created action fails to refresh", () => {
