@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useEffect, useMemo } from "react"
@@ -24,7 +25,7 @@ export const useSendFundsTransactionDot = ({
   value,
   sendMax,
   allowReap,
-  isLocked = false,
+  isLocked,
 }: SendFundsTransactionProps) => {
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "polkadot")
@@ -59,7 +60,7 @@ export const useSendFundsTransactionDot = ({
     if (qDryRun.error) log.error("Dry run error", qDryRun.error)
   }, [qDryRun.data, qDryRun.error])
 
-  const maxAmount = useMemo(() => {
+  const liveMaxAmount = useMemo(() => {
     if (!balance || !isTokenDot(token) || qTip.isLoading) return null
 
     const tipPlanck = tipToken?.id === token.id ? BigInt(qTip.data ?? "0") : 0n
@@ -77,10 +78,13 @@ export const useSendFundsTransactionDot = ({
     }
   }, [balance, qEstimateFee.data, qTip, tipToken?.id, token])
 
-  const estimatedFee = useMemo(
+  const maxAmount = useLockedValue(liveMaxAmount, isLocked)
+
+  const liveEstimatedFee = useMemo(
     () => (qEstimateFee.data ? qEstimateFee.data.partialFee.toString() : null),
     [qEstimateFee.data]
   )
+  const estimatedFee = useLockedValue(liveEstimatedFee, isLocked)
 
   const [isLoading, isRefetching, error] = useMemo(() => {
     const queries = [qSapi, qTip, qPayload, qEstimateFee, qDryRun]

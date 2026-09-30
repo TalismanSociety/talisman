@@ -290,7 +290,7 @@ const SendButton = () => {
 
 const EthFeeSummary = () => {
   const { t } = useTranslation()
-  const { token, network, transaction } = useSendFunds()
+  const { token, network, transaction, isLocked } = useSendFunds()
 
   if (!token || transaction?.platform !== "ethereum" || network?.platform !== "ethereum")
     return null
@@ -320,6 +320,7 @@ const EthFeeSummary = () => {
             txDetails={txDetails}
             networkUsage={networkUsage}
             tx={tx}
+            disabled={isLocked}
           />
         )}
       </SummaryRow>
