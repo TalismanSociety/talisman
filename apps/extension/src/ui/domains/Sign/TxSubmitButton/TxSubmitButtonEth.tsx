@@ -14,6 +14,7 @@ import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import type { TxSubmitButtonProps } from "./types"
+import { useReportPayloadLock } from "./useReportPayloadLock"
 
 export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   tx,
@@ -24,6 +25,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   const account = useAccountByAddress(tx.payload.from)
 
   const handleLedgerSignature = useCallback(
@@ -84,7 +86,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
           containerId={containerId}
           evmNetworkId={tx.networkId}
           onSigned={handleLedgerSignature}
-          onSentToDevice={onPayloadLockChange}
+          onSentToDevice={reportPayloadLock}
         />
       )
   }

@@ -13,6 +13,7 @@ import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
 import type { TxSubmitButtonProps } from "./types"
+import { useReportPayloadLock } from "./useReportPayloadLock"
 
 export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   tx,
@@ -23,6 +24,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   // fee payer == first signer, equivalent to both legacy/versioned branches of the old code
   const address = useMemo(() => parseTransactionInfo(tx.payload).feePayer, [tx.payload])
   const account = useAccountByAddress(address)
@@ -90,7 +92,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           className={className}
           containerId={containerId}
           onSigned={handleLedgerSignature}
-          onSentToDevice={onPayloadLockChange}
+          onSentToDevice={reportPayloadLock}
         />
       )
     default:

@@ -372,6 +372,26 @@ describe("SapiSendButton", () => {
     })
   })
 
+  it("releases the payload lock when the signing step unmounts mid-sign", () => {
+    mockUseAccountByAddress.mockReturnValue({
+      type: "ledger-polkadot",
+      address: mockPayload.address,
+    })
+    const onPayloadLockChange = vi.fn()
+    const { unmount } = render(
+      <SapiSendButton
+        payload={mockPayload}
+        onSubmitted={mockOnSubmitted}
+        onPayloadLockChange={onPayloadLockChange}
+      />
+    )
+
+    act(() => mockHardwareOnSentToDevice(true))
+    unmount()
+
+    expect(onPayloadLockChange).toHaveBeenLastCalledWith(false)
+  })
+
   describe("with polkadot-vault account", () => {
     beforeEach(() => {
       mockUseAccountByAddress.mockReturnValue({

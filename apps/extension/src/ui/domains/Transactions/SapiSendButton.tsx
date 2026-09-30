@@ -8,6 +8,7 @@ import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useReportPayloadLock } from "@ui/domains/Sign/TxSubmitButton/useReportPayloadLock"
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
@@ -59,12 +60,14 @@ const useLockedInputs = (
   const [isLocked, setIsLockedState] = useState(false)
   const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
 
+  const reportPayloadLock = useReportPayloadLock(onLockChange)
+
   const setIsLocked = useCallback(
     (locked: boolean) => {
       setIsLockedState(locked)
-      onLockChange?.(locked)
+      reportPayloadLock(locked)
     },
-    [onLockChange]
+    [reportPayloadLock]
   )
 
   useEffect(() => {
