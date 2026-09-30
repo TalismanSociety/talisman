@@ -33,6 +33,7 @@ import {
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
+import { useLockedValue } from "./hooks/useLockedValue"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
   ExternalAddressWarningProvider,
@@ -191,8 +192,15 @@ const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate, setIsLocked } =
-    useSendFunds()
+  const {
+    network,
+    onSubmitted,
+    transaction,
+    txInfo,
+    dtaoRootStakeHoldGate,
+    isLocked,
+    setIsLocked,
+  } = useSendFunds()
   const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
@@ -221,7 +229,7 @@ const SendButton = () => {
     [network, onSubmitted, saveConfirmation]
   )
 
-  const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
+  const liveTx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!network || !txInfo || !transaction) return null
 
     switch (transaction.platform) {
@@ -256,6 +264,8 @@ const SendButton = () => {
         throw new Error(`Unsupported transaction platform`)
     }
   }, [transaction, network, txInfo])
+
+  const tx = useLockedValue(liveTx, isLocked)
 
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
