@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
 
-/** reports lock changes, and releases a held lock when the signing step unmounts */
+/** reports lock changes, releases a held lock on unmount, then ignores late reports (Ledger promises outlive the step) */
 export const useReportPayloadLock = (
   onPayloadLockChange: ((isLocked: boolean) => void) | undefined
 ) => {
@@ -11,6 +11,7 @@ export const useReportPayloadLock = (
   useEffect(
     () => () => {
       if (isLockedRef.current) onPayloadLockChangeRef.current?.(false)
+      onPayloadLockChangeRef.current = undefined
     },
     []
   )
