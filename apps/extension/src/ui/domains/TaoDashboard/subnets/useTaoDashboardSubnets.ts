@@ -147,15 +147,15 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   )
 
   // outside mainnet the sn45 queries are disabled: flag their columns so cells render N/A
-  // instead of misleading zeros. Chain columns work on every network, but mcap also needs a
-  // TAO rate to be shown in USD
+  // instead of misleading zeros. Chain columns work on every network. Volume and mcap also need
+  // a TAO rate to be shown in USD
   const errors = useMemo(
     () => ({
       price: isMarketsError && (!isMainnet || isLeaderboardError),
       balance: false,
       score: !isMainnet || isLeaderboardError,
       staked: isMarketsError,
-      volume: !isMainnet || isLeaderboardError,
+      volume: !isMainnet || isLeaderboardError || taoUsdPrice === undefined,
       mcap: isMarketsError || taoUsdPrice === undefined,
       emission: isMarketsError,
       chart: !isMainnet || isLeaderboardError,
