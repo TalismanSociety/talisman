@@ -114,7 +114,7 @@ Compute it once and use it for both browsers. The number counts per version acro
    .claude/skills/create-release/bin/rename-build.sh X.Y.Z chrome "$RC"
    ```
 
-2. `pnpm build:extension:prod:firefox`, with `run_in_background`. It runs two uncached Docker builds, so allow 20 minutes or more. Then:
+2. `pnpm build:extension:prod:firefox`, with `run_in_background`. It builds in Docker and takes about 2 minutes. Then:
 
    ```sh
    .claude/skills/create-release/bin/rename-build.sh X.Y.Z firefox "$RC"
