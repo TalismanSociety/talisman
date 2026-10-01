@@ -5,9 +5,10 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances } from "@ui/state/balances"
 import { useTokens } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { useMemo } from "react"
-import { useAlphaPricesByNetuid } from "../hooks/useAlphaPricesByNetuid"
-import { type SubnetLeaderboardRow, useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
+import { type SubnetLeaderboardRow, useSubnetLeaderboard } from "../hooks/useSn45Api"
+import { useSubnetMarkets } from "../hooks/useSubnetMarkets"
 import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { raoToTao } from "../shared/util"
@@ -21,16 +22,13 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     isLoading: isLeaderboardLoading,
     isError: isLeaderboardError,
   } = useSubnetLeaderboard(period)
-  const { data: taoPrice, isLoading: isTaoPriceLoading, isError: isTaoPriceError } = useTaoPrice()
 
   const { networkId, isMainnet } = useTaoDashboardNetwork()
   const { selectedAccounts } = usePortfolioNavigation()
 
-  const {
-    data: alphaPrices,
-    isLoading: isAlphaPricesLoading,
-    isError: isAlphaPricesError,
-  } = useAlphaPricesByNetuid()
+  const { data: markets, isLoading: isMarketsLoading, isError: isMarketsError } = useSubnetMarkets()
+
+  const taoUsdPrice = useTokenRates(subNativeTokenId(networkId))?.usd?.price ?? undefined
 
   const balances = useBalances("all")
   const balancesStatus = useBalancesStatus(balances)
@@ -80,27 +78,20 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     return new Map<number, SubnetLeaderboardRow>(leaderboardData.subnets.map((s) => [s.netuid, s]))
   }, [leaderboardData])
 
-  const taoUsdPrice = taoPrice?.price ? parseFloat(taoPrice.price) : 0
-
   const subnets = useMemo(() => {
+    const toUsd = (tao: number | undefined) =>
+      tao !== undefined && taoUsdPrice !== undefined ? tao * taoUsdPrice : undefined
+
     return subnetTokens
       .map((token) => {
         const leaderboard = leaderboardMap.get(token.netuid)
+        const market = markets?.get(token.netuid)
 
-        // the on-chain pool price covers networks without leaderboard data (testnet)
-        const priceTao = leaderboard?.currentPrice ?? alphaPrices?.get(token.netuid)
-        const priceUsd = typeof priceTao === "number" ? priceTao * taoUsdPrice : undefined
-
+        const priceTao = market?.priceTao ?? leaderboard?.currentPrice ?? undefined
         const priceChange = leaderboard?.priceChange ?? undefined
-        const stakedAlpha = raoToTao(leaderboard?.stakedAlpha)
-        const stakedTao = raoToTao(leaderboard?.stakedTao)
         const volume = raoToTao(leaderboard?.volume)
-
-        const emission = leaderboard?.emissionPct ?? 0
+        const mcap = market?.mcapTao ?? undefined
         const score = leaderboard?.score ?? 0
-
-        // Market cap from leaderboard squid proxy (price × circulating supply), converted to USD
-        const mcap = leaderboard?.mcap ? raoToTao(leaderboard.mcap) * taoUsdPrice : 0
 
         // Determine sentiment based on score
         const sentiment: SubnetSentiment = score >= 80 ? "bullish" : score <= 20 ? "bearish" : null
@@ -118,7 +109,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           token,
 
           priceTao,
-          priceUsd,
+          priceUsd: toUsd(priceTao),
           priceChange,
           score,
           sentiment,
@@ -128,53 +119,48 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
           // outside mainnet tokens are unpriced and the fiat sum fabricates a $0.00
           balanceUsd: isMainnet ? (balances?.sum.fiat("usd").transferable ?? null) : null,
           unstakeAddress,
-          stakedTao: stakedTao || (priceTao ? stakedAlpha * priceTao : undefined),
-          stakedAlpha,
-          mcapUsd: mcap,
-          volumeUsd: volume * taoUsdPrice,
-          emission,
+          stakedTao: market?.stakedTao,
+          stakedAlpha: market?.stakedAlpha ?? 0,
+          mcapUsd: toUsd(mcap),
+          volumeUsd: toUsd(volume),
+          emission: market?.emissionPct ?? 0,
           chartData: leaderboard?.priceHistory7d,
         }
       })
       .sort((a, b) => a.token.netuid - b.token.netuid)
-  }, [subnetTokens, leaderboardMap, taoUsdPrice, balancesPerNetuid, alphaPrices, isMainnet])
+  }, [subnetTokens, leaderboardMap, markets, taoUsdPrice, balancesPerNetuid, isMainnet])
 
   const loading = useMemo(
     () => ({
-      // on mainnet the on-chain alpha prices are only a fallback for subnets the leaderboard
-      // doesn't know yet: don't keep the whole column pulsing while they load
-      price: isMainnet ? isLeaderboardLoading || isTaoPriceLoading : isAlphaPricesLoading,
+      // price comes from chain, with the sn45 leaderboard price as a fallback: it's only
+      // loading until one of them has data
+      price: !markets && !leaderboardData && (isMarketsLoading || isLeaderboardLoading),
       balance: balancesStatus.status === "fetching",
       score: isLeaderboardLoading,
-      staked: isLeaderboardLoading,
+      staked: isMarketsLoading,
       volume: isLeaderboardLoading,
-      mcap: isLeaderboardLoading,
-      emission: isLeaderboardLoading,
+      mcap: isMarketsLoading,
+      emission: isMarketsLoading,
       chart: isLeaderboardLoading,
     }),
-    [
-      isMainnet,
-      isLeaderboardLoading,
-      isTaoPriceLoading,
-      isAlphaPricesLoading,
-      balancesStatus.status,
-    ]
+    [markets, leaderboardData, isMarketsLoading, isLeaderboardLoading, balancesStatus.status]
   )
 
   // outside mainnet the sn45 queries are disabled: flag their columns so cells render N/A
-  // instead of misleading zeros — except price, which falls back to the on-chain pool price
+  // instead of misleading zeros. Chain columns work on every network, but mcap also needs a
+  // TAO rate to be shown in USD
   const errors = useMemo(
     () => ({
-      price: isMainnet ? isLeaderboardError || isTaoPriceError : isAlphaPricesError,
+      price: isMarketsError && (!isMainnet || isLeaderboardError),
       balance: false,
       score: !isMainnet || isLeaderboardError,
-      staked: !isMainnet || isLeaderboardError,
+      staked: isMarketsError,
       volume: !isMainnet || isLeaderboardError,
-      mcap: !isMainnet || isLeaderboardError,
-      emission: !isMainnet || isLeaderboardError,
+      mcap: isMarketsError || taoUsdPrice === undefined,
+      emission: isMarketsError,
       chart: !isMainnet || isLeaderboardError,
     }),
-    [isLeaderboardError, isMainnet, isTaoPriceError, isAlphaPricesError]
+    [isMainnet, isLeaderboardError, isMarketsError, taoUsdPrice]
   )
 
   const isLoading = Object.values(loading).some(Boolean)
