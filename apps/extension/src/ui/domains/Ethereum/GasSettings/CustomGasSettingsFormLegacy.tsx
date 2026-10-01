@@ -10,6 +10,7 @@ import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals, getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { IconButton } from "@ui/components/IconButton"
@@ -38,7 +39,7 @@ import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
-  className: "bg-grey-700 px-6 gap-6 h-12.5",
+  className: "px-6 gap-6 h-12.5",
 }
 
 type FormData = {
@@ -286,118 +287,117 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   )
 
   return (
-    <form
-      onSubmit={submitWithoutBubbleUp}
-      className="flex flex-col rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm"
-    >
-      <div className="flex w-full font-bold text-white">
-        <div>
-          <IconButton>
-            <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
-          </IconButton>
+    <DrawerContent>
+      <form onSubmit={submitWithoutBubbleUp} className="flex flex-col text-body-secondary text-sm">
+        <div className="flex w-full font-bold text-white">
+          <div>
+            <IconButton>
+              <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
+            </IconButton>
+          </div>
+          <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
         </div>
-        <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
-      </div>
-      <div className="mt-12 mb-16">
-        {t("Set your own custom gas fee to control the priority and cost of your transaction.")}
-      </div>
-      <div className="mb-14 grid w-full grid-cols-2 gap-8">
-        <Indicator label={t("Network Gas Price")}>
-          {t("{{networkGasPrice}} GWEI", { networkGasPrice })}{" "}
-          <WithTooltip
-            className="inline-flex h-3.75 flex-col justify-center align-text-top"
-            tooltip={t(
-              "The Gas Price is set by the network and changes depending on network usage"
-            )}
-          >
-            <InfoIcon />
-          </WithTooltip>
-        </Indicator>
-        {networkUsage !== undefined && (
-          <Indicator label={t("Network Usage")}>{Math.round(networkUsage * 100)} %</Indicator>
-        )}
-      </div>
-      <FormFieldContainer
-        noErrorRow
-        className="w-full"
-        label={
-          <span className="text-sm">
-            {t("Gas Price")}{" "}
-            <WithTooltip tooltip={t("The fee you are willing to pay for each gas unit")}>
-              <InfoIcon className="inline align-text-top" />
-            </WithTooltip>
-          </span>
-        }
-      >
-        {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
-        <FormFieldInputText
-          after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
-          containerProps={INPUT_PROPS}
-          {...register("gasPriceGwei")}
-        />
-      </FormFieldContainer>
-      <MessageRow type="warning" message={warningFee} />
-      <FormFieldContainer
-        noErrorRow
-        className="w-full"
-        label={
-          <span className="text-sm">
-            {t("Gas Limit")}{" "}
+        <div className="mt-12 mb-16">
+          {t("Set your own custom gas fee to control the priority and cost of your transaction.")}
+        </div>
+        <div className="mb-14 grid w-full grid-cols-2 gap-8">
+          <Indicator label={t("Network Gas Price")}>
+            {t("{{networkGasPrice}} GWEI", { networkGasPrice })}{" "}
             <WithTooltip
-              tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
-            >
-              <InfoIcon className="inline align-text-top" />
-            </WithTooltip>
-          </span>
-        }
-      >
-        <FormFieldInputText
-          containerProps={INPUT_PROPS}
-          {...register("gasLimit", {
-            valueAsNumber: true,
-          })}
-        />
-      </FormFieldContainer>
-      <MessageRow type="error" message={errorGasLimit} />
-
-      <div className="flex h-13 w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
-        <div>
-          {t("Total Max Fee")}{" "}
-          <WithTooltip
-            tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit"
-            )}
-          >
-            <InfoIcon className="inline-block align-text-top" />
-          </WithTooltip>
-        </div>
-        <div>
-          {totalMaxFee && showMaxFeeTotal ? (
-            <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
-          ) : isLoadingGasSettingsValid ? (
-            <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
-          ) : (
-            <Tooltip>
-              <TooltipTrigger className="text-alert-error">
-                {t("Invalid transaction")}
-              </TooltipTrigger>
-              {!!gasSettingsError && (
-                <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+              className="inline-flex h-3.75 flex-col justify-center align-text-top"
+              tooltip={t(
+                "The Gas Price is set by the network and changes depending on network usage"
               )}
-            </Tooltip>
+            >
+              <InfoIcon />
+            </WithTooltip>
+          </Indicator>
+          {networkUsage !== undefined && (
+            <Indicator label={t("Network Usage")}>{Math.round(networkUsage * 100)} %</Indicator>
           )}
         </div>
-      </div>
-      <div className="mt-10 w-full">
-        <Button
-          type="submit"
+        <FormFieldContainer
+          noErrorRow
           className="w-full"
-          disabled={!showMaxFeeTotal}
-          primary={showMaxFeeTotal}
+          label={
+            <span className="text-sm">
+              {t("Gas Price")}{" "}
+              <WithTooltip tooltip={t("The fee you are willing to pay for each gas unit")}>
+                <InfoIcon className="inline align-text-top" />
+              </WithTooltip>
+            </span>
+          }
         >
-          {t("Save")}
-        </Button>
-      </div>
-    </form>
+          {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
+          <FormFieldInputText
+            after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
+            containerProps={INPUT_PROPS}
+            {...register("gasPriceGwei")}
+          />
+        </FormFieldContainer>
+        <MessageRow type="warning" message={warningFee} />
+        <FormFieldContainer
+          noErrorRow
+          className="w-full"
+          label={
+            <span className="text-sm">
+              {t("Gas Limit")}{" "}
+              <WithTooltip
+                tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
+              >
+                <InfoIcon className="inline align-text-top" />
+              </WithTooltip>
+            </span>
+          }
+        >
+          <FormFieldInputText
+            containerProps={INPUT_PROPS}
+            {...register("gasLimit", {
+              valueAsNumber: true,
+            })}
+          />
+        </FormFieldContainer>
+        <MessageRow type="error" message={errorGasLimit} />
+
+        <div className="flex h-13 w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
+          <div>
+            {t("Total Max Fee")}{" "}
+            <WithTooltip
+              tooltip={t(
+                "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit"
+              )}
+            >
+              <InfoIcon className="inline-block align-text-top" />
+            </WithTooltip>
+          </div>
+          <div>
+            {totalMaxFee && showMaxFeeTotal ? (
+              <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
+            ) : isLoadingGasSettingsValid ? (
+              <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
+            ) : (
+              <Tooltip>
+                <TooltipTrigger className="text-alert-error">
+                  {t("Invalid transaction")}
+                </TooltipTrigger>
+                {!!gasSettingsError && (
+                  <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+                )}
+              </Tooltip>
+            )}
+          </div>
+        </div>
+        <div className="mt-10 w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!showMaxFeeTotal}
+            primary={showMaxFeeTotal}
+          >
+            {t("Save")}
+          </Button>
+        </div>
+      </form>
+    </DrawerContent>
   )
 }

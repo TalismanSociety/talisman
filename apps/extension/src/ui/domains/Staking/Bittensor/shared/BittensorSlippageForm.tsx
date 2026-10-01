@@ -22,8 +22,7 @@ export const BittensorSlippageForm: FC<{
   netuid: number | null
   onClose: () => void
   autoFocus?: boolean
-  inputContainerClassName?: string
-}> = ({ netuid, onClose, autoFocus, inputContainerClassName }) => {
+}> = ({ netuid, onClose, autoFocus }) => {
   const [slippage, setSlippage] = useBittensorSubnetSlippage(netuid)
   const [slippageEdit, setSlippageEdit] = useState<string>(String(slippage))
   const { t } = useTranslation()
@@ -83,7 +82,7 @@ export const BittensorSlippageForm: FC<{
       <FormFieldInputText
         ref={refInput}
         small
-        containerProps={{ className: cn("px-6 text-right", inputContainerClassName) }}
+        containerProps={{ className: "px-6 text-right" }}
         after={
           <div className="flex items-center gap-4">
             <div>%</div>

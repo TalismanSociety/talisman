@@ -2,6 +2,7 @@ import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -17,7 +18,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
   const { t } = useTranslation()
 
   return (
-    <div className="flex max-h-150 w-full flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
+    <DrawerContent className="flex max-h-150 flex-col gap-12">
       <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-12 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">{t("Risk Assessment")}</div>
@@ -32,7 +33,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
           {t("Close")}
         </Button>
       </div>
-    </div>
+    </DrawerContent>
   )
 }
 
@@ -48,7 +49,7 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 
   return (
-    <div className="flex w-full animate-fade-in flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
+    <DrawerContent className="flex animate-fade-in flex-col gap-12">
       <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-8 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">
@@ -74,7 +75,7 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
           {t("Yes")}
         </Button>
       </div>
-    </div>
+    </DrawerContent>
   )
 }
 

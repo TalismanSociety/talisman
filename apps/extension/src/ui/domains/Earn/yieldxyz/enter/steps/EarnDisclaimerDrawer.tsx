@@ -1,6 +1,7 @@
 import { TERMS_OF_USE_URL } from "@common/constants"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useAppState } from "@ui/state/app"
 import type { FC, PropsWithChildren } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -21,7 +22,7 @@ export const EarnDisclaimerDrawer: FC<EarnDisclaimerDrawerProps> = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId="earn-modal">
-      <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+      <DrawerContent className="flex flex-col items-center gap-8">
         <div className="font-bold text-body">{t("Accept Terms to Continue")}</div>
         <p className="text-body-secondary text-sm">
           <Trans
@@ -44,7 +45,7 @@ export const EarnDisclaimerDrawer: FC<EarnDisclaimerDrawerProps> = ({
             {t("Accept")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

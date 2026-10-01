@@ -1,5 +1,7 @@
+import { XIcon } from "@talismn/icons"
 import { Drawer } from "@ui/components/Drawer"
-import { ModalDialog } from "@ui/components/ModalDialog"
+import { DrawerContent } from "@ui/components/DrawerContent"
+import { IconButton } from "@ui/components/IconButton"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ProxyDelayForm } from "./ProxyDelayForm"
@@ -26,13 +28,17 @@ const Content: FC<{ delay: string; onSave: (delay: string) => void; onClose: () 
   const { t } = useTranslation()
 
   return (
-    <ModalDialog
-      variant="wizard"
-      title={t("Announcement Delay")}
-      onCloseClick={onClose}
-      className="h-auto rounded-t-xl"
-    >
-      <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
-    </ModalDialog>
+    <DrawerContent className="flex max-h-full flex-col gap-8">
+      <header className="flex shrink-0 items-center gap-8">
+        <div className="size-12 shrink-0" />
+        <h1 className="grow truncate text-center font-bold text-base">{t("Announcement Delay")}</h1>
+        <IconButton onClick={onClose}>
+          <XIcon />
+        </IconButton>
+      </header>
+      <div className="scrollable scrollable-800 min-h-0 grow overflow-auto">
+        <ProxyDelayForm delay={delay} onSave={onSave} onClose={onClose} />
+      </div>
+    </DrawerContent>
   )
 }

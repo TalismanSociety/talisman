@@ -1,6 +1,7 @@
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
@@ -68,7 +69,7 @@ export const BittensorSubnetBondForm = () => {
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         onDismiss={handleCloseSubnetRiskDrawer}
       >
-        <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+        <DrawerContent className="flex flex-col items-center gap-8">
           <div className="font-bold text-body">{t("Subnet Alpha Price Risk")}</div>
           <p className="text-center text-body-secondary text-sm">
             {t(
@@ -89,7 +90,7 @@ export const BittensorSubnetBondForm = () => {
               {t("I Understand")}
             </Button>
           </div>
-        </div>
+        </DrawerContent>
       </Drawer>
     </>
   )

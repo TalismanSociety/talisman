@@ -6,6 +6,7 @@ import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Address } from "@ui/domains/Account/Address"
@@ -114,62 +115,54 @@ const AddToAddressBookDrawerForm: FC<{
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <form
-      className="flex h-67 flex-col justify-end rounded-t-xl bg-grey-800 p-12"
-      onSubmit={submitWithoutBubbleUp}
-    >
-      <header className="flex flex-col items-center justify-center gap-6">
-        <AccountIcon
-          className="text-xl"
-          address={address}
-          genesisHash={limitToNetwork ? tokenGenesisHash : undefined}
-        />
-        <span className="font-bold">
-          <Address className="address" address={address} endCharCount={6} startCharCount={6} />
-        </span>
-      </header>
-      <section className="my-4 mt-10">
-        <FormFieldContainer error={errors.name?.message}>
-          <FormFieldInputText
-            {...register("name")}
-            placeholder={t("Contact name")}
-            autoComplete="off"
+    <DrawerContent className="h-67">
+      <form className="flex h-full flex-col justify-end" onSubmit={submitWithoutBubbleUp}>
+        <header className="flex flex-col items-center justify-center gap-6">
+          <AccountIcon
+            className="text-xl"
+            address={address}
+            genesisHash={limitToNetwork ? tokenGenesisHash : undefined}
           />
-        </FormFieldContainer>
-        {tokenGenesisHash ? (
-          <Checkbox
-            childProps={{ className: "flex items-center gap-2" }}
-            {...register("limitToNetwork")}
-          >
-            <Trans
-              t={t}
-              defaults="Limit to <Chain><ChainLogo />{{chainName}}</Chain>"
-              components={{
-                Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
-                ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
-              }}
-              values={{ chainName: chain?.name }}
+          <span className="font-bold">
+            <Address className="address" address={address} endCharCount={6} startCharCount={6} />
+          </span>
+        </header>
+        <section className="my-4 mt-10">
+          <FormFieldContainer error={errors.name?.message}>
+            <FormFieldInputText
+              {...register("name")}
+              placeholder={t("Contact name")}
+              autoComplete="off"
             />
-            <LimitToNetworkTooltip />
-          </Checkbox>
-        ) : null}
-      </section>
-      <footer className="grid grid-cols-2 gap-8">
-        <Button fullWidth onClick={onClose}>
-          {t("Cancel")}
-        </Button>
-        <Button
-          className="disabled:bg-grey-750"
-          type="submit"
-          fullWidth
-          primary
-          processing={isSubmitting}
-          disabled={!isValid}
-        >
-          {t("Save")}
-        </Button>
-      </footer>
-    </form>
+          </FormFieldContainer>
+          {tokenGenesisHash ? (
+            <Checkbox
+              childProps={{ className: "flex items-center gap-2" }}
+              {...register("limitToNetwork")}
+            >
+              <Trans
+                t={t}
+                defaults="Limit to <Chain><ChainLogo />{{chainName}}</Chain>"
+                components={{
+                  Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
+                  ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
+                }}
+                values={{ chainName: chain?.name }}
+              />
+              <LimitToNetworkTooltip />
+            </Checkbox>
+          ) : null}
+        </section>
+        <footer className="grid grid-cols-2 gap-8">
+          <Button fullWidth onClick={onClose}>
+            {t("Cancel")}
+          </Button>
+          <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
+            {t("Save")}
+          </Button>
+        </footer>
+      </form>
+    </DrawerContent>
   )
 }
 

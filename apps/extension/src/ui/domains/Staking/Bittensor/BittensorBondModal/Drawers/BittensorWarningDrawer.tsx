@@ -1,6 +1,7 @@
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState } from "@ui/state/app"
 import { type FC, type PropsWithChildren, useState } from "react"
@@ -22,7 +23,7 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}>
-      <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+      <DrawerContent className="flex flex-col items-center gap-8">
         <div className="font-bold text-body">{t("Subnet staking warning")}</div>
         <p className="text-body-secondary text-sm">
           <Trans
@@ -51,7 +52,7 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
             {t("I Understand")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

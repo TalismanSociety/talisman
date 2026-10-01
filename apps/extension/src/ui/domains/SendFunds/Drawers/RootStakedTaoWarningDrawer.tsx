@@ -1,6 +1,7 @@
 import { AlertTriangleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useTranslation } from "react-i18next"
 
 export const RootStakedTaoWarningDrawer = ({
@@ -16,7 +17,7 @@ export const RootStakedTaoWarningDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="gap flex flex-col items-center rounded-t-xl bg-black-tertiary p-12 text-center">
+      <DrawerContent className="gap flex flex-col items-center text-center">
         <div className="flex size-24 items-center justify-center rounded-full bg-alert-warn/10">
           <AlertTriangleIcon className="inline-block size-12 text-alert-warn" />
         </div>
@@ -32,7 +33,7 @@ export const RootStakedTaoWarningDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }
