@@ -43,9 +43,11 @@ A feature behind a feature flag counts only when it ships switched on: look up t
 
 **Changelog.** The user pastes it into Discord, so write it for wallet users:
 
+- List only what matters to users: changes they notice and care about. Leave out minor polish, rare edge cases and small text fixes.
 - Leave out what users cannot see: tests (`✅`), docs and agent tooling (`📝`, `🔧`), CI (`💚`), dependency bumps, renames and refactors (`♻️`, `🚚`, `🔥`) with no visible effect.
 - Keep a refactor when it changes what users see (for example "Escape closes modals").
-- Describe the effect, not the code: "Hardware wallet fees no longer change while you sign", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/create-release/bin/pr-details.sh <n> <n>…`.
+- Write formal, terse release notes. No second person ("you", "your"): "Swap quote must be reselected when the confirmed output drops", not "Swaps ask you to pick the quote again when the amount you'd receive would drop".
+- Describe the effect, not the code: "Hardware wallet fees stay fixed during signing", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/create-release/bin/pr-details.sh <n> <n>…`.
 - Always mention a new or changed fee, and anything else that changes what users pay or receive. When the amount comes from remote config, say so in the proposal and ask the user to confirm the number.
 - Merge related commits into one line. Drop PR numbers.
 - Stay under 2000 characters, the Discord message limit.
@@ -114,7 +116,7 @@ Compute it once and use it for both browsers. The number counts per version acro
    .claude/skills/create-release/bin/rename-build.sh X.Y.Z chrome "$RC"
    ```
 
-2. `pnpm build:extension:prod:firefox`, with `run_in_background`. It runs two uncached Docker builds, so allow 20 minutes or more. Then:
+2. `pnpm build:extension:prod:firefox`, with `run_in_background`. It builds in Docker and takes about 2 minutes. Then:
 
    ```sh
    .claude/skills/create-release/bin/rename-build.sh X.Y.Z firefox "$RC"
