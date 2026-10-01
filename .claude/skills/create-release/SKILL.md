@@ -1,13 +1,14 @@
 ---
-name: release
-description: Cut a new Talisman extension release, from changelog to RC zips. Proposes the semver bump and a Discord-ready changelog from the commits since the last version, waits for the user's approval, then creates the chore/bump-version-vX.Y.Z branch, runs prepare-release, commits, and builds the Chrome and Firefox production zips with an _RC<N> suffix. Use when the user wants to release, cut or prepare a version, bump the version, write release notes or a changelog for Discord, or build a new release candidate (RC2, RC3…) on an existing release branch.
+name: create-release
+description: Cut a Talisman extension release. Proposes the semver bump and a Discord-ready changelog for approval, then creates the chore/bump-version-vX.Y.Z branch, runs prepare-release, builds the Chrome and Firefox _RC<N> zips, pushes, and opens the PR. On an existing release branch, builds the next RC.
+disable-model-invocation: true
 ---
 
 # Release the Talisman extension
 
-A release is a `chore/bump-version-vX.Y.Z` branch with one commit, `🔖 bump version vX.Y.Z`, plus production zips in `apps/extension/dist/` named `…-chrome_RC<N>.zip` and `…-firefox_RC<N>.zip`. The user pushes and opens the PR. This skill stops before that.
+A release is a `chore/bump-version-vX.Y.Z` branch with one commit, `🔖 bump version vX.Y.Z`, production zips in `apps/extension/dist/` named `…-chrome_RC<N>.zip` and `…-firefox_RC<N>.zip`, and a PR to `dev` whose description is the changelog.
 
-Run every command from the repo root of the main checkout. Helpers live in `.claude/skills/release/bin/`.
+Run every command from the repo root of the main checkout. Helpers live in `.claude/skills/create-release/bin/`.
 
 ## 1. Pre-flight
 
@@ -20,12 +21,12 @@ Check these before you read any history, so the changelog matches what ships:
 
 Report every failed check and wait for the user. Do not work around one.
 
-Already on a `chore/bump-version-v*` branch with the bump commit? Then the user wants another RC: go to step 5.
+On a `chore/bump-version-v*` branch that has the bump commit, the user wants another RC. Run the same checks, but expect that branch instead of `dev`. The working tree must still be clean: fixes go in commits before the build. Then go to step 5.
 
 ## 2. Propose the bump and the changelog
 
 ```sh
-.claude/skills/release/bin/release-commits.sh
+.claude/skills/create-release/bin/release-commits.sh
 ```
 
 It prints the current version, the newest tag, and every commit since the last version bump on this branch. The tags point at squashed PR-branch commits, so `git describe` and `<tag>..HEAD` give the wrong range: use this script. When it prints a `WARNING`, show it to the user.
@@ -44,7 +45,7 @@ A feature behind a feature flag counts only when it ships switched on: look up t
 
 - Leave out what users cannot see: tests (`✅`), docs and agent tooling (`📝`, `🔧`), CI (`💚`), dependency bumps, renames and refactors (`♻️`, `🚚`, `🔥`) with no visible effect.
 - Keep a refactor when it changes what users see (for example "Escape closes modals").
-- Describe the effect, not the code: "Hardware wallet fees no longer change while you sign", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/release/bin/pr-details.sh <n> <n>…`.
+- Describe the effect, not the code: "Hardware wallet fees no longer change while you sign", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/create-release/bin/pr-details.sh <n> <n>…`.
 - Always mention a new or changed fee, and anything else that changes what users pay or receive. When the amount comes from remote config, say so in the proposal and ask the user to confirm the number.
 - Merge related commits into one line. Drop PR numbers.
 - Stay under 2000 characters, the Discord message limit.
@@ -72,7 +73,9 @@ Drop empty sections.
 
 ## 3. Get approval
 
-Ask the user to approve both the bump and the changelog. Revise and show the whole proposal again until they approve both. Nothing changes on disk before approval, so iterating is free.
+Ask the user to approve both the bump and the changelog. Revise and show the whole proposal again until they approve both. Nothing changes in the repo before approval, so iterating is free.
+
+Then save the approved changelog, without the code fence, to `.tmp/release-vX.Y.Z-changelog.md` (`.tmp/` is gitignored). Step 6 uses it as the PR description.
 
 ## 4. Branch, prepare, commit
 
@@ -100,7 +103,7 @@ With `X.Y.Z` the approved version:
 Commit first: both builds put the HEAD sha in the zip name, and the Firefox build reads the working tree.
 
 ```sh
-RC=$(.claude/skills/release/bin/next-rc.sh X.Y.Z)
+RC=$(.claude/skills/create-release/bin/next-rc.sh X.Y.Z)
 ```
 
 Compute it once and use it for both browsers. The number counts per version across all shas (RC1 to RC7 for 3.7.2), so a new commit on the branch still gets the next number.
@@ -108,19 +111,29 @@ Compute it once and use it for both browsers. The number counts per version acro
 1. `pnpm build:extension:prod`, with `run_in_background`. Then:
 
    ```sh
-   .claude/skills/release/bin/rename-build.sh X.Y.Z chrome "$RC"
+   .claude/skills/create-release/bin/rename-build.sh X.Y.Z chrome "$RC"
    ```
 
 2. `pnpm build:extension:prod:firefox`, with `run_in_background`. It runs two uncached Docker builds, so allow 20 minutes or more. Then:
 
    ```sh
-   .claude/skills/release/bin/rename-build.sh X.Y.Z firefox "$RC"
+   .claude/skills/create-release/bin/rename-build.sh X.Y.Z firefox "$RC"
    ```
 
    The Firefox build also writes `…-sources.zip`. Leave its name as is.
 
 When a build or a rename fails, show the output and stop. `rename-build.sh` refuses to overwrite a file.
 
-## 6. Hand over
+## 6. Push and open the PR
 
-Print the two RC zips and the sources zip with their SHA256 (`shasum -a 256 <file>`). Tell the user to push `chore/bump-version-vX.Y.Z` and open the PR (title `🔖 bump version vX.Y.Z`). Then stop: do not push, do not open the PR, do not tag.
+1. `git push -u origin chore/bump-version-vX.Y.Z`
+2. When `gh pr view --json url` finds a PR for the branch, print its URL and leave it as is: an RC rebuild adds commits to an open PR.
+3. Otherwise open it:
+
+   ```sh
+   gh pr create --base dev --title "🔖 bump version vX.Y.Z" --body-file .tmp/release-vX.Y.Z-changelog.md
+   ```
+
+   When the changelog file is missing (a new session, for example), go back to step 2 for the changelog only, get it approved, and save it.
+
+Finish with the PR URL, and the two RC zips and the sources zip with their SHA256 (`shasum -a 256 <file>`). Do not tag and do not merge.
