@@ -93,8 +93,8 @@ export const getScaleApi = (
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload),
 
-    getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
-      getRuntimeCallResult<T>(chain, apiName, method, args),
+    getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[], at?: string) =>
+      getRuntimeCallResult<T>(chain, apiName, method, args, at),
 
     submit: (
       payload: SignerPayloadJSON,
