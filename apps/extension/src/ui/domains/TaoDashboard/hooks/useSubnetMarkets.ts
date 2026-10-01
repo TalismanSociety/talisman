@@ -1,5 +1,6 @@
 import { isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../shared/util"
@@ -79,20 +80,23 @@ export const useSubnetMarkets = () => {
     queryFn: async () => {
       if (!sapi) return null
 
+      const at = await api.subSend<string>(sapi.chainId, "chain_getBlockHash", [])
       const [dynamicInfos, alphaPrices] = await Promise.all([
         sapi.getRuntimeCallValue<(DynamicInfo | null | undefined)[]>(
           "SubnetInfoRuntimeApi",
           "get_all_dynamic_info",
-          []
+          [],
+          at
         ),
-        sapi.getRuntimeCallValue<AlphaPrice[]>("SwapRuntimeApi", "current_alpha_price_all", []),
+        sapi.getRuntimeCallValue<AlphaPrice[]>("SwapRuntimeApi", "current_alpha_price_all", [], at),
       ])
 
       const netuids = dynamicInfos.filter(isNotNil).map(({ netuid }) => netuid)
       const excessTao = await sapi.getStorageValues<bigint>(
         "SubtensorModule",
         "SubnetExcessTao",
-        netuids.map((netuid) => [netuid])
+        netuids.map((netuid) => [netuid]),
+        at
       )
       const excessTaoByNetuid = new Map(netuids.map((netuid, i) => [netuid, excessTao[i] ?? 0n]))
 
