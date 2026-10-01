@@ -94,7 +94,11 @@ const SentimentTrend: FC<
           )}
           className={cn(sentChangeColor)}
         >
-          {sentChangeScore > 0 ? `+${sentChangeScore}` : sentChangeScore}
+          {data.sentimentVelocity === null
+            ? t("N/A")
+            : sentChangeScore > 0
+              ? `+${sentChangeScore}`
+              : sentChangeScore}
         </SentimentField>
       </div>
     </div>
