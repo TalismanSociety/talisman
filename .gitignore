@@ -60,8 +60,9 @@ review
 .tmp
 
 # do not track .claude folder as it would double the context bloat when using copilot
-# except the verify skill, which drives the dev extension for any agent
+# except the verify and release skills
 .claude/*
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/verify/
+!.claude/skills/release/
