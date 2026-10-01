@@ -63,7 +63,7 @@ ab() { agent-browser --session talisman --cdp 9223 "$@"; }
 - **Background state:** `.claude/skills/verify/bin/sw-eval.mjs '<async expression>'` evaluates in the service worker and prints JSON. Use it to prove side effects, for example `chrome.storage.local.get("keyring")` for accounts, `chrome.storage.local.get("sitesAuthorized")` for dapp connections.
 - **Headless UI modals and anything agent-browser cannot see:** a Playwright script in `.tmp/` with `chromium.connectOverCDP("http://localhost:9223")` (example in `AGENTS.md`). `browser.close()` only disconnects.
 
-Signing: sign only with a test account. By convention their names contain `Guardians`. Read the signer name in the popup before you click Approve or Sign.
+Signing: sign only with a test account, whose name starts with `Guardians` (setup in [`features/README.md`](features/README.md#test-accounts)). Read the signer name in the popup before you click Approve or Sign.
 
 ## 4. Evidence
 

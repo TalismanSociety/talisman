@@ -7,9 +7,27 @@ The maintained source for verifying the user-facing behaviour of the Talisman ex
 - `.claude/skills/verify/bin/doctor.mjs` prints only `PASS` lines.
 - `$RUN` exists and `tabs.sh baseline "$RUN"` ran.
 - `ab` is `agent-browser --session talisman --cdp 9223`.
-- The wallet holds `Guardians` accounts (EVM, SUB, SOL). They are test accounts: the only signers a run may use.
+- The wallet holds the test accounts in [Test accounts](#test-accounts).
 - `EXT` is `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno`.
 - The dev Chrome window may be narrow (1050 px seen). Wide dashboard layouts then clip: a clipped control can ignore `ab find … click`. Use the direct route in the feature file, or click through `ab eval`.
+
+## Test accounts
+
+A run signs only with test accounts, and recognises them by name: each name starts with `Guardians`. Each type has two accounts, so a transfer can stay between the wallet's own accounts:
+
+| Name | Type |
+| --- | --- |
+| `Guardians EVM`, `Guardians EVM 2` | Ethereum |
+| `Guardians SUB`, `Guardians SUB 2` | Polkadot |
+| `Guardians SOL`, `Guardians SOL 2` | Solana |
+
+Set them up once in the dev profile, by hand:
+
+1. Use a recovery phrase dedicated to testing, never the one of a personal wallet. Its accounts may hold real funds, but only amounts you accept to lose: the dev profile keeps the phrase on disk, and runs sign with these accounts.
+2. For each account, open `$EXT/dashboard.html#/accounts/add/derived?platform=<ethereum|polkadot|solana>`, fill `Choose a name` with the name above, and add it.
+3. For [Send funds](./send-funds.md), fund `Guardians SUB` with testTAO on Bittensor testnet.
+
+An agent does not create, rename or fund these accounts. When one is missing or has no balance, skip the recipes that need it and record the skip in `notes.md`.
 
 ## Driving conventions
 

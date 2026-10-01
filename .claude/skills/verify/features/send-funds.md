@@ -18,7 +18,7 @@ A user sends a token from one of their accounts to an address: pick the token, t
 
 Preconditions:
 
-- A `Guardians` sender with a testnet balance (for example testTAO on Bittensor testnet), and a second `Guardians` account as the recipient. Send between the wallet's own accounts.
+- `Guardians SUB` holds testTAO on Bittensor testnet, and `Guardians SUB 2` exists (see [Test accounts](./README.md#test-accounts)). Send between the wallet's own accounts. Without testTAO, skip this recipe and record the skip.
 - The doctor passes.
 
 - **Pick the token.** `ab tab new "$EXT/popup.html#/send/token?from=<Guardians SUB>&to=<Guardians SUB 2>"`, `ab wait --text "Select a token"`, testnet tokens stay hidden until you search: fill `Search by token or network name` with `testTAO`, then click the `testTAO` row. The URL moves to `#/send/amount` with `tokenId=bittensor-testnet:substrate-native`.
