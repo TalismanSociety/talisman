@@ -27,7 +27,6 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
       dailyEmissions,
     },
     isLoading,
-    isError,
   } = useSubnetStats(netuid)
 
   // Real-time price from SwapRuntimeApi.current_alpha_price, refreshed on each block
@@ -45,7 +44,7 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   return (
     <div className="flex h-25.5 flex-wrap items-center justify-between gap-4 px-12">
       <div className="flex w-full items-end justify-between gap-4">
-        <div className={cn(isError && "invisible")}>
+        <div className={cn(!tokenPrice && "invisible")}>
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-white text-xl">
               τ {tokenPrice?.toFixed(6) ?? "0.000000"}
@@ -72,24 +71,16 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
 
         <div className="flex h-full items-end gap-12">
           <Metric label={t("24h Volume")}>
-            {isError || volume24h === null ? (
-              t("N/A")
-            ) : (
-              <FiatFromUsd amount={volume24h} compact noCountUp />
-            )}
+            {volume24h === null ? t("N/A") : <FiatFromUsd amount={volume24h} compact noCountUp />}
           </Metric>
           <Metric label={t("Market Cap")}>
-            {isError || marketCap === null ? (
-              t("N/A")
-            ) : (
-              <FiatFromUsd amount={marketCap} compact noCountUp />
-            )}
+            {marketCap === null ? t("N/A") : <FiatFromUsd amount={marketCap} compact noCountUp />}
           </Metric>
           <Metric label={t("FDV")}>
-            {isError || fdv === null ? t("N/A") : <FiatFromUsd amount={fdv} compact noCountUp />}
+            {fdv === null ? t("N/A") : <FiatFromUsd amount={fdv} compact noCountUp />}
           </Metric>
           <Metric label={t("Em/Day")}>
-            {isError ? t("N/A") : formatCompactAlpha(dailyEmissions ?? 0, "τ")}
+            {dailyEmissions === null ? t("N/A") : formatCompactAlpha(dailyEmissions, "τ")}
           </Metric>
         </div>
       </div>
