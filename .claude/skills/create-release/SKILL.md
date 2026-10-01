@@ -1,6 +1,6 @@
 ---
 name: create-release
-description: Cut a Talisman extension release. Proposes the semver bump and a Discord-ready changelog for approval, then creates the chore/bump-version-vX.Y.Z branch, runs prepare-release, builds the Chrome and Firefox _RC<N> zips, pushes, and opens the PR. On an existing release branch, builds the next RC.
+description: Cut a Talisman extension release: changelog, version bump, RC builds and PR.
 disable-model-invocation: true
 ---
 
