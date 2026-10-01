@@ -45,7 +45,8 @@ A feature behind a feature flag counts only when it ships switched on: look up t
 
 - Leave out what users cannot see: tests (`✅`), docs and agent tooling (`📝`, `🔧`), CI (`💚`), dependency bumps, renames and refactors (`♻️`, `🚚`, `🔥`) with no visible effect.
 - Keep a refactor when it changes what users see (for example "Escape closes modals").
-- Describe the effect, not the code: "Hardware wallet fees no longer change while you sign", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/create-release/bin/pr-details.sh <n> <n>…`.
+- Write formal, terse release notes. No second person ("you", "your"): "Swap quote must be reselected when the confirmed output drops", not "Swaps ask you to pick the quote again when the amount you'd receive would drop".
+- Describe the effect, not the code: "Hardware wallet fees stay fixed during signing", not "freeze SendFunds fees". When a subject does not tell you the effect, read the PRs, all in one call: `.claude/skills/create-release/bin/pr-details.sh <n> <n>…`.
 - Always mention a new or changed fee, and anything else that changes what users pay or receive. When the amount comes from remote config, say so in the proposal and ask the user to confirm the number.
 - Merge related commits into one line. Drop PR numbers.
 - Stay under 2000 characters, the Discord message limit.
