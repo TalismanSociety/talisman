@@ -16,6 +16,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   disabled,
   isProcessing,
   onSubmit,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const riskGate = useRiskAnalysisSubmitGate()
@@ -54,6 +55,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           label={label}
           tx={tx}
           onSubmit={onSubmit}
+          onPayloadLockChange={onPayloadLockChange}
           className={className}
         />
       )
@@ -64,6 +66,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           label={label}
           tx={tx}
           onSubmit={onSubmit}
+          onPayloadLockChange={onPayloadLockChange}
           className={className}
         />
       )
@@ -74,6 +77,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           label={label}
           tx={tx}
           onSubmit={onSubmit}
+          onPayloadLockChange={onPayloadLockChange}
           className={className}
         />
       )

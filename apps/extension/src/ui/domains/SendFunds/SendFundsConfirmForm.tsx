@@ -5,6 +5,7 @@ import { Checkbox } from "@ui/components/Checkbox"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { WithTooltip } from "@ui/components/WithTooltip"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import {
@@ -18,7 +19,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -191,7 +191,15 @@ const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { network, onSubmitted, transaction, txInfo, dtaoRootStakeHoldGate } = useSendFunds()
+  const {
+    network,
+    onSubmitted,
+    transaction,
+    txInfo,
+    dtaoRootStakeHoldGate,
+    isLocked,
+    setIsLocked,
+  } = useSendFunds()
   const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
@@ -220,7 +228,7 @@ const SendButton = () => {
     [network, onSubmitted, saveConfirmation]
   )
 
-  const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
+  const liveTx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!network || !txInfo || !transaction) return null
 
     switch (transaction.platform) {
@@ -256,6 +264,8 @@ const SendButton = () => {
     }
   }, [transaction, network, txInfo])
 
+  const tx = useLockedValue(liveTx, isLocked)
+
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
       <div className="flex w-full flex-col gap-6" data-testid="send-funds-confirm-button">
@@ -268,6 +278,7 @@ const SendButton = () => {
         <TxSubmitButton
           label={t("Confirm")}
           onSubmit={handleSubmit}
+          onPayloadLockChange={setIsLocked}
           tx={tx}
           disabled={!isReady || !canConfirm || dtaoRootStakeHoldGate.isBlocked}
           containerId="main"
@@ -279,7 +290,7 @@ const SendButton = () => {
 
 const EthFeeSummary = () => {
   const { t } = useTranslation()
-  const { token, network, transaction } = useSendFunds()
+  const { token, network, transaction, isLocked } = useSendFunds()
 
   if (!token || transaction?.platform !== "ethereum" || network?.platform !== "ethereum")
     return null
@@ -309,6 +320,7 @@ const EthFeeSummary = () => {
             txDetails={txDetails}
             networkUsage={networkUsage}
             tx={tx}
+            disabled={isLocked}
           />
         )}
       </SummaryRow>

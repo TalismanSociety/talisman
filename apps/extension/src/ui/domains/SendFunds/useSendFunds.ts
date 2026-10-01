@@ -40,13 +40,13 @@ import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
 import { useSendFundsTransactionSol } from "./useSendFundsTransactionSol"
 
-const useSendFundsTransaction = () => {
+const useSendFundsTransaction = (isLocked: boolean) => {
   const { from, to, tokenId, amount, allowReap, sendMax } = useSendFundsWizard()
   const token = useToken(tokenId)
 
   const inputs = useMemo<SendFundsTransactionProps>(() => {
-    return { tokenId, from, to, value: amount, sendMax, allowReap }
-  }, [allowReap, amount, from, sendMax, to, tokenId])
+    return { tokenId, from, to, value: amount, sendMax, allowReap, isLocked }
+  }, [allowReap, amount, from, sendMax, to, tokenId, isLocked])
 
   const txEth = useSendFundsTransactionEth(inputs)
   const txDot = useSendFundsTransactionDot(inputs)
@@ -158,7 +158,7 @@ const useSendFundsProvider = () => {
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
-  const transaction = useSendFundsTransaction()
+  const transaction = useSendFundsTransaction(isLocked)
 
   const transfer = useMemo(() => {
     if (!token) return null

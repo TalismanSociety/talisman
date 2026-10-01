@@ -4,12 +4,12 @@ import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
+import { useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { BaseError } from "viem"
-
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
@@ -21,8 +21,10 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   label,
   className,
   onSubmit,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   const account = useAccountByAddress(tx.payload.from)
 
   const handleLedgerSignature = useCallback(
@@ -83,6 +85,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
           containerId={containerId}
           evmNetworkId={tx.networkId}
           onSigned={handleLedgerSignature}
+          onSentToDevice={reportPayloadLock}
         />
       )
   }

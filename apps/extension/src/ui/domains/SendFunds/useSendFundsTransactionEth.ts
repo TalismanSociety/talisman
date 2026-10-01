@@ -2,10 +2,11 @@ import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
@@ -16,8 +17,8 @@ export const useSendFundsTransactionEth = ({
   from,
   to,
   value = "0", // default to "0" to force fee estimation
+  isLocked,
 }: SendFundsTransactionProps) => {
-  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "ethereum")
   const feeToken = useToken(network?.nativeTokenId)
@@ -47,6 +48,8 @@ export const useSendFundsTransactionEth = ({
   }, [from, to, token, value])
 
   const result = useEthTransaction(tx, token?.networkId, isLocked, false)
+  const txDetails = useLockedValue(result.txDetails, isLocked)
+  const gasSettingsByPriority = useLockedValue(result.gasSettingsByPriority, isLocked)
 
   // force a risk analysis scan if the account isnt owned
   const targetAccount = useAccountByAddress(to)
@@ -64,22 +67,22 @@ export const useSendFundsTransactionEth = ({
 
     switch (token.type) {
       case "evm-native": {
-        if (!result?.txDetails?.maxFee) return null
-        const val = balance.transferable.planck - result.txDetails.maxFee
+        if (!txDetails?.maxFee) return null
+        const val = balance.transferable.planck - txDetails.maxFee
         return String(val > 0n ? val : 0n)
       }
       default:
         return balance.transferable.planck ? String(balance.transferable.planck) : "0"
     }
-  }, [balance, token, result?.txDetails?.maxFee])
+  }, [balance, token, txDetails?.maxFee])
 
   const [estimatedFee, maxFee] = useMemo(() => {
-    if (result?.txDetails?.estimatedFee && result?.txDetails?.maxFee) {
-      return [result.txDetails.estimatedFee, result.txDetails.maxFee]
+    if (txDetails?.estimatedFee && txDetails?.maxFee) {
+      return [txDetails.estimatedFee, txDetails.maxFee]
     }
 
     return [null, null]
-  }, [result.txDetails])
+  }, [txDetails])
 
   if (!isTokenEth(token)) return null
 
@@ -87,6 +90,8 @@ export const useSendFundsTransactionEth = ({
     platform: "ethereum" as const,
     riskAnalysis,
     ...result,
+    txDetails,
+    gasSettingsByPriority,
     tx: result.transaction, // prevents naming conflicts for consumers
     error: error ?? result.error,
 
@@ -94,7 +99,5 @@ export const useSendFundsTransactionEth = ({
     estimatedFee,
     maxFee,
     feeTokenId: feeToken?.id,
-
-    setIsLocked,
   }
 }
