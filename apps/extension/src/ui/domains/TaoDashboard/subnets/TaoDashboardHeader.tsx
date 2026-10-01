@@ -6,10 +6,11 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useSubnetLeaderboard, useTaoPrice } from "../hooks/useSn45Api"
+import { useSubnetLeaderboard } from "../hooks/useSn45Api"
 import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import { raoToTao } from "../shared/util"
 
@@ -26,15 +27,12 @@ export const TaoDashboardHeader = () => {
     return allBalances.find((b) => selectedAccountIds.has(b.address))
   }, [allBalances, selectedAccounts])
 
-  const {
-    data: taoPrice,
-    isLoading: isTaoPriceLoading,
-    isRefetching: isTaoPriceRefetching,
-  } = useTaoPrice()
+  const taoUsdRate = useTokenRates(tao?.id)?.usd ?? null
   const {
     data: leaderboardData,
     isLoading: isLeaderboardLoading,
     isRefetching: isLeaderboardRefetching,
+    isError: isLeaderboardError,
   } = useSubnetLeaderboard("1d")
 
   const taoBalances = useMemo(() => {
@@ -60,20 +58,16 @@ export const TaoDashboardHeader = () => {
   )
   const isBalanceRefetching = hasCachedBalances && !isInitializing
 
-  const isStatsLoading = isTaoPriceLoading || isLeaderboardLoading
-  const isStatsRefetching = isTaoPriceRefetching || isLeaderboardRefetching
-
   const stats = useMemo(() => {
-    const taoUsd = taoPrice?.price ? parseFloat(taoPrice.price) : 0
+    const taoUsd = taoUsdRate?.price ?? 0
     const subnets = leaderboardData?.subnets ?? []
 
-    const marketCap = taoPrice?.marketCap ?? 0
-    const priceChange24h = taoPrice?.priceChange24h ?? null
+    const marketCap = taoUsdRate?.marketCap ?? 0
+    const priceChange24h = taoUsdRate?.change24h ?? null
     const totalSubnetVolume = subnets.reduce((sum, s) => sum + raoToTao(s.volume) * taoUsd, 0)
-    const marketCapChange24h = taoPrice?.marketCapChange24h ?? null
 
-    return { marketCap, marketCapChange24h, totalSubnetVolume, taoUsd, priceChange24h }
-  }, [taoPrice, leaderboardData])
+    return { marketCap, totalSubnetVolume, taoUsd, priceChange24h }
+  }, [taoUsdRate, leaderboardData])
 
   const totalStakedPlanck = useMemo(() => {
     // Use fiat("tao") to get the TAO-equivalent value directly from each dTAO balance,
@@ -107,8 +101,8 @@ export const TaoDashboardHeader = () => {
           label={t("Staked Tao Balance")}
           tokenId={tao?.id}
           planck={totalStakedPlanck}
-          isLoading={isInitializing || isTaoPriceLoading}
-          isRefetching={isBalanceRefetching || isTaoPriceRefetching}
+          isLoading={isInitializing}
+          isRefetching={isBalanceRefetching}
           unavailable={!isMainnet}
           className="pr-8"
         />
@@ -119,24 +113,21 @@ export const TaoDashboardHeader = () => {
           <MarketStat
             label={t("Total Market Cap")}
             value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
-            change={stats.marketCapChange24h ?? undefined}
-            isLoading={isStatsLoading}
-            isRefetching={isStatsRefetching}
+            isLoading={!taoUsdRate}
             unavailable={!isMainnet}
           />
           <MarketStat
             label={t("Total Subnet Volume")}
             value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
-            isLoading={isStatsLoading}
-            isRefetching={isStatsRefetching}
-            unavailable={!isMainnet}
+            isLoading={isLeaderboardLoading || !taoUsdRate}
+            isRefetching={isLeaderboardRefetching}
+            unavailable={!isMainnet || isLeaderboardError}
           />
           <MarketStat
             label={t("TAO Price")}
             value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
             change={stats.priceChange24h ?? undefined}
-            isLoading={isStatsLoading}
-            isRefetching={isStatsRefetching}
+            isLoading={!taoUsdRate}
             unavailable={!isMainnet}
           />
         </div>
@@ -193,7 +184,7 @@ const MarketStat: FC<{
   change?: number
   isLoading?: boolean
   isRefetching?: boolean
-  /** market data has no source for this network: render a dash instead of a zero value */
+  /** market data has no source for this network, or its source failed: render a dash instead of a zero value */
   unavailable?: boolean
 }> = ({ label, value, change, isLoading, isRefetching, unavailable }) => {
   const isPositive = change !== undefined && change > 0
