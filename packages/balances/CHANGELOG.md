@@ -1,5 +1,41 @@
 # @talismn/balances
 
+## 3.0.5
+
+### Patch Changes
+
+- a9703ce: substrate-assets and substrate-foreignassets report a Blocked account's whole balance as frozen
+- 3807288: move the Balance, Balances and formatter classes from types/ to classes/ (exports unchanged)
+- a9703ce: substrate-foreignassets balances carry their own module source
+- a9703ce: nomination pool stake shows when the pool has no metadata, named after the pool id
+- a9703ce: sol-spl balances sum every token account of a mint, the part a transfer cannot spend (outside the associated token account, or frozen) is locked
+- bf998fe: deprecate the unused AnyBalanceModule type, remove stale TODOs and read error messages with getErrorMessage
+- b77f7f2: share one polling and one rpc-query subscribeBalances implementation across balance modules
+- a9703ce: uniswap v2 lp holdings are whole planck amounts
+- 24d5545: add getBlockExplorerUrl (first block explorer url of a network, or null) and isAccountPlatformCompatibleWithNetwork; @talismn/balances uses it instead of its own copy
+- a9ebed5: add package descriptions and update READMEs
+- e8813c1: fix substrate-psp22 balances: decode ink! 4 message results, reject reverted calls, keep token and address on errors
+- 5c2938e: remove placeholder tests and commented-out code
+- Updated dependencies [eaef963]
+- Updated dependencies [9ff568c]
+- Updated dependencies [24d5545]
+- Updated dependencies [9ff568c]
+- Updated dependencies [d779652]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [a9703ce]
+- Updated dependencies [9c4764b]
+- Updated dependencies [bf67cea]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/chain-connectors@1.0.5
+  - @talismn/chaindata-provider@2.1.0
+  - @talismn/util@2.1.0
+  - @talismn/crypto@1.1.1
+  - @talismn/sapi@2.0.3
+  - @talismn/scale@2.0.2
+  - @talismn/token-rates@4.0.5
+
 ## 3.0.4
 
 ### Patch Changes

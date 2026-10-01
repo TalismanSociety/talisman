@@ -1,5 +1,14 @@
 # @talismn/solana
 
+## 1.0.4
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+- Updated dependencies [a9ebed5]
+- Updated dependencies [f029165]
+  - @talismn/crypto@1.1.1
+
 ## 1.0.3
 
 ### Patch Changes

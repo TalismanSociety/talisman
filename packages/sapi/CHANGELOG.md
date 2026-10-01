@@ -1,5 +1,18 @@
 # @talismn/sapi
 
+## 2.0.3
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+- a9703ce: throw when the fallback block hash is missing instead of building a payload without one
+- 9c4764b: fix hasEvent and module error docs for unified metadata, arithmetic error texts, and the fee estimate length
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [f029165]
+  - @talismn/scale@2.0.2
+
 ## 2.0.2
 
 ### Patch Changes

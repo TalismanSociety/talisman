@@ -1,5 +1,23 @@
 # @talismn/token-rates
 
+## 4.0.5
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+- Updated dependencies [eaef963]
+- Updated dependencies [9ff568c]
+- Updated dependencies [24d5545]
+- Updated dependencies [9ff568c]
+- Updated dependencies [d779652]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/chain-connectors@1.0.5
+  - @talismn/chaindata-provider@2.1.0
+  - @talismn/util@2.1.0
+
 ## 4.0.4
 
 ### Patch Changes
