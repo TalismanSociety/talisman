@@ -23,21 +23,6 @@ export type SubnetLeaderboardRow = Omit<
   priceHistory7d: number[] | null
 }
 
-// Hook to get the TAO price
-export const useTaoPrice = () => {
-  const isEnabled = useIsSn45Enabled()
-  return useQuery({
-    queryKey: ["sn45", isEnabled, "taoPrice"],
-    enabled: isEnabled,
-    queryFn: async ({ signal }) => {
-      const response = await sn45Api.v1.getTaoPrice({ signal })
-      return response.data
-    },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 // Hook to get subnet leaderboard data
 export const useSubnetLeaderboard = (period: TimePeriod = "1d") => {
   const isEnabled = useIsSn45Enabled()

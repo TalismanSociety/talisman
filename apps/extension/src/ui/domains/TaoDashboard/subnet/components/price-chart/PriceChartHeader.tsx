@@ -17,8 +17,8 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   const { t } = useTranslation()
   const {
     data: {
-      tokenPrice: indexedPrice,
-      tokenPriceUsd: indexedPriceUsd,
+      tokenPrice: fallbackPrice,
+      tokenPriceUsd: fallbackPriceUsd,
       taoUsdPrice,
       priceChange24h,
       marketCap,
@@ -34,8 +34,9 @@ export const PriceChartHeader: FC<PriceChartHeaderProps> = ({ netuid }) => {
   const { data: realtimePrice } = useRealtimeAlphaPrice(netuid, bestBlockNumber)
 
   // Prefer the on-chain real-time price when available
-  const tokenPrice = realtimePrice ?? indexedPrice
-  const tokenPriceUsd = realtimePrice && taoUsdPrice ? realtimePrice * taoUsdPrice : indexedPriceUsd
+  const tokenPrice = realtimePrice ?? fallbackPrice
+  const tokenPriceUsd =
+    realtimePrice && taoUsdPrice ? realtimePrice * taoUsdPrice : fallbackPriceUsd
 
   if (isLoading) {
     return <PriceChartHeaderSkeleton />

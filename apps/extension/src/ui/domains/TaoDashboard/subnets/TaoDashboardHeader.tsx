@@ -113,22 +113,20 @@ export const TaoDashboardHeader = () => {
           <MarketStat
             label={t("Total Market Cap")}
             value={<FiatFromUsd amount={stats.marketCap} compact noCountUp />}
-            isLoading={!taoUsdRate}
-            unavailable={!isMainnet}
+            unavailable={!isMainnet || !taoUsdRate}
           />
           <MarketStat
             label={t("Total Subnet Volume")}
             value={<FiatFromUsd amount={stats.totalSubnetVolume} compact noCountUp />}
-            isLoading={isLeaderboardLoading || !taoUsdRate}
+            isLoading={isLeaderboardLoading}
             isRefetching={isLeaderboardRefetching}
-            unavailable={!isMainnet || isLeaderboardError}
+            unavailable={!isMainnet || isLeaderboardError || !taoUsdRate}
           />
           <MarketStat
             label={t("TAO Price")}
             value={<FiatFromUsd amount={stats.taoUsd} noCountUp />}
             change={stats.priceChange24h ?? undefined}
-            isLoading={!taoUsdRate}
-            unavailable={!isMainnet}
+            unavailable={!isMainnet || !taoUsdRate}
           />
         </div>
       </div>
