@@ -65,6 +65,8 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 
 ## Verify in the browser
 
+To verify a change or reproduce a bug in the running wallet, follow the `verify` skill in `.claude/skills/verify/SKILL.md`: a doctor check, helper scripts, and one recipe per feature.
+
 CDP on port 9223 exists only while `pnpm dev` runs with its browser. Always pass the port: most tools default to 9222, which can be another browser. The dev extension id is `akcdepjilgckjbngkhjghfnmnnkdnmno`.
 
 Extension pages: use agent-browser, a browser automation CLI that comes with an agent skill. Install both once with `npm install -g agent-browser` (or `brew install agent-browser`) and `npx skills add vercel-labs/agent-browser`. The skill tells the agent to run `agent-browser skills get core`, which prints the usage guide for the installed version. You do not need `agent-browser install`: it downloads a Chrome, and here the tool attaches to the dev Chrome.
