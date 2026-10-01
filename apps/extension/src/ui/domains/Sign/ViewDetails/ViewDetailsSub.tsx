@@ -6,12 +6,11 @@ import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
-import { type FC, useEffect, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
@@ -58,7 +57,6 @@ const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { chain, payload, decodedCall, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
   const nativeToken = useToken(chain?.nativeTokenId)
@@ -105,10 +103,6 @@ const ViewDetailsContent: FC<{
   }, [decodedCall, t])
 
   const { data: lifetimeRows } = useLifetimeRows()
-
-  useEffect(() => {
-    genericEvent("open sign transaction view details", { type: "substrate" })
-  }, [genericEvent])
 
   return (
     <div className="flex max-h-150 w-full flex-col gap-12 bg-grey-850 p-12">

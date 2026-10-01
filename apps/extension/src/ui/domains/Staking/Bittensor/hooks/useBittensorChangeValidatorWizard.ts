@@ -1,7 +1,6 @@
 import type { Address } from "@core/types/base"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
@@ -49,7 +48,6 @@ const DEFAULT_STATE: WizardState = {
 }
 
 const useBittensorChangeValidatorWizardProvider = () => {
-  const { genericEvent } = useAnalytics()
   const { close, args } = useBittensorChangeValidatorModal()
   const [{ step, newHotkey, hash, tokenId, address }, setWizardState] = useState<WizardState>(
     () => Object.assign({}, DEFAULT_STATE, args) // init with params passed to modal
@@ -145,13 +143,9 @@ const useBittensorChangeValidatorWizardProvider = () => {
     [setNewHotkey, setStep]
   )
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent("Bittensor Change Validator", { tokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, tokenId]
-  )
+  const onSubmitted = useCallback((hash: Hex) => {
+    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  }, [])
 
   // Current hotkey from the token (for display in form)
   const currentHotkey = token?.hotkey ?? null

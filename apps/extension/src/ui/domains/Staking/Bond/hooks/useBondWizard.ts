@@ -2,7 +2,6 @@ import type { Address } from "@core/types/base"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
@@ -44,7 +43,6 @@ const DEFAULT_STATE: WizardState = {
 
 const useBondWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { args } = useBondModal()
 
   const [
@@ -160,13 +158,9 @@ const useBondWizardProvider = () => {
     [isFormValid]
   )
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent(`${bondType} Bond`, { tokenId, isBondExtra: hasJoinedNomPool })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, hasJoinedNomPool, tokenId, bondType]
-  )
+  const onSubmitted = useCallback((hash: Hex) => {
+    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  }, [])
 
   const maxPlancks = useMemo(() => {
     if (!balance || !existentialDeposit || !feeEstimate) return null

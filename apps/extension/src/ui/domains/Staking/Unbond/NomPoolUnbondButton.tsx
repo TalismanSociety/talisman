@@ -1,6 +1,5 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,8 +18,6 @@ export const NomPoolUnbondButton: FC<{
   const { open } = useUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
-  const { genericEvent } = useAnalytics()
-
   const canUnstake = useMemo(
     () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
     [address, stakingStatus?.accounts]
@@ -28,8 +25,7 @@ export const NomPoolUnbondButton: FC<{
 
   const handleClick = useCallback(() => {
     open({ tokenId, address, poolId })
-    genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
-  }, [address, genericEvent, open, poolId, tokenId])
+  }, [address, open, poolId, tokenId])
 
   if (!canUnstake) return null // no nompool/tao staking on this network
 

@@ -13,7 +13,6 @@ import type {
   RequestAddressLookup,
 } from "@core/domains/accounts/types"
 import type {
-  AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   LoggedinType,
   QuickUnlockAuthenticateResult,
@@ -129,7 +128,6 @@ export default interface MessageTypes {
   approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
 
   // app message types -------------------------------------------------------
-  analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
   sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn

@@ -4,7 +4,6 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -86,12 +85,7 @@ const ConfirmDrawer = ({
 
 export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void }) => {
   const { t } = useTranslation()
-  const { popupOpenEvent } = useAnalytics()
   const { open, isOpen } = useOpenClose()
-
-  useEffect(() => {
-    popupOpenEvent("reset wallet")
-  }, [popupOpenEvent])
 
   return (
     <PopupLayout>

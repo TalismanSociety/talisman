@@ -3,7 +3,6 @@ import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
@@ -28,7 +27,6 @@ type WizardState = {
 
 const useUnbondWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { args } = useUnbondModal()
 
   const [{ address, step, hash, tokenId }, setWizardState] = useState<WizardState>(() => ({
@@ -57,20 +55,15 @@ const useUnbondWizardProvider = () => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    unbondType,
   } = useGetUnbondInfo({
     sapi,
     chainId: token?.networkId,
     address: account?.address,
   })
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent(`${unbondType} Unbond`, { tokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, tokenId, unbondType]
-  )
+  const onSubmitted = useCallback((hash: Hex) => {
+    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  }, [])
 
   const amountToUnbond = useMemo(
     () =>

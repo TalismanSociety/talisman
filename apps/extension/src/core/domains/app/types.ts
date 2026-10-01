@@ -2,7 +2,6 @@ import type { TokenId } from "@talismn/chaindata-provider"
 
 import type { ValidRequests } from "../../libs/requests/types"
 import type { Address } from "../../types/base"
-import type { PostHogCaptureProperties } from "../analytics/types"
 import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
 export type RemoteConfigStoreData = RemoteConfigData
@@ -36,11 +35,6 @@ export type SendFundsOpenRequest = {
   tokenId?: TokenId
   tokenSymbol?: string
   to?: Address
-}
-
-export interface AnalyticsCaptureRequest {
-  eventName: string
-  options?: PostHogCaptureProperties
 }
 
 export type FeatureFlag = keyof RemoteConfigStoreData["featureFlags"]
@@ -124,7 +118,6 @@ export interface AppMessages {
   "pri(app.popupOpen)": [string | undefined, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.promptLogin)": [null, boolean]
-  "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]

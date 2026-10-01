@@ -39,7 +39,6 @@ const IGNORED_LOG_MESSAGES: MessageTypes[] = [
   "pub(ping)",
   "pri(keepalive)",
   "pri(keepunlocked)",
-  "pri(app.analyticsCapture)",
   "pub(talisman.rpc.byGenesisHash.subscribe)",
   "pub(talisman.rpc.byGenesisHash.unsubscribe)",
   "pub(talisman.rpc.byGenesisHash.send)",

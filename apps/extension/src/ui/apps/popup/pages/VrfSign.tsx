@@ -8,7 +8,6 @@ import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useStatus from "@ui/hooks/useStatus"
 import { useRequest } from "@ui/state/requests"
 import { type FC, useCallback, useEffect, useMemo } from "react"
@@ -37,7 +36,6 @@ const TranscriptField: FC<{ label: string; value?: string }> = ({ label, value }
 
 export const VrfSignRequest = () => {
   const { t } = useTranslation()
-  const { popupOpenEvent } = useAnalytics()
   const { id } = useParams<"id">()
   const req = useRequest(id as SigningRequestID<"vrf-sign">)
   const { status, message, setStatus } = useStatus()
@@ -45,10 +43,6 @@ export const VrfSignRequest = () => {
   useEffect(() => {
     if (!req) window.close()
   }, [req])
-
-  useEffect(() => {
-    popupOpenEvent("vrf-sign")
-  }, [popupOpenEvent])
 
   const approve = useCallback(async () => {
     if (!req) return

@@ -13,7 +13,6 @@ import {
 import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -29,7 +28,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { t } from "i18next"
@@ -40,22 +38,10 @@ import { z } from "zod/v4"
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Network",
-}
-
 export const EditNetworkPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
   const network = useAnyNetwork(id)
-
-  useAnalyticsPageView(ANALYTICS_PAGE, {
-    id,
-    mode: network ? "Edit" : "Add",
-  })
 
   if (!network) return null
 

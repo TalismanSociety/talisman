@@ -16,7 +16,6 @@ import { ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -37,20 +36,12 @@ import { getGoPlusReportUrl } from "@ui/domains/TokenRisk/goPlusReport"
 import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork, useToken } from "@ui/state/chaindata"
 import { dump as convertToYaml } from "js-yaml"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Token Details",
-}
 
 export const EditTokenPage = () => {
   const { t } = useTranslation()
@@ -63,8 +54,6 @@ export const EditTokenPage = () => {
     // if token doesn't exist, redirect to tokens page
     if (token === null) navigate("/tokens")
   }, [token, navigate])
-
-  useAnalyticsPageView(ANALYTICS_PAGE, { id })
 
   if (!token || !network) return null
 
@@ -92,7 +81,7 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
-  const { scan: riskScan } = useTokenRiskScan(token, "token-settings")
+  const { scan: riskScan } = useTokenRiskScan(token)
   const hasSecurityReport = !!getGoPlusReportUrl(token) || riskScan?.verdict !== "unknown"
   const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()

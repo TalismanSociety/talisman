@@ -20,13 +20,12 @@ import {
   type BalanceSummary,
   useTokenBalancesSummary,
 } from "@ui/domains/Portfolio/useTokenBalancesSummary"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { usePortfolioBalances } from "@ui/state/portfolio"
 import { t } from "i18next"
 import { uniq } from "lodash-es"
-import { type FC, useEffect, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -164,11 +163,6 @@ const usePortfolioAsset = () => {
 
 export const PortfolioAsset = () => {
   const { symbol, token, balancesToDisplay, summary } = usePortfolioAsset()
-  const { pageOpenEvent } = useAnalytics()
-
-  useEffect(() => {
-    pageOpenEvent("portfolio asset", { symbol })
-  }, [pageOpenEvent, symbol])
 
   if (!symbol) return <NavigateWithQuery url="/portfolio" />
 

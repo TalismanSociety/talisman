@@ -18,7 +18,6 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { getErrorMessage, isNotNil } from "@talismn/util"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { CtaButton } from "@ui/components/CtaButton"
@@ -36,13 +35,6 @@ import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "General",
-}
-
 export const GeneralPage = () => (
   <DashboardLayout sidebar="settings">
     <Content />
@@ -55,7 +47,7 @@ const Content = () => {
   const [hideDust, setHideDust] = useSetting("hideDust")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
-  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
+  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload()
   const [developerMode, setDeveloperMode] = useSetting("developerMode")
 
   return (

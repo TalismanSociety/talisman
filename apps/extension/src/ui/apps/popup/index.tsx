@@ -134,7 +134,7 @@ const Popup = () => {
         <ManageProxyModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
-      <DatabaseErrorAlert container="popup" />
+      <DatabaseErrorAlert />
     </FadeIn>
   )
 }

@@ -3,7 +3,6 @@ import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/st
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { ListButton } from "@ui/components/ListButton"
 import { Modal } from "@ui/components/Modal"
@@ -21,7 +20,6 @@ import { cn } from "@ui/util/cn"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 import { getPlatformLabel, type PlatformOption } from "./usePlatformOptions"
 
@@ -194,14 +192,6 @@ const NetworkRow: FC<{
 
   const navigate = useNavigate()
   const handleNetworkClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "chain settings button",
-      properties: {
-        chainId: network.id,
-      },
-    })
     navigate(`/settings/networks-tokens/network/${network.id}`)
   }, [navigate, network.id])
 

@@ -682,7 +682,6 @@ export default defineConfig({
             "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
               process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
             ),
-            "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
           },
         }),
         // Buffer and process globals, still used by Ledger, MetaMask and ethereumjs libs

@@ -15,13 +15,12 @@ import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetail
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances } from "@ui/state/balances"
 import { usePortfolioBalances } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { uniq } from "lodash-es"
-import { type FC, useCallback, useEffect, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 
@@ -105,7 +104,6 @@ export const PortfolioAsset = () => {
   const { selectedAccount: account } = usePortfolioNavigation()
   const allBalances = useBalances()
   const { networkBalances } = usePortfolioBalances()
-  const { popupOpenEvent } = useAnalytics()
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
@@ -117,10 +115,6 @@ export const PortfolioAsset = () => {
     () => accountBalances.find((b) => b.token?.symbol === symbol),
     [accountBalances, symbol]
   )
-
-  useEffect(() => {
-    popupOpenEvent("portfolio asset", { symbol })
-  }, [popupOpenEvent, symbol])
 
   if (!symbol) return <Navigate to="/portfolio" />
 

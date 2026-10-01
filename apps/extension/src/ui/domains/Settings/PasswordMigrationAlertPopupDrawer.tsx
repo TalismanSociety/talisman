@@ -1,6 +1,5 @@
 import { LockIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Card } from "@ui/components/Card"
 import { Drawer } from "@ui/components/Drawer"
@@ -65,14 +64,6 @@ const PasswordMigrationAlertPopupDrawer = () => {
   const { isOpen } = useMigratePasswordModal()
 
   const handleAccept = useCallback(() => {
-    sendAnalyticsEvent({
-      container: "Popup",
-      feature: "Navigation",
-      featureVersion: 3,
-      page: "Portfolio",
-      name: "Goto",
-      action: "Migrate password button",
-    })
     api.dashboardOpen("/settings")
   }, [])
 

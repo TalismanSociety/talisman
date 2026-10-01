@@ -5,7 +5,6 @@ import { PillButton } from "@ui/components/PillButton"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +18,6 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   const { t } = useTranslation()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
-  const { genericEvent } = useAnalytics()
   const { open: openRampsModal } = useRampsModal()
 
   const handleCopy = useCallback(() => {
@@ -27,14 +25,12 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
       address: selectedAccount?.address,
       qr: true,
     })
-    genericEvent("open receive", { from: "asset details" })
-  }, [selectedAccount?.address, genericEvent, open])
+  }, [selectedAccount?.address, open])
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    genericEvent("open ramps", { from: "asset details" })
     openRampsModal()
-  }, [genericEvent, openRampsModal])
+  }, [openRampsModal])
 
   return (
     <FadeIn>

@@ -8,14 +8,12 @@ import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/ic
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
@@ -29,13 +27,6 @@ import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import type { TxReplaceType } from "./types"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Transactions",
-  featureVersion: 1,
-  page: "Replace Transaction",
-}
 
 type TxReplaceDrawerProps = {
   tx?: WalletTransaction
@@ -99,15 +90,6 @@ const EvmDrawerContent: FC<{
   onClose?: (newTxHash?: HexString) => void
 }> = ({ tx, type, fullHeight, containerId, onClose }) => {
   const { t } = useTranslation()
-  const analyticsProps = useMemo(
-    () => ({
-      evmNetworkId: tx.networkId,
-      networkType: "ethereum",
-    }),
-    [tx.networkId]
-  )
-  useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
-
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
   const [isLocked, setIsLocked] = useState(false)
   const {
@@ -132,13 +114,6 @@ const EvmDrawerContent: FC<{
     try {
       const serialized = serializeTransactionRequest(transaction)
       const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
-      api.analyticsCapture({
-        eventName: `transaction ${type}`,
-        options: {
-          chainId: Number(tx.networkId),
-          networkType: "ethereum",
-        },
-      })
       onClose?.(newHash)
     } catch (err) {
       log.error("handleSend", { err })
@@ -160,13 +135,6 @@ const EvmDrawerContent: FC<{
       try {
         const serialized = serializeTransactionRequest(transaction)
         const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
-        api.analyticsCapture({
-          eventName: `transaction ${type}`,
-          options: {
-            chainId: Number(tx.networkId),
-            networkType: "ethereum",
-          },
-        })
         onClose?.(newHash)
       } catch (err) {
         log.error("handleSend", { err })

@@ -1,7 +1,6 @@
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -13,7 +12,6 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Spacer } from "@ui/components/Spacer"
 import { TogglePill } from "@ui/components/TogglePill"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useAnyNetwork, useNetworks } from "@ui/state/chaindata"
@@ -23,18 +21,10 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { type PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Tokens",
-}
-
 const Content = () => {
   const { t } = useTranslation()
   useBalancesHydrate() // preload
 
-  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -82,11 +72,6 @@ const Content = () => {
   ])
 
   const handleAddToken = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add token button",
-    })
     navigate("./add")
   }, [navigate])
 

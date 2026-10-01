@@ -96,7 +96,6 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 | ------------------- | -------- | ----------------------------------------------- |
 | `SENTRY_AUTH_TOKEN` | Chrome   | Sentry token for sourcemap upload (build only warns without it) |
 | `SENTRY_DSN`        | Chrome   | Sentry DSN used at runtime                      |
-| `POSTHOG_AUTH_TOKEN`| Chrome   | PostHog analytics token                         |
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 

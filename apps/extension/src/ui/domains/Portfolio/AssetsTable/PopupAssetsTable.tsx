@@ -12,7 +12,6 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { StakeUnstakeButtons } from "@ui/domains/Staking/StakeUnstakeButtons"
 import { useUnbondButton } from "@ui/domains/Staking/Unbond/useUnbondButton"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -62,7 +61,6 @@ const AssetRow: FC<{
   locked?: boolean
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
-  const { genericEvent } = useAnalytics()
   const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
@@ -75,8 +73,7 @@ const AssetRow: FC<{
     if (!token) return
 
     navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
-    genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
-  }, [genericEvent, navigate, token])
+  }, [navigate, token])
 
   const { tokens, fiat } = useMemo(() => {
     return {

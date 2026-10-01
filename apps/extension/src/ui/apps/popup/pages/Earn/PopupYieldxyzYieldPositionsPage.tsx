@@ -1,16 +1,9 @@
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { YieldxyzYieldPositions } from "@ui/domains/Earn/yieldxyz/positions/YieldxyzYieldPositions"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useEffect } from "react"
 import { Navigate, useParams } from "react-router-dom"
 
 export const PopupYieldxyzYieldPositionsPage = () => {
-  const { pageOpenEvent } = useAnalytics()
   const { yieldId, address } = useParams()
-
-  useEffect(() => {
-    pageOpenEvent("earn yieldxyz position", { yieldId })
-  }, [pageOpenEvent, yieldId])
 
   if (!yieldId || !address) return <Navigate to="/earn" replace />
 

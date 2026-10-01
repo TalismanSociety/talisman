@@ -207,7 +207,7 @@ const Dashboard = () => (
     <LoginChecker>
       <DashboardInner />
     </LoginChecker>
-    <DatabaseErrorAlert container="fullscreen" />
+    <DatabaseErrorAlert />
   </PreventPhishing>
 )
 

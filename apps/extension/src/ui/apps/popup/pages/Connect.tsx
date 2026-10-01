@@ -13,7 +13,6 @@ import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContai
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { ConnectedAccountsMultiSelect } from "@ui/domains/Site/ConnectedAccountsMultiSelect"
 import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useAuthorisedSites } from "@ui/state/authorisedSites"
 import { useRequest } from "@ui/state/requests"
@@ -71,7 +70,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
-  const { popupOpenEvent } = useAnalytics()
   const [connected, setConnected] = useState<string[]>([])
 
   useEffect(() => {
@@ -103,10 +101,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     api.authrequestIgnore(authRequest.id)
     window.close()
   }, [authRequest])
-
-  useEffect(() => {
-    popupOpenEvent("connect")
-  }, [popupOpenEvent])
 
   const onNoAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {

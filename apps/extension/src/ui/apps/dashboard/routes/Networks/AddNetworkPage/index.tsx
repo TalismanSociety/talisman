@@ -4,7 +4,6 @@ import { log } from "@common/log"
 import { getGithubTokenLogoUrlByCoingeckoId, NetworkBaseSchema } from "@talismn/chaindata-provider"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { useField } from "@tanstack/react-form"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -14,7 +13,6 @@ import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkByGenesisHash$, getNetworkById$ } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
 import { type FC, useMemo } from "react"
@@ -28,19 +26,8 @@ import {
   useNetworkCreateForm,
 } from "./context"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Network",
-}
-
 export const AddNetworkPage = () => {
   const { t } = useTranslation()
-
-  useAnalyticsPageView(ANALYTICS_PAGE, {
-    mode: "Add",
-  })
 
   return (
     <DashboardLayout sidebar="settings">

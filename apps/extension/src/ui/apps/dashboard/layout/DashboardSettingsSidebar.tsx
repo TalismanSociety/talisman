@@ -13,7 +13,6 @@ import {
 import { IconButton } from "@ui/components/IconButton"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, Suspense, useCallback } from "react"
@@ -22,13 +21,11 @@ import { NavLink, type To, useMatch, useNavigate } from "react-router-dom"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const navigate = useNavigate()
 
   const handleAddAccountClick = useCallback(() => {
-    genericEvent("goto add account", { from: "sidebar" })
     navigate("/accounts/add")
-  }, [genericEvent, navigate])
+  }, [navigate])
 
   return (
     <div className={cn("rounded-lg bg-grey-900", "flex w-full flex-col gap-8 p-8")}>

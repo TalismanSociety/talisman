@@ -4,14 +4,12 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworks } from "@ui/state/chaindata"
 import { keyBy } from "lodash-es"
 import { useCallback, useMemo } from "react"
@@ -31,13 +29,6 @@ const schema = yup.object({
   name: yup.string().required(" "),
   genesisHash: yup.mixed<HexString>(),
 })
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Address book contact edit",
-}
 
 export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
   const { t } = useTranslation()
@@ -83,11 +74,6 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
       try {
         const { name, genesisHash } = formData
         await api.accountUpdateContact({ ...contact, name, genesisHash })
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Interact",
-          action: "Edit address book contact",
-        })
         close()
       } catch (error) {
         setError("name", error as Error)
@@ -117,8 +103,6 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
     }
     return contact.address
   }, [contact.address, isAddressSs58, genesisHash, compatibleNetworksByGenesisHash])
-
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>

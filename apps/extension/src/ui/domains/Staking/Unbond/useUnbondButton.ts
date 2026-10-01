@@ -3,7 +3,6 @@ import type { Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -17,7 +16,6 @@ import { useGetSeekStaked } from "../Seek/hooks/useGetSeekStaked"
 import { useUnbondModal } from "./useUnbondModal"
 
 export const useUnbondButton = ({ balances }: { balances: Balances | null | undefined }) => {
-  const { genericEvent } = useAnalytics()
   const ownedAccounts = useAccounts("owned")
 
   const remoteConfig = useRemoteConfig()
@@ -79,11 +77,6 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       if (!bestUnbondableBalance) return
       e.stopPropagation()
 
-      genericEvent("open inline unstaking modal", {
-        tokenId: bestUnbondableBalance.tokenId,
-        from: "portfolio",
-      })
-
       switch (bestUnbondableBalance.type) {
         case "bittensor": {
           const { address, networkId, hotkey, netuid } = bestUnbondableBalance
@@ -117,7 +110,6 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
     },
     [
       bestUnbondableBalance,
-      genericEvent,
       openBittensorModal,
       openUnbondModal,
       openSeekStakingModal,

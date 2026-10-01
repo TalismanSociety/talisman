@@ -3,7 +3,6 @@ import { log } from "@common/log"
 import { assert, getErrorMessage, sleep } from "@talismn/util"
 import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
@@ -16,7 +15,6 @@ import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./quickUnlo
 import type { PasswordStoreData } from "./store.password"
 import { isCompleteEnrollment } from "./store.quickUnlock"
 import type {
-  AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
@@ -66,7 +64,6 @@ export default class AppHandler extends ExtensionHandler {
 
     await this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
-    talismanAnalytics.capture("password created")
 
     return true
   }
@@ -85,10 +82,8 @@ export default class AppHandler extends ExtensionHandler {
         // we can now set up the auth secret
         await this.stores.password.setPassword(transformedPassword)
         await this.stores.password.setupAuthSecret(transformedPassword)
-        talismanAnalytics.capture("authenticate", { method: "legacy" })
       } else {
         await this.stores.password.authenticate(pass)
-        talismanAnalytics.capture("authenticate", { method: "new" })
       }
       // start the autolock timer
       this.stores.settings
@@ -271,7 +266,6 @@ export default class AppHandler extends ExtensionHandler {
       encryptedPassword,
       iv,
     })
-    talismanAnalytics.capture("quick unlock enrolled")
     return true
   }
 
@@ -282,7 +276,6 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     await this.stores.quickUnlock.unenroll()
-    talismanAnalytics.capture("quick unlock unenrolled")
     return true
   }
 
@@ -353,8 +346,6 @@ export default class AppHandler extends ExtensionHandler {
       return "failed"
     }
 
-    talismanAnalytics.capture("authenticate", { method: "quickUnlock" })
-
     this.stores.settings
       .get()
       .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
@@ -413,12 +404,6 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.sendFunds.open)":
         return this.openSendFunds(request as RequestTypes["pri(app.sendFunds.open)"])
-
-      case "pri(app.analyticsCapture)": {
-        const { eventName, options } = request as AnalyticsCaptureRequest
-        talismanAnalytics.capture(eventName, options)
-        return true
-      }
 
       case "pri(app.phishing.addException)": {
         return addException((request as RequestTypes["pri(app.phishing.addException)"]).url)

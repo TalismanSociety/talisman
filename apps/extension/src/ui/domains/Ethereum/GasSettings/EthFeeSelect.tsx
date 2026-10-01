@@ -7,7 +7,6 @@ import type {
 import type { TokenId } from "@talismn/chaindata-provider"
 import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
@@ -16,16 +15,6 @@ import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
 import { CustomGasSettingsFormLegacy } from "./CustomGasSettingsFormLegacy"
 import { useFeePriorityOptionsUI } from "./common"
 import { FeeOptionsSelectForm } from "./FeeOptionsForm"
-
-const OpenFeeSelectTracker = () => {
-  const { genericEvent } = useAnalytics()
-
-  useEffect(() => {
-    genericEvent("open evm fee select")
-  }, [genericEvent])
-
-  return null
-}
 
 type EthFeeSelectProps = {
   tx: TransactionRequest
@@ -55,7 +44,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   className,
 }) => {
   const options = useFeePriorityOptionsUI()
-  const { genericEvent } = useAnalytics()
 
   const [showCustomSettings, setShowCustomSettings] = useState(false)
   const { isOpen, open, close } = useOpenClose()
@@ -66,11 +54,10 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
 
   const setPriority = useCallback(
     (priority: EthPriorityOptionName) => {
-      genericEvent("evm fee change", { priority })
       if (onChange) onChange(priority)
       close()
     },
-    [close, genericEvent, onChange]
+    [close, onChange]
   )
 
   const handleSelect = useCallback(
@@ -143,8 +130,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
             networkUsage={networkUsage}
           />
         )}
-
-        <OpenFeeSelectTracker />
       </Drawer>
     </>
   )

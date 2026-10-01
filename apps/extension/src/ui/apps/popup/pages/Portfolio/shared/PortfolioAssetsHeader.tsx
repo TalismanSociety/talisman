@@ -13,7 +13,6 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances } from "@ui/state/balances"
@@ -29,12 +28,9 @@ const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
-  const { genericEvent } = useAnalytics()
-
   const sendFunds = useCallback(() => {
     openSendFundsPopup()
-    genericEvent("open send funds", { from: "popup portfolio" })
-  }, [openSendFundsPopup, genericEvent])
+  }, [openSendFundsPopup])
 
   return (
     <Tooltip placement="bottom">
@@ -57,8 +53,6 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { selectedFolder } = usePortfolioNavigation()
 
-  const { genericEvent } = useAnalytics()
-
   const chain = useNetworkByGenesisHash(getAccountGenesisHash(account))
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
@@ -66,8 +60,7 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
       networkId: chain?.id,
       addresses: selectedFolder?.tree.map((account) => account.address),
     })
-    genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal, selectedFolder?.tree])
+  }, [account?.address, chain?.id, openCopyAddressModal, selectedFolder?.tree])
 
   return (
     <Tooltip placement="bottom">
@@ -167,7 +160,6 @@ export const PortfolioAssetsHeader = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AccountContextMenu
-                    analyticsFrom="popup portfolio"
                     address={account?.address}
                     hideManageAccounts
                     trigger={

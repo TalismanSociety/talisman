@@ -60,7 +60,7 @@ export const AddCustomErc20Token = () => {
 
   const network = useNetworkById(request?.token?.networkId, "ethereum")
   const getWarningMessage = useWatchAssetWarningMessage()
-  const { scan, isPending: isScanPending } = useTokenRiskScan(request?.token, "dapp-add-token")
+  const { scan, isPending: isScanPending } = useTokenRiskScan(request?.token)
   const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
   const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
 

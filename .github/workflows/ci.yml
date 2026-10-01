@@ -123,7 +123,6 @@ jobs:
         run: pnpm build:extension
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
-          POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
           # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts

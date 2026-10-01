@@ -29,7 +29,6 @@ import type {
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../types"
@@ -238,7 +237,6 @@ export default class Tabs extends TabsHandler {
   private reportPhishingRedirect(url: string, source: PhishingSource): void {
     const properties = { url, source }
     sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
-    talismanAnalytics.capture("Redirect from phishing site", properties)
   }
 
   private async redirectToPhishingPage(

@@ -1,6 +1,5 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapMinusIcon } from "@talismn/icons"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,8 +17,6 @@ export const NomPoolWithdrawButton: FC<{
   const { open } = useNomPoolWithdrawModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
 
-  const { genericEvent } = useAnalytics()
-
   const canWithdraw = useMemo(
     () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canWithdraw),
     [address, stakingStatus]
@@ -27,8 +24,7 @@ export const NomPoolWithdrawButton: FC<{
 
   const handleClick = useCallback(() => {
     open({ tokenId, address })
-    genericEvent("open inline staking withdraw modal", { from: "asset details", tokenId })
-  }, [address, genericEvent, open, tokenId])
+  }, [address, open, tokenId])
 
   if (!canWithdraw) return null // no nompool staking on this network
 

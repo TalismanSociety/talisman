@@ -2,7 +2,6 @@ import { isAccountOwned } from "@core/domains/keyring/exports"
 import { ArrowDownIcon, CreditCardIcon, RepeatIcon, SendIcon, TaoIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -21,11 +20,10 @@ import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
 
 type DashboardTopActionsProps = {
-  analyticsPage: AnalyticsPage
   className?: string
 }
 
-export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPage, className }) => {
+export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className }) => {
   const { selectedAccounts, selectedAccount } = usePortfolioNavigation()
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
@@ -55,8 +53,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
     () =>
       [
         {
-          analyticsName: "Goto" as const,
-          analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
           onClick: () =>
@@ -68,8 +64,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
           disabledReason,
         },
         {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open receive",
           label: selectedAccount && !isAccountOwned(selectedAccount) ? t("Copy") : t("Receive"),
           icon: ArrowDownIcon,
           onClick: () =>
@@ -79,8 +73,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
           disabled: !selectedAccounts.length,
         },
         {
-          analyticsName: "Goto" as const,
-          analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
           onClick: () => openSwapModal({}),
@@ -89,8 +81,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
         },
         canBuy
           ? {
-              analyticsName: "Goto" as const,
-              analyticsAction: "open ramps",
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
               onClick: () => openRampsModal(),
@@ -100,8 +90,6 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
           : null,
         isBittensorEnabled
           ? {
-              analyticsName: "Goto" as const,
-              analyticsAction: "open tao dashboard",
               label: t("Trade TAO"),
               icon: TaoIcon,
               onClick: () =>
@@ -139,15 +127,13 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ analyticsPag
     >
       {actions.map((action, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static list
-        <Action key={index} analyticsPage={analyticsPage} {...action} />
+        <Action key={index} {...action} />
       ))}
     </div>
   )
 }
 
 type ActionDef = {
-  analyticsName: AnalyticsEventName
-  analyticsAction?: string
   label: string
   tooltip?: string
   icon: FC<{ className?: string }>
@@ -156,14 +142,7 @@ type ActionDef = {
   disabledReason?: string
 }
 
-type ActionProps = ActionDef & {
-  analyticsPage: AnalyticsPage
-}
-
-const Action: FC<ActionProps> = ({
-  analyticsPage,
-  analyticsName,
-  analyticsAction,
+const Action: FC<ActionDef> = ({
   label,
   tooltip,
   icon: Icon,
@@ -174,14 +153,9 @@ const Action: FC<ActionProps> = ({
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       event.stopPropagation()
-      sendAnalyticsEvent({
-        ...analyticsPage,
-        name: analyticsName,
-        action: analyticsAction,
-      })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName, analyticsPage]
+    [onClick]
   )
 
   return (

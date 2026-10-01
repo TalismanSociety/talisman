@@ -8,18 +8,10 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
-import {
-  type FC,
-  type PropsWithChildren,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-} from "react"
+import { type FC, type PropsWithChildren, type ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { formatEther, formatGwei } from "viem"
 
@@ -68,7 +60,6 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     error,
     errorDetails,
   } = useEthSignTransactionRequest()
-  const { genericEvent } = useAnalytics()
 
   const nativeToken = useToken(network?.nativeTokenId)
   const formatEthValue = useCallback(
@@ -79,10 +70,6 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   )
 
   const nativeTokenRates = useTokenRates(nativeToken?.id)
-
-  useEffect(() => {
-    genericEvent("open sign transaction view details", { type: "ethereum" })
-  }, [genericEvent])
 
   const [estimatedFee, maximumFee, estimatedL1DataFee, estimatedL2Fee] = useMemo(
     () =>

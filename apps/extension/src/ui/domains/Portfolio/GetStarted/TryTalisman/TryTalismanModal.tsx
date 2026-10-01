@@ -1,4 +1,3 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -6,13 +5,6 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { TryTalismanContent } from "./TryTalismanContent"
 import { useTryTalismanModal } from "./useTryTalismanModal"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Try Talisman",
-}
 
 export const TryTalismanModal = () => {
   const { t } = useTranslation()
@@ -29,7 +21,7 @@ export const TryTalismanModal = () => {
         onCloseClick={close}
       >
         <ScrollContainer className="h-full w-full">
-          <TryTalismanContent analytics={ANALYTICS_PAGE} />
+          <TryTalismanContent />
         </ScrollContainer>
       </ModalDialog>
     </Modal>

@@ -13,7 +13,6 @@ import {
 } from "@talismn/icons"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { Nav, NavItem } from "@ui/components/Nav"
@@ -28,66 +27,33 @@ import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Navigation",
-  featureVersion: 3,
-  page: "Portfolio",
-}
-
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close } = usePopupNavOpenClose()
   const ownedAccounts = useAccounts("owned")
 
   const handleLock = useCallback(async () => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Interact",
-      action: "Lock wallet",
-    })
     api.lock()
     window.close()
   }, [])
 
   const handleAddAccountClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add account button",
-    })
     api.dashboardOpen("/accounts/add")
     window.close()
   }, [])
 
   const handleAddressBookClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Address Book button",
-    })
     api.dashboardOpen("/settings/address-book")
     window.close()
   }, [])
 
   const handleSendFundsClick = useCallback(async () => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Send Funds button",
-    })
     await api.sendFundsOpen()
     window.close()
   }, [])
 
   const { open: openSwapModal } = useSwapModal()
   const handleSwapClick = useCallback(async () => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Swap button",
-    })
-
     openSwapModal({})
     await sleep(150)
     close()
@@ -95,31 +61,16 @@ export const NavigationDrawer: FC = () => {
 
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Backup Wallet button",
-    })
     api.dashboardOpen("/settings/mnemonics")
     window.close()
   }, [])
 
   const handleSettingsClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Settings button",
-    })
     api.dashboardOpen("/settings/general")
     window.close()
   }, [])
 
   const handleManageNetworksClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Manage Networks button",
-    })
     api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [])
@@ -127,11 +78,6 @@ export const NavigationDrawer: FC = () => {
   const showBuySell = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
   const handleBuySellClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Buy/Sell button",
-    })
     openRampsModal()
     close()
   }, [openRampsModal, close])

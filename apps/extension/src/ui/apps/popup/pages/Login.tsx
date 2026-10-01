@@ -9,7 +9,6 @@ import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
@@ -243,13 +242,8 @@ const Login = ({
   autoTriggerQuickUnlock: boolean
 }) => {
   const { t } = useTranslation()
-  const { popupOpenEvent } = useAnalytics()
   const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
   const [quickUnlockError, setQuickUnlockError] = useState<string>()
-
-  useEffect(() => {
-    popupOpenEvent("auth")
-  }, [popupOpenEvent])
 
   const {
     watch,

@@ -17,7 +17,6 @@ import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dT
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
@@ -125,7 +124,6 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
 
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const allBalances = useBalances("owned")
   const remoteConfig = useRemoteConfig()
   const { args } = useBittensorBondModal()
@@ -468,13 +466,9 @@ const useBittensorBondWizardProvider = () => {
     })
   }, [])
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent("Bittensor Bond", { tokenId: nativeTokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, nativeTokenId]
-  )
+  const onSubmitted = useCallback((hash: Hex) => {
+    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  }, [])
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked

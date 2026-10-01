@@ -2,7 +2,6 @@ import { languages } from "@common/i18nConfig"
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowUpRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Toggle } from "@ui/components/Toggle"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
@@ -14,13 +13,6 @@ import { useTranslation } from "react-i18next"
 import { AutoLockDrawer, useAutoLockDrawerOpenClose } from "./AutoLockDrawer"
 import { CurrenciesDrawer, useCurrenciesDrawerOpenClose } from "./CurrenciesDrawer"
 import { LanguageDrawer, useLanguageDrawerOpenClose } from "./LanguageDrawer"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Quick Settings",
-  featureVersion: 3,
-  page: "Portfolio",
-}
 
 export const [useQuickSettingsOpenClose] = createGlobalOpenClose()
 
@@ -198,11 +190,6 @@ const AllSettingsButton = () => {
   const { t } = useTranslation()
 
   const handleClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "All Settings button",
-    })
     api.dashboardOpen("/settings/general")
     window.close()
   }, [])

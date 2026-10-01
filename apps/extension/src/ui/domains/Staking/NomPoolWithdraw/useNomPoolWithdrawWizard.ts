@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
@@ -33,7 +32,6 @@ type WizardState = {
 
 const useNomPoolWithdrawWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { args } = useNomPoolWithdrawModal()
 
   const [{ address, step, hash, tokenId }, setWizardState] = useState<WizardState>(() => ({
@@ -52,13 +50,9 @@ const useNomPoolWithdrawWizardProvider = () => {
   const { data: pool } = useNomPoolByMember(token?.networkId, account?.address)
   const { data: sapi } = useScaleApi(token?.networkId)
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent("NomPool Withdraw", { tokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, tokenId]
-  )
+  const onSubmitted = useCallback((hash: Hex) => {
+    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  }, [])
 
   const { data: activeEra } = useActiveStakingEra(token?.networkId)
 

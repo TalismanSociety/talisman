@@ -16,7 +16,6 @@ import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -92,19 +91,15 @@ const Accounts = () => {
       watchedTree.map(treeItemToOption("watched")).filter(filterEmptyFolders),
     ]
   }, [currentFolder, treeName, catalog, accounts, t, balanceTotals])
-
-  const { genericEvent } = useAnalytics()
   const navigate = useNavigate()
 
   const handleManageAccountsClick = useCallback(() => {
-    genericEvent("goto manage accounts", { from: "sidebar" })
     navigate("/settings/accounts")
-  }, [genericEvent, navigate])
+  }, [navigate])
 
   const handleAddAccountClick = useCallback(() => {
-    genericEvent("goto add account", { from: "sidebar" })
     navigate("/accounts/add")
-  }, [genericEvent, navigate])
+  }, [navigate])
 
   return (
     <div className="flex w-full flex-col gap-8 p-8" data-testid="sidebar-account-list">

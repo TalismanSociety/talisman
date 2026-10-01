@@ -3,7 +3,6 @@ import type { Account } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import { EyeIcon, EyeOffIcon, FolderIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardTopActions } from "@ui/apps/dashboard/DashboardTopActions"
 import { ContextMenuTrigger } from "@ui/components/ContextMenu"
 import { IconButton } from "@ui/components/IconButton"
@@ -15,7 +14,6 @@ import { FolderContextMenu } from "@ui/domains/Account/FolderContextMenu"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals } from "@ui/state/balanceTotals"
 import { useSelectedCurrency, useSetting } from "@ui/state/settings"
@@ -27,15 +25,13 @@ import { usePortfolioNavigation } from "./usePortfolioNavigation"
 
 const HideBalancesButton: FC<{ visible: boolean }> = ({ visible }) => {
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
-  const { genericEvent } = useAnalytics()
 
   const toggleHideBalance: MouseEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       event.stopPropagation()
-      genericEvent("toggle hide balance")
       setHideBalances((prev) => !prev)
     },
-    [genericEvent, setHideBalances]
+    [setHideBalances]
   )
 
   return (
@@ -75,7 +71,6 @@ const SelectionScope: FC<{
         <div className="shrink-0">
           <AccountContextMenu
             address={account.address}
-            analyticsFrom="dashboard portfolio"
             placement="bottom-end"
             trigger={
               <IconButton className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-grey-800/50 hover:bg-grey-800/80">
@@ -179,14 +174,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <DashboardTopActions analyticsPage={ANALYTICS_PAGE} className="z-1" />
+      <DashboardTopActions className="z-1" />
     </div>
   )
-}
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Portfolio Home",
 }

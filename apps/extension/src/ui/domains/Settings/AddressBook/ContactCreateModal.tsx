@@ -8,7 +8,6 @@ import {
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -16,7 +15,6 @@ import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { keyBy } from "lodash-es"
@@ -34,13 +32,6 @@ type FormValues = {
   searchAddress: string
   address: string
   genesisHash?: HexString
-}
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Address book contact create",
 }
 
 export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
@@ -178,11 +169,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             genesisHash,
           },
         ])
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Interact",
-          action: "Create address book contact",
-        })
         notify({
           type: "success",
           title: t("New contact added"),
@@ -199,8 +185,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     },
     [close, setError, t]
   )
-
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>

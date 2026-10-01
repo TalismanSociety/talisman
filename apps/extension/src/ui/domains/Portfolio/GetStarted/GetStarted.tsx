@@ -1,6 +1,5 @@
 import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
@@ -136,8 +135,6 @@ const useGetStarted = () => {
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
   const onAddAccountClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add account" })
-
     if (IS_POPUP) api.dashboardOpen("/accounts/add")
     else navigate("/accounts/add")
 
@@ -145,38 +142,28 @@ const useGetStarted = () => {
   }, [navigate])
 
   const onTryItClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
-
     if (IS_POPUP) navigate("/try-talisman")
     else openTryTalismanModal()
   }, [navigate, openTryTalismanModal])
 
   const onReceiveClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "receive" })
-
     onCopyAddressModal()
   }, [onCopyAddressModal])
 
   const onSwapClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "swap" })
     openSwapModal({})
   }, [openSwapModal])
 
   const onBuyClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "open ramps" })
-
     openRamps()
   }, [openRamps])
 
   const onLearnMoreClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
-
     if (IS_POPUP) navigate("/learn-more")
     else openLearnMoreModal()
   }, [navigate, openLearnMoreModal])
 
   const onDismissClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "dismiss get started" })
     setIsHidden(true)
   }, [setIsHidden])
 
@@ -223,17 +210,3 @@ const GetStartedActionButton: FC<{
     {iconRight}
   </button>
 )
-
-const ANALYTICS_PAGE: AnalyticsPage = IS_POPUP
-  ? {
-      container: "Popup",
-      feature: "Onboarding",
-      featureVersion: 1,
-      page: "Popup - No Accounts",
-    }
-  : {
-      container: "Fullscreen",
-      feature: "Onboarding",
-      featureVersion: 1,
-      page: "Dashboard - No Accounts",
-    }

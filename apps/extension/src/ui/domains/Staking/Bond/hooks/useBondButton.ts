@@ -1,10 +1,9 @@
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
 import { type Balance, type Balances, findDTaoConvictionLock } from "@talismn/balances"
-import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -22,7 +21,6 @@ export const useBondButton = ({
   // for now only used for bittensor to prevent reusing existing netuid
   ignoreExistingSettings?: boolean
 }) => {
-  const { genericEvent } = useAnalytics()
   const ownedAccounts = useAccounts("owned")
 
   const remoteConfig = useRemoteConfig()
@@ -54,11 +52,6 @@ export const useBondButton = ({
       if (!bestBondableBalance) return
       e.stopPropagation()
 
-      genericEvent("open inline staking modal", {
-        tokenId: bestBondableBalance.tokenId,
-        from: "portfolio",
-      })
-
       switch (bestBondableBalance.type) {
         case "bittensor": {
           const { address, networkId, hotkey, netuid } = bestBondableBalance
@@ -84,7 +77,6 @@ export const useBondButton = ({
     },
     [
       bestBondableBalance,
-      genericEvent,
       handleOpenBittensorModal,
       ignoreExistingSettings,
       openSeekStakingModal,
@@ -102,7 +94,6 @@ export const useBondButton = ({
 type BondableBalance =
   | {
       type: "seek"
-      tokenId: TokenId
       address: Address
       amount: bigint
       isBonding: boolean
@@ -110,7 +101,6 @@ type BondableBalance =
   | {
       type: "bittensor"
       networkId: NetworkId
-      tokenId: TokenId
       address: Address
       amount: bigint
       hotkey?: string
@@ -141,7 +131,6 @@ const getBondableBalance = (
   if (token.id === remoteConfig.seek.tokenId) {
     return {
       type: "seek",
-      tokenId: token.id,
       address: balance.address,
       amount: balance.transferable.planck,
       isBonding: false, // TODO add meta to balance if already staking
@@ -163,7 +152,6 @@ const getBondableBalance = (
     return {
       type: "bittensor",
       networkId: token.networkId,
-      tokenId: subNativeTokenId(token.networkId), // only for analytics
       address: balance.address,
       amount: balance.transferable.planck,
       isBonding,
@@ -180,7 +168,6 @@ const getBondableBalance = (
     return {
       type: "bittensor",
       networkId: token.networkId,
-      tokenId: subNativeTokenId(token.networkId), // only for analytics
       address,
       hotkey: token.hotkey,
       netuid: token.netuid,

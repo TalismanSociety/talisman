@@ -2,7 +2,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
@@ -12,7 +11,6 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Address } from "@ui/domains/Account/Address"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { type FC, type FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -20,13 +18,6 @@ import { Trans, useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 import { AccountIcon } from "../../Account/AccountIcon"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Send Funds",
-  featureVersion: 1,
-  page: "Add to address book",
-}
 
 type FormValues = {
   name: string
@@ -78,20 +69,12 @@ const AddToAddressBookDrawerForm: FC<{
             genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
           },
         ])
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Interact",
-          action: "Add address book contact",
-          properties: {
-            addressType,
-          },
-        })
         onClose?.()
       } catch (err) {
         setError("name", err as Error)
       }
     },
-    [address, addressType, tokenGenesisHash, onClose, setError]
+    [address, tokenGenesisHash, onClose, setError]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -111,8 +94,6 @@ const AddToAddressBookDrawerForm: FC<{
     }, 250)
     return () => clearTimeout(timeout)
   }, [setFocus, reset])
-
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <DrawerContent className="h-67">
