@@ -1,5 +1,6 @@
 interface SessionStorageData {
   password?: string
+  phishingExceptions?: { hosts: string[]; urls: string[] }
 }
 
 abstract class TalismanSessionStorage {
