@@ -21,12 +21,12 @@ Preconditions:
 
 - The wallet is unlocked and holds the `Guardians` accounts.
 
-- **Open all accounts.** `ab tab new "$EXT/dashboard.html#/portfolio"`, `ab wait --text "All Accounts"`. The sidebar lists each account with a fiat value. Screenshot.
+- **Open all accounts.** `ab tab new "$EXT/dashboard.html#/portfolio"`, `ab wait --text "All Accounts"`. The URL settles on `#/portfolio/tokens`. The sidebar lists each account with a fiat value. Screenshot.
 - **Select one account.** `ab find text "Guardians SUB" click`. The URL gains `?account=<address>` and the header shows `Guardians SUB` with its total. Wait for the token rows: skeleton rows show while balances load.
 - **Search.** `ab find placeholder "Search" fill "TAO"`. Only matching tokens stay.
-- **Open a token.** Click a token row. The page shows per-network rows for that token.
+- **Open a token.** Click a token row (for example `TAO`). The URL becomes `#/portfolio/tokens/TAO?account=<address>` and the page shows per-network rows for that token.
 - **Cross-check.** The same account in the popup: `ab tab new "$EXT/popup.html#/portfolio"`. The total matches the dashboard within the rounding of the currency.
-- **Prove the data source.** `sw-eval.mjs 'chrome.storage.local.get("balanceTotals").then(({balanceTotals}) => balanceTotals["<address>::usd"])'` returns `{ address, currency, total }` for that account. Its `total` matches the sidebar value.
+- **Prove the numbers from a second view.** The popup total, the dashboard "All Accounts" total and the per-account sidebar values come from one in-memory computation (`ui/state/balanceTotals.ts`); compare the three. Do not read `chrome.storage.local` `balanceTotals`: it is a stale leftover that current code never writes (zeros and addresses that are not in the wallet).
 
 ## Gotchas
 

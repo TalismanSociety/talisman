@@ -9,6 +9,7 @@ The maintained source for verifying the user-facing behaviour of the Talisman ex
 - `ab` is `agent-browser --session talisman --cdp 9223`.
 - The wallet holds `Guardians` accounts (EVM, SUB, SOL). They are test accounts: the only signers a run may use.
 - `EXT` is `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno`.
+- The dev Chrome window may be narrow (1050 px seen). Wide dashboard layouts then clip: a clipped control can ignore `ab find … click`. Use the direct route in the feature file, or click through `ab eval`.
 
 ## Driving conventions
 
@@ -29,10 +30,10 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 
 ## Features
 
-- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-09-30.
-- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup.
-- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers.
-- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction.
-- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings.
+- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-09-30 and 2026-10-01.
+- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-01.
+- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-01 (EVM and Substrate connect, sign, reject).
+- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-01 with a testTAO transfer.
+- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-01.
 
-Only the watched-account recipe has been driven. The other four come from the source code and earlier sessions: the first run that drives one corrects its handles.
+Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.

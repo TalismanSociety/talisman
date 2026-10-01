@@ -17,19 +17,21 @@ A web page asks Talisman for accounts, and then for a signature, through the pro
 
 Preconditions:
 
-- `https://example.com` is not yet a connected site (`sw-eval.mjs 'chrome.storage.local.get("sitesAuthorized").then(s => Object.keys(s.sitesAuthorized ?? s))'`).
+- The origin you use is not yet a connected site (`sw-eval.mjs 'chrome.storage.local.get("sitesAuthorized").then(s => Object.keys(s.sitesAuthorized))'`). The dev profile may already hold `example.com`: use `https://example.org` then. The steps below say `example.org`.
 
-- **Open the dapp.** `ab tab new "https://example.com"`. `ab eval 'typeof window.talismanEth'` returns `"object"`.
+- **Open the dapp.** `ab tab new "https://example.org"`. `ab eval 'typeof window.talismanEth'` returns `"object"`.
 - **Request accounts without blocking.** `ab eval 'window.__req = window.talismanEth.request({ method: "eth_requestAccounts" }).then(r => (window.__res = r), e => (window.__err = e.message)); "sent"'`.
-- **Answer the popup.** `.claude/skills/verify/bin/popup-url.sh` prints `…/popup.html#/auth/<id>`. `ab tab new "<that url>"`, `ab snapshot -i -c`. Select a `Guardians EVM` account row, then click the button named `Connect 1`. Both popup tabs close.
-- **Prove the connection.** Back on the dapp tab: `ab eval 'window.__res'` returns an array with the Guardians EVM address. `sitesAuthorized` now has an `example.com` entry.
+- **Answer the popup.** `.claude/skills/verify/bin/popup-url.sh` prints `…/popup.html#/auth/<id>`. `ab tab new "<that url>"`, `ab snapshot -i -c`. `Guardians EVM` is preselected and the button reads `Connect 1`: check that in a screenshot, do not click the row (that toggles it). Click `Connect 1`. Both popup tabs close.
+- **Prove the connection.** Back on the dapp tab: `ab eval 'window.__res'` returns an array with the Guardians EVM address in lower case. `sitesAuthorized` now has an `example.org` entry.
 - **Sign a message.** `ab eval 'window.__sig = window.talismanEth.request({ method: "personal_sign", params: ["0x68656c6c6f", window.__res[0]] }).then(r => (window.__sigRes = r), e => (window.__sigErr = e.message)); "sent"'`. Open the `#/eth-sign/<id>` popup the same way, check that the signer name contains `Guardians`, click `Approve`. `ab eval 'window.__sigRes'` is a `0x…` signature of 132 characters.
+- **Connect Substrate.** `ab eval 'window.__sub = window.injectedWeb3.talisman.enable("verify").then(e => e.accounts.get()).then(a => (window.__subRes = a.map(x => x.name)), e => (window.__subErr = String(e.message))); "sent"'`. Open the `#/auth/<id>` popup: nothing is preselected and `Connect` is disabled. Click the `Guardians SUB` row, then click the connect button by its `@ref` (its accessible name is `Connect1`, so `find role button --name "Connect 1"` fails). `window.__subRes` is `["Guardians SUB"]`.
 - **Reject.** Send a second `personal_sign`, click `Cancel` in its popup. `window.__sigErr` reads "User Rejected Request".
-- **Undo.** Forget `example.com` as in [Connected sites](./connected-sites.md).
+- **Undo.** Forget `example.org` as in [Connected sites](./connected-sites.md).
 
 ## Gotchas
 
 - `ab eval` awaits a returned promise. Store the promise in `window` and return a string, else the command blocks until someone answers the popup.
+- `popup-url.sh` prints only request popups (`<type>.<uuid>` ids), so a `popup.html#/portfolio` tab you opened does not confuse it.
 - agent-browser does not list popups the extension opens. `popup-url.sh` finds them; open the URL in a new tab to drive it.
 - A script that awaits the Approve click never returns: the popup closes itself. Put a timeout on any Playwright evaluate in a popup.
 - A dapp request that hangs with no popup is a stale service worker: run the doctor.
