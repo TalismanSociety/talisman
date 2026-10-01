@@ -43,6 +43,7 @@ A feature behind a feature flag counts only when it ships switched on: look up t
 
 **Changelog.** The user pastes it into Discord, so write it for wallet users:
 
+- List only what matters to users: changes they notice and care about. Leave out minor polish, rare edge cases and small text fixes.
 - Leave out what users cannot see: tests (`✅`), docs and agent tooling (`📝`, `🔧`), CI (`💚`), dependency bumps, renames and refactors (`♻️`, `🚚`, `🔥`) with no visible effect.
 - Keep a refactor when it changes what users see (for example "Escape closes modals").
 - Write formal, terse release notes. No second person ("you", "your"): "Swap quote must be reselected when the confirmed output drops", not "Swaps ask you to pick the quote again when the amount you'd receive would drop".
