@@ -5,8 +5,8 @@ import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/useSentimentLabelFromScore100Pos"
 import {
   getColorFromScore100Neg,
   useScore1To100Neg,
