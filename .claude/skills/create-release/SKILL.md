@@ -1,6 +1,6 @@
 ---
 name: create-release
-description: Cut a Talisman extension release: changelog, version bump, RC builds and PR.
+description: Cut a Talisman extension release with changelog, version bump, RC builds and PR.
 disable-model-invocation: true
 ---
 
