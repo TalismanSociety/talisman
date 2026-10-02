@@ -26,7 +26,10 @@ import { useNavigate } from "react-router-dom"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
-  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "dashboard",
+    account
+  )
 
   const sendFunds = useCallback(() => {
     openSendFundsPopup()
@@ -56,6 +59,7 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
   const chain = useNetworkByGenesisHash(getAccountGenesisHash(account))
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
+      entry: "account_header",
       address: account?.address,
       networkId: chain?.id,
       addresses: selectedFolder?.tree.map((account) => account.address),

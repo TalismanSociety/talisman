@@ -63,6 +63,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "address_book",
     undefined,
     undefined,
     undefined,
@@ -80,6 +81,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
+      entry: "address_book",
       networkId: contactChain?.id,
       address: contact.address,
     })

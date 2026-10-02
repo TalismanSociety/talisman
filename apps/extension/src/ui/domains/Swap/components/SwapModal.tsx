@@ -12,7 +12,7 @@ export const SwapModal = () => {
   return (
     <Modal analyticsId="swap" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="swap-modal">
-        <SwapProvider stateInit={args}>
+        <SwapProvider stateInit={args} isOpen={isOpen}>
           <SwapWizard />
         </SwapProvider>
       </PopupSizeModalContainer>

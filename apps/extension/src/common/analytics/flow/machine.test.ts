@@ -29,6 +29,13 @@ const transfer = defineFlow("transfer", {
   settlement: "transaction",
 })
 
+const exchange = defineFlow("exchange", {
+  subject: "exchanging tokens",
+  steps: ["form"],
+  extras: { completed: { swap_status: "optional", protocol: "required" } },
+  settlement: "transaction",
+})
+
 const begin = (flow: FlowBase = wizard, screen: string | null = null) =>
   beginAttempt(flow, {
     flowId: "3f2a9c1e-1b2c-4d5e-8f90-a1b2c3d4e5f6",
@@ -309,5 +316,36 @@ describe("the worker's mirror", () => {
     expect(transfer.events.transfer_completed.schema.safeParse(completed.properties).success).toBe(
       true
     )
+  })
+
+  it("completes with the settlement's properties its completed event declares, and drops the rest", () => {
+    const submittedMirror = (flow: FlowBase) =>
+      mirrorEvent(
+        mirrorEvent(null, ref(flow, "started"), { flow_id: "s" }, { now: 0, screen: null }),
+        ref(flow, "submitted"),
+        { flow_id: "s", duration_ms: 5 },
+        { now: 0, screen: null, transactionId: "0xdef" }
+      ) as Mirror
+    const settled = {
+      status: "success",
+      timeToSettleMs: 400,
+      properties: { protocol: "lifi", swap_status: "finished", cross_chain: true },
+    } as const
+
+    const swapped = completeOnSettlement(submittedMirror(exchange), settled, 9_000)
+    expect(swapped.properties).toEqual({
+      flow_id: "s",
+      duration_ms: 9_000,
+      status: "success",
+      time_to_settle_ms: 400,
+      protocol: "lifi",
+      swap_status: "finished",
+    })
+    expect(exchange.events.exchange_completed.schema.safeParse(swapped.properties).success).toBe(
+      true
+    )
+
+    const sent = completeOnSettlement(submittedMirror(transfer), settled, 9_000)
+    expect(transfer.events.transfer_completed.schema.safeParse(sent.properties).success).toBe(true)
   })
 })

@@ -26,6 +26,10 @@ const HOSTNAME =
 
 export const isHostname = (value: string): boolean => HOSTNAME.test(value)
 
+/** A symbol `p.symbol` would reject reads unknown, so the event still goes out. */
+export const symbolForAnalytics = (symbol: string | null | undefined): string =>
+  symbol && SYMBOL.test(symbol) ? symbol : "unknown"
+
 const MAX_COUNT = 1_000_000
 const MAX_DURATION_MS = 7 * 24 * 60 * 60_000
 
@@ -60,6 +64,13 @@ export const p = {
   int,
 
   count: (description: string) => int(description, { min: 0, max: MAX_COUNT }),
+
+  number: (description: string, { min, max }: { min: number; max: number }) =>
+    ({
+      schema: z.number().min(min).max(max),
+      description,
+      posthogType: "Numeric",
+    }) satisfies PropertyDef<number>,
 
   durationMs: (description: string) => int(description, { min: 0, max: MAX_DURATION_MS }),
 

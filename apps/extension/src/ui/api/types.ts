@@ -132,7 +132,7 @@ export default interface MessageTypes {
   approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
 
   // app message types -------------------------------------------------------
-  sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
+  sendFundsOpen: (request: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 

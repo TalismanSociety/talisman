@@ -1,7 +1,10 @@
+import { classifyError } from "@common/analytics/errorCategory"
+import { toDurationMs } from "@common/analytics/schema"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
+import { track } from "@ui/api/track"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import type {
   BaseQuote,
@@ -131,6 +134,32 @@ export const useSwapQuoteManager = (params: {
   const isAllQuotesSettled =
     queryResults.every((r) => !r.isLoading && !r.isFetching) ||
     (!enabled && queryResults.length === 0)
+
+  // once per amount and token pair, as mobile: the 20 s refreshes are not new answers
+  const quoteRequest = useRef<{ key: string; at: number; reported: boolean } | null>(null)
+  useEffect(() => {
+    if (!enabled || quoteRequest.current?.key === quoteInputKey) return
+    quoteRequest.current = { key: quoteInputKey, at: performance.now(), reported: false }
+  }, [enabled, quoteInputKey])
+
+  useEffect(() => {
+    const request = quoteRequest.current
+    if (!enabled || !isAllQuotesSettled || request?.key !== quoteInputKey || request.reported)
+      return
+    request.reported = true
+    queryResults.forEach((result, index) => {
+      const protocol = applicableModules[index]?.protocol
+      if (result.isError && protocol)
+        track("swap_quote_failed", { protocol, error_category: classifyError(result.error) })
+    })
+    const quotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
+    if (quotes.length)
+      track("swap_quote_received", {
+        quote_count: quotes.length,
+        protocols: [...new Set(quotes.map((quote) => quote.protocol))],
+        latency_ms: toDurationMs(performance.now() - request.at),
+      })
+  }, [applicableModules, enabled, isAllQuotesSettled, queryResults, quoteInputKey])
   const hasQuoteErrorLive = queryResults.length > 0 && queryResults.every((r) => r.isError)
 
   // Stable dependencies: only change when actual query data/error state updates

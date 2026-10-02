@@ -1,3 +1,4 @@
+import type { SendEntry } from "@common/analytics/funds"
 import type { TokenId } from "@talismn/chaindata-provider"
 
 import type { ValidRequests } from "../../libs/requests/types"
@@ -32,6 +33,7 @@ export interface RequestRoute {
 }
 
 export type SendFundsOpenRequest = {
+  entry: SendEntry
   from?: Address
   tokenId?: TokenId
   tokenSymbol?: string

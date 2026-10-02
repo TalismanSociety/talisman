@@ -26,7 +26,7 @@ Screens, modals, error toasts, transactions and dapp requests are tracked centra
 1. Create `common/analytics/flow/definitions/<name>.ts` with `defineFlow("<name>", { subject, steps, … })`. Add it to `FLOWS` in `flow/registry.ts`. The options are in `references/define-flow.md`.
 2. Add any extra property to `properties.ts`, with a sentence that says what the value means.
 3. In the hook that holds the steps, call `useFlow(flows.<name>, { step, entry, attributes, active })`. Pass `active: isOpen` when the provider stays mounted while the modal is closed.
-4. Report from event handlers and async code: `flows.<name>.submitted(…)` where the user confirms, `flows.<name>.failed(err)` in the catch that shows the error, and `flows.<name>.completed(…)` where the user finishes. A flow with `settlement: "transaction"` passes `transactionId` to `submitted` and never calls `completed`: the worker sends it when the transaction settles.
+4. Report from event handlers and async code: `flows.<name>.submitted(…)` where the user confirms, `flows.<name>.failed(err)` in the catch that shows the error, and `flows.<name>.completed(…)` where the user finishes. A flow with `settlement: "transaction"` passes `transactionId` to `submitted` and never calls `completed`: the worker sends it when the transaction settles. `TxSubmitButton` and `SapiSendButton` take `onError`, called after their own error toast: report `failed` there.
 5. Classify the flow's messages as `{ flow: "<name>" }` in `MESSAGE_COVERAGE`, and its provider as `{ flow: "<name>" }` in `FLOW_PROVIDERS`.
 6. Prove it with `.claude/skills/verify/features/analytics-events.md`.
 
@@ -38,6 +38,7 @@ Rules that the types do not catch:
 - A step held in state reaches the flow on the next render. When the same handler sets the step and then calls `submitted`, call `flows.<name>.step(…)` first, or `last_step` reads the step before.
 - A page runs one attempt per flow. Call `useFlow` once, in the provider or the common parent.
 - `completed`, and `submitted` of a transaction flow, mark the modal or drawer on top as completed, so its `modal_closed` reads `dismiss: "completed"`.
+- One invalid value rejects the whole event in the background, and a rejected `submitted` never links its transaction. Pass token symbols through `symbolForAnalytics` and networks through `networkIdForAnalytics` (`custom` for a user-added network), both in `common/analytics`.
 
 ## Add an event
 

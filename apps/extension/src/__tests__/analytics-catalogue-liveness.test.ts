@@ -79,6 +79,13 @@ const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   folder_deleted: ["accounts_in_folder"],
   account_moved: ["item", "action", "tree"],
   watched_account_portfolio_toggled: ["in_portfolio"],
+  swap_quote_received: ["quote_count", "protocols", "latency_ms"],
+  swap_quote_failed: ["protocol", "error_category"],
+  swap_approval_submitted: ["protocol", "network_id", "is_revoke"],
+  tx_replace_requested: ["replace_type"],
+  contact_added: ["source", "platform", "has_network", "name_service"],
+  receive_opened: ["entry"],
+  receive_address_copied: ["network_id", "address_format"],
   buy_opened: ["tab"],
   buy_provider_launched: ["provider", "fiat_currency", "token_symbol", "network_id", "direction"],
 }

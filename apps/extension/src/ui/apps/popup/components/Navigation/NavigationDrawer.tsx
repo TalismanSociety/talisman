@@ -48,13 +48,13 @@ export const NavigationDrawer: FC = () => {
   }, [])
 
   const handleSendFundsClick = useCallback(async () => {
-    await api.sendFundsOpen()
+    await api.sendFundsOpen({ entry: "nav_menu" })
     window.close()
   }, [])
 
   const { open: openSwapModal } = useSwapModal()
   const handleSwapClick = useCallback(async () => {
-    openSwapModal({})
+    openSwapModal({ entry: "nav_menu" })
     await sleep(150)
     close()
   }, [openSwapModal, close])
@@ -78,7 +78,7 @@ export const NavigationDrawer: FC = () => {
   const showBuySell = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
   const handleBuySellClick = useCallback(() => {
-    openRampsModal()
+    openRampsModal({ entry: "nav_menu" })
     close()
   }, [openRampsModal, close])
 

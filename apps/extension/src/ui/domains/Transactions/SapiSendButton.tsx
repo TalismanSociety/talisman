@@ -87,6 +87,7 @@ type SapiSendButtonProps = {
   className?: string
   color?: ButtonProps["color"]
   onSubmitted: (hash: Hex, innerHash?: Hex) => void
+  onError?: (cause: unknown) => void
   mode?: ScaleApiSubmitMode
   checkPassword?: boolean
   onPayloadLockChange?: PayloadLockListener
@@ -100,6 +101,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   disabled,
   className,
   onSubmitted,
+  onError,
   mode,
   color,
   onPayloadLockChange,
@@ -139,9 +141,10 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
           cause: err,
         })
+        onError?.(err)
       }
     },
-    [onSubmitted, sapi, lockedInputs, t]
+    [onSubmitted, onError, sapi, lockedInputs, t]
   )
 
   return (
@@ -165,6 +168,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   disabled,
   className,
   onSubmitted,
+  onError,
   mode,
   color,
   onPayloadLockChange,
@@ -206,9 +210,10 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
           cause: err,
         })
+        onError?.(err)
       }
     },
-    [lockedInputs, onSubmitted, sapi, t]
+    [lockedInputs, onSubmitted, onError, sapi, t]
   )
 
   if (!account) return null
@@ -236,6 +241,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   containerId,
   onSubmitted,
+  onError,
   mode,
   color,
   checkPassword,
@@ -281,8 +287,9 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
         cause: err,
       })
+      onError?.(err)
     }
-  }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, t])
+  }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, onError, t])
 
   const handleClick = useCallback(() => {
     if (checkPassword) {

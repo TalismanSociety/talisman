@@ -1,7 +1,14 @@
+import { chainPlatformOf } from "@common/analytics/accounts"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
+import {
+  detectAddressEncoding,
+  getAccountPlatformFromAddress,
+  normalizeAddress,
+} from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
@@ -35,6 +42,7 @@ const AddToAddressBookDrawerForm: FC<{
   onClose?: () => void
 }> = ({ address, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation()
+  const { recipientSource } = useSendFundsWizard()
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === normalizeAddress(address),
@@ -69,12 +77,20 @@ const AddToAddressBookDrawerForm: FC<{
             genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
           },
         ])
+        const platform = chainPlatformOf(getAccountPlatformFromAddress(address))
+        if (platform)
+          track("contact_added", {
+            source: "send",
+            platform,
+            has_network: !!(limitToNetwork && tokenGenesisHash),
+            name_service: recipientSource === "name_service",
+          })
         onClose?.()
       } catch (err) {
         setError("name", err as Error)
       }
     },
-    [address, tokenGenesisHash, onClose, setError]
+    [address, tokenGenesisHash, onClose, recipientSource, setError]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)

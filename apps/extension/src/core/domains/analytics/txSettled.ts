@@ -1,8 +1,10 @@
+import { SWAP_OUTCOMES, type SwapOutcome, swapOfTransaction } from "@common/analytics/funds"
 import { toDurationMs } from "@common/analytics/schema"
 import { type SettledStatus, txTypeOf } from "@common/analytics/transactions"
 
 import type { TxStatusFact, TxStatusReason } from "../transactions/store.transactions"
-import type { TransactionStatus } from "../transactions/types"
+import type { SwapStatus, TransactionStatus } from "../transactions/types"
+import type { SwapOutcomeFact } from "../transactions/watchSwapStatus"
 import { flowTracker } from "./flowTracker"
 import { track } from "./track"
 import { analyticsNetworkId, signerOfAddress } from "./txContext"
@@ -45,5 +47,30 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     submitted_by: row.siteUrl ? "dapp" : "wallet",
     ...(signer && { signer }),
   })
-  await flowTracker.settled(row.id, { status, timeToSettleMs }, Date.now())
+  const swap = swapOfTransaction(row.txInfo)
+  // its exchange status watcher starts now, and ends the flow with trackSwapOutcome
+  if (swap && status === "success") return
+  await flowTracker.settled(
+    row.id,
+    { status, timeToSettleMs, ...(swap && { properties: swap }) },
+    Date.now()
+  )
+}
+
+const isSwapOutcome = (status: SwapStatus): status is SwapOutcome =>
+  (SWAP_OUTCOMES as readonly string[]).includes(status)
+
+/** A swap ends when the exchange the wallet watches does: its transaction succeeded earlier. */
+export const trackSwapOutcome = async ({ row, status, at }: SwapOutcomeFact) => {
+  const swap = swapOfTransaction(row.txInfo)
+  if (!swap || !isSwapOutcome(status)) return
+  await flowTracker.settled(
+    row.id,
+    {
+      status: "success",
+      timeToSettleMs: toDurationMs(at - row.timestamp),
+      properties: { ...swap, swap_status: status },
+    },
+    Date.now()
+  )
 }

@@ -12,7 +12,12 @@ type MessageCoverage = { readonly [M in Exclude<PriMessage, PriSubscription>]: C
 
 export const MESSAGE_COVERAGE = {
   "pri(accounts.add.external)": {
-    event: ["account_watch_added", "ledger_accounts_imported", "external_accounts_imported"],
+    event: [
+      "account_watch_added",
+      "ledger_accounts_imported",
+      "external_accounts_imported",
+      "contact_added",
+    ],
   },
   "pri(accounts.add.derive)": { event: "account_created" },
   "pri(accounts.add.keypair)": { event: "account_created" },
@@ -45,7 +50,7 @@ export const MESSAGE_COVERAGE = {
   "pri(app.dashboardOpen)": { exempt: "navigation" },
   "pri(app.onboardOpen)": { exempt: "navigation" },
   "pri(app.popupOpen)": { exempt: "navigation" },
-  "pri(app.sendFunds.open)": { exempt: "pending 5b" },
+  "pri(app.sendFunds.open)": { flow: "send" },
   "pri(app.promptLogin)": { exempt: "navigation" },
   "pri(app.phishing.addException)": { exempt: "pending 5c" },
   "pri(app.resetWallet)": { flow: "wallet_reset" },
@@ -113,7 +118,7 @@ export const MESSAGE_COVERAGE = {
   "pri(chaindata.networks.remove)": { exempt: "pending 5e" },
   "pri(chaindata.tokens.upsert)": { exempt: "pending 5e" },
   "pri(chaindata.tokens.remove)": { exempt: "pending 5e" },
-  "pri(sendFunds.confirmedAddresses.add)": { exempt: "pending 5b" },
+  "pri(sendFunds.confirmedAddresses.add)": { flow: "send" },
   "pri(queryCache.get)": "read",
   "pri(queryCache.set)": { exempt: "transport" },
   "pri(queryCache.remove)": { exempt: "transport" },

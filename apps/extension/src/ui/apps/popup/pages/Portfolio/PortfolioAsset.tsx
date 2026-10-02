@@ -29,6 +29,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   const { selectedAccount: account } = usePortfolioNavigation()
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "token_details",
     account,
     undefined,
     symbol

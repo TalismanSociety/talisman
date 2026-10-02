@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
+import { Subject } from "rxjs"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
@@ -18,6 +19,14 @@ const MAX_RETRIES = 10
 const RETRY_DELAY_MS = 5_000
 const NOT_FOUND_GRACE_PERIOD_MS = 10 * 60 * 1_000 // 10 minutes
 const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
+
+/** A watcher stopped on this status, stored before it is published. */
+export type SwapOutcomeFact = { row: WalletTransaction; status: SwapStatus; at: number }
+
+export const swapOutcomeFacts$ = new Subject<SwapOutcomeFact>()
+
+const publishOutcome = (row: WalletTransaction, status: SwapStatus) =>
+  swapOutcomeFacts$.next({ row, status, at: Date.now() })
 
 // Track active watchers to prevent duplicate polling for the same transaction.
 const activeWatchers = new Set<string>()
@@ -66,7 +75,7 @@ async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionIn
     const status = (await fetchSwapStatusWithRetry(txId, txInfo)) ?? "unknown"
     await updateSwapStatus(txId, status)
 
-    if (isFinalSwapStatus(tx, status)) return
+    if (isFinalSwapStatus(tx, status)) return publishOutcome(tx, status)
 
     // Allow a grace period for not_found — the tx may still be in the mempool
     if (status === "not_found") {
@@ -74,7 +83,7 @@ async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionIn
       if (Date.now() - notFoundSince >= NOT_FOUND_GRACE_PERIOD_MS) {
         // Giving up — mark as unknown so the UI stops showing an active deposit
         await updateSwapStatus(txId, "unknown")
-        return
+        return publishOutcome(tx, "unknown")
       }
     } else {
       notFoundSince = null
@@ -237,6 +246,7 @@ export const resumeSwapWatchers = async () => {
       // so the UI stops showing an active deposit
       if (tx.swapStatus === "not_found" && now - tx.timestamp >= NOT_FOUND_GRACE_PERIOD_MS) {
         await updateSwapStatus(tx.id, "unknown")
+        publishOutcome(tx, "unknown")
         continue
       }
 

@@ -1,11 +1,15 @@
 import { type FlowBase, flowRegistry, type Lifecycle } from "./defineFlow"
 import { accountProxyAdd, accountProxyRemove } from "./definitions/accountProxy"
 import { addAccount } from "./definitions/addAccount"
+import { buy } from "./definitions/buy"
 import { onboarding } from "./definitions/onboarding"
 import { passwordChange } from "./definitions/passwordChange"
 import { passwordMigration } from "./definitions/passwordMigration"
 import { quickUnlockSetup } from "./definitions/quickUnlockSetup"
+import { receive } from "./definitions/receive"
 import { recoveryPhraseBackup } from "./definitions/recoveryPhraseBackup"
+import { send } from "./definitions/send"
+import { swap } from "./definitions/swap"
 import { walletReset } from "./definitions/walletReset"
 
 export const FLOWS = flowRegistry(
@@ -17,7 +21,11 @@ export const FLOWS = flowRegistry(
   quickUnlockSetup,
   addAccount,
   accountProxyAdd,
-  accountProxyRemove
+  accountProxyRemove,
+  send,
+  swap,
+  buy,
+  receive
 )
 
 export type Flows = typeof FLOWS

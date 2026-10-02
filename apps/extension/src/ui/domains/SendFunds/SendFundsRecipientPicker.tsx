@@ -1,3 +1,4 @@
+import type { RecipientSource } from "@common/analytics/funds"
 import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
@@ -114,7 +115,7 @@ const UnknownAddressDrawer = ({
 
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation()
-  const { from, to, set, tokenId } = useSendFundsWizard()
+  const { from, to, set, tokenId, setRecipientSource } = useSendFundsWizard()
   const { setRecipientWarning } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
@@ -201,9 +202,19 @@ export const SendFundsRecipientPicker = () => {
     [set, setRecipientWarning]
   )
 
+  const selectFrom = useCallback(
+    (source: RecipientSource) => (address: string) => {
+      setRecipientSource(source)
+      handleSelect(address)
+    },
+    [handleSelect, setRecipientSource]
+  )
+  const newAddressSource = newAddress?.name ? "name_service" : "typed"
+
   const [unknownAddress, setUnknownAddress] = useState<string>()
   const handleSelectUnknownAddress = useCallback(
     (address: string) => {
+      setRecipientSource(newAddressSource)
       switch (getAccountPlatformFromAddress(address)) {
         case "polkadot": {
           setUnknownAddress(address)
@@ -216,12 +227,14 @@ export const SendFundsRecipientPicker = () => {
         }
       }
     },
-    [handleSelect, open]
+    [handleSelect, newAddressSource, open, setRecipientSource]
   )
 
   const handleSubmitSearch = useCallback(() => {
-    if (newAddress && !newAddress.ss58FormatError) set("to", newAddress.address, true)
-  }, [newAddress, set])
+    if (!newAddress || newAddress.ss58FormatError) return
+    setRecipientSource(newAddressSource)
+    set("to", newAddress.address, true)
+  }, [newAddress, newAddressSource, set, setRecipientSource])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -260,7 +273,7 @@ export const SendFundsRecipientPicker = () => {
               accounts={contacts}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("contact")}
               header={
                 <>
                   <UserIcon className="mr-2 inline align-text-top" />
@@ -273,7 +286,7 @@ export const SendFundsRecipientPicker = () => {
               accounts={ownedAccounts}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("own_account")}
               header={
                 <>
                   <TalismanHandIcon className="mr-2 inline-block align-text-top" />
@@ -288,7 +301,7 @@ export const SendFundsRecipientPicker = () => {
               accounts={watchedAccounts}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("watched_account")}
               header={
                 <>
                   <EyeIcon className="mr-2 inline-block align-text-top" />

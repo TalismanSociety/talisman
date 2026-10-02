@@ -214,12 +214,13 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openSendFunds({
+    entry,
     from,
     tokenId,
     tokenSymbol,
     to,
   }: SendFundsOpenRequest): Promise<boolean> {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams({ entry })
     if (from) params.append("from", from)
     if (tokenId) params.append("tokenId", tokenId)
     // tokenId takes precedence over tokenSymbol

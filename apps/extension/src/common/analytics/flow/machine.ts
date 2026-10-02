@@ -246,11 +246,23 @@ export const abandonOnPageClose = (mirror: Mirror, now: number): Emission | null
     ? null
     : abandonment(mirror, "page_closed", toDurationMs(now - mirror.startedAtEpochMs))
 
-export type Settled = { readonly status: SettledStatus; readonly timeToSettleMs: number }
+/** `properties`: what the settlement knows beyond its status. The flow keeps those its completed event declares. */
+export type Settled = {
+  readonly status: SettledStatus
+  readonly timeToSettleMs: number
+  readonly properties?: EventProperties
+}
+
+const declaredOnCompleted = (flow: FlowBase, properties: EventProperties): EventProperties => {
+  const event = flow.eventNames.completed
+  const declared = (event && flow.events[event]?.properties) || []
+  return Object.fromEntries(Object.entries(properties).filter(([key]) => declared.includes(key)))
+}
 
 export const completeOnSettlement = (mirror: Mirror, settled: Settled, now: number): Emission => ({
   lifecycle: "completed",
   properties: {
+    ...declaredOnCompleted(mirror.flow, settled.properties ?? {}),
     ...stamp(mirror),
     duration_ms: toDurationMs(now - mirror.startedAtEpochMs),
     status: settled.status,

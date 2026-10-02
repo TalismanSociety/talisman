@@ -2,6 +2,7 @@ import { accountEvents } from "./events/accounts"
 import { consentEvents } from "./events/consent"
 import { dappRequestEvents } from "./events/dappRequests"
 import { errorEvents } from "./events/errors"
+import { fundsEvents } from "./events/funds"
 import { lifecycleEvents } from "./events/lifecycle"
 import { overlayEvents } from "./events/overlays"
 import { performanceEvents } from "./events/performance"
@@ -31,6 +32,7 @@ const groups = [
   performanceEvents,
   lifecycleEvents,
   accountEvents,
+  fundsEvents,
   flowEventGroup(FLOWS),
 ] as const
 

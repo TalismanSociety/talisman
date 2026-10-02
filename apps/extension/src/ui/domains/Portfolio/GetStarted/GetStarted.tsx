@@ -147,15 +147,15 @@ const useGetStarted = () => {
   }, [navigate, openTryTalismanModal])
 
   const onReceiveClick = useCallback(() => {
-    onCopyAddressModal()
+    onCopyAddressModal({ entry: "get_started" })
   }, [onCopyAddressModal])
 
   const onSwapClick = useCallback(() => {
-    openSwapModal({})
+    openSwapModal({ entry: "get_started" })
   }, [openSwapModal])
 
   const onBuyClick = useCallback(() => {
-    openRamps()
+    openRamps({ entry: "get_started" })
   }, [openRamps])
 
   const onLearnMoreClick = useCallback(() => {

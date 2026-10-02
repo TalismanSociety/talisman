@@ -2,6 +2,17 @@ import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "
 import { AMOUNT_BUCKETS, DAY_BUCKETS, SHARE_BUCKETS } from "./buckets"
 import { DAPP_METHODS, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
+import {
+  FEE_PRIORITIES,
+  GAS_TYPES,
+  RAMP_DIRECTIONS,
+  RAMP_PROVIDERS,
+  RECIPIENT_SOURCES,
+  REPLACE_TYPES,
+  SWAP_OUTCOMES,
+  SWAP_PROTOCOLS,
+  TX_PHASES,
+} from "./funds"
 import { p } from "./schema"
 import { CHAIN_PLATFORMS, SETTLED_STATUSES, SIGNERS, SUBMITTERS, TX_TYPES } from "./transactions"
 
@@ -15,7 +26,10 @@ const TVL_TRIGGERS = ["daily", "update"] as const
 const ABANDON_CAUSES = ["left", "page_closed"] as const
 
 export const properties = {
-  source: p.enum(["onboarding", "settings"], "Where the user made the choice."),
+  source: p.enum(
+    ["onboarding", "settings", "send", "address_book"],
+    "Where the user made the choice. contact_added: the screen the contact was saved from."
+  ),
 
   $screen_name: p.routePattern(
     "Route pattern of the screen, params as :name, never a value. Set on $screen, and on every event a page sends: the screen shown when it fired."
@@ -61,7 +75,9 @@ export const properties = {
   field: p.slug("The form field the error belongs to: its input name."),
 
   platform: p.enum(CHAIN_PLATFORMS, "Chain platform, not the OS."),
-  network_id: p.slug("Chaindata network id. custom: a network the user added."),
+  network_id: p.slug(
+    "Chaindata network id. custom: a network the user added. generic: an address copied in no network's format."
+  ),
   tx_type: p.enum(
     TX_TYPES,
     "The wallet's transaction kind (txInfo.type). other: a transaction without one, such as staking, Earn and every dapp transaction."
@@ -74,10 +90,10 @@ export const properties = {
   sign_only: p.bool("The wallet signed it and the dapp broadcasts it."),
   status: p.enum(
     SETTLED_STATUSES,
-    "Final status. replaced: another transaction with the same nonce settled. dropped: the chain never saw it."
+    "Final status of the transaction on chain. replaced: another transaction with the same nonce settled. dropped: the chain never saw it."
   ),
   time_to_settle_ms: p.durationMs(
-    "From the stored transaction to its final status. The start is set before the broadcast for wallet Polkadot transactions, after it for Ethereum, and at signing for dapp Polkadot and Solana transactions."
+    "From the stored transaction to its final status. The start is set before the broadcast for wallet Polkadot transactions, after it for Ethereum, and at signing for dapp Polkadot and Solana transactions. swap_completed: until the exchange's final status when the wallet watched one."
   ),
 
   method: p.enum(
@@ -207,4 +223,67 @@ export const properties = {
     ACCOUNT_MOVES,
     "How a drag in the account list changed the item's folder. reordered: the same folder or the top level."
   ),
+
+  token_symbol: p.symbol("Symbol of the token sent or bought."),
+  send_max: p.bool("The user sent the whole transferable balance with Max."),
+  usd_bucket: p.enum(AMOUNT_BUCKETS, "USD value of the amount sent or swapped, as a range."),
+  fee_usd_bucket: p.enum(
+    AMOUNT_BUCKETS,
+    "USD value of the network fee estimated on the confirm screen, as a range."
+  ),
+  fee_priority: p.enum(
+    FEE_PRIORITIES,
+    "The EVM fee priority. Absent on networks without a fee choice. custom: the user set the gas values."
+  ),
+  gas_type: p.enum(GAS_TYPES, "How the EVM network prices gas."),
+  recipient_source: p.enum(
+    RECIPIENT_SOURCES,
+    "How the user picked the recipient. typed: an address entered in the search field, typed or pasted. prefilled: the send opened with a recipient. unknown: none of these was seen."
+  ),
+  phase: p.enum(
+    TX_PHASES,
+    "Where the transaction failed. pre_broadcast: before any node accepted it. approval: the token approval a swap needs first. submit: the swap transaction itself."
+  ),
+  protocol: p.enum(SWAP_PROTOCOLS, "The swap provider."),
+  protocols: p.list(p.enum(SWAP_PROTOCOLS, "A swap provider."), "Providers that returned a quote."),
+  quote_count: p.count("Quotes returned by every provider together."),
+  latency_ms: p.durationMs("From asking every provider for a quote to the last one answering."),
+  from_network_id: p.slug(
+    "Chaindata network id of the token swapped from. custom: a network the user added."
+  ),
+  to_network_id: p.slug(
+    "Chaindata network id of the token swapped to. custom: a network the user added."
+  ),
+  from_symbol: p.symbol("Symbol of the token swapped from."),
+  to_symbol: p.symbol("Symbol of the token swapped to."),
+  cross_chain: p.bool("The swap moves value from one network to another."),
+  slippage_percent: p.nullable(
+    p.number(
+      "The slippage tolerance in percent. Null when the provider takes no slippage setting.",
+      {
+        min: 0,
+        max: 100,
+      }
+    )
+  ),
+  slippage_is_default: p.nullable(
+    p.bool("slippage_percent is the wallet's default. Null with slippage_percent.")
+  ),
+  swap_status: p.enum(
+    SWAP_OUTCOMES,
+    "The exchange's final status, when the wallet watched one. unknown: the wallet stopped watching without one. Absent when the transaction itself did not succeed."
+  ),
+  stage: p.slug("The step the user left the swap on: mobile's name for last_step."),
+  prefill_from_token: p.bool("The swap opened with the token to swap from already picked."),
+  is_revoke: p.bool("The approval resets an existing allowance to zero, as some tokens require."),
+  replace_type: p.enum(REPLACE_TYPES, "How the user replaced a pending transaction."),
+  tab: p.enum(RAMP_DIRECTIONS, "The buy and sell tab the modal opened on."),
+  direction: p.enum(RAMP_DIRECTIONS, "Whether the user went on to buy or to sell crypto."),
+  provider: p.enum(RAMP_PROVIDERS, "The ramp provider the user went on to."),
+  fiat_currency: p.slug("The fiat currency code the user picked, such as USD."),
+  address_format: p.slug(
+    "<encoding>:<format> of the copied address, as mobile. encoding: ss58, ethereum or base58solana. format: standard, or legacy for an old network prefix."
+  ),
+  has_network: p.bool("The contact is limited to one network."),
+  name_service: p.bool("The address came from a name service lookup."),
 } as const

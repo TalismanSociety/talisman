@@ -14,7 +14,7 @@ import {
   updateTransactionsRestart,
 } from "../transactions/store.transactions"
 import type { TransactionStatus, WalletTransactionEth } from "../transactions/types"
-import { settledStatusOf, trackTxSettled } from "./txSettled"
+import { settledStatusOf, trackSwapOutcome, trackTxSettled } from "./txSettled"
 
 type TrackedCall = [event: EventName, props?: EventProperties]
 
@@ -177,6 +177,58 @@ describe("tx_settled from the transaction store", () => {
 
     expect((await db.transactionsV2.get("tx-5"))?.status).toBe("pending")
     expect(facts).toEqual([])
+  })
+
+  const makeSwapTx = (nonce: number): WalletTransactionEth => ({
+    ...makeEvmTx(nonce),
+    txInfo: {
+      type: "swap-lifi",
+      protocolName: "stargate",
+      fromTokenId: "1:evm-native",
+      toTokenId: "42161:evm-native",
+      fromAmount: "1",
+      toAmount: "1",
+      to: ACCOUNT,
+    },
+  })
+
+  it("leaves a successful swap to its exchange, and settles a failed one with the swap", async () => {
+    await db.transactionsV2.bulkPut([makeSwapTx(5), makeSwapTx(6)])
+
+    await updateTransactionStatus("tx-5", "success")
+    await updateTransactionStatus("tx-6", "error")
+    await reportFacts()
+
+    expect(settledStatuses().sort()).toEqual(["error", "success"])
+    expect(settled).toHaveBeenCalledOnce()
+    expect(settled).toHaveBeenCalledWith(
+      "tx-6",
+      {
+        status: "error",
+        timeToSettleMs: expect.any(Number),
+        properties: { protocol: "lifi", cross_chain: true },
+      },
+      expect.any(Number)
+    )
+  })
+
+  it("ends a swap when its exchange reaches a final status, timed from the stored transaction", async () => {
+    const row = { ...makeSwapTx(5), timestamp: 1_000 }
+
+    await trackSwapOutcome({ row, status: "exchanging", at: 5_000 })
+    await trackSwapOutcome({ row: makeEvmTx(6), status: "finished", at: 5_000 })
+    expect(settled).not.toHaveBeenCalled()
+
+    await trackSwapOutcome({ row, status: "refunded", at: 5_000 })
+    expect(settled).toHaveBeenCalledWith(
+      "tx-5",
+      {
+        status: "success",
+        timeToSettleMs: 4_000,
+        properties: { protocol: "lifi", cross_chain: true, swap_status: "refunded" },
+      },
+      expect.any(Number)
+    )
   })
 
   it("caps the time to settle of a transaction older than a week", async () => {

@@ -5,6 +5,7 @@ import { requestStore } from "../../libs/requests/store"
 import { passwordStore } from "../app/store.password"
 import { liveWalletBalances$ } from "../balances/walletBalances"
 import { txStatusFacts$ } from "../transactions/store.transactions"
+import { swapOutcomeFacts$ } from "../transactions/watchSwapStatus"
 import { dappRequestTracker } from "./dappRequests"
 import { analyticsEngine } from "./engine"
 import { onInstalledForAnalytics, onLockFact } from "./lifecycle"
@@ -12,7 +13,7 @@ import { analyticsLifecycleStore } from "./store.lifecycle"
 import { track } from "./track"
 import { gatherTvlInputs } from "./tvl/gather"
 import { createTvlSchedule } from "./tvl/schedule"
-import { trackTxSettled } from "./txSettled"
+import { trackSwapOutcome, trackTxSettled } from "./txSettled"
 
 const tvlSchedule = createTvlSchedule({
   admits: () => analyticsEngine.admits("usage"),
@@ -53,5 +54,9 @@ export const startAnalyticsMechanisms = () => {
 
   txStatusFacts$.subscribe((fact) => {
     trackTxSettled(fact).catch(reportFailure("tx_settled"))
+  })
+
+  swapOutcomeFacts$.subscribe((fact) => {
+    trackSwapOutcome(fact).catch(reportFailure("swap outcome"))
   })
 }

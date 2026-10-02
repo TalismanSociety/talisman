@@ -1,12 +1,11 @@
+import { networkIdForAnalytics } from "@common/analytics/funds"
 import {
   type ChainPlatform,
-  CUSTOM_NETWORK_ID,
   type Signer,
   type SubmittedBy,
   signerOf,
   type TxType,
 } from "@common/analytics/transactions"
-import { isNetworkCustom } from "@talismn/chaindata-provider"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { keyringStore } from "../keyring/store"
@@ -32,14 +31,12 @@ export type TxContext = {
   signer: Signer
 }
 
-/** Custom and unknown networks read `custom`: a user-added id can be a genesis hash. */
-export const analyticsNetworkId = async (network: NetworkRef): Promise<string> => {
-  const found =
+export const analyticsNetworkId = async (network: NetworkRef): Promise<string> =>
+  networkIdForAnalytics(
     "genesisHash" in network
       ? await chaindataProvider.getNetworkByGenesisHash(network.genesisHash)
       : await chaindataProvider.getNetworkById(network.networkId)
-  return found && !isNetworkCustom(found) ? found.id : CUSTOM_NETWORK_ID
-}
+  )
 
 export const signerOfAddress = async (address: string): Promise<Signer | null> => {
   const account = await keyringStore.getAccount(address)

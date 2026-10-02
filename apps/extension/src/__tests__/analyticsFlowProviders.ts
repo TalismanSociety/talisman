@@ -9,9 +9,9 @@ export type ProviderClass =
 
 export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   AppOnboardProvider: { flow: "onboarding" },
-  SendFundsWizardProvider: { pending: "5b", becomes: "send" },
+  SendFundsWizardProvider: { flow: "send" },
   AccountAddQrProvider: { flow: "add_account", runBy: "ui/domains/Account/AccountAdd/flow.ts" },
-  CopyAddressWizardProvider: { pending: "5b", becomes: "receive" },
+  CopyAddressWizardProvider: { flow: "receive" },
   MnemonicBackupModalProviderWrapper: { flow: "recovery_phrase_backup" },
   MnemonicCreateModalProvider: {
     flow: "add_account",
@@ -19,7 +19,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   },
   YieldxyzEnterWizardProvider: { pending: "5d", becomes: "earn_deposit" },
   YieldxyzExitWizardProvider: { pending: "5d", becomes: "earn_withdraw" },
-  SwapProvider: { pending: "5b", becomes: "swap" },
+  SwapProvider: { flow: "swap" },
   BittensorBondWizardProvider: { pending: "5d", becomes: "staking" },
   BittensorChangeValidatorWizardProvider: { pending: "5d", becomes: "staking" },
   BittensorConvictionLockWizardProvider: { pending: "5d", becomes: "staking" },

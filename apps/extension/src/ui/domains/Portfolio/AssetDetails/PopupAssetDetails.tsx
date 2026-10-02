@@ -22,6 +22,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const handleCopy = useCallback(() => {
     open({
+      entry: "token_details",
       address: selectedAccount?.address,
       qr: true,
     })
@@ -29,7 +30,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    openRampsModal()
+    openRampsModal({ entry: "token_details" })
   }, [openRampsModal])
 
   return (

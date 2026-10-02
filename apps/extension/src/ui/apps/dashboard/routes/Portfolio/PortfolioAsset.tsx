@@ -88,6 +88,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
 
   // don't set the token id here because it could be one of many
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "token_details",
     account,
     undefined,
     symbol

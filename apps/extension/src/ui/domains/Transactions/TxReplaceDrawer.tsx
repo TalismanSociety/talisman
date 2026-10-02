@@ -1,3 +1,4 @@
+import { networkIdForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
@@ -8,6 +9,7 @@ import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/ic
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
@@ -109,6 +111,15 @@ const EvmDrawerContent: FC<{
 
   const [isProcessing, setIsProcessing] = useState(false)
   const markOverlayCompleted = useMarkOverlayCompleted()
+  const reportReplaced = useCallback(
+    () =>
+      track("tx_replace_requested", {
+        replace_type: type === "speed-up" ? "speed_up" : "cancel",
+        platform: "ethereum",
+        network_id: networkIdForAnalytics(evmNetwork),
+      }),
+    [evmNetwork, type]
+  )
 
   const handleSend = useCallback(async () => {
     if (!transaction) return
@@ -116,6 +127,7 @@ const EvmDrawerContent: FC<{
     try {
       const serialized = serializeTransactionRequest(transaction)
       const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
+      reportReplaced()
       markOverlayCompleted()
       onClose?.(newHash)
     } catch (err) {
@@ -130,7 +142,7 @@ const EvmDrawerContent: FC<{
       })
     }
     setIsProcessing(false)
-  }, [markOverlayCompleted, onClose, transaction, tx, type, t])
+  }, [markOverlayCompleted, onClose, reportReplaced, transaction, tx, type, t])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -139,6 +151,7 @@ const EvmDrawerContent: FC<{
       try {
         const serialized = serializeTransactionRequest(transaction)
         const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
+        reportReplaced()
         markOverlayCompleted()
         onClose?.(newHash)
       } catch (err) {
@@ -155,7 +168,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [markOverlayCompleted, onClose, t, transaction, tx, type]
+    [markOverlayCompleted, onClose, reportReplaced, t, transaction, tx, type]
   )
 
   const handleSentToDevice = useCallback(() => {

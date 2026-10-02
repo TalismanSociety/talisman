@@ -21,6 +21,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   label,
   className,
   onSubmit,
+  onError,
   onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
@@ -44,9 +45,10 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
           subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
           cause,
         })
+        onError?.(cause)
       }
     },
-    [onSubmit, tx, t]
+    [onSubmit, onError, tx, t]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,10 +70,11 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
         cause,
       })
+      onError?.(cause)
     } finally {
       setIsSubmitting(false)
     }
-  }, [onSubmit, tx, t])
+  }, [onSubmit, onError, tx, t])
 
   if (!isAccountPlatformEthereum(account))
     return <TxSubmitButtonFallback label={label} className={className} />

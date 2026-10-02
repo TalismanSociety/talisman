@@ -19,6 +19,7 @@ const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
 
   const handleClick = useCallback(() => {
     open({
+      entry: "token_details",
       address: selectedAccount?.address,
       networkId,
     })

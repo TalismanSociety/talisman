@@ -18,13 +18,13 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    open({ address: selectedAccount?.address, qr: true })
+    open({ entry: "no_tokens", address: selectedAccount?.address, qr: true })
   }, [selectedAccount?.address, open])
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
   const handleBuyCryptoClick = useCallback(() => {
-    openRampsModal()
+    openRampsModal({ entry: "no_tokens" })
   }, [openRampsModal])
 
   return (

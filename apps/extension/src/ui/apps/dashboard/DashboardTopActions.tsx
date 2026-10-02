@@ -57,6 +57,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
           icon: SendIcon,
           onClick: () =>
             api.sendFundsOpen({
+              entry: "dashboard",
               from: selectedAddress,
               tokenSymbol: symbol || undefined,
             }),
@@ -68,6 +69,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
           icon: ArrowDownIcon,
           onClick: () =>
             openCopyAddressModal({
+              entry: "dashboard",
               address: selectedAddress,
             }),
           disabled: !selectedAccounts.length,
@@ -75,7 +77,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
         {
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapModal({}),
+          onClick: () => openSwapModal({ entry: "dashboard" }),
           disabled: disableActions,
           disabledReason,
         },
@@ -83,7 +85,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
           ? {
               label: t("Buy/Sell"),
               icon: CreditCardIcon,
-              onClick: () => openRampsModal(),
+              onClick: () => openRampsModal({ entry: "dashboard" }),
               disabled: disableActions,
               disabledReason,
             }
