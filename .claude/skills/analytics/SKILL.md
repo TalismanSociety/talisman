@@ -16,6 +16,7 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 | A `pri(...)` message | Add one line to `MESSAGE_COVERAGE` |
 | A `provideContext` provider | Add one line to `FLOW_PROVIDERS` |
 | An error toast | Pass `cause: err`, or `errorCategory` when nothing was thrown |
+| An inline form error from a caught failure | `setError(field, { type: classifyError(err), message })`, and `errorCategory={errorCategoryOfField(errors.field)}` on its `FormFieldContainer` |
 | A `<Route path>` | Use words, `:param` and `*`, never a value |
 
 Screens, modals, error toasts, transactions and dapp requests are tracked centrally. Do not add events for them.
@@ -33,7 +34,8 @@ The runtime adds `flow_id`, `step`, `last_step`, `duration_ms`, `error_category`
 
 Rules that the types do not catch:
 
-- Never report from a child's mount effect. Children's effects run before `useFlow` starts the attempt.
+- Never report from a child's mount effect. Children's effects run before `useFlow` starts the attempt. A child that knows a step the parent cannot see (a modal, a device prompt) declares it as state to the provider that runs the flow, as `useAddAccountStep` does for `add_account`.
+- A step held in state reaches the flow on the next render. When the same handler sets the step and then calls `submitted`, call `flows.<name>.step(…)` first, or `last_step` reads the step before.
 - A page runs one attempt per flow. Call `useFlow` once, in the provider or the common parent.
 - `completed`, and `submitted` of a transaction flow, mark the modal or drawer on top as completed, so its `modal_closed` reads `dismiss: "completed"`.
 
@@ -42,7 +44,8 @@ Rules that the types do not catch:
 1. Add it to a group in `common/analytics/events/` with `defineEventGroup(properties, { name: { description, props } })`. A prop is `"required"`, `"optional"` or `{ narrow: z.enum([...]) }`.
 2. Send it with `track("name", { … })`. Write the name as a string literal, or the liveness test cannot see it.
 3. Do not write `<flow>_started` or any other flow event by hand. `defineFlow` generates them.
-4. If mobile sends an event of the same name, give it mobile's properties. `MOBILE_SHARED` lists them.
+4. If mobile sends an event of the same name, give it mobile's properties, and add a row to `MOBILE_SHARED`.
+5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`core/domains/analytics/accountMessages.ts` for accounts), not in the handler: domain code never imports analytics.
 
 ## Add an exemption
 

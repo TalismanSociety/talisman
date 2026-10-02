@@ -8,14 +8,14 @@ export type ProviderClass =
   | { none: string }
 
 export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
-  AppOnboardProvider: { pending: "5a", becomes: "onboarding" },
+  AppOnboardProvider: { flow: "onboarding" },
   SendFundsWizardProvider: { pending: "5b", becomes: "send" },
-  AccountAddQrProvider: { pending: "5a", becomes: "add_account" },
+  AccountAddQrProvider: { flow: "add_account", runBy: "ui/domains/Account/AccountAdd/flow.ts" },
   CopyAddressWizardProvider: { pending: "5b", becomes: "receive" },
   MnemonicBackupModalProviderWrapper: { flow: "recovery_phrase_backup" },
   MnemonicCreateModalProvider: {
-    pending: "5a",
-    becomes: "add_account: the flow arrives as a prop",
+    flow: "add_account",
+    runBy: "ui/domains/Account/AccountAdd/flow.ts",
   },
   YieldxyzEnterWizardProvider: { pending: "5d", becomes: "earn_deposit" },
   YieldxyzExitWizardProvider: { pending: "5d", becomes: "earn_withdraw" },
@@ -31,11 +31,17 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   UnbondWizardProvider: { pending: "5d", becomes: "staking" },
   BittensorClaimWizardProvider: { pending: "5d", becomes: "staking" },
   YieldxyzManageWizardProvider: { pending: "5d", becomes: "earn_manage" },
-  MigratePasswordProvider: { pending: "5a", becomes: "password_migration" },
-  JsonAccountImportProvider: { pending: "5a", becomes: "add_account" },
-  AddLedgerAccountProvider: { pending: "5a", becomes: "add_account" },
-  AccountAddMnemonicProvider: { pending: "5a", becomes: "add_account" },
-  SignetConnectProvider: { pending: "5a", becomes: "add_account" },
+  MigratePasswordProvider: { flow: "password_migration" },
+  JsonAccountImportProvider: {
+    flow: "add_account",
+    runBy: "ui/domains/Account/AccountAdd/flow.ts",
+  },
+  AddLedgerAccountProvider: { flow: "add_account", runBy: "ui/domains/Account/AccountAdd/flow.ts" },
+  AccountAddMnemonicProvider: {
+    flow: "add_account",
+    runBy: "ui/domains/Account/AccountAdd/flow.ts",
+  },
+  SignetConnectProvider: { flow: "add_account", runBy: "ui/domains/Account/AccountAdd/flow.ts" },
   NetworkCreateFormProvider: { none: "a form" },
   NetworkFormProvider: { none: "a form" },
   MnemonicDeleteModalProvider: { none: "the id of the item a modal acts on" },
@@ -43,6 +49,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   MnemonicSetPvVerifierModalProvider: { none: "the id of the item a modal acts on" },
   ScrollContainerProvider: { none: "a scroll container ref" },
   AccountCreateContextProvider: { none: "a tab of the add-account menu, not a step" },
+  AccountAddFlowProvider: { flow: "add_account" },
   ManageAccountsProvider: { none: "a search box" },
   PasswordUnlockProvider: { none: "a password gate inside other flows" },
   MnemonicUnlockProvider: { none: "a password gate inside other flows" },
@@ -64,10 +71,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
 }
 
 export const STEP_STATE_ELSEWHERE: Readonly<Record<string, ProviderClass>> = {
-  "ui/domains/AccountProxies/AddProxy/AddProxyModal.tsx": {
-    pending: "5a",
-    becomes: "account_proxy_add",
-  },
+  "ui/domains/AccountProxies/AddProxy/AddProxyModal.tsx": { flow: "account_proxy_add" },
   "ui/apps/popup/pages/SendFunds/SendFundsRedirect.tsx": {
     none: "redirects into the send route: the send flow runs in SendFundsWizardProvider",
   },

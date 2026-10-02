@@ -1,3 +1,4 @@
+import { accountEvents } from "./events/accounts"
 import { consentEvents } from "./events/consent"
 import { dappRequestEvents } from "./events/dappRequests"
 import { errorEvents } from "./events/errors"
@@ -29,6 +30,7 @@ const groups = [
   dappRequestEvents,
   performanceEvents,
   lifecycleEvents,
+  accountEvents,
   flowEventGroup(FLOWS),
 ] as const
 

@@ -10,6 +10,8 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { notify } from "@ui/components/Notifications"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -30,6 +32,7 @@ const Content = () => {
   const navigate = useNavigate()
   const allBackedUp = useMnemonicsAllBackedUp()
   const [progress, setProgress] = useState<ChangePasswordStatusUpdateType>()
+  useFlow(flows.password_change, {})
 
   const schema = useMemo(
     () =>
@@ -93,6 +96,7 @@ const Content = () => {
 
   const subscribeChangePassword = useCallback(
     async ({ currentPw, newPw, newPwConfirm }: FormData) => {
+      flows.password_change.submitted()
       // sets up a custom promise, resolving when the password change is done or there is an error
       return await new Promise<void>((resolve, reject) => {
         const unsub = api.changePasswordSubscribe(
@@ -106,12 +110,14 @@ const Content = () => {
               reject(new Error(message))
             }
             if (status === ChangePasswordStatusUpdateStatus.DONE) {
+              flows.password_change.completed()
               unsub()
               resolve()
             }
           }
         )
       }).catch((err) => {
+        flows.password_change.failed(err)
         switch (err.message) {
           case "Incorrect password":
             setError("currentPw", { type: "wrong_password", message: err.message })
@@ -169,7 +175,7 @@ const Content = () => {
       <form className="mt-8" onSubmit={handleSubmit(subscribeChangePassword)}>
         <FormFieldContainer
           error={errors.currentPw?.message}
-          errorCategory={errors.currentPw?.type === "wrong_password" ? "wrong_password" : undefined}
+          errorCategory={errorCategoryOfField(errors.currentPw)}
           label={t("Old Password")}
         >
           <FormFieldInputText

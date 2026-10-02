@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useProxyTypesForNetwork } from "@ui/hooks/useProxyTypesForNetwork"
 import { useAccountCanWriteProxies } from "@ui/state/accountProxies"
@@ -149,9 +150,15 @@ const AddProxyContent: FC<{ address: string; onClose: () => void }> = ({
     [network, isDelegateValid, isDelegateCompatible, proxyType, proxyTypes, isDelayValid]
   )
 
+  useFlow(flows.account_proxy_add, {
+    active: canWrite,
+    step: step === "submitted" ? null : step,
+  })
+
   const handleSubmitted = useCallback(
     (hash: Hex) => {
       if (!network) return
+      flows.account_proxy_add.submitted({ transactionId: hash })
       setSubmittedHash(hash)
       setSubmittedNetworkId(network.id)
       setStep("submitted")

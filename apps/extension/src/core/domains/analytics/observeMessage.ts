@@ -6,6 +6,7 @@ import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
 import { requestStore } from "../../libs/requests/store"
 import type { MessageTypes, RequestTypes, ResponseTypes } from "../../types"
 import { isJsonPayload } from "../../util/isJsonPayload"
+import { observeAccountMessage } from "./accountMessages"
 import { dappRequestTracker } from "./dappRequests"
 import { track } from "./track"
 import { resolveTxContext, type TxAttempt } from "./txContext"
@@ -244,8 +245,8 @@ const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
 
 /**
  * Called by `talismanHandler` for every extension message, before the handler runs. Returns
- * what to call with the handler's outcome, or null when the message concerns no transaction
- * and no dapp request decision.
+ * what to call with the handler's outcome, or null when the message concerns no transaction,
+ * no dapp request decision and no account change.
  */
 export const observeExtensionMessage = (
   type: MessageTypes,
@@ -257,13 +258,15 @@ export const observeExtensionMessage = (
     if (decision && requestId) dappRequestTracker.noteDecision(requestId, decision, Date.now())
 
     const submission = isSubmission(type) ? observeSubmission(type, request) : null
-    if (!requestId && !submission) return null
+    const accountChange = observeAccountMessage(type, request)
+    if (!requestId && !submission && !accountChange) return null
 
     return (outcome) => {
       try {
         if (decision === "approved" && requestId && !outcome.ok)
           dappRequestTracker.noteApprovalFailure(requestId, classifyError(outcome.error))
         submission?.(outcome).catch(reportFailure)
+        if (accountChange && outcome.ok) accountChange(outcome.response).catch(reportFailure)
       } catch (cause) {
         reportFailure(cause)
       }

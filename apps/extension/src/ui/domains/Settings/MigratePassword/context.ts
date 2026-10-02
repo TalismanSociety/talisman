@@ -2,15 +2,39 @@ import { sentry } from "@core/config/sentry"
 import { passwordStore } from "@core/domains/app/store.password"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import useStatus, { statusOptions } from "@ui/hooks/useStatus"
+import useStatus, { type StatusOptions, statusOptions } from "@ui/hooks/useStatus"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { dismissMigratePasswordModal } from "./useMigratePasswordModal"
+
+type MigrationStep = FlowStep<typeof flows.password_migration>
+
+const migrationStep = ({
+  status,
+  hasPassword,
+  allBackedUp,
+  passwordTrimmed,
+  hasNewPassword,
+}: {
+  status: StatusOptions
+  hasPassword: boolean
+  allBackedUp: boolean
+  passwordTrimmed: boolean | undefined
+  hasNewPassword: boolean
+}): MigrationStep | null => {
+  if (status === statusOptions.PROCESSING) return "processing"
+  if (status === statusOptions.SUCCESS || status === statusOptions.ERROR) return null
+  if (!hasPassword) return "password"
+  if (!allBackedUp) return "backup"
+  if (passwordTrimmed && !hasNewPassword) return "new_password"
+  return null
+}
 
 const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) => {
   const [password, setPassword] = useSensitiveState<string>()
@@ -48,15 +72,19 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const migratePassword = useCallback(async () => {
     if ((passwordTrimmed && !newPassword) || !password || !allBackedUp) return
     setStatus.processing()
+    flows.password_migration.submitted()
     // decide whether to use the new password or to use the same one
     let newPw = password
     if (passwordTrimmed && newPassword) {
       newPw = newPassword
     }
     try {
-      await api.changePassword(password, newPw, newPw)
+      const changed = await api.changePassword(password, newPw, newPw)
+      if (changed) flows.password_migration.completed()
+      else flows.password_migration.failed(new Error("Password migration was refused"))
       setStatus.success()
     } catch (err) {
+      flows.password_migration.failed(err)
       setError(err as Error)
       setStatus.error(getErrorMessage(err, t("Unknown error")))
     }
@@ -67,6 +95,10 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
       migratePassword()
     }
   }, [allBackedUp, status, migratePassword])
+
+  useFlow(flows.password_migration, {
+    step: migrationStep({ status, hasPassword, allBackedUp, passwordTrimmed, hasNewPassword }),
+  })
 
   const closeAndComplete = useCallback(() => {
     dismissMigratePasswordModal()

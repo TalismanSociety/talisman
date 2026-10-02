@@ -1,3 +1,4 @@
+import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "./accounts"
 import { AMOUNT_BUCKETS, DAY_BUCKETS, SHARE_BUCKETS } from "./buckets"
 import { DAPP_METHODS, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
@@ -6,6 +7,8 @@ import { CHAIN_PLATFORMS, SETTLED_STATUSES, SIGNERS, SUBMITTERS, TX_TYPES } from
 
 export const UNLOCK_METHODS = ["password", "quick_unlock"] as const
 export const LOCK_REASONS = ["manual", "auto_lock", "error"] as const
+/** Mobile's `app_unlock_failed` reasons. */
+export const UNLOCK_FAILURES = ["rejected", "error"] as const
 export const ERROR_SURFACES = ["toast", "field", "alert", "screen", "boundary"] as const
 export const DISMISS_CAUSES = ["escape", "backdrop", "button", "completed"] as const
 const TVL_TRIGGERS = ["daily", "update"] as const
@@ -37,7 +40,9 @@ export const properties = {
     ERROR_CATEGORIES,
     "What kind of failure, never its text. input_invalid: a form field's own validation. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
   ),
-  flow: p.slug("The flow running when it happened."),
+  flow: p.slug(
+    "The flow running when it happened. Account events: onboarding for the wallet's first account, add_account for the others, as on mobile."
+  ),
   flow_id: p.slug(
     "Random id of one attempt at a flow, a UUID with dashes. Every event of the attempt carries it. error_shown: the attempt running when the error showed."
   ),
@@ -76,8 +81,8 @@ export const properties = {
   ),
 
   method: p.enum(
-    [...DAPP_METHODS, ...UNLOCK_METHODS],
-    "Dapp request events: the method the request answers, connect for every connection request. app_unlocked: how the wallet was unlocked."
+    [...DAPP_METHODS, ...UNLOCK_METHODS, ...ACCOUNT_METHODS],
+    "Dapp request events: the method the request answers, connect for every connection request. app_unlocked: how the wallet was unlocked. add_account events: how the user adds the account, once they picked it."
   ),
   outcome: p.enum(
     REQUEST_OUTCOMES,
@@ -115,8 +120,8 @@ export const properties = {
     "Why the wallet was locked before this unlock. restart: the browser or the extension restarted."
   ),
   reason: p.enum(
-    LOCK_REASONS,
-    "Why the wallet locked. error: a failed key access or Quick Unlock attempt locked it."
+    [...LOCK_REASONS, "rejected"],
+    "app_locked: why the wallet locked, error when a failed key access or Quick Unlock attempt locked it. app_unlock_failed: rejected when the password or the user refused it, error for any other failure."
   ),
   legacy_password: p.bool("The unlock went through the legacy password path."),
 
@@ -178,4 +183,28 @@ export const properties = {
     "Days since install, as a range. For installs older than this analytics, since the update that brought it. unknown: never recorded."
   ),
   quick_unlock_enabled: p.bool("Quick Unlock is set up."),
+
+  biometrics_offered: p.bool(
+    "The setup offered biometric unlock. Always false in the extension, which offers Quick Unlock only in settings."
+  ),
+  origin: p.enum(
+    ACCOUNT_ORIGINS,
+    "Where the account's key comes from. seed: a recovery phrase created or typed in now. existing_seed: a recovery phrase the wallet already held. vault: Polkadot Vault."
+  ),
+  wallet_type: p.enum(CHAIN_PLATFORMS, "The chain platform of the account, as mobile names it."),
+  is_first_account: p.bool("The wallet held no account before this one, contacts aside."),
+  count: p.count("How many accounts the import added."),
+  account_type: p.enum(SIGNERS, "Who signs for the account: the kind of account."),
+  item: p.enum(
+    ["account", "folder", "recovery_phrase"],
+    "What the user renamed. recovery_phrase is the extension's own."
+  ),
+  format: p.enum(["json", "private_key"], "What the export wrote out."),
+  in_portfolio: p.bool("The watched account now counts in the portfolio total."),
+  tree: p.enum(ACCOUNT_TREES, "The account list the folder or account is in."),
+  accounts_in_folder: p.count("Accounts the folder held when it was deleted."),
+  action: p.enum(
+    ACCOUNT_MOVES,
+    "How a drag in the account list changed the item's folder. reordered: the same folder or the top level."
+  ),
 } as const

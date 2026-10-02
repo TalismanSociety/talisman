@@ -4,6 +4,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -33,6 +34,7 @@ const ConfirmDrawer = ({
 
   const handleReset = useCallback(async () => {
     setResetting(true)
+    flows.wallet_reset.completed()
     // don't wait for the response here, or the normal onboarding tab will open
     api.resetWallet()
     window.close()
@@ -86,6 +88,7 @@ const ConfirmDrawer = ({
 export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void }) => {
   const { t } = useTranslation()
   const { open, isOpen } = useOpenClose()
+  useFlow(flows.wallet_reset, { step: isOpen ? "confirm" : "warning" })
 
   return (
     <PopupLayout>

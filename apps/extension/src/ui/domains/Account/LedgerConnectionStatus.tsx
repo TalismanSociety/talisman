@@ -1,4 +1,6 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { LedgerStatus } from "@ui/hooks/ledger/common"
 import { cn } from "@ui/util/cn"
 import { useTranslation } from "react-i18next"
@@ -8,6 +10,8 @@ export type LedgerConnectionStatusProps = {
   message: string
   className?: string
   onRetryClick?: () => void
+  /** Set with an error status: what kind of failure it shows. */
+  errorCategory?: ErrorCategory
 }
 
 const wrapStrong = (text: string) => {
@@ -35,8 +39,14 @@ export const LedgerConnectionStatus = ({
   message,
   className,
   onRetryClick,
+  errorCategory = "ledger",
 }: LedgerConnectionStatusProps) => {
   const { t } = useTranslation()
+  useErrorShown({
+    shown: status === "error" && message,
+    surface: "alert",
+    category: errorCategory,
+  })
 
   if (!status || status === "unknown") return null
 

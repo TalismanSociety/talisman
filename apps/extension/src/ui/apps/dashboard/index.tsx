@@ -12,7 +12,7 @@ import { type FC, lazy, type PropsWithChildren, Suspense, useEffect, useRef } fr
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, useMatch } from "react-router-dom"
 
-import { AccountAddMenu } from "./routes/AccountAdd"
+import { AccountAddLayout, AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
@@ -66,7 +66,7 @@ const DashboardInner = () => {
           />
         ))}
         <Route path="accounts">
-          <Route path="add">
+          <Route path="add" element={<AccountAddLayout />}>
             <Route index element={<AccountAddMenu />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />

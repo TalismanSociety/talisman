@@ -2,6 +2,7 @@ import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -82,6 +83,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
 
       try {
         await api.accountsCatalogRunActions([{ type: "addFolder", tree: treeName, name }])
+        track("folder_created", { tree: treeName })
         onConfirm()
       } catch (err) {
         setError("name", {

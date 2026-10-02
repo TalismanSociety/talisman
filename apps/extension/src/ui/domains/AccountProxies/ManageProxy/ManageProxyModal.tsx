@@ -9,6 +9,7 @@ import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -61,9 +62,12 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   const hasProxiesWithCount = sets.some((s) => s.proxyCount > 0)
   const isLoadingDetails = sets.some((s) => s.proxyCount > 0 && s.proxies.length === 0)
 
+  useFlow(flows.account_proxy_remove, { active: !!removeTarget, step: "confirm" })
+
   const handleSubmitted = useCallback(
     (hash: Hex) => {
       if (!removeTarget) return
+      flows.account_proxy_remove.submitted({ transactionId: hash })
       setSubmittedHash(hash)
       setSubmittedNetworkId(removeTarget.networkId)
     },

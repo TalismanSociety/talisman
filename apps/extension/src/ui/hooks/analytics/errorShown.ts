@@ -1,4 +1,4 @@
-import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { type ErrorCategory, isErrorCategory } from "@common/analytics/errorCategory"
 import type { ERROR_SURFACES } from "@common/analytics/properties"
 import { track } from "@ui/api/track"
 import { type RefObject, useEffect } from "react"
@@ -80,3 +80,12 @@ export const useFieldErrorShown = (
     })
   }, [shown, root, field, category])
 }
+
+/**
+ * A form error set from a caught failure carries its category as its type, as in
+ * `setError("password", { type: classifyError(err), message })`. A validation rule's type is
+ * not a category: the field's own validation.
+ */
+export const errorCategoryOfField = (
+  error: { type?: unknown } | undefined
+): ErrorCategory | undefined => (isErrorCategory(error?.type) ? error.type : undefined)

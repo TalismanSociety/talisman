@@ -1,6 +1,6 @@
 import { z } from "zod/v4"
 
-import { properties, UNLOCK_METHODS } from "../properties"
+import { LOCK_REASONS, properties, UNLOCK_FAILURES, UNLOCK_METHODS } from "../properties"
 import { defineEventGroup } from "../schema"
 
 export const lifecycleEvents = defineEventGroup(properties, {
@@ -21,10 +21,19 @@ export const lifecycleEvents = defineEventGroup(properties, {
       legacy_password: "required",
     },
   },
+  app_unlock_failed: {
+    description:
+      "An unlock attempt failed: a wrong password, or a Quick Unlock that did not complete. A Quick Unlock prompt the wallet opened by itself and the user dismissed is not an attempt.",
+    props: {
+      method: { narrow: z.enum(UNLOCK_METHODS) },
+      reason: { narrow: z.enum(UNLOCK_FAILURES) },
+      error_category: "required",
+    },
+  },
   app_locked: {
     description:
       "The wallet went from unlocked to locked. A browser or extension restart locks it without this event.",
-    props: { reason: "required" },
+    props: { reason: { narrow: z.enum(LOCK_REASONS) } },
   },
   tvl_snapshot: {
     description:

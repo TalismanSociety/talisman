@@ -1,3 +1,4 @@
+import { attachErrorCategory } from "@common/analytics/errorCategory"
 import { addTrailingSlash } from "@talismn/util"
 
 import type { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
@@ -74,7 +75,7 @@ export const signet = {
         checkTabClosedInterval && clearInterval(checkTabClosedInterval)
         window.removeEventListener("message", handleNewMessage)
 
-        reject("Signet tab closed")
+        reject(attachErrorCategory(new Error("Signet tab closed"), "user_rejected"))
       }, 500)
     })
   },

@@ -1,7 +1,24 @@
 import { type FlowBase, flowRegistry, type Lifecycle } from "./defineFlow"
+import { accountProxyAdd, accountProxyRemove } from "./definitions/accountProxy"
+import { addAccount } from "./definitions/addAccount"
+import { onboarding } from "./definitions/onboarding"
+import { passwordChange } from "./definitions/passwordChange"
+import { passwordMigration } from "./definitions/passwordMigration"
+import { quickUnlockSetup } from "./definitions/quickUnlockSetup"
 import { recoveryPhraseBackup } from "./definitions/recoveryPhraseBackup"
+import { walletReset } from "./definitions/walletReset"
 
-export const FLOWS = flowRegistry(recoveryPhraseBackup)
+export const FLOWS = flowRegistry(
+  recoveryPhraseBackup,
+  onboarding,
+  walletReset,
+  passwordChange,
+  passwordMigration,
+  quickUnlockSetup,
+  addAccount,
+  accountProxyAdd,
+  accountProxyRemove
+)
 
 export type Flows = typeof FLOWS
 export type FlowName = keyof Flows & string

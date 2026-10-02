@@ -1,9 +1,11 @@
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
+import { useAccountsCatalog } from "@ui/state/accounts"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -73,10 +75,15 @@ const DeleteFolder = ({
   className,
 }: DeleteFolderProps) => {
   const { t } = useTranslation()
+  const catalog = useAccountsCatalog()
   const handleDeleteClick = useCallback(async () => {
+    const folder = catalog[treeName].find((item) => item.type === "folder" && item.id === id)
     await api.accountsCatalogRunActions([{ type: "removeFolder", tree: treeName, id }])
+    track("folder_deleted", {
+      accounts_in_folder: folder?.type === "folder" ? folder.tree.length : 0,
+    })
     onConfirm()
-  }, [id, onConfirm, treeName])
+  }, [catalog, id, onConfirm, treeName])
 
   return (
     <div className={className}>

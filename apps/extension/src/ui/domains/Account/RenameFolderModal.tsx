@@ -2,6 +2,7 @@ import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -111,6 +112,7 @@ const RenameFolder = ({
     async ({ name: newName }: FormData) => {
       try {
         await api.accountsCatalogRunActions([{ type: "renameFolder", tree: treeName, id, newName }])
+        track("item_renamed", { item: "folder" })
         onConfirm()
       } catch (err) {
         setError("name", {

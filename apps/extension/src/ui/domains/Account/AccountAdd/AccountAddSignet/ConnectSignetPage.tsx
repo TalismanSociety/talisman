@@ -7,10 +7,12 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { notify } from "@ui/components/Notifications"
 import { Spacer } from "@ui/components/Spacer"
+import { flows } from "@ui/hooks/analytics/flows"
 import { signet } from "@ui/util/signet"
 import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
+import { useAddAccountStep } from "../flow"
 
 import { useSignetConnect } from "./context"
 
@@ -33,6 +35,7 @@ export const ConnectSignetPage = () => {
   const { signetUrl, signetUrlOrigin, setSignetUrl, setVaults } = useSignetConnect()
   const { t } = useTranslation()
   const [isConnecting, setIsConnecting] = useState(false)
+  useAddAccountStep(isConnecting ? "connect_device" : null)
 
   const handleContinue = useCallback(
     async (e: React.FormEvent) => {
@@ -53,6 +56,7 @@ export const ConnectSignetPage = () => {
           })
         }
       } catch (err) {
+        flows.add_account.failed(err)
         notify({
           type: "error",
           title: t("Connection failed"),

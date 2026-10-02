@@ -3,11 +3,13 @@ import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
+import { type AddAccountStep, useAddAccountStep } from "../flow"
 
 import type { AccountAddPageProps } from "../types"
 
@@ -140,9 +142,17 @@ const reducer = (state: AddQrState, action: Action): AddQrState => {
 
 const initialState: AddQrState = { type: "SCAN", enable: false }
 
+const QR_STEPS: Partial<Record<AddQrState["type"], AddAccountStep>> = {
+  CONFIGURE: "select_accounts",
+  CONFIGURE_VERIFIER_CERT: "verifier_certificate",
+}
+
 const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(reducer, initialState)
+  useAddAccountStep(
+    QR_STEPS[state.type] ?? (state.type === "SCAN" && state.enable ? "connect_device" : null)
+  )
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
 
   const vaultAccounts = useQrCodeAccounts()
@@ -153,6 +163,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       if (state.submitting) return
 
       dispatch({ method: "setSubmitting" })
+      flows.add_account.submitted()
 
       const notificationId = notify(
         {
@@ -203,6 +214,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           },
         ])
 
+        flows.add_account.completed()
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {
           type: "success",
@@ -210,6 +222,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           subtitle: name,
         })
       } catch (error) {
+        flows.add_account.failed(error)
         dispatch({ method: "setSubmittingFailed" })
         notifyUpdate(notificationId, {
           type: "error",

@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { IS_FIREFOX } from "@common/constants"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
@@ -6,6 +7,8 @@ import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import imgPassword from "@ui/theme/images/onboard_password_character.png"
 import { cn } from "@ui/util/cn"
 import { useCallback, useEffect } from "react"
@@ -92,9 +95,14 @@ export const PasswordPage = () => {
       try {
         await createPassword(password, passwordConfirm)
       } catch (e) {
-        setError("password", { message: getErrorMessage(e, t("Unknown error")) })
+        flows.onboarding.failed(e)
+        setError("password", {
+          type: classifyError(e),
+          message: getErrorMessage(e, t("Unknown error")),
+        })
         return
       }
+      flows.onboarding.submitted({ biometrics_offered: false })
       navigateNext()
     },
     [setError, createPassword, navigateNext, t]
@@ -140,7 +148,10 @@ export const PasswordPage = () => {
                   <CapsLockWarningMessage />
                 </div>
               </div>
-              <FormFieldContainer error={errors.password?.message}>
+              <FormFieldContainer
+                error={errors.password?.message}
+                errorCategory={errorCategoryOfField(errors.password)}
+              >
                 <FormFieldInputText
                   {...register("password")}
                   type="password"

@@ -93,6 +93,7 @@ const ROWS: [string, unknown, ErrorCategory][] = [
   ["other validity", new Error("Invalid Transaction: Custom error: 3"), "network_rejected"],
   ["wrong password", new Error("Incorrect Password"), "wrong_password"],
   ["locked approval", new Error("Unauthorised"), "wrong_password"],
+  ["keyring decryption", new Error("Failed to decrypt data"), "wrong_password"],
   ["timeout message", new Error("Request timed out"), "timeout"],
   ["fetch failure", new Error("Failed to fetch"), "rpc"],
   ["a string is a message", "user rejected the request", "user_rejected"],

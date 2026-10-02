@@ -25,6 +25,7 @@ import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useDebouncedValue } from "@ui/hooks/useDebouncedValue"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
@@ -36,6 +37,7 @@ import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import * as yup from "yup"
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
+import { useAddAccountStep } from "../flow"
 import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -205,7 +207,8 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
     },
   })
 
-  const { generateMnemonic } = useMnemonicCreateModal()
+  const { generateMnemonic, isOpen: isCreatingPhrase } = useMnemonicCreateModal()
+  useAddAccountStep(isCreatingPhrase ? "new_phrase" : null)
 
   const submit = useCallback(
     async ({ name, platform, mnemonicId, derivationPath }: FormData) => {
@@ -232,6 +235,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             name,
           }
 
+      flows.add_account.submitted()
       const notificationId = notify(
         {
           type: "processing",
@@ -244,6 +248,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       try {
         const [address] = await api.accountAddDerive([option])
 
+        flows.add_account.completed()
         onSuccess(address)
 
         notifyUpdate(notificationId, {
@@ -252,6 +257,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           subtitle: name,
         })
       } catch (err) {
+        flows.add_account.failed(err)
         log.error("Failed to create account", err)
         notifyUpdate(notificationId, {
           type: "error",

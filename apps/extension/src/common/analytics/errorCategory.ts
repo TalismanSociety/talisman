@@ -169,7 +169,8 @@ export const CATEGORY_RULES: readonly CategoryRule[] = [
   },
   {
     match: "message",
-    pattern: /(incorrect|invalid|wrong) password|^unauthori[sz]ed$/i,
+    // the keyring's own message when a password does not decrypt a stored secret
+    pattern: /(incorrect|invalid|wrong) password|^unauthori[sz]ed$|^failed to decrypt data$/i,
     category: "wrong_password",
   },
   { match: "message", pattern: /^timeout$|timed? ?out/i, category: "timeout" },

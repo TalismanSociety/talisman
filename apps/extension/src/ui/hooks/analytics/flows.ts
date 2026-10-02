@@ -128,15 +128,16 @@ export const useFlow = <N extends string, T extends FlowTypes>(
     }
   }, [flow, active])
 
-  useEffect(() => {
-    if (live && name && step != null && running.get(name)?.flowId === flowId.current)
-      apply(name, { type: "step", step })
-  }, [live, name, step])
-
+  // before the step: a render that changes both stamps the new step with the new attributes
   const attributesKey = JSON.stringify(attributes ?? null)
   useEffect(() => {
     const current: Attributes | null = JSON.parse(attributesKey)
     if (live && name && current && running.get(name)?.flowId === flowId.current)
       apply(name, { type: "attributes", attributes: current })
   }, [live, name, attributesKey])
+
+  useEffect(() => {
+    if (live && name && step != null && running.get(name)?.flowId === flowId.current)
+      apply(name, { type: "step", step })
+  }, [live, name, step])
 }

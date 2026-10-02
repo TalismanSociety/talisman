@@ -2,6 +2,7 @@ import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
+import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -22,6 +23,9 @@ export const QuickUnlockSetting = () => {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
   const getQuickUnlockErrorMessage = useQuickUnlockErrorMessage()
+  const [isSettingUp, setIsSettingUp] = useState(false)
+  const [setupStep, setSetupStep] = useState<FlowStep<typeof flows.quick_unlock_setup>>("passkey")
+  useFlow(flows.quick_unlock_setup, { active: isSettingUp, step: setupStep })
 
   const abortRef = useRef<AbortController>(null)
 
@@ -40,10 +44,19 @@ export const QuickUnlockSetting = () => {
       abortRef.current = abort
       try {
         if (checked) {
+          setIsSettingUp(true)
+          setSetupStep("passkey")
           const credential = await createQuickUnlockCredential(abort.signal)
+          setSetupStep("enrol")
+          // the state reaches the flow on the next render, after submitted
+          flows.quick_unlock_setup.step("enrol")
+          flows.quick_unlock_setup.submitted()
           try {
             await api.quickUnlockEnroll(credential)
+            flows.quick_unlock_setup.completed()
+            setIsSettingUp(false)
           } catch (err) {
+            flows.quick_unlock_setup.failed(err)
             // the passkey exists but we can't use it, don't leave it behind. removal is best-effort
             // though, so tell the user where to find it if the authenticator keeps it
             await signalCredentialRemoved(credential.credentialId)
@@ -65,6 +78,7 @@ export const QuickUnlockSetting = () => {
           if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
         }
       } catch (err) {
+        if (checked) flows.quick_unlock_setup.failed(err)
         // resolves to null if the user cancelled the quick unlock prompt, or if we abandoned it
         const message = getQuickUnlockErrorMessage(err)
 
