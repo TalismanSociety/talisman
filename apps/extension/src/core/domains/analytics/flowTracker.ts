@@ -24,9 +24,11 @@ type Slot = { readonly mirror: Mirror; readonly uiContext: UiContext }
 
 type PortState = { readonly slots: Map<string, Slot>; screen: string | null }
 
+type Settlement = { readonly settled: Settled; readonly settledAt: number }
+
 export type FlowLinks = {
-  put(transactionId: string, slot: Slot, now: number): Promise<void>
-  take(transactionId: string): Promise<Slot | null>
+  put(transactionId: string, slot: Slot, now: number): Promise<Settlement | null>
+  take(transactionId: string, settled: Settled, now: number): Promise<Slot | null>
 }
 
 export type FlowSend = (
@@ -79,7 +81,10 @@ export class FlowTracker {
     const slot = { mirror, uiContext }
     if (mirror.phase === "submitted" && mirror.transactionId) {
       slots.delete(flowId)
-      this.deps.links.put(mirror.transactionId, slot, now).catch(reportFailure("link"))
+      this.deps.links
+        .put(mirror.transactionId, slot, now)
+        .then((early) => early && this.#complete(slot, early.settled, early.settledAt))
+        .catch(reportFailure("link"))
       return
     }
     slots.set(flowId, slot)
@@ -88,8 +93,12 @@ export class FlowTracker {
   }
 
   async settled(transactionId: string, settled: Settled, now: number): Promise<void> {
-    const slot = await this.deps.links.take(transactionId)
-    if (slot) this.#emit(slot, completeOnSettlement(slot.mirror, settled, now), null, now)
+    const slot = await this.deps.links.take(transactionId, settled, now)
+    if (slot) this.#complete(slot, settled, now)
+  }
+
+  #complete(slot: Slot, settled: Settled, now: number) {
+    this.#emit(slot, completeOnSettlement(slot.mirror, settled, now), null, now)
   }
 
   #watch(port: Port): PortState {
@@ -121,12 +130,42 @@ const reportFailure = (what: string) => (cause: unknown) =>
 
 const MAX_LINKS = 50
 const LINK_TTL_MS = 24 * 60 * 60_000
+const MAX_SETTLEMENTS = 20
+const SETTLEMENT_TTL_MS = 10 * 60_000
 
-export type FlowLinkRecord = Omit<Mirror, "flow"> & {
+type LinkRecord = Omit<Mirror, "flow"> & {
+  readonly kind: "link"
   readonly flow: string
   readonly uiContext: UiContext
   readonly linkedAt: number
 }
+
+type SettlementRecord = Settlement & {
+  readonly kind: "settlement"
+  readonly transactionId: string
+}
+
+export type FlowLinkRecord = LinkRecord | SettlementRecord
+
+const isLive = (now: number) => (record: FlowLinkRecord) =>
+  record.kind === "link"
+    ? now - record.linkedAt < LINK_TTL_MS
+    : now - record.settledAt < SETTLEMENT_TTL_MS
+
+const capped = (records: readonly FlowLinkRecord[]) => [
+  ...records.filter((record) => record.kind === "link").slice(-MAX_LINKS),
+  ...records.filter((record) => record.kind === "settlement").slice(-MAX_SETTLEMENTS),
+]
+
+const findRecord = <K extends FlowLinkRecord["kind"]>(
+  records: readonly FlowLinkRecord[],
+  kind: K,
+  transactionId: string
+) =>
+  records.find(
+    (record): record is Extract<FlowLinkRecord, { kind: K }> =>
+      record.kind === kind && record.transactionId === transactionId
+  )
 
 export type LinkStorage = {
   read(): Promise<readonly FlowLinkRecord[]>
@@ -141,24 +180,49 @@ export const createFlowLinks = (storage: LinkStorage): FlowLinks => {
     return result
   }
 
+  const readLive = async (now: number) => (await storage.read()).filter(isLive(now))
+  const without = (records: readonly FlowLinkRecord[], transactionId: string) =>
+    records.filter((record) => record.transactionId !== transactionId)
+
   return {
     put: (transactionId, { mirror, uiContext }, now) =>
       serialised(async () => {
-        const kept = (await storage.read()).filter(
-          (record) => now - record.linkedAt < LINK_TTL_MS && record.transactionId !== transactionId
-        )
-        const record = { ...mirror, flow: mirror.flow.name, uiContext, linkedAt: now }
-        await storage.write([...kept, record].slice(-MAX_LINKS))
+        const records = await readLive(now)
+        const early = findRecord(records, "settlement", transactionId)
+        const kept = without(records, transactionId)
+        if (early) {
+          await storage.write(kept)
+          return { settled: early.settled, settledAt: early.settledAt }
+        }
+        const record: LinkRecord = {
+          ...mirror,
+          kind: "link",
+          flow: mirror.flow.name,
+          uiContext,
+          linkedAt: now,
+        }
+        await storage.write(capped([...kept, record]))
+        return null
       }),
-    take: (transactionId) =>
+    take: (transactionId, settled, now) =>
       serialised(async () => {
-        const records = await storage.read()
-        const record = records.find((candidate) => candidate.transactionId === transactionId)
-        if (!record) return null
-        await storage.write(records.filter((candidate) => candidate !== record))
-        const flow = flowList().find((candidate) => candidate.name === record.flow)
+        const records = await readLive(now)
+        const link = findRecord(records, "link", transactionId)
+        const kept = without(records, transactionId)
+        if (!link) {
+          const early: SettlementRecord = {
+            kind: "settlement",
+            transactionId,
+            settled,
+            settledAt: now,
+          }
+          await storage.write(capped([...kept, early]))
+          return null
+        }
+        await storage.write(kept)
+        const flow = flowList().find((candidate) => candidate.name === link.flow)
         if (!flow) return null
-        const { uiContext, linkedAt: _, ...mirror } = record
+        const { kind: _kind, uiContext, linkedAt: _linkedAt, ...mirror } = link
         return { mirror: { ...mirror, flow }, uiContext }
       }),
   }

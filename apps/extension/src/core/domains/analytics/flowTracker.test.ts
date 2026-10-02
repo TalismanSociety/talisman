@@ -182,6 +182,31 @@ describe("FlowTracker", () => {
     ])
   })
 
+  it("completes a transaction flow whose transaction settled before the page linked it", async () => {
+    const { port } = fakePort()
+    observe(port, parsed("transfer_started", { flow_id: "t" }), 10_000)
+    await tracker.settled("0xabc", { status: "success", timeToSettleMs: 300 }, 59_000)
+    observe(
+      port,
+      parsed("transfer_submitted", { flow_id: "t", duration_ms: 5 }, { transactionId: "0xabc" })
+    )
+
+    await vi.waitFor(() =>
+      expect(sent()).toEqual([
+        {
+          event: "transfer_completed",
+          properties: {
+            flow_id: "t",
+            duration_ms: 49_000,
+            status: "success",
+            time_to_settle_ms: 300,
+          },
+        },
+      ])
+    )
+    expect(storage.records).toEqual([])
+  })
+
   it("finds a linked attempt after a service worker restart", async () => {
     const { port } = fakePort()
     observe(port, parsed("transfer_started", { flow_id: "t" }))
@@ -213,18 +238,37 @@ describe("flow links", () => {
     },
   })
 
+  const settled = { status: "success", timeToSettleMs: 1 } as const
+  const DAY_MS = 24 * 60 * 60_000
+
   it("keeps the latest 50 and drops links older than 24 hours", async () => {
     const storage = memoryStorage()
     const links = createFlowLinks(storage)
     await links.put("old", slot("old"), 0)
-    for (let i = 0; i < 51; i++) await links.put(`t${i}`, slot(`t${i}`), 24 * 60 * 60_000 + i)
+    for (let i = 0; i < 51; i++) await links.put(`t${i}`, slot(`t${i}`), DAY_MS + i)
 
     expect(storage.records).toHaveLength(50)
     expect(storage.records.map(({ transactionId }) => transactionId)).not.toContain("old")
     expect(storage.records[0].transactionId).toBe("t1")
-    expect(await links.take("t0")).toBeNull()
-    expect(await links.take("t50")).toMatchObject({ mirror: { flowId: "t50" } })
-    expect(await links.take("t50")).toBeNull()
+    expect(await links.take("t0", settled, DAY_MS + 60)).toBeNull()
+    expect(await links.take("t50", settled, DAY_MS + 60)).toMatchObject({
+      mirror: { flowId: "t50" },
+    })
+    expect(await links.take("t50", settled, DAY_MS + 60)).toBeNull()
+  })
+
+  it("holds a settlement that arrives first for 10 minutes, and no more than 20 of them", async () => {
+    const storage = memoryStorage()
+    const links = createFlowLinks(storage)
+    await links.put("pending", slot("pending"), 0)
+    for (let i = 0; i < 21; i++) await links.take(`s${i}`, settled, i)
+
+    expect(await links.put("s0", slot("s0"), 30)).toBeNull()
+    expect(await links.put("s1", slot("s1"), 30)).toEqual({ settled, settledAt: 1 })
+    expect(await links.put("s20", slot("s20"), 10 * 60_000 + 20)).toBeNull()
+    expect(await links.take("pending", settled, 40)).toMatchObject({
+      mirror: { flowId: "pending" },
+    })
   })
 
   it("never writes a link concurrently: two puts both land", async () => {
