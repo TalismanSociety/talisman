@@ -64,8 +64,7 @@ export const createDexieAnalyticsStore = (): AnalyticsStore => {
     load: async () => {
       const row = await db.state.get("state")
       if (!row) return undefined
-      const { key: _, ...state } = row
-      return state
+      return { session: row.session, appliedConsent: row.appliedConsent }
     },
     commit: ({ state, put, remove }) =>
       db.transaction("rw", db.events, db.state, async () => {

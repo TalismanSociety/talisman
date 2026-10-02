@@ -9,6 +9,7 @@ import { windowManager } from "../../libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
+import { analyticsEngine } from "../analytics/engine"
 import { keyringStore } from "../keyring/store"
 import { addException } from "./protector"
 import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./quickUnlockCrypto"
@@ -203,6 +204,7 @@ export default class AppHandler extends ExtensionHandler {
     await this.stores.sites.clear()
     // since all accounts are being wiped, account catalog also needs to be wiped.
     await this.stores.accountsCatalog.clear()
+    await analyticsEngine.endSession()
 
     return true
   }

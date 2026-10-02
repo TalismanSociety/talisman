@@ -81,8 +81,6 @@ export type QueuedEventRecord = {
 }
 
 export type AnalyticsState = {
-  installId: string
-  errorId: string
   session: AnalyticsSession | null
   appliedConsent: Consent | null
 }

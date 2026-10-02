@@ -1,3 +1,4 @@
+import { catalogue } from "@common/analytics/catalogue"
 import { describe, expect, it } from "vitest"
 
 import type { Environment } from "./environment"
@@ -25,12 +26,7 @@ const ENVIRONMENT: Environment = {
   $browser: "Chrome",
 }
 
-const STATE: AnalyticsState = {
-  installId: "install-id",
-  errorId: "error-id",
-  session: null,
-  appliedConsent: null,
-}
+const STATE: AnalyticsState = { session: null, appliedConsent: null }
 
 const optIn = () => {
   const result = parseTrackedEvent({
@@ -99,7 +95,7 @@ describe("stampEvent", () => {
       drawOffset: () => 6 * 60_000,
     })
 
-  it("builds the wire event with super properties, the session and a shifted timestamp", () => {
+  it("builds the wire event with super properties, the session as its id and a shifted timestamp", () => {
     const { record, state } = stamp()
     const at = Date.UTC(2026, 9, 2, 12) + 6 * 60_000
 
@@ -107,7 +103,7 @@ describe("stampEvent", () => {
     expect(record.kind).toBe("usage")
     expect(record.wire).toEqual({
       event: "analytics_opt_in",
-      distinct_id: "install-id",
+      distinct_id: state.session?.id,
       timestamp: new Date(at).toISOString(),
       uuid: record.uuid,
       properties: {
@@ -154,16 +150,42 @@ describe("stampEvent", () => {
     expect(record.wire.properties.$process_person_profile).toBe(false)
   })
 
-  it("an error event uses the error id, real time and no session", () => {
+  it("events of one session share its id, and the next session has another", () => {
+    const first = stamp()
+    const second = stamp(optIn(), first.state)
+    const afterReset = stamp(optIn(), { ...second.state, session: null })
+
+    expect(second.record.wire.distinct_id).toBe(first.record.wire.distinct_id)
+    expect(afterReset.record.wire.distinct_id).not.toBe(first.record.wire.distinct_id)
+  })
+
+  it("an unlinked event has an id of its own, no session and leaves the running session alone", () => {
+    const running = stamp().state
+    const unlinked = { ...optIn(), unlinked: true } as ParsedEvent
+
+    const { record, state } = stamp(unlinked, running)
+
+    expect(record.wire.distinct_id).toBe(record.uuid)
+    expect(record.wire.distinct_id).not.toBe(running.session?.id)
+    expect(record.wire.properties).not.toHaveProperty("$session_id")
+    expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12) + 6 * 60_000)
+    expect(state).toBe(running)
+  })
+
+  it("the holdings snapshot is unlinked", () => {
+    expect(catalogue.tvl_snapshot.unlinked).toBe(true)
+  })
+
+  it("an error event has an id of its own, real time and no session", () => {
     const { record, state } = stamp({ ...optIn(), kind: "error" })
 
-    expect(record.wire.distinct_id).toBe("error-id")
+    expect(record.wire.distinct_id).toBe(record.uuid)
     expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12))
     expect(record.wire.properties).not.toHaveProperty("$session_id")
     expect(state.session).toBeNull()
   })
 
-  it("an exception keeps the uuid its realm minted, on the error id, in real time, without a session", () => {
+  it("an exception keeps the uuid its realm minted, as its only id, in real time, without a session", () => {
     const uuid = "6f1c2b9e-3a4d-4e5f-8a7b-9c0d1e2f3a4b"
     const result = toExceptionEvent(
       {
@@ -180,7 +202,7 @@ describe("stampEvent", () => {
     const { record, state } = stamp(result.event)
 
     expect(record.uuid).toBe(uuid)
-    expect(record.wire).toMatchObject({ uuid, distinct_id: "error-id", event: "$exception" })
+    expect(record.wire).toMatchObject({ uuid, distinct_id: uuid, event: "$exception" })
     expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12))
     expect(record.wire.properties).not.toHaveProperty("$session_id")
     expect(record.wire.properties).not.toHaveProperty("$release_id")

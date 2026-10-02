@@ -4,25 +4,21 @@ import type { UiContext } from "@common/analytics/superProperties"
 import type { Environment } from "./environment"
 import type { ParsedEvent } from "./parse"
 import { redactSecrets } from "./redactSecrets"
-import { advanceSession, realTime, uuidv7 } from "./session"
+import { advanceSession, realTime, shift, uuidv7 } from "./session"
 import type {
+  AnalyticsSession,
   AnalyticsState,
   ExceptionEntry,
   QueuedEventRecord,
   RedactedProperties,
   WireProperties,
+  WireTime,
 } from "./types"
 
-type KindPolicy = {
-  readonly identity: "install" | "error"
-  readonly sessioned: boolean
-  readonly flushImmediately: boolean
-}
-
 export const KIND_POLICY = {
-  usage: { identity: "install", sessioned: true, flushImmediately: false },
-  error: { identity: "error", sessioned: false, flushImmediately: true },
-} as const satisfies Record<ConsentKind, KindPolicy>
+  usage: { flushImmediately: false },
+  error: { flushImmediately: true },
+} as const satisfies Record<ConsentKind, { readonly flushImmediately: boolean }>
 
 const redactValue = (value: WireProperties[string]): WireProperties[string] => {
   if (typeof value === "string") return redactSecrets(value)
@@ -50,6 +46,17 @@ export const redactProperties = (properties: WireProperties): RedactedProperties
     ])
   ) as RedactedProperties
 
+const placeInTime = (
+  event: ParsedEvent,
+  current: AnalyticsSession | null,
+  realNow: number,
+  drawOffset: () => number
+): { at: WireTime; session: AnalyticsSession | null } => {
+  if (event.kind === "error") return { at: realTime(realNow), session: null }
+  if (event.unlinked) return { at: shift(realNow, drawOffset()), session: null }
+  return advanceSession(current, realNow, drawOffset)
+}
+
 export const stampEvent = ({
   event,
   uiContext,
@@ -65,9 +72,7 @@ export const stampEvent = ({
   realNow: number
   drawOffset: () => number
 }): { record: QueuedEventRecord; state: AnalyticsState } => {
-  const policy = KIND_POLICY[event.kind]
-  const step = policy.sessioned ? advanceSession(state.session, realNow, drawOffset) : null
-  const at = step?.at ?? realTime(realNow)
+  const { at, session } = placeInTime(event, state.session, realNow, drawOffset)
   const uuid = event.uuid ?? uuidv7(at)
   const record: QueuedEventRecord = {
     uuid,
@@ -75,7 +80,7 @@ export const stampEvent = ({
     kind: event.kind,
     wire: {
       event: event.name,
-      distinct_id: policy.identity === "install" ? state.installId : state.errorId,
+      distinct_id: session?.id ?? uuid,
       timestamp: new Date(at).toISOString(),
       uuid,
       properties: redactProperties({
@@ -83,10 +88,10 @@ export const stampEvent = ({
         ui_context: uiContext,
         ...(event.screen && { $screen_name: event.screen }),
         ...event.properties,
-        ...(step && { $session_id: step.session.id }),
+        ...(session && { $session_id: session.id }),
         $process_person_profile: false,
       }),
     },
   }
-  return { record, state: step ? { ...state, session: step.session } : state }
+  return { record, state: session ? { ...state, session } : state }
 }

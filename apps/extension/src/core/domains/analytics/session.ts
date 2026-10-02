@@ -33,7 +33,7 @@ export const advanceSession = (
       at: shift(realNow, current.offsetMs),
     }
 
-  const offsetMs = live ? current.offsetMs : drawOffset()
+  const offsetMs = drawOffset()
   const at = shift(realNow, offsetMs)
   return {
     // PostHog requires the id's time to be at or before the session's first event

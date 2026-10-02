@@ -140,6 +140,15 @@ export class AnalyticsEngine {
     return this.#inFlight[kind]
   }
 
+  /** The next usage event starts a session, so it carries an id that nothing ties to the last one. */
+  endSession(): Promise<void> {
+    return this.#serial(async () => {
+      if (this.#inert || !this.#state.session) return
+      this.#state = { ...this.#state, session: null }
+      await this.#store.commit({ state: this.#state })
+    })
+  }
+
   inspect(): Promise<AnalyticsSnapshot> {
     return this.#serial(async () => {
       const queued = await Promise.all(
@@ -176,12 +185,7 @@ export class AnalyticsEngine {
       this.#store = createMemoryAnalyticsStore()
       return undefined
     })
-    this.#state = stored ?? {
-      installId: crypto.randomUUID(),
-      errorId: crypto.randomUUID(),
-      session: null,
-      appliedConsent: null,
-    }
+    this.#state = stored ?? { session: null, appliedConsent: null }
     try {
       if (!stored) await this.#store.commit({ state: this.#state })
       this.#consent = await firstValueFrom(this.#deps.consent$)

@@ -16,7 +16,7 @@ const row = (uuid: string, sendAt: number, kind: QueuedEventRecord["kind"] = "us
   kind,
   wire: {
     event: "analytics_opt_in",
-    distinct_id: "install-id",
+    distinct_id: "session-id",
     properties: {} as RedactedProperties,
     timestamp: new Date(sendAt).toISOString(),
     uuid,
@@ -24,8 +24,6 @@ const row = (uuid: string, sendAt: number, kind: QueuedEventRecord["kind"] = "us
 })
 
 const STATE: AnalyticsState = {
-  installId: "install-id",
-  errorId: "error-id",
   session: null,
   appliedConsent: { usage: "granted", error: "granted" },
 }

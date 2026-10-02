@@ -210,6 +210,19 @@ describe("AnalyticsEngine", () => {
       expect(sentEvents(world)).toEqual([])
     })
 
+    it("ending the session gives the next event another id", async () => {
+      const world = createWorld()
+      const worker = startWorker(world, { consent: consent("granted") })
+      await worker.capture()
+
+      await worker.engine.endSession()
+      await worker.capture()
+
+      const [before, after] = (await rows(world.store)).map((row) => row.wire)
+      expect(after.distinct_id).not.toBe(before.distinct_id)
+      expect(after.properties.$session_id).toBe(after.distinct_id)
+    })
+
     it("denied → granted from settings queues analytics_opt_in from settings", async () => {
       const world = createWorld()
       const worker = startWorker(world, { consent: consent("denied") })
@@ -244,7 +257,7 @@ describe("AnalyticsEngine", () => {
       expect(await worker.capture(errorEvent())).toBe("queued")
       await worker.engine.flush("error")
       expect(sentEvents(world).map((event) => event.distinct_id)).toEqual([
-        (await world.store.load())?.errorId,
+        sentEvents(world)[0].uuid,
       ])
 
       world.outcome = "retry"

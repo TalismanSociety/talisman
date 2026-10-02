@@ -15,6 +15,7 @@ export type ParsedCatalogueEvent = {
   readonly properties: EventProperties
   readonly screen?: string
   readonly transactionId?: string
+  readonly unlinked?: true
   readonly uuid?: never
 } & Brand
 
@@ -24,6 +25,7 @@ export type ParsedException = {
   readonly properties: ExceptionProperties
   readonly screen?: string
   readonly transactionId?: never
+  readonly unlinked?: never
   readonly uuid: string
 } & Brand
 
@@ -87,6 +89,7 @@ export const parseTrackedEvent = (raw: unknown): ParseResult<ParsedCatalogueEven
     properties: parsed.data,
     ...(screenValid && { screen }),
     ...(transactionId !== undefined && { transactionId }),
+    ...(def.unlinked && { unlinked: true }),
   }
   return {
     ok: true,

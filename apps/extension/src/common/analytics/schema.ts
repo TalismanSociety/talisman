@@ -153,6 +153,7 @@ export type EventProperties = Readonly<Record<string, PropertyValue | undefined>
 export type EventDef<Props extends EventProperties = EventProperties> = {
   readonly description: string
   readonly kind: ConsentKind
+  readonly unlinked?: true
   readonly properties: readonly string[]
   readonly schema: z.ZodType<Props>
 }
@@ -164,6 +165,8 @@ export type EventGroup = Readonly<Record<string, EventDef>>
 type EventInput<R extends Registry> = {
   readonly description: string
   readonly kind?: ConsentKind
+  /** Sent under an id of its own, outside any session: nothing ties it to the user's other events. */
+  readonly unlinked?: true
   readonly props: { readonly [K in keyof R]?: PropertyUse<PropertyValueOf<R[K]>> }
 }
 
@@ -181,7 +184,7 @@ export const defineEventGroup = <
   group: G
 ): { readonly [E in keyof G]: EventDef<PropsOf<R, G[E]["props"]>> } =>
   Object.fromEntries(
-    Object.entries(group).map(([name, { description, kind = "usage", props }]) => {
+    Object.entries(group).map(([name, { description, kind = "usage", unlinked, props }]) => {
       const uses = Object.entries(props) as [string, PropertyUse][]
       const shape = Object.fromEntries(
         uses.map(([property, use]) => [property, schemaOfUse(registry[property], use)])
@@ -189,6 +192,7 @@ export const defineEventGroup = <
       const def: EventDef = {
         description,
         kind,
+        ...(unlinked && { unlinked }),
         properties: uses.map(([property]) => property),
         schema: z.strictObject(shape) as z.ZodType as z.ZodType<EventProperties>,
       }

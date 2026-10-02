@@ -35,7 +35,7 @@ describe("advanceSession", () => {
       session({ lastActivityAt: T0 + SESSION_MAX_DURATION_MS - MINUTE }),
       T0 + SESSION_MAX_DURATION_MS,
       "new",
-      5 * MINUTE,
+      11 * MINUTE,
     ],
     ["a clock set back before the start", session(), T0 - MINUTE, "new", 11 * MINUTE],
   ] as const)("%s: %s session, offset %i", (_, current, realNow, expected, offsetMs) => {
@@ -52,19 +52,6 @@ describe("advanceSession", () => {
 
     expect(uuidTime(next.id)).toBe(at)
     expect(uuidTime(next.id)).not.toBe(T0)
-  })
-
-  it("the 24 h rotation keeps the order of the old session's tail", () => {
-    const old = session({ lastActivityAt: T0 + SESSION_MAX_DURATION_MS - MINUTE })
-    const tail = shift(old.lastActivityAt, old.offsetMs)
-    const largestOffset = () => MAX_OFFSET_MS
-    const smallestOffset = () => 0
-
-    for (const draw of [largestOffset, smallestOffset]) {
-      const { session: next, at } = advanceSession(old, T0 + SESSION_MAX_DURATION_MS, draw)
-      expect(at).toBeGreaterThan(tail)
-      expect(uuidTime(next.id)).toBeGreaterThan(tail)
-    }
   })
 })
 

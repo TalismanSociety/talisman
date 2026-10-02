@@ -5,7 +5,7 @@ import type { RedactedProperties, WireEvent } from "./types"
 
 const EVENT: WireEvent = {
   event: "analytics_opt_in",
-  distinct_id: "install-id",
+  distinct_id: "session-id",
   properties: { source: "settings" } as unknown as RedactedProperties,
   timestamp: "2026-10-02T12:00:00.000Z",
   uuid: "0199a4f0-0000-7000-8000-000000000000",
