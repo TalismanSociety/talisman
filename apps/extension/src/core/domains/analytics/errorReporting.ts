@@ -32,7 +32,7 @@ export const receiveException = async (
   const result = toExceptionEvent(parsed.report, { extensionOrigin: chrome.runtime.getURL("") })
   if (!result.ok) return analyticsEngine.capture({ result, uiContext, realNow })
 
-  if (!throttle.admit(result.event.properties.$exception_fingerprint, realNow))
+  if (!throttle.admit(result.throttleKey, realNow))
     return analyticsEngine.capture({
       result: { ok: false, name: "$exception", issues: ["throttled"], disposition: "filtered" },
       uiContext,
@@ -41,7 +41,11 @@ export const receiveException = async (
 
   const networkId = parsed.report.networkId && (await resolveNetworkId(parsed.report.networkId))
   const event = networkId ? withNetworkId(result.event, networkId) : result.event
-  return analyticsEngine.capture({ result: { ...result, event }, uiContext, realNow })
+  return analyticsEngine.capture({
+    result: { ok: true, event, ...(result.issues && { issues: result.issues }) },
+    uiContext,
+    realNow,
+  })
 }
 
 export const reportError = (

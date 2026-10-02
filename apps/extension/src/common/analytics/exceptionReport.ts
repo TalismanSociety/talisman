@@ -12,6 +12,8 @@ import {
   StringCoercer,
 } from "@posthog/core/error-tracking"
 
+import { classifyError, type ErrorCategory } from "./errorCategory"
+
 export const EXCEPTION_MECHANISMS = [
   "caught",
   "uncaught",
@@ -43,6 +45,7 @@ export type ReportErrorOptions = {
 export type ExceptionReport = {
   id: string
   mechanism: ExceptionMechanism
+  category: ErrorCategory
   exceptions: readonly Exception[]
   networkId?: string
   screen?: string
@@ -86,6 +89,14 @@ const withinLimits = ({ type, value, stacktrace, ...exception }: Exception): Exc
   }),
 })
 
+const categoryOf = (thrown: unknown): ErrorCategory => {
+  try {
+    return classifyError(thrown)
+  } catch {
+    return "unknown"
+  }
+}
+
 export const buildExceptionReport = (
   thrown: unknown,
   { mechanism = "caught", networkId, screen }: ReportErrorOptions & { screen?: string }
@@ -109,6 +120,7 @@ export const buildExceptionReport = (
   return {
     id: crypto.randomUUID(),
     mechanism,
+    category: categoryOf(thrown),
     exceptions,
     ...(networkId && { networkId: networkId.slice(0, L.networkIdLength) }),
     ...(screen && { screen: screen.slice(0, L.screenLength) }),

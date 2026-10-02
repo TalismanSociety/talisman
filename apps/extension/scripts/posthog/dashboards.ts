@@ -62,13 +62,18 @@ export type Alert = {
   readonly interval: "hourly" | "daily" | "weekly"
 }
 
-type ExceptionPropertyName = Exclude<keyof ExceptionProperties, `$${string}` | "network_id">
+type SharedExceptionProperty = "network_id" | "error_category"
+type ExceptionPropertyName = Exclude<
+  keyof ExceptionProperties,
+  `$${string}` | SharedExceptionProperty
+>
 
 const exceptionProperties: {
   readonly [K in ExceptionPropertyName]: Omit<PropertyDefinition, "name" | "isSuper">
 } = {
   exception_type: {
-    description: "The thrown value's type, such as TypeError: the first entry of $exception_list.",
+    description:
+      "The thrown error's class, such as TypeError: the first entry of $exception_list. Error for a class the wallet cannot name safely, or a thrown value that is not an error.",
     posthogType: "String",
   },
   mechanism: {
@@ -89,7 +94,7 @@ export const EXCEPTION_PROPERTIES: readonly PropertyDefinition[] = Object.entrie
 ).map(([name, definition]) => ({ name, ...definition, isSuper: false }))
 
 export const BUILTIN_EVENTS: Readonly<Record<string, readonly string[]>> = {
-  $exception: [...Object.keys(exceptionProperties), "network_id"],
+  $exception: [...Object.keys(exceptionProperties), "network_id", "error_category"],
 }
 
 export const catalogueSnapshot = (

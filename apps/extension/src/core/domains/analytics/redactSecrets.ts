@@ -21,9 +21,9 @@ const redactMnemonicRun = (run: string): string => {
 
 const RULES: readonly [RegExp, string | ((match: string) => string)][] = [
   [LOWERCASE_WORD_RUN, redactMnemonicRun],
-  [/0x[0-9a-fA-F]+/g, "<hex>"],
-  [/\b[0-9a-fA-F]{32,}\b/g, "<hex>"],
-  [/\b[1-9A-HJ-NP-Za-km-z]{32,}\b/g, "<base58>"],
+  [/0[xX][0-9a-fA-F]{8,}/g, "<hex>"],
+  [/[0-9a-fA-F]{32,}/g, "<hex>"],
+  [/[1-9A-HJ-NP-Za-km-z]{32,}/g, "<base58>"],
 ]
 
 export const redactSecrets = (text: string): string =>

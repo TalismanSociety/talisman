@@ -193,6 +193,7 @@ describe("stampEvent", () => {
       {
         id: uuid,
         mechanism: "caught",
+        category: "unknown",
         exceptions: [
           { type: "Error", value: "boom", mechanism: { type: "caught", exception_id: 0 } },
         ],

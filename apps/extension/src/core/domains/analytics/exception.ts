@@ -1,3 +1,4 @@
+import { ERROR_CATEGORIES, type ErrorCategory } from "@common/analytics/errorCategory"
 import {
   EXCEPTION_LIMITS,
   EXCEPTION_MECHANISMS,
@@ -9,7 +10,6 @@ import { z } from "zod/v4"
 
 import { describeIssues, type ParsedException, type ParseFailure, rejected } from "./parse"
 import { redactSecrets } from "./redactSecrets"
-import { scrubExceptionMessage } from "./scrubExceptionMessage"
 import type { ExceptionEntry, ExceptionFrame } from "./types"
 
 const L = EXCEPTION_LIMITS
@@ -44,6 +44,7 @@ const entrySchema = z.object({
 const exceptionReportSchema = z.strictObject({
   id: z.uuid(),
   mechanism: z.enum(EXCEPTION_MECHANISMS),
+  category: z.enum(ERROR_CATEGORIES),
   exceptions: z.array(entrySchema).min(1).max(L.entries),
   networkId: z.string().max(L.networkIdLength).optional(),
   screen: z.string().max(L.screenLength).optional(),
@@ -76,38 +77,72 @@ export const ignoredBy = ({ type, value }: { type: string; value: string }): Ign
     (key) => IGNORED_ERRORS[key].test(value) || IGNORED_ERRORS[key].test(`${type}: ${value}`)
   ) ?? null
 
-const MOZ_EXTENSION_ORIGIN = /^moz-extension:\/\/[^/]+\//
+const OWN_SCRIPT = /^[\w./-]+\.js$/
+const NATIVE_FILENAMES: ReadonlySet<string | undefined> = new Set([
+  undefined,
+  "<anonymous>",
+  "native",
+])
+const FUNCTION_NAME =
+  /^(?:async |new |get |set )?[A-Za-z_$<][\w$.<>]{0,79}(?: \[as [\w$]{1,40}\])?$/
+const CHUNK_ID = /^[\w-]+$/
+
+const isCodeName = (name: string | undefined): name is string =>
+  name !== undefined && FUNCTION_NAME.test(name) && redactSecrets(name) === name
 
 /**
- * PostHog recomputes in_app for every frame it resolves, so this decides only the frames it cannot.
- * A Firefox origin holds a per-install UUID; it is replaced after the realm applied chunk ids,
- * which are keyed by the raw filename.
+ * Keeps code positions only. A frame of another origin is dropped whole: the stack parser reads
+ * the lines of a multi-line message as frames, so their "filename" can be any text of the message.
  */
-export const markFrames = (
-  frames: readonly RawFrame[],
-  extensionOrigin: string
-): ExceptionFrame[] =>
-  frames.map(({ filename, ...frame }) => ({
-    ...frame,
-    ...(filename !== undefined && {
-      filename: filename.replace(MOZ_EXTENSION_ORIGIN, "moz-extension://talisman/"),
-    }),
-    in_app: filename?.startsWith(extensionOrigin) ?? false,
-  }))
+export const ownFrames = (frames: readonly RawFrame[], extensionOrigin: string): ExceptionFrame[] =>
+  frames.flatMap(({ platform, filename, function: name, lineno, colno, chunk_id }) => {
+    const own =
+      filename?.startsWith(extensionOrigin) &&
+      OWN_SCRIPT.test(filename.slice(extensionOrigin.length))
+    if (!own && !NATIVE_FILENAMES.has(filename)) return []
+    if (!own && !isCodeName(name)) return []
+    return [
+      {
+        platform,
+        ...(own && { filename }),
+        ...(isCodeName(name) && { function: name }),
+        ...(own && lineno !== undefined && { lineno }),
+        ...(own && colno !== undefined && { colno }),
+        ...(own && chunk_id !== undefined && CHUNK_ID.test(chunk_id) && { chunk_id }),
+        in_app: !!own,
+      },
+    ]
+  })
+
+const ERROR_CLASS = /^[A-Z][A-Za-z0-9]{0,63}$/
+const BOUNDARY_PREFIX = "React ErrorBoundary "
+
+/** The name of an error class, never text: a thrown object's own `name` can hold anything. */
+export const errorClassOf = ({
+  type,
+  synthetic,
+}: {
+  type: string
+  synthetic?: boolean
+}): string => {
+  if (synthetic) return "Error"
+  if (type.startsWith(BOUNDARY_PREFIX))
+    return `${BOUNDARY_PREFIX}${errorClassOf({ type: type.slice(BOUNDARY_PREFIX.length) })}`
+  return ERROR_CLASS.test(type) && redactSecrets(type) === type ? type : "Error"
+}
 
 export type ExceptionProperties = {
   readonly $exception_list: readonly ExceptionEntry[]
   readonly $exception_level: "error"
-  /** PostHog groups on every frame otherwise: one bug would split by library call path. */
-  readonly $exception_fingerprint: string
   readonly exception_type: string
+  readonly error_category: ErrorCategory
   readonly mechanism: ExceptionMechanism
   readonly handled: boolean
   readonly network_id?: string
 }
 
 export type ExceptionResult =
-  | { ok: true; event: ParsedException; issues?: readonly string[] }
+  | { ok: true; event: ParsedException; throttleKey: string; issues?: readonly string[] }
   | ParseFailure
 
 export const toExceptionEvent = (
@@ -123,14 +158,17 @@ export const toExceptionEvent = (
       disposition: "filtered",
     }
 
-  const entries: ExceptionEntry[] = report.exceptions.map(({ stacktrace, ...entry }) => ({
-    ...entry,
-    type: redactSecrets(entry.type),
-    value: scrubExceptionMessage(entry.value),
-    ...(stacktrace && {
-      stacktrace: { type: "raw", frames: markFrames(stacktrace.frames, extensionOrigin) },
-    }),
-  }))
+  const entries: ExceptionEntry[] = report.exceptions.map(
+    ({ stacktrace, mechanism, type }, index) => {
+      const frames = stacktrace ? ownFrames(stacktrace.frames, extensionOrigin) : []
+      return {
+        type: errorClassOf({ type, synthetic: mechanism.synthetic }),
+        value: index === 0 ? report.category : "",
+        ...(frames.length && { stacktrace: { type: "raw", frames } }),
+        mechanism: { ...mechanism, type: index === 0 ? report.mechanism : "chained" },
+      }
+    }
+  )
   const [root] = entries
   const { screen } = report
   const screenValid =
@@ -143,15 +181,17 @@ export const toExceptionEvent = (
     properties: {
       $exception_list: entries,
       $exception_level: "error",
-      $exception_fingerprint: `${root.type}: ${root.value}`,
       exception_type: root.type,
+      error_category: report.category,
       mechanism: report.mechanism,
       handled: isHandledMechanism(report.mechanism),
     },
   }
+  const [thrown] = report.exceptions
   return {
     ok: true,
     event: event as ParsedException,
+    throttleKey: `${thrown.type}: ${thrown.value}`,
     ...(screen !== undefined && !screenValid && { issues: ["screen: invalid_format"] }),
   }
 }
@@ -163,12 +203,12 @@ export const withNetworkId = (event: ParsedException, networkId: string): Parsed
 
 export const EXCEPTION_THROTTLE = {
   windowMs: 10 * 60_000,
-  perFingerprint: 3,
+  perKey: 3,
   total: 30,
 } as const
 
 export type ExceptionThrottle = {
-  admit(fingerprint: string, now: number): boolean
+  admit(key: string, now: number): boolean
 }
 
 export const createExceptionThrottle = (
@@ -178,15 +218,15 @@ export const createExceptionThrottle = (
   let admitted = 0
   const counts = new Map<string, number>()
   return {
-    admit(fingerprint, now) {
+    admit(key, now) {
       if (now - windowStart >= limits.windowMs) {
         windowStart = now
         admitted = 0
         counts.clear()
       }
-      const count = counts.get(fingerprint) ?? 0
-      if (count >= limits.perFingerprint || admitted >= limits.total) return false
-      counts.set(fingerprint, count + 1)
+      const count = counts.get(key) ?? 0
+      if (count >= limits.perKey || admitted >= limits.total) return false
+      counts.set(key, count + 1)
       admitted++
       return true
     },

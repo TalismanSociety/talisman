@@ -28,7 +28,7 @@ const redactValue = (value: WireProperties[string]): WireProperties[string] => {
   ) as typeof value
 }
 
-/** Frames hold code positions, and a Chrome extension id is valid base58: redacting them would break symbolication. */
+/** Frames hold code positions only (ownFrames), and a Chrome extension id is valid base58: redacting them would break symbolication. */
 const redactExceptions = (entries: readonly ExceptionEntry[]): readonly ExceptionEntry[] =>
   entries.map((entry) => ({
     ...entry,

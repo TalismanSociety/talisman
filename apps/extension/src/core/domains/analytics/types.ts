@@ -1,6 +1,6 @@
 import type { TrackRequest } from "@common/analytics/catalogue"
 import type { RiskVerdict } from "@common/analytics/dapp"
-import type { ExceptionReport } from "@common/analytics/exceptionReport"
+import type { ExceptionMechanism, ExceptionReport } from "@common/analytics/exceptionReport"
 import type { ConsentKind, PropertyValue } from "@common/analytics/schema"
 
 export type Disposition =
@@ -49,7 +49,7 @@ export type ExceptionEntry = {
   value: string
   stacktrace?: { type: "raw"; frames: ExceptionFrame[] }
   mechanism: {
-    type: string
+    type: ExceptionMechanism | "chained"
     handled?: boolean
     synthetic?: boolean
     exception_id: number

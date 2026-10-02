@@ -64,7 +64,13 @@ test("hex strings are redacted", () => {
   expect(redactSecrets("insufficient funds for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")).toBe(
     "insufficient funds for <hex>"
   )
-  expect(redactSecrets("chain 0x89 rejected")).toBe("chain <hex> rejected")
+  expect(redactSecrets("addr 0Xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")).toBe("addr <hex>")
+  expect(redactSecrets(`pk_${bareKey}`)).toBe("pk_<hex>")
+})
+
+test("a short hex value is no secret: a chain id, a status code, a symbol", () => {
+  for (const text of ["chain 0x89 rejected", "Locked device (0x5515)", "0xBTC"])
+    expect(redactSecrets(text)).toBe(text)
 })
 
 test("base58 keys and addresses are redacted", () => {
@@ -73,6 +79,9 @@ test("base58 keys and addresses are redacted", () => {
   expect(redactSecrets(`import failed ${solanaSecret}`)).toBe("import failed <base58>")
   expect(redactSecrets("send from 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")).toBe(
     "send from <base58>"
+  )
+  expect(redactSecrets("balances_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY_0")).toBe(
+    "balances_<base58>_0"
   )
 })
 
