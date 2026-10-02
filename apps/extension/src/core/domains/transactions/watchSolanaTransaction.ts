@@ -3,11 +3,10 @@ import type { Signature } from "@solana/kit"
 import type { SolRpc } from "@talismn/chain-connectors"
 import { getBlockExplorerUrl, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo, type SolTransaction } from "@talismn/solana"
-
-import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { reportError } from "../analytics/errorReporting"
 import { addSolTransaction, updateTransactionStatus } from "./store.transactions"
 import type { TransactionStatus, WalletTransactionInfo, WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
@@ -38,7 +37,7 @@ export const watchSolanaTransaction = async (
     watchUntilFinalized(rpc, signature, network.name, notifications ? txUrl : undefined, txInfo)
   } catch (err) {
     log.error("Failed to watch Solana transaction (outer)", { err, networkId, transaction })
-    sentry.captureException(err, { tags: { networkId } })
+    reportError(err, { networkId })
   }
 }
 // Helper function to poll for transaction confirmation

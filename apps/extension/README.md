@@ -77,7 +77,6 @@ pnpm build
 pnpm build:firefox
 
 # Production builds (Chrome Web Store / Firefox Add-ons)
-# Enables Sentry sourcemap upload
 pnpm build:prod
 pnpm build:prod:firefox  # Local build; the release build runs via Docker (root: pnpm build:extension:prod:firefox)
 
@@ -94,8 +93,6 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 
 | Variable            | Required | Description                                     |
 | ------------------- | -------- | ----------------------------------------------- |
-| `SENTRY_AUTH_TOKEN` | Chrome   | Sentry token for sourcemap upload (build only warns without it) |
-| `SENTRY_DSN`        | Chrome   | Sentry DSN used at runtime                      |
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 
@@ -104,7 +101,6 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 #### Sourcemap Handling
 
 - **Production/Canary Chrome builds**: Generate hidden sourcemaps (no inline reference in JS)
-- **Sentry upload**: Sourcemaps are uploaded to Sentry for error tracking (Chrome only)
 - **Firefox production/canary builds**: No sourcemaps
 - **Cleanup**: Sourcemaps are automatically deleted before zipping to keep them out of the final distribution
 
@@ -119,12 +115,12 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 
 ### Build Variants
 
-| Build Type  | Name Suffix | Version Name Example   | Sentry Upload |
-| ----------- | ----------- | ---------------------- | ------------- |
-| Production  | (none)      | `3.1.16`                  | ✅ (Chrome)   |
-| Canary      | ` - Canary` | `3.1.16 canary - abc1234` | ✅ (Chrome)   |
-| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    | ❌            |
-| Local Build | (none)      | `3.1.16 dev - abc1234`    | ❌            |
+| Build Type  | Name Suffix | Version Name Example      |
+| ----------- | ----------- | ------------------------- |
+| Production  | (none)      | `3.1.16`                  |
+| Canary      | ` - Canary` | `3.1.16 canary - abc1234` |
+| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    |
+| Local Build | (none)      | `3.1.16 dev - abc1234`    |
 
 ### How Production Builds Work
 
@@ -173,8 +169,7 @@ The main configuration file controls:
 | Package resolution | Source (`src/`) | Source (`src/`)                           |
 | Icon suffix        | `-dev`          | `-prod` / `-canary`                       |
 | Minification       | Disabled        | Enabled                                   |
-| Source maps        | Separate `.map` files | Chrome: hidden (uploaded to Sentry, then deleted). Firefox: none |
-| Sentry upload      | No              | Chrome only                               |
+| Source maps        | Separate `.map` files | Chrome: hidden (deleted before zipping). Firefox: none |
 
 ## Testing
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { Environment } from "./environment"
+import { toExceptionEvent } from "./exception"
 import { type ParsedEvent, parseTrackedEvent } from "./parse"
 import { redactSecrets } from "./redactSecrets"
 import { redactProperties, stampEvent } from "./stamp"
@@ -76,14 +77,14 @@ describe("redactProperties", () => {
           },
         ],
       },
-      mechanism: { handled: true, synthetic: false, type: "generic" },
+      mechanism: { handled: true, synthetic: false, type: "caught", exception_id: 0 },
     }
 
     const [redacted] = redactProperties({ $exception_list: [exception] })
       .$exception_list as ExceptionEntry[]
 
     expect(redacted.value).toBe("insufficient funds for <hex>")
-    expect(redacted.stacktrace.frames[0].filename).toBe(EXTENSION_FRAME)
+    expect(redacted.stacktrace?.frames[0].filename).toBe(EXTENSION_FRAME)
   })
 })
 
@@ -159,6 +160,30 @@ describe("stampEvent", () => {
     expect(record.wire.distinct_id).toBe("error-id")
     expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12))
     expect(record.wire.properties).not.toHaveProperty("$session_id")
+    expect(state.session).toBeNull()
+  })
+
+  it("an exception keeps the uuid its realm minted, on the error id, in real time, without a session", () => {
+    const uuid = "6f1c2b9e-3a4d-4e5f-8a7b-9c0d1e2f3a4b"
+    const result = toExceptionEvent(
+      {
+        id: uuid,
+        mechanism: "caught",
+        exceptions: [
+          { type: "Error", value: "boom", mechanism: { type: "caught", exception_id: 0 } },
+        ],
+      },
+      { extensionOrigin: EXTENSION_FRAME }
+    )
+    if (!result.ok) throw new Error("fixture filtered")
+
+    const { record, state } = stamp(result.event)
+
+    expect(record.uuid).toBe(uuid)
+    expect(record.wire).toMatchObject({ uuid, distinct_id: "error-id", event: "$exception" })
+    expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12))
+    expect(record.wire.properties).not.toHaveProperty("$session_id")
+    expect(record.wire.properties).not.toHaveProperty("$release_id")
     expect(state.session).toBeNull()
   })
 

@@ -68,7 +68,7 @@ export const stampEvent = ({
   const policy = KIND_POLICY[event.kind]
   const step = policy.sessioned ? advanceSession(state.session, realNow, drawOffset) : null
   const at = step?.at ?? realTime(realNow)
-  const uuid = uuidv7(at)
+  const uuid = event.uuid ?? uuidv7(at)
   const record: QueuedEventRecord = {
     uuid,
     sendAt: at,

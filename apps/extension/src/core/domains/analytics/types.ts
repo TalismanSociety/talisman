@@ -1,14 +1,23 @@
 import type { TrackRequest } from "@common/analytics/catalogue"
 import type { RiskVerdict } from "@common/analytics/dapp"
+import type { ExceptionReport } from "@common/analytics/exceptionReport"
 import type { ConsentKind, PropertyValue } from "@common/analytics/schema"
 
-export type Disposition = "queued" | "held" | "dropped_consent" | "dropped_off" | "rejected"
+export type Disposition =
+  | "queued"
+  | "held"
+  | "dropped_consent"
+  | "dropped_off"
+  | "rejected"
+  /** The intake's own policy dropped it: the exception ignore list or throttle. */
+  | "filtered"
 
 export type RequestRiskReport = { id: string; verdict: RiskVerdict }
 
 export interface AnalyticsMessages {
   "pri(analytics.track)": [TrackRequest, Disposition]
   "pri(analytics.requestRisk)": [RequestRiskReport, boolean]
+  "pri(analytics.exception)": [ExceptionReport, Disposition]
 }
 
 export type WireTime = number & { readonly __brand: "WireTime" }
@@ -28,10 +37,10 @@ export type Consent = {
 
 export type ExceptionFrame = {
   platform: "web:javascript"
-  filename: string
-  function: string
-  lineno: number | null
-  colno: number | null
+  filename?: string
+  function?: string
+  lineno?: number
+  colno?: number
   in_app: boolean
   chunk_id?: string
 }
@@ -39,8 +48,15 @@ export type ExceptionFrame = {
 export type ExceptionEntry = {
   type: string
   value: string
-  stacktrace: { type: "raw"; frames: ExceptionFrame[] }
-  mechanism: { handled: boolean; synthetic: boolean; type: string }
+  stacktrace?: { type: "raw"; frames: ExceptionFrame[] }
+  mechanism: {
+    type: string
+    handled?: boolean
+    synthetic?: boolean
+    exception_id: number
+    parent_id?: number
+    source?: "cause" | "member"
+  }
 }
 
 export type WireProperties = Readonly<

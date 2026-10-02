@@ -39,6 +39,11 @@ export const dappEvents = defineEventGroup(properties, {
       "The user disconnected every account from every connected site of one platform in settings. The sites stay listed.",
     props: { platform: "required", site_count: "required" },
   },
+  phishing_site_blocked: {
+    description:
+      "The wallet redirected a tab away from a site flagged as phishing, to its warning page. One per redirected tab. No URL or domain is sent.",
+    props: { protection_source: "required" },
+  },
   phishing_site_trusted: {
     description:
       "The user chose to continue to a site the wallet had blocked as malicious, which allows it from then on.",

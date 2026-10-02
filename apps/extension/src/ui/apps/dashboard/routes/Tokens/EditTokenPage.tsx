@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
 import { log } from "@common/log"
-import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
@@ -16,6 +15,7 @@ import { ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { api } from "@ui/api"
+import { reportError } from "@ui/api/errorReporting"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -499,7 +499,7 @@ const ConfirmRemove: FC<{
       await api.tokenRemove(token.id)
       isTokenKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
-      sentry.captureException(err)
+      reportError(err)
       notify({
         type: "error",
         title: t("Error"),

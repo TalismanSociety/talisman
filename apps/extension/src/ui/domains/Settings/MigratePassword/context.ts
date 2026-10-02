@@ -1,12 +1,13 @@
-import { sentry } from "@core/config/sentry"
 import { passwordStore } from "@core/domains/app/store.password"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { reportError } from "@ui/api/errorReporting"
 import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import useStatus, { type StatusOptions, statusOptions } from "@ui/hooks/useStatus"
 import { useMnemonics } from "@ui/state/mnemonics"
+import { useSetting } from "@ui/state/settings"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -57,10 +58,11 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     })
   }, [password])
 
+  // the error screen's checkbox turns error tracking on to send this report
+  const [useErrorTracking] = useSetting("useErrorTracking")
   useEffect(() => {
-    // the user's error tracking preference is enforced centrally, in the client's beforeSend
-    if (error) sentry.captureException(error)
-  }, [error])
+    if (error && useErrorTracking) reportError(error)
+  }, [error, useErrorTracking])
 
   const hasPassword = !!password
   const hasNewPassword = !!newPassword

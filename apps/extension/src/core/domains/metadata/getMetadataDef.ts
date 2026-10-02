@@ -5,11 +5,10 @@ import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi
 import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
 import { assert, getErrorMessage, type HexString, isHexString } from "@talismn/util"
 import { withRetry } from "viem"
-
-import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { reportError } from "../analytics/errorReporting"
 import type { TalismanMetadataDef } from "../substrate/types"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 import { decodeMetadataRpc, encodeMetadataRpc } from "./helpers"
@@ -128,7 +127,7 @@ const getMetadataDefInner = async (
     if (getErrorMessage(cause) !== "RPC connect timeout reached") {
       const error = new Error("Failed to update metadata", { cause })
       log.error(error)
-      sentry.captureException(error, { extra: { genesisHash, chainId: chain?.id ?? "UNKNOWN" } })
+      reportError(error, { networkId: chain?.id })
     }
     metadataUpdatesStore.set(genesisHash, false)
   }
@@ -165,7 +164,7 @@ export const fetchMetadataDefFromChain = async (
     fetchMethod(chain.id),
     chainConnectorDot.send(chain.id, "system_properties", [], true),
   ]).catch((rpcError) => {
-    // not a useful error, do not log to sentry
+    // not a useful error, do not report it
     if (getErrorMessage(rpcError) === "RPC connect timeout reached") {
       log.error(rpcError)
       metadataUpdatesStore.set(genesisHash as HexString, false)

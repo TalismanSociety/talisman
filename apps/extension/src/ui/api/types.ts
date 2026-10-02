@@ -1,4 +1,5 @@
 import type { TrackRequest } from "@common/analytics/catalogue"
+import type { ExceptionReport } from "@common/analytics/exceptionReport"
 import type {
   AccountProxiesSubscriptionResponse,
   RequestAccountProxiesLoadDetails,
@@ -86,6 +87,7 @@ export default interface MessageTypes {
   keepunlocked: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
   analyticsTrack: (request: TrackRequest) => Promise<Disposition>
+  analyticsException: (report: ExceptionReport) => Promise<Disposition>
   analyticsRequestRisk: (report: RequestRiskReport) => Promise<boolean>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>

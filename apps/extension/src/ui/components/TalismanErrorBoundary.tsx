@@ -1,7 +1,7 @@
 import { classifyError } from "@common/analytics/errorCategory"
 import { DEBUG, DISCORD_TALISMAN_URL } from "@common/constants"
-import { sentry } from "@core/config/sentry"
 import { TalismanDeadHandIcon } from "@talismn/icons"
+import { reportError } from "@ui/api/errorReporting"
 import { Button } from "@ui/components/Button"
 import { reportErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { DexieError } from "dexie"
@@ -17,11 +17,6 @@ type TalismanErrorBoundaryState = {
   eventId?: string
 }
 
-/**
- * Error boundary that reports errors to our manual Sentry client.
- * Don't use @sentry/react's ErrorBoundary: it captures via the global Sentry instance,
- * which must not be initialised in browser extensions (see #2418).
- */
 export class TalismanErrorBoundary extends Component<
   TalismanErrorBoundaryProps,
   TalismanErrorBoundaryState
@@ -41,9 +36,8 @@ export class TalismanErrorBoundary extends Component<
   componentDidCatch(error: Error, info: ErrorInfo): void {
     reportErrorShown({ surface: "boundary", category: classifyError(error) })
 
-    // mirror @sentry/react's captureReactException: link an error carrying the React
-    // component stack via `cause`, surfaced as a navigable stacktrace by the
-    // LinkedErrors integration
+    // the React component stack rides as the `cause`, which the report carries as a chained
+    // exception with its own frames
     if (error instanceof Error && info.componentStack && !error.cause) {
       const boundaryError = new Error(error.message)
       boundaryError.name = `React ErrorBoundary ${error.name}`
@@ -51,11 +45,9 @@ export class TalismanErrorBoundary extends Component<
       error.cause = boundaryError
     }
 
-    const eventId = sentry.captureException(error, {
-      captureContext: { contexts: { react: { componentStack: info.componentStack } } },
-      mechanism: { handled: true },
+    reportError(error, { mechanism: "error_boundary" }).then((eventId) => {
+      if (eventId) this.setState({ eventId })
     })
-    this.setState({ eventId })
   }
 
   render() {

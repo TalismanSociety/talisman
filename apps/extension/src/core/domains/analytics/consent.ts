@@ -25,7 +25,7 @@ export const transmits = (kind: ConsentKind, transmission: Transmission): boolea
   }
 }
 
-export type Admission = Exclude<Disposition, "rejected">
+export type Admission = Exclude<Disposition, "rejected" | "filtered">
 
 const ADMISSION_BY_CONSENT: Record<KindConsent, Admission> = {
   granted: "queued",

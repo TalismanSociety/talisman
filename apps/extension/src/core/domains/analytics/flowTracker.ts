@@ -18,7 +18,7 @@ import { log } from "@common/log"
 import type { Port } from "../../types/base"
 import { sessionStorage } from "../../util/sessionStorageCompat"
 import { analyticsEngine } from "./engine"
-import { type ParsedEvent, parseTrackedEvent } from "./parse"
+import { type ParsedCatalogueEvent, parseTrackedEvent } from "./parse"
 
 type Slot = { readonly mirror: Mirror; readonly uiContext: UiContext }
 
@@ -43,7 +43,7 @@ export class FlowTracker {
 
   constructor(private readonly deps: { send: FlowSend; links: FlowLinks }) {}
 
-  observe(port: Port, uiContext: UiContext, event: ParsedEvent, now: number): void {
+  observe(port: Port, uiContext: UiContext, event: ParsedCatalogueEvent, now: number): void {
     const state = this.#watch(port)
     const { slots } = state
     const flowId = stringIn(event.properties, "flow_id")

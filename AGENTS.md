@@ -56,6 +56,7 @@ Product analytics go to PostHog. Events, properties and flows are defined once, 
 
 - Properties are typed: buckets, enums and slugs. An address, a URL, an amount or an error text has no property to go in.
 - `track("event_name", props)` takes its event and props from the catalogue. A misspelt event or a missing prop is a type error.
+- Error reports go to PostHog as `$exception`. Global handlers report uncaught errors. Report a caught error that is a bug with `reportError(err)` from the seam of the file's realm: `@ui/api/errorReporting` in pages, `core/domains/analytics/errorReporting` in the background.
 - A task with steps (a wizard, a modal with stages, a run of routes) is a flow. Define it with `defineFlow`, run it with `useFlow(flows.<name>, …)` in the hook that holds the steps, and report `flows.<name>.submitted`, `.completed` and `.failed` where those happen.
 - CI fails when a change ships without analytics:
   - a `pri(…)` message missing from `core/domains/analytics/messageCoverage.ts` (type error);

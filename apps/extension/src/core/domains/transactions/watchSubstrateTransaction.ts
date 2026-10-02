@@ -10,10 +10,10 @@ import { parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
-import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
+import { reportError } from "../analytics/errorReporting"
 import { settingsStore } from "../app/store.settings"
 import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
@@ -148,8 +148,7 @@ const getExtrinsincResult = async (
     }
   } catch (error) {
     // errors commonly arise here due to misconfigured metadata
-    // this is difficult to debug and may not be solvable at our end, so we are no longer logging them to Sentry
-    // eg https://sentry.io/share/issue/6762fac9d55e4df9be29a25f108f075e/
+    // this is difficult to debug and may not be solvable at our end, so we no longer report them
     log.error(error)
   }
 
@@ -212,7 +211,7 @@ const watchExtrinsicStatus = async (
           cause: error,
         })
         log.error(err)
-        sentry.captureException(err, { extra: { chainId } })
+        reportError(err, { networkId: chainId })
         return
       }
 
@@ -235,7 +234,7 @@ const watchExtrinsicStatus = async (
         unsubscribe("finalizedHeads")
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
-        sentry.captureException(error, { extra: { chainId } })
+        reportError(error, { networkId: chainId })
       }
     }
   )
@@ -248,7 +247,7 @@ const watchExtrinsicStatus = async (
         cause: error,
       })
       log.error(err)
-      sentry.captureException(err, { extra: { chainId } })
+      reportError(err, { networkId: chainId })
       return
     }
 
@@ -279,14 +278,14 @@ const watchExtrinsicStatus = async (
         if (timeout !== null) clearTimeout(timeout)
       }
     } catch (error) {
-      sentry.captureException(error, { extra: { chainId } })
+      reportError(error, { networkId: chainId })
     }
   }).catch((cause) => {
     // finalised heads alone still settle the transaction, and the timeout still ends the watch
     subscriptions.allHeads = false
     const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", { cause })
     log.error(err)
-    sentry.captureException(err, { extra: { chainId } })
+    reportError(err, { networkId: chainId })
   })
 
   if (!subscriptions.finalizedHeads && !subscriptions.allHeads) return
@@ -367,7 +366,7 @@ export const watchSubstrateTransaction = async (
   } catch (cause) {
     const error = new Error("Failed to watch extrinsic", { cause })
     log.warn(error)
-    sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+    reportError(error, { networkId: chain.id })
     return
   }
 }

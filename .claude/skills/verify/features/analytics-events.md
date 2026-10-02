@@ -8,6 +8,7 @@ A change that adds analytics proves its events here. A dev build never sends eve
 - `flow-trace` follows one flow attempt by its `flow_id`: `_started`, `_step_viewed`, `_submitted`, then `_completed` or `_abandoned`.
 - `page-closed` closes the page mid-flow. The worker sends `_abandoned` with `abandon_cause: "page_closed"` and the `last_step`.
 - `left` dismisses the modal mid-flow. The page sends `_abandoned` with `abandon_cause: "left"`, and `modal_closed` reads the gesture.
+- `exceptions` throws in the worker and in a page. Each `$exception` reads `queued` with a scrubbed message, or `filtered` (ignore list, throttle) or `dropped_consent`.
 
 ## How to get to it (user POV)
 
@@ -38,6 +39,16 @@ Steps:
 - **Restore.** Turn analytics off again in `$EXT/dashboard.html#/settings/analytics` if it was off.
 
 To trace another flow, change the name filter in `trace` to its events.
+
+### Exceptions
+
+Error reporting is the Error reporting toggle in Security & Privacy (`$EXT/dashboard.html#/settings/security-privacy-settings`). Save its value first and restore it at the end. Mark the time as above, then read the exceptions with `.claude/skills/verify/bin/sw-eval.mjs "globalThis.talismanAnalytics.log().then((log) => log.filter((e) => e.capturedAt > $T0 && e.name === '\$exception'))"`.
+
+- **Worker.** `sw-eval.mjs '(talismanAnalytics.probeException("probe 0xdeadbeef"), 0)'` throws from bundled code, so the worker's own handler reports it. The entry has `ui_context: background`, `mechanism: uncaught`, a `background.js` frame, the value `probe <hex>` and `$exception_fingerprint` `Error: probe <hex>`. Its `distinct_id` is the error id, not the install id of the usage events, and it has no `$session_id`.
+- **Page.** In a dashboard tab, `ab eval 'setTimeout(() => { throw new Error("probe") }); 1'`. The entry has `ui_context: dashboard` and the page's `$screen_name`. `Promise.reject(new Error("probe"))` reads `mechanism: unhandled_rejection`. Dev builds serve page code from the dev server, so page frames read `in_app: false`.
+- **Throttle.** The same message a fourth time within 10 minutes reads `filtered` with `issues: ["throttled"]`. Change the message between runs.
+- **Off.** With Error reporting off, each exception reads `dropped_consent`.
+- **Error boundary.** No page has a crash trigger. Add a temporary `throw` to a component, open its page, and read `Error ID: <id>` on the crash screen: it equals the `$exception` entry's `id` and `wire.uuid`. With Error reporting off, the crash screen shows no Error ID. Remove the `throw` before you commit.
 
 ## Gotchas
 

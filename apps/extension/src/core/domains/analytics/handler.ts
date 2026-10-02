@@ -7,6 +7,7 @@ import type { Port } from "../../types/base"
 import { dappRequestTracker } from "./dappRequests"
 import { analyticsEngine } from "./engine"
 import { uiContextFromSenderUrl } from "./environment"
+import { receiveException } from "./errorReporting"
 import { flowTracker } from "./flowTracker"
 import { parseTrackedEvent } from "./parse"
 
@@ -31,6 +32,11 @@ export class AnalyticsHandler extends ExtensionHandler {
         if (result.ok) flowTracker.observe(port, uiContext, result.event, realNow)
         return disposition as ResponseType<TMessageType>
       }
+      case "pri(analytics.exception)":
+        return (await receiveException(
+          request,
+          uiContextFromSenderUrl(port.sender?.url)
+        )) as ResponseType<TMessageType>
       case "pri(analytics.requestRisk)": {
         const { id, verdict } = requestRiskSchema.parse(request)
         dappRequestTracker.noteRisk(id, verdict)

@@ -491,13 +491,13 @@ export class RemoteConfigApi<
           analytics: {
             /** Posthog project API key (public, write-only) the extension sends product analytics and error reports with. Empty string disables both. */
             posthogApiKey: string;
-            /** Sends error reports to Posthog, on every browser, independently of the user's analytics setting */
+            /** Sends error reports to Posthog on the enabled browser builds, independently of the user's analytics setting */
             errorTrackingEnabled: boolean;
-            /** Browser builds that send product analytics. Does not affect error tracking */
+            /** Browser builds that send product analytics and error reports */
             browsers: {
-              /** Product analytics on the Chrome build, used by every Chromium browser */
+              /** Analytics and error reports on the Chrome build, used by every Chromium browser */
               chrome: boolean;
-              /** Product analytics on the Firefox build */
+              /** Analytics and error reports on the Firefox build */
               firefox: boolean;
             };
           };

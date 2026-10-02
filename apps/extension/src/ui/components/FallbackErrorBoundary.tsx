@@ -12,7 +12,7 @@ interface FallbackErrorBoundaryState {
 
 /**
  * Error boundary that catches errors in its children and renders a fallback UI.
- * Use this if you don't want to use the Sentry error boundary.
+ * Unlike TalismanErrorBoundary, it reports nothing.
  */
 export class FallbackErrorBoundary extends Component<
   FallbackErrorBoundaryProps,

@@ -418,4 +418,18 @@ describe("AnalyticsEngine", () => {
     expect(disposition).toBe("rejected")
     expect(await rows(world.store)).toEqual([])
   })
+
+  it("answers a filtered report with its own disposition and stores nothing", async () => {
+    const world = createWorld()
+    const worker = startWorker(world, { consent: consent("granted") })
+
+    const disposition = await worker.engine.capture({
+      result: { ok: false, name: "$exception", issues: ["throttled"], disposition: "filtered" },
+      uiContext: "background",
+      realNow: world.now,
+    })
+
+    expect(disposition).toBe("filtered")
+    expect(await rows(world.store, "error")).toEqual([])
+  })
 })

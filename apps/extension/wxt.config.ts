@@ -3,7 +3,6 @@ import { existsSync, readdirSync, readFileSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 import replace from "@rollup/plugin-replace"
-import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
 import JSZip from "jszip"
@@ -40,10 +39,8 @@ const getSupportedLanguages = (): string => {
 }
 const SUPPORTED_LANGUAGES = getSupportedLanguages()
 
-// Keep runtime Sentry release in sync with the Sentry Vite plugin configuration.
-// The plugin also supports SENTRY_RELEASE as an override.
-const SENTRY_RELEASE_NAME =
-  process.env.SENTRY_RELEASE ?? `${pkg.version}-${BUILD_TYPE}-${getGitSha()}`
+// process.env.RELEASE: the dev PORT_SUFFIX is built from it (src/common/constants.ts)
+const RELEASE_NAME = `${pkg.version}-${BUILD_TYPE}-${getGitSha()}`
 
 // Create a plugin that ensures deterministic module ordering for reproducible builds.
 // This is critical for Firefox Add-on Store review where builds must be byte-identical.
@@ -203,52 +200,6 @@ function getGitSha(): string {
   }
 }
 
-// Create Sentry Vite plugins for production/canary builds
-// Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
-// to prevent exposing source code in the distributed extension.
-// Returns an array of plugins (Sentry uses multiple internal plugins)
-// Note: Sentry is only used for Chrome builds, not Firefox
-function createSentryPlugins(browser: string): Plugin[] {
-  // Only enable for production and canary builds
-  if (!["production", "canary"].includes(BUILD_TYPE ?? "")) return []
-
-  // Skip Sentry for Firefox builds - we only use Sentry with Chrome
-  if (browser === "firefox") return []
-
-  // Require auth token for Sentry uploads
-  if (!process.env.SENTRY_AUTH_TOKEN) {
-    log.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
-    return []
-  }
-
-  return sentryVitePlugin({
-    // Sentry organization and project
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    org: "talisman",
-    project: "talisman-extension",
-
-    // Release identification
-    release: {
-      name: SENTRY_RELEASE_NAME,
-    },
-
-    // Sourcemap configuration
-    // Let Sentry auto-detect sourcemaps from the build output
-    // Note: filesToDeleteAfterUpload is NOT used here because WXT builds in multiple steps,
-    // and Sentry would try to delete files between steps causing ENOENT errors.
-    // Instead, we use a post-build script or the zip step handles cleanup.
-    sourcemaps: {
-      // Exclude content scripts that run in page context (not useful for debugging our code)
-      ignore: ["**/content_script.js.map", "**/page.js.map"],
-    },
-
-    // Disable telemetry
-    telemetry: false,
-    // Do not output sourcemap files list
-    silent: true,
-  }) as Plugin[]
-}
-
 // Delete sourcemap files from the output directory
 // This is called after build:done for production/canary builds
 // to ensure sourcemaps are not included in the final extension zip
@@ -392,12 +343,10 @@ export default defineConfig({
   // Build hooks
   hooks: {
     // Before zipping, delete sourcemaps for production/canary builds
-    // Sourcemaps are uploaded to Sentry during the build, then removed before zipping
     // to prevent exposing source code in the distributed extension, and keep the package small
     "zip:extension:start": (wxt) => {
       if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
-        const outputDir = resolve(__dirname, "dist", `${wxt.config.browser}-mv3`)
-        deleteSourcemaps(outputDir)
+        deleteSourcemaps(wxt.config.outDir)
       }
     },
     // After zipping, normalize timestamps for Firefox builds to ensure reproducibility
@@ -671,10 +620,9 @@ export default defineConfig({
             "process.env.VERSION": JSON.stringify(pkg.version),
             "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
             "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
-            "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
+            "process.env.RELEASE": JSON.stringify(RELEASE_NAME),
             "process.env.BUILD_TYPE": JSON.stringify(BUILD_TYPE),
             "process.env.GIT_SHA": JSON.stringify(getGitSha()),
-            "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
             "process.env.SUPPORTED_LANGUAGES": JSON.stringify(SUPPORTED_LANGUAGES),
             "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
             "process.env.BITTENSOR_DEVNET_RPC": JSON.stringify(
@@ -750,9 +698,6 @@ export default defineConfig({
         // Deterministic build plugin - ensures consistent module ordering for reproducible builds
         // This is important for Firefox Add-on Store review where builds must match
         createDeterministicBuildPlugin(),
-        // Sentry plugins for production/canary builds - uploads sourcemaps then deletes them
-        // Must be last to ensure they run after all other transformations
-        ...createSentryPlugins(browser),
       ],
 
       resolve: {
@@ -764,10 +709,9 @@ export default defineConfig({
         "process.env.VERSION": JSON.stringify(pkg.version),
         "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
         "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
-        "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
+        "process.env.RELEASE": JSON.stringify(RELEASE_NAME),
         "process.env.BUILD_TYPE": JSON.stringify(BUILD_TYPE),
         "process.env.GIT_SHA": JSON.stringify(getGitSha()),
-        "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
         "process.env.SUPPORTED_LANGUAGES": JSON.stringify(SUPPORTED_LANGUAGES),
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
         "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
@@ -808,14 +752,14 @@ export default defineConfig({
 
         // Sourcemap configuration:
         // - Dev mode: separate sourcemaps for debugging without bloating file sizes
-        // - Production/Canary Chrome: hidden sourcemaps (uploaded to Sentry, then deleted)
-        // - Firefox: no sourcemaps (we don't use Sentry for Firefox)
+        // - Production/Canary Chrome: hidden sourcemaps (deleted before zipping)
+        // - Firefox: no sourcemaps
         // - Other builds: no sourcemaps
         // Note: "hidden" generates sourcemaps but doesn't add the //# sourceMappingURL comment
         sourcemap: isDev
           ? true // Separate .js.map files for dev
           : ["production", "canary"].includes(BUILD_TYPE ?? "") && !isFirefox
-            ? "hidden" // Generate maps for Sentry upload (Chrome only)
+            ? "hidden" // Chrome only
             : false, // No sourcemaps for Firefox or other builds
 
         // Vite 8 (rolldown) dropped esbuild; oxc is the native minifier
@@ -885,15 +829,10 @@ var browser = globalThis.browser;
 
                 return `${firefoxShim}
 // Document shim for service worker - some packages reference document which doesn't exist.
-// @sentry/browser v10's BrowserClient constructor (and its browserSession integration) call
-// document.addEventListener("visibilitychange", ...); a service worker has no page lifecycle,
-// so expose no-op event APIs to keep the shim truthy without crashing SW boot.
 if (typeof document === "undefined") {
   globalThis.document = {
     baseURI: self.location.href,
     currentScript: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
   };
 }
 `

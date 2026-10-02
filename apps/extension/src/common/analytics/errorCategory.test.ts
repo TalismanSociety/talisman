@@ -65,6 +65,11 @@ const ROWS: [string, unknown, ErrorCategory][] = [
     "insufficient_gas",
   ],
   ["balance message", new Error("Insufficient balance"), "insufficient_balance"],
+  [
+    "yield.xyz Kamino rent",
+    new Error("KaminoLendingInsufficientSolForRentError"),
+    "insufficient_fee",
+  ],
   ["nonce message", new Error("replacement transaction underpriced"), "nonce_conflict"],
   ["substrate duplicate", new Error("1013: Transaction Already Imported"), "nonce_conflict"],
   ["stale nonce", new Error("Transaction is outdated"), "nonce_conflict"],

@@ -42,6 +42,7 @@ const IGNORED_LOG_MESSAGES: MessageTypes[] = [
   "pri(keepalive)",
   "pri(keepunlocked)",
   "pri(analytics.track)",
+  "pri(analytics.exception)",
   "pub(talisman.rpc.byGenesisHash.subscribe)",
   "pub(talisman.rpc.byGenesisHash.unsubscribe)",
   "pub(talisman.rpc.byGenesisHash.send)",

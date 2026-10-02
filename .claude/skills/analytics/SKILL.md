@@ -19,6 +19,7 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 | An inline form error from a caught failure | `setError(field, { type: classifyError(err), message })`, and `errorCategory={errorCategoryOfField(errors.field)}` on its `FormFieldContainer` |
 | An inline error a hook computes | Return an `InlineError` (`{ message, category }`) where the condition is checked, and `useErrorShown` where it renders |
 | A `SignAlertMessage type="error"` | `errorCategory`: the failure it shows, or `null` when it warns about what the request does (an unlimited approval, a domain mismatch), which sends no `error_shown` |
+| A caught error that is a bug, not a user mistake | `reportError(err)` from the seam of the file's realm: `@ui/api/errorReporting` in pages, `core/domains/analytics/errorReporting` in the background. A core module that pages import (the password store, notifications) logs instead: `error-reporting-realms.test.ts` fails otherwise |
 | A `<Route path>` | Use words, `:param` and `*`, never a value |
 | A key in `SettingsStoreData` or `AppStoreData` | Classify it in `common/analytics/settings.ts`: a `setting_changed` key, or the reason it is not one |
 

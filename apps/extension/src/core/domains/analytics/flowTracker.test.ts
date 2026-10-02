@@ -9,7 +9,7 @@ import {
   FlowTracker,
   type LinkStorage,
 } from "./flowTracker"
-import { type ParsedEvent, parseTrackedEvent } from "./parse"
+import { type ParsedCatalogueEvent, parseTrackedEvent } from "./parse"
 
 vi.mock("./engine", () => ({ analyticsEngine: {} }))
 
@@ -77,7 +77,7 @@ describe("FlowTracker", () => {
     tracker = new FlowTracker({ send, links: createFlowLinks(storage) })
   })
 
-  const observe = (port: Port, event: ParsedEvent, now = Date.now()) =>
+  const observe = (port: Port, event: ParsedCatalogueEvent, now = Date.now()) =>
     tracker.observe(port, "dashboard", event, now)
 
   it("sends abandoned page_closed with the last step when the page closes mid-flow, once", () => {
@@ -255,6 +255,7 @@ describe("the transactionId envelope", () => {
       ok: false,
       name: `${PILOT}_submitted`,
       issues: ["transaction_id_not_allowed"],
+      disposition: "rejected",
     })
   })
 

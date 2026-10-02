@@ -138,6 +138,8 @@ export const CATEGORY_RULES: readonly CategoryRule[] = [
     category: "user_rejected",
   },
   { match: "message", pattern: /inability to pay some fees/i, category: "insufficient_fee" },
+  // yield.xyz: the account lacks the SOL a new Kamino account must hold for rent
+  { match: "message", pattern: /InsufficientSolForRent/i, category: "insufficient_fee" },
   { match: "message", pattern: /insufficient funds for gas/i, category: "insufficient_gas" },
   {
     match: "message",

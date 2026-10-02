@@ -46,6 +46,6 @@ export const resolveTransmission = ({
     endpoint: config.postHogUrl,
     apiKey: posthogApiKey,
     usage: browsers[build],
-    errorTracking: errorTrackingEnabled,
+    errorTracking: errorTrackingEnabled && browsers[build],
   }
 }

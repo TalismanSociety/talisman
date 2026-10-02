@@ -40,6 +40,7 @@ export const MESSAGE_COVERAGE = {
   "pri(accountProxies.loadDetails)": "read",
   "pri(accountProxies.updatePalletCache)": "read",
   "pri(analytics.track)": { exempt: "transport" },
+  "pri(analytics.exception)": { exempt: "transport" },
   "pri(analytics.requestRisk)": { event: "dapp_request_resolved" },
   "pri(app.onboardCreatePassword)": { flow: "onboarding" },
   "pri(app.authenticate)": { event: ["app_unlocked", "app_unlock_failed"] },

@@ -113,15 +113,16 @@ export class AnalyticsEngine {
   capture({ result, uiContext, realNow }: CaptureInput): Promise<Disposition> {
     return this.#serial(async () => {
       if (result.ok) return this.#capture(result.event, uiContext, realNow, result.issues)
-      log.warn("[analytics] rejected event", result.name, result.issues)
+      if (result.disposition === "rejected")
+        log.warn("[analytics] rejected event", result.name, result.issues)
       await this.#log({
         id: crypto.randomUUID(),
         name: result.name,
         capturedAt: realNow,
-        disposition: "rejected",
+        disposition: result.disposition,
         issues: result.issues,
       })
-      return "rejected"
+      return result.disposition
     })
   }
 

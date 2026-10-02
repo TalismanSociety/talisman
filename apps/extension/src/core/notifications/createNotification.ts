@@ -1,4 +1,5 @@
-import { sentry } from "../config/sentry"
+import { log } from "@common/log"
+
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
 export type NotificationType = "submitted" | "success" | "error" | "not_found" | "autolocked"
@@ -72,6 +73,8 @@ export const createNotification = async (
     const options = getNotificationOptions(type, networkName, error)
     chrome.notifications.create(url, options)
   } catch (err) {
-    sentry.captureException(err)
+    // not reported: pages import this module through the password store, and the worker's
+    // error reporting seam must stay out of pages
+    log.error("Failed to create notification", { err })
   }
 }

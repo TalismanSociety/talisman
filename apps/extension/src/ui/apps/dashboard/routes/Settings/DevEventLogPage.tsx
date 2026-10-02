@@ -20,6 +20,7 @@ const DISPOSITION_COLOURS: Record<DevLogEntry["disposition"], string> = {
   dropped_off: "bg-grey-800 text-body-secondary",
   purged: "bg-grey-800 text-body-secondary",
   rejected: "bg-alert-error/10 text-alert-error",
+  filtered: "bg-grey-800 text-body-secondary",
 }
 
 const Chip = ({ className, children }: { className?: string; children: string }) => (

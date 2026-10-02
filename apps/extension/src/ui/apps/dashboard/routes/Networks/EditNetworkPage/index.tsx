@@ -1,6 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
 
-import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -13,6 +12,7 @@ import {
 import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { reportError } from "@ui/api/errorReporting"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -434,7 +434,7 @@ const ConfirmRemove: FC<{
       await api.networkRemove(network.id)
       isNetworkKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
-      sentry.captureException(err)
+      reportError(err)
       notify({
         type: "error",
         title: t("Error"),

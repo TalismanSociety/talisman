@@ -17,6 +17,7 @@ export const api: MessageTypes = {
   keepunlocked: () => messageService.sendMessage("pri(keepunlocked)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   analyticsTrack: (request) => messageService.sendMessage("pri(analytics.track)", request),
+  analyticsException: (report) => messageService.sendMessage("pri(analytics.exception)", report),
   analyticsRequestRisk: (report) =>
     messageService.sendMessage("pri(analytics.requestRisk)", report),
   // UNSORTED
