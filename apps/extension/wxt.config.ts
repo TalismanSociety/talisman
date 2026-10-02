@@ -206,7 +206,13 @@ function getGitSha(): string {
 }
 
 const sourcemapPlan = (browser: string) =>
-  planSourcemapUpload({ browser, buildType: BUILD_TYPE, env: process.env, version: pkg.version })
+  planSourcemapUpload({
+    browser,
+    buildType: BUILD_TYPE,
+    env: process.env,
+    version: pkg.version,
+    build: getGitSha(),
+  })
 
 // Delete sourcemap files from the output directory
 // This is called after build:done for production/canary builds

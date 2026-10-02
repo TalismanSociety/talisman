@@ -26,7 +26,7 @@ const MUST_NOT_BE_INJECTED = ["page.js", "content-scripts/content.js"]
 export type SourcemapPlan =
   | { action: "skip"; reason: "firefox" | "no_sourcemaps" | "dry_run" }
   | { action: "fail"; reason: string }
-  | { action: "inject_and_upload"; host: string; apiKey: string; version: string }
+  | { action: "inject_and_upload"; host: string; apiKey: string; version: string; build: string }
 
 /** Read `env` in the hook, after WXT loaded `.env`. */
 export const planSourcemapUpload = ({
@@ -34,11 +34,13 @@ export const planSourcemapUpload = ({
   buildType,
   env,
   version,
+  build,
 }: {
   browser: string
   buildType: string | undefined
   env: Readonly<Record<string, string | undefined>>
   version: string
+  build: string
 }): SourcemapPlan => {
   if (browser === "firefox") return { action: "skip", reason: "firefox" }
   if (buildType !== "production" && buildType !== "canary")
@@ -55,6 +57,7 @@ export const planSourcemapUpload = ({
     host: env.POSTHOG_CLI_HOST?.trim() || POSTHOG_API_HOST,
     apiKey,
     version,
+    build,
   }
 }
 
@@ -96,12 +99,12 @@ export const preflightSourcemapPlan = async (
 
 /**
  * `symbol-set` stamps the release on the uploaded maps: the other mode puts it in the chunks, for
- * an SDK we do not run to read. A chunk that an earlier version uploaded keeps that version.
+ * an SDK we do not run to read. Each build is its own release, `<version>+<build>`, and a chunk that
+ * an earlier build uploaded keeps that build's release.
  */
 export const cliSteps = (
   outDir: string,
-  host: string,
-  version: string
+  { host, version, build }: { host: string; version: string; build: string }
 ): readonly (readonly string[])[] => {
   const global = ["dlx", POSTHOG_CLI, "--host", host]
   const selection = [
@@ -120,6 +123,8 @@ export const cliSteps = (
       RELEASE_NAME,
       "--release-version",
       version,
+      "--build",
+      build,
       "--release-mode",
       "symbol-set",
     ],
@@ -175,7 +180,7 @@ export const runSourcemapPlan = async (
     case "fail":
       throw new Error(`[posthog sourcemaps] ${plan.reason}`)
     case "inject_and_upload": {
-      const [inject, upload] = cliSteps(outDir, plan.host, plan.version)
+      const [inject, upload] = cliSteps(outDir, plan)
       await run(inject, { cwd: tmpdir() })
       assertInjection(outDir)
       await run(upload, { cwd: tmpdir() })
