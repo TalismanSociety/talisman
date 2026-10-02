@@ -69,7 +69,7 @@ To verify a change or reproduce a bug in the running wallet, follow the `verify`
 
 CDP on port 9223 exists only while `pnpm dev` runs with its browser. Always pass the port: most tools default to 9222, which can be another browser. The dev extension id is `akcdepjilgckjbngkhjghfnmnnkdnmno`.
 
-The host dev Chrome serves the main checkout. A git worktree drives a browser of its own on another CDP port, set in `VERIFY_CDP_PORT`: see the `verify` skill.
+The host dev Chrome serves the main checkout, and the examples below drive it: run them from the main checkout only. A git worktree must not run `pnpm dev`. It drives a browser of its own through the `verify` skill helpers, which refuse to drive 9223 from a worktree.
 
 Extension pages: use agent-browser, a browser automation CLI that comes with an agent skill. Install both once with `npm install -g agent-browser` (or `brew install agent-browser`) and `npx skills add vercel-labs/agent-browser`. The skill tells the agent to run `agent-browser skills get core`, which prints the usage guide for the installed version. You do not need `agent-browser install`: it downloads a Chrome, and here the tool attaches to the dev Chrome.
 

@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223, or the port in VERIFY_CDP_PORT) the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), or run manual QA before a PR.
+description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223), or in a git worktree's own browser, the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), or run manual QA before a PR.
 ---
 
 # Verify the Talisman extension
@@ -15,21 +15,14 @@ The host dev build has one instance per machine: the dev server has a fixed port
 
 Run every command from the repo root.
 
-The main checkout drives the host dev Chrome on CDP 9223. A git worktree must not start `pnpm dev`, because the host instance belongs to the main checkout. A worktree drives a browser of its own, which serves the worktree's build on another CDP port. Export that port as `VERIFY_CDP_PORT`: the helpers and the `ab` function in step 3 read it. Without such a browser, verify a worktree with unit tests and typecheck.
+Each checkout drives the browser that serves its own build. The helpers find its CDP port in this order: `VERIFY_CDP_PORT`, then the port in `.tmp/verify/cdp-port`, then 9223 in the main checkout. In a worktree with neither, they exit with an error, because 9223 is the main checkout's browser. A shell variable does not last from one agent tool call to the next, so a worktree keeps its port in the file.
 
-Some machines have a local Docker runner in the main checkout at `.claude/skills/verify/docker/`. It is kept out of git. When it exists, it gives each worktree a container with its own dev build, Chromium and dev wallet:
+### In the main checkout
 
-```sh
-runner="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.claude/skills/verify/docker/worktree.sh"
-"$runner" up     # prints the export VERIFY_CDP_PORT line once its doctor passes
-"$runner" sync   # after each edit; restarts the build after a commit
-"$runner" down   # at the end of the run
-```
-
-In the main checkout:
+The main checkout drives the host dev Chrome on CDP 9223.
 
 1. Run the doctor (step 2). When every line is `PASS`, reuse the instance and write `reused: not started by this run` in `$RUN/notes.md`. Go to step 3.
-2. When nothing listens on 8254, start the dev build. Never do this from a worktree.
+2. When nothing listens on 8254, start the dev build:
 
    ```sh
    nohup sh -c 'tail -f /dev/null | pnpm dev' > "$RUN/dev.log" 2>&1 &
@@ -41,6 +34,24 @@ In the main checkout:
 
 Keep commits out of the run: a commit while `pnpm dev` runs changes the build sha, and the background rejects every page (see `AGENTS.md`).
 
+### In a worktree
+
+A worktree must not start `pnpm dev`: the host instance belongs to the main checkout. A worktree drives a browser of its own, which serves the worktree's build on another CDP port. Without such a browser, verify a worktree with unit tests and typecheck.
+
+Some machines have a local Docker runner in the main checkout at `.claude/skills/verify/docker/`. It is kept out of git. It gives each worktree a container with its own dev build, Chromium and dev wallet. Set `runner` again in each tool call:
+
+```sh
+runner="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.claude/skills/verify/docker/worktree.sh"
+[ -x "$runner" ] || echo "no Docker runner on this machine: verify with unit tests and typecheck"
+```
+
+1. `"$runner" ls`. When it lists the container of this worktree, the run reuses it: write `reused: not started by this run` in `$RUN/notes.md`.
+2. `"$runner" up` starts the container, or reuses it, and returns once the container's own doctor passes.
+3. `mkdir -p .tmp/verify && "$runner" port > .tmp/verify/cdp-port`
+4. Run the doctor (step 2), then go to step 3.
+
+After each edit, run `"$runner" sync`, then the doctor. A rebuild of the background locks the wallet, and the doctor unlocks it. `sync` restarts the build when HEAD changed, so a commit during the run needs only a `sync`. The doctor compares commits: it does not see an edit that you did not sync.
+
 ## 2. Doctor
 
 ```sh
@@ -49,10 +60,12 @@ Keep commits out of the run: a commit while `pnpm dev` runs changes the build sh
 
 Read-only apart from one dashboard tab that it opens and closes. It prints one `PASS`/`FAIL` line per check and exits non-zero on any `FAIL`:
 
-- main checkout, not a worktree (on CDP 9223 only)
-- port 8254 belongs to `wxt` from this checkout (on CDP 9223 only)
-- CDP answers on `VERIFY_CDP_PORT`, default 9223
-- the extension service worker runs, and the build sha in the script it runs equals `git rev-parse --short HEAD`. A commit since the build started fails this check: restart the build (`sync` with the runner).
+- on CDP 9223: the main checkout, not a worktree. A worktree stops here, before it touches the main checkout's browser.
+- on CDP 9223: port 8254 belongs to `wxt` from this checkout
+- CDP answers on the port from step 1
+- the extension service worker runs the build of HEAD. The line shows three shas: `built` (the manifest on disk), `running` (the script that the service worker runs) and `HEAD`, then the fix:
+  - a build older than HEAD: restart the build (`pnpm dev:kill && pnpm dev`, or `"$runner" sync`).
+  - a running script older than the build: Chromium runs a cached background script. Reload the extension in `chrome://extensions`, or restart the browser. A runner container wipes that cache at each start: `"$runner" down`, then `up`.
 - the dashboard renders (non-empty `#root`), and prints the dev-server modules that failed to load when it does not
 - the wallet is onboarded and unlocked. A locked wallet makes the dashboard tab open the login popup, which stays open.
 
@@ -67,16 +80,18 @@ Set up the run:
 ```sh
 RUN=.tmp/verify/$(date +%Y%m%d-%H%M%S)-<feature>
 .claude/skills/verify/bin/tabs.sh baseline "$RUN"
-ab() { agent-browser --session "talisman${VERIFY_CDP_PORT:+-$VERIFY_CDP_PORT}" --cdp "${VERIFY_CDP_PORT:-9223}" "$@"; }
+ab() { .claude/skills/verify/bin/ab "$@"; }
 ```
+
+`bin/ab` runs agent-browser on the browser from step 1, with session `talisman` on 9223 and `talisman-<port>` on another port. A function does not last between agent tool calls either: when `ab` is not found, define it again or call `bin/ab`.
 
 - **Extension pages:** `ab tab new "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno/dashboard.html#/<route>"`, then `ab wait --text "<text you expect>"` before the first snapshot. Open each page in a new tab: a tab cannot navigate to `chrome-extension://`.
 - **Handles**, in order of preference: `ab find testid <id>`, `ab find role button --name "<name>"`, `ab find placeholder "<text>"`, then `@eN` refs from `ab snapshot -i -c`. The `data-testid` values in `playwright/e2e-tests/fixtures.ts` are stable handles.
 - **Popups** (connect, sign, send requests from a dapp): `.claude/skills/verify/bin/popup-url.sh` prints the popup URL. Open it with `ab tab new "<url>"` and act there. Approve or reject there completes the request and closes both tabs.
 - **Background state:** `.claude/skills/verify/bin/sw-eval.mjs '<async expression>'` evaluates in the service worker and prints JSON. Use it to prove side effects, for example `chrome.storage.local.get("keyring")` for accounts, `chrome.storage.local.get("sitesAuthorized")` for dapp connections.
-- **Headless UI modals and anything agent-browser cannot see:** a Playwright script in `.tmp/` with ``chromium.connectOverCDP(`http://localhost:${process.env.VERIFY_CDP_PORT ?? 9223}`)`` (example in `AGENTS.md`). `browser.close()` only disconnects.
+- **Headless UI modals and anything agent-browser cannot see:** a Playwright script in `.tmp/` that imports `cdpPort` from `../.claude/skills/verify/bin/cdp-port.mjs` and calls ``chromium.connectOverCDP(`http://localhost:${cdpPort()}`)`` (example in `AGENTS.md`). `browser.close()` only disconnects.
 
-Signing: sign only with a test account, whose name starts with `Guardians` (setup in [`features/README.md`](features/README.md#test-accounts)). Read the signer name in the popup before you click Approve or Sign. Runs in parallel, from several worktrees, share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. Give each run its own sender, or send one at a time.
+Signing: sign only with a test account, whose name starts with `Guardians` (setup in [`features/README.md`](features/README.md#test-accounts)). Read the signer name in the popup before you click Approve or Sign. Runs from several worktrees share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. The setup funds one sender (`Guardians SUB`), so send from one run at a time.
 
 ## 4. Evidence
 
@@ -94,19 +109,19 @@ Everything goes in `$RUN` (under `.tmp/`, gitignored). Cleanup keeps it.
 .claude/skills/verify/bin/tabs.sh cleanup "$RUN"   # closes the page targets opened since the baseline
 ```
 
-`tabs.sh cleanup` also closes a tab that a person opened in the dev Chrome during the run.
+`tabs.sh cleanup` acts on the browser that `tabs.sh baseline` recorded in `$RUN/cdp-port`. It also closes a tab that a person opened in that browser during the run.
 
 - Undo the wallet mutations of the run (accounts, connected sites, custom networks) through the UI, as each feature file says.
 - If this run started the dev build: `kill $(cat "$RUN/dev.pids") "$(cat "$RUN/dev.pid")"; pnpm dev:kill`. `pnpm dev:kill` alone leaves the `tail` alive.
-- If this run brought up a worktree container: `"$runner" down`.
+- If this run started the worktree container: `ab close`, then `"$runner" down`, then `rm .tmp/verify/cdp-port`. The `ab close` ends the agent-browser session of that port, which the next container can get.
 - If the instance was reused, leave it running: it belongs to someone else.
 - Leave `$RUN` in place and name it in your report.
 
-`agent-browser close` is not a cleanup step here: the browser belongs to `pnpm dev`, not to agent-browser.
+On the host, `ab close` is not a cleanup step: the browser belongs to `pnpm dev`, not to agent-browser.
 
 ## Helpers
 
-All in `.claude/skills/verify/bin/`, run from the repo root. Each reads the CDP port from `VERIFY_CDP_PORT`, default 9223:
+All in `.claude/skills/verify/bin/`, run from the repo root. Each finds the CDP port as step 1 says, and exits with an error when it cannot:
 
 | Helper | Invocation | Output |
 | --- | --- | --- |
@@ -114,6 +129,8 @@ All in `.claude/skills/verify/bin/`, run from the repo root. Each reads the CDP 
 | `sw-eval.mjs` | `sw-eval.mjs 'chrome.storage.local.get(null).then(Object.keys)'` | JSON result of the expression in the service worker |
 | `popup-url.sh` | `popup-url.sh [seconds]` | the URL of each open `popup.html#/…` target, waits up to 20 s by default |
 | `tabs.sh` | `tabs.sh baseline "$RUN"` / `tabs.sh cleanup "$RUN"` | records, then closes, page targets |
+| `ab` | `ab <agent-browser command>` | agent-browser on this checkout's browser |
+| `cdp-port.mjs` | `cdp-port.mjs`, or `import { cdpPort }` | the CDP port of this checkout's browser |
 
 ## Gotchas
 
