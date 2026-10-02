@@ -1,5 +1,5 @@
 import { SWAP_OUTCOMES, type SwapOutcome, swapOfTransaction } from "@common/analytics/funds"
-import { toDurationMs } from "@common/analytics/schema"
+import { toSettleMs } from "@common/analytics/schema"
 import { type SettledStatus, txTypeOf } from "@common/analytics/transactions"
 
 import type { TxStatusFact, TxStatusReason } from "../transactions/store.transactions"
@@ -31,7 +31,7 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     analyticsNetworkId({ networkId: row.networkId }),
     signerOfAddress(row.account),
   ])
-  const timeToSettleMs = toDurationMs(at - row.timestamp)
+  const timeToSettleMs = toSettleMs(at - row.timestamp)
   track("tx_settled", {
     status,
     platform: row.platform,
@@ -60,7 +60,7 @@ export const trackSwapOutcome = async ({ row, status, at }: SwapOutcomeFact) => 
     row.id,
     {
       status: "success",
-      timeToSettleMs: toDurationMs(at - row.timestamp),
+      timeToSettleMs: toSettleMs(at - row.timestamp),
       properties: { ...swap, swap_status: status },
     },
     Date.now()

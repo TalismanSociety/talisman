@@ -30,6 +30,10 @@ const MAX_DURATION_MS = 7 * 24 * 60 * 60_000
 export const toDurationMs = (ms: number): number =>
   Number.isNaN(ms) ? 0 : Math.min(MAX_DURATION_MS, Math.max(0, Math.round(ms)))
 
+export const toSettleMs = (ms: number): number => Math.round(toDurationMs(ms) / 1_000) * 1_000
+
+export const toSlippagePercent = (percent: number): number => Math.round(percent * 10) / 10
+
 const int = (description: string, { min, max }: { min?: number; max?: number } = {}) => {
   let schema = z.number().int()
   if (min !== undefined) schema = schema.min(min)

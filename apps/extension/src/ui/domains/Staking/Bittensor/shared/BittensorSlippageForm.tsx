@@ -1,3 +1,4 @@
+import { toSlippagePercent } from "@common/analytics/schema"
 import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
 import { track } from "@ui/api/track"
@@ -32,7 +33,7 @@ export const BittensorSlippageForm: FC<{
       const slippagePercent = Number(slippageEdit)
       setSlippage(slippagePercent)
       track("staking_slippage_changed", {
-        slippage_percent: slippagePercent,
+        slippage_percent: toSlippagePercent(slippagePercent),
         preset: false,
         is_default: slippagePercent === DEFAULT_USER_MAX_SLIPPAGE,
       })

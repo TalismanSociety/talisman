@@ -1,6 +1,7 @@
 import { toAmountBucket } from "@common/analytics/buckets"
 import { classifyError } from "@common/analytics/errorCategory"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
+import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -626,7 +627,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       fee_usd_bucket: toAmountBucket(
         feeToken ? usdOf(feePlanck, feeToken.decimals, feeTokenRates) : null
       ),
-      slippage_percent: supportsSlippage ? slippagePercent : null,
+      slippage_percent: supportsSlippage ? toSlippagePercent(slippagePercent) : null,
       slippage_is_default: supportsSlippage ? slippagePercent === SWAP_SLIPPAGE_DEFAULT : null,
     }
   }, [

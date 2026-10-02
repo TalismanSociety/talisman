@@ -106,7 +106,7 @@ export const properties = {
     "Final status of the transaction on chain. replaced: another transaction with the same nonce settled. dropped: the chain never saw it."
   ),
   time_to_settle_ms: p.durationMs(
-    "From the stored transaction to its final status. The start is set before the broadcast for wallet Polkadot transactions, after it for Ethereum, and at signing for dapp Polkadot and Solana transactions. swap_completed: until the exchange's final status when the wallet watched one."
+    "From the stored transaction to its final status, rounded to the second. The start is set before the broadcast for wallet Polkadot transactions, after it for Ethereum, and at signing for dapp Polkadot and Solana transactions. swap_completed: until the exchange's final status when the wallet watched one."
   ),
 
   method: p.enum(
@@ -272,7 +272,7 @@ export const properties = {
   cross_chain: p.bool("The swap moves value from one network to another."),
   slippage_percent: p.nullable(
     p.number(
-      "The slippage tolerance in percent. Null when the provider takes no slippage setting.",
+      "The slippage tolerance in percent, rounded to one decimal. Null when the provider takes no slippage setting.",
       {
         min: 0,
         max: 100,

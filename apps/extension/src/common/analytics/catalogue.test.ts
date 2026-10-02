@@ -12,6 +12,8 @@ import {
   p,
   type Registry,
   type TrackFn,
+  toSettleMs,
+  toSlippagePercent,
 } from "./schema"
 import { superPropertyDefinitions } from "./superProperties"
 
@@ -161,5 +163,26 @@ const callShapes = (
 describe("track()", () => {
   it("rejects bad call shapes at compile time: `pnpm typecheck` checks the @ts-expect-error lines", () => {
     expect(callShapes).toBeTypeOf("function")
+  })
+})
+
+describe("rounded values", () => {
+  it.each([
+    [12_499, 12_000],
+    [12_500, 13_000],
+    [400, 0],
+    [-5, 0],
+    [Number.NaN, 0],
+  ])("a settle time of %i ms reads %i", (ms, rounded) => {
+    expect(toSettleMs(ms)).toBe(rounded)
+  })
+
+  it.each([
+    [0.5, 0.5],
+    [0.37, 0.4],
+    [0.6942, 0.7],
+    [3, 3],
+  ])("a slippage of %f%% reads %f", (percent, rounded) => {
+    expect(toSlippagePercent(percent)).toBe(rounded)
   })
 })

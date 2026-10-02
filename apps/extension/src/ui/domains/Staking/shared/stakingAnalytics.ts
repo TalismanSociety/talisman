@@ -1,6 +1,6 @@
 import { type AmountBucket, toAmountBucket } from "@common/analytics/buckets"
 import { networkIdForAnalytics } from "@common/analytics/funds"
-import { symbolForAnalytics } from "@common/analytics/schema"
+import { symbolForAnalytics, toSlippagePercent } from "@common/analytics/schema"
 import { type Signer, signerOf } from "@common/analytics/transactions"
 import type { Network } from "@talismn/chaindata-provider"
 import type { AccountType } from "@talismn/keyring"
@@ -41,7 +41,7 @@ export const stakingSubmittedReport = ({
   return (
     report && {
       ...report,
-      slippage_percent: slippage?.percent ?? null,
+      slippage_percent: slippage ? toSlippagePercent(slippage.percent) : null,
       slippage_is_default: slippage?.isDefault ?? null,
     }
   )
