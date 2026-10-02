@@ -15,6 +15,42 @@ const sh = (cmd, args) => {
   }
 }
 
+// Reads the build sha from the scripts the service worker runs. The manifest is reread from disk on
+// each load, but Chromium can keep running an older build's cached background script.
+async function runningBuildShas() {
+  const targets = await (await fetch(`${CDP}/json/list`)).json()
+  const target = targets.find((t) => t.type === "service_worker" && t.url.startsWith(EXTENSION))
+  if (!target) return []
+  const socket = new WebSocket(target.webSocketDebuggerUrl)
+  await new Promise((resolve, reject) => {
+    socket.onopen = resolve
+    socket.onerror = reject
+  })
+  const scriptIds = []
+  const replies = new Map()
+  socket.onmessage = ({ data }) => {
+    const message = JSON.parse(data)
+    if (message.method === "Debugger.scriptParsed") scriptIds.push(message.params.scriptId)
+    replies.get(message.id)?.(message.result)
+  }
+  const send = (method, params) =>
+    new Promise((resolve) => {
+      const id = replies.size + 1
+      replies.set(id, resolve)
+      socket.send(JSON.stringify({ id, method, params }))
+    })
+  await send("Debugger.enable")
+  const shas = new Set()
+  for (const scriptId of scriptIds) {
+    const { scriptSource } = await send("Debugger.getScriptSource", { scriptId })
+    for (const [, sha] of scriptSource.matchAll(/\d+\.\d+\.\d+-dev-([0-9a-f]{7,40})[`"]/g))
+      shas.add(sha)
+  }
+  await send("Debugger.disable")
+  socket.close()
+  return [...shas]
+}
+
 const results = []
 const check = (name, ok, detail) => {
   results.push(ok)
@@ -66,11 +102,11 @@ if (!worker) {
 }
 
 if (check("extension service worker is running", !!worker, worker?.url())) {
-  const versionName = await worker.evaluate(() => chrome.runtime.getManifest().version_name)
+  const running = await runningBuildShas()
   check(
     "running build matches git HEAD",
-    versionName.endsWith(head),
-    `running "${versionName}", HEAD ${head}`
+    running.length === 1 && running[0] === head,
+    `running ${running.join(", ") || "no sha found"}, HEAD ${head}`
   )
 }
 const onboarded =
