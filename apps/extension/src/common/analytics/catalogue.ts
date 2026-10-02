@@ -1,9 +1,11 @@
 import { accountEvents } from "./events/accounts"
 import { consentEvents } from "./events/consent"
 import { dappRequestEvents } from "./events/dappRequests"
+import { dappEvents } from "./events/dapps"
 import { errorEvents } from "./events/errors"
 import { fundsEvents } from "./events/funds"
 import { lifecycleEvents } from "./events/lifecycle"
+import { networkTokenEvents } from "./events/networksTokens"
 import { overlayEvents } from "./events/overlays"
 import { performanceEvents } from "./events/performance"
 import { screenEvents } from "./events/screens"
@@ -33,6 +35,8 @@ const groups = [
   lifecycleEvents,
   accountEvents,
   fundsEvents,
+  dappEvents,
+  networkTokenEvents,
   flowEventGroup(FLOWS),
 ] as const
 

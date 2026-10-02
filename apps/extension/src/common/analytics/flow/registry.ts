@@ -10,6 +10,7 @@ import { receive } from "./definitions/receive"
 import { recoveryPhraseBackup } from "./definitions/recoveryPhraseBackup"
 import { send } from "./definitions/send"
 import { swap } from "./definitions/swap"
+import { vaultSign } from "./definitions/vaultSign"
 import { walletReset } from "./definitions/walletReset"
 
 export const FLOWS = flowRegistry(
@@ -25,7 +26,8 @@ export const FLOWS = flowRegistry(
   send,
   swap,
   buy,
-  receive
+  receive,
+  vaultSign
 )
 
 export type Flows = typeof FLOWS

@@ -1,3 +1,4 @@
+import type { SubmittedBy } from "@common/analytics/transactions"
 import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
@@ -11,10 +12,11 @@ import { Drawer } from "@ui/components/Drawer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { type ReactElement, useEffect, useMemo, useState } from "react"
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -47,7 +49,16 @@ type ScanState =
   // waiting for user to scan qr code from their device to return the signature
   | { page: "RECEIVE" }
 
+const FLOW_STEPS = {
+  INIT: null,
+  SEND: "show_qr",
+  UPDATE_METADATA: "update_metadata",
+  RECEIVE: "scan_signature",
+} as const satisfies Record<ScanState["page"], string | null>
+
 interface Props {
+  /** Who asked for the signature: a dapp request, or the wallet's own transaction. */
+  requestedBy: SubmittedBy
   account: AccountPolkadotVault
   className?: string
   buttonClassName?: string
@@ -65,6 +76,7 @@ interface Props {
 }
 
 export const QrSubstrate = ({
+  requestedBy,
   account,
   className = "",
   buttonClassName = "",
@@ -89,6 +101,18 @@ export const QrSubstrate = ({
   const { t } = useTranslation()
   const [scanState, setScanState] = useState<ScanState>(
     skipInit && !disabled ? { page: "SEND" } : { page: "INIT" }
+  )
+  useFlow(flows.vault_sign, {
+    active: scanState.page !== "INIT",
+    entry: requestedBy,
+    step: FLOW_STEPS[scanState.page],
+  })
+  const handleSignature = useCallback(
+    (result: { signature: `0x${string}` }) => {
+      flows.vault_sign.completed()
+      onSignature?.(result)
+    },
+    [onSignature]
   )
   const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
@@ -216,7 +240,7 @@ export const QrSubstrate = ({
          */}
         {scanState.page === "RECEIVE" && onSignature && (
           <div className="flex h-full flex-col items-center justify-between">
-            <ScanQr type="signature" onScan={onSignature} size={280} />
+            <ScanQr type="signature" onScan={handleSignature} size={280} />
             <div className="mt-10 max-w-md text-center text-body-secondary leading-10">
               {t("Scan the Polkadot Vault QR code.")}
               <br />

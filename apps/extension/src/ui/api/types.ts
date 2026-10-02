@@ -63,6 +63,7 @@ import type {
 } from "@core/domains/sitesAuthorised/types"
 import type {
   RequestSolanaSignApprove,
+  RequestSolanaSignCancel,
   ResponseSolanaRpcSend,
   ResponseSolanaSubmit,
   SolRpcRequest,
@@ -292,6 +293,7 @@ export default interface MessageTypes {
     txInfo?: WalletTransactionInfo
   ) => Promise<ResponseSolanaSubmit>
   solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
+  solSignCancel: (id: RequestSolanaSignCancel["id"]) => Promise<boolean>
 
   // substrate chain metadata
   subChainMetadata: (

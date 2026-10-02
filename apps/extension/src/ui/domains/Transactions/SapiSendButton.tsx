@@ -220,6 +220,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
 
   return (
     <QrSubstrate
+      requestedBy="wallet"
       containerId={containerId ?? "main"}
       disabled={disabled}
       buttonClassName={className}

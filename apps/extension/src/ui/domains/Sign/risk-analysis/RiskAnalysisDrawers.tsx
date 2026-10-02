@@ -1,5 +1,6 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
@@ -93,6 +94,11 @@ const RiskAnalysisCriticalPane: FC<{
     if (riskAnalysis?.validationResult === "Malicious") open()
   }, [open, riskAnalysis?.validationResult])
 
+  const proceed = useCallback(() => {
+    if (riskAnalysis) track("risk_warning_bypassed", { platform: riskAnalysis.platform })
+    close()
+  }, [close, riskAnalysis])
+
   if (riskAnalysis?.disableCriticalPane) return null
 
   return (
@@ -122,7 +128,7 @@ const RiskAnalysisCriticalPane: FC<{
         </div>
         <button
           type="button"
-          onClick={close}
+          onClick={proceed}
           className="flex items-center text-base text-brand-orange/80 hover:text-brand-orange"
         >
           <span>{t("Proceed anyway")}</span>

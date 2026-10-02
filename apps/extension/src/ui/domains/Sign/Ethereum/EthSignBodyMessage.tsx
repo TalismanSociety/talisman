@@ -160,7 +160,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
       )}
 
       {isInvalidVerifyingContract && (
-        <SignAlertMessage type="error" className="mt-8">
+        <SignAlertMessage type="error" errorCategory="unsupported" className="mt-8">
           {t("Verifying contract's address is invalid.")}
         </SignAlertMessage>
       )}

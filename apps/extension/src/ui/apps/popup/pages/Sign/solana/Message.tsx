@@ -1,3 +1,4 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
 import { base58 } from "@talismn/crypto"
@@ -19,6 +20,8 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { rejectSolanaRequest } from "./rejectSolanaRequest"
+
 export const SolSignMessageRequest: FC<{
   request: SolSigningRequest
 }> = ({ request }) => {
@@ -36,7 +39,7 @@ export const SolSignMessageRequest: FC<{
 
   const [state, setState] = useState<{
     processing: boolean
-    error: string | undefined
+    error: { message: string; category: ErrorCategory } | undefined
   }>({
     processing: false,
     error: undefined,
@@ -59,9 +62,7 @@ export const SolSignMessageRequest: FC<{
     [account, message]
   )
 
-  const handleReject = async () => {
-    window.close() // will reject the request automatically
-  }
+  const handleReject = () => rejectSolanaRequest(id)
 
   const handleApprove = async (signature?: string) => {
     setState({ error: undefined, processing: true })
@@ -70,8 +71,10 @@ export const SolSignMessageRequest: FC<{
     } catch (error) {
       setState({
         processing: false,
-
-        error: getErrorMessage(error, "Failed to approve sign request"),
+        error: {
+          message: getErrorMessage(error, "Failed to approve sign request"),
+          category: classifyError(error),
+        },
       })
     }
   }
@@ -92,13 +95,13 @@ export const SolSignMessageRequest: FC<{
       </PopupContent>
       <PopupFooter>
         {isAccountOfType(account, "watch-only") && (
-          <SignAlertMessage className="mb-6" type="error">
+          <SignAlertMessage className="mb-6" type="error" errorCategory="unsupported">
             {t("Cannot sign with a watch-only account.")}
           </SignAlertMessage>
         )}
         {!!state.error && (
-          <SignAlertMessage className="mb-6" type="error">
-            {state.error}
+          <SignAlertMessage className="mb-6" type="error" errorCategory={state.error.category}>
+            {state.error.message}
           </SignAlertMessage>
         )}
         <div className="grid w-full grid-cols-2 gap-12">

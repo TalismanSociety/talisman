@@ -100,7 +100,7 @@ export const EthSignBodyMessageSIWE: FC<{
       </div>
       <div className="grow"></div>
       {siweDomainMismatch && (
-        <SignAlertMessage type="error" className="mt-8">
+        <SignAlertMessage type="error" errorCategory={null} className="mt-8">
           <div className="flex flex-col gap-4">
             <div>{t("Sign in domain is different from website domain.")}</div>
             <Checkbox

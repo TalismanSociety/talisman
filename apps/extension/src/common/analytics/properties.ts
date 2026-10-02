@@ -1,6 +1,6 @@
 import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "./accounts"
 import { AMOUNT_BUCKETS, DAY_BUCKETS, SHARE_BUCKETS } from "./buckets"
-import { DAPP_METHODS, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
+import { DAPP_METHODS, PROTECTION_SOURCES, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
 import {
   FEE_PRIORITIES,
@@ -27,8 +27,8 @@ const ABANDON_CAUSES = ["left", "page_closed"] as const
 
 export const properties = {
   source: p.enum(
-    ["onboarding", "settings", "send", "address_book"],
-    "Where the user made the choice. contact_added: the screen the contact was saved from."
+    ["onboarding", "settings", "send", "address_book", "dapp"],
+    "Where the user made the choice. contact_added: the screen the contact was saved from. Network and token events: dapp when the user approved a dapp's request to add it."
   ),
 
   $screen_name: p.routePattern(
@@ -102,7 +102,7 @@ export const properties = {
   ),
   outcome: p.enum(
     REQUEST_OUTCOMES,
-    "approved, rejected: the user decided, or the wallet refused the approval (error_category is then set). closed: the request window closed without a decision, by the user, by ignoring it, or by another request's approval closing every window (a Solana reject closes its window, so it reads closed). expired: the dapp tab closed or navigated away, or the window failed to open."
+    "approved, rejected: the user decided, or the wallet refused the approval (error_category is then set). closed: the request window closed without a decision, by the user, by ignoring it, or by another request's approval closing every window. expired: the dapp tab closed or navigated away, or the window failed to open."
   ),
   time_to_decision_ms: p.durationMs(
     "From the request reaching the wallet to the decision, or to its end without one. An unlock first is included."
@@ -145,7 +145,9 @@ export const properties = {
     TVL_TRIGGERS,
     "Why it was sent: the daily cadence, or the first unlock after an update."
   ),
-  account_count: p.count("Accounts, contacts excluded."),
+  account_count: p.count(
+    "Accounts, contacts excluded. Dapp connection events: the accounts the dapp can now see through that provider."
+  ),
   local_count: p.count("Accounts whose keys the wallet holds."),
   ledger_count: p.count("Ledger accounts."),
   vault_count: p.count("Polkadot Vault accounts."),
@@ -224,7 +226,9 @@ export const properties = {
     "How a drag in the account list changed the item's folder. reordered: the same folder or the top level."
   ),
 
-  token_symbol: p.symbol("Symbol of the token sent or bought."),
+  token_symbol: p.symbol(
+    "Symbol of the token sent, bought, added or turned on. unknown: a symbol the catalogue cannot hold."
+  ),
   send_max: p.bool("The user sent the whole transferable balance with Max."),
   usd_bucket: p.enum(AMOUNT_BUCKETS, "USD value of the amount sent or swapped, as a range."),
   fee_usd_bucket: p.enum(
@@ -286,4 +290,22 @@ export const properties = {
   ),
   has_network: p.bool("The contact is limited to one network."),
   name_service: p.bool("The address came from a name service lookup."),
+
+  protection_source: p.enum(
+    PROTECTION_SOURCES,
+    "Which check flagged the site: the community phishing lists, or Blockaid's site scan."
+  ),
+  mode: p.enum(
+    ["add", "edit"],
+    "custom_network_saved: whether the user added or edited the network."
+  ),
+  testnet: p.bool("The network is a testnet."),
+  rpc_provider: p.nullable(
+    p.hostname(
+      "The registrable domain of the network's first RPC, such as alchemy.com. Null for a self-hosted node: an IP address, localhost or a private-network name."
+    )
+  ),
+  enabled: p.bool("The network or token is now turned on."),
+  default_enabled: p.bool("The network or token is on by default, when the user has not set it."),
+  has_coingecko_id: p.bool("The token has a CoinGecko id, so the wallet can price it."),
 } as const

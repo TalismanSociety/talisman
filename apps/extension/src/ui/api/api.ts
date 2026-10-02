@@ -285,6 +285,7 @@ export const api: MessageTypes = {
     }) as Promise<ResponseSolanaSubmit>,
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
+  solSignCancel: (id) => messageService.sendMessage("pri(solana.sign.cancel)", { id }),
 
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),

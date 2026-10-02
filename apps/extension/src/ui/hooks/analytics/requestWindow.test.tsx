@@ -4,7 +4,11 @@ import { api } from "@ui/api"
 import { pageContext } from "@ui/api/pageContext"
 import { describe, expect, it, vi } from "vitest"
 
-import { reportRequestRisk, useReportRequestRendered } from "./requestWindow"
+import {
+  reportRequestRisk,
+  reportRequestTokenRisk,
+  useReportRequestRendered,
+} from "./requestWindow"
 
 const track = vi.hoisted(() => vi.fn())
 vi.mock("@ui/api/track", () => ({ track }))
@@ -39,6 +43,15 @@ describe("request window", () => {
     expect(pageContext.requestId).toBe("eth-sign.1")
 
     reportRequestRisk("Warning")
+    expect(api.analyticsRequestRisk).toHaveBeenCalledWith({ id: "eth-sign.1", verdict: "warning" })
+  })
+
+  it("reports a spam token as a warning and an unscanned token as nothing", () => {
+    vi.mocked(api.analyticsRequestRisk).mockClear()
+    reportRequestTokenRisk("unknown")
+    expect(api.analyticsRequestRisk).not.toHaveBeenCalled()
+
+    reportRequestTokenRisk("Spam")
     expect(api.analyticsRequestRisk).toHaveBeenCalledWith({ id: "eth-sign.1", verdict: "warning" })
   })
 })

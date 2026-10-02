@@ -23,6 +23,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
+import { rejectSolanaRequest } from "./rejectSolanaRequest"
 
 export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
@@ -82,8 +83,8 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   )
 
   const handleReject = useCallback(() => {
-    window.close()
-  }, [])
+    if (signInRequest) rejectSolanaRequest(signInRequest.id)
+  }, [signInRequest])
 
   if (!signInRequest) return null
 
@@ -119,7 +120,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
             {!accounts.length && (
               <NoAccountWarning
                 type={"polkadot"}
-                onIgnoreClick={() => window.close()}
+                onIgnoreClick={handleReject}
                 onAddAccountClick={async () => {
                   await api.dashboardOpen("/accounts/add")
                   window.close()

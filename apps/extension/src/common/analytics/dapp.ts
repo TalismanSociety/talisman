@@ -88,5 +88,7 @@ export const toDappDomain = (url: string | undefined): string | null => {
 export const RISK_VERDICTS = ["benign", "warning", "malicious", "error", "unscanned"] as const
 export type RiskVerdict = (typeof RISK_VERDICTS)[number]
 
+export const PROTECTION_SOURCES = ["lists", "blockaid"] as const
+
 export const REQUEST_OUTCOMES = ["approved", "rejected", "expired", "closed"] as const
 export type RequestOutcome = (typeof REQUEST_OUTCOMES)[number]

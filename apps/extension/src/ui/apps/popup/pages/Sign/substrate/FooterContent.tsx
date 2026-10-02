@@ -41,7 +41,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
   return (
     <>
       {account.type === "watch-only" && (
-        <SignAlertMessage className="mb-6" type="error">
+        <SignAlertMessage className="mb-6" type="error" errorCategory="unsupported">
           {t("Cannot sign with a watch-only account.")}
         </SignAlertMessage>
       )}
@@ -71,6 +71,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
             return (
               <Suspense fallback={null}>
                 <QrSubstrate
+                  requestedBy="dapp"
                   payload={payload}
                   shortMetadata={shortMetadata}
                   account={account}
@@ -123,7 +124,7 @@ const DryRunError: FC = () => {
   if (!dryRun?.errorMessage) return null
 
   return (
-    <SignAlertMessage className="mb-6" type="error">
+    <SignAlertMessage className="mb-6" type="error" errorCategory="simulation">
       {t("This transaction is likely to fail:")}
       <br />
       {dryRun.errorMessage}

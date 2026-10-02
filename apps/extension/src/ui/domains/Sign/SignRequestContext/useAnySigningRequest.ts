@@ -1,10 +1,11 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import type { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
 import type { KnownRespondableRequest } from "@core/libs/requests/types"
 import { isEthereumRequest } from "@core/types/requests"
 import { getErrorMessage } from "@talismn/util"
 import useStatus, { type SetStatusFn, type StatusOptions } from "@ui/hooks/useStatus"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest, TApproveArgs extends unknown[]> {
@@ -21,6 +22,10 @@ type SignableRequest<T extends keyof SigningRequests, TApproveArgs extends unkno
   status: StatusOptions
   isEthereumRequest: boolean
   message?: string
+  /** What kind of failure the ERROR status shows. */
+  errorCategory: ErrorCategory
+  /** Shows the approval failure, classified from what was thrown. */
+  fail: (cause: unknown, message: string) => void
   approve: (...args: TApproveArgs) => Promise<void>
   reject: () => Promise<void>
   setReady: SetStatusFn["ready"]
@@ -32,7 +37,16 @@ export const useAnySigningRequest = <T extends AnySigningRequest, TApproveArgs e
   currentRequest,
 }: UseAnySigningRequestProps<T, TApproveArgs>) => {
   const { status, message, setStatus } = useStatus()
+  const [errorCategory, setErrorCategory] = useState<ErrorCategory>("unknown")
   const { t } = useTranslation()
+
+  const fail = useCallback(
+    (cause: unknown, message: string) => {
+      setErrorCategory(classifyError(cause))
+      setStatus.error(message)
+    },
+    [setStatus]
+  )
 
   const approve = useCallback(
     async (...args: TApproveArgs) => {
@@ -43,14 +57,15 @@ export const useAnySigningRequest = <T extends AnySigningRequest, TApproveArgs e
         setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve", { err })
-        setStatus.error(
+        fail(
+          err,
           isEthereumRequest(currentRequest)
             ? getErrorMessage(err, t("Unknown error"))
             : "Failed to approve sign request"
         )
       }
     },
-    [approveSignFn, currentRequest, setStatus, t]
+    [approveSignFn, currentRequest, setStatus, fail, t]
   )
 
   // handle request rejection
@@ -74,6 +89,8 @@ export const useAnySigningRequest = <T extends AnySigningRequest, TApproveArgs e
     status,
     setStatus,
     message,
+    errorCategory,
+    fail,
     approve,
     reject,
     setReady,

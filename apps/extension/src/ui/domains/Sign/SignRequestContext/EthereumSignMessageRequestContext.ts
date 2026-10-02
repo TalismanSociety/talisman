@@ -65,7 +65,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error(getErrorMessage(err, t("Unknown error")))
+        baseRequest.fail(err, getErrorMessage(err, t("Unknown error")))
       }
     },
     [baseRequest, riskAnalysis, t]

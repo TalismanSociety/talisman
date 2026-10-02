@@ -308,6 +308,27 @@ describe("observeExtensionMessage", () => {
       expect(propsOf("dapp_request_resolved")).toMatchObject({ outcome: "rejected" })
     })
 
+    it("records a Solana cancel as rejected, where closing the window reads closed", () => {
+      const solSign = (message: string) =>
+        openRequest({
+          type: "sol-sign",
+          url: DAPP_URL,
+          account: ETH_ACCOUNT,
+          request: { type: "message", message },
+        } as unknown as Omit<ValidRequests, "id">)
+
+      observeExtensionMessage("pri(solana.sign.cancel)", { id: solSign("first") })
+      popup.close()
+      solSign("second")
+      popup.close()
+
+      expect(
+        trackedCalls()
+          .filter(([event]) => event === "dapp_request_resolved")
+          .map(([, props]) => props?.outcome)
+      ).toEqual(["rejected", "closed"])
+    })
+
     it("records an ignored request as closed, not expired", () => {
       const port = chrome.runtime.connect()
       const id = openRequest(

@@ -1,3 +1,4 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
 import type { SigningRequestID } from "@core/domains/signing/types"
@@ -10,7 +11,7 @@ import { Message } from "@ui/domains/Sign/Message"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import useStatus from "@ui/hooks/useStatus"
 import { useRequest } from "@ui/state/requests"
-import { type FC, useCallback, useEffect, useMemo } from "react"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
@@ -39,6 +40,7 @@ export const VrfSignRequest = () => {
   const { id } = useParams<"id">()
   const req = useRequest(id as SigningRequestID<"vrf-sign">)
   const { status, message, setStatus } = useStatus()
+  const [errorCategory, setErrorCategory] = useState<ErrorCategory>("unknown")
 
   useEffect(() => {
     if (!req) window.close()
@@ -52,6 +54,7 @@ export const VrfSignRequest = () => {
       setStatus.success("Approved")
     } catch (err) {
       DEBUG && log.error(err)
+      setErrorCategory(classifyError(err))
       setStatus.error("Failed to approve VRF sign request")
     }
   }, [req, setStatus])
@@ -112,7 +115,7 @@ export const VrfSignRequest = () => {
       </PopupContent>
       <PopupFooter>
         {errorMessage && (
-          <SignAlertMessage className="mb-8" type="error">
+          <SignAlertMessage className="mb-8" type="error" errorCategory={errorCategory}>
             {errorMessage}
           </SignAlertMessage>
         )}

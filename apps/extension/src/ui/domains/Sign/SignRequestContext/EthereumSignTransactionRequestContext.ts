@@ -44,6 +44,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     isLoading,
     error,
     errorDetails,
+    errorCategory: txErrorCategory,
     networkUsage,
     gasSettingsByPriority,
     setCustomSettings,
@@ -103,7 +104,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error(getErrorMessage(err, t("Unknown error")))
+        baseRequest.fail(err, getErrorMessage(err, t("Unknown error")))
         setIsPayloadLocked(false)
       }
     },
@@ -118,6 +119,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     isLoading,
     error,
     errorDetails,
+    txErrorCategory,
     network,
     networkUsage,
     decodedTx,

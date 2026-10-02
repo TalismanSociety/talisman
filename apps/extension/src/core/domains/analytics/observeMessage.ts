@@ -7,6 +7,7 @@ import { requestStore } from "../../libs/requests/store"
 import type { MessageTypes, RequestTypes, ResponseTypes } from "../../types"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { observeAccountMessage } from "./accountMessages"
+import { observeDappMessage } from "./dappMessages"
 import { dappRequestTracker } from "./dappRequests"
 import { track } from "./track"
 import { resolveTxContext, type TxAttempt } from "./txContext"
@@ -202,6 +203,7 @@ const REQUEST_DECISIONS: Partial<Record<MessagesWithRequestId, RequestDecision>>
   "pri(sites.requests.reject)": "rejected",
   "pri(sites.requests.ignore)": "closed",
   "pri(solana.sign.approve)": "approved",
+  "pri(solana.sign.cancel)": "rejected",
 }
 
 const isSubmission = (type: MessageTypes): type is TxSubmissionMessage =>
@@ -246,7 +248,7 @@ const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
 /**
  * Called by `talismanHandler` for every extension message, before the handler runs. Returns
  * what to call with the handler's outcome, or null when the message concerns no transaction,
- * no dapp request decision and no account change.
+ * no dapp request decision, no account change and no dapp connection, network or token change.
  */
 export const observeExtensionMessage = (
   type: MessageTypes,
@@ -259,7 +261,8 @@ export const observeExtensionMessage = (
 
     const submission = isSubmission(type) ? observeSubmission(type, request) : null
     const accountChange = observeAccountMessage(type, request)
-    if (!requestId && !submission && !accountChange) return null
+    const dappChange = observeDappMessage(type, request)
+    if (!requestId && !submission && !accountChange && !dappChange) return null
 
     return (outcome) => {
       try {
@@ -267,6 +270,7 @@ export const observeExtensionMessage = (
           dappRequestTracker.noteApprovalFailure(requestId, classifyError(outcome.error))
         submission?.(outcome).catch(reportFailure)
         if (accountChange && outcome.ok) accountChange(outcome.response).catch(reportFailure)
+        if (dappChange && outcome.ok) dappChange().catch(reportFailure)
       } catch (cause) {
         reportFailure(cause)
       }

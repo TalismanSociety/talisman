@@ -88,6 +88,11 @@ const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   receive_address_copied: ["network_id", "address_format"],
   buy_opened: ["tab"],
   buy_provider_launched: ["provider", "fiat_currency", "token_symbol", "network_id", "direction"],
+  custom_network_saved: ["mode", "platform", "network_id", "testnet", "rpc_provider"],
+  network_toggled: ["network_id", "enabled", "platform", "default_enabled"],
+  // mobile's token_id and coingecko_id stay out: an ERC-20 token id holds its contract address
+  custom_token_added: ["network_id", "token_symbol", "has_coingecko_id"],
+  token_toggled: ["token_symbol", "network_id", "enabled", "default_enabled"],
 }
 
 const scans = listSourceFiles(SRC).map((file) => {

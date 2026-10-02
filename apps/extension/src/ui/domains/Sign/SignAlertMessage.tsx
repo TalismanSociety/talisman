@@ -22,14 +22,20 @@ const getIconSizeClass = (size: IconSize) => {
   }
 }
 
-type SignAlertMessageProps = PropsWithChildren & {
-  className?: string
-  type?: "warning" | "error"
-  iconSize?: IconSize
-  processing?: boolean
-  /** What kind of failure an error alert shows. */
-  errorCategory?: ErrorCategory
-}
+/**
+ * An error alert says what kind of failure it shows. null: it warns about what the request does
+ * (an unlimited approval, a domain mismatch), which is no failure, so no error_shown is sent.
+ */
+type AlertKind =
+  | { type?: "warning"; errorCategory?: null }
+  | { type: "error"; errorCategory: ErrorCategory | null }
+
+type SignAlertMessageProps = PropsWithChildren &
+  AlertKind & {
+    className?: string
+    iconSize?: IconSize
+    processing?: boolean
+  }
 
 export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   children,
@@ -37,9 +43,13 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   type = "warning",
   iconSize = "base",
   processing,
-  errorCategory = "unknown",
+  errorCategory,
 }) => {
-  useErrorShown({ shown: type === "error" && "error", surface: "alert", category: errorCategory })
+  useErrorShown({
+    shown: type === "error" && !!errorCategory && "error",
+    surface: "alert",
+    category: errorCategory ?? "unknown",
+  })
 
   return (
     <div

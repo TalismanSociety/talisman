@@ -1,0 +1,146 @@
+import { toDappDomain } from "@common/analytics/dapp"
+import { networkIdForAnalytics } from "@common/analytics/funds"
+import { toRpcProvider } from "@common/analytics/networks"
+import { symbolForAnalytics } from "@common/analytics/schema"
+import type { ChainPlatform } from "@common/analytics/transactions"
+
+import { requestStore } from "../../libs/requests/store"
+import { chaindataProvider } from "../../rpcs/chaindata"
+import type { MessageTypes, RequestTypes } from "../../types"
+import sitesAuthorisedStore from "../sitesAuthorised/store"
+import type { AuthorisedSiteUpdate } from "../sitesAuthorised/types"
+import { track } from "./track"
+
+type DappMessage =
+  | "pri(sites.requests.approve)"
+  | "pri(sites.requests.approveSolSignIn)"
+  | "pri(sites.update)"
+  | "pri(eth.networks.add.approve)"
+  | "pri(eth.watchasset.requests.approve)"
+
+type Observe<M extends DappMessage> = (request: RequestTypes[M]) => () => Promise<void>
+
+const CONNECTED_ACCOUNTS: Record<"addresses" | "ethAddresses" | "solAddresses", ChainPlatform> = {
+  addresses: "polkadot",
+  ethAddresses: "ethereum",
+  solAddresses: "solana",
+}
+
+const reportSiteUpdate = async (dappDomain: string | null, update: AuthorisedSiteUpdate) => {
+  for (const [key, platform] of Object.entries(CONNECTED_ACCOUNTS))
+    if (key in update)
+      track("dapp_connection_updated", {
+        platform,
+        account_count: update[key as keyof typeof CONNECTED_ACCOUNTS]?.length ?? 0,
+        dapp_domain: dappDomain,
+      })
+
+  if (update.ethChainId === undefined) return
+  const network = await chaindataProvider.getNetworkById(String(update.ethChainId), "ethereum")
+  track("dapp_network_switched", {
+    network_id: networkIdForAnalytics(network),
+    dapp_domain: dappDomain,
+  })
+}
+
+/**
+ * Each runs when the message arrives, before the handler: the approvals delete their stored request,
+ * and add the network or token that decides between a toggle and a custom add. Each returns what to
+ * run once the handler succeeded.
+ */
+const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
+  "pri(sites.requests.approve)": ({ id, addresses = [] }) => {
+    const queued = requestStore.getRequest(id)
+    return async () => {
+      if (queued)
+        track("dapp_connection_approved", {
+          method: "connect",
+          platform: queued.request.provider,
+          account_count: addresses.length,
+          dapp_domain: toDappDomain(queued.url),
+        })
+    }
+  },
+  "pri(sites.requests.approveSolSignIn)": ({ id }) => {
+    const queued = requestStore.getRequest(id)
+    return async () => {
+      if (queued)
+        track("dapp_connection_approved", {
+          method: "signIn",
+          platform: "solana",
+          account_count: 1,
+          dapp_domain: toDappDomain(queued.url),
+        })
+    }
+  },
+  "pri(sites.update)": ({ id, authorisedSite }) => {
+    const site = sitesAuthorisedStore.get(id)
+    return async () => reportSiteUpdate(toDappDomain((await site)?.url), authorisedSite)
+  },
+  "pri(eth.networks.add.approve)": ({ id }) => {
+    const queued = requestStore.getRequest(id)
+    if (!queued) return async () => {}
+    const { network } = queued
+    const listed = chaindataProvider.getNetworkById(network.id, "ethereum")
+    return async () => {
+      const known = await listed
+      if (known)
+        track("network_toggled", {
+          network_id: networkIdForAnalytics(known),
+          platform: "ethereum",
+          enabled: true,
+          default_enabled: !!known.isDefault && !known.isTestnet,
+          source: "dapp",
+        })
+      else
+        track("custom_network_saved", {
+          mode: "add",
+          platform: "ethereum",
+          network_id: network.id,
+          testnet: !!network.isTestnet,
+          rpc_provider: toRpcProvider(network.rpcs?.[0]),
+          source: "dapp",
+        })
+    }
+  },
+  "pri(eth.watchasset.requests.approve)": ({ id }) => {
+    const queued = requestStore.getRequest(id)
+    if (!queued) return async () => {}
+    const { token } = queued
+    const listed = chaindataProvider.getTokenById(token.id)
+    const network = chaindataProvider.getNetworkById(token.networkId, "ethereum")
+    return async () => {
+      const [known, tokenNetwork] = await Promise.all([listed, network])
+      const networkId = networkIdForAnalytics(tokenNetwork)
+      if (known)
+        track("token_toggled", {
+          network_id: networkId,
+          token_symbol: symbolForAnalytics(known.symbol),
+          enabled: true,
+          default_enabled: !!known.isDefault,
+          source: "dapp",
+        })
+      else
+        track("custom_token_added", {
+          network_id: networkId,
+          token_symbol: symbolForAnalytics(token.symbol),
+          has_coingecko_id: !!token.coingeckoId,
+          source: "dapp",
+        })
+    }
+  },
+}
+
+const isDappMessage = (type: MessageTypes): type is DappMessage =>
+  Object.hasOwn(DAPP_MESSAGES, type)
+
+/** Null when the message is not a dapp connection, network or token change. */
+export const observeDappMessage = (
+  type: MessageTypes,
+  request: unknown
+): (() => Promise<void>) | null => {
+  if (!isDappMessage(type)) return null
+  // each entry only ever receives its own message's request
+  const observe = DAPP_MESSAGES[type] as unknown as (request: unknown) => () => Promise<void>
+  return observe(request)
+}

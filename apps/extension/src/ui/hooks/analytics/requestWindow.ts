@@ -4,6 +4,7 @@ import type { ValidRequests } from "@core/libs/requests/types"
 import { api } from "@ui/api"
 import { pageContext } from "@ui/api/pageContext"
 import { track } from "@ui/api/track"
+import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
 import { useEffect } from "react"
 
 import { pageStartedLocked } from "./performance"
@@ -39,4 +40,18 @@ const VERDICTS: Record<"Benign" | "Warning" | "Malicious" | "Error", RiskVerdict
 export const reportRequestRisk = (validationResult: keyof typeof VERDICTS) => {
   const id = pageContext.requestId
   if (id) api.analyticsRequestRisk({ id, verdict: VERDICTS[validationResult] }).catch(() => {})
+}
+
+/** A token Blockaid calls spam is a warning; an unknown verdict means no scan finished. */
+const TOKEN_VERDICTS: Partial<Record<TokenRiskVerdict, keyof typeof VERDICTS>> = {
+  Benign: "Benign",
+  Warning: "Warning",
+  Spam: "Warning",
+  Malicious: "Malicious",
+}
+
+/** The token scan of a watch asset request, as the request's risk verdict. */
+export const reportRequestTokenRisk = (verdict: TokenRiskVerdict) => {
+  const validationResult = TOKEN_VERDICTS[verdict]
+  if (validationResult) reportRequestRisk(validationResult)
 }

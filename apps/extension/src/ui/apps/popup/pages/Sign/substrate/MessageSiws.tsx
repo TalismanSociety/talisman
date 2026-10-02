@@ -49,7 +49,7 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
       </div>
       <div className="grow"></div>
       {validationError && (
-        <SignAlertMessage type="error" className="mt-8">
+        <SignAlertMessage type="error" errorCategory={null} className="mt-8">
           {t("Sign in domain or address is different from website domain or signer address.")}
         </SignAlertMessage>
       )}

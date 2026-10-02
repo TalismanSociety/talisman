@@ -1,6 +1,7 @@
 import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
@@ -19,8 +20,9 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const isBlockaid = searchParams.get("source") === "blockaid"
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
+    track("phishing_site_trusted", { protection_source: isBlockaid ? "blockaid" : "lists" })
     window.location.replace(url)
-  }, [url])
+  }, [url, isBlockaid])
 
   const displayUrl = useMemo(() => {
     try {

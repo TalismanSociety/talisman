@@ -17,6 +17,7 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 | A `provideContext` provider | Add one line to `FLOW_PROVIDERS` |
 | An error toast | Pass `cause: err`, or `errorCategory` when nothing was thrown |
 | An inline form error from a caught failure | `setError(field, { type: classifyError(err), message })`, and `errorCategory={errorCategoryOfField(errors.field)}` on its `FormFieldContainer` |
+| A `SignAlertMessage type="error"` | `errorCategory`: the failure it shows, or `null` when it warns about what the request does (an unlimited approval, a domain mismatch), which sends no `error_shown` |
 | A `<Route path>` | Use words, `:param` and `*`, never a value |
 
 Screens, modals, error toasts, transactions and dapp requests are tracked centrally. Do not add events for them.
@@ -46,7 +47,7 @@ Rules that the types do not catch:
 2. Send it with `track("name", { … })`. Write the name as a string literal, or the liveness test cannot see it.
 3. Do not write `<flow>_started` or any other flow event by hand. `defineFlow` generates them.
 4. If mobile sends an event of the same name, give it mobile's properties, and add a row to `MOBILE_SHARED`.
-5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`core/domains/analytics/accountMessages.ts` for accounts), not in the handler: domain code never imports analytics.
+5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`core/domains/analytics/accountMessages.ts` for accounts, `dappMessages.ts` for dapp connections and the networks and tokens dapps add), not in the handler: domain code never imports analytics. A dapp request's decision needs a message too: a page that only calls `window.close()` reads `outcome: closed`, never `rejected`.
 
 ## Add an exemption
 
