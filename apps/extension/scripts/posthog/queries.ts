@@ -25,16 +25,7 @@ export type SqlQuery = JsonObject & {
 }
 export type Query = VizQuery | SqlQuery
 
-type Math =
-  | "total"
-  | "dau"
-  | "weekly_active"
-  | "monthly_active"
-  | "avg"
-  | "median"
-  | "p90"
-  | "p95"
-  | "sum"
+type Math = "total" | "dau" | "avg" | "median" | "p90" | "p95" | "sum"
 
 export type EventsNode = {
   readonly kind: "EventsNode"
@@ -83,8 +74,8 @@ export const ev = (event: string | null, opts: EvOptions = {}): EventsNode => ({
   ...(opts.optional && { optionalInFunnel: true }),
 })
 
-/** Unique installs: events are personless, so PostHog counts a deterministic id per distinct_id. */
-export const users = (event: string | null, opts: Omit<EvOptions, "math"> = {}) =>
+/** Unique sessions: a usage event's distinct_id is its session, and PostHog's "unique users" counts distinct ids. */
+export const sessions = (event: string | null, opts: Omit<EvOptions, "math"> = {}) =>
   ev(event, { ...opts, math: "dau" })
 
 const breakdownFilter = (breakdown: string | readonly string[], limit?: number) => ({
@@ -148,42 +139,6 @@ export const funnel = (o: FunnelOptions): VizQuery =>
     ...(o.breakdown && { breakdownFilter: breakdownFilter(o.breakdown) }),
   })
 
-export const retention = (o: {
-  readonly target: string
-  readonly returning: string
-  readonly period?: "Day" | "Week"
-  readonly totalIntervals?: number
-  readonly dateFrom?: string
-}): VizQuery => {
-  const entity = (event: string) => ({ id: event, name: event, type: "events", kind: "EventsNode" })
-  return viz({
-    kind: "RetentionQuery",
-    dateRange: dateRange(o.dateFrom),
-    properties: [],
-    filterTestAccounts: true,
-    retentionFilter: {
-      targetEntity: entity(o.target),
-      returningEntity: entity(o.returning),
-      period: o.period ?? "Week",
-      totalIntervals: o.totalIntervals ?? 8,
-      retentionType: "retention_first_time",
-      retentionReference: "total",
-      meanRetentionCalculation: "weighted",
-    },
-  })
-}
-
-export const stickiness = (o: { readonly series: readonly EventsNode[] }): VizQuery =>
-  viz({
-    kind: "StickinessQuery",
-    dateRange: dateRange(),
-    interval: "day",
-    series: o.series,
-    properties: [],
-    filterTestAccounts: true,
-    stickinessFilter: {},
-  })
-
 export const paths = (o: { readonly startPoint?: string; readonly stepLimit?: number }): VizQuery =>
   viz({
     kind: "PathsQuery",
@@ -238,7 +193,3 @@ export const withTestAccountFilter = (query: Query, enabled: boolean): Query =>
 export const sqlString = (value: string) =>
   `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`
 export const sqlList = (values: readonly string[]) => values.map(sqlString).join(", ")
-
-export const SQL_NOT_TEST_ACCOUNT = TEST_ACCOUNT_FILTERS.map(
-  ({ key, value }) => `ifNull(properties.${key}, '') NOT IN (${sqlList((value ?? []).map(String))})`
-).join(" AND ")

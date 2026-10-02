@@ -10,12 +10,9 @@ import {
   paths,
   prop,
   type Query,
-  retention,
-  SQL_NOT_TEST_ACCOUNT,
+  sessions,
   sqlList,
-  stickiness,
   trend,
-  users,
   withTestAccountFilter,
 } from "./queries"
 
@@ -149,7 +146,7 @@ ORDER BY attempts DESC`),
       const success = successFilter(flow)
       return {
         name: `Funnel: ${flow.name}`,
-        description: `Installs that started ${flow.subject} and completed it within a day, through the steps in order. Steps are optional, as a branch skips some. The steps view shows drop-off and the time between steps.${success ? ` completed counts ${success.key} ${success.value?.join(" or ")} only.` : ""}`,
+        description: `Sessions that started ${flow.subject} and completed it within a day, through the steps in order. Steps are optional, as a branch skips some. The steps view shows drop-off and the time between steps.${success ? ` completed counts ${success.key} ${success.value?.join(" or ")} only.` : ""}`,
         query: flowFunnel(flow),
       }
     }),
@@ -168,7 +165,7 @@ SELECT
   count() AS abandoned,
   countIf(abandon_cause = 'page_closed') AS page_closed,
   countIf(error_category IS NOT NULL) AS after_error,
-  uniq(distinct_id) AS installs
+  uniq(distinct_id) AS sessions
 FROM (${flowEvents}
 )
 WHERE lifecycle = 'abandoned'
@@ -216,77 +213,42 @@ export const buildDashboards = (catalogue: CatalogueSnapshot): Dashboard[] => {
       prefix: "Overview",
       title: "Overview & Health",
       description:
-        "Active installs, retention, speed and errors for the Talisman extension. All counts are anonymous, per install. Production builds only.",
+        "Sessions, active wallets, speed and errors for the Talisman extension. No event carries an id of the wallet: usage is counted per session. Production builds only.",
       tiles: [
         {
-          name: "Active installs",
+          name: "Sessions",
           description:
-            "Installs that sent any event over the date range, with the change from the previous period.",
+            "Sessions that sent any event over the date range, with the change from the previous period. A session ends after 30 minutes idle or 24 hours, and nothing links one session to the next.",
           size: "third",
           query: trend({
-            series: [users(null, { name: "Active installs" })],
+            series: [sessions(null, { name: "Sessions" })],
             display: "BoldNumber",
             compare: true,
           }),
         },
         {
-          name: "DAU / WAU / MAU",
-          description: "Installs that sent any event: daily, rolling 7-day and rolling 30-day.",
+          name: "Daily active wallets",
+          description:
+            "Daily holdings snapshots: a wallet with usage analytics on sends at most one per 24 hours after an unlock, under an id of its own. The closest count of active wallets there is, as no event carries an id of the wallet.",
           size: "full",
           query: trend({
             series: [
-              users(null, { name: "DAU" }),
-              ev(null, { math: "weekly_active", name: "WAU" }),
-              ev(null, { math: "monthly_active", name: "MAU" }),
+              ev("tvl_snapshot", { name: "Wallets", properties: [prop("trigger", "daily")] }),
             ],
           }),
         },
         {
-          name: "Weekly retention",
+          name: "Active wallets by age",
           description:
-            "Of the installs that first showed a wallet screen in a week, the share that showed one again in each later week.",
-          query: retention({
-            target: "$screen",
-            returning: "$screen",
-            period: "Week",
-            totalIntervals: 8,
-            dateFrom: "-60d",
-          }),
-        },
-        {
-          name: "Stickiness",
-          description: "How many days in the period each install showed a wallet screen.",
-          query: stickiness({ series: [ev("$screen")] }),
-        },
-        {
-          name: "Install lifecycle",
-          description:
-            "Weekly active installs: new (first seen that week, over the last 365 days), returning (also active the week before) and resurrecting (back after a gap). Built in SQL because personless events leave PostHog's lifecycle insight empty.",
+            "Daily holdings snapshots by days since install, as a range: how much of the active base is new and how much is long-standing. Retention per wallet cannot be measured: nothing links a wallet's days.",
           size: "full",
-          query: hogql(
-            `
-SELECT
-  week,
-  countIf(week = first_week) AS new,
-  countIf(week > first_week AND has(weeks, week - toIntervalWeek(1))) AS returning,
-  countIf(week > first_week AND NOT has(weeks, week - toIntervalWeek(1))) AS resurrecting
-FROM (
-  SELECT distinct_id, groupUniqArray(toStartOfWeek(timestamp)) AS weeks, min(toStartOfWeek(timestamp)) AS first_week
-  FROM events
-  WHERE ${SQL_NOT_TEST_ACCOUNT} AND timestamp > now() - toIntervalDay(365)
-  GROUP BY distinct_id
-)
-ARRAY JOIN weeks AS week
-WHERE week IN (SELECT DISTINCT toStartOfWeek(timestamp) FROM events WHERE {filters})
-GROUP BY week
-ORDER BY week`,
-            {
-              dateFrom: "-90d",
-              display: "ActionsStackedBar",
-              x: "week",
-              y: ["new", "returning", "resurrecting"],
-            }
-          ),
+          query: trend({
+            series: [
+              ev("tvl_snapshot", { name: "Wallets", properties: [prop("trigger", "daily")] }),
+            ],
+            breakdown: "days_since_install",
+            display: "ActionsStackedBar",
+          }),
         },
         {
           name: "Popup open time",
@@ -320,13 +282,8 @@ ORDER BY week`,
         },
         {
           name: "Exceptions",
-          description: "Exceptions reported, and installs that reported one.",
-          query: trend({
-            series: [
-              ev("$exception", { name: "Exceptions" }),
-              users("$exception", { name: "Installs with an exception" }),
-            ],
-          }),
+          description: "Exceptions reported. Each report has an id of its own.",
+          query: trend({ series: [ev("$exception", { name: "Exceptions" })] }),
         },
         {
           name: "Unlock failure rate",
@@ -341,11 +298,11 @@ ORDER BY week`,
           }),
         },
         {
-          name: "Active installs by version",
-          description: "Daily active installs by extension version: how fast a release is adopted.",
+          name: "Sessions by version",
+          description: "Daily sessions by extension version: how fast a release is adopted.",
           size: "full",
           query: trend({
-            series: [users(null, { name: "Installs" })],
+            series: [sessions(null, { name: "Sessions" })],
             breakdown: "appVersion",
             breakdownLimit: 10,
             display: "ActionsAreaGraph",
@@ -388,7 +345,7 @@ SELECT
   properties.surface AS surface,
   properties.error_category AS category,
   count() AS shown,
-  uniq(distinct_id) AS installs
+  uniq(distinct_id) AS sessions
 FROM events
 WHERE event = 'error_shown' AND {filters}
 GROUP BY flow, field, surface, category
@@ -397,9 +354,9 @@ LIMIT 100`),
         },
         {
           name: "Errors shown by category",
-          description: "Installs that saw an error, by error category.",
+          description: "Sessions that saw an error, by error category.",
           query: trend({
-            series: [users("error_shown", { name: "Installs" })],
+            series: [sessions("error_shown", { name: "Sessions" })],
             breakdown: "error_category",
             display: "ActionsStackedBar",
           }),
@@ -408,7 +365,7 @@ LIMIT 100`),
           name: "Errors shown by screen",
           description: "Errors shown per screen (route pattern) and category.",
           query: hogql(`
-SELECT properties.$screen_name AS screen, properties.error_category AS category, count() AS shown, uniq(distinct_id) AS installs
+SELECT properties.$screen_name AS screen, properties.error_category AS category, count() AS shown, uniq(distinct_id) AS sessions
 FROM events
 WHERE event = 'error_shown' AND {filters}
 GROUP BY screen, category
@@ -422,26 +379,26 @@ LIMIT 50`),
       prefix: "Exceptions",
       title: "Exceptions",
       description:
-        "Exceptions the wallet reported, by type, mechanism and network. Exceptions carry a separate error-only install id, so they cannot be joined to product events.",
+        "Exceptions the wallet reported, by class, category, mechanism and network. A report carries an id of its own and no message text, so it cannot be joined to product events or to another report.",
       tiles: [
         {
           name: "Top exceptions",
           description:
-            "The most frequent exceptions, one row per fingerprint (type and scrubbed message; stored as its SHA-512 hex when longer than 128 characters): how it was caught, whether the app recovered, the installs that reported it and the screens it showed on.",
+            "The most frequent exceptions, one row per fingerprint (PostHog's own, from the class and the resolved stack): its category, how it was caught, whether the app recovered and the screens it showed on.",
           size: "full",
           query: hogql(`
 SELECT
   properties.exception_type AS type,
+  properties.error_category AS category,
   properties.$exception_fingerprint AS fingerprint,
   properties.mechanism AS mechanism,
   properties.handled AS handled,
   count() AS reported,
-  uniq(distinct_id) AS installs,
   topK(3)(properties.$screen_name) AS screens,
   max(timestamp) AS last_seen
 FROM events
 WHERE event = '$exception' AND {filters}
-GROUP BY type, fingerprint, mechanism, handled
+GROUP BY type, category, fingerprint, mechanism, handled
 ORDER BY reported DESC
 LIMIT 100`),
         },
@@ -535,7 +492,7 @@ LIMIT 50`),
           description:
             "Moves from a portfolio screen to a screen outside the portfolio: which features users reach from it.",
           query: hogql(`
-SELECT properties.$screen_name AS screen, count() AS opened, uniq(distinct_id) AS installs
+SELECT properties.$screen_name AS screen, count() AS opened, uniq(distinct_id) AS sessions
 FROM events
 WHERE event = '$screen' AND startsWith(ifNull(properties.previous_screen_name, ''), '/portfolio')
   AND NOT startsWith(properties.$screen_name, '/portfolio') AND {filters}
@@ -682,7 +639,7 @@ SELECT
   properties.platform AS platform,
   if(event = 'tx_broadcast_failed', properties.error_category, properties.status) AS category,
   count() AS failed,
-  uniq(distinct_id) AS installs
+  uniq(distinct_id) AS sessions
 FROM events
 WHERE (event = 'tx_broadcast_failed' OR (event = 'tx_settled' AND properties.status IN ('error', 'dropped'))) AND {filters}
 GROUP BY network, platform, category
@@ -731,7 +688,7 @@ LIMIT 100`),
         {
           name: "Exceptions by build",
           description:
-            "One row per pre-release build: the exceptions it reported, how many distinct errors, the installs that reported them, and when.",
+            "One row per pre-release build: the exceptions it reported, how many distinct errors, and when.",
           size: "full",
           query: hogql(`
 SELECT
@@ -740,7 +697,6 @@ SELECT
   properties.appBuild AS build,
   count() AS reported,
   uniq(properties.$exception_fingerprint) AS errors,
-  uniq(distinct_id) AS installs,
   min(timestamp) AS first_seen,
   max(timestamp) AS last_seen
 FROM events
@@ -768,7 +724,6 @@ SELECT
     WHERE event = '$exception' AND properties.appVariant = 'production' AND timestamp > now() - toIntervalDay(90)
   ) AS in_production,
   count() AS reported,
-  uniq(distinct_id) AS installs,
   topK(3)(properties.$screen_name) AS screens,
   max(timestamp) AS last_seen
 FROM events
@@ -794,9 +749,9 @@ export const ALERTS: readonly Alert[] = [
     interval: "daily",
   },
   {
-    name: "Installs hitting an exception doubled",
+    name: "Exceptions doubled",
     tile: "Exceptions",
-    seriesIndex: 1,
+    seriesIndex: 0,
     condition: "relative_increase",
     threshold: { type: "percentage", upper: 1 },
     interval: "daily",
@@ -810,8 +765,8 @@ export const ALERTS: readonly Alert[] = [
     interval: "daily",
   },
   {
-    name: "Daily active installs down 30%",
-    tile: "DAU / WAU / MAU",
+    name: "Daily active wallets down 30%",
+    tile: "Daily active wallets",
     seriesIndex: 0,
     condition: "relative_decrease",
     threshold: { type: "percentage", upper: 0.3 },
