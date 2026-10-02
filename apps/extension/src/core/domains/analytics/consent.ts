@@ -10,7 +10,7 @@ export const consentFromSettings = ({
 }: Pick<SettingsStoreData, "useAnalyticsTracking" | "useErrorTracking">): Consent => ({
   usage:
     useAnalyticsTracking === undefined ? "pending" : useAnalyticsTracking ? "granted" : "denied",
-  error: useErrorTracking ? "granted" : "denied",
+  error: useAnalyticsTracking !== undefined && useErrorTracking ? "granted" : "denied",
 })
 
 export type Admission = Exclude<Disposition, "rejected" | "filtered">

@@ -17,7 +17,8 @@ const POSTHOG: Transmission = {
 
 describe("consentFromSettings", () => {
   it.each([
-    [undefined, true, consent("pending", "granted")],
+    [undefined, true, consent("pending", "denied")],
+    [true, true, consent("granted", "granted")],
     [true, false, consent("granted", "denied")],
     [false, true, consent("denied", "granted")],
   ] as const)("useAnalyticsTracking %s, useErrorTracking %s", (usage, error, expected) => {
