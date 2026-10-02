@@ -4,14 +4,20 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { SitesAuthorizedStore } from "../store"
 import type { AuthorizedSite, AuthorizedSites, ProviderType } from "../types"
 
+const ADDRESS = {
+  polkadot: "5Substrate",
+  ethereum: "0xEthereum",
+  solana: "Solana1111",
+} satisfies Record<ProviderType, string>
+
 const CONNECTIONS = {
-  polkadot: { addresses: ["5Substrate"], connectAllSubstrate: false },
+  polkadot: { addresses: [ADDRESS.polkadot], connectAllSubstrate: false },
   ethereum: {
-    ethAddresses: ["0xEthereum"],
+    ethAddresses: [ADDRESS.ethereum],
     ethPermissions: { eth_accounts: { date: 1, id: "permission" } },
     ethChainId: 1,
   },
-  solana: { solAddresses: ["Solana1111"] },
+  solana: { solAddresses: [ADDRESS.solana] },
 } satisfies Record<ProviderType, Partial<AuthorizedSite>>
 
 const PROVIDERS = Object.keys(CONNECTIONS) as ProviderType[]
@@ -158,9 +164,7 @@ describe("SitesAuthorizedStore", () => {
     test.each(PROVIDERS)("removes the account from %s connections", async (provider) => {
       const id = siteId(PROVIDERS)
       await store.replace(createSites([PROVIDERS]))
-      const address = CONNECTIONS[provider][ADDRESSES_KEY[provider]][0]
-
-      await store.forgetAccount(address)
+      await store.forgetAccount(ADDRESS[provider])
 
       expect((await store.get(id))[ADDRESSES_KEY[provider]]).toEqual([])
     })

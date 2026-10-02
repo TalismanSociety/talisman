@@ -8,6 +8,29 @@ import type { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
 
+const PROVIDER_ADDRESSES_KEY = {
+  polkadot: "addresses",
+  ethereum: "ethAddresses",
+  solana: "solAddresses",
+} as const satisfies Record<ProviderType, keyof AuthorizedSite>
+
+const PROVIDER_KEYS = {
+  polkadot: ["addresses", "connectAllSubstrate"],
+  ethereum: ["ethAddresses", "ethPermissions", "ethChainId"],
+  solana: ["solAddresses"],
+} as const satisfies Record<ProviderType, readonly (keyof AuthorizedSite)[]>
+
+const isTalismanWebAppSubstrate = (host: string, type: ProviderType) =>
+  type === "polkadot" && isTalismanHostname(host)
+
+const forgetProvider = (sites: AuthorizedSites, id: string, type: ProviderType) => {
+  const remaining = { ...sites[id] }
+  for (const key of PROVIDER_KEYS[type]) delete remaining[key]
+
+  if (Object.values(PROVIDER_ADDRESSES_KEY).some((key) => remaining[key])) sites[id] = remaining
+  else delete sites[id]
+}
+
 // exported only for test purposes
 /** @knipignore exported for test mocks */
 export class SitesAuthorizedStore extends SubscribableStorageProvider<
@@ -62,25 +85,18 @@ export class SitesAuthorizedStore extends SubscribableStorageProvider<
   }
 
   async forgetSite(id: string, type: ProviderType) {
-    const site = await this.get(id)
-    if (type === "polkadot" && site?.ethAddresses)
-      await this.updateSite(id, { addresses: undefined, connectAllSubstrate: undefined })
-    else if (type === "ethereum" && site?.addresses)
-      await this.updateSite(id, {
-        ethAddresses: undefined,
-        ethPermissions: undefined,
-        ethChainId: undefined,
-      })
-    else await this.delete(id)
+    await this.mutate((sites) => {
+      forgetProvider(sites, id, type)
+      return sites
+    })
   }
 
   // called after removing an account from keyring, for cleanup purposes
   async forgetAccount(address: string) {
     await this.mutate((sites) => {
-      for (const [key, { addresses, ethAddresses }] of Object.entries(sites)) {
-        sites[key].addresses = addresses?.filter((a) => a !== address)
-        sites[key].ethAddresses = ethAddresses?.filter((a) => a !== address)
-      }
+      for (const site of Object.values(sites))
+        for (const key of Object.values(PROVIDER_ADDRESSES_KEY))
+          site[key] = site[key]?.filter((a) => a !== address)
       return sites
     })
   }
@@ -97,36 +113,17 @@ export class SitesAuthorizedStore extends SubscribableStorageProvider<
 
   async forgetAllSites(type: ProviderType) {
     await this.mutate((sites) => {
-      for (const host of Object.keys(sites)) {
-        if (type === "ethereum") {
-          if (!sites[host].addresses) delete sites[host]
-          else {
-            delete sites[host].ethAddresses
-            delete sites[host].ethPermissions
-            delete sites[host].ethChainId
-          }
-        }
-        // don't forget Talisman web app
-        if (type === "polkadot" && !isTalismanHostname(host)) {
-          if (!sites[host].ethAddresses) delete sites[host]
-          else {
-            delete sites[host].addresses
-            delete sites[host].connectAllSubstrate
-          }
-        }
-      }
+      for (const host of Object.keys(sites))
+        if (!isTalismanWebAppSubstrate(host, type)) forgetProvider(sites, host, type)
       return sites
     })
   }
 
   async disconnectAllSites(type: ProviderType) {
+    const key = PROVIDER_ADDRESSES_KEY[type]
     await this.mutate((sites) => {
-      for (const host of Object.keys(sites)) {
-        // disconnect all accounts unless it's Talisman web app
-        if (type === "polkadot" && sites[host].addresses && !isTalismanHostname(host))
-          sites[host].addresses = []
-        if (type === "ethereum" && sites[host].ethAddresses) sites[host].ethAddresses = []
-      }
+      for (const [host, site] of Object.entries(sites))
+        if (site[key] && !isTalismanWebAppSubstrate(host, type)) site[key] = []
       return sites
     })
   }
