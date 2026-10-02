@@ -93,16 +93,35 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 
 | Variable            | Required | Description                                     |
 | ------------------- | -------- | ----------------------------------------------- |
+| `POSTHOG_CLI_API_KEY` | Chrome release | PostHog personal API key with the error tracking write scope. Uploads the source maps |
+| `POSTHOG_CLI_PROJECT_ID` | Chrome release | PostHog project id, the number in `us.posthog.com/project/<id>` |
+| `POSTHOG_CLI_HOST` | No | PostHog API host. The CLI defaults to the US cloud |
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 
 Put local values in `apps/extension/.env`. `.env.sample` lists every variable that you can set there, including dev-only and e2e variables. The build scripts set `BUILD_TYPE`.
 
-#### Sourcemap Handling
+#### Source maps
 
-- **Production/Canary Chrome builds**: Generate hidden sourcemaps (no inline reference in JS)
-- **Firefox production/canary builds**: No sourcemaps
-- **Cleanup**: Sourcemaps are automatically deleted before zipping to keep them out of the final distribution
+Production and canary Chrome builds make hidden source maps (no inline reference in the JS) and upload them to PostHog, so error tracking shows exceptions at their source line. The `zip:extension:start` hook in `wxt.config.ts` runs `scripts/posthogSourcemaps.ts`, in this order:
+
+1. `@posthog/cli sourcemap inject` adds a chunk id to each bundle. `page.js` and `content-scripts/` are left out: they run in web pages and report no errors.
+2. `@posthog/cli sourcemap upload` uploads the maps.
+3. The hook deletes every `.map` file. Maps never ship in the zip.
+
+The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcemaps.ts`. Its first run downloads the CLI binary from GitHub.
+
+| Situation | Result |
+| --- | --- |
+| Firefox build | Skipped. Firefox builds have no source maps, and the Docker build stays reproducible |
+| `pnpm dev`, `wxt build` and CI builds | Skipped. They make no maps |
+| Neither `POSTHOG_CLI_*` variable set | A warning. The zip has no chunk ids, and PostHog cannot resolve its frames |
+| Only one of the two set | The build fails |
+| Inject or upload fails | The build fails, and no zip is made |
+
+Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. The build sends no release: exceptions carry the extension version as `$app_version`.
+
+To build a production zip without uploading while the keys are in `.env`, set `POSTHOG_CLI_DRY_RUN=true` in the shell. The zip then has no chunk ids.
 
 ### Output Directories
 
@@ -115,12 +134,12 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 
 ### Build Variants
 
-| Build Type  | Name Suffix | Version Name Example      |
-| ----------- | ----------- | ------------------------- |
-| Production  | (none)      | `3.1.16`                  |
-| Canary      | ` - Canary` | `3.1.16 canary - abc1234` |
-| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    |
-| Local Build | (none)      | `3.1.16 dev - abc1234`    |
+| Build Type  | Name Suffix | Version Name Example      | Source map upload |
+| ----------- | ----------- | ------------------------- | ----------------- |
+| Production  | (none)      | `3.1.16`                  | ✅ (Chrome)       |
+| Canary      | ` - Canary` | `3.1.16 canary - abc1234` | ✅ (Chrome)       |
+| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    | ❌                |
+| Local Build | (none)      | `3.1.16 dev - abc1234`    | ❌                |
 
 ### How Production Builds Work
 
@@ -169,7 +188,7 @@ The main configuration file controls:
 | Package resolution | Source (`src/`) | Source (`src/`)                           |
 | Icon suffix        | `-dev`          | `-prod` / `-canary`                       |
 | Minification       | Disabled        | Enabled                                   |
-| Source maps        | Separate `.map` files | Chrome: hidden (deleted before zipping). Firefox: none |
+| Source maps        | Separate `.map` files | Chrome: hidden (uploaded to PostHog, then deleted). Firefox: none |
 
 ## Testing
 

@@ -11,6 +11,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
+import { planSourcemapUpload, runSourcemapPlan } from "./scripts/posthogSourcemaps"
 import { log } from "./src/common/log"
 
 const pkg = require("./package.json")
@@ -342,9 +343,15 @@ export default defineConfig({
 
   // Build hooks
   hooks: {
-    // Before zipping, delete sourcemaps for production/canary builds
-    // to prevent exposing source code in the distributed extension, and keep the package small
-    "zip:extension:start": (wxt) => {
+    // Before zipping, upload the sourcemaps to PostHog, then delete them for production/canary
+    // builds to prevent exposing source code in the distributed extension, and keep the package small
+    "zip:extension:start": async (wxt) => {
+      const plan = planSourcemapUpload({
+        browser: wxt.config.browser,
+        buildType: BUILD_TYPE,
+        env: process.env,
+      })
+      await runSourcemapPlan(plan, { outDir: wxt.config.outDir, warn: log.warn })
       if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
         deleteSourcemaps(wxt.config.outDir)
       }
@@ -752,7 +759,7 @@ export default defineConfig({
 
         // Sourcemap configuration:
         // - Dev mode: separate sourcemaps for debugging without bloating file sizes
-        // - Production/Canary Chrome: hidden sourcemaps (deleted before zipping)
+        // - Production/Canary Chrome: hidden sourcemaps (uploaded to PostHog, then deleted)
         // - Firefox: no sourcemaps
         // - Other builds: no sourcemaps
         // Note: "hidden" generates sourcemaps but doesn't add the //# sourceMappingURL comment

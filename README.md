@@ -185,7 +185,7 @@ When building UI features, please follow the following spec to ensure they're tr
 
 - `build:extension` : builds the extension for Chrome (outputs to `dist/chrome-mv3`)
 - `build:extension:firefox` : builds the extension for Firefox (outputs to `dist/firefox-mv3`)
-- `build:extension:prod` : production Chrome build
+- `build:extension:prod` : production Chrome build, with source map upload to PostHog
 - `build:extension:prod:firefox` : production Firefox build via Docker (reproducible)
 - `build:extension:canary` : canary Chrome build for internal testing
 - `build:extension:canary:firefox` : canary Firefox build for internal testing
