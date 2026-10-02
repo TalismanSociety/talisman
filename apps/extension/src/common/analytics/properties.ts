@@ -211,7 +211,7 @@ export const properties = {
   is_funded: p.bool("Owned accounts hold more than $0."),
   days_since_install: p.enum(
     DAY_BUCKETS,
-    "Days since install, as a range. For installs older than this analytics, since the update that brought it. unknown: never recorded."
+    "Days since install, as a range. For installs older than this analytics, since the oldest account or recovery phrase. unknown: no date recorded."
   ),
   quick_unlock_enabled: p.bool("Quick Unlock is set up."),
 

@@ -16,12 +16,8 @@ export const onInstalledForAnalytics = async ({
   if (reason === "install") {
     await analyticsLifecycleStore.set({ installedAt: Date.now() })
     track("app_installed")
-  } else if (reason === "update") {
-    await analyticsLifecycleStore.mutate((data) => ({
-      ...data,
-      installedAt: data.installedAt ?? Date.now(),
-    }))
-    if (previousVersion) track("app_updated", { previous_version: previousVersion })
+  } else if (reason === "update" && previousVersion) {
+    track("app_updated", { previous_version: previousVersion })
   }
 }
 

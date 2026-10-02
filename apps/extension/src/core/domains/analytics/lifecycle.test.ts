@@ -94,13 +94,13 @@ describe("onInstalledForAnalytics", () => {
     expect(trackedCalls()).toEqual([["app_updated", { previous_version: "3.10.0" }]])
   })
 
-  it("dates an install that predates analytics from its update", async () => {
+  it("leaves an install that predates analytics undated", async () => {
     await onInstalledForAnalytics({
       reason: chrome.runtime.OnInstalledReason.UPDATE,
       previousVersion: "3.10.0",
     })
 
-    expect(await analyticsLifecycleStore.get("installedAt")).toBe(T0)
+    expect(await analyticsLifecycleStore.get("installedAt")).toBeNull()
   })
 
   it("ignores a browser update", async () => {

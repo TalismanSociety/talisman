@@ -94,6 +94,7 @@ export const gatherTvlInputs = async (
     accounts: accounts.map((account) => ({
       type: account.type,
       platform: platformOf(account.address),
+      createdAt: account.createdAt,
     })),
     mnemonics,
     enabledNetworkIds: networks

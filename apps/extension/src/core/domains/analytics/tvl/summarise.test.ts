@@ -155,10 +155,10 @@ describe("summariseTvl", () => {
     const result = summariseTvl(
       inputs({
         accounts: [
-          { type: "contact", platform: "ethereum" },
-          { type: "keypair", platform: "ethereum" },
-          { type: "ledger-ethereum", platform: "ethereum" },
-          { type: "watch-only", platform: "polkadot" },
+          { type: "contact", platform: "ethereum", createdAt: T0 },
+          { type: "keypair", platform: "ethereum", createdAt: T0 },
+          { type: "ledger-ethereum", platform: "ethereum", createdAt: T0 },
+          { type: "watch-only", platform: "polkadot", createdAt: T0 },
         ],
       })
     )
@@ -177,6 +177,18 @@ describe("summariseTvl", () => {
     expect(summariseTvl(inputs({ installedAt: null })).days_since_install).toBe("unknown")
   })
 
+  it("dates an install older than analytics from its oldest account or recovery phrase", () => {
+    const result = (oldest: Partial<TvlInputs>) =>
+      summariseTvl(inputs({ installedAt: T0, ...oldest })).days_since_install
+
+    expect(
+      result({
+        accounts: [{ type: "keypair", platform: "ethereum", createdAt: T0 - 400 * DAY_MS }],
+      })
+    ).toBe("365+")
+    expect(result({ mnemonics: [{ confirmed: true, createdAt: T0 - 40 * DAY_MS }] })).toBe("30-89")
+  })
+
   it("only allow-lists ids the catalogue accepts and that read as no secret", () => {
     for (const id of [...TVL_ALLOWED_COINGECKO_IDS, ...TVL_STABLECOIN_COINGECKO_IDS]) {
       expect(properties.held_token_usd_buckets.schema.safeParse([`<10|${id}`]).success, id).toBe(
@@ -192,11 +204,14 @@ describe("summariseTvl", () => {
         allowedCoingeckoIds: new Set(TVL_ALLOWED_COINGECKO_IDS),
         stablecoinCoingeckoIds: new Set(TVL_STABLECOIN_COINGECKO_IDS),
         accounts: [
-          { type: "keypair", platform: "ethereum" },
-          { type: "polkadot-vault", platform: "polkadot" },
-          { type: "signet", platform: "polkadot" },
+          { type: "keypair", platform: "ethereum", createdAt: T0 },
+          { type: "polkadot-vault", platform: "polkadot", createdAt: T0 },
+          { type: "signet", platform: "polkadot", createdAt: T0 },
         ],
-        mnemonics: [{ confirmed: true }, { confirmed: false }],
+        mnemonics: [
+          { confirmed: true, createdAt: T0 },
+          { confirmed: false, createdAt: T0 },
+        ],
         enabledNetworkIds: ["1", "polkadot", "obscure-chain"],
         holdings: [
           held("1-evm-native", "1", "ethereum", 2_500, { stakedUsd: 1_000 }),

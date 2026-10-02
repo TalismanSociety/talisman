@@ -16,8 +16,8 @@ export type Holding = {
 
 export type TvlInputs = {
   trigger: TvlSnapshot["trigger"]
-  accounts: { type: AccountType; platform: string | null }[]
-  mnemonics: { confirmed: boolean }[]
+  accounts: { type: AccountType; platform: string | null; createdAt: number }[]
+  mnemonics: { confirmed: boolean; createdAt: number }[]
   enabledNetworkIds: string[]
   customNetworkCount: number
   nativeCoingeckoIdOf: (networkId: string) => string | null
@@ -44,6 +44,11 @@ const sumBy = <K extends string>(holdings: readonly Holding[], keyOf: (h: Holdin
 
 const total = (holdings: readonly Holding[], amountOf: (h: Holding) => number = (h) => h.usd) =>
   holdings.reduce((sum, holding) => sum + amountOf(holding), 0)
+
+const earliestOf = (times: readonly (number | null)[]) => {
+  const known = times.filter((time) => time !== null)
+  return known.length ? Math.min(...known) : null
+}
 
 const bucketedMostValuableFirst = (sums: readonly [string, number][]) =>
   [...sums]
@@ -133,7 +138,14 @@ export const summariseTvl = (inputs: TvlInputs): TvlSnapshot => {
       ownedUsd
     ),
     is_funded: ownedUsd > 0,
-    days_since_install: toDayBucket(inputs.installedAt, inputs.now),
+    days_since_install: toDayBucket(
+      earliestOf([
+        inputs.installedAt,
+        ...accounts.map(({ createdAt }) => createdAt),
+        ...inputs.mnemonics.map(({ createdAt }) => createdAt),
+      ]),
+      inputs.now
+    ),
     quick_unlock_enabled: inputs.quickUnlockEnabled,
   }
 }
