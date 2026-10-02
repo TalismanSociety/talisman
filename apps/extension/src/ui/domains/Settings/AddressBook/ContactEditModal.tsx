@@ -1,8 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
-import type { HexString } from "@talismn/util"
+import { getErrorMessage, type HexString } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -10,6 +11,7 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useNetworks } from "@ui/state/chaindata"
 import { keyBy } from "lodash-es"
 import { useCallback, useMemo } from "react"
@@ -76,7 +78,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         await api.accountUpdateContact({ ...contact, name, genesisHash })
         close()
       } catch (error) {
-        setError("name", error as Error)
+        setError("name", { type: classifyError(error), message: getErrorMessage(error) })
       }
     },
     [close, contact, setError]
@@ -110,7 +112,11 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         <ModalDialog title={t("Edit contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">
-              <FormFieldContainer error={errors.name?.message} label={t("Name")}>
+              <FormFieldContainer
+                error={errors.name?.message}
+                errorCategory={errorCategoryOfField(errors.name)}
+                label={t("Name")}
+              >
                 <FormFieldInputText
                   type="text"
                   {...register("name")}

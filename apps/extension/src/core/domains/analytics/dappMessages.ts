@@ -1,6 +1,6 @@
 import { toDappDomain } from "@common/analytics/dapp"
 import { networkIdForAnalytics } from "@common/analytics/funds"
-import { toRpcProvider } from "@common/analytics/networks"
+import { networkToggledOf, tokenToggledOf, toRpcProvider } from "@common/analytics/networks"
 import { symbolForAnalytics } from "@common/analytics/schema"
 import type { ChainPlatform } from "@common/analytics/transactions"
 
@@ -8,13 +8,16 @@ import { requestStore } from "../../libs/requests/store"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageTypes, RequestTypes } from "../../types"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
-import type { AuthorisedSiteUpdate } from "../sitesAuthorised/types"
+import type { AuthorisedSiteUpdate, ProviderType } from "../sitesAuthorised/types"
 import { track } from "./track"
 
 type DappMessage =
   | "pri(sites.requests.approve)"
   | "pri(sites.requests.approveSolSignIn)"
   | "pri(sites.update)"
+  | "pri(sites.forget)"
+  | "pri(sites.forget.all)"
+  | "pri(sites.disconnect.all)"
   | "pri(eth.networks.add.approve)"
   | "pri(eth.watchasset.requests.approve)"
 
@@ -24,6 +27,17 @@ const CONNECTED_ACCOUNTS: Record<"addresses" | "ethAddresses" | "solAddresses", 
   addresses: "polkadot",
   ethAddresses: "ethereum",
   solAddresses: "solana",
+}
+
+const PLATFORM_ACCOUNTS: Record<ProviderType, keyof typeof CONNECTED_ACCOUNTS> = {
+  polkadot: "addresses",
+  ethereum: "ethAddresses",
+  solana: "solAddresses",
+}
+
+const countSites = async (type: ProviderType) => {
+  const sites = await sitesAuthorisedStore.get()
+  return Object.values(sites).filter((site) => site[PLATFORM_ACCOUNTS[type]] !== undefined).length
 }
 
 const reportSiteUpdate = async (dappDomain: string | null, update: AuthorisedSiteUpdate) => {
@@ -77,6 +91,24 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
     const site = sitesAuthorisedStore.get(id)
     return async () => reportSiteUpdate(toDappDomain((await site)?.url), authorisedSite)
   },
+  "pri(sites.forget)": ({ id, type }) => {
+    const site = sitesAuthorisedStore.get(id)
+    return async () =>
+      track("dapp_connection_forgotten", {
+        platform: type,
+        dapp_domain: toDappDomain((await site)?.url),
+      })
+  },
+  "pri(sites.forget.all)": ({ type }) => {
+    const siteCount = countSites(type)
+    return async () =>
+      track("dapp_connections_forgotten", { platform: type, site_count: await siteCount })
+  },
+  "pri(sites.disconnect.all)": ({ type }) => {
+    const siteCount = countSites(type)
+    return async () =>
+      track("dapp_connections_disconnected", { platform: type, site_count: await siteCount })
+  },
   "pri(eth.networks.add.approve)": ({ id }) => {
     const queued = requestStore.getRequest(id)
     if (!queued) return async () => {}
@@ -84,14 +116,7 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
     const listed = chaindataProvider.getNetworkById(network.id, "ethereum")
     return async () => {
       const known = await listed
-      if (known)
-        track("network_toggled", {
-          network_id: networkIdForAnalytics(known),
-          platform: "ethereum",
-          enabled: true,
-          default_enabled: !!known.isDefault && !known.isTestnet,
-          source: "dapp",
-        })
+      if (known) track("network_toggled", networkToggledOf(known, true, "dapp"))
       else
         track("custom_network_saved", {
           mode: "add",
@@ -111,18 +136,10 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
     const network = chaindataProvider.getNetworkById(token.networkId, "ethereum")
     return async () => {
       const [known, tokenNetwork] = await Promise.all([listed, network])
-      const networkId = networkIdForAnalytics(tokenNetwork)
-      if (known)
-        track("token_toggled", {
-          network_id: networkId,
-          token_symbol: symbolForAnalytics(known.symbol),
-          enabled: true,
-          default_enabled: !!known.isDefault,
-          source: "dapp",
-        })
+      if (known) track("token_toggled", tokenToggledOf(known, tokenNetwork, true, "dapp"))
       else
         track("custom_token_added", {
-          network_id: networkId,
+          network_id: networkIdForAnalytics(tokenNetwork),
           token_symbol: symbolForAnalytics(token.symbol),
           has_coingecko_id: !!token.coingeckoId,
           source: "dapp",

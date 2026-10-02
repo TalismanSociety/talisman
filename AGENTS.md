@@ -62,6 +62,7 @@ Product analytics go to PostHog. Events, properties and flows are defined once, 
   - a `provideContext` missing from `src/__tests__/analyticsFlowProviders.ts`, or one marked `{ none }` that holds step state;
   - a catalogue event that nothing sends, a flow that cannot end, or an event or property without a description;
   - an error toast without `cause` or `errorCategory` (type error);
+  - a setting or app flag missing from `common/analytics/settings.ts` (type error);
   - a `<Route path>` that holds a value instead of words, `:param` and `*`.
 - Dev builds send nothing. They keep the last 500 events in a log. Prove that your events fire with `.claude/skills/verify/features/analytics-events.md`.
 

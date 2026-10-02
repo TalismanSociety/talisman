@@ -1,8 +1,10 @@
+import { networkToggledOf } from "@common/analytics/networks"
 import type { ActiveNetworks } from "@core/domains/chaindata/store.activeNetworks"
 import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { ListButton } from "@ui/components/ListButton"
 import { Modal } from "@ui/components/Modal"
@@ -206,8 +208,9 @@ const NetworkRow: FC<{
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       activeNetworksStore.setActive(network.id, e.target.checked)
+      track("network_toggled", networkToggledOf(network, e.target.checked, "settings"))
     },
-    [network.id]
+    [network]
   )
 
   return (
@@ -242,6 +245,7 @@ const ResetAllNetworksModalContent: FC<{
 }> = ({ platform, onClose }) => {
   const { t } = useTranslation()
   const networks = useNetworks({ activeOnly: false, includeTestnets: true, platform })
+  const activeNetworksState = useActiveNetworksState()
 
   const handleClick = useCallback(async () => {
     activeNetworksStore.mutate((prev) => {
@@ -249,8 +253,11 @@ const ResetAllNetworksModalContent: FC<{
       for (const networkId of networks.map((network) => network.id)) delete newState[networkId]
       return newState
     })
+    track("networks_reset", {
+      count: networks.filter((network) => network.id in activeNetworksState).length,
+    })
     onClose()
-  }, [networks, onClose])
+  }, [networks, onClose, activeNetworksState])
 
   return (
     <ModalDialog
@@ -310,6 +317,7 @@ const DeactivateNetworksModalContent: FC<{
       ...prev,
       ...Object.fromEntries(networkIds.map((networkId) => [networkId, false])),
     }))
+    track("networks_deactivated", { count: networkIds.length, unused_only: mode === "unused" })
 
     onClose()
   }, [activeNetworkIds, mode, onClose, unusedNetworkIds])

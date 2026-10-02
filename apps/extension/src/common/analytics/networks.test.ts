@@ -1,6 +1,7 @@
+import type { Network } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
-import { toRpcProvider } from "./networks"
+import { networkToggledOf, savedNetworkId, toRpcProvider } from "./networks"
 
 describe("toRpcProvider", () => {
   it("keeps the registrable domain and drops the path and subdomains", () => {
@@ -17,5 +18,26 @@ describe("toRpcProvider", () => {
     expect(toRpcProvider("ipfs://bafy")).toBeNull()
     expect(toRpcProvider("not a url")).toBeNull()
     expect(toRpcProvider(undefined)).toBeNull()
+  })
+})
+
+describe("savedNetworkId", () => {
+  it("keeps Talisman's id and an Ethereum chain id, and hides a user-added genesis hash", () => {
+    expect(savedNetworkId({ id: "polkadot", platform: "polkadot" }, true)).toBe("polkadot")
+    expect(savedNetworkId({ id: "987654321", platform: "ethereum" }, false)).toBe("987654321")
+    expect(savedNetworkId({ id: `0x${"ab".repeat(32)}`, platform: "polkadot" }, false)).toBe(
+      "custom"
+    )
+  })
+
+  it("names a toggled network as custom_network_saved does", () => {
+    const network = { id: "987654321", platform: "ethereum", isTestnet: true } as Network
+    expect(networkToggledOf(network, false, "settings")).toEqual({
+      network_id: "987654321",
+      platform: "ethereum",
+      enabled: false,
+      default_enabled: false,
+      source: "settings",
+    })
   })
 })

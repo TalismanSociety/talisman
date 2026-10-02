@@ -147,12 +147,29 @@ describe("account messages", () => {
     ])
   })
 
-  it("reads the removed account's kind before the handler deletes it, and skips contacts", async () => {
+  it("reads the removed account's kind before the handler deletes it, and tells a contact apart", async () => {
     keyring.accounts = [account("ledger-ethereum", ETH), account("contact", DOT)]
     await handle("pri(accounts.forget)", { address: ETH }, { removes: [ETH] }, true)
     await handle("pri(accounts.forget)", { address: DOT }, { removes: [DOT] }, true)
 
-    expect(tracked.calls).toEqual([["account_removed", { account_type: "ledger" }]])
+    expect(tracked.calls).toEqual([
+      ["account_removed", { account_type: "ledger" }],
+      ["contact_deleted"],
+    ])
+  })
+
+  it("reports whether a contact edit changed its network, against the contact before the edit", async () => {
+    const GENESIS = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+    keyring.accounts = [{ ...account("contact", DOT), genesisHash: GENESIS } as Account]
+
+    await handle("pri(accounts.update.contact)", { address: DOT, name: "a", genesisHash: GENESIS })
+    await handle("pri(accounts.update.contact)", { address: DOT, name: "b" })
+    await handle("pri(accounts.update.contact)", { address: ETH, name: "c" })
+
+    expect(tracked.calls).toEqual([
+      ["contact_edited", { network_changed: false }],
+      ["contact_edited", { network_changed: true }],
+    ])
   })
 
   it("sends nothing for messages that are not account changes", () => {

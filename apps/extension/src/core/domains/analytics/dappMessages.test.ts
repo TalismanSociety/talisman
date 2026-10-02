@@ -31,7 +31,7 @@ vi.mock("../../rpcs/chaindata", () => ({
   },
 }))
 vi.mock("../sitesAuthorised/store", () => ({
-  default: { get: async (id: string) => state.sites[id] },
+  default: { get: async (id?: string) => (id === undefined ? state.sites : state.sites[id]) },
 }))
 
 const DAPP_URL = "https://app.example.com/swap"
@@ -45,7 +45,12 @@ const handle = async (type: MessageTypes, request: unknown, afterHandler?: () =>
   await settle?.()
 }
 
-const network = { id: CHAIN_ID, isTestnet: false, rpcs: ["https://base.g.alchemy.com/v2/key"] }
+const network = {
+  id: CHAIN_ID,
+  platform: "ethereum",
+  isTestnet: false,
+  rpcs: ["https://base.g.alchemy.com/v2/key"],
+}
 
 describe("dapp messages", () => {
   beforeEach(() => {
@@ -104,6 +109,38 @@ describe("dapp messages", () => {
       ],
       ["dapp_network_switched", { network_id: "1", dapp_domain: "app.example.com" }],
     ])
+  })
+
+  it("reports a site forgotten in settings by its hostname, read before the handler deletes it", async () => {
+    state.sites["app.example.com"] = { url: DAPP_URL, ethAddresses: ["0x1"] }
+
+    await handle("pri(sites.forget)", { id: "app.example.com", type: "ethereum" }, () => {
+      delete state.sites["app.example.com"]
+    })
+
+    expect(tracked.calls).toEqual([
+      ["dapp_connection_forgotten", { platform: "ethereum", dapp_domain: "app.example.com" }],
+    ])
+  })
+
+  it("counts the sites of the platform a forget all or disconnect all applies to", async () => {
+    state.sites = {
+      "a.example.com": { url: "https://a.example.com", ethAddresses: [] },
+      "b.example.com": { url: "https://b.example.com", ethAddresses: ["0x1"], addresses: [] },
+      "c.example.com": { url: "https://c.example.com", addresses: ["5Gr"] },
+    }
+
+    await handle("pri(sites.disconnect.all)", { type: "ethereum" })
+    await handle("pri(sites.forget.all)", { type: "polkadot" }, () => {
+      state.sites = {}
+    })
+
+    expect(tracked.calls).toEqual([
+      ["dapp_connections_disconnected", { platform: "ethereum", site_count: 2 }],
+      ["dapp_connections_forgotten", { platform: "polkadot", site_count: 2 }],
+    ])
+    for (const [event, props = {}] of tracked.calls)
+      expect(catalogue[event].schema.safeParse(props).success, event).toBe(true)
   })
 
   it("reports a network a dapp adds as custom, with its RPC provider and never its URL", async () => {

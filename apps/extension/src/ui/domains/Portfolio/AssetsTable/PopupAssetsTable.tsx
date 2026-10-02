@@ -12,11 +12,13 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { StakeUnstakeButtons } from "@ui/domains/Staking/StakeUnstakeButtons"
 import { useUnbondButton } from "@ui/domains/Staking/Unbond/useUnbondButton"
+import { reportTokenDetailsOpened } from "@ui/hooks/analytics/portfolio"
+import { useReportSearch } from "@ui/hooks/analytics/search"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
-import { usePortfolioGlobalData } from "@ui/state/portfolio"
+import { usePortfolioGlobalData, usePortfolioSearch } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -73,7 +75,8 @@ const AssetRow: FC<{
     if (!token) return
 
     navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
-  }, [navigate, token])
+    reportTokenDetailsOpened(token, network, networkIds.length)
+  }, [navigate, token, network, networkIds.length])
 
   const { tokens, fiat } = useMemo(() => {
     return {
@@ -244,6 +247,11 @@ export const PopupAssetsTable = () => {
   // group by status by token (symbol)
   const { availableSymbolBalances: available, lockedSymbolBalances } =
     usePortfolioSymbolBalancesByFilter("search")
+  const resultCount = useMemo(
+    () => new Set([...available, ...lockedSymbolBalances].map(([symbol]) => symbol)).size,
+    [available, lockedSymbolBalances]
+  )
+  useReportSearch("portfolio_tokens", usePortfolioSearch(), resultCount)
 
   const currency = useSelectedCurrency()
 

@@ -13,6 +13,7 @@ import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { getNetworkByGenesisHash$, getNetworkById$ } from "@ui/state/chaindata"
 import type { TFunction } from "i18next"
 import { type FC, useMemo } from "react"
@@ -90,8 +91,59 @@ const NetworkCreateForm: FC = () => {
       />
       <form.Field
         name="rpc"
+        asyncDebounceMs={200}
+        validators={{
+          onChangeAsync: async ({ value, signal, fieldApi }): Promise<InlineError | null> => {
+            if (!value) {
+              fieldApi.form.setFieldValue("id", "")
+              return null
+            }
+
+            switch (platform) {
+              case "polkadot": {
+                const networkInfo = await getDotNetworkInfo(t, value)
+                if ("category" in networkInfo) {
+                  fieldApi.form.resetField("id")
+                  return networkInfo
+                }
+
+                if (await firstValueFrom(getNetworkByGenesisHash$(networkInfo.id as `0x${string}`)))
+                  return networkExists(t)
+
+                fieldApi.form.setFieldValue("id", networkInfo.id)
+                fieldApi.form.setFieldValue("name", networkInfo.name)
+                fieldApi.form.setFieldValue("dotNetworkSpecifics", networkInfo.dotNetworkSpecifics)
+                fieldApi.form.setFieldValue("nativeCurrency", networkInfo.nativeCurrency)
+                fieldApi.form.validate("change")
+                break
+              }
+              case "ethereum": {
+                const networkInfo = await getEthNetworkInfo(t, value, signal)
+                if ("category" in networkInfo) {
+                  fieldApi.form.resetField("id")
+                  return networkInfo
+                }
+
+                if (await firstValueFrom(getNetworkById$(networkInfo.networkId)))
+                  return networkExists(t)
+
+                fieldApi.form.setFieldValue("id", networkInfo.networkId)
+                fieldApi.form.setFieldValue("nativeCurrency.decimals", 18)
+                fieldApi.form.validate("change")
+                break
+              }
+            }
+
+            return null
+          },
+        }}
         children={(field) => (
-          <FormFieldContainer field="rpc" label={t("RPC Url")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer
+            field="rpc"
+            label={t("RPC Url")}
+            error={field.state.meta.errors[0]?.message}
+            errorCategory={field.state.meta.errors[0]?.category}
+          >
             <FormFieldInputText
               type="text"
               value={field.state.value ?? ""}
@@ -114,52 +166,6 @@ const NetworkCreateForm: FC = () => {
             />
           </FormFieldContainer>
         )}
-        asyncDebounceMs={200}
-        validators={{
-          onChangeAsync: async ({ value, signal, fieldApi }) => {
-            if (!value) {
-              fieldApi.form.setFieldValue("id", "")
-              return null
-            }
-
-            switch (platform) {
-              case "polkadot": {
-                const networkInfo = await getDotNetworkInfo(t, value)
-                if (typeof networkInfo === "string") {
-                  fieldApi.form.resetField("id")
-                  return networkInfo
-                }
-
-                if (await firstValueFrom(getNetworkByGenesisHash$(networkInfo.id as `0x${string}`)))
-                  return t("Network already exists")
-
-                fieldApi.form.setFieldValue("id", networkInfo.id)
-                fieldApi.form.setFieldValue("name", networkInfo.name)
-                fieldApi.form.setFieldValue("dotNetworkSpecifics", networkInfo.dotNetworkSpecifics)
-                fieldApi.form.setFieldValue("nativeCurrency", networkInfo.nativeCurrency)
-                fieldApi.form.validate("change")
-                break
-              }
-              case "ethereum": {
-                const networkInfo = await getEthNetworkInfo(t, value, signal)
-                if (typeof networkInfo === "string") {
-                  fieldApi.form.resetField("id")
-                  return networkInfo
-                }
-
-                if (await firstValueFrom(getNetworkById$(networkInfo.networkId)))
-                  return t("Network already exists")
-
-                fieldApi.form.setFieldValue("id", networkInfo.networkId)
-                fieldApi.form.setFieldValue("nativeCurrency.decimals", 18)
-                fieldApi.form.validate("change")
-                break
-              }
-            }
-
-            return null
-          },
-        }}
       />
       {!!platform && (
         <>
@@ -447,18 +453,29 @@ const NetworkCreateForm: FC = () => {
   )
 }
 
+const networkExists = (t: TFunction): InlineError => ({
+  message: t("Network already exists"),
+  category: "input_invalid",
+})
+
+const rpcFailed = (t: TFunction): InlineError => ({
+  message: t("Failed to fetch network information from RPC"),
+  category: "rpc",
+})
+
 const getDotNetworkInfo = async (
   t: TFunction,
   rpcUrl: string
 ): Promise<
-  Pick<NetworkCreateFormData, "id" | "dotNetworkSpecifics" | "nativeCurrency" | "name"> | string
+  | Pick<NetworkCreateFormData, "id" | "dotNetworkSpecifics" | "nativeCurrency" | "name">
+  | InlineError
 > => {
   const parsed = z.url({ protocol: /^wss?$/ }).safeParse(rpcUrl)
-  if (!parsed.success) return t("Invalid websocket url")
+  if (!parsed.success) return { message: t("Invalid websocket url"), category: "input_invalid" }
 
   try {
     const chainInfo = await getDotChainInfoFromRpc(parsed.data)
-    if (!chainInfo) return t("Failed to fetch network information from RPC")
+    if (!chainInfo) return rpcFailed(t)
 
     const {
       genesisHash,
@@ -494,18 +511,22 @@ const getDotNetworkInfo = async (
     log.error("Failed to fetch Substrate chain info", { rpcUrl, err })
   }
 
-  return t("Failed to fetch network information network")
+  return rpcFailed(t)
 }
 
-const getEthNetworkInfo = async (t: TFunction, rpcUrl: string, signal?: AbortSignal) => {
+const getEthNetworkInfo = async (
+  t: TFunction,
+  rpcUrl: string,
+  signal?: AbortSignal
+): Promise<{ networkId: string } | InlineError> => {
   const parsed = z.url({ protocol: /^https?$/ }).safeParse(rpcUrl)
-  if (!parsed.success) return t("Invalid http url")
+  if (!parsed.success) return { message: t("Invalid http url"), category: "input_invalid" }
 
   try {
     const networkId = await fetchEthChainId(rpcUrl, signal)
     return { networkId }
   } catch (err) {
     log.error("Failed to fetch Ethereum chain info", { err })
-    return t("Failed to fetch network information from RPC")
+    return rpcFailed(t)
   }
 }

@@ -24,6 +24,21 @@ export const dappEvents = defineEventGroup(properties, {
     description: "The user picked another Ethereum network for a connected dapp.",
     props: { network_id: "required", dapp_domain: "required" },
   },
+  dapp_connection_forgotten: {
+    description:
+      "The user forgot a connected site for one platform in settings: the dapp must ask to connect again.",
+    props: { platform: "required", dapp_domain: "required" },
+  },
+  dapp_connections_forgotten: {
+    description:
+      "The user forgot every connected site of one platform in settings, Talisman's own web app aside.",
+    props: { platform: "required", site_count: "required" },
+  },
+  dapp_connections_disconnected: {
+    description:
+      "The user disconnected every account from every connected site of one platform in settings. The sites stay listed.",
+    props: { platform: "required", site_count: "required" },
+  },
   phishing_site_trusted: {
     description:
       "The user chose to continue to a site the wallet had blocked as malicious, which allows it from then on.",

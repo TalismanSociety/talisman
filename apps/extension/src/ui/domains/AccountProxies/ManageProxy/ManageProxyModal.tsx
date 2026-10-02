@@ -250,6 +250,7 @@ const RemoveProxyConfirm: FC<{
           payload={payload?.payload}
           txMetadata={payload?.txMetadata}
           onSubmitted={onSubmitted}
+          onError={flows.account_proxy_remove.failed}
           disabled={isAffordabilityCheckUnavailable || insufficientBalance}
           checkPassword
         />

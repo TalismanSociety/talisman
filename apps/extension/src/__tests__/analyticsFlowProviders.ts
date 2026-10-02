@@ -1,10 +1,8 @@
-import type { PendingArea } from "@common/analytics/coverage"
 import type { FlowName } from "@common/analytics/flow/registry"
 
 export type ProviderClass =
   | { flow: FlowName; runBy?: string }
   | { viaProp: FlowName }
-  | { pending: PendingArea; becomes: string }
   | { none: string }
 
 export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {

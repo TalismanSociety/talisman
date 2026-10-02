@@ -286,6 +286,33 @@ describe("observeExtensionMessage", () => {
     expect(observeExtensionMessage("pri(signing.approveSign)", undefined)).toBeNull()
   })
 
+  describe("change tables", () => {
+    it("reports a change once the handler succeeded, and nothing when it failed", async () => {
+      observeExtensionMessage("pri(nfts.setFavorite)", { id: "n", isFavorite: true })?.({
+        ok: false,
+        error: new Error("failed"),
+      })
+      observeExtensionMessage("pri(nfts.setFavorite)", { id: "n", isFavorite: true })?.({
+        ok: true,
+        response: true,
+      })
+      await settledObservations()
+
+      expect(trackedCalls()).toEqual([["nft_favourite_toggled", { favourite: true }]])
+    })
+
+    it.each([
+      "pri(accounts.update.contact)",
+      "pri(sites.forget.all)",
+      "pri(chaindata.tokens.remove)",
+      "pri(nfts.refreshMetadata)",
+    ] as const)("observes %s", (type) => {
+      expect(
+        observeExtensionMessage(type, { id: "x", type: "solana", address: "x" })
+      ).not.toBeNull()
+    })
+  })
+
   describe("dapp request decisions", () => {
     it("records an approval, which a window closing during it does not undo", () => {
       const id = openEthSend()

@@ -1,3 +1,9 @@
+import { isNetworkKnown, type Network, type Token } from "@talismn/chaindata-provider"
+
+import { networkIdForAnalytics } from "./funds"
+import { symbolForAnalytics } from "./schema"
+import { CUSTOM_NETWORK_ID } from "./transactions"
+
 const PRIVATE_SUFFIXES = [".local", ".lan", ".home", ".internal", ".localhost", ".onion", ".arpa"]
 
 /** Second-level labels under a country TLD that belong to the public suffix (`co.uk`). */
@@ -38,3 +44,38 @@ export const toRpcProvider = (url: string | null | undefined): string | null => 
   const keep = tld.length === 2 && COUNTRY_SECOND_LEVELS.has(second) && labels.length >= 3 ? 3 : 2
   return labels.slice(-keep).join(".")
 }
+
+/**
+ * The id `custom_network_saved` and `custom_network_deleted` report: Talisman's id for a network
+ * from its list, the chain id for an Ethereum network, custom for any other user-added network,
+ * whose id is a genesis hash.
+ */
+export const savedNetworkId = (
+  network: { id: string; platform: string },
+  known: boolean
+): string => (known || network.platform === "ethereum" ? network.id : CUSTOM_NETWORK_ID)
+
+type ToggleSource = "dapp" | "settings"
+
+/** network_toggled, under the id custom_network_saved reports. The default is what `isNetworkActive` falls back to. */
+export const networkToggledOf = (network: Network, enabled: boolean, source: ToggleSource) => ({
+  network_id: savedNetworkId(network, isNetworkKnown(network)),
+  platform: network.platform,
+  enabled,
+  default_enabled: !!network.isDefault && !network.isTestnet,
+  source,
+})
+
+/** token_toggled: the default is what `isTokenActive` falls back to. */
+export const tokenToggledOf = (
+  token: Token,
+  network: Network | null | undefined,
+  enabled: boolean,
+  source: ToggleSource
+) => ({
+  network_id: networkIdForAnalytics(network),
+  token_symbol: symbolForAnalytics(token.symbol),
+  enabled,
+  default_enabled: !!token.isDefault,
+  source,
+})

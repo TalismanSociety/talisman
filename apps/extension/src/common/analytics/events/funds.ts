@@ -44,6 +44,14 @@ export const fundsEvents = defineEventGroup(properties, {
       name_service: "required",
     },
   },
+  contact_edited: {
+    description: "The user saved changes to an address book contact.",
+    props: { network_changed: "required" },
+  },
+  contact_deleted: {
+    description: "The user deleted an address book contact.",
+    props: {},
+  },
   address_copied: {
     description:
       "The user copied an address straight from a receive or copy button, without the receive steps: the account and its format were already known.",

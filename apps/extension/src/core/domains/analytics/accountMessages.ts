@@ -78,12 +78,23 @@ const observeAccountType = (address: string, report: (type: AccountType) => void
   }
 }
 
+type Contact = Extract<Account, { type: "contact" }>
+
+const observeContact = (address: string, report: (contact: Contact) => void) => {
+  const before = keyringStore.getAccount(address)
+  return async () => {
+    const account = await before
+    if (account?.type === "contact") report(account)
+  }
+}
+
 type AccountMessage =
   | "pri(accounts.add.derive)"
   | "pri(accounts.add.keypair)"
   | "pri(accounts.create.json)"
   | "pri(accounts.add.external)"
   | "pri(accounts.forget)"
+  | "pri(accounts.update.contact)"
   | "pri(accounts.rename)"
   | "pri(accounts.export)"
   | "pri(accounts.export.all)"
@@ -112,11 +123,21 @@ const ACCOUNT_MESSAGES: { [M in AccountMessage]: Observe<M> } = {
         ? null
         : EXTERNAL_ORIGINS[account.type]
     ),
-  "pri(accounts.forget)": ({ address }) =>
-    observeAccountType(address, (type) => {
-      const accountType = signerOf(type)
+  "pri(accounts.forget)": ({ address }) => {
+    const before = keyringStore.getAccount(address)
+    return async () => {
+      const account = await before
+      if (account?.type === "contact") return track("contact_deleted")
+      const accountType = account && signerOf(account.type)
       if (accountType) track("account_removed", { account_type: accountType })
-    }),
+    }
+  },
+  "pri(accounts.update.contact)": ({ address, genesisHash }) =>
+    observeContact(address, (contact) =>
+      track("contact_edited", {
+        network_changed: (contact.genesisHash ?? null) !== (genesisHash ?? null),
+      })
+    ),
   "pri(accounts.rename)": ({ address }) =>
     observeAccountType(address, (type) => {
       const accountType = signerOf(type)

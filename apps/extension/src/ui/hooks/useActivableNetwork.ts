@@ -1,5 +1,7 @@
+import { networkToggledOf } from "@common/analytics/networks"
 import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import type { Network } from "@talismn/chaindata-provider"
+import { track } from "@ui/api/track"
 import { useActiveNetworksState } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
 
@@ -15,8 +17,10 @@ export const useActivableNetwork = (network: Network | undefined) => {
     async (active: boolean) => {
       if (!network) throw new Error("Network not found")
       await activeNetworksStore.setActive(network.id, active)
+      if (active !== isActive)
+        track("network_toggled", networkToggledOf(network, active, "settings"))
     },
-    [network]
+    [network, isActive]
   )
 
   const toggleActive = useCallback(async () => {
@@ -32,7 +36,9 @@ export const useActivableNetwork = (network: Network | undefined) => {
   const resetToTalismanDefault = useCallback(() => {
     if (!network) throw new Error("Network not found")
     activeNetworksStore.resetActive(network.id)
-  }, [network])
+    const active = isNetworkActive(network, {})
+    if (active !== isActive) track("network_toggled", networkToggledOf(network, active, "settings"))
+  }, [network, isActive])
 
   return {
     network,

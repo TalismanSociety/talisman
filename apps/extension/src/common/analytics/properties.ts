@@ -1,3 +1,5 @@
+import { z } from "zod/v4"
+
 import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "./accounts"
 import { AMOUNT_BUCKETS, DAY_BUCKETS, SHARE_BUCKETS } from "./buckets"
 import { DAPP_METHODS, PROTECTION_SOURCES, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
@@ -13,7 +15,9 @@ import {
   SWAP_PROTOCOLS,
   TX_PHASES,
 } from "./funds"
-import { p } from "./schema"
+import { ACCOUNT_SELECTIONS, SEARCH_SURFACES } from "./portfolio"
+import { type PropertyDef, p } from "./schema"
+import { SETTING_ENUM_VALUE, SETTING_KEYS, type SettingValue } from "./settings"
 import { EARN_SYSTEMS, STAKING_ACTIONS, STAKING_TYPES, VALIDATOR_SORTS } from "./staking"
 import { CHAIN_PLATFORMS, SETTLED_STATUSES, SIGNERS, SUBMITTERS, TX_TYPES } from "./transactions"
 
@@ -26,10 +30,19 @@ export const DISMISS_CAUSES = ["escape", "backdrop", "button", "completed"] as c
 const TVL_TRIGGERS = ["daily", "update"] as const
 const ABANDON_CAUSES = ["left", "page_closed"] as const
 
+const settingValue: PropertyDef<SettingValue> = {
+  schema: z
+    .union([z.boolean(), z.number().finite(), z.string().regex(SETTING_ENUM_VALUE)])
+    .nullable(),
+  description:
+    "The setting's new value: a boolean, a number, or a short identifier such as a currency code or a sort order. Null when the setting was cleared.",
+  posthogType: "String",
+}
+
 export const properties = {
   source: p.enum(
     ["onboarding", "settings", "send", "address_book", "dapp"],
-    "Where the user made the choice. contact_added: the screen the contact was saved from. Network and token events: dapp when the user approved a dapp's request to add it."
+    "Where the user made the choice. contact_added: the screen the contact was saved from. Network and token events: dapp when the user approved a dapp's request to add it, settings when they did it in Settings > Networks & Tokens."
   ),
 
   $screen_name: p.routePattern(
@@ -48,8 +61,8 @@ export const properties = {
   ),
 
   surface: p.enum(
-    ERROR_SURFACES,
-    "Where the error showed: a toast, an inline field error, a sign alert, a blocking error screen, or the crash screen."
+    [...ERROR_SURFACES, ...SEARCH_SURFACES],
+    "error_shown: where the error showed, a toast, an inline field error, a sign alert, a blocking error screen, or the crash screen. search_performed: the search box, by mobile's name where mobile has the same one."
   ),
   error_category: p.enum(
     ERROR_CATEGORIES,
@@ -77,7 +90,7 @@ export const properties = {
 
   platform: p.enum(CHAIN_PLATFORMS, "Chain platform, not the OS."),
   network_id: p.slug(
-    "Chaindata network id. custom: a network the user added. generic: an address copied in no network's format."
+    "Chaindata network id. custom: a network the user added. generic: an address copied in no network's format. custom_network_saved, custom_network_deleted and network_toggled report a user-added Ethereum network by its chain id, never custom."
   ),
   tx_type: p.enum(
     TX_TYPES,
@@ -212,7 +225,9 @@ export const properties = {
   ),
   wallet_type: p.enum(CHAIN_PLATFORMS, "The chain platform of the account, as mobile names it."),
   is_first_account: p.bool("The wallet held no account before this one, contacts aside."),
-  count: p.count("How many accounts the import added."),
+  count: p.count(
+    "Account imports: how many accounts the import added. networks_deactivated: how many networks were turned off. networks_reset, tokens_reset: how many networks or tokens went back to Talisman's default."
+  ),
   account_type: p.enum(SIGNERS, "Who signs for the account: the kind of account."),
   item: p.enum(
     ["account", "folder", "recovery_phrase"],
@@ -322,7 +337,7 @@ export const properties = {
   netuid: p.count("The Bittensor subnet, by its number. 0 is root."),
   is_root: p.bool("The Bittensor subnet is root, netuid 0."),
   symbol: p.symbol(
-    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. unknown: a symbol the catalogue cannot hold."
+    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. unknown: a symbol the catalogue cannot hold."
   ),
   mev_shield: p.bool(
     "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."
@@ -346,5 +361,32 @@ export const properties = {
   ),
   earn_action: p.slug(
     "The yield.xyz pending action the user ran on a position, lowercased: claim_rewards, withdraw, restake_rewards and the like."
+  ),
+
+  key: p.enum(
+    SETTING_KEYS,
+    "The setting that changed, by mobile's name where mobile has the same setting: blurBalances is Hide balances, hideSmallBalance is Hide dust, currency is the fiat currency shown. The hide keys that are not mobile's are the extension's Don't show again choices."
+  ),
+  value: settingValue,
+  language_code: p.slug("The language the user picked, such as en or zh-CN."),
+  timeout_ms: p.durationMs(
+    "Inactivity before the wallet locks itself, in milliseconds. 0: the timer is off."
+  ),
+  selection: p.enum(
+    ACCOUNT_SELECTIONS,
+    "What the user picked in the account list: one account, a folder, or All Accounts."
+  ),
+  accounts_total: p.count("Accounts in the wallet, contacts excluded, when the user switched."),
+  result_count: p.count("How many results the search showed when the user stopped typing."),
+  query_length: p.count("How many characters the search held, spaces at either end excluded."),
+  hidden: p.bool("The NFT collection is now hidden from the portfolio."),
+  favourite: p.bool("The NFT is now a favourite."),
+  network_changed: p.bool("The edit changed the network the contact is limited to."),
+  unused_only: p.bool(
+    "The user deactivated only the networks where no account holds a balance, not all of them."
+  ),
+  site_count: p.count("Connected sites the action applied to."),
+  session_only: p.bool(
+    "The reminder is hidden until the browser restarts, not for three days: the user closed it while unbacked accounts hold funds."
   ),
 } as const

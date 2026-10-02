@@ -488,6 +488,7 @@ const AddProxyConfirm: FC<{
         payload={payload?.payload}
         txMetadata={payload?.txMetadata}
         onSubmitted={onSubmitted}
+        onError={flows.account_proxy_add.failed}
         disabled={
           isAffordabilityCheckUnavailable ||
           insufficientBalance ||

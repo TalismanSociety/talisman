@@ -4,6 +4,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
 import { IconButton } from "@ui/components/IconButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
+import { changeLanguage } from "@ui/hooks/analytics/settings"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,10 +22,10 @@ const LanguagesList = () => {
 
   const handleLanguageClick = useCallback(
     (lang: string) => {
-      i18n.changeLanguage(lang ?? "en")
+      changeLanguage(lang ?? "en")
       close()
     },
-    [close, i18n]
+    [close]
   )
 
   return (

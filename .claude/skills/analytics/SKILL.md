@@ -1,6 +1,6 @@
 ---
 name: analytics
-description: This skill should be used when a change adds or changes a wizard, a modal with stages, a `pri(...)` message, a `provideContext` provider, an error toast, a route or a `track()` event in the Talisman extension, when asked to "add analytics", "track a flow", "add an event" or "add an exemption", or when a type error or test names `MESSAGE_COVERAGE`, `FLOW_PROVIDERS`, `NotificationProps`, `UNEMITTED`, `MOBILE_SHARED` or the analytics catalogue.
+description: This skill should be used when a change adds or changes a wizard, a modal with stages, a `pri(...)` message, a `provideContext` provider, an error toast, a route or a `track()` event in the Talisman extension, when asked to "add analytics", "track a flow", "add an event" or "add an exemption", or when a type error or test names `MESSAGE_COVERAGE`, `FLOW_PROVIDERS`, `NotificationProps`, `MOBILE_SHARED` or the analytics catalogue.
 ---
 
 # Analytics in the Talisman extension
@@ -20,6 +20,7 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 | An inline error a hook computes | Return an `InlineError` (`{ message, category }`) where the condition is checked, and `useErrorShown` where it renders |
 | A `SignAlertMessage type="error"` | `errorCategory`: the failure it shows, or `null` when it warns about what the request does (an unlimited approval, a domain mismatch), which sends no `error_shown` |
 | A `<Route path>` | Use words, `:param` and `*`, never a value |
+| A key in `SettingsStoreData` or `AppStoreData` | Classify it in `common/analytics/settings.ts`: a `setting_changed` key, or the reason it is not one |
 
 Screens, modals, error toasts, transactions and dapp requests are tracked centrally. Do not add events for them.
 
@@ -48,20 +49,20 @@ Rules that the types do not catch:
 2. Send it with `track("name", { … })`. Write the name as a string literal, or the liveness test cannot see it.
 3. Do not write `<flow>_started` or any other flow event by hand. `defineFlow` generates them.
 4. If mobile sends an event of the same name, give it mobile's properties, and add a row to `MOBILE_SHARED`.
-5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`core/domains/analytics/accountMessages.ts` for accounts, `dappMessages.ts` for dapp connections and the networks and tokens dapps add), not in the handler: domain code never imports analytics. A dapp request's decision needs a message too: a page that only calls `window.close()` reads `outcome: closed`, never `rejected`.
+5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`CHANGE_OBSERVERS` in `core/domains/analytics/observeMessage.ts`: `accountMessages.ts` for accounts and contacts, `dappMessages.ts` for dapp connections and the networks and tokens dapps add, `chaindataMessages.ts` for the networks and tokens of settings, `nftMessages.ts`), not in the handler: domain code never imports analytics. A dapp request's decision needs a message too: a page that only calls `window.close()` reads `outcome: closed`, never `rejected`.
+6. A setting the user changes needs no `track()`: the `useSetting` and `useAppState` setters send `setting_changed` for a classified key whose value changed. A write the user did not make (an effect that clears a stale value) goes through `settingsStore.set` or `appStore.set`, which send nothing.
 
 ## Add an exemption
 
 - A message: `{ exempt: "transport" | "navigation" | "housekeeping" }` in `MESSAGE_COVERAGE`. A message that changes user state is never exempt: give it `{ event }` or `{ flow }`. A new reason is an edit of `Coverage` in `common/analytics/coverage.ts`.
 - A provider: `{ none: "<what it holds>" }` in `FLOW_PROVIDERS`. The test fails if its hook holds step state.
-- `{ exempt: "pending 5x" }` and `{ pending: "5x" }` mark work that a later analytics unit does. Do not add new ones.
 
 ## When a guard fails
 
 | The message says | Fix |
 | --- | --- |
 | `Property '"pri(x)"' is missing in type … MessageCoverage` | Add the message to `core/domains/analytics/messageCoverage.ts` |
-| `Type '"pending 5a"' is not assignable` | That area has landed. Replace the entry with its event or flow |
+| `Property 'x' is missing in type …` at `common/analytics/settings.ts` | Classify the new setting or app flag there |
 | `Type '"x"' is not assignable to type 'EventName …'` | Add the event to the catalogue first |
 | `Provider "X" (…) is not classified` | Add it to `FLOW_PROVIDERS` in `src/__tests__/analyticsFlowProviders.ts` |
 | `Provider "X" is { none } but its hook … holds step state` | Make it a flow, or move the step state out |

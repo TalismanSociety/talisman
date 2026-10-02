@@ -1,3 +1,5 @@
+import { chainPlatformOf } from "@common/analytics/accounts"
+import { classifyError } from "@common/analytics/errorCategory"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   getAccountPlatformFromAddress,
@@ -8,6 +10,7 @@ import {
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -15,6 +18,7 @@ import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { notify } from "@ui/components/Notifications"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { keyBy } from "lodash-es"
@@ -169,6 +173,14 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             genesisHash,
           },
         ])
+        const platform = chainPlatformOf(getAccountPlatformFromAddress(address))
+        if (platform)
+          track("contact_added", {
+            source: "address_book",
+            platform,
+            has_network: !!genesisHash,
+            name_service: isNsLookup,
+          })
         notify({
           type: "success",
           title: t("New contact added"),
@@ -178,12 +190,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
       } catch (error) {
         setError(
           "address",
-          { message: getErrorMessage(error, t("Unknown error")) },
+          { type: classifyError(error), message: getErrorMessage(error, t("Unknown error")) },
           { shouldFocus: true }
         )
       }
     },
-    [close, setError, t]
+    [close, setError, t, isNsLookup]
   )
 
   return (
@@ -201,7 +213,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
                   spellCheck="false"
                 />
               </FormFieldContainer>
-              <FormFieldContainer error={errors.address?.message} label={t("Address")}>
+              <FormFieldContainer
+                error={errors.address?.message}
+                errorCategory={errorCategoryOfField(errors.address)}
+                label={t("Address")}
+              >
                 <FormFieldInputText
                   type="text"
                   {...register("searchAddress")}

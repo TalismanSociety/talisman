@@ -1,6 +1,7 @@
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -14,7 +15,7 @@ import { TogglePill } from "@ui/components/TogglePill"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalancesHydrate } from "@ui/state/balances"
-import { useAnyNetwork, useNetworks } from "@ui/state/chaindata"
+import { useActiveTokensState, useAnyNetwork, useNetworks } from "@ui/state/chaindata"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -173,11 +174,13 @@ const ResetStatesModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { t } = useTranslation()
+  const activeTokens = useActiveTokensState()
 
   const handleClick = useCallback(async () => {
     activeTokensStore.mutate(() => ({}))
+    track("tokens_reset", { count: Object.keys(activeTokens).length })
     onClose()
-  }, [onClose])
+  }, [onClose, activeTokens])
 
   return (
     <ModalDialog className="h-auto" title={t("Reset tokens")} onCloseClick={onClose}>

@@ -1,7 +1,6 @@
 import { join, relative } from "node:path"
 
-import { catalogue, catalogueDefinitions, type EventName } from "@common/analytics/catalogue"
-import type { PendingArea } from "@common/analytics/coverage"
+import { catalogue, catalogueDefinitions } from "@common/analytics/catalogue"
 import { flowList } from "@common/analytics/flow/registry"
 import { describe, expect, it } from "vitest"
 
@@ -16,9 +15,6 @@ import { listSourceFiles, REPO_ROOT } from "./listSourceFiles"
  * must be string literals at `track(` calls so it can see them.
  */
 const SRC = join(REPO_ROOT, "apps/extension/src")
-
-/** Events kept for parity with mobile that the extension cannot send yet. */
-const UNEMITTED: Partial<Record<EventName, { pending: PendingArea; why: string }>> = {}
 
 /**
  * Events mobile already sends under the same name, with the properties mobile requires. A flow
@@ -104,6 +100,17 @@ const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   // mobile's token_id and coingecko_id stay out: an ERC-20 token id holds its contract address
   custom_token_added: ["network_id", "token_symbol", "has_coingecko_id"],
   token_toggled: ["token_symbol", "network_id", "enabled", "default_enabled"],
+  custom_network_deleted: ["network_id", "platform"],
+  custom_token_deleted: ["network_id"],
+  contact_edited: ["network_changed"],
+  setting_changed: ["key", "value"],
+  language_changed: ["language_code"],
+  auto_lock_changed: ["timeout_ms"],
+  account_switched: ["selection", "accounts_total"],
+  // mobile's token_id stays out, as on custom_token_added
+  token_details_opened: ["symbol", "network_id"],
+  // mobile's query and query_redacted stay out: the extension never sends search text
+  search_performed: ["surface", "query_length", "result_count"],
 }
 
 const scans = listSourceFiles(SRC).map((file) => {
@@ -158,10 +165,10 @@ describe("analytics catalogue", () => {
   it("sends every event that is not a flow event", () => {
     const flowEvents = new Set(flowList().flatMap((flow) => Object.values(flow.eventNames)))
     const dead = Object.keys(catalogue)
-      .filter((name) => !flowEvents.has(name) && !literalEmitters.has(name) && !(name in UNEMITTED))
+      .filter((name) => !flowEvents.has(name) && !literalEmitters.has(name))
       .map(
         (name) =>
-          `Event "${name}" has no emitter. Send it with track("${name}", …) in non-test code, delete it from the catalogue, or list it in UNEMITTED with a pending area.`
+          `Event "${name}" has no emitter. Send it with track("${name}", …) in non-test code, or delete it from the catalogue.`
       )
     expect(dead).toEqual([])
   })
@@ -177,14 +184,6 @@ describe("analytics catalogue", () => {
         : []
     })
     expect(lacking).toEqual([])
-  })
-
-  it("keeps UNEMITTED honest", () => {
-    const stale = Object.keys(UNEMITTED).filter((name) => literalEmitters.has(name))
-    expect(
-      stale,
-      `UNEMITTED lists events that now have an emitter: remove ${stale.join(", ")}.`
-    ).toEqual([])
   })
 
   describe.each(flowList().map((flow) => [flow.name, flow] as const))("flow %s", (name, flow) => {

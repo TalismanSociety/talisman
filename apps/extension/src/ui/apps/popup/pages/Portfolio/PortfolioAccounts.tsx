@@ -35,6 +35,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state/balances"
 import { cn } from "@ui/util/cn"
@@ -81,10 +82,12 @@ type AccountOption = FolderAccountOption | AccountAccountOption
 
 const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     navigate(`/portfolio?folder=${option.id}`)
-  }, [navigate, option])
+    reportAccountSwitched("folder")
+  }, [navigate, option, reportAccountSwitched])
 
   return (
     <button
@@ -113,10 +116,12 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
 
 const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     navigate(`/portfolio/tokens?account=${option.address}`)
-  }, [navigate, option])
+    reportAccountSwitched("account", option.accountType)
+  }, [navigate, option, reportAccountSwitched])
 
   return (
     <div

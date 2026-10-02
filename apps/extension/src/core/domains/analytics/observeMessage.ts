@@ -7,8 +7,10 @@ import { requestStore } from "../../libs/requests/store"
 import type { MessageTypes, RequestTypes, ResponseTypes } from "../../types"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { observeAccountMessage } from "./accountMessages"
+import { observeChaindataMessage } from "./chaindataMessages"
 import { observeDappMessage } from "./dappMessages"
 import { dappRequestTracker } from "./dappRequests"
+import { observeNftMessage } from "./nftMessages"
 import { track } from "./track"
 import { resolveTxContext, type TxAttempt } from "./txContext"
 
@@ -245,10 +247,21 @@ const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
     })
 }
 
+/** Each returns what to run once the handler succeeded, or null for a message it does not observe. */
+const CHANGE_OBSERVERS: readonly ((
+  type: MessageTypes,
+  request: unknown
+) => ((response: unknown) => Promise<void>) | null)[] = [
+  observeAccountMessage,
+  observeDappMessage,
+  observeChaindataMessage,
+  observeNftMessage,
+]
+
 /**
  * Called by `talismanHandler` for every extension message, before the handler runs. Returns
  * what to call with the handler's outcome, or null when the message concerns no transaction,
- * no dapp request decision, no account change and no dapp connection, network or token change.
+ * no dapp request decision and no change a `CHANGE_OBSERVERS` table reports.
  */
 export const observeExtensionMessage = (
   type: MessageTypes,
@@ -260,17 +273,15 @@ export const observeExtensionMessage = (
     if (decision && requestId) dappRequestTracker.noteDecision(requestId, decision, Date.now())
 
     const submission = isSubmission(type) ? observeSubmission(type, request) : null
-    const accountChange = observeAccountMessage(type, request)
-    const dappChange = observeDappMessage(type, request)
-    if (!requestId && !submission && !accountChange && !dappChange) return null
+    const changes = CHANGE_OBSERVERS.flatMap((observe) => observe(type, request) ?? [])
+    if (!requestId && !submission && !changes.length) return null
 
     return (outcome) => {
       try {
         if (decision === "approved" && requestId && !outcome.ok)
           dappRequestTracker.noteApprovalFailure(requestId, classifyError(outcome.error))
         submission?.(outcome).catch(reportFailure)
-        if (accountChange && outcome.ok) accountChange(outcome.response).catch(reportFailure)
-        if (dappChange && outcome.ok) dappChange().catch(reportFailure)
+        if (outcome.ok) for (const change of changes) change(outcome.response).catch(reportFailure)
       } catch (cause) {
         reportFailure(cause)
       }

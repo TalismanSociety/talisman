@@ -3,6 +3,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { ExclusiveButtonsList } from "@ui/components/ExclusiveButtonsList"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Spacer } from "@ui/components/Spacer"
+import { changeLanguage } from "@ui/hooks/analytics/settings"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,11 +19,7 @@ const Content = () => {
     <>
       <HeaderBlock title={t("Language")} text={t("Choose your preferred language")} />
       <Spacer />
-      <ExclusiveButtonsList
-        options={options}
-        value={i18n.language}
-        onChange={i18n.changeLanguage}
-      />
+      <ExclusiveButtonsList options={options} value={i18n.language} onChange={changeLanguage} />
       <Spacer />
     </>
   )
