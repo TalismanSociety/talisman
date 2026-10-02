@@ -68,7 +68,7 @@ const PasswordMigrationAlertPopupDrawer = () => {
   }, [])
 
   return (
-    <Drawer isOpen={isOpen} anchor="bottom">
+    <Drawer analyticsId="password_migration_alert_popup" isOpen={isOpen} anchor="bottom">
       <AlertCard onAccept={handleAccept} />
     </Drawer>
   )

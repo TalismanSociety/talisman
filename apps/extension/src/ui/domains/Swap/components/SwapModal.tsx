@@ -10,7 +10,7 @@ export const SwapModal = () => {
   const { isOpen, close, args } = useSwapModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="swap" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="swap-modal">
         <SwapProvider stateInit={args}>
           <SwapWizard />

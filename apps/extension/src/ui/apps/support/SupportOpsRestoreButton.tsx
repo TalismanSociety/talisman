@@ -17,7 +17,7 @@ export const SupportOpsRestoreButton = () => {
         description="Import your Talisman data from a backup file"
         onClick={open}
       />
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="support_restore" isOpen={isOpen} onDismiss={close}>
         <RestoreModalDialog onClose={close} />
       </Modal>
     </>

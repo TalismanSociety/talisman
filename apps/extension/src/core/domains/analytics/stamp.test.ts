@@ -119,6 +119,28 @@ describe("stampEvent", () => {
     })
   })
 
+  it("stamps the page's screen as $screen_name, and $screen keeps its own", () => {
+    const parsed = (raw: unknown) => {
+      const result = parseTrackedEvent(raw)
+      if (!result.ok) throw new Error("fixture does not parse")
+      return result.event
+    }
+
+    const modal = stamp(
+      parsed({ event: "modal_opened", properties: { modal_id: "swap" }, screen: "/portfolio" })
+    )
+    const screen = stamp(
+      parsed({
+        event: "$screen",
+        properties: { $screen_name: "/earn", previous_screen_name: "/portfolio" },
+        screen: "/portfolio",
+      })
+    )
+
+    expect(modal.record.wire.properties.$screen_name).toBe("/portfolio")
+    expect(screen.record.wire.properties.$screen_name).toBe("/earn")
+  })
+
   it("lets no event property override $session_id or $process_person_profile", () => {
     const event = {
       ...optIn(),

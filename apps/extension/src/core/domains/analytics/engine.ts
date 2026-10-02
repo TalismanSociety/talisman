@@ -112,7 +112,7 @@ export class AnalyticsEngine {
 
   capture({ result, uiContext, realNow }: CaptureInput): Promise<Disposition> {
     return this.#serial(async () => {
-      if (result.ok) return this.#capture(result.event, uiContext, realNow)
+      if (result.ok) return this.#capture(result.event, uiContext, realNow, result.issues)
       log.warn("[analytics] rejected event", result.name, result.issues)
       await this.#log({
         id: crypto.randomUUID(),
@@ -123,6 +123,11 @@ export class AnalyticsEngine {
       })
       return "rejected"
     })
+  }
+
+  /** Whether an event of this kind would be queued now: no work for opted-out or pre-consent installs. */
+  admits(kind: ConsentKind): Promise<boolean> {
+    return this.#serial(async () => admit(kind, this.#consent, this.#transmission) === "queued")
   }
 
   flush(kind: ConsentKind): Promise<void> {
@@ -188,7 +193,12 @@ export class AnalyticsEngine {
     ])
   }
 
-  async #capture(event: ParsedEvent, uiContext: UiContext, realNow: number): Promise<Disposition> {
+  async #capture(
+    event: ParsedEvent,
+    uiContext: UiContext,
+    realNow: number,
+    issues?: readonly string[]
+  ): Promise<Disposition> {
     const admission = admit(event.kind, this.#consent, this.#transmission)
     if (admission === "dropped_consent" || admission === "dropped_off") {
       await this.#log({
@@ -196,6 +206,7 @@ export class AnalyticsEngine {
         name: event.name,
         capturedAt: realNow,
         disposition: admission,
+        issues,
       })
       return admission
     }
@@ -221,6 +232,7 @@ export class AnalyticsEngine {
       capturedAt: realNow,
       disposition: admission,
       wire: record.wire,
+      issues,
     })
 
     if (admission === "queued") {

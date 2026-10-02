@@ -174,7 +174,7 @@ const NoAccountWarning = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <Drawer isOpen anchor="bottom" containerId="main">
+    <Drawer analyticsId="no_account_warning" isOpen anchor="bottom" containerId="main">
       <DrawerContent className="flex flex-col gap-8">
         <div className="w-full text-center">
           <InfoIcon className="inline-block text-3xl text-primary-500" />

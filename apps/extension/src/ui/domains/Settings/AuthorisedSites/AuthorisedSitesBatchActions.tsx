@@ -30,7 +30,7 @@ const BatchActionButton: FC<{
       <button type="button" onClick={open} className={className}>
         {children}
       </button>
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="authorised_sites_batch_action" isOpen={isOpen} onDismiss={close}>
         <ModalDialog onCloseClick={close} title={confirmTitle} className="h-auto border-grey-800">
           <p className="text-body-secondary">{confirmDescription}</p>
           <div className="mt-8 grid grid-cols-2 gap-8">

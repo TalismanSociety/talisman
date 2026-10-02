@@ -159,6 +159,7 @@ export const NetworkOptionsModal: FC<{
 }> = ({ isOpen, options, selected, containerId, onChange, onClose }) => {
   return (
     <Modal
+      analyticsId="network_options"
       isOpen={isOpen}
       onDismiss={onClose}
       className={cn(

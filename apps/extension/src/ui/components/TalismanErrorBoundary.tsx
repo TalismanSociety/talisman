@@ -1,7 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { DEBUG, DISCORD_TALISMAN_URL } from "@common/constants"
 import { sentry } from "@core/config/sentry"
 import { TalismanDeadHandIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
+import { reportErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { DexieError } from "dexie"
 import { Component, type ErrorInfo, type ReactNode, useCallback } from "react"
 
@@ -37,6 +39,8 @@ export class TalismanErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
+    reportErrorShown({ surface: "boundary", category: classifyError(error) })
+
     // mirror @sentry/react's captureReactException: link an error carrying the React
     // component stack via `cause`, surfaced as a navigable stacktrace by the
     // LinkedErrors integration

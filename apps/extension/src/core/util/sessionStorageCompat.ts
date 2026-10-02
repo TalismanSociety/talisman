@@ -1,5 +1,7 @@
 interface SessionStorageData {
   password?: string
+  /** Why the wallet last locked, for app_unlocked: gone after a browser or extension restart. */
+  analyticsLastLockReason?: string
 }
 
 abstract class TalismanSessionStorage {

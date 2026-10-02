@@ -78,7 +78,7 @@ export const MnemonicDeleteModal = () => {
   }, [inputCheck, t])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="mnemonic_delete" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog
         className="h-auto"
         title={

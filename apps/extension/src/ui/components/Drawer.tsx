@@ -1,4 +1,8 @@
 import { Transition, TransitionChild } from "@headlessui/react"
+import {
+  OverlayAnalyticsContext,
+  useOverlayAnalytics,
+} from "@ui/hooks/analytics/useOverlayAnalytics"
 import { DismissLayerContext, useDismissOnEscape } from "@ui/hooks/useDismissOnEscape"
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
 import { cn } from "@ui/util/cn"
@@ -69,6 +73,8 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
 }
 
 type DrawerProps = {
+  /** Stable snake_case id for analytics, chosen once: never rename it. */
+  analyticsId: string
   anchor: DrawerAnchor
   children: ReactNode
   isOpen?: boolean
@@ -78,6 +84,7 @@ type DrawerProps = {
 }
 
 export const Drawer: FC<DrawerProps> = ({
+  analyticsId,
   anchor,
   children,
   isOpen,
@@ -86,16 +93,18 @@ export const Drawer: FC<DrawerProps> = ({
   onDismiss,
 }) => {
   const [status, setStatus] = useState<OpenCloseStatus>("closed")
-  const dismissLayer = useDismissOnEscape(!!isOpen, onDismiss)
+  const overlay = useOverlayAnalytics({ id: analyticsId, isOpen: !!isOpen })
+  const dismissLayer = useDismissOnEscape(!!isOpen, overlay.dismissVia("escape", onDismiss))
+  const dismissByBackdrop = overlay.dismissVia("backdrop", onDismiss)
 
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
-      if (!onDismiss) return
+      if (!dismissByBackdrop) return
 
       e.stopPropagation()
-      onDismiss()
+      dismissByBackdrop()
     },
-    [onDismiss]
+    [dismissByBackdrop]
   )
 
   const { position, drawer, enterFrom, enterTo, leaveFrom, leaveTo } = useMemo(
@@ -139,9 +148,11 @@ export const Drawer: FC<DrawerProps> = ({
         beforeLeave={() => setStatus("closing")}
         afterLeave={() => setStatus("closed")}
       >
-        <OpenCloseStatusProvider status={status}>
-          <DismissLayerContext value={dismissLayer}>{children}</DismissLayerContext>
-        </OpenCloseStatusProvider>
+        <OverlayAnalyticsContext value={overlay.layer}>
+          <OpenCloseStatusProvider status={status}>
+            <DismissLayerContext value={dismissLayer}>{children}</DismissLayerContext>
+          </OpenCloseStatusProvider>
+        </OverlayAnalyticsContext>
       </TransitionChild>
     </Transition>,
     container

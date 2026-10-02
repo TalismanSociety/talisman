@@ -83,7 +83,14 @@ export const NavigationDrawer: FC = () => {
   }, [openRampsModal, close])
 
   return (
-    <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
+    <Drawer
+      analyticsId="navigation"
+      className="h-full"
+      containerId="main"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <div className="flex h-full w-full flex-col bg-black">
         <header className="box-border flex h-36 w-full items-center justify-between gap-6 border-grey-800 border-b px-12">
           <TalismanWhiteLogo className="h-6.25 w-auto" />

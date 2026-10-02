@@ -189,7 +189,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         <form.Field
           name="name"
           children={(field) => (
-            <FormFieldContainer error={field.state.meta.errors[0]}>
+            <FormFieldContainer field="name" error={field.state.meta.errors[0]}>
               <FormFieldInputText
                 value={field.state.value}
                 placeholder={t("Choose a name")}
@@ -225,7 +225,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         <form.Field
           name="privateKey"
           children={(field) => (
-            <FormFieldContainer error={field.state.meta.errors[0]}>
+            <FormFieldContainer field="privateKey" error={field.state.meta.errors[0]}>
               <FormFieldInputText
                 value={field.state.value}
                 placeholder={t("Enter your private key")}

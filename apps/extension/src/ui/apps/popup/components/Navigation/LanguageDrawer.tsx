@@ -58,7 +58,7 @@ export const LanguageDrawer = () => {
   const { isOpen } = useLanguageDrawerOpenClose()
 
   return (
-    <Drawer anchor="right" isOpen={isOpen} containerId="main">
+    <Drawer analyticsId="language" anchor="right" isOpen={isOpen} containerId="main">
       <LanguageDrawerContent />
     </Drawer>
   )

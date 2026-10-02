@@ -1,3 +1,4 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import type { ReactNode } from "react"
 
@@ -8,6 +9,9 @@ export type NotificationProps = {
   title: ReactNode
   subtitle?: ReactNode
   right?: ReactNode
+  /** An error toast's caught error: its category is reported, never its text. */
+  cause?: unknown
+  errorCategory?: ErrorCategory
 }
 
 const NotificationIcon = ({ type }: { type: NotificationType }) => {

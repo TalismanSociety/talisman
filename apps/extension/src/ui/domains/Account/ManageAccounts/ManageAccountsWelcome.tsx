@@ -38,11 +38,17 @@ export const ManageAccountsWelcome = () => {
   }, [hasFolders, hideWelcome, open, setHideWelcome])
 
   return IS_POPUP ? (
-    <Drawer anchor={"bottom"} containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Drawer
+      analyticsId="manage_accounts_welcome"
+      anchor={"bottom"}
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <Content onClose={handleClose} onDismiss={close} />
     </Drawer>
   ) : (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="manage_accounts_welcome" isOpen={isOpen} onDismiss={close}>
       <Content onClose={handleClose} onDismiss={close} />
     </Modal>
   )

@@ -105,7 +105,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
   }, [contact.address, isAddressSs58, genesisHash, compatibleNetworksByGenesisHash])
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="contact_edit" isOpen={isOpen} onDismiss={close}>
       <div id="edit-contact-modal" className="h-150 max-h-full w-100 overflow-hidden">
         <ModalDialog title={t("Edit contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">

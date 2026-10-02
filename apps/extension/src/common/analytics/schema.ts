@@ -23,8 +23,14 @@ const HOSTNAME =
   /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/
 const ROUTE_PATTERN = /^(?:\/|(?:\/(?:[A-Za-z0-9_-]+|:[A-Za-z][A-Za-z0-9]*|\*))+)$/
 
+export const isHostname = (value: string): boolean => HOSTNAME.test(value)
+
 const MAX_COUNT = 1_000_000
 const MAX_DURATION_MS = 7 * 24 * 60 * 60_000
+
+/** A value `p.durationMs` accepts: whole, non-negative, capped rather than rejected. */
+export const toDurationMs = (ms: number): number =>
+  Number.isNaN(ms) ? 0 : Math.min(MAX_DURATION_MS, Math.max(0, Math.round(ms)))
 
 const int = (description: string, { min, max }: { min?: number; max?: number } = {}) => {
   let schema = z.number().int()
@@ -87,6 +93,24 @@ export const p = {
     ...def,
     schema: def.schema.nullable(),
   }),
+
+  /** `<left>|<right>`, each half valid for its own definition: a list of these stays enumerable. */
+  pair: <L extends string, R extends string>(
+    left: PropertyDef<L>,
+    right: PropertyDef<R>,
+    description: string
+  ): PropertyDef<`${L}|${R}`> =>
+    string(
+      z.string().refine((value) => {
+        const separator = value.indexOf("|")
+        return (
+          separator !== -1 &&
+          left.schema.safeParse(value.slice(0, separator)).success &&
+          right.schema.safeParse(value.slice(separator + 1)).success
+        )
+      }),
+      description
+    ) as PropertyDef<`${L}|${R}`>,
 }
 
 export type PropertyUse<V extends PropertyValue = PropertyValue> =
@@ -94,7 +118,7 @@ export type PropertyUse<V extends PropertyValue = PropertyValue> =
   | "optional"
   | { readonly narrow: z.ZodType<V>; readonly optional?: true }
 
-type Registry = Readonly<Record<string, PropertyDef>>
+export type Registry = Readonly<Record<string, PropertyDef>>
 
 type IsOptionalUse<U> = U extends "optional" ? true : U extends { optional: true } ? true : false
 

@@ -77,7 +77,12 @@ const TokenPickerModal: FC<{
   onDismiss: () => void
 }> = ({ isOpen, ...contentProps }) => {
   return (
-    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={contentProps.onDismiss}>
+    <Modal
+      analyticsId="token_picker"
+      containerId="swap-modal"
+      isOpen={isOpen}
+      onDismiss={contentProps.onDismiss}
+    >
       <TokenPickerModalContent isOpen={isOpen} {...contentProps} />
     </Modal>
   )
@@ -362,6 +367,7 @@ const SelectTokenWarningDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="select_token_warning"
       anchor="bottom"
       isOpen={!!tokenId}
       onDismiss={onBack}

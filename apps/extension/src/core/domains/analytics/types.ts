@@ -1,10 +1,14 @@
 import type { TrackRequest } from "@common/analytics/catalogue"
+import type { RiskVerdict } from "@common/analytics/dapp"
 import type { ConsentKind, PropertyValue } from "@common/analytics/schema"
 
 export type Disposition = "queued" | "held" | "dropped_consent" | "dropped_off" | "rejected"
 
+export type RequestRiskReport = { id: string; verdict: RiskVerdict }
+
 export interface AnalyticsMessages {
   "pri(analytics.track)": [TrackRequest, Disposition]
+  "pri(analytics.requestRisk)": [RequestRiskReport, boolean]
 }
 
 export type WireTime = number & { readonly __brand: "WireTime" }

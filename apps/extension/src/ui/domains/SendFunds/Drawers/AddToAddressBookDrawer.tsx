@@ -156,7 +156,13 @@ export const AddToAddressBookDrawer: FC<{
   asChild?: boolean
 }> = ({ address, tokenGenesisHash, containerId, isOpen, close }) => {
   return (
-    <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
+    <Drawer
+      analyticsId="add_to_address_book"
+      isOpen={isOpen}
+      anchor="bottom"
+      onDismiss={close}
+      containerId={containerId}
+    >
       <AddToAddressBookDrawerForm
         address={address}
         tokenGenesisHash={tokenGenesisHash}

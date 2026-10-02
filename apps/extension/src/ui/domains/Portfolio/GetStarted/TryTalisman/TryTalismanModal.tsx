@@ -11,7 +11,7 @@ export const TryTalismanModal = () => {
   const { isOpen, close } = useTryTalismanModal()
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close} containerId="main">
+    <Modal analyticsId="try_talisman" isOpen={isOpen} onDismiss={close} containerId="main">
       <ModalDialog
         title={
           <Trans t={t}>

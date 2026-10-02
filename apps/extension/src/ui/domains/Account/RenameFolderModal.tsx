@@ -45,7 +45,7 @@ export const RenameFolderModal = () => {
   const { id, name, treeName, close, isOpen } = useRenameFolderModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="rename_folder" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Rename Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <RenameFolder
@@ -150,7 +150,7 @@ const RenameFolder = ({
 
   return (
     <form className={className} onSubmit={handleSubmit(submit)}>
-      <FormFieldContainer label={t("Folder name")} error={errors.name?.message}>
+      <FormFieldContainer field="name" label={t("Folder name")} error={errors.name?.message}>
         <FormFieldInputText
           {...registerName}
           ref={handleNameRef}

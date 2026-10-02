@@ -11,7 +11,12 @@ export const YieldxyzEnterPositionModal: FC = () => {
   const { isOpen, close, args: stateInit } = useYieldxyzEnterModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="yieldxyz_enter_position"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="YieldxyzEnterPositionModal" />}>
           <YieldxyzEnterWizardProvider stateInit={stateInit}>

@@ -28,7 +28,12 @@ export const SearchablePickerDialog: FC<SearchablePickerDialogProps> = ({
   children,
 }) => {
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      analyticsId="searchable_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <SearchablePickerContent
         title={title}
         searchPlaceholder={searchPlaceholder}

@@ -13,7 +13,12 @@ export const BittensorChangeValidatorModal = () => {
   const { isOpen, close } = useBittensorChangeValidatorModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="bittensor_change_validator"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <div
         id={STAKING_MODAL_CONTENT_CONTAINER_ID}
         className={cn(

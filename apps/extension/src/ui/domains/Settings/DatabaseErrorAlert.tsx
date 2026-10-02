@@ -3,6 +3,7 @@ import { errorsStore } from "@core/domains/app/store.errors"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Card } from "@ui/components/Card"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useErrorsStoreValue } from "@ui/state/errors"
 import { useCallback } from "react"
@@ -14,6 +15,7 @@ export const DatabaseErrorAlert = () => {
   const databaseUnavailable = useErrorsStoreValue("databaseUnavailable")
   const databaseQuotaExceeded = useErrorsStoreValue("databaseQuotaExceeded")
   const isOpen = databaseUnavailable || databaseQuotaExceeded
+  useErrorShown({ shown: isOpen && "database", surface: "screen", category: "storage" })
 
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload()
   const dismiss = useCallback(

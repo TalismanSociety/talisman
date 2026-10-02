@@ -8,6 +8,7 @@ import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
@@ -34,6 +35,7 @@ const notifyPayloadExpired = (t: (key: string) => string) => {
     type: "error",
     title: t("Transaction expired"),
     subtitle: t("Please try again."),
+    errorCategory: "payload_expired",
   })
 }
 
@@ -135,6 +137,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
           title: t("Failed to submit"),
           // biome-ignore lint/suspicious/noExplicitAny: legacy
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+          cause: err,
         })
       }
     },
@@ -201,6 +204,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
           title: t("Failed to submit"),
           // biome-ignore lint/suspicious/noExplicitAny: legacy
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+          cause: err,
         })
       }
     },
@@ -275,6 +279,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         title: t("Failed to submit"),
         // biome-ignore lint/suspicious/noExplicitAny: legacy
         subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+        cause: err,
       })
     }
   }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, t])
@@ -326,14 +331,32 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-export const SapiSendButton: FC<SapiSendButtonProps> = ({ payload, disabled, ...rest }) => {
+export const SapiSendButton: FC<SapiSendButtonProps> = ({
+  payload,
+  disabled,
+  onSubmitted,
+  ...rest
+}) => {
   const { t } = useTranslation()
+  const markOverlayCompleted = useMarkOverlayCompleted()
+  const handleSubmitted = useCallback(
+    (...submitted: Parameters<typeof onSubmitted>) => {
+      markOverlayCompleted()
+      onSubmitted(...submitted)
+    },
+    [markOverlayCompleted, onSubmitted]
+  )
 
   // while a payload is rebuilt or withheld, keep the signing flow mounted with the last one:
   // unmounting it drops a Ledger, Vault or password step that is in progress
   const [lastPayload, setLastPayload] = useState(payload)
   if (payload && payload !== lastPayload) setLastPayload(payload)
-  const props = { ...rest, payload: payload ?? lastPayload, disabled: disabled || !payload }
+  const props = {
+    ...rest,
+    onSubmitted: handleSubmitted,
+    payload: payload ?? lastPayload,
+    disabled: disabled || !payload,
+  }
 
   const account = useAccountByAddress(props.payload?.address)
 

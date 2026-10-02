@@ -52,6 +52,7 @@ export const CopyAddressFormatPickerDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="copy_address_format_picker"
       containerId="copy-address-modal"
       isOpen={!!format}
       anchor="bottom"

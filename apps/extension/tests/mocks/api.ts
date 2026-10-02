@@ -46,6 +46,7 @@ const sitesStore = new SitesAuthorizedStore(authorisedSites)
 
 const mockedApiMethods = {
   analyticsTrack: vi.fn().mockResolvedValue("queued"),
+  analyticsRequestRisk: vi.fn().mockResolvedValue(true),
   accountsSubscribe: vi.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
     cb([
       {

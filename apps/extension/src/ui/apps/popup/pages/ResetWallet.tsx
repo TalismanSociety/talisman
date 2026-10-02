@@ -41,7 +41,7 @@ const ConfirmDrawer = ({
   const isMatch = useMemo(() => confirmText?.toLowerCase() === "reset wallet", [confirmText])
 
   return (
-    <Drawer isOpen={isOpen} anchor="bottom">
+    <Drawer analyticsId="reset_wallet_confirm" isOpen={isOpen} anchor="bottom">
       <DrawerContent>
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">

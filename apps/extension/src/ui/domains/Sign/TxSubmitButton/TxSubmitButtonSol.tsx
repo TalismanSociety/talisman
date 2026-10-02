@@ -46,6 +46,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           title: `Failed to submit`,
           type: "error",
           subtitle: getErrorMessage(cause, t("Unknown error")),
+          cause,
         })
       }
     },
@@ -69,6 +70,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         title: `Failed to submit`,
         type: "error",
         subtitle: getErrorMessage(cause, t("Unknown error")),
+        cause,
       })
     } finally {
       setIsSubmitting(false)

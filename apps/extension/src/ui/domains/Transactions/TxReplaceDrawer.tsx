@@ -14,6 +14,7 @@ import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
@@ -107,6 +108,7 @@ const EvmDrawerContent: FC<{
   const account = useAccountByAddress(tx.account)
 
   const [isProcessing, setIsProcessing] = useState(false)
+  const markOverlayCompleted = useMarkOverlayCompleted()
 
   const handleSend = useCallback(async () => {
     if (!transaction) return
@@ -114,6 +116,7 @@ const EvmDrawerContent: FC<{
     try {
       const serialized = serializeTransactionRequest(transaction)
       const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
+      markOverlayCompleted()
       onClose?.(newHash)
     } catch (err) {
       log.error("handleSend", { err })
@@ -123,10 +126,11 @@ const EvmDrawerContent: FC<{
         subtitle: getErrorMessage(err).includes("nonce too low")
           ? t("Transaction already confirmed")
           : t(`Failed to {{type}}`, { type }),
+        cause: err,
       })
     }
     setIsProcessing(false)
-  }, [onClose, transaction, tx, type, t])
+  }, [markOverlayCompleted, onClose, transaction, tx, type, t])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -135,6 +139,7 @@ const EvmDrawerContent: FC<{
       try {
         const serialized = serializeTransactionRequest(transaction)
         const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
+        markOverlayCompleted()
         onClose?.(newHash)
       } catch (err) {
         log.error("handleSend", { err })
@@ -145,11 +150,12 @@ const EvmDrawerContent: FC<{
             getErrorMessage(err) === "nonce too low"
               ? t("Transaction already confirmed")
               : t(`Failed to {{type}}`, { type }),
+          cause: err,
         })
       }
       setIsProcessing(false)
     },
-    [onClose, t, transaction, tx, type]
+    [markOverlayCompleted, onClose, t, transaction, tx, type]
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -283,7 +289,13 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
   // can't use a drawer in dashbaord, render a modal instead
   if (!IS_POPUP) {
     return (
-      <Modal isOpen={isOpenReady} anchor="center" containerId={containerId} onDismiss={onClose}>
+      <Modal
+        analyticsId="tx_replace"
+        isOpen={isOpenReady}
+        anchor="center"
+        containerId={containerId}
+        onDismiss={onClose}
+      >
         <div
           id="tx-main"
           className="flex h-150 max-h-dvh w-100 max-w-dvw flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
@@ -304,6 +316,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
 
   return (
     <Drawer
+      analyticsId="tx_replace"
       isOpen={isOpenReady}
       anchor="bottom"
       containerId={containerId ?? "main"}

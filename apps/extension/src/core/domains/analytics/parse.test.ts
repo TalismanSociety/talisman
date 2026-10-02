@@ -46,3 +46,31 @@ describe("parseTrackedEvent", () => {
     expect(JSON.stringify(result)).not.toContain(secret)
   })
 })
+
+describe("the page's screen", () => {
+  const event = { event: "modal_opened", properties: { modal_id: "swap" } }
+
+  it("rides with the event when it is a route pattern", () => {
+    const result = parseTrackedEvent({ ...event, screen: "/portfolio/tokens/:symbol" })
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        event: expect.objectContaining({ screen: "/portfolio/tokens/:symbol" }),
+      })
+    )
+  })
+
+  it.each([
+    ["a path with a symbol value", "/portfolio/tokens/USDC.e"],
+    ["a query string", "/portfolio?account=5Grw"],
+  ])("is dropped, never the event, when it is %s", (_, screen) => {
+    const result = parseTrackedEvent({ ...event, screen })
+
+    expect(result).toEqual({
+      ok: true,
+      event: { name: "modal_opened", kind: "usage", properties: { modal_id: "swap" } },
+      issues: ["screen: invalid_format"],
+    })
+  })
+})

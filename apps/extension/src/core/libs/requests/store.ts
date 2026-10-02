@@ -1,5 +1,5 @@
 import { TEST } from "@common/constants"
-import { map, ReplaySubject } from "rxjs"
+import { map, ReplaySubject, Subject } from "rxjs"
 import { v4 } from "uuid"
 import { genericSubscription } from "../../handlers/subscriptions"
 import type { Port } from "../../types/base"
@@ -41,6 +41,18 @@ class RequestCounts {
   }
 }
 
+export type RequestEnding =
+  | "resolved"
+  | "rejected"
+  | "window_closed"
+  | "port_disconnected"
+  | "open_failed"
+  | "ignored"
+
+export type RequestFact =
+  | { type: "created"; request: ValidRequests; at: number }
+  | { type: "ended"; request: ValidRequests; ending: RequestEnding; error?: Error; at: number }
+
 class RequestStore {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<
@@ -50,6 +62,8 @@ class RequestStore {
   // `observable` is kept up to date with the list of requests, and ensures that the front end
   // can easily set up a subscription to the data, and the state can show the correct message on the icon
   readonly observable = new ReplaySubject<ValidRequests[]>(1)
+  /** Each request is created once and ends once, whichever exit runs first. */
+  readonly facts$ = new Subject<RequestFact>()
 
   allRequests(): AnyRespondableRequest[]
   allRequests<T extends KnownRequestTypes>(type: T): KnownRespondableRequest<T>[]
@@ -69,9 +83,24 @@ class RequestStore {
   public clearRequests() {
     Object.keys(this.requests).forEach((key) => {
       windowManager.popupClose(this.requests[key].windowId)
-      delete this.requests[key]
+      this.#end(key, "window_closed")
     })
+  }
+
+  #end(id: string, ending: RequestEnding, error?: Error): boolean {
+    const entry = this.requests[id]
+    if (!entry) return false
+
+    delete this.requests[id]
     this.observable.next(this.getAllRequests())
+    this.facts$.next({
+      type: "ended",
+      request: this.extractBaseRequest(entry.request),
+      ending,
+      ...(error && { error }),
+      at: Date.now(),
+    })
+    return true
   }
 
   public createRequest<
@@ -84,12 +113,7 @@ class RequestStore {
       // reject pending request if user closes the tab that requested it
       if (port?.onDisconnect)
         port.onDisconnect.addListener(() => {
-          if (!this.requests[id]) return
-
-          delete this.requests[id]
-          this.observable.next(this.getAllRequests())
-
-          reject(new Error("Port disconnected"))
+          if (this.#end(id, "port_disconnected")) reject(new Error("Port disconnected"))
         })
 
       const newRequest = {
@@ -103,24 +127,25 @@ class RequestStore {
       } as KnownRespondableRequest<T>
 
       this.requests[id] = { request }
+      this.facts$.next({ type: "created", request: newRequest, at: Date.now() })
+
+      const openFailed = (error: Error) => {
+        this.#end(id, "open_failed")
+        reject(error)
+      }
 
       windowManager
         .popupOpen(`#/${requestOptions.type}/${id}`, () => {
-          if (!this.requests[id]) return
-
-          delete this.requests[id]
-          this.observable.next(this.getAllRequests())
-
-          reject(new Error("Cancelled"))
+          if (this.#end(id, "window_closed")) reject(new Error("Cancelled"))
         })
         .then((windowId) => {
-          if (windowId === undefined && !TEST) reject(new Error("Failed to open popup"))
-          else {
+          if (windowId === undefined && !TEST) openFailed(new Error("Failed to open popup"))
+          else if (this.requests[id]) {
             this.requests[id].windowId = windowId
             this.observable.next(this.getAllRequests())
           }
         })
-        .catch(reject)
+        .catch(openFailed)
     })
   }
 
@@ -139,19 +164,18 @@ class RequestStore {
     resolve: Resolver<KnownResponse<T>>["resolve"],
     reject: (error: Error) => void
   ): Resolver<KnownResponse<T>> {
-    const complete = (): void => {
+    const complete = (ending: RequestEnding, error?: Error): void => {
       if (this.requests[id]) windowManager.popupClose(this.requests[id].windowId)
-      delete this.requests[id]
-      this.observable.next(this.getAllRequests())
+      this.#end(id, ending, error)
     }
 
     return {
       reject: (error: Error): void => {
-        complete()
+        complete("rejected", error)
         reject(error)
       },
       resolve: (result: KnownResponse<T>): void => {
-        complete()
+        complete("resolved")
         resolve(result)
       },
     }
@@ -171,9 +195,7 @@ class RequestStore {
 
   public deleteRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
     if (this.requests[id]) windowManager.popupClose(this.requests[id].windowId)
-    delete this.requests[id]
-    this.observable.next(this.getAllRequests())
-    return
+    this.#end(id, "ignored")
   }
 
   public getAllRequests(): ValidRequests[]

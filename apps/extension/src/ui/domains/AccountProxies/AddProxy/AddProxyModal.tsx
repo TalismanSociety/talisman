@@ -44,7 +44,7 @@ type ActivePicker = "network" | "delegate" | "account" | "proxyType" | null
 export const AddProxyModal: FC = () => {
   const { isOpen, args, close } = useAddProxyModal()
   return (
-    <Modal isOpen={isOpen && !!args?.address} onDismiss={close}>
+    <Modal analyticsId="add_proxy" isOpen={isOpen && !!args?.address} onDismiss={close}>
       <PopupSizeModalContainer id="add-proxy-modal">
         {!!args?.address && <AddProxyContent address={args.address} onClose={close} />}
       </PopupSizeModalContainer>

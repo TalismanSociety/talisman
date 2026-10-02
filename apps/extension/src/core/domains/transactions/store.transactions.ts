@@ -3,11 +3,48 @@ import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { parseTransactionInfo, type SolTransaction, serializeTransaction } from "@talismn/solana"
 import merge from "lodash-es/merge"
+import { Subject } from "rxjs"
 import type { Hex, TransactionRequest } from "viem"
 import { db } from "../../db"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
-import type { SwapStatus, TransactionStatus, WalletTransactionInfo } from "./types"
+import type {
+  SwapStatus,
+  TransactionStatus,
+  WalletTransaction,
+  WalletTransactionInfo,
+} from "./types"
+
+/**
+ * watch: a watcher or the cleanup saw it settle. sibling: a same-nonce transaction settled first.
+ * dropped: the cleanup proved the chain never saw it. restart: the worker restart pass.
+ */
+export type TxStatusReason = "watch" | "sibling" | "dropped" | "restart"
+
+/** A status change this store committed, published after the commit. */
+export type TxStatusFact = {
+  row: WalletTransaction
+  from: TransactionStatus
+  to: TransactionStatus
+  reason: TxStatusReason
+  at: number
+}
+
+export const txStatusFacts$ = new Subject<TxStatusFact>()
+
+type PendingFact = Omit<TxStatusFact, "at">
+
+const publish = (facts: readonly PendingFact[]) => {
+  const at = Date.now()
+  for (const fact of facts) txStatusFacts$.next({ ...fact, at })
+}
+
+const collectStatusChange =
+  (facts: PendingFact[], to: TransactionStatus, reason: TxStatusReason) =>
+  (row: WalletTransaction) => {
+    facts.push({ row: { ...row, status: to }, from: row.status, to, reason })
+    row.status = to
+  }
 
 type AddTransactionOptions = {
   label?: string
@@ -151,15 +188,19 @@ export const addSubstrateTransaction = async (
   }
 }
 
-export const updateTransactionStatus = async (
+const applyTransactionStatus = async (
   id: string,
   status: TransactionStatus,
-  blockNumber?: bigint | number,
-  confirmed?: boolean
+  {
+    blockNumber,
+    confirmed,
+    reason,
+  }: { blockNumber?: bigint | number; confirmed?: boolean; reason: TxStatusReason }
 ) => {
+  const facts: PendingFact[] = []
   try {
     // Atomic read+write: a concurrent writer must not lose its status between the get and the update.
-    return await db.transaction("rw", db.transactionsV2, async () => {
+    const updated = await db.transaction("rw", db.transactionsV2, async () => {
       // this can be called after the tx has been overriden/replaced, check status first
       const existing = await db.transactionsV2.get(id)
       if (!existing) return false
@@ -172,6 +213,7 @@ export const updateTransactionStatus = async (
         tx.blockNumber = blockNumber.toString()
 
       await db.transactionsV2.put(tx)
+      facts.push({ row: tx, from: existing.status, to: status, reason })
 
       if (status === "success" || status === "error") {
         // mark pending transactions with the same nonce as replaced
@@ -184,7 +226,7 @@ export const updateTransactionStatus = async (
               row.nonce === tx.nonce &&
               ["pending", "unknown"].includes(row.status)
           )
-          .modify({ status: "replaced" })
+          .modify(collectStatusChange(facts, "replaced", "sibling"))
 
         // mark pending transactions with a lower nonce as unknown
         await db.transactionsV2
@@ -198,16 +240,29 @@ export const updateTransactionStatus = async (
               row.nonce < tx.nonce &&
               row.status === "pending"
           )
-          .modify({ status: "unknown" })
+          .modify(collectStatusChange(facts, "unknown", "sibling"))
       }
 
       return true
     })
+    publish(facts)
+    return updated
   } catch (err) {
     log.error("updateTransactionStatus", { err })
     return false
   }
 }
+
+export const updateTransactionStatus = (
+  id: string,
+  status: TransactionStatus,
+  blockNumber?: bigint | number,
+  confirmed?: boolean
+) => applyTransactionStatus(id, status, { blockNumber, confirmed, reason: "watch" })
+
+/** The cleanup's verdict: the chain never saw it. Stored as "error", reported as dropped. */
+export const markTransactionDropped = (id: string) =>
+  applyTransactionStatus(id, "error", { reason: "dropped" })
 
 export const getTransactionStatus = async (hash: string) => {
   const tx = await db.transactionsV2.get(hash)
@@ -221,6 +276,7 @@ export const updateTransactionsRestart = async () => {
       .where("status")
       .equals("success")
       .toArray()) {
+      const facts: PendingFact[] = []
       await db.transactionsV2
         .filter(filterIsSameNetworkAndAddressTx(successfulTx))
         .filter(
@@ -230,7 +286,8 @@ export const updateTransactionsRestart = async () => {
             row.nonce === successfulTx.nonce &&
             ["pending", "unknown"].includes(row.status)
         )
-        .modify({ status: "error" })
+        .modify(collectStatusChange(facts, "error", "restart"))
+      publish(facts)
     }
 
     // mark all other pending transactions as unknown

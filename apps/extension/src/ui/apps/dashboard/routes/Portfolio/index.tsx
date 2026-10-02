@@ -1,12 +1,13 @@
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
+import { Routes } from "@ui/components/Routes"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioDefiContent } from "@ui/domains/Portfolio/PortfolioDefiContent"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
-import { Route, Routes } from "react-router-dom"
+import { Route } from "react-router-dom"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
@@ -36,7 +37,7 @@ const PortfolioToolbar = () => {
   const showNfts = useFeatureFlag("NFTS_V2")
 
   return (
-    <Routes>
+    <Routes screen={false}>
       <Route path="tokens" element={<PortfolioToolbarTokens />} />
       <Route path="nfts" element={!!showNfts && <PortfolioToolbarNfts />} />
     </Routes>
@@ -44,7 +45,7 @@ const PortfolioToolbar = () => {
 }
 
 const PortfolioHeader = () => (
-  <Routes>
+  <Routes screen={false}>
     <Route path="tokens/:symbol" element={<PortfolioAssetHeader />} />
     <Route path="*" element={<DashboardPortfolioHeader />} />
   </Routes>

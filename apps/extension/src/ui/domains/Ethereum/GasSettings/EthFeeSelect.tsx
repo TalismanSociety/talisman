@@ -94,6 +94,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
         <span className="align-middle">{options[priority].label}</span>
       </PillButton>
       <Drawer
+        analyticsId="eth_fee_select"
         containerId={drawerContainerId}
         isOpen={isOpen && !disabled}
         anchor="bottom"

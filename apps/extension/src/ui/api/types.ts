@@ -13,7 +13,7 @@ import type {
   RequestAddAccountKeypair,
   RequestAddressLookup,
 } from "@core/domains/accounts/types"
-import type { Disposition } from "@core/domains/analytics/exports"
+import type { Disposition, RequestRiskReport } from "@core/domains/analytics/exports"
 import type {
   ChangePasswordStatusUpdate,
   LoggedinType,
@@ -85,6 +85,7 @@ export default interface MessageTypes {
   keepunlocked: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
   analyticsTrack: (request: TrackRequest) => Promise<Disposition>
+  analyticsRequestRisk: (report: RequestRiskReport) => Promise<boolean>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>

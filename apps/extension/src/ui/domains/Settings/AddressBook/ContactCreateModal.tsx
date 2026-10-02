@@ -187,7 +187,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   )
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="contact_create" isOpen={isOpen} onDismiss={close}>
       <div id="create-contact-modal" className="h-150 max-h-full w-100 overflow-hidden">
         <ModalDialog title={t("Add new contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">

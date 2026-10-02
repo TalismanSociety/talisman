@@ -1,7 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
 import { assert } from "@talismn/util"
 
+import { observeExtensionMessage } from "../domains/analytics/observeMessage"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import type { AnyEthRequest } from "../domains/ethereum/types"
 import type { MessageTypes, TransportRequestMessage } from "../types"
@@ -95,6 +97,9 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     }
   }
 
+  // before the handler runs: an approval deletes its queued request when it completes
+  const settleObservation = isExtension ? observeExtensionMessage(message, request) : null
+
   // handle the request and get a promise as a response
   const promise = isExtension
     ? extension.handle(id, message, request, port)
@@ -103,6 +108,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // resolve the promise and send back the response
   promise
     .then((response): void => {
+      settleObservation?.({ ok: true, response })
       if (!IGNORED_LOG_MESSAGES.includes(message)) {
         const duration = `${(performance.now() - start).toFixed(2)}ms`
         log.debug(`[${port.name} RES] ${source}`, {
@@ -121,6 +127,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       response = null
     })
     .catch((error) => {
+      settleObservation?.({ ok: false, error })
       const duration = `${(performance.now() - start).toFixed(2)}ms`
       log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error, duration })
 
@@ -141,9 +148,14 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           code: error.code,
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
           isEthProviderRpcError: true,
+          ...(isExtension && { errorCategory: classifyError(error) }),
         })
       } else {
-        safePostMessage(port, { id, error: error.message })
+        safePostMessage(port, {
+          id,
+          error: error.message,
+          ...(isExtension && { errorCategory: classifyError(error) }),
+        })
       }
     })
     .finally(() => {

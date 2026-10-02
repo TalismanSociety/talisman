@@ -1,11 +1,19 @@
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
-import type { Address } from "@talismn/balances"
+import type { Address, BalancesResult } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash-es"
-import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap } from "rxjs"
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  switchMap,
+  tap,
+} from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
@@ -42,6 +50,12 @@ const walletAddressesByTokenId$ = combineLatest({
   distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
 )
 
+/**
+ * The wallet's balances while they are live, else null. Fed by `walletBalances$` without
+ * subscribing to it, so reading it never starts a balances aggregation.
+ */
+export const liveWalletBalances$ = new BehaviorSubject<BalancesResult | null>(null)
+
 export const walletBalances$ = settingsStore.observable.pipe(
   map((settings) => DEBUG && settings.disableBalanceFetching),
   distinctUntilChanged(),
@@ -74,6 +88,10 @@ export const walletBalances$ = settingsStore.observable.pipe(
         },
       })
     )
+  }),
+  tap({
+    next: (result) => liveWalletBalances$.next(result.status === "live" ? result : null),
+    unsubscribe: () => liveWalletBalances$.next(null),
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000)

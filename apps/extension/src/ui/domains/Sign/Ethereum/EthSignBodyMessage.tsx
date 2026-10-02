@@ -165,6 +165,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         </SignAlertMessage>
       )}
       <Drawer
+        analyticsId="eth_sign_message_details"
         anchor="bottom"
         containerId="main"
         isOpen={ocViewDetails.isOpen}

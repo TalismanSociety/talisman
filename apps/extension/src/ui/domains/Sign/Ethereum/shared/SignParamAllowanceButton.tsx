@@ -254,7 +254,13 @@ export const SignParamAllowanceButton: FC<{
           </TooltipContent>
         )}
       </Tooltip>
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="edit_allowance"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <EditAllowanceForm
           account={account}
           token={token}

@@ -377,6 +377,7 @@ const SendPage = ({
       </div>
 
       <Drawer
+        analyticsId="qr_substrate_unable_to_sign"
         anchor="bottom"
         isOpen={!qrCodeSource && !!chain}
         containerId={containerId}
@@ -409,6 +410,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_chainspec"
         anchor="bottom"
         isOpen={!!scanState.showChainspecDrawer}
         containerId={containerId}
@@ -456,6 +458,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_enable_network"
         anchor="bottom"
         isOpen={!!scanState.showEnableNetwork}
         containerId={containerId}
@@ -500,6 +503,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_update_metadata"
         anchor="bottom"
         isOpen={!!scanState.showUpdateMetadataDrawer}
         containerId={containerId}

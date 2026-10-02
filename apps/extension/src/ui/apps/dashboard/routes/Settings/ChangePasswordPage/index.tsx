@@ -114,7 +114,7 @@ const Content = () => {
       }).catch((err) => {
         switch (err.message) {
           case "Incorrect password":
-            setError("currentPw", { message: err.message })
+            setError("currentPw", { type: "wrong_password", message: err.message })
             break
           case "New password and new password confirmation must match":
             setError("newPwConfirm", { message: err.message })
@@ -166,7 +166,11 @@ const Content = () => {
       )}
 
       <form className="mt-8" onSubmit={handleSubmit(subscribeChangePassword)}>
-        <FormFieldContainer error={errors.currentPw?.message} label={t("Old Password")}>
+        <FormFieldContainer
+          error={errors.currentPw?.message}
+          errorCategory={errors.currentPw?.type === "wrong_password" ? "wrong_password" : undefined}
+          label={t("Old Password")}
+        >
           <FormFieldInputText
             {...register("currentPw")}
             placeholder={t("Enter Old Password")}

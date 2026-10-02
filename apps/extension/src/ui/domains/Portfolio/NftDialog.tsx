@@ -545,6 +545,7 @@ const NftDialogInner: FC<{
 
   return (
     <Modal
+      analyticsId="nft_dialog"
       isOpen={isOpen}
       onDismiss={handleDismiss}
       className={cn(

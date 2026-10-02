@@ -6,7 +6,7 @@ import { z } from "zod/v4"
 import { catalogue, catalogueDefinitions } from "./catalogue"
 import type { FlowEventName } from "./flows"
 import { properties } from "./properties"
-import { defineEventGroup, mergeEventGroups, p, type TrackFn } from "./schema"
+import { defineEventGroup, mergeEventGroups, p, type Registry, type TrackFn } from "./schema"
 import { superPropertyDefinitions } from "./superProperties"
 
 const RESERVED = ["$session_id", "$process_person_profile"]
@@ -30,8 +30,7 @@ describe("the catalogue", () => {
     for (const [event, def] of Object.entries(catalogue)) {
       const { shape } = def.schema as unknown as z.ZodObject
       for (const name of def.properties) {
-        const registered: readonly string[] | undefined =
-          properties[name as keyof typeof properties].values
+        const registered = (properties as Registry)[name].values
         const schema = shape[name] instanceof z.ZodOptional ? shape[name].unwrap() : shape[name]
         if (registered && schema instanceof z.ZodEnum)
           for (const value of schema.options)
@@ -88,6 +87,9 @@ describe("property builders", () => {
     ["routePattern", p.routePattern("."), "/", "portfolio"],
     ["list", p.list(p.slug("."), ".", { maxItems: 2 }), ["a", "b"], ["a", "b", "c"]],
     ["nullable", p.nullable(p.count(".")), null, undefined],
+    ["pair", p.pair(p.enum(["<10"], "."), p.slug("."), "."), "<10|usd-coin", "<10|two words"],
+    ["pair", p.pair(p.enum(["<10"], "."), p.slug("."), "."), "<10|usd-coin", "<10"],
+    ["pair", p.pair(p.enum(["<10"], "."), p.slug("."), "."), "<10|usd-coin", "10|usd-coin"],
   ])("%s accepts %o and rejects %o", (_, def, valid, invalid) => {
     expect(accepts(def, valid)).toBe(true)
     expect(accepts(def, invalid)).toBe(false)
@@ -104,6 +106,7 @@ describe("property builders", () => {
         "int",
         "list",
         "nullable",
+        "pair",
         "routePattern",
         "slug",
         "symbol",

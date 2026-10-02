@@ -141,7 +141,13 @@ export const PasswordCheckDrawer: FC<PasswordCheckDrawerProps> = ({
   }, [onDismiss])
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={handleDismiss}>
+    <Drawer
+      analyticsId="password_check"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+      onDismiss={handleDismiss}
+    >
       <PasswordCheckDrawerContent
         onVerified={onVerified}
         onDismiss={handleDismiss}

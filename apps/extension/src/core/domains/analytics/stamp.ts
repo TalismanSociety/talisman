@@ -81,6 +81,7 @@ export const stampEvent = ({
       properties: redactProperties({
         ...environment,
         ui_context: uiContext,
+        ...(event.screen && { $screen_name: event.screen }),
         ...event.properties,
         ...(step && { $session_id: step.session.id }),
         $process_person_profile: false,

@@ -1,7 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useSetting } from "@ui/state/settings"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -11,6 +13,11 @@ export const MigratePasswordError = () => {
   const { t } = useTranslation()
   const { statusMessage, onComplete } = useMigratePassword()
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
+  useErrorShown({
+    shown: "password_migration",
+    surface: "screen",
+    category: classifyError(statusMessage),
+  })
 
   return (
     <ModalDialog className="h-auto" title={t("There was a problem")}>

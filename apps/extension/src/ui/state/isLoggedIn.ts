@@ -1,6 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
-import { Observable, shareReplay } from "rxjs"
+import { tapLoggedIn } from "@ui/hooks/analytics/performance"
+import { Observable, shareReplay, tap } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -9,6 +10,6 @@ export const isLoggedIn$ = new Observable<boolean>((subscriber) => {
     subscriber.next(v === "TRUE")
   })
   return () => unsubscribe()
-}).pipe(debugObservable("isLoggedIn$"), shareReplay(1))
+}).pipe(debugObservable("isLoggedIn$"), tap(tapLoggedIn), shareReplay(1))
 
 const [_useIsLoggedIn] = bind(isLoggedIn$)

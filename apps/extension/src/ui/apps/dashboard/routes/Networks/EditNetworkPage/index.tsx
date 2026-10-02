@@ -246,7 +246,11 @@ const NetworkForm: FC = () => {
         <form.Field
           name="blockExplorerUrl"
           children={(field) => (
-            <FormFieldContainer label="Block Explorer Url" error={field.state.meta.errors[0]}>
+            <FormFieldContainer
+              field="blockExplorerUrl"
+              label="Block Explorer Url"
+              error={field.state.meta.errors[0]}
+            >
               <FormFieldInputText
                 type="text"
                 value={field.state.value}
@@ -372,7 +376,11 @@ const NetworkForm: FC = () => {
           </div>
         </div>
       </form>
-      <Modal isOpen={ocConfirmRemove.isOpen} onDismiss={ocConfirmRemove.close}>
+      <Modal
+        analyticsId="network_remove_confirm"
+        isOpen={ocConfirmRemove.isOpen}
+        onDismiss={ocConfirmRemove.close}
+      >
         <ConfirmRemove onClose={ocConfirmRemove.close} network={network} />
       </Modal>
     </>

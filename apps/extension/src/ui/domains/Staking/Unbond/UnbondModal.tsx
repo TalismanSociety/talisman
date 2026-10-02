@@ -62,7 +62,7 @@ export const UnbondModal = () => {
   const { isOpen, args, openKey, close } = useUnbondModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="unbond" containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="UnbondModal" />}>
         {args && (
           <UnbondWizardProvider key={openKey}>

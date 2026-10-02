@@ -162,7 +162,12 @@ export const AccountExportPrivateKeyModal = () => {
   const { isOpen, close } = useAccountExportPrivateKeyModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="account_export_private_key"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <ModalDialog title={t("Export private key")} onCloseClick={close} className="h-auto w-125.75">
         <div className="h-60.5">
           <PasswordUnlock

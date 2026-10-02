@@ -10,6 +10,7 @@ export const RampsModal = () => {
 
   return (
     <Modal
+      analyticsId="ramps"
       isOpen={isOpen}
       onDismiss={close}
       className={cn(

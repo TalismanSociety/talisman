@@ -6,6 +6,7 @@ import type {
 } from "@core/libs/requests/types"
 import { bind } from "@react-rxjs/core"
 import { api } from "@ui/api"
+import { useReportRequestRendered } from "@ui/hooks/analytics/requestWindow"
 import { map, Observable } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
@@ -28,4 +29,8 @@ const [useRequestInner] = bind(<T extends KnownRequestTypes>(id: KnownRequestId<
 // just to fix typings
 export const useRequest = <T extends KnownRequestTypes>(
   id: KnownRequestId<T>
-): KnownRequest<T> | undefined => useRequestInner(id)
+): KnownRequest<T> | undefined => {
+  const request = useRequestInner(id)
+  useReportRequestRendered(request)
+  return request
+}

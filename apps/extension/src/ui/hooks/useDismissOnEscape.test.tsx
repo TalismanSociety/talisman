@@ -11,7 +11,7 @@ describe("useDismissOnEscape", () => {
   it("dismisses an open modal", () => {
     const onDismiss = vi.fn()
     render(
-      <Modal isOpen onDismiss={onDismiss}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismiss}>
         modal
       </Modal>
     )
@@ -24,7 +24,7 @@ describe("useDismissOnEscape", () => {
   it("ignores closed modals and other keys", () => {
     const onDismiss = vi.fn()
     render(
-      <Modal isOpen={false} onDismiss={onDismiss}>
+      <Modal analyticsId="test_modal" isOpen={false} onDismiss={onDismiss}>
         modal
       </Modal>
     )
@@ -32,7 +32,7 @@ describe("useDismissOnEscape", () => {
 
     cleanup()
     render(
-      <Modal isOpen onDismiss={onDismiss}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismiss}>
         modal
       </Modal>
     )
@@ -45,13 +45,13 @@ describe("useDismissOnEscape", () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     const { rerender } = render(
-      <Modal isOpen onDismiss={onDismissModal}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
         modal
       </Modal>
     )
     rerender(
-      <Modal isOpen onDismiss={onDismissModal}>
-        <Drawer anchor="bottom" isOpen onDismiss={onDismissDrawer}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
+        <Drawer analyticsId="test_drawer" anchor="bottom" isOpen onDismiss={onDismissDrawer}>
           drawer
         </Drawer>
       </Modal>
@@ -62,8 +62,13 @@ describe("useDismissOnEscape", () => {
     expect(onDismissModal).not.toHaveBeenCalled()
 
     rerender(
-      <Modal isOpen onDismiss={onDismissModal}>
-        <Drawer anchor="bottom" isOpen={false} onDismiss={onDismissDrawer}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
+        <Drawer
+          analyticsId="test_drawer"
+          anchor="bottom"
+          isOpen={false}
+          onDismiss={onDismissDrawer}
+        >
           drawer
         </Drawer>
       </Modal>
@@ -77,8 +82,8 @@ describe("useDismissOnEscape", () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     render(
-      <Modal isOpen onDismiss={onDismissModal}>
-        <Drawer anchor="bottom" isOpen onDismiss={onDismissDrawer}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
+        <Drawer analyticsId="test_drawer" anchor="bottom" isOpen onDismiss={onDismissDrawer}>
           drawer
         </Drawer>
       </Modal>
@@ -93,13 +98,13 @@ describe("useDismissOnEscape", () => {
   it("does not reach the modal beneath a layer that cannot be dismissed", () => {
     const onDismissModal = vi.fn()
     const { rerender } = render(
-      <Modal isOpen onDismiss={onDismissModal}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
         modal
       </Modal>
     )
     rerender(
-      <Modal isOpen onDismiss={onDismissModal}>
-        <Drawer anchor="bottom" isOpen>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
+        <Drawer analyticsId="test_drawer" anchor="bottom" isOpen>
           drawer
         </Drawer>
       </Modal>
@@ -114,13 +119,13 @@ describe("useDismissOnEscape", () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     const { rerender } = render(
-      <Modal isOpen onDismiss={() => onDismissModal()}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={() => onDismissModal()}>
         modal
       </Modal>
     )
     rerender(
-      <Modal isOpen onDismiss={() => onDismissModal()}>
-        <Drawer anchor="bottom" isOpen onDismiss={onDismissDrawer}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={() => onDismissModal()}>
+        <Drawer analyticsId="test_drawer" anchor="bottom" isOpen onDismiss={onDismissDrawer}>
           drawer
         </Drawer>
       </Modal>
@@ -135,7 +140,7 @@ describe("useDismissOnEscape", () => {
   it("leaves an Escape handled by an inner element alone", () => {
     const onDismiss = vi.fn()
     render(
-      <Modal isOpen onDismiss={onDismiss}>
+      <Modal analyticsId="test_modal" isOpen onDismiss={onDismiss}>
         modal
       </Modal>
     )

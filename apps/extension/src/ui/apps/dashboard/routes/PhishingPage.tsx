@@ -2,6 +2,7 @@ import { TALISMAN_WEB_APP_URL } from "@common/constants"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
+import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -13,6 +14,7 @@ type PhishingPageProps = {
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const { t } = useTranslation()
+  useVirtualScreen("/phishing-page-detected/:url")
   const [searchParams] = useSearchParams()
   const isBlockaid = searchParams.get("source") === "blockaid"
   const allowSite = useCallback(async () => {

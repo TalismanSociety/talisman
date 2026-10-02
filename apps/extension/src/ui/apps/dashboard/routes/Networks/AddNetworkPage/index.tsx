@@ -71,7 +71,11 @@ const NetworkCreateForm: FC = () => {
         name="platform"
         children={(field) => (
           <>
-            <FormFieldContainer label={t("Platform")} error={field.state.meta.errors[0]}>
+            <FormFieldContainer
+              field="platform"
+              label={t("Platform")}
+              error={field.state.meta.errors[0]}
+            >
               <PlatformSelect
                 value={field.state.value ?? null}
                 onChange={(platform) => {
@@ -87,7 +91,7 @@ const NetworkCreateForm: FC = () => {
       <form.Field
         name="rpc"
         children={(field) => (
-          <FormFieldContainer label={t("RPC Url")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer field="rpc" label={t("RPC Url")} error={field.state.meta.errors[0]}>
             <FormFieldInputText
               type="text"
               value={field.state.value ?? ""}
@@ -164,7 +168,11 @@ const NetworkCreateForm: FC = () => {
               <form.Field
                 name="name"
                 children={(field) => (
-                  <FormFieldContainer label="Network Name" error={field.state.meta.errors[0]}>
+                  <FormFieldContainer
+                    field="name"
+                    label="Network Name"
+                    error={field.state.meta.errors[0]}
+                  >
                     <FormFieldInputText
                       type="text"
                       value={field.state.value}
@@ -334,7 +342,11 @@ const NetworkCreateForm: FC = () => {
           <form.Field
             name="blockExplorerUrl"
             children={(field) => (
-              <FormFieldContainer label="Block Explorer Url" error={field.state.meta.errors[0]}>
+              <FormFieldContainer
+                field="blockExplorerUrl"
+                label="Block Explorer Url"
+                error={field.state.meta.errors[0]}
+              >
                 <FormFieldInputText
                   type="text"
                   value={field.state.value}

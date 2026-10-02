@@ -1,4 +1,6 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { cn } from "@ui/util/cn"
 
 import type { FC, PropsWithChildren } from "react"
@@ -25,6 +27,8 @@ type SignAlertMessageProps = PropsWithChildren & {
   type?: "warning" | "error"
   iconSize?: IconSize
   processing?: boolean
+  /** What kind of failure an error alert shows. */
+  errorCategory?: ErrorCategory
 }
 
 export const SignAlertMessage: FC<SignAlertMessageProps> = ({
@@ -33,7 +37,10 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   type = "warning",
   iconSize = "base",
   processing,
+  errorCategory = "unknown",
 }) => {
+  useErrorShown({ shown: type === "error" && "error", surface: "alert", category: errorCategory })
+
   return (
     <div
       className={cn("flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-5", className)}

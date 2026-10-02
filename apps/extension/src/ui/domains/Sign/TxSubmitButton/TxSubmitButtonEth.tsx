@@ -42,6 +42,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
           title: `Failed to submit`,
           type: "error",
           subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
+          cause,
         })
       }
     },
@@ -65,6 +66,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         title: `Failed to submit`,
         type: "error",
         subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
+        cause,
       })
     } finally {
       setIsSubmitting(false)

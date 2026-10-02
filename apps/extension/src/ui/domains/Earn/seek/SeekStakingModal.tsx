@@ -99,7 +99,7 @@ export const SeekStakingModal: FC = () => {
   const { isOpen, close, args } = useSeekStakingModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="seek_staking" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id={SEEK_STAKING_MODAL_CONTAINER_ID}>
         {args && (
           <SeekStakingForm action={args.action} initialAddress={args.address} isOpen={isOpen} />
@@ -603,6 +603,7 @@ const SeekAccountPickerModal: FC<{
 
   return (
     <Modal
+      analyticsId="seek_account_picker"
       containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
       isOpen={isOpen}
       onDismiss={onBackClick}

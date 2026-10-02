@@ -27,7 +27,7 @@ type RemoveTarget = { networkId: string; entry: AccountProxyEntry }
 export const ManageProxyModal: FC = () => {
   const { isOpen, args, close } = useManageProxyModal()
   return (
-    <Modal isOpen={isOpen && !!args?.address} onDismiss={close}>
+    <Modal analyticsId="manage_proxy" isOpen={isOpen && !!args?.address} onDismiss={close}>
       <PopupSizeModalContainer id="manage-proxy-modal">
         {!!args?.address && <ManageProxyContent address={args.address} onClose={close} />}
       </PopupSizeModalContainer>

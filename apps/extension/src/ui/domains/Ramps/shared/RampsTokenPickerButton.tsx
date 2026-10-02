@@ -48,6 +48,7 @@ export const RampsTokenPickerButton: FC<{
         {token ? <TokenContent token={token} /> : <EmptyContent />}
       </button>
       <Drawer
+        analyticsId="ramps_token_picker"
         anchor="right"
         isOpen={isOpen}
         containerId="ramp-container"

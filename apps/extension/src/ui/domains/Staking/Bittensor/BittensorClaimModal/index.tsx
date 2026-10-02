@@ -13,7 +13,7 @@ export const BittensorClaimModal = () => {
   const { isOpen, args, openKey, close } = useBittensorClaimModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="bittensor_claim" containerId="main" isOpen={isOpen} onDismiss={close}>
       <div
         id={BITTENSOR_CLAIM_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals & drawers
         className={cn(

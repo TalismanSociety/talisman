@@ -62,7 +62,7 @@ export default class AppHandler extends ExtensionHandler {
     } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
 
-    await this.stores.password.setPassword(transformedPw)
+    await this.stores.password.setPassword(transformedPw, "onboarding")
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
 
     return true
@@ -80,7 +80,10 @@ export default class AppHandler extends ExtensionHandler {
         authenticateLegacyMethod(transformedPassword)
 
         // we can now set up the auth secret
-        await this.stores.password.setPassword(transformedPassword)
+        await this.stores.password.setPassword(transformedPassword, {
+          method: "password",
+          legacyPassword: true,
+        })
         await this.stores.password.setupAuthSecret(transformedPassword)
       } else {
         await this.stores.password.authenticate(pass)
@@ -92,7 +95,7 @@ export default class AppHandler extends ExtensionHandler {
 
       return true
     } catch {
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
       return false
     }
   }
@@ -102,7 +105,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async lock(): Promise<LoggedinType> {
-    await this.stores.password.clearPassword()
+    await this.stores.password.clearPassword("manual")
     return this.authStatus()
   }
 
@@ -326,7 +329,7 @@ export default class AppHandler extends ExtensionHandler {
       // check before starting the session, so that only a proven mismatch reaches the unenroll below
       await this.stores.password.checkHashedPassword(password)
     } catch (cause) {
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
 
       // the auth secret was read above, so the recovered password simply doesn't match it anymore
       // and this enrollment can never unlock the wallet again
@@ -337,11 +340,14 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     try {
-      await this.stores.password.setPassword(password)
+      await this.stores.password.setPassword(password, {
+        method: "quick_unlock",
+        legacyPassword: false,
+      })
     } catch (cause) {
       // the password is proven good, so this is the session write failing - the enrollment is still
       // valid and the next attempt can succeed, keep it
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
       log.error("Quick unlock could not start the session", { cause })
       return "failed"
     }

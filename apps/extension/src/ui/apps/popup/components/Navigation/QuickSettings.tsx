@@ -4,6 +4,7 @@ import { ArrowUpRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Toggle } from "@ui/components/Toggle"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
+import { useOverlayAnalytics } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state/settings"
@@ -18,6 +19,7 @@ export const [useQuickSettingsOpenClose] = createGlobalOpenClose()
 
 export const QuickSettingsOverlay: FC = () => {
   const { isOpen, close } = useQuickSettingsOpenClose()
+  const { dismissVia } = useOverlayAnalytics({ id: "quick_settings", isOpen })
 
   return (
     <Transition show={isOpen} appear>
@@ -25,7 +27,7 @@ export const QuickSettingsOverlay: FC = () => {
         as="div"
         className="absolute top-0 left-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
         role="presentation"
-        onClick={close}
+        onClick={dismissVia("backdrop", close)}
         enter="ease-out duration-300"
         enterFrom="opacity-0"
         enterTo="opacity-100"

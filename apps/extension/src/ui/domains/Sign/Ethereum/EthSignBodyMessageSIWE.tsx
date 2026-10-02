@@ -112,7 +112,13 @@ export const EthSignBodyMessageSIWE: FC<{
           </div>
         </SignAlertMessage>
       )}
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="eth_sign_siwe_details"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <ViewDetailsContent account={account} request={request} siwe={siwe} onClose={close} />
       </Drawer>
     </div>

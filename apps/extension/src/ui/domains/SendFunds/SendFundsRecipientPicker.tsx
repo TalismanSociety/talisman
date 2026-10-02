@@ -76,7 +76,13 @@ const UnknownAddressDrawer = ({
   }, [close, onProceed, address])
 
   return (
-    <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
+    <Drawer
+      analyticsId="unknown_address"
+      containerId="main"
+      isOpen={isOpen}
+      anchor="bottom"
+      onDismiss={close}
+    >
       <DrawerContent className="flex max-w-105 flex-col items-center gap-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="px-10 font-bold text-white">

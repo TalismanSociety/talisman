@@ -26,7 +26,13 @@ export const ViewDetailsSub: FC = () => {
   return (
     <>
       <ViewDetailsButton onClick={open} hide={isOpen} />
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="view_details_sub"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

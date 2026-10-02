@@ -22,7 +22,7 @@ export const NewFolderModal = () => {
   const { close, isOpen } = useNewFolderModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="new_folder" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("New Folder")} onCloseClick={close} className="h-auto w-92">
         <NewFolder onConfirm={close} onCancel={close} />
       </ModalDialog>
@@ -121,7 +121,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
 
   return (
     <form className={className} onSubmit={handleSubmit(submit)}>
-      <FormFieldContainer label={t("Folder name")} error={errors.name?.message}>
+      <FormFieldContainer field="name" label={t("Folder name")} error={errors.name?.message}>
         <FormFieldInputText
           {...registerName}
           ref={handleNameRef}

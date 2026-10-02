@@ -9,6 +9,7 @@ import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
@@ -370,6 +371,7 @@ export const LoginViewManager = ({
   autoTriggerQuickUnlock: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
+  useVirtualScreen("/login")
 
   if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
   return (

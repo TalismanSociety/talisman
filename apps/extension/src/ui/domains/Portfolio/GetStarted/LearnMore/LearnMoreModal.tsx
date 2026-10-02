@@ -23,7 +23,7 @@ export const LearnMoreModal = () => {
   )
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close} containerId="main">
+    <Modal analyticsId="learn_more" isOpen={isOpen} onDismiss={close} containerId="main">
       <ModalDialog
         title={t("Learn More")}
         onCloseClick={close}

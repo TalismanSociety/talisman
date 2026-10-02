@@ -4,6 +4,7 @@ import { assert } from "@talismn/util"
 
 import { sentry } from "./config/sentry"
 import { analyticsEngine } from "./domains/analytics/engine"
+import { startAnalyticsMechanisms } from "./domains/analytics/mechanisms"
 import { passwordStore } from "./domains/app/store.password"
 import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
@@ -21,6 +22,7 @@ import { trackUiPort } from "./libs/uiOpenState"
 sentry.init("background")
 
 analyticsEngine.start()
+startAnalyticsMechanisms()
 
 // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
 // so capture uncaught errors and unhandled rejections with our own listeners.

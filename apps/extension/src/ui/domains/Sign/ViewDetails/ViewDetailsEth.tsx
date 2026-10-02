@@ -345,7 +345,13 @@ export const ViewDetailsEth = () => {
         <FileSearchIcon className="text-base" />
         <span className="text-xs">{t("View Details")}</span>
       </button>
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen && !isLoading} onDismiss={close}>
+      <Drawer
+        analyticsId="view_details_eth"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen && !isLoading}
+        onDismiss={close}
+      >
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

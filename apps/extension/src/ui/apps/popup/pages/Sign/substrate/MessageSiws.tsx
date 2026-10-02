@@ -53,7 +53,13 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
           {t("Sign in domain or address is different from website domain or signer address.")}
         </SignAlertMessage>
       )}
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="siws_view_details"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <ViewDetailsContent account={account} request={request} onClose={close} />
       </Drawer>
     </div>

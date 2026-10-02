@@ -380,7 +380,11 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
           />
         </div>
       </form>
-      <Modal isOpen={ocConfirmRemove.isOpen} onDismiss={ocConfirmRemove.close}>
+      <Modal
+        analyticsId="token_remove_confirm"
+        isOpen={ocConfirmRemove.isOpen}
+        onDismiss={ocConfirmRemove.close}
+      >
         <ConfirmRemove onClose={ocConfirmRemove.close} token={token} />
       </Modal>
     </>

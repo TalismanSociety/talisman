@@ -158,7 +158,11 @@ const AddCustomTokenForm = () => {
       <form.Field
         name="networkId"
         children={(field) => (
-          <FormFieldContainer label={t("Network")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer
+            field="networkId"
+            label={t("Network")}
+            error={field.state.meta.errors[0]}
+          >
             <NetworkCombo
               networks={networkOptions}
               value={field.state.value ?? ""}
@@ -184,7 +188,11 @@ const AddCustomTokenForm = () => {
       <form.Field
         name="contractAddress"
         children={(field) => (
-          <FormFieldContainer label={t("Contract Address")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer
+            field="contractAddress"
+            label={t("Contract Address")}
+            error={field.state.meta.errors[0]}
+          >
             <FormFieldInputText
               type="text"
               value={field.state.value ?? ""}

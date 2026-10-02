@@ -39,7 +39,11 @@ export const SubnetStakingOperationModal: FC<{
 }> = ({ netuid }) => {
   const { isOpen, args: transaction, close } = useTransactionModal()
   return (
-    <Modal isOpen={isOpen && !!transaction} onDismiss={close}>
+    <Modal
+      analyticsId="subnet_staking_operation"
+      isOpen={isOpen && !!transaction}
+      onDismiss={close}
+    >
       <PopupSizeModalContainer id="tao-dashboard-transaction-modal">
         {transaction && <ModalContent netuid={netuid} transaction={transaction} onClose={close} />}
       </PopupSizeModalContainer>

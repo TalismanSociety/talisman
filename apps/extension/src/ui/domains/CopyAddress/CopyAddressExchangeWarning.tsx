@@ -13,7 +13,13 @@ export const CopyAddressExchangeWarning: FC<{
   const { t } = useTranslation()
 
   return (
-    <Drawer containerId="copy-address-modal" isOpen={isOpen} anchor="bottom" onDismiss={onDismiss}>
+    <Drawer
+      analyticsId="copy_address_exchange_warning"
+      containerId="copy-address-modal"
+      isOpen={isOpen}
+      anchor="bottom"
+      onDismiss={onDismiss}
+    >
       <DrawerContent className="flex flex-col items-center">
         <AlertCircleIcon className="text-3xl text-primary-500" />
         <div className="mt-12 font-bold text-md">{t("Receiving from an exchange?")}</div>

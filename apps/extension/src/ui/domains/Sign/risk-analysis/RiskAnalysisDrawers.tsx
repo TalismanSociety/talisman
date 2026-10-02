@@ -3,6 +3,7 @@ import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
+import { useOverlayAnalytics } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -86,6 +87,7 @@ const RiskAnalysisCriticalPane: FC<{
   const { t } = useTranslation()
 
   const { isOpen, open, close } = useOpenClose()
+  useOverlayAnalytics({ id: "risk_analysis_critical", isOpen })
 
   useEffect(() => {
     if (riskAnalysis?.validationResult === "Malicious") open()
@@ -144,6 +146,7 @@ export const RiskAnalysisDrawers: FC<{
   return (
     <>
       <Drawer
+        analyticsId="risk_analysis_review"
         anchor="bottom"
         containerId={containerId}
         isOpen={riskAnalysis.review.drawer.isOpen}
@@ -153,6 +156,7 @@ export const RiskAnalysisDrawers: FC<{
       </Drawer>
       <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} onReject={onReject} />
       <Drawer
+        analyticsId="risk_analysis_auto_scan_prompt"
         anchor="bottom"
         containerId={containerId}
         isOpen={riskAnalysis.shouldPromptAutoRiskScan}

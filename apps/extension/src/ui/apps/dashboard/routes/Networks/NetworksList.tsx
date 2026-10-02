@@ -129,10 +129,18 @@ export const NetworksList: FC<{
           {t("Deactivate all")}
         </button>
 
-        <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
+        <Modal
+          analyticsId="networks_reset_all"
+          isOpen={ocResetAllModal.isOpen}
+          onDismiss={ocResetAllModal.close}
+        >
           <ResetAllNetworksModalContent platform={platform} onClose={ocResetAllModal.close} />
         </Modal>
-        <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
+        <Modal
+          analyticsId="networks_deactivate_all"
+          isOpen={ocDeactivateAllModal.isOpen}
+          onDismiss={ocDeactivateAllModal.close}
+        >
           <DeactivateNetworksModalContent
             platform={platform}
             onClose={ocDeactivateAllModal.close}

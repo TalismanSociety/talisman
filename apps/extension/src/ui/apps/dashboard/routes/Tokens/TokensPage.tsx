@@ -152,7 +152,11 @@ const Content = () => {
         networkId={networkId}
         search={search}
       />
-      <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
+      <Modal
+        analyticsId="tokens_reset_all"
+        isOpen={ocResetAllModal.isOpen}
+        onDismiss={ocResetAllModal.close}
+      >
         <ResetStatesModalContent onClose={ocResetAllModal.close} />
       </Modal>
     </>

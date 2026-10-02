@@ -198,7 +198,11 @@ const LedgerTransportTypeSelect = () => {
       <Button primary small onClick={checkConnectivity}>
         {t("Check")}
       </Button>
-      <Modal isOpen={!!checkStatus} onDismiss={() => setCheckStatus(undefined)}>
+      <Modal
+        analyticsId="ledger_transport_check"
+        isOpen={!!checkStatus}
+        onDismiss={() => setCheckStatus(undefined)}
+      >
         <LedgerTransportCheckModalDialog
           status={checkStatus}
           transport={ledgerTransportType}
