@@ -10,7 +10,7 @@ export const UI_CONTEXTS = [
 ] as const
 export type UiContext = (typeof UI_CONTEXTS)[number]
 
-export const APP_VARIANTS = ["development", "preview", "production"] as const
+export const APP_VARIANTS = ["development", "preview", "canary", "production"] as const
 export type AppVariant = (typeof APP_VARIANTS)[number]
 
 export const BROWSERS = ["chrome", "edge", "brave", "firefox", "other"] as const
@@ -44,7 +44,7 @@ export const superPropertyDefinitions: {
   appBuild: { description: "Short git sha of the build.", posthogType: "String" },
   appVariant: {
     description:
-      "development: a dev build. production: a production build installed from a store. preview: anything else, such as an unpacked release candidate.",
+      "development: a dev build. canary: a canary build, however it is installed. production: a production build installed from a store. preview: a production build installed otherwise, such as an unpacked release candidate.",
     posthogType: "String",
     values: APP_VARIANTS,
   },

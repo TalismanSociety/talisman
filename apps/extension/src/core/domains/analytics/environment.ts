@@ -17,6 +17,7 @@ export const resolveAppVariant = ({
   installType: string | undefined
 }): AppVariant => {
   if (build === "dev") return "development"
+  if (buildType === "canary") return "canary"
   if (buildType === "production" && (installType === "normal" || installType === "admin"))
     return "production"
   return "preview"

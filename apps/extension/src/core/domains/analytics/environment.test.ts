@@ -11,7 +11,8 @@ describe("resolveAppVariant", () => {
     ["production", "production", "development", "preview"],
     ["production", "production", "sideload", "preview"],
     ["production", "production", undefined, "preview"],
-    ["production", "canary", "normal", "preview"],
+    ["production", "canary", "normal", "canary"],
+    ["production", "canary", "development", "canary"],
     ["production", "dev", "normal", "preview"],
   ])("build %s, build type %s, install type %s: %s", (build, buildType, installType, expected) => {
     expect(resolveAppVariant({ build, buildType, installType })).toBe(expected)

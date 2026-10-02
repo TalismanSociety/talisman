@@ -64,7 +64,7 @@ Event and property descriptions come from the catalogue. To change one, edit the
 
 ### What a run writes, in order
 
-1. Project settings (`settings.ts`): IP discard, posthog-js capture features off, the test-account filter (`appVariant` is not `development` or `preview`) and its default, GeoIP at execution order 1, and the "Keep country and continent only" property filter at order 2.
+1. Project settings (`settings.ts`): IP discard, posthog-js capture features off, the test-account filter (`appVariant` is not `development`, `preview` or `canary`) and its default, GeoIP at execution order 1, and the "Keep country and continent only" property filter at order 2.
 2. Seed events, with `--seed`.
 3. Event and property definitions: description, `verified`, the `aiec-managed` tag, `flow` and `flow:<name>` on flow events, `super` on super properties, and the PostHog property type.
 4. Dashboards and their insights, the tile layout, and the primary dashboard (Overview).

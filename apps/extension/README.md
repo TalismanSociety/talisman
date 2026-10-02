@@ -105,7 +105,7 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 Production and canary Chrome builds make hidden source maps (no inline reference in the JS) and upload them to PostHog, so error tracking shows exceptions at their source line. The `zip:extension:start` hook in `wxt.config.ts` runs `scripts/posthogSourcemaps.ts`, in this order:
 
 1. `@posthog/cli sourcemap inject` adds a chunk id to each bundle. `page.js` and `content-scripts/` are left out: they run in web pages and report no errors.
-2. `@posthog/cli sourcemap upload` uploads the maps under the release `talisman-extension` `<version>+<git sha>`, for example `3.10.1+de76c562f`.
+2. `@posthog/cli sourcemap upload` uploads the maps under the release `talisman-extension` `<version>+<git sha>`, for example `3.10.1+de76c562f`. A canary build adds `-canary` to the version: `3.10.1-canary+de76c562f`.
 3. The hook deletes every `.map` file. Maps never ship in the zip.
 
 Before the build starts, the `build:before` hook checks the key with PostHog. The key must be set and valid, hold `error_tracking:write`, and reach the project in `src/core/domains/analytics/posthogProject.ts`.

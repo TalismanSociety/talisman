@@ -77,7 +77,7 @@ describe("planSourcemapUpload", () => {
     ).toEqual({ action: "skip", reason: "dry_run" })
   })
 
-  it("uploads a production or canary Chrome build with the key, to the project's API host", () => {
+  it("uploads a production or canary Chrome build with the key, a canary under its own version", () => {
     expect(
       plan({
         browser: "chrome",
@@ -101,7 +101,7 @@ describe("planSourcemapUpload", () => {
       action: "inject_and_upload",
       host: "http://127.0.0.1:9",
       apiKey: "phx_test",
-      version: VERSION,
+      version: "3.10.1-canary",
       build: BUILD,
     })
   })

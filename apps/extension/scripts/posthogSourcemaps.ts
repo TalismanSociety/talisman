@@ -56,7 +56,7 @@ export const planSourcemapUpload = ({
     action: "inject_and_upload",
     host: env.POSTHOG_CLI_HOST?.trim() || POSTHOG_API_HOST,
     apiKey,
-    version,
+    version: buildType === "canary" ? `${version}-canary` : version,
     build,
   }
 }

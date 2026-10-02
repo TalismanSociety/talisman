@@ -6,7 +6,12 @@ export type PropertyFilter = {
 }
 
 export const TEST_ACCOUNT_FILTERS: readonly PropertyFilter[] = [
-  { key: "appVariant", type: "event", operator: "is_not", value: ["development", "preview"] },
+  {
+    key: "appVariant",
+    type: "event",
+    operator: "is_not",
+    value: ["development", "preview", "canary"],
+  },
 ]
 
 export const DEFAULT_DATE_FROM = "-30d"
