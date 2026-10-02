@@ -25,7 +25,7 @@ describe("idempotent matching", () => {
   })
 
   it("keeps stored tags and adds the missing ones once", () => {
-    expect(withTags(["mine", "aiec-managed"])).toEqual(["mine", "aiec-managed"])
-    expect(withTags(null, ["aiec-managed", "flow"])).toEqual(["aiec-managed", "flow"])
+    expect(withTags(["mine", "managed-by-code"])).toEqual(["mine", "managed-by-code"])
+    expect(withTags(null, ["managed-by-code", "flow"])).toEqual(["managed-by-code", "flow"])
   })
 })

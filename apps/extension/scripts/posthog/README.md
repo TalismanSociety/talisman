@@ -66,14 +66,14 @@ Event and property descriptions come from the catalogue. To change one, edit the
 
 1. Project settings (`settings.ts`): IP discard, posthog-js capture features off, the test-account filter (`appVariant` is not `development`, `preview` or `canary`) and its default, GeoIP at execution order 1, and the "Keep country and continent only" property filter at order 2.
 2. Seed events, with `--seed`.
-3. Event and property definitions: description, `verified`, the `aiec-managed` tag, `flow` and `flow:<name>` on flow events, `super` on super properties, and the PostHog property type.
+3. Event and property definitions: description, `verified`, the `managed-by-code` tag, `flow` and `flow:<name>` on flow events, `super` on super properties, and the PostHog property type.
 4. Dashboards and their insights, the tile layout, and the primary dashboard (Overview).
 5. Alerts, each subscribing the API key's owner, plus one Discord destination each when the webhook variable is set.
 6. The release annotation, with `--annotate-release`.
 
 ### Ownership
 
-The script owns every dashboard and insight tagged `aiec-managed`, and never reads or writes an untagged one. It matches a dashboard by its title and an insight by its tile name, so reordering dashboards or moving a tile renames the stored object instead of creating another. Renaming a tile creates a new insight: run `--prune` to remove the old one. Alerts carry no tags: the script owns every alert on a managed insight and matches it by name. PostHog has no hard delete for dashboards and insights, so removals set `deleted: true` and can be restored in the PostHog UI.
+The script owns every dashboard and insight tagged `managed-by-code`, and never reads or writes an untagged one. It matches a dashboard by its title and an insight by its tile name, so reordering dashboards or moving a tile renames the stored object instead of creating another. Renaming a tile creates a new insight: run `--prune` to remove the old one. Alerts carry no tags: the script owns every alert on a managed insight and matches it by name. PostHog has no hard delete for dashboards and insights, so removals set `deleted: true` and can be restored in the PostHog UI.
 
 ### API key scopes
 

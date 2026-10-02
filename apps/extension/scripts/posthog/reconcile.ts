@@ -1,6 +1,6 @@
 import type { Tile } from "./dashboards"
 
-export const MANAGED_TAG = "aiec-managed"
+export const MANAGED_TAG = "managed-by-code"
 
 export const isManaged = (obj: { tags?: readonly string[] | null }) =>
   (obj.tags ?? []).includes(MANAGED_TAG)
