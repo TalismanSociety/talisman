@@ -27,8 +27,8 @@ Preconditions:
 
 ## Gotchas
 
-- Ethereum, Substrate and Solana connections are listed apart; a site can appear in several tabs. `Forget Site` on the Ethereum tab clears `ethAddresses`, `ethPermissions` and `ethChainId` when the site also has Substrate `addresses`. On the Substrate tab it clears `addresses` and `connectAllSubstrate` when the site also has `ethAddresses`. In every other case, Solana included, it deletes the whole `sitesAuthorized` entry (`core/domains/sitesAuthorised/store.ts` `forgetSite`).
-- The toolbar has `Forget All Sites` and `Disconnect All Sites` (a confirm dialog, button `Continue`). Neither has a Solana branch, so both do nothing on the Solana tab.
+- Ethereum, Substrate and Solana connections are listed apart; a site can appear in several tabs. `Forget Site` on the Ethereum tab clears `ethAddresses`, `ethPermissions` and `ethChainId` and keeps the Substrate `addresses`. On the Substrate tab it clears `addresses` and `connectAllSubstrate` and keeps `ethAddresses`. Forgetting the site's only remaining connection deletes the whole `sitesAuthorized` entry (`core/domains/sitesAuthorised/store.ts` `forgetSite`).
+- The toolbar has `Forget All Sites` and `Disconnect All Sites`. Each opens a confirm dialog; its button is `Continue`.
 - `Connect All` is hidden on the Solana tab.
 - `wallet_revokePermissions` from the dapp leaves an empty entry that only Forget Site removes.
 - `Forget Site` appears twice: on the row and in the dialog. Click the dialog button last.
