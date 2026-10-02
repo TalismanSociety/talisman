@@ -32,7 +32,6 @@ const forgetProvider = (sites: AuthorizedSites, id: string, type: ProviderType) 
 }
 
 // exported only for test purposes
-/** @knipignore exported for test mocks */
 export class SitesAuthorizedStore extends SubscribableStorageProvider<
   AuthorizedSites,
   "pri(sites.subscribe)"
