@@ -100,7 +100,9 @@ export const preflightSourcemapPlan = async (
 /**
  * `symbol-set` stamps the release on the uploaded maps: the other mode puts it in the chunks, for
  * an SDK we do not run to read. Each build is its own release, `<version>+<build>`, and a chunk that
- * an earlier build uploaded keeps that build's release.
+ * an earlier build uploaded keeps that build's release and map. Chunk ids hash the bundle only, so
+ * an identical bundle can come with a different map (a comment edit, another output dir): the
+ * stored map still resolves it, hence `--skip-on-conflict`.
  */
 export const cliSteps = (
   outDir: string,
@@ -127,6 +129,7 @@ export const cliSteps = (
       build,
       "--release-mode",
       "symbol-set",
+      "--skip-on-conflict",
     ],
   ]
 }

@@ -119,7 +119,7 @@ The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcem
 | `POSTHOG_CLI_API_KEY` missing, invalid, without the scope or for another project | The build fails before it starts |
 | Inject or upload fails | The build fails, and no zip is made |
 
-Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. Each build is its own release. A chunk that an earlier build already uploaded keeps that build's release.
+Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. Each build is its own release. A chunk that an earlier build already uploaded keeps that build's release and map, even when its map changed without its code changing (a comment edit, another output folder): the stored map still resolves that code.
 
 To build a production zip without uploading while the keys are in `.env`, set `POSTHOG_CLI_DRY_RUN=true` in the shell. The zip then has no chunk ids.
 

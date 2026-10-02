@@ -108,7 +108,7 @@ describe("planSourcemapUpload", () => {
 })
 
 describe("cliSteps", () => {
-  it("injects then uploads, both excluding page.js and content scripts, and stamps the version and build on the upload only", () => {
+  it("injects then uploads, both excluding page.js and content scripts, stamps the version and build on the upload only, and keeps maps uploaded by earlier builds", () => {
     const [inject, upload] = cliSteps("/out/chrome-mv3", {
       host: "http://127.0.0.1:9",
       version: VERSION,
@@ -123,7 +123,7 @@ describe("cliSteps", () => {
     expect(inject.some((arg) => arg.startsWith("--release"))).toBe(false)
     expect(upload.join(" ")).toContain("sourcemap upload")
     expect(upload.join(" ")).toContain(
-      "--release-name talisman-extension --release-version 3.10.1 --build 4d329168b --release-mode symbol-set"
+      "--release-name talisman-extension --release-version 3.10.1 --build 4d329168b --release-mode symbol-set --skip-on-conflict"
     )
   })
 })
