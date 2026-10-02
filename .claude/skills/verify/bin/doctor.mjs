@@ -148,9 +148,11 @@ if (check("extension service worker is running", !!worker, worker?.url())) {
       : `built ${built}, running ${running.join(", ") || "no build sha found"}, HEAD ${short(head)}${
           isRunningHead
             ? ""
-            : commitOf(built) !== head
-              ? ": the build predates HEAD, restart it (pnpm dev:kill && pnpm dev, or the runner's sync)"
-              : ": the service worker runs a cached older script, reload the extension in chrome://extensions or restart the browser"
+            : running.length === 0
+              ? ": compare RELEASE_SHA in doctor.mjs with the release name in wxt.config.ts"
+              : commitOf(built) !== head
+                ? ": the build predates HEAD, restart it (pnpm dev:kill && pnpm dev, or the runner's sync)"
+                : ": the service worker runs a cached older script, reload the extension in chrome://extensions or restart the browser"
         }`
   )
 }
