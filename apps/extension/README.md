@@ -110,7 +110,7 @@ Production and canary Chrome builds make hidden source maps (no inline reference
 
 Before the build starts, the `build:before` hook checks the key with PostHog. The key must be set and valid, hold `error_tracking:write`, and reach the project in `src/core/domains/analytics/posthogProject.ts`.
 
-The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcemaps.ts`. Its first run downloads the CLI binary from GitHub.
+The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcemaps.ts`. Its first run downloads the CLI binary from GitHub. It gets its key and nothing else of the build's env, and the build fails if it changed anything in the output beyond the chunk ids.
 
 | Situation | Result |
 | --- | --- |
