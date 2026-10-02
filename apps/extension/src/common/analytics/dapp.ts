@@ -1,5 +1,6 @@
 import type { ValidRequests } from "@core/libs/requests/types"
 
+import { isPrivateHost } from "./networks"
 import { isHostname } from "./schema"
 import type { ChainPlatform } from "./transactions"
 
@@ -66,7 +67,7 @@ export const toDappDomain = (url: string | undefined): string | null => {
     if (protocol === "ipfs:" || protocol === "ipns:") return protocol.slice(0, -1)
     if (protocol !== "http:" && protocol !== "https:") return null
     const host = hostname.toLowerCase()
-    return isHostname(host) ? host : null
+    return isHostname(host) && !isPrivateHost(host) ? host : null
   } catch {
     return null
   }

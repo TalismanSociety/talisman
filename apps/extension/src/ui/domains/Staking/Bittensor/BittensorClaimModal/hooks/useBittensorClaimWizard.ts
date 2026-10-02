@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
 import { BalanceFormatter, type DTaoClaimTarget } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
@@ -96,7 +97,7 @@ const useBittensorClaimWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: nativeToken?.symbol,
+        symbol: tokenSymbolForAnalytics(nativeToken),
         usd:
           typeof claimablePlancks === "bigint"
             ? new BalanceFormatter(claimablePlancks, nativeToken?.decimals, tokenRates).fiat("usd")
@@ -105,7 +106,7 @@ const useBittensorClaimWizardProvider = () => {
       if (report) flows.staking.submitted({ ...report, transactionId: txHash })
       setWizardState((prev) => ({ ...prev, hash: txHash }))
     },
-    [account, network, nativeToken?.symbol, nativeToken?.decimals, claimablePlancks, tokenRates]
+    [account, network, nativeToken, claimablePlancks, tokenRates]
   )
 
   useFlow(flows.staking, {

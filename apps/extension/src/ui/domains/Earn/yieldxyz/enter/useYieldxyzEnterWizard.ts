@@ -1,4 +1,5 @@
 import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { type EarnEntry, yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned } from "@core/domains/keyring/exports"
@@ -244,7 +245,7 @@ const useYieldxyzEnterWizardProvider = ({
     const report = valueReport({
       account,
       network,
-      symbol: tokenIn?.symbol,
+      symbol: tokenSymbolForAnalytics(tokenIn),
       usd:
         state.amountIn === null
           ? null
@@ -252,15 +253,7 @@ const useYieldxyzEnterWizardProvider = ({
     })
     if (report)
       flows.earn_deposit.submitted({ ...report, yield_id: yieldIdForAnalytics(state.productId) })
-  }, [
-    account,
-    network,
-    tokenIn?.symbol,
-    tokenIn?.decimals,
-    tokenRates,
-    state.amountIn,
-    state.productId,
-  ])
+  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId])
 
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return

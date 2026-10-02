@@ -42,7 +42,7 @@ Rules that the types do not catch:
 - A step held in state reaches the flow on the next render. When the same handler sets the step and then calls `submitted`, call `flows.<name>.step(…)` first, or `last_step` reads the step before.
 - A page runs one attempt per flow. Call `useFlow` once, in the provider or the common parent.
 - `completed`, and `submitted` of a transaction flow, mark the modal or drawer on top as completed, so its `modal_closed` reads `dismiss: "completed"`.
-- One invalid value rejects the whole event in the background, and a rejected `submitted` never links its transaction. Pass token symbols through `symbolForAnalytics` and networks through `networkIdForAnalytics` (`custom` for a user-added network), both in `common/analytics`.
+- One invalid value rejects the whole event in the background, and a rejected `submitted` never links its transaction. Pass tokens through `tokenSymbolForAnalytics` (`unknown` for a user-added token) and networks through `networkIdForAnalytics` (`custom` for a user-added network), both in `common/analytics/funds.ts`.
 
 ## Add an event
 

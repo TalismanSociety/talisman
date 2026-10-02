@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
@@ -222,7 +223,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     direction: "buy",
     resetValueIn,
     valueIn,
-    symbol: tokenIn?.symbol,
+    symbol: tokenSymbolForAnalytics(tokenIn),
     taoPlancks: valueIn,
   })
 

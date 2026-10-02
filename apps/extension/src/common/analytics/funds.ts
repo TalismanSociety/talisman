@@ -1,7 +1,14 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { isNetworkCustom, type Network, networkIdFromTokenId } from "@talismn/chaindata-provider"
+import {
+  isNetworkKnown,
+  isTokenCustom,
+  type Network,
+  networkIdFromTokenId,
+  type Token,
+} from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
 
+import { symbolForAnalytics } from "./schema"
 import { CUSTOM_NETWORK_ID } from "./transactions"
 
 export const SEND_ENTRIES = [
@@ -75,8 +82,16 @@ export const RAMP_DIRECTIONS = ["buy", "sell"] as const
 export const REPLACE_TYPES = ["speed_up", "cancel"] as const
 export const TX_PHASES = ["pre_broadcast", "approval", "submit"] as const
 
+export const savedNetworkId = (
+  network: { id: string; platform: string },
+  known: boolean
+): string => (known || network.platform === "ethereum" ? network.id : CUSTOM_NETWORK_ID)
+
 export const networkIdForAnalytics = (network: Network | null | undefined): string =>
-  network && !isNetworkCustom(network) ? network.id : CUSTOM_NETWORK_ID
+  network ? savedNetworkId(network, isNetworkKnown(network)) : CUSTOM_NETWORK_ID
+
+export const tokenSymbolForAnalytics = (token: Token | null | undefined): string =>
+  token && !isTokenCustom(token) ? symbolForAnalytics(token.symbol) : "unknown"
 
 export const copiedNetworkId = (network: Network | null | undefined): string =>
   network ? networkIdForAnalytics(network) : "generic"

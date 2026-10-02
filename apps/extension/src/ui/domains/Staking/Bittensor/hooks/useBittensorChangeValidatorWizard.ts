@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingEntry } from "@common/analytics/staking"
 import type { Address } from "@core/types/base"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -162,13 +163,13 @@ const useBittensorChangeValidatorWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: token?.symbol,
+        symbol: tokenSymbolForAnalytics(token),
         usd: currentPosition?.balance.free.fiat("usd"),
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [account, network, token?.symbol, currentPosition?.balance.free]
+    [account, network, token, currentPosition?.balance.free]
   )
 
   useFlow(flows.staking, {

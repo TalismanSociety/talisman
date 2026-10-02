@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -103,13 +104,13 @@ const useBondWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: token?.symbol,
+        symbol: tokenSymbolForAnalytics(token),
         usd: amountToStake?.fiat("usd"),
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [account, network, token?.symbol, amountToStake]
+    [account, network, token, amountToStake]
   )
 
   useFlow(flows.staking, {

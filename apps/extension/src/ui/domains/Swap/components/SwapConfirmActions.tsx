@@ -1,7 +1,6 @@
 import { toAmountBucket } from "@common/analytics/buckets"
 import { classifyError } from "@common/analytics/errorCategory"
-import { networkIdForAnalytics } from "@common/analytics/funds"
-import { symbolForAnalytics } from "@common/analytics/schema"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -619,8 +618,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       platform: fromToken.platform,
       from_network_id: networkIdForAnalytics(fromNetwork),
       to_network_id: networkIdForAnalytics(toNetwork),
-      from_symbol: symbolForAnalytics(fromToken.symbol),
-      to_symbol: symbolForAnalytics(toToken.symbol),
+      from_symbol: tokenSymbolForAnalytics(fromToken),
+      to_symbol: tokenSymbolForAnalytics(toToken),
       signer,
       cross_chain: fromToken.networkId !== toToken.networkId,
       usd_bucket: toAmountBucket(usdOf(fromAmount, fromToken.decimals, fromTokenRates)),

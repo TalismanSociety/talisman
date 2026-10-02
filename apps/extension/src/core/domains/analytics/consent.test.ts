@@ -42,8 +42,6 @@ describe("admit", () => {
     ["error", consent("granted"), { ...POSTHOG, usage: false }, "queued"],
     ["error", consent("granted"), { ...POSTHOG, errorTracking: false }, "dropped_off"],
     ["usage", consent("granted"), { ...POSTHOG, errorTracking: false }, "queued"],
-    ["usage", consent("granted"), { mode: "unconfigured" }, "queued"],
-    ["usage", consent("pending"), { mode: "unconfigured" }, "held"],
     ["usage", consent("granted"), { mode: "dev_log" }, "queued"],
   ] as const)(
     "%s event, consent %o, transmission %o: %s",

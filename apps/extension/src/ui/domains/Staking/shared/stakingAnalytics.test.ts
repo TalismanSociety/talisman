@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 
 import { stakingSubmittedReport, stakingTransactionId, valueReport } from "./stakingAnalytics"
 
-const bittensor = { id: "bittensor", platform: "polkadot" } as Network
+const bittensor = { id: "bittensor", platform: "polkadot", __isKnown: true } as unknown as Network
 const local = { type: "keypair" } as const
 const stamps = { flow_id: "4f1c2b8e-0c56-4c1e-9d5a-6d7c1f2e3a4b", duration_ms: 1200 }
 

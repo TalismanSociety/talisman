@@ -113,25 +113,37 @@ describe("chaindata messages", () => {
     ])
   })
 
-  it("reports a token by symbol and network, an edit apart from an add, never its contract", async () => {
+  it("reports a token by network, an edit apart from an add, never its typed symbol or contract", async () => {
     state.networks["8453"] = evmNetwork
-    const token = { id: TOKEN_ID, networkId: "8453", symbol: "USDC", coingeckoId: "usd-coin" }
+    const token = { id: TOKEN_ID, networkId: "8453", symbol: "ALICE", coingeckoId: "usd-coin" }
 
     await handle("pri(chaindata.tokens.upsert)", token, () => {
-      state.tokens[TOKEN_ID] = token
+      state.tokens[TOKEN_ID] = { ...token, __isCustom: true, __isKnown: false }
     })
-    await handle("pri(chaindata.tokens.upsert)", { ...token, symbol: "USDC.e" })
+    await handle("pri(chaindata.tokens.upsert)", { ...token, symbol: "BOB" })
     await handle("pri(chaindata.tokens.remove)", { id: TOKEN_ID })
 
     expect(tracked.calls).toEqual([
       [
         "custom_token_added",
-        { network_id: "8453", token_symbol: "USDC", has_coingecko_id: true, source: "settings" },
+        { network_id: "8453", token_symbol: "unknown", has_coingecko_id: true, source: "settings" },
       ],
-      ["custom_token_edited", { network_id: "8453", token_symbol: "USDC.e" }],
+      ["custom_token_edited", { network_id: "8453", token_symbol: "unknown" }],
       ["custom_token_deleted", { network_id: "8453" }],
     ])
-    expect(JSON.stringify(tracked.calls)).not.toContain("0x8335")
+    expect(JSON.stringify(tracked.calls)).not.toMatch(/0x8335|ALICE|BOB/)
+  })
+
+  it("reports a Talisman token the user edits by its Talisman symbol", async () => {
+    state.networks["8453"] = evmNetwork
+    const token = { id: TOKEN_ID, networkId: "8453", symbol: "USDC" }
+    state.tokens[TOKEN_ID] = { ...token, __isCustom: false, __isKnown: true }
+
+    await handle("pri(chaindata.tokens.upsert)", { ...token, symbol: "ALICE" })
+
+    expect(tracked.calls).toEqual([
+      ["custom_token_edited", { network_id: "8453", token_symbol: "USDC" }],
+    ])
   })
 
   it("reports NFT choices from the request", async () => {

@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingEntry } from "@common/analytics/staking"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
@@ -508,7 +509,7 @@ const useBittensorBondWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: isSubnetUnbond ? dtaoToken?.symbol : nativeToken?.symbol,
+        symbol: tokenSymbolForAnalytics(isSubnetUnbond ? dtaoToken : nativeToken),
         usd: amountTao?.fiat("usd"),
         slippage:
           stakeType === "subnet"
@@ -527,13 +528,13 @@ const useBittensorBondWizardProvider = () => {
       account,
       network,
       isSubnetUnbond,
-      dtaoToken?.symbol,
-      nativeToken?.symbol,
       amountTao,
       stakeType,
       slippageTolerance,
       isDefaultSlippage,
       withMevShield,
+      nativeToken,
+      dtaoToken,
     ]
   )
 

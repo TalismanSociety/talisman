@@ -1,7 +1,12 @@
+import type { Network, Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
-import { addressFormatOf, swapOfTransaction } from "./funds"
-import { symbolForAnalytics } from "./schema"
+import {
+  addressFormatOf,
+  networkIdForAnalytics,
+  swapOfTransaction,
+  tokenSymbolForAnalytics,
+} from "./funds"
 
 describe("swapOfTransaction", () => {
   const swap = { fromAmount: "1", toAmount: "1", to: "0x1" } as const
@@ -34,6 +39,24 @@ describe("swapOfTransaction", () => {
   })
 })
 
+describe("networkIdForAnalytics", () => {
+  const network = (id: string, platform: string, isCustom: boolean, isKnown: boolean) =>
+    ({ id, platform, __isCustom: isCustom, __isKnown: isKnown }) as unknown as Network
+
+  it("keeps Talisman's id, edited or not, and an Ethereum chain id", () => {
+    expect(networkIdForAnalytics(network("polkadot", "polkadot", false, true))).toBe("polkadot")
+    expect(networkIdForAnalytics(network("polkadot", "polkadot", true, true))).toBe("polkadot")
+    expect(networkIdForAnalytics(network("987654321", "ethereum", true, false))).toBe("987654321")
+  })
+
+  it("hides a user-added genesis hash and a missing network", () => {
+    expect(networkIdForAnalytics(network(`0x${"ab".repeat(32)}`, "polkadot", true, false))).toBe(
+      "custom"
+    )
+    expect(networkIdForAnalytics(null)).toBe("custom")
+  })
+})
+
 describe("addressFormatOf", () => {
   it("reads the encoding from the address, as mobile's <encoding>:<format>", () => {
     expect(addressFormatOf("0x1111111111111111111111111111111111111111")).toBe("ethereum:standard")
@@ -44,10 +67,21 @@ describe("addressFormatOf", () => {
   })
 })
 
-describe("symbolForAnalytics", () => {
-  it("keeps a symbol the catalogue accepts and reads any other as unknown", () => {
-    expect(symbolForAnalytics("USDC.e")).toBe("USDC.e")
-    expect(symbolForAnalytics("SN 12 alpha")).toBe("unknown")
-    expect(symbolForAnalytics(undefined)).toBe("unknown")
+describe("tokenSymbolForAnalytics", () => {
+  const token = (symbol: string, isCustom: boolean, isKnown: boolean) =>
+    ({ symbol, __isCustom: isCustom, __isKnown: isKnown }) as unknown as Token
+
+  it("keeps the symbol of a Talisman token", () => {
+    expect(tokenSymbolForAnalytics(token("USDC.e", false, true))).toBe("USDC.e")
+  })
+
+  it("reads a token whose symbol the user typed, added or edited, as unknown", () => {
+    expect(tokenSymbolForAnalytics(token("ALICE", true, false))).toBe("unknown")
+    expect(tokenSymbolForAnalytics(token("ALICE", true, true))).toBe("unknown")
+  })
+
+  it("reads a symbol the catalogue rejects and no token as unknown", () => {
+    expect(tokenSymbolForAnalytics(token("SN 12 alpha", false, true))).toBe("unknown")
+    expect(tokenSymbolForAnalytics(null)).toBe("unknown")
   })
 })

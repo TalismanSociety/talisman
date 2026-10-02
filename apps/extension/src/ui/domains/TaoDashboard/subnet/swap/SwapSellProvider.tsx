@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
@@ -187,7 +188,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     direction: "sell",
     resetValueIn,
     valueIn: state.valueIn,
-    symbol: tokenIn?.symbol,
+    symbol: tokenSymbolForAnalytics(tokenIn),
     taoPlancks: typeof valueOut === "bigint" ? valueOut : null,
   })
 

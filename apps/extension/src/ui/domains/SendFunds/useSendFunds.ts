@@ -1,7 +1,6 @@
 import { toAmountBucket } from "@common/analytics/buckets"
 import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
-import { networkIdForAnalytics } from "@common/analytics/funds"
-import { symbolForAnalytics } from "@common/analytics/schema"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -527,7 +526,7 @@ const useSendFundsProvider = () => {
       if (reported)
         flows.send.submitted({
           ...reported,
-          token_symbol: symbolForAnalytics(token?.symbol),
+          token_symbol: tokenSymbolForAnalytics(token),
           ...(transaction?.platform === "ethereum" &&
             transaction.priority && { fee_priority: transaction.priority }),
           send_max: sendMax,
@@ -545,9 +544,9 @@ const useSendFundsProvider = () => {
       recipientSource,
       reported,
       sendMax,
-      token?.symbol,
       transaction,
       transfer,
+      token,
     ]
   )
 

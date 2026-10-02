@@ -1,7 +1,6 @@
 import { toDappDomain } from "@common/analytics/dapp"
 import { networkIdForAnalytics } from "@common/analytics/funds"
 import { networkToggledOf, tokenToggledOf, toRpcProvider } from "@common/analytics/networks"
-import { symbolForAnalytics } from "@common/analytics/schema"
 import type { ChainPlatform } from "@common/analytics/transactions"
 
 import { requestStore } from "../../libs/requests/store"
@@ -135,7 +134,7 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
       else
         track("custom_token_added", {
           network_id: networkIdForAnalytics(tokenNetwork),
-          token_symbol: symbolForAnalytics(token.symbol),
+          token_symbol: "unknown",
           has_coingecko_id: !!token.coingeckoId,
           source: "dapp",
         })

@@ -25,7 +25,6 @@ export type Transmission =
       errorTracking: boolean
     }
   | { mode: "dev_log" }
-  | { mode: "unconfigured" }
   | { mode: "off" }
 
 export const resolveTransmission = ({
@@ -38,9 +37,8 @@ export const resolveTransmission = ({
   config: AnalyticsRemoteConfig | null
 }): Transmission => {
   if (isDevBuild) return { mode: "dev_log" }
-  if (!config) return { mode: "unconfigured" }
+  if (!config?.analytics.posthogApiKey) return { mode: "off" }
   const { posthogApiKey, errorTrackingEnabled, browsers } = config.analytics
-  if (!posthogApiKey) return { mode: "off" }
   return {
     mode: "posthog",
     endpoint: config.postHogUrl,

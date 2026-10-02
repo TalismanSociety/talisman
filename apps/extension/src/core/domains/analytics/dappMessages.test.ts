@@ -93,7 +93,7 @@ describe("dapp messages", () => {
 
   it("tells an account change from a network switch on a connected site", async () => {
     state.sites["app.example.com"] = { url: DAPP_URL }
-    state.networks["1"] = { id: "1" }
+    state.networks["1"] = { id: "1", platform: "ethereum", __isKnown: true }
 
     await handle("pri(sites.update)", {
       id: "app.example.com",
@@ -184,13 +184,13 @@ describe("dapp messages", () => {
     ])
   })
 
-  it("reports a token a dapp adds by symbol and network, never by its contract", async () => {
-    const token = { id: TOKEN_ID, networkId: CHAIN_ID, symbol: "USDC", coingeckoId: "usd-coin" }
+  it("reports a token a dapp adds by network, never by its symbol or contract", async () => {
+    const token = { id: TOKEN_ID, networkId: CHAIN_ID, symbol: "ALICE", coingeckoId: "usd-coin" }
     state.requests["eth-watchasset.1"] = { url: DAPP_URL, token }
     state.networks[CHAIN_ID] = network
 
     await handle("pri(eth.watchasset.requests.approve)", { id: "eth-watchasset.1" }, () => {
-      state.tokens[TOKEN_ID] = token
+      state.tokens[TOKEN_ID] = { ...token, __isCustom: true, __isKnown: false }
     })
     state.requests["eth-watchasset.2"] = { url: DAPP_URL, token }
     await handle("pri(eth.watchasset.requests.approve)", { id: "eth-watchasset.2" })
@@ -198,13 +198,13 @@ describe("dapp messages", () => {
     expect(tracked.calls).toEqual([
       [
         "custom_token_added",
-        { network_id: CHAIN_ID, token_symbol: "USDC", has_coingecko_id: true, source: "dapp" },
+        { network_id: CHAIN_ID, token_symbol: "unknown", has_coingecko_id: true, source: "dapp" },
       ],
       [
         "token_toggled",
         {
           network_id: CHAIN_ID,
-          token_symbol: "USDC",
+          token_symbol: "unknown",
           enabled: true,
           default_enabled: false,
           source: "dapp",

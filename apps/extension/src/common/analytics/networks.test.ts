@@ -1,7 +1,8 @@
 import type { Network } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
-import { networkToggledOf, savedNetworkId, toRpcProvider } from "./networks"
+import { savedNetworkId } from "./funds"
+import { networkToggledOf, toRpcProvider } from "./networks"
 
 describe("toRpcProvider", () => {
   it("keeps the registrable domain and drops the path and subdomains", () => {

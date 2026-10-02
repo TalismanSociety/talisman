@@ -1,4 +1,5 @@
 import { classifyError } from "@common/analytics/errorCategory"
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -224,13 +225,13 @@ const useBittensorChangeLockHotkeyWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: baseToken?.symbol,
+        symbol: tokenSymbolForAnalytics(baseToken),
         usd: null,
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
       setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
     },
-    [account, network, baseToken?.symbol]
+    [account, network, baseToken]
   )
 
   useFlow(flows.staking, {

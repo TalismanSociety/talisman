@@ -85,6 +85,7 @@ export class AnalyticsEngine {
   #held: QueuedEventRecord[] = []
   #inFlight: Partial<Record<ConsentKind, Promise<void>>> = {}
   #failures = 0
+  #inert = false
 
   constructor(deps: AnalyticsEngineDeps) {
     this.#deps = deps
@@ -186,11 +187,18 @@ export class AnalyticsEngine {
       session: null,
       appliedConsent: null,
     }
-    if (!stored) await this.#store.commit({ state: this.#state })
-    ;[this.#consent, this.#transmission] = await Promise.all([
-      firstValueFrom(this.#deps.consent$),
-      firstValueFrom(this.#deps.transmission$),
-    ])
+    try {
+      if (!stored) await this.#store.commit({ state: this.#state })
+      ;[this.#consent, this.#transmission] = await Promise.all([
+        firstValueFrom(this.#deps.consent$),
+        firstValueFrom(this.#deps.transmission$),
+      ])
+    } catch (cause) {
+      log.error("[analytics] start failed, dropping every event", { cause })
+      this.#inert = true
+      this.#consent = { usage: "denied", error: "denied" }
+      this.#transmission = { mode: "off" }
+    }
   }
 
   async #capture(
@@ -243,6 +251,7 @@ export class AnalyticsEngine {
   }
 
   async #apply(consent: Consent, transmission: Transmission) {
+    if (this.#inert) return
     this.#consent = consent
     this.#transmission = transmission
 

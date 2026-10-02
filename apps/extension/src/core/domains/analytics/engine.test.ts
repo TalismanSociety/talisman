@@ -1,5 +1,5 @@
 import type { ConsentKind } from "@common/analytics/schema"
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, Subject } from "rxjs"
 import { describe, expect, it } from "vitest"
 
 import { AnalyticsEngine } from "./engine"
@@ -7,7 +7,7 @@ import type { Environment } from "./environment"
 import { type ParsedEvent, parseTrackedEvent } from "./parse"
 import { MIN_ALARM_DELAY_MS } from "./scheduler"
 import { type AnalyticsStore, createMemoryAnalyticsStore } from "./store.queue"
-import type { Transmission } from "./transmission"
+import { parseAnalyticsRemoteConfig, resolveTransmission, type Transmission } from "./transmission"
 import type { SendOutcome, Transport } from "./transport"
 import type { Consent, WireEvent } from "./types"
 
@@ -85,10 +85,10 @@ const startWorker = (
   {
     consent: initialConsent,
     transmission = POSTHOG,
-  }: { consent: Consent; transmission?: Transmission }
+    transmission$ = new BehaviorSubject(transmission),
+  }: { consent: Consent; transmission?: Transmission; transmission$?: Subject<Transmission> }
 ) => {
   const consent$ = new BehaviorSubject(initialConsent)
-  const transmission$ = new BehaviorSubject(transmission)
   let onAlarm = () => {}
   const engine = new AnalyticsEngine({
     clock: () => world.now,
@@ -385,23 +385,65 @@ describe("AnalyticsEngine", () => {
       expect(await worker.capture(errorEvent())).toBe("queued")
     })
 
-    it("an unconfigured section queues without sending, then sends once a key arrives", async () => {
-      const world = createWorld()
-      const worker = startWorker(world, {
-        consent: consent("granted"),
-        transmission: { mode: "unconfigured" },
+    it("a missing analytics section drops, purges and clears the alarm like the kill switch", async () => {
+      const unconfigured = resolveTransmission({
+        isDevBuild: false,
+        build: "chrome",
+        config: parseAnalyticsRemoteConfig({}),
       })
-      expect(await worker.capture()).toBe("queued")
-      expect(world.alarmAt).toBeUndefined()
+      const world = createWorld()
+      const worker = startWorker(world, { consent: consent("granted") })
+      world.outcome = "retry"
+      await worker.capture()
+      await worker.capture(errorEvent())
+      await worker.engine.flush("usage")
+      expect(world.alarmAt).toBeDefined()
 
-      world.now += OFFSET + MINUTE
+      const snapshot = await worker.setTransmission(unconfigured)
+
+      expect(snapshot.queued).toEqual({ usage: 0, error: 0 })
+      expect(world.alarmAt).toBeUndefined()
+      expect(await worker.capture()).toBe("dropped_off")
+      expect(await worker.capture(errorEvent())).toBe("dropped_off")
+      expect(await rows(world.store)).toEqual([])
+    })
+  })
+
+  describe("a failed start", () => {
+    const expectInert = async (worker: ReturnType<typeof startWorker>, world: World) => {
+      expect(await worker.capture()).toBe("dropped_off")
+      expect(await worker.capture(errorEvent())).toBe("dropped_off")
+      expect(await worker.engine.admits("usage")).toBe(false)
       await worker.engine.flush("usage")
       expect(sentEvents(world)).toEqual([])
+      expect(world.alarmAt).toBeUndefined()
+    }
 
+    it("drops every event when the store cannot save, even after consent changes", async () => {
+      const world = createWorld()
+      world.store = {
+        ...world.store,
+        load: async () => undefined,
+        commit: async () => {
+          throw new Error("QuotaExceededError")
+        },
+      }
+      const worker = startWorker(world, { consent: consent("granted") })
+
+      await expectInert(worker, world)
+      await worker.setConsent(consent("granted", "denied"))
       await worker.setTransmission(POSTHOG)
-      expect(world.alarmAt).toBe(world.now + MIN_ALARM_DELAY_MS + OFFSET)
-      await worker.fireAlarm()
-      expect(sentEvents(world)).toHaveLength(1)
+      await expectInert(worker, world)
+    })
+
+    it("drops every event when the remote config never arrives", async () => {
+      const world = createWorld()
+      const transmission$ = new Subject<Transmission>()
+      transmission$.complete()
+      const worker = startWorker(world, { consent: consent("granted"), transmission$ })
+
+      await expectInert(worker, world)
+      expect(await rows(world.store)).toEqual([])
     })
   })
 

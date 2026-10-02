@@ -1,4 +1,5 @@
 import { attachErrorCategory, type ErrorCategory } from "@common/analytics/errorCategory"
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingAction, StakingEntry } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
@@ -383,7 +384,7 @@ const SeekStakingForm: FC<{
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: token?.symbol,
+        symbol: tokenSymbolForAnalytics(token),
         usd:
           amount === null
             ? null
@@ -391,7 +392,7 @@ const SeekStakingForm: FC<{
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
     },
-    [account, network, token?.symbol, token?.decimals, amount, tokenRates]
+    [account, network, token, amount, tokenRates]
   )
 
   useFlow(flows.staking, {

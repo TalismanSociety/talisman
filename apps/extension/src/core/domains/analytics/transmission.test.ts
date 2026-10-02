@@ -50,7 +50,14 @@ describe("resolveTransmission", () => {
 
   it.each([
     ["a dev build, whatever the config", true, "chrome", config(), { mode: "dev_log" }],
-    ["a missing section", false, "chrome", null, { mode: "unconfigured" }],
+    ["a missing section", false, "chrome", parseAnalyticsRemoteConfig({}), { mode: "off" }],
+    [
+      "a malformed section",
+      false,
+      "chrome",
+      parseAnalyticsRemoteConfig({ analytics: { posthogApiKey: 1 } }),
+      { mode: "off" },
+    ],
     ["an empty key", false, "chrome", config({ posthogApiKey: "" }), { mode: "off" }],
     [
       "the chrome build",

@@ -1,5 +1,4 @@
-import { networkIdForAnalytics } from "@common/analytics/funds"
-import { symbolForAnalytics } from "@common/analytics/schema"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Token } from "@talismn/chaindata-provider"
@@ -82,7 +81,7 @@ export const useRampsForm = <
         flows.buy.completed({
           provider: formData.provider,
           fiat_currency: formData.currencyCode,
-          token_symbol: symbolForAnalytics(token?.symbol),
+          token_symbol: tokenSymbolForAnalytics(token),
           network_id: networkIdForAnalytics(network),
           direction,
         })

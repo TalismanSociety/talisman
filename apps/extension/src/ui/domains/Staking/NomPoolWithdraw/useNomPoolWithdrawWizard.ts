@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { BalanceFormatter } from "@talismn/balances"
@@ -88,13 +89,13 @@ const useNomPoolWithdrawWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: token?.symbol,
+        symbol: tokenSymbolForAnalytics(token),
         usd: amountToWithdraw?.fiat("usd"),
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [account, network, token?.symbol, amountToWithdraw]
+    [account, network, token, amountToWithdraw]
   )
 
   useFlow(flows.staking, {

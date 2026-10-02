@@ -1,6 +1,9 @@
-import { networkIdForAnalytics } from "@common/analytics/funds"
-import { savedNetworkId, toRpcProvider } from "@common/analytics/networks"
-import { symbolForAnalytics } from "@common/analytics/schema"
+import {
+  networkIdForAnalytics,
+  savedNetworkId,
+  tokenSymbolForAnalytics,
+} from "@common/analytics/funds"
+import { toRpcProvider } from "@common/analytics/networks"
 import { isNetworkKnown } from "@talismn/chaindata-provider"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -49,7 +52,7 @@ const CHAINDATA_MESSAGES: { [M in ChaindataMessage]: Observe<M> } = {
     return async () => {
       const [existing, tokenNetwork] = await Promise.all([before, network])
       const networkId = networkIdForAnalytics(tokenNetwork)
-      const tokenSymbol = symbolForAnalytics(token.symbol)
+      const tokenSymbol = tokenSymbolForAnalytics(existing)
       if (existing)
         track("custom_token_edited", { network_id: networkId, token_symbol: tokenSymbol })
       else

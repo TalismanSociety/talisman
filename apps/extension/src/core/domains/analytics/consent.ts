@@ -20,7 +20,6 @@ export const transmits = (kind: ConsentKind, transmission: Transmission): boolea
     case "posthog":
       return kind === "usage" ? transmission.usage : transmission.errorTracking
     case "dev_log":
-    case "unconfigured":
       return true
   }
 }

@@ -1,8 +1,6 @@
 import { isNetworkKnown, type Network, type Token } from "@talismn/chaindata-provider"
 
-import { networkIdForAnalytics } from "./funds"
-import { symbolForAnalytics } from "./schema"
-import { CUSTOM_NETWORK_ID } from "./transactions"
+import { networkIdForAnalytics, savedNetworkId, tokenSymbolForAnalytics } from "./funds"
 
 const PRIVATE_SUFFIXES = [".local", ".lan", ".home", ".internal", ".localhost", ".onion", ".arpa"]
 
@@ -18,6 +16,12 @@ const COUNTRY_SECOND_LEVELS: ReadonlySet<string> = new Set([
 
 const RPC_PROTOCOLS = ["http:", "https:", "ws:", "wss:"]
 
+export const isPrivateHost = (host: string): boolean =>
+  host === "localhost" ||
+  host.startsWith("[") ||
+  /^\d+(\.\d+){3}$/.test(host) ||
+  PRIVATE_SUFFIXES.some((suffix) => host.endsWith(suffix))
+
 export const toRpcProvider = (url: string | null | undefined): string | null => {
   if (!url) return null
   let host: string
@@ -28,8 +32,7 @@ export const toRpcProvider = (url: string | null | undefined): string | null => 
   } catch {
     return null
   }
-  if (host === "localhost" || host.startsWith("[") || /^\d+(\.\d+){3}$/.test(host)) return null
-  if (PRIVATE_SUFFIXES.some((suffix) => host.endsWith(suffix))) return null
+  if (isPrivateHost(host)) return null
 
   const labels = host.split(".").filter(Boolean)
   if (labels.length < 2) return null
@@ -38,11 +41,6 @@ export const toRpcProvider = (url: string | null | undefined): string | null => 
   const keep = tld.length === 2 && COUNTRY_SECOND_LEVELS.has(second) && labels.length >= 3 ? 3 : 2
   return labels.slice(-keep).join(".")
 }
-
-export const savedNetworkId = (
-  network: { id: string; platform: string },
-  known: boolean
-): string => (known || network.platform === "ethereum" ? network.id : CUSTOM_NETWORK_ID)
 
 type ToggleSource = "dapp" | "settings"
 
@@ -61,7 +59,7 @@ export const tokenToggledOf = (
   source: ToggleSource
 ) => ({
   network_id: networkIdForAnalytics(network),
-  token_symbol: symbolForAnalytics(token.symbol),
+  token_symbol: tokenSymbolForAnalytics(token),
   enabled,
   default_enabled: !!token.isDefault,
   source,

@@ -1,6 +1,5 @@
-import { networkIdForAnalytics } from "@common/analytics/funds"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { ACCOUNT_SELECTIONS } from "@common/analytics/portfolio"
-import { symbolForAnalytics } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
 import type { Network, Token } from "@talismn/chaindata-provider"
 import type { AccountType } from "@talismn/keyring"
@@ -31,6 +30,6 @@ export const reportTokenDetailsOpened = (
   heldNetworkCount: number
 ) =>
   track("token_details_opened", {
-    symbol: symbolForAnalytics(token.symbol),
+    symbol: tokenSymbolForAnalytics(token),
     ...(heldNetworkCount <= 1 && { network_id: networkIdForAnalytics(network) }),
   })

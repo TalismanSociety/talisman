@@ -44,8 +44,12 @@ describe("describeDappRequest", () => {
 describe("toDappDomain", () => {
   it.each([
     ["https://App.Uniswap.org:8443/swap?inputCurrency=0xabc#top", "app.uniswap.org"],
-    ["http://localhost:3000/", "localhost"],
-    ["http://127.0.0.1:8080", "127.0.0.1"],
+    ["http://localhost:3000/", null],
+    ["http://127.0.0.1:8080", null],
+    ["http://192.168.1.10/", null],
+    ["https://printer.local/", null],
+    ["http://router.lan/", null],
+    ["http://dapp.localhost:5173/", null],
     ["ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/", "ipfs"],
     ["ipns://app.example.eth", "ipns"],
     ["http://[::1]:3000/", null],

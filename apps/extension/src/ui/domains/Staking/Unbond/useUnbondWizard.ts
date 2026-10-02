@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
@@ -79,13 +80,13 @@ const useUnbondWizardProvider = () => {
       const report = stakingSubmittedReport({
         account,
         network,
-        symbol: token?.symbol,
+        symbol: tokenSymbolForAnalytics(token),
         usd: amountToUnbond?.fiat("usd"),
       })
       if (report) flows.staking.submitted({ ...report, transactionId: hash })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [account, network, token?.symbol, amountToUnbond]
+    [account, network, token, amountToUnbond]
   )
 
   useFlow(flows.staking, {
