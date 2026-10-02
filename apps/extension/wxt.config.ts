@@ -205,6 +205,9 @@ function getGitSha(): string {
   }
 }
 
+const sourcemapPlan = (browser: string) =>
+  planSourcemapUpload({ browser, buildType: BUILD_TYPE, env: process.env, version: pkg.version })
+
 // Delete sourcemap files from the output directory
 // This is called after build:done for production/canary builds
 // to ensure sourcemaps are not included in the final extension zip
@@ -348,23 +351,15 @@ export default defineConfig({
   // Build hooks
   hooks: {
     "build:before": async (wxt) => {
-      await preflightSourcemapPlan(
-        planSourcemapUpload({
-          browser: wxt.config.browser,
-          buildType: BUILD_TYPE,
-          env: process.env,
-        })
-      )
+      await preflightSourcemapPlan(sourcemapPlan(wxt.config.browser))
     },
     // Before zipping, upload the sourcemaps to PostHog, then delete them for production/canary
     // builds to prevent exposing source code in the distributed extension, and keep the package small
     "zip:extension:start": async (wxt) => {
-      const plan = planSourcemapUpload({
-        browser: wxt.config.browser,
-        buildType: BUILD_TYPE,
-        env: process.env,
+      await runSourcemapPlan(sourcemapPlan(wxt.config.browser), {
+        outDir: wxt.config.outDir,
+        warn: log.warn,
       })
-      await runSourcemapPlan(plan, { outDir: wxt.config.outDir, warn: log.warn })
       if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
         deleteSourcemaps(wxt.config.outDir)
       }

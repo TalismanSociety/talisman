@@ -16,6 +16,7 @@ import {
 
 const KEYS = { POSTHOG_CLI_API_KEY: "phx_test" }
 const HOST = "https://us.posthog.com"
+const VERSION = "3.10.1"
 
 const untouchable = new Proxy(
   {},
@@ -29,12 +30,19 @@ const untouchable = new Proxy(
 describe("planSourcemapUpload", () => {
   it("skips Firefox before it reads the env", () => {
     expect(
-      planSourcemapUpload({ browser: "firefox", buildType: "production", env: untouchable })
+      planSourcemapUpload({
+        version: VERSION,
+        browser: "firefox",
+        buildType: "production",
+        env: untouchable,
+      })
     ).toEqual({ action: "skip", reason: "firefox" })
   })
 
   it.each(["dev", undefined])("skips a %s build: it has no maps", (buildType) => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType, env: KEYS })).toEqual({
+    expect(
+      planSourcemapUpload({ version: VERSION, browser: "chrome", buildType, env: KEYS })
+    ).toEqual({
       action: "skip",
       reason: "no_sourcemaps",
     })
@@ -44,11 +52,14 @@ describe("planSourcemapUpload", () => {
     ["no key", {}],
     ["a blank key", { POSTHOG_CLI_API_KEY: "  " }],
   ])("fails with %s, and skips on the CLI's dry run", (_, env) => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType: "canary", env })).toMatchObject({
+    expect(
+      planSourcemapUpload({ version: VERSION, browser: "chrome", buildType: "canary", env })
+    ).toMatchObject({
       action: "fail",
     })
     expect(
       planSourcemapUpload({
+        version: VERSION,
         browser: "chrome",
         buildType: "production",
         env: { ...KEYS, POSTHOG_CLI_DRY_RUN: "true" },
@@ -57,34 +68,50 @@ describe("planSourcemapUpload", () => {
   })
 
   it("uploads a production or canary Chrome build with the key, to the project's API host", () => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env: KEYS })).toEqual({
+    expect(
+      planSourcemapUpload({
+        version: VERSION,
+        browser: "chrome",
+        buildType: "production",
+        env: KEYS,
+      })
+    ).toEqual({
       action: "inject_and_upload",
       host: HOST,
       apiKey: "phx_test",
+      version: VERSION,
     })
     expect(
       planSourcemapUpload({
+        version: VERSION,
         browser: "chrome",
         buildType: "canary",
         env: { ...KEYS, POSTHOG_CLI_HOST: "http://127.0.0.1:9" },
       })
-    ).toEqual({ action: "inject_and_upload", host: "http://127.0.0.1:9", apiKey: "phx_test" })
+    ).toEqual({
+      action: "inject_and_upload",
+      host: "http://127.0.0.1:9",
+      apiKey: "phx_test",
+      version: VERSION,
+    })
   })
 })
 
 describe("cliSteps", () => {
-  it("injects then uploads, both excluding page.js and content scripts, with no release", () => {
-    const steps = cliSteps("/out/chrome-mv3", "http://127.0.0.1:9")
+  it("injects then uploads, both excluding page.js and content scripts, and stamps the version on the upload only", () => {
+    const [inject, upload] = cliSteps("/out/chrome-mv3", "http://127.0.0.1:9", VERSION)
 
-    expect(steps.map((args) => args.slice(-8, -6))).toEqual([
-      ["sourcemap", "inject"],
-      ["sourcemap", "upload"],
-    ])
-    for (const args of steps) {
+    for (const args of [inject, upload]) {
       expect(args).toEqual(expect.arrayContaining(["--host", "http://127.0.0.1:9"]))
       expect(args.join(" ")).toContain("-e **/page.js -e **/content-scripts/**")
-      expect(args.some((arg) => arg.startsWith("--release"))).toBe(false)
     }
+    expect(inject.join(" ")).toContain("sourcemap inject")
+    expect(inject.some((arg) => arg.startsWith("--release"))).toBe(false)
+    expect(upload.join(" ")).toContain("sourcemap upload")
+    expect(upload.join(" ")).toContain(
+      "--release-name talisman-extension --release-version 3.10.1 --release-mode symbol-set"
+    )
+    expect(upload).not.toContain("--build")
   })
 })
 
@@ -121,7 +148,12 @@ describe("assertInjection", () => {
   })
 })
 
-const UPLOAD: SourcemapPlan = { action: "inject_and_upload", host: HOST, apiKey: "phx_test" }
+const UPLOAD: SourcemapPlan = {
+  action: "inject_and_upload",
+  host: HOST,
+  apiKey: "phx_test",
+  version: VERSION,
+}
 
 describe("preflightSourcemapPlan", () => {
   const answering =
