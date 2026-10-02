@@ -37,11 +37,11 @@ export const lifecycleEvents = defineEventGroup(properties, {
   },
   tvl_snapshot: {
     description:
-      "The shape of the wallet in counts and ranges, at most once per 24 h after an unlock once balances are live, and on the first unlock after an update. Tokens and networks off the allow-list (the CoinGecko top 100 that chaindata carries) are only counted. Unlinked: it has an id of its own, no session and its own time shift.",
+      "The shape of the wallet in ranges, at most once per 24 h after an unlock once balances are live, and on the first unlock after an update. Tokens and networks off the allow-list (the CoinGecko top 100 that chaindata carries) are only counted. Unlinked: it has an id of its own, no session and its own time shift.",
     unlinked: true,
     props: {
       trigger: "required",
-      account_count: "required",
+      wallet_account_count: "required",
       local_count: "required",
       ledger_count: "required",
       vault_count: "required",

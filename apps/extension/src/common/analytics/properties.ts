@@ -1,7 +1,7 @@
 import { z } from "zod/v4"
 
 import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "./accounts"
-import { AMOUNT_BUCKETS, DAY_BUCKETS, SHARE_BUCKETS } from "./buckets"
+import { AMOUNT_BUCKETS, COUNT_BUCKETS, DAY_BUCKETS, HELD_BUCKETS, SHARE_BUCKETS } from "./buckets"
 import { DAPP_METHODS, PROTECTION_SOURCES, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
 import {
@@ -28,6 +28,8 @@ export const ERROR_SURFACES = ["toast", "field", "alert", "screen", "boundary"] 
 export const DISMISS_CAUSES = ["escape", "backdrop", "button", "completed"] as const
 const TVL_TRIGGERS = ["daily", "update"] as const
 const ABANDON_CAUSES = ["left", "page_closed"] as const
+
+const range = (description: string) => p.enum(COUNT_BUCKETS, `${description} As a range.`)
 
 const settingValue: PropertyDef<SettingValue> = {
   schema: z
@@ -153,20 +155,19 @@ export const properties = {
     TVL_TRIGGERS,
     "Why it was sent: the daily cadence, or the first unlock after an update."
   ),
-  account_count: p.count(
-    "Accounts, contacts excluded. Dapp connection events: the accounts the dapp can now see through that provider."
-  ),
-  local_count: p.count("Accounts whose keys the wallet holds."),
-  ledger_count: p.count("Ledger accounts."),
-  vault_count: p.count("Polkadot Vault accounts."),
-  signet_count: p.count("Signet accounts."),
-  watch_count: p.count("Watched accounts."),
-  ethereum_count: p.count("Ethereum accounts."),
-  polkadot_count: p.count("Polkadot accounts."),
-  solana_count: p.count("Solana accounts."),
-  recovery_phrase_count: p.count("Recovery phrases."),
-  recovery_phrase_unbacked_count: p.count("Recovery phrases never confirmed as backed up."),
-  enabled_network_count: p.count("Enabled networks."),
+  account_count: p.count("The accounts the dapp can now see through that provider."),
+  wallet_account_count: range("Accounts, contacts excluded."),
+  local_count: range("Accounts whose keys the wallet holds."),
+  ledger_count: range("Ledger accounts."),
+  vault_count: range("Polkadot Vault accounts."),
+  signet_count: range("Signet accounts."),
+  watch_count: range("Watched accounts."),
+  ethereum_count: range("Ethereum accounts."),
+  polkadot_count: range("Polkadot accounts."),
+  solana_count: range("Solana accounts."),
+  recovery_phrase_count: range("Recovery phrases."),
+  recovery_phrase_unbacked_count: range("Recovery phrases never confirmed as backed up."),
+  enabled_network_count: range("Enabled networks."),
   enabled_network_ids: p.list(
     p.slug("A chaindata network id."),
     "Enabled networks whose native token is on the allow-list, sorted."
@@ -177,24 +178,24 @@ export const properties = {
   ),
   held_network_usd_buckets: p.list(
     p.pair(
-      p.enum(AMOUNT_BUCKETS, "A USD range."),
+      p.enum(HELD_BUCKETS, "A USD range, open above $1M."),
       p.slug("A chaindata network id."),
       "A USD range and a network id."
     ),
-    "<bucket>|<network id> for each held_network_ids entry, most valuable first."
+    "<bucket>|<network id> for each held_network_ids entry, sorted by network id."
   ),
   held_token_usd_buckets: p.list(
     p.pair(
-      p.enum(AMOUNT_BUCKETS, "A USD range."),
+      p.enum(HELD_BUCKETS, "A USD range, open above $1M."),
       p.slug("A CoinGecko id."),
       "A USD range and a CoinGecko id."
     ),
-    "<bucket>|<CoinGecko id> for allow-listed tokens owned accounts hold at least $1 of, summed across networks, most valuable first."
+    "<bucket>|<CoinGecko id> for allow-listed tokens owned accounts hold at least $1 of, summed across networks, sorted by CoinGecko id."
   ),
-  other_token_count: p.count("Tokens held (at least $1) that are not on the allow-list."),
-  other_network_count: p.count("Networks held (at least $1) that are not on the allow-list."),
-  dust_network_count: p.count("Networks where owned accounts hold more than $0 and less than $1."),
-  custom_network_count: p.count("Networks the user added."),
+  other_token_count: range("Tokens held (at least $1) that are not on the allow-list."),
+  other_network_count: range("Networks held (at least $1) that are not on the allow-list."),
+  dust_network_count: range("Networks where owned accounts hold more than $0 and less than $1."),
+  custom_network_count: range("Networks the user added."),
   currency: p.slug("The fiat currency the user picked."),
   portfolio_usd_bucket: p.enum(AMOUNT_BUCKETS, "USD value of owned accounts."),
   watched_usd_bucket: p.enum(AMOUNT_BUCKETS, "USD value of watched accounts."),

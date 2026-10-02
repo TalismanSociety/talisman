@@ -168,6 +168,7 @@ describe("stampEvent", () => {
     expect(record.wire.distinct_id).toBe(record.uuid)
     expect(record.wire.distinct_id).not.toBe(running.session?.id)
     expect(record.wire.properties).not.toHaveProperty("$session_id")
+    expect(record.wire.properties).not.toHaveProperty("browser_language")
     expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12) + 6 * 60_000)
     expect(state).toBe(running)
   })

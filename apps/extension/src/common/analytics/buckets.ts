@@ -28,6 +28,35 @@ export const toAmountBucket = (fiat: number | null | undefined): AmountBucket =>
   return AMOUNT_UPPER_BOUNDS.find(([bound]) => fiat < bound)?.[1] ?? ">100M"
 }
 
+export const HELD_BUCKETS = [
+  "<10",
+  "10-100",
+  "100-1k",
+  "1k-10k",
+  "10k-100k",
+  "100k-1M",
+  ">1M",
+] as const
+export type HeldBucket = (typeof HELD_BUCKETS)[number]
+
+export const toHeldBucket = (fiat: number): HeldBucket => {
+  const bucket = toAmountBucket(fiat)
+  return (HELD_BUCKETS as readonly string[]).includes(bucket) ? (bucket as HeldBucket) : ">1M"
+}
+
+export const COUNT_BUCKETS = ["0", "1", "2-5", "6-20", "21+"] as const
+export type CountBucket = (typeof COUNT_BUCKETS)[number]
+
+const COUNT_UPPER_BOUNDS: readonly [number, CountBucket][] = [
+  [1, "0"],
+  [2, "1"],
+  [6, "2-5"],
+  [21, "6-20"],
+]
+
+export const toCountBucket = (count: number): CountBucket =>
+  COUNT_UPPER_BOUNDS.find(([bound]) => count < bound)?.[1] ?? "21+"
+
 export const SHARE_BUCKETS = ["0", "<10%", "10-25%", "25-50%", "50-75%", "75-100%"] as const
 export type ShareBucket = (typeof SHARE_BUCKETS)[number]
 

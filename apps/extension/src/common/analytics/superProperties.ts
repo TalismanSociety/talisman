@@ -55,7 +55,7 @@ export const superPropertyDefinitions: {
   },
   browser_language: {
     description:
-      "Language of the browser, without its region: en for en-AU. Not the wallet language. unknown: the browser gave none. Usage events only.",
+      "Language of the browser, without its region: en for en-AU. Not the wallet language. unknown: the browser gave none. Not on error reports or unlinked events.",
     posthogType: "String",
   },
   ui_context: {

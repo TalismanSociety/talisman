@@ -2,6 +2,7 @@ import { catalogue } from "@common/analytics/catalogue"
 import { properties } from "@common/analytics/properties"
 import { describe, expect, it } from "vitest"
 
+import { parseTrackedEvent } from "../parse"
 import { redactSecrets } from "../redactSecrets"
 import { TVL_ALLOWED_COINGECKO_IDS, TVL_STABLECOIN_COINGECKO_IDS } from "./allowList.gen"
 import { type Holding, summariseTvl, type TvlInputs } from "./summarise"
@@ -54,12 +55,12 @@ describe("summariseTvl", () => {
     )
 
     expect(result).toMatchObject({
-      enabled_network_count: 2,
+      enabled_network_count: "2-5",
       enabled_network_ids: ["1"],
       held_network_ids: ["1"],
       held_token_usd_buckets: ["10-100|ethereum"],
-      other_token_count: 1,
-      other_network_count: 1,
+      other_token_count: "1",
+      other_network_count: "1",
     })
     expect(JSON.stringify(result)).not.toMatch(/obsc/i)
   })
@@ -78,13 +79,13 @@ describe("summariseTvl", () => {
     expect(result).toMatchObject({
       held_network_ids: ["1"],
       held_token_usd_buckets: ["<10|ethereum"],
-      dust_network_count: 1,
-      other_network_count: 0,
-      other_token_count: 0,
+      dust_network_count: "1",
+      other_network_count: "0",
+      other_token_count: "0",
     })
   })
 
-  it("lists buckets most valuable first and ids in order", () => {
+  it("lists ids and buckets by id, whatever their value", () => {
     const result = summariseTvl(
       inputs({
         holdings: [
@@ -95,8 +96,41 @@ describe("summariseTvl", () => {
     )
 
     expect(result.held_network_ids).toEqual(["1", "polkadot"])
-    expect(result.held_network_usd_buckets).toEqual(["1k-10k|polkadot", "10-100|1"])
-    expect(result.held_token_usd_buckets).toEqual(["1k-10k|polkadot", "10-100|ethereum"])
+    expect(result.held_network_usd_buckets).toEqual(["10-100|1", "1k-10k|polkadot"])
+    expect(result.held_token_usd_buckets).toEqual(["10-100|ethereum", "1k-10k|polkadot"])
+  })
+
+  it("reads every holding above $1M as one open range per asset, and keeps the total's range", () => {
+    const result = summariseTvl(
+      inputs({
+        holdings: [
+          held("1-evm-native", "1", "ethereum", 2_000_000),
+          held("polkadot-native", "polkadot", "polkadot", 250_000_000),
+        ],
+      })
+    )
+
+    expect(result.held_network_usd_buckets).toEqual([">1M|1", ">1M|polkadot"])
+    expect(result.held_token_usd_buckets).toEqual([">1M|ethereum", ">1M|polkadot"])
+    expect(result.portfolio_usd_bucket).toBe(">100M")
+  })
+
+  it.each([
+    [0, "0"],
+    [1, "1"],
+    [2, "2-5"],
+    [5, "2-5"],
+    [6, "6-20"],
+    [20, "6-20"],
+    [21, "21+"],
+  ])("reads %i accounts as the range %s", (count, range) => {
+    const accounts = Array.from({ length: count }, () => ({
+      type: "keypair" as const,
+      platform: "ethereum",
+      createdAt: T0,
+    }))
+
+    expect(summariseTvl(inputs({ accounts })).wallet_account_count).toBe(range)
   })
 
   it("sums a token across networks by its CoinGecko id", () => {
@@ -145,8 +179,8 @@ describe("summariseTvl", () => {
       enabled_network_ids: ["1"],
       held_network_ids: [],
       held_network_usd_buckets: [],
-      other_network_count: 1,
-      custom_network_count: 1,
+      other_network_count: "1",
+      custom_network_count: "1",
     })
     expect(JSON.stringify(result)).not.toContain("my-devnet")
   })
@@ -164,13 +198,24 @@ describe("summariseTvl", () => {
     )
 
     expect(result).toMatchObject({
-      account_count: 3,
-      local_count: 1,
-      ledger_count: 1,
-      watch_count: 1,
-      ethereum_count: 2,
-      polkadot_count: 1,
+      wallet_account_count: "2-5",
+      local_count: "1",
+      ledger_count: "1",
+      watch_count: "1",
+      ethereum_count: "2-5",
+      polkadot_count: "1",
     })
+  })
+
+  it("dates the install from the wallet's accounts, never from a contact", () => {
+    const result = summariseTvl(
+      inputs({
+        installedAt: T0,
+        accounts: [{ type: "contact", platform: "ethereum", createdAt: T0 - 400 * DAY_MS }],
+      })
+    )
+
+    expect(result.days_since_install).toBe("0")
   })
 
   it("reads days since install as unknown when the install time was never recorded", () => {
@@ -224,5 +269,9 @@ describe("summariseTvl", () => {
     )
 
     expect(() => catalogue.tvl_snapshot.schema.parse(result)).not.toThrow()
+    expect(parseTrackedEvent({ event: "tvl_snapshot", properties: result })).toMatchObject({
+      ok: true,
+      event: { unlinked: true },
+    })
   })
 })

@@ -58,7 +58,7 @@ const placeInTime = (
 }
 
 const environmentOf = (event: ParsedEvent, environment: Environment) => {
-  if (event.kind !== "error") return environment
+  if (event.kind !== "error" && !event.unlinked) return environment
   const { browser_language: _, ...shared } = environment
   return shared
 }
