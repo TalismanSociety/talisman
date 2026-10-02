@@ -1,3 +1,4 @@
+import { toCountBucket } from "@common/analytics/buckets"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { ACCOUNT_SELECTIONS } from "@common/analytics/portfolio"
 import { signerOf } from "@common/analytics/transactions"
@@ -16,7 +17,7 @@ export const useReportAccountSwitched = () => {
       const signer = accountType && signerOf(accountType)
       track("account_switched", {
         selection,
-        accounts_total: accountsTotal,
+        accounts_total: toCountBucket(accountsTotal),
         ...(signer && { account_type: signer }),
       })
     },

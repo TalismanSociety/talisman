@@ -240,7 +240,7 @@ export const buildDashboards = (catalogue: CatalogueSnapshot): Dashboard[] => {
         {
           name: "Active wallets by age",
           description:
-            "Daily holdings snapshots by days since install, as a range: how much of the active base is new and how much is long-standing. Retention per wallet cannot be measured: nothing links a wallet's days.",
+            "Daily holdings snapshots by days since install, as a range: how much of the active base is new and how much is long-standing. Retention per wallet cannot be measured: no id links a wallet's days.",
           size: "full",
           query: trend({
             series: [

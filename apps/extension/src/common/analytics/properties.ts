@@ -168,21 +168,14 @@ export const properties = {
   recovery_phrase_count: range("Recovery phrases."),
   recovery_phrase_unbacked_count: range("Recovery phrases never confirmed as backed up."),
   enabled_network_count: range("Enabled networks."),
-  enabled_network_ids: p.list(
-    p.slug("A chaindata network id."),
-    "Enabled networks whose native token is on the allow-list, sorted."
-  ),
-  held_network_ids: p.list(
-    p.slug("A chaindata network id."),
-    "Allow-listed networks where owned accounts hold at least $1, sorted."
-  ),
   held_network_usd_buckets: p.list(
     p.pair(
       p.enum(HELD_BUCKETS, "A USD range, open above $1M."),
       p.slug("A chaindata network id."),
       "A USD range and a network id."
     ),
-    "<bucket>|<network id> for each held_network_ids entry, sorted by network id."
+    "<bucket>|<network id> for the allow-listed networks where owned accounts hold the most, at least $1 and ten at most, sorted by network id.",
+    { maxItems: 10 }
   ),
   held_token_usd_buckets: p.list(
     p.pair(
@@ -190,7 +183,8 @@ export const properties = {
       p.slug("A CoinGecko id."),
       "A USD range and a CoinGecko id."
     ),
-    "<bucket>|<CoinGecko id> for allow-listed tokens owned accounts hold at least $1 of, summed across networks, sorted by CoinGecko id."
+    "<bucket>|<CoinGecko id> for the allow-listed tokens owned accounts hold the most of, summed across networks, at least $1 and ten at most, sorted by CoinGecko id.",
+    { maxItems: 10 }
   ),
   other_token_count: range("Tokens held (at least $1) that are not on the allow-list."),
   other_network_count: range("Networks held (at least $1) that are not on the allow-list."),
@@ -365,7 +359,7 @@ export const properties = {
     ACCOUNT_SELECTIONS,
     "What the user picked in the account list: one account, a folder, or All Accounts."
   ),
-  accounts_total: p.count("Accounts in the wallet, contacts excluded, when the user switched."),
+  accounts_total: range("Accounts in the wallet, contacts excluded, when the user switched."),
   result_count: p.count("How many results the search showed when the user stopped typing."),
   query_length: p.count("How many characters the search held, spaces at either end excluded."),
   hidden: p.bool("The NFT collection is now hidden from the portfolio."),

@@ -56,8 +56,7 @@ describe("summariseTvl", () => {
 
     expect(result).toMatchObject({
       enabled_network_count: "2-5",
-      enabled_network_ids: ["1"],
-      held_network_ids: ["1"],
+      held_network_usd_buckets: ["10-100|1"],
       held_token_usd_buckets: ["10-100|ethereum"],
       other_token_count: "1",
       other_network_count: "1",
@@ -77,7 +76,7 @@ describe("summariseTvl", () => {
     )
 
     expect(result).toMatchObject({
-      held_network_ids: ["1"],
+      held_network_usd_buckets: ["<10|1"],
       held_token_usd_buckets: ["<10|ethereum"],
       dust_network_count: "1",
       other_network_count: "0",
@@ -85,7 +84,7 @@ describe("summariseTvl", () => {
     })
   })
 
-  it("lists ids and buckets by id, whatever their value", () => {
+  it("lists buckets by id, whatever their value", () => {
     const result = summariseTvl(
       inputs({
         holdings: [
@@ -95,7 +94,6 @@ describe("summariseTvl", () => {
       })
     )
 
-    expect(result.held_network_ids).toEqual(["1", "polkadot"])
     expect(result.held_network_usd_buckets).toEqual(["10-100|1", "1k-10k|polkadot"])
     expect(result.held_token_usd_buckets).toEqual(["10-100|ethereum", "1k-10k|polkadot"])
   })
@@ -113,6 +111,23 @@ describe("summariseTvl", () => {
     expect(result.held_network_usd_buckets).toEqual([">1M|1", ">1M|polkadot"])
     expect(result.held_token_usd_buckets).toEqual([">1M|ethereum", ">1M|polkadot"])
     expect(result.portfolio_usd_bucket).toBe(">100M")
+  })
+
+  it("names the ten largest holdings at most, and never the networks the user enabled", () => {
+    const ids = Array.from({ length: 14 }, (_, index) => `coin-${String(index).padStart(2, "0")}`)
+    const result = summariseTvl(
+      inputs({
+        enabledNetworkIds: ["1", "polkadot"],
+        allowedCoingeckoIds: new Set(ids),
+        holdings: ids.map((id, index) => held(`token-${id}`, "1", id, 10 ** (index % 7) + index)),
+      })
+    )
+
+    expect(result.held_token_usd_buckets).toHaveLength(10)
+    expect(result.held_token_usd_buckets).toContain("100k-1M|coin-05")
+    expect(result.held_token_usd_buckets.join()).not.toContain("coin-00")
+    expect(result).not.toHaveProperty("enabled_network_ids")
+    expect(result).not.toHaveProperty("held_network_ids")
   })
 
   it.each([
@@ -176,8 +191,6 @@ describe("summariseTvl", () => {
     )
 
     expect(result).toMatchObject({
-      enabled_network_ids: ["1"],
-      held_network_ids: [],
       held_network_usd_buckets: [],
       other_network_count: "1",
       custom_network_count: "1",

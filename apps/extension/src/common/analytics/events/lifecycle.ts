@@ -53,8 +53,6 @@ export const lifecycleEvents = defineEventGroup(properties, {
       recovery_phrase_count: "required",
       recovery_phrase_unbacked_count: "required",
       enabled_network_count: "required",
-      enabled_network_ids: "required",
-      held_network_ids: "required",
       held_network_usd_buckets: "required",
       held_token_usd_buckets: "required",
       other_token_count: "required",

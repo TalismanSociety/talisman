@@ -54,7 +54,7 @@ A `biome-ignore` comment must give the reason for this case. "legacy" is not a r
 
 Product analytics go to PostHog. Events, properties and flows are defined once, as values, in `apps/extension/src/common/analytics/`. Read `.claude/skills/analytics/SKILL.md` before you add a flow, an event or an exemption.
 
-- Properties are typed: buckets, enums and slugs. An address, a URL, a hostname, an amount, an exact count of what the user holds or an error text has no property to go in.
+- Properties are typed: buckets, enums and slugs. An address, a URL, a hostname, an amount, an error text, or how many accounts or assets the wallet holds (ranges only) has no property to go in.
 - No event carries an id of the wallet or the install. A usage event's id is its session, an error report and the daily `tvl_snapshot` each have an id of their own. Never add a stable id, and never the Gandalf install id: `src/__tests__/analytics-keeps-to-itself.test.ts` guards it.
 - `track("event_name", props)` takes its event and props from the catalogue. A misspelt event or a missing prop is a type error.
 - Error reports go to PostHog as `$exception`, with the error's class, its category and code positions, never its message. Global handlers report uncaught errors. Report a caught error that is a bug with `reportError(err)` from the seam of the file's realm: `@ui/api/errorReporting` in pages, `core/domains/analytics/errorReporting` in the background.

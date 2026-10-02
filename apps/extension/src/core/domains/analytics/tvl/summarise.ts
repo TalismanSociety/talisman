@@ -37,7 +37,7 @@ export type TvlInputs = {
 }
 
 const HELD_MIN_USD = 1
-const MAX_LIST_ITEMS = 100
+const MAX_LIST_ITEMS = 10
 
 const sumBy = <K extends string>(holdings: readonly Holding[], keyOf: (h: Holding) => K | null) => {
   const sums = new Map<K, number>()
@@ -56,10 +56,11 @@ const earliestOf = (times: readonly (number | null)[]) => {
   return known.length ? Math.min(...known) : null
 }
 
-const bucketedById = (sums: readonly [string, number][]) =>
+const largestBucketedById = (sums: readonly [string, number][]) =>
   [...sums]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([, a], [, b]) => b - a)
     .slice(0, MAX_LIST_ITEMS)
+    .sort(([a], [b]) => a.localeCompare(b))
     .map(([id, usd]) => `${toHeldBucket(usd)}|${id}` as const)
 
 export const summariseTvl = (inputs: TvlInputs): TvlSnapshot => {
@@ -112,16 +113,8 @@ export const summariseTvl = (inputs: TvlInputs): TvlSnapshot => {
       inputs.mnemonics.filter((mnemonic) => !mnemonic.confirmed).length
     ),
     enabled_network_count: toCountBucket(inputs.enabledNetworkIds.length),
-    enabled_network_ids: inputs.enabledNetworkIds
-      .filter(isNetworkAllowed)
-      .sort()
-      .slice(0, MAX_LIST_ITEMS),
-    held_network_ids: allowedHeldNetworks
-      .map(([id]) => id)
-      .sort()
-      .slice(0, MAX_LIST_ITEMS),
-    held_network_usd_buckets: bucketedById(allowedHeldNetworks),
-    held_token_usd_buckets: bucketedById(allowedCoins),
+    held_network_usd_buckets: largestBucketedById(allowedHeldNetworks),
+    held_token_usd_buckets: largestBucketedById(allowedCoins),
     other_token_count: toCountBucket(
       heldTokens.filter(([tokenId]) => !isTokenAllowed(tokenId)).length
     ),
