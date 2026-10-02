@@ -48,10 +48,10 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 
 ## Features
 
-- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-09-30 and 2026-10-01.
-- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-01.
-- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-01 (EVM and Substrate connect, sign, reject).
-- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-01 with a testTAO transfer.
-- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-01.
+- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-10-02.
+- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-02.
+- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-02 (EVM and Substrate connect, sign, reject).
+- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-02 with a testTAO transfer.
+- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-02.
 
 Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.
