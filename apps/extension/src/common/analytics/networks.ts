@@ -28,7 +28,7 @@ export const toRpcProvider = (url: string | null | undefined): string | null => 
   try {
     const parsed = new URL(url)
     if (!RPC_PROTOCOLS.includes(parsed.protocol)) return null
-    host = parsed.hostname.toLowerCase()
+    host = parsed.hostname.toLowerCase().replace(/\.+$/, "")
   } catch {
     return null
   }

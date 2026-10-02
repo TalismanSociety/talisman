@@ -16,6 +16,8 @@ describe("toRpcProvider", () => {
     expect(toRpcProvider("http://192.168.1.10:8545")).toBeNull()
     expect(toRpcProvider("http://[::1]:8545")).toBeNull()
     expect(toRpcProvider("http://node.lan")).toBeNull()
+    expect(toRpcProvider("http://alice-laptop.local.:8545")).toBeNull()
+    expect(toRpcProvider("http://localhost.:8545")).toBeNull()
     expect(toRpcProvider("ipfs://bafy")).toBeNull()
     expect(toRpcProvider("not a url")).toBeNull()
     expect(toRpcProvider(undefined)).toBeNull()
