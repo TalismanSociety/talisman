@@ -74,8 +74,6 @@ const check = (name, ok, detail) => {
 }
 
 const repoRoot = sh("git", ["rev-parse", "--show-toplevel"])
-const gitDir = sh("git", ["rev-parse", "--absolute-git-dir"])
-const commonDir = sh("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"])
 const head = sh("git", ["rev-parse", "HEAD"])
 const commitOf = (sha) => sh("git", ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`])
 const short = (sha) => sha.slice(0, 9)
@@ -83,15 +81,6 @@ const short = (sha) => sha.slice(0, 9)
 // A browser on another port has a dev server of its own, out of reach of these host checks.
 const isHost = CDP_PORT === HOST_CDP_PORT
 if (isHost) {
-  const isMainCheckout = check(
-    "main checkout (not a git worktree)",
-    gitDir === commonDir,
-    gitDir === commonDir
-      ? repoRoot
-      : `${repoRoot} is a worktree and :${HOST_CDP_PORT} is the main checkout's browser: write the CDP port of a browser of its own to .tmp/verify/cdp-port (verify skill, step 1)`
-  )
-  if (!isMainCheckout) process.exit(1)
-
   const serverPid = sh("lsof", ["-ti", `tcp:${DEV_SERVER_PORT}`, "-sTCP:LISTEN"]).split("\n")[0]
   const serverCmd = serverPid ? sh("ps", ["-o", "command=", "-p", serverPid]) : ""
   check(

@@ -15,7 +15,7 @@ The host dev build has one instance per machine: the dev server has a fixed port
 
 Run every command from the repo root.
 
-Each checkout drives the browser that serves its own build. The helpers find its CDP port in this order: `VERIFY_CDP_PORT`, then the port in `.tmp/verify/cdp-port`, then 9223 in the main checkout. In a worktree with neither, they exit with an error, because 9223 is the main checkout's browser. A shell variable does not last from one agent tool call to the next, so a worktree keeps its port in the file.
+Each checkout drives the browser that serves its own build. The helpers find its CDP port in this order: `VERIFY_CDP_PORT`, then the port in `.tmp/verify/cdp-port`, then 9223 in the main checkout. In a worktree they exit with an error when they find no port or find 9223, because 9223 is the main checkout's browser. A shell variable does not last from one agent tool call to the next, so a worktree keeps its port in the file.
 
 ### In the main checkout
 
@@ -60,7 +60,6 @@ After each edit, run `"$runner" sync`, then the doctor. A rebuild of the backgro
 
 Read-only apart from one dashboard tab that it opens and closes. It prints one `PASS`/`FAIL` line per check and exits non-zero on any `FAIL`:
 
-- on CDP 9223: the main checkout, not a worktree. A worktree stops here, before it touches the main checkout's browser.
 - on CDP 9223: port 8254 belongs to `wxt` from this checkout
 - CDP answers on the port from step 1
 - the extension service worker runs the build of HEAD. The line shows three shas: `built` (the manifest on disk), `running` (the script that the service worker runs) and `HEAD`, then the fix:
