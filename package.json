@@ -20,6 +20,7 @@
     "update:translations": "pnpm chore:update-translations",
     "chore:generate-clients": "pnpm -r chore:generate-clients",
     "chore:register-gandalf-e2e": "pnpm --silent run --filter extension chore:register-gandalf-e2e",
+    "posthog:provision": "pnpm --silent run --filter extension posthog:provision",
     "chore:generate-init-data": "pnpm -r chore:generate-init-data",
     "chore:prepare-release": "pnpm chore:generate-clients && pnpm chore:generate-init-data && pnpm chore:download-translations && pnpm biome check --fix && pnpm typecheck",
     "dev": "pnpm dev:extension",
