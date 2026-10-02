@@ -139,6 +139,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           type: "error",
           title: t("Error importing account"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

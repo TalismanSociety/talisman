@@ -292,6 +292,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },

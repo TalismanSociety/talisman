@@ -215,6 +215,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           type: "error",
           title: t("Error importing account"),
           subtitle: getErrorMessage(error, t("Unknown error")),
+          cause: error,
         })
       }
     },

@@ -183,6 +183,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         type: "error",
         title: t("Error importing account"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
     setIsImporting(false)

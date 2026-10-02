@@ -142,6 +142,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             : t("Approval failed"),
           type: "error",
           subtitle: getErrorMessage(cause, t("Unknown error")).slice(0, 100),
+          cause,
         })
       } finally {
         setIsApproving(false)

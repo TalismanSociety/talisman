@@ -80,6 +80,7 @@ export const ConnectSignetSelectAccounts = () => {
         type: "error",
         title: "Failed to import accounts",
         subtitle: getErrorMessage(e, t("Unknown error")),
+        cause: e,
       })
     } finally {
       setImporting(false)

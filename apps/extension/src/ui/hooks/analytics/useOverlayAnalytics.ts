@@ -14,6 +14,10 @@ type OverlayLayer = {
 
 export const OverlayAnalyticsContext = createContext<OverlayLayer | null>(null)
 
+const openLayers: OverlayLayer[] = []
+
+export const markInnermostOverlayCompleted = () => openLayers.at(-1)?.markCompleted()
+
 /**
  * First that applies: the user finished what the overlay was for; the gesture that closed it;
  * the cause of the ancestor it unmounted with; anything else (its own buttons, code).
@@ -70,8 +74,10 @@ export const useOverlayAnalytics = ({ id, isOpen }: { id: string; isOpen: boolea
       closedCause: null,
     })
     track("modal_opened", { modal_id: id })
+    openLayers.push(layer)
 
     return () => {
+      openLayers.splice(openLayers.lastIndexOf(layer), 1)
       const dismiss = resolveDismiss({
         completed: overlay.completed,
         gesture: overlay.gesture,
@@ -85,7 +91,7 @@ export const useOverlayAnalytics = ({ id, isOpen }: { id: string; isOpen: boolea
         duration_ms: toDurationMs(performance.now() - overlay.openedAt),
       })
     }
-  }, [isOpen, id, parent])
+  }, [isOpen, id, parent, layer])
 
   const dismissVia = useCallback(
     (gesture: Gesture, onDismiss: (() => void) | undefined) =>

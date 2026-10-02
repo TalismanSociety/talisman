@@ -79,6 +79,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           type: "error",
           title: t("Copy failed"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          errorCategory: "clipboard",
         },
         { toastId }
       )

@@ -1,0 +1,76 @@
+---
+name: analytics
+description: This skill should be used when a change adds or changes a wizard, a modal with stages, a `pri(...)` message, a `provideContext` provider, an error toast, a route or a `track()` event in the Talisman extension, when asked to "add analytics", "track a flow", "add an event" or "add an exemption", or when a type error or test names `MESSAGE_COVERAGE`, `FLOW_PROVIDERS`, `NotificationProps`, `UNEMITTED`, `MOBILE_SHARED` or the analytics catalogue.
+---
+
+# Analytics in the Talisman extension
+
+Events, properties and flows are values in `apps/extension/src/common/analytics/`. `track()`, the background parser and PostHog's definitions all read them, so a wrong event is a type error and an event that nothing sends fails a test. Dev builds send nothing: they keep the last 500 events in a log.
+
+## Decide what the change needs
+
+| The change adds or changes | Do this |
+| --- | --- |
+| A wizard, a modal with stages, or a run of routes | Add a flow |
+| One user action outside a flow | Add an event |
+| A `pri(...)` message | Add one line to `MESSAGE_COVERAGE` |
+| A `provideContext` provider | Add one line to `FLOW_PROVIDERS` |
+| An error toast | Pass `cause: err`, or `errorCategory` when nothing was thrown |
+| A `<Route path>` | Use words, `:param` and `*`, never a value |
+
+Screens, modals, error toasts, transactions and dapp requests are tracked centrally. Do not add events for them.
+
+## Add a flow
+
+1. Create `common/analytics/flow/definitions/<name>.ts` with `defineFlow("<name>", { subject, steps, … })`. Add it to `FLOWS` in `flow/registry.ts`. The options are in `references/define-flow.md`.
+2. Add any extra property to `properties.ts`, with a sentence that says what the value means.
+3. In the hook that holds the steps, call `useFlow(flows.<name>, { step, entry, attributes, active })`. Pass `active: isOpen` when the provider stays mounted while the modal is closed.
+4. Report from event handlers and async code: `flows.<name>.submitted(…)` where the user confirms, `flows.<name>.failed(err)` in the catch that shows the error, and `flows.<name>.completed(…)` where the user finishes. A flow with `settlement: "transaction"` passes `transactionId` to `submitted` and never calls `completed`: the worker sends it when the transaction settles.
+5. Classify the flow's messages as `{ flow: "<name>" }` in `MESSAGE_COVERAGE`, and its provider as `{ flow: "<name>" }` in `FLOW_PROVIDERS`.
+6. Prove it with `.claude/skills/verify/features/analytics-events.md`.
+
+The runtime adds `flow_id`, `step`, `last_step`, `duration_ms`, `error_category` and `abandon_cause`. It sends `_started`, `_step_viewed` and `_abandoned` by itself. Closing the page mid-flow sends `_abandoned` with `abandon_cause: "page_closed"` from the worker.
+
+Rules that the types do not catch:
+
+- Never report from a child's mount effect. Children's effects run before `useFlow` starts the attempt.
+- A page runs one attempt per flow. Call `useFlow` once, in the provider or the common parent.
+- `completed`, and `submitted` of a transaction flow, mark the modal or drawer on top as completed, so its `modal_closed` reads `dismiss: "completed"`.
+
+## Add an event
+
+1. Add it to a group in `common/analytics/events/` with `defineEventGroup(properties, { name: { description, props } })`. A prop is `"required"`, `"optional"` or `{ narrow: z.enum([...]) }`.
+2. Send it with `track("name", { … })`. Write the name as a string literal, or the liveness test cannot see it.
+3. Do not write `<flow>_started` or any other flow event by hand. `defineFlow` generates them.
+4. If mobile sends an event of the same name, give it mobile's properties. `MOBILE_SHARED` lists them.
+
+## Add an exemption
+
+- A message: `{ exempt: "transport" | "navigation" | "housekeeping" }` in `MESSAGE_COVERAGE`. A message that changes user state is never exempt: give it `{ event }` or `{ flow }`. A new reason is an edit of `Coverage` in `common/analytics/coverage.ts`.
+- A provider: `{ none: "<what it holds>" }` in `FLOW_PROVIDERS`. The test fails if its hook holds step state.
+- `{ exempt: "pending 5x" }` and `{ pending: "5x" }` mark work that a later analytics unit does. Do not add new ones.
+
+## When a guard fails
+
+| The message says | Fix |
+| --- | --- |
+| `Property '"pri(x)"' is missing in type … MessageCoverage` | Add the message to `core/domains/analytics/messageCoverage.ts` |
+| `Type '"pending 5a"' is not assignable` | That area has landed. Replace the entry with its event or flow |
+| `Type '"x"' is not assignable to type 'EventName …'` | Add the event to the catalogue first |
+| `Provider "X" (…) is not classified` | Add it to `FLOW_PROVIDERS` in `src/__tests__/analyticsFlowProviders.ts` |
+| `Provider "X" is { none } but its hook … holds step state` | Make it a flow, or move the step state out |
+| `… does not call useFlow(flows.x, …)` | Call `useFlow` in the file the message names |
+| `… holds step state … outside a provider` | List the file in `STEP_STATE_ELSEWHERE` |
+| `Event "x" has no emitter` | Send it with `track("x", …)`, or delete it |
+| `Flow "x" is never started` | Call `useFlow(flows.x, …)` |
+| `Flow "x" can never complete` | Add the `completed` call, or `submitted` with `transactionId` for a transaction flow |
+| `Flow "x" defines events nothing sends` | Add the call it names, or list the event in the flow's `omit` |
+| `track() needs a string literal event name` | Write the event name as a literal |
+| `Write a sentence for: x` | Give the event or property a description that ends with a full stop |
+| `No event carries: x` | Use the property in an event, or delete it |
+| `x is shared with mobile and lacks …` | Add mobile's properties to the event or the flow's extras |
+| `Duplicate analytics event: x` (type error) | A flow generates that name. Rename the domain event, or use the flow's `rename` |
+| `… is not assignable to parameter of type 'NotificationProps'` | Add `cause: err` to the error toast, or `errorCategory` when nothing was thrown |
+| `imports toast from react-toastify` or `calls notifyCustom` | Use `notify` or `notifyUpdate` from `@ui/components/Notifications` |
+| `<Route path=…>: "…" looks like a value` | Use a `:param` segment and read it with `useParams()` |
+| `${x} is not a constant` | Use a `:param` segment, or splice a constant |

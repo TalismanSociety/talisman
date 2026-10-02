@@ -1,21 +1,21 @@
 import type { ErrorCategory } from "@common/analytics/errorCategory"
 import type { ERROR_SURFACES } from "@common/analytics/properties"
-import { pageContext } from "@ui/api/pageContext"
 import { track } from "@ui/api/track"
 import { type RefObject, useEffect } from "react"
 import type { Id } from "react-toastify"
+
+import { recordErrorOnInnermostFlow } from "./flows"
 
 export type ErrorSurface = (typeof ERROR_SURFACES)[number]
 
 type ErrorShown = { surface: ErrorSurface; category: ErrorCategory; field?: string }
 
-/** The flow comes from the page context: toasts and the root boundary have no React context. */
 export const reportErrorShown = ({ surface, category, field }: ErrorShown) => {
-  const { flow } = pageContext
+  const attempt = recordErrorOnInnermostFlow(category)
   track("error_shown", {
     surface,
     error_category: category,
-    ...(flow && { flow }),
+    ...attempt,
     ...(field && { field }),
   })
 }

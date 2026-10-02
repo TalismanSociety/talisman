@@ -56,6 +56,7 @@ export const EthSignBodyErc20Approve: FC = () => {
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },

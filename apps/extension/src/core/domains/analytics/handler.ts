@@ -7,6 +7,7 @@ import type { Port } from "../../types/base"
 import { dappRequestTracker } from "./dappRequests"
 import { analyticsEngine } from "./engine"
 import { uiContextFromSenderUrl } from "./environment"
+import { flowTracker } from "./flowTracker"
 import { parseTrackedEvent } from "./parse"
 
 const requestRiskSchema = z.strictObject({
@@ -22,12 +23,14 @@ export class AnalyticsHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(analytics.track)":
-        return analyticsEngine.capture({
-          result: parseTrackedEvent(request),
-          uiContext: uiContextFromSenderUrl(port.sender?.url),
-          realNow: Date.now(),
-        }) as Promise<ResponseType<TMessageType>>
+      case "pri(analytics.track)": {
+        const result = parseTrackedEvent(request)
+        const uiContext = uiContextFromSenderUrl(port.sender?.url)
+        const realNow = Date.now()
+        const disposition = await analyticsEngine.capture({ result, uiContext, realNow })
+        if (result.ok) flowTracker.observe(port, uiContext, result.event, realNow)
+        return disposition as ResponseType<TMessageType>
+      }
       case "pri(analytics.requestRisk)": {
         const { id, verdict } = requestRiskSchema.parse(request)
         dappRequestTracker.noteRisk(id, verdict)

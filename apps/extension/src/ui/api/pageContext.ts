@@ -6,10 +6,8 @@
 type PageContext = {
   /** Writer: the screen tracker. */
   screen: string | null
-  /** Writer: the innermost running flow. */
-  flow: string | null
   /** Writer: the request window, once its request arrived. */
   requestId: string | null
 }
 
-export const pageContext: PageContext = { screen: null, flow: null, requestId: null }
+export const pageContext: PageContext = { screen: null, requestId: null }

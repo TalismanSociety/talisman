@@ -45,7 +45,12 @@ export const ConnectSignetPage = () => {
           setVaults(res)
           navigate("accounts")
         } else {
-          notify({ type: "error", title: t("Connection failed"), subtitle: "No vault selected" })
+          notify({
+            type: "error",
+            title: t("Connection failed"),
+            subtitle: "No vault selected",
+            errorCategory: "input_invalid",
+          })
         }
       } catch (err) {
         notify({
@@ -57,6 +62,7 @@ export const ConnectSignetPage = () => {
               : typeof err === "string"
                 ? err
                 : "Please try again.",
+          cause: err,
         })
 
         log.error("Failed to connect to Signet", { err })

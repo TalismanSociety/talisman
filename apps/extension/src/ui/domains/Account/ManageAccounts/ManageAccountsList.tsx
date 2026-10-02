@@ -74,11 +74,12 @@ export const ManageAccountsList: FC<{
           ])
 
           setItems(newItems)
-        } catch {
+        } catch (err) {
           notify({
             type: "error",
             title: t("Error"),
             subtitle: t("Failed to reorder"),
+            cause: err,
           })
         }
       }

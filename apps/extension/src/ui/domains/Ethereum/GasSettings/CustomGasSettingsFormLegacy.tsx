@@ -248,6 +248,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },

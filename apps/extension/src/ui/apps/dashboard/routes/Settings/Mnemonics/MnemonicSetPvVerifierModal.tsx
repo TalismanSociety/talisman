@@ -62,6 +62,7 @@ export const MnemonicSetPvVerifierModal = () => {
         type: "error",
         title: t("Failed to change PV verifier"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [close, mnemonic, t])

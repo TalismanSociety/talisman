@@ -56,6 +56,7 @@ const SetVerifierCertificateContentInner = () => {
           type: "error",
           title: t("Error"),
           subtitle: t("Failed to set verifier certificate."),
+          cause: err,
         },
         { autoClose: false, closeOnClick: true }
       )

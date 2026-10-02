@@ -391,7 +391,12 @@ const SeekStakingForm: FC<{
         break
       case "error":
         refProcessedHash.current = pending.hash
-        notify({ type: "error", title: t("Error"), subtitle: t("Transaction failed") })
+        notify({
+          type: "error",
+          title: t("Error"),
+          subtitle: t("Transaction failed"),
+          errorCategory: "dispatch_failed",
+        })
         setPending(null)
         break
       case "replaced":

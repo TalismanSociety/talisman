@@ -6,18 +6,21 @@ import { overlayEvents } from "./events/overlays"
 import { performanceEvents } from "./events/performance"
 import { screenEvents } from "./events/screens"
 import { transactionEvents } from "./events/transactions"
+import { flowEventGroup } from "./flow/defineFlow"
+import { FLOWS } from "./flow/registry"
 import { properties } from "./properties"
 import {
   type ConsentKind,
   type EventProperties,
   mergeEventGroups,
+  type NoDuplicateEvents,
   type PosthogPropertyType,
   type Registry,
   type TrackFn,
 } from "./schema"
 import { superPropertyDefinitions } from "./superProperties"
 
-export const catalogue = mergeEventGroups(
+const groups = [
   consentEvents,
   screenEvents,
   overlayEvents,
@@ -25,19 +28,27 @@ export const catalogue = mergeEventGroups(
   transactionEvents,
   dappRequestEvents,
   performanceEvents,
-  lifecycleEvents
-)
+  lifecycleEvents,
+  flowEventGroup(FLOWS),
+] as const
+
+true satisfies NoDuplicateEvents<typeof groups>
+
+export const catalogue = mergeEventGroups(...groups)
 
 export type Catalogue = typeof catalogue
 export type EventName = keyof Catalogue & string
 
 export type Track = TrackFn<Catalogue>
 
+export const isEventName = (name: string): name is EventName => Object.hasOwn(catalogue, name)
+
 export type TrackRequest = {
   event: EventName
   properties: EventProperties
   /** The page's current screen, stamped as `$screen_name`. An invalid one is dropped, never the event. */
   screen?: string
+  transactionId?: string
 }
 
 export type EventDefinition = {

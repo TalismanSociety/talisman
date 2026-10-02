@@ -29,6 +29,9 @@ vi.mock("./track", () => ({
   },
 }))
 
+const settled = vi.hoisted(() => vi.fn(async () => {}))
+vi.mock("./flowTracker", () => ({ flowTracker: { settled } }))
+
 vi.mock("./txContext", () => ({
   analyticsNetworkId: vi.fn(async () => "ethereum"),
   signerOfAddress: vi.fn(async () => "local"),
@@ -97,6 +100,7 @@ describe("tx_settled from the transaction store", () => {
   beforeEach(async () => {
     await db.transactionsV2.clear()
     tracked.calls.length = 0
+    settled.mockClear()
     facts = []
     subscription = txStatusFacts$.subscribe((fact) => facts.push(fact))
   })
@@ -116,6 +120,12 @@ describe("tx_settled from the transaction store", () => {
 
     expect(facts).toHaveLength(2)
     expect(settledStatuses()).toEqual(["success"])
+    expect(settled).toHaveBeenCalledOnce()
+    expect(settled).toHaveBeenCalledWith(
+      "tx-5",
+      { status: "success", timeToSettleMs: expect.any(Number) },
+      expect.any(Number)
+    )
   })
 
   it("reports same-nonce siblings as replaced, and not a lower nonce left unknown", async () => {

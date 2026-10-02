@@ -114,6 +114,7 @@ export const useYieldxyzTransactionManager = ({
           type: "error",
           title: t("Error"),
           subtitle: t("Transaction failed"),
+          errorCategory: "dispatch_failed",
         })
         setPendingTxId(null)
         break

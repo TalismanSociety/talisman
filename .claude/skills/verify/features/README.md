@@ -53,5 +53,6 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 - [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-02 (EVM and Substrate connect, sign, reject).
 - [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-02 with a testTAO transfer.
 - [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-02.
+- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-10-02 with the recovery phrase backup flow.
 
 Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.

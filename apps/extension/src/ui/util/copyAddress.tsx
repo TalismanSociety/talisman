@@ -33,6 +33,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
         type: "error",
         title: i18next.t(`Copy failed`),
         subtitle: shortenAddress(address),
+        errorCategory: "clipboard",
       },
       { toastId }
     )

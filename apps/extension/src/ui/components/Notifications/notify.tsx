@@ -12,12 +12,8 @@ const DEFAULT_OPTIONS: ToastOptions = {
   autoClose: 2000,
 }
 
-/** Without a cause, a string subtitle is usually the error's message: its patterns still classify. */
-const categoryOf = ({ errorCategory, cause, subtitle }: NotificationProps): ErrorCategory => {
-  if (errorCategory) return errorCategory
-  if (cause !== undefined) return classifyError(cause)
-  return typeof subtitle === "string" ? classifyError(subtitle) : "unknown"
-}
+const categoryOf = (content: Extract<NotificationProps, { type: "error" }>): ErrorCategory =>
+  content.errorCategory ?? classifyError(content.cause)
 
 export const notify = (content: NotificationProps, options: ToastOptions = {}): Id => {
   const toastId = toast(<Notification {...content} />, {

@@ -5,6 +5,8 @@ import { track } from "@ui/api/track"
 import { IS_POPUP } from "@ui/util/constants"
 import { useEffect, useRef } from "react"
 
+import { onScreenReported } from "./flows"
+
 /**
  * How long a pattern waits before it is the screen. A prefix splat waits for its descendant
  * `<Routes>`: React holds a suspended boundary's content back for at least 300 ms after its
@@ -65,6 +67,7 @@ const report = (screen: SettledScreen) => {
   const previous = reported
   reported = screen
   pageContext.screen = screen.name
+  onScreenReported(screen.name)
 
   track("$screen", {
     $screen_name: screen.name,

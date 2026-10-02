@@ -1,5 +1,7 @@
 import { z } from "zod/v4"
 
+import { isRoutePattern } from "./screenPattern"
+
 export type PropertyScalar = string | number | boolean | null
 export type PropertyValue = PropertyScalar | readonly PropertyScalar[]
 
@@ -15,13 +17,12 @@ export type PropertyDef<V extends PropertyValue = PropertyValue> = {
   readonly values?: readonly string[]
 }
 
-type PropertyValueOf<D> = D extends PropertyDef<infer V> ? V : never
+export type PropertyValueOf<D> = D extends PropertyDef<infer V> ? V : never
 
 const SLUG = /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/
 const SYMBOL = /^[\p{L}\p{N}._\-+$]{1,24}$/u
 const HOSTNAME =
   /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/
-const ROUTE_PATTERN = /^(?:\/|(?:\/(?:[A-Za-z0-9_-]+|:[A-Za-z][A-Za-z0-9]*|\*))+)$/
 
 export const isHostname = (value: string): boolean => HOSTNAME.test(value)
 
@@ -75,8 +76,7 @@ export const p = {
 
   hostname: (description: string) => string(z.string().regex(HOSTNAME), description),
 
-  routePattern: (description: string) =>
-    string(z.string().max(128).regex(ROUTE_PATTERN), description),
+  routePattern: (description: string) => string(z.string().refine(isRoutePattern), description),
 
   /** PostHog stores arrays as JSON strings. */
   list: <V extends PropertyScalar>(
@@ -126,7 +126,7 @@ type UseValue<D, U> = U extends { narrow: z.ZodType<infer V> } ? V : PropertyVal
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
-type PropsOf<R extends Registry, Uses> = Simplify<
+export type PropsOf<R extends Registry, Uses> = Simplify<
   {
     [K in keyof Uses & keyof R as IsOptionalUse<Uses[K]> extends true ? never : K]: UseValue<
       R[K],
@@ -188,7 +188,7 @@ export const defineEventGroup = <
     })
   ) as { readonly [E in keyof G]: EventDef<PropsOf<R, G[E]["props"]>> }
 
-type UnionToIntersection<U> = (U extends unknown ? (u: U) => void : never) extends (
+export type UnionToIntersection<U> = (U extends unknown ? (u: U) => void : never) extends (
   i: infer I
 ) => void
   ? I
@@ -200,11 +200,27 @@ export const mergeEventGroups = <const Gs extends readonly EventGroup[]>(
   const merged: Record<string, EventDef> = {}
   for (const group of groups)
     for (const [name, def] of Object.entries(group)) {
-      if (Object.hasOwn(merged, name)) throw new Error(`Duplicate analytics event "${name}"`)
+      if (Object.hasOwn(merged, name))
+        throw new Error(
+          `Duplicate analytics event "${name}". A flow generates <flow>_started, _step_viewed, _submitted, _completed, _failed and _abandoned: rename the domain event, or give the flow another name or a rename entry.`
+        )
       merged[name] = def
     }
   return merged as UnionToIntersection<Gs[number]>
 }
+
+type DuplicateNames<Gs extends readonly EventGroup[], Seen = never> = Gs extends readonly [
+  infer Head extends EventGroup,
+  ...infer Tail extends EventGroup[],
+]
+  ? (keyof Head & Seen) | DuplicateNames<Tail, Seen | keyof Head>
+  : never
+
+export type NoDuplicateEvents<Gs extends readonly EventGroup[]> = [DuplicateNames<Gs>] extends [
+  never,
+]
+  ? true
+  : `Duplicate analytics event: ${DuplicateNames<Gs> & string}`
 
 export type TrackArgsOf<Props> = [keyof Props] extends [never]
   ? []

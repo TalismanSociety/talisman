@@ -51,6 +51,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         type: "error",
         title: t("Failed to import", { count: accountsToImport.length }),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
       setIsSubmitting(false)
     }

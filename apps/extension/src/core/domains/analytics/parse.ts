@@ -1,4 +1,5 @@
-import { catalogue, type EventName } from "@common/analytics/catalogue"
+import { catalogue, type EventName, isEventName } from "@common/analytics/catalogue"
+import { flowEventRef } from "@common/analytics/flow/registry"
 import { properties as catalogueProperties } from "@common/analytics/properties"
 import type { ConsentKind, EventProperties } from "@common/analytics/schema"
 import { z } from "zod/v4"
@@ -11,6 +12,7 @@ export type ParsedEvent = {
   readonly properties: EventProperties
   /** The page's screen when the event fired, valid as a `$screen_name`. */
   readonly screen?: string
+  readonly transactionId?: string
 } & { readonly __brand: "ParsedEvent" }
 
 export type ParseResult =
@@ -21,6 +23,7 @@ const envelopeSchema = z.strictObject({
   event: z.string().max(64),
   properties: z.record(z.string(), z.unknown()),
   screen: z.string().optional(),
+  transactionId: z.string().max(128).optional(),
 })
 
 const describeIssues = (error: z.ZodError) =>
@@ -30,14 +33,19 @@ const describeIssues = (error: z.ZodError) =>
     return `${where}: ${issue.code}${keys}`
   })
 
-const isEventName = (name: string): name is EventName => Object.hasOwn(catalogue, name)
+const linksTransaction = (name: EventName) => {
+  const ref = flowEventRef(name)
+  return ref?.lifecycle === "submitted" && ref.flow.settlement === "transaction"
+}
 
 export const parseTrackedEvent = (raw: unknown): ParseResult => {
   const envelope = envelopeSchema.safeParse(raw)
   if (!envelope.success) return { ok: false, name: "", issues: describeIssues(envelope.error) }
 
-  const { event: name, properties, screen } = envelope.data
+  const { event: name, properties, screen, transactionId } = envelope.data
   if (!isEventName(name)) return { ok: false, name: redactSecrets(name), issues: ["unknown_event"] }
+  if (transactionId !== undefined && !linksTransaction(name))
+    return { ok: false, name, issues: ["transaction_id_not_allowed"] }
 
   const def = catalogue[name]
   const parsed = def.schema.safeParse(properties)
@@ -50,6 +58,7 @@ export const parseTrackedEvent = (raw: unknown): ParseResult => {
     kind: def.kind,
     properties: parsed.data,
     ...(screenValid && { screen }),
+    ...(transactionId !== undefined && { transactionId }),
   }
   return {
     ok: true,

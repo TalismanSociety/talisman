@@ -158,6 +158,7 @@ export const AddLedgerSelectAccount = () => {
           type: "error",
           title: t("Connecting account", { count: accounts.length }),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

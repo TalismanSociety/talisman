@@ -196,6 +196,7 @@ export const AccountAddMnemonicForm = () => {
             type: "error",
             title: t("Error importing account"),
             subtitle: getErrorMessage(err, t("Unknown error")),
+            cause: err,
           })
         }
       }

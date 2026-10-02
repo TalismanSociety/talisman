@@ -99,6 +99,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
           type: "error",
           title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },
@@ -503,6 +504,7 @@ const ConfirmRemove: FC<{
         type: "error",
         title: t("Error"),
         subtitle: getErrorMessage(err, t("Failed to remove")),
+        cause: err,
       })
       setConfirming(false)
     }

@@ -4,9 +4,15 @@ import { describe, expect, it } from "vitest"
 import { z } from "zod/v4"
 
 import { catalogue, catalogueDefinitions } from "./catalogue"
-import type { FlowEventName } from "./flows"
 import { properties } from "./properties"
-import { defineEventGroup, mergeEventGroups, p, type Registry, type TrackFn } from "./schema"
+import {
+  defineEventGroup,
+  mergeEventGroups,
+  type NoDuplicateEvents,
+  p,
+  type Registry,
+  type TrackFn,
+} from "./schema"
 import { superPropertyDefinitions } from "./superProperties"
 
 const RESERVED = ["$session_id", "$process_person_profile"]
@@ -45,6 +51,16 @@ describe("mergeEventGroups", () => {
     const group = defineEventGroup(properties, { twice: { description: "Twice.", props: {} } })
 
     expect(() => mergeEventGroups(group, group)).toThrow('Duplicate analytics event "twice"')
+  })
+
+  it("fails typecheck on an event name two groups define", () => {
+    const once = defineEventGroup(properties, { twice: { description: "Twice.", props: {} } })
+    const other = defineEventGroup(properties, { other: { description: "Other.", props: {} } })
+    const distinct: NoDuplicateEvents<[typeof once, typeof other]> = true
+    // @ts-expect-error twice is in two groups
+    const clash: NoDuplicateEvents<[typeof once, typeof other, typeof once]> = true
+
+    expect([distinct, clash]).toEqual([true, true])
   })
 })
 
@@ -143,21 +159,8 @@ const callShapes = (
   trackFixture("all_optional", { source: "onboarding" })
 }
 
-const flowEventNames: FlowEventName<"send">[] = [
-  "send_started",
-  "send_step_viewed",
-  "send_submitted",
-  "send_completed",
-  "send_failed",
-  "send_abandoned",
-]
-
 describe("track()", () => {
   it("rejects bad call shapes at compile time: `pnpm typecheck` checks the @ts-expect-error lines", () => {
     expect(callShapes).toBeTypeOf("function")
-  })
-
-  it("names a flow's lifecycle events after the flow", () => {
-    expect(flowEventNames).toHaveLength(6)
   })
 })

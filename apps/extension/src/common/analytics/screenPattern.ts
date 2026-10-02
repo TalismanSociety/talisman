@@ -1,3 +1,19 @@
+/** Capitals stay legal for `auth-sol-signIn`. */
+const ROUTE_WORD = /^[a-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$/
+const ROUTE_WORD_MAX_LENGTH = 30
+
+export const isRouteWord = (segment: string): boolean =>
+  segment.length <= ROUTE_WORD_MAX_LENGTH && ROUTE_WORD.test(segment)
+
+const isRouteSegment = (segment: string) =>
+  segment === "*" || /^:[A-Za-z][A-Za-z0-9]*$/.test(segment) || isRouteWord(segment)
+
+export const isRoutePattern = (pattern: string): boolean =>
+  pattern === "/" ||
+  (pattern.startsWith("/") &&
+    pattern.length <= 128 &&
+    pattern.slice(1).split("/").every(isRouteSegment))
+
 /**
  * What a matched pattern may still be waiting for. `descendant`: it ends in a prefix splat
  * (`portfolio/*`), so a descendant `<Routes>` names the screen once it renders. `redirect`: it

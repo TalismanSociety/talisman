@@ -124,6 +124,7 @@ const Content = () => {
               type: "error",
               title: t("Error changing password"),
               subtitle: err.message,
+              cause: err,
             })
         }
       })

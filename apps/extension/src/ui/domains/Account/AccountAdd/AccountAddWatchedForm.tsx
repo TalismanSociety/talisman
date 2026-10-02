@@ -134,6 +134,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           type: "error",
           title: t("Error creating account"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

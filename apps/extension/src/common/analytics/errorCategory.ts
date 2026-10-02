@@ -26,6 +26,7 @@ export const ERROR_CATEGORIES = [
   "timeout",
   "input_invalid",
   "storage",
+  "clipboard",
   "unknown",
 ] as const
 

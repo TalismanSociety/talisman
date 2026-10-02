@@ -107,6 +107,7 @@ export const useYieldxyzAction = ({ type, address, yieldId, args }: UseYieldxyzA
           type: "error",
           title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
         setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
         throw err

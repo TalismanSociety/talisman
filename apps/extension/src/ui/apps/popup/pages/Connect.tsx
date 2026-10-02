@@ -86,6 +86,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
         type: "error",
         title: t("Failed to connect"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [authRequest, connected, t])

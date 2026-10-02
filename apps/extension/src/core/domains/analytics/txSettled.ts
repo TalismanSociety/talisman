@@ -3,6 +3,7 @@ import { type SettledStatus, txTypeOf } from "@common/analytics/transactions"
 
 import type { TxStatusFact, TxStatusReason } from "../transactions/store.transactions"
 import type { TransactionStatus } from "../transactions/types"
+import { flowTracker } from "./flowTracker"
 import { track } from "./track"
 import { analyticsNetworkId, signerOfAddress } from "./txContext"
 
@@ -34,13 +35,15 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     analyticsNetworkId({ networkId: row.networkId }),
     signerOfAddress(row.account),
   ])
+  const timeToSettleMs = toDurationMs(at - row.timestamp)
   track("tx_settled", {
     status,
     platform: row.platform,
     network_id: networkId,
     tx_type: txTypeOf(row.txInfo),
-    time_to_settle_ms: toDurationMs(at - row.timestamp),
+    time_to_settle_ms: timeToSettleMs,
     submitted_by: row.siteUrl ? "dapp" : "wallet",
     ...(signer && { signer }),
   })
+  await flowTracker.settled(row.id, { status, timeToSettleMs }, Date.now())
 }

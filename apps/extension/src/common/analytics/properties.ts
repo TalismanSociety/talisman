@@ -9,6 +9,7 @@ export const LOCK_REASONS = ["manual", "auto_lock", "error"] as const
 export const ERROR_SURFACES = ["toast", "field", "alert", "screen", "boundary"] as const
 export const DISMISS_CAUSES = ["escape", "backdrop", "button", "completed"] as const
 const TVL_TRIGGERS = ["daily", "update"] as const
+const ABANDON_CAUSES = ["left", "page_closed"] as const
 
 export const properties = {
   source: p.enum(["onboarding", "settings"], "Where the user made the choice."),
@@ -25,7 +26,7 @@ export const properties = {
     "How it closed. escape, backdrop: the user dismissed it with that gesture. completed: the user finished what it was for (a transaction submitted inside it) before it closed. button: any other close, by its own buttons or by code. A close that follows an asynchronous dismiss handler reads button."
   ),
   duration_ms: p.durationMs(
-    "Elapsed milliseconds. modal_closed: how long it was open. balances_loaded: from the unlock (or the page load when already unlocked) to balances loaded."
+    "Elapsed milliseconds. modal_closed: how long it was open. balances_loaded: from the unlock (or the page load when already unlocked) to balances loaded. Flow events: since the flow's started event."
   ),
 
   surface: p.enum(
@@ -34,9 +35,24 @@ export const properties = {
   ),
   error_category: p.enum(
     ERROR_CATEGORIES,
-    "What kind of failure, never its text. input_invalid: a form field's own validation."
+    "What kind of failure, never its text. input_invalid: a form field's own validation. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
   ),
   flow: p.slug("The flow running when it happened."),
+  flow_id: p.slug(
+    "Random id of one attempt at a flow, a UUID with dashes. Every event of the attempt carries it. error_shown: the attempt running when the error showed."
+  ),
+  step: p.slug("The flow step the user reached, as the flow defines it."),
+  last_step: p.slug(
+    "The step the attempt was on: the last step_viewed, or the screen a screen-backed step matches."
+  ),
+  entry: p.slug("Where the user started the flow from. Each flow lists its own values."),
+  abandon_cause: p.enum(
+    ABANDON_CAUSES,
+    "How the attempt ended unfinished. left: the user closed its modal or navigated away inside the page. page_closed: the page itself went away (the popup or tab closed, or it reloaded)."
+  ),
+  verified: p.bool(
+    "The user proved the backup by picking the recovery phrase's words in order. false: they skipped the check."
+  ),
   field: p.slug("The form field the error belongs to: its input name."),
 
   platform: p.enum(CHAIN_PLATFORMS, "Chain platform, not the OS."),

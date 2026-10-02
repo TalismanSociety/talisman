@@ -401,6 +401,7 @@ const CopyChainIdButton: FC<{ chainId: string; className?: string }> = ({ chainI
         type: "error",
         title: "Error",
         subtitle: getErrorMessage(err, "Failed to chain ID"),
+        cause: err,
       })
     }
   }, [chainId])
@@ -438,6 +439,7 @@ const ConfirmRemove: FC<{
         type: "error",
         title: t("Error"),
         subtitle: getErrorMessage(err, t("Failed to remove")),
+        cause: err,
       })
       setConfirming(false)
     }

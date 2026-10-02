@@ -111,6 +111,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
       notify({
         type: "error",
         title: t(`Copy failed`),
+        errorCategory: "clipboard",
       })
     }
   }, [request?.data, t])

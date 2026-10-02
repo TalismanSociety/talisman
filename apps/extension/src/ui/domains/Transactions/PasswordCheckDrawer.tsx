@@ -75,6 +75,7 @@ const PasswordCheckDrawerContent: FC<
           notify({
             type: "error",
             title: t("Incorrect password"),
+            errorCategory: "wrong_password",
           })
         }
       } catch (err) {
@@ -83,6 +84,7 @@ const PasswordCheckDrawerContent: FC<
           type: "error",
           title: t("Password check failed"),
           subtitle: getErrorMessage(err, t("Unknown error")).slice(0, 200),
+          cause: err,
         })
       }
     },

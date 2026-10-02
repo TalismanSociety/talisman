@@ -69,6 +69,7 @@ export const MnemonicDeleteModal = () => {
         type: "error",
         title: t("Failed to delete"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [close, mnemonic, t])
