@@ -16,7 +16,7 @@ const sh = (cmd, args) => {
   }
 }
 
-const RELEASE_SHA = /\d+\.\d+\.\d+-dev-([0-9a-f]{7,40})[`"]/g
+const RELEASE_SHA = /\d+\.\d+\.\d+-dev-([0-9a-f]{4,40})[`"]/g
 
 // Reads the build sha from the scripts the service worker runs. The manifest is reread from disk on
 // each load, but Chromium can keep running an older build's cached background script.
