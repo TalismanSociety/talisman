@@ -93,9 +93,8 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 
 | Variable            | Required | Description                                     |
 | ------------------- | -------- | ----------------------------------------------- |
-| `POSTHOG_CLI_API_KEY` | Chrome release | PostHog personal API key with the error tracking write scope. Uploads the source maps |
-| `POSTHOG_CLI_PROJECT_ID` | Chrome release | PostHog project id, the number in `us.posthog.com/project/<id>` |
-| `POSTHOG_CLI_HOST` | No | PostHog API host. The CLI defaults to the US cloud |
+| `POSTHOG_CLI_API_KEY` | Chrome release | PostHog personal API key with only the `error_tracking:write` scope, limited to the project. Uploads the source maps |
+| `POSTHOG_CLI_HOST` | No | PostHog API host. The default is `https://us.posthog.com` |
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 
@@ -106,8 +105,10 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 Production and canary Chrome builds make hidden source maps (no inline reference in the JS) and upload them to PostHog, so error tracking shows exceptions at their source line. The `zip:extension:start` hook in `wxt.config.ts` runs `scripts/posthogSourcemaps.ts`, in this order:
 
 1. `@posthog/cli sourcemap inject` adds a chunk id to each bundle. `page.js` and `content-scripts/` are left out: they run in web pages and report no errors.
-2. `@posthog/cli sourcemap upload` uploads the maps.
+2. `@posthog/cli sourcemap upload` uploads the maps under the release `talisman-extension` `<version>+<git sha>`, for example `3.10.1+de76c562f`.
 3. The hook deletes every `.map` file. Maps never ship in the zip.
+
+Before the build starts, the `build:before` hook checks the key with PostHog. The key must be set and valid, hold `error_tracking:write`, and reach the project in `src/core/domains/analytics/posthogProject.ts`.
 
 The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcemaps.ts`. Its first run downloads the CLI binary from GitHub.
 
@@ -115,11 +116,10 @@ The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcem
 | --- | --- |
 | Firefox build | Skipped. Firefox builds have no source maps, and the Docker build stays reproducible |
 | `pnpm dev`, `wxt build` and CI builds | Skipped. They make no maps |
-| Neither `POSTHOG_CLI_*` variable set | A warning. The zip has no chunk ids, and PostHog cannot resolve its frames |
-| Only one of the two set | The build fails |
+| `POSTHOG_CLI_API_KEY` missing, invalid, without the scope or for another project | The build fails before it starts |
 | Inject or upload fails | The build fails, and no zip is made |
 
-Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. The build sends no release: exceptions carry the extension version as `$app_version`.
+Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. Each build is its own release. A chunk that an earlier build already uploaded keeps that build's release.
 
 To build a production zip without uploading while the keys are in `.env`, set `POSTHOG_CLI_DRY_RUN=true` in the shell. The zip then has no chunk ids.
 
