@@ -2,7 +2,8 @@
 import { execFileSync } from "node:child_process"
 import { chromium } from "@playwright/test"
 
-const CDP = "http://localhost:9223"
+const CDP_PORT = process.env.VERIFY_CDP_PORT ?? "9223"
+const CDP = `http://localhost:${CDP_PORT}`
 const DEV_SERVER_PORT = 8254
 const EXTENSION = "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno"
 
@@ -24,24 +25,31 @@ const check = (name, ok, detail) => {
 const repoRoot = sh("git", ["rev-parse", "--show-toplevel"])
 const gitDir = sh("git", ["rev-parse", "--absolute-git-dir"])
 const commonDir = sh("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"])
-check("main checkout (not a git worktree)", gitDir === commonDir, repoRoot)
-
 const head = sh("git", ["rev-parse", "--short", "HEAD"])
 
-const serverPid = sh("lsof", ["-ti", `tcp:${DEV_SERVER_PORT}`, "-sTCP:LISTEN"]).split("\n")[0]
-const serverCmd = serverPid ? sh("ps", ["-o", "command=", "-p", serverPid]) : ""
-check(
-  `dev server on :${DEV_SERVER_PORT} is wxt from this checkout`,
-  serverCmd.includes(`${repoRoot}/apps/extension/`) && serverCmd.includes("wxt"),
-  serverPid ? `pid ${serverPid}` : "nothing listening, run the Launch step"
-)
+// A browser on another port has a dev server of its own, out of reach of these host checks.
+if (CDP_PORT === "9223") {
+  check(
+    "main checkout (not a git worktree)",
+    gitDir === commonDir,
+    gitDir === commonDir ? repoRoot : `${repoRoot}: set VERIFY_CDP_PORT to a browser of its own`
+  )
+
+  const serverPid = sh("lsof", ["-ti", `tcp:${DEV_SERVER_PORT}`, "-sTCP:LISTEN"]).split("\n")[0]
+  const serverCmd = serverPid ? sh("ps", ["-o", "command=", "-p", serverPid]) : ""
+  check(
+    `dev server on :${DEV_SERVER_PORT} is wxt from this checkout`,
+    serverCmd.includes(`${repoRoot}/apps/extension/`) && serverCmd.includes("wxt"),
+    serverPid ? `pid ${serverPid}` : "nothing listening, run the Launch step"
+  )
+}
 
 let version
 try {
   const res = await fetch(`${CDP}/json/version`)
   version = await res.json()
 } catch {}
-if (!check("dev Chrome answers CDP on :9223", !!version, version?.Browser)) process.exit(1)
+if (!check(`dev Chrome answers CDP on :${CDP_PORT}`, !!version, version?.Browser)) process.exit(1)
 
 const browser = await chromium.connectOverCDP(CDP)
 const context = browser.contexts()[0]

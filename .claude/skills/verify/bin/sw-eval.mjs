@@ -10,7 +10,9 @@ if (!expression) {
   process.exit(2)
 }
 
-const browser = await chromium.connectOverCDP("http://localhost:9223")
+const browser = await chromium.connectOverCDP(
+  `http://localhost:${process.env.VERIFY_CDP_PORT ?? "9223"}`
+)
 const worker = browser
   .contexts()[0]
   .serviceWorkers()
