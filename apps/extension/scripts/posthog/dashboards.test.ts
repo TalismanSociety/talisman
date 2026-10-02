@@ -15,6 +15,7 @@ import {
   referencedProperties,
   specErrors,
   tileNameOf,
+  tileQuery,
 } from "./dashboards"
 import { ev, hogql, prop, trend } from "./queries"
 
@@ -31,6 +32,24 @@ describe("the spec against the analytics catalogue", () => {
       expect(tiles).toContain(`Funnel: ${flow.name}`)
       expect(tiles).toContain(`Abandoned: ${flow.name}`)
     }
+  })
+})
+
+describe("tileQuery", () => {
+  const filtered = (query: ReturnType<typeof tileQuery>) =>
+    query.kind === "InsightVizNode"
+      ? query.source.filterTestAccounts
+      : (query.source.filters as { filterTestAccounts?: boolean }).filterTestAccounts
+
+  it("keeps the test-account filter off on pre-release tiles, and follows the flag elsewhere", () => {
+    const dashboards = buildDashboards(catalogue)
+    const preRelease = dashboards.filter((spec) => spec.audience === "pre-release")
+    expect(preRelease.flatMap((spec) => spec.tiles)).not.toHaveLength(0)
+    for (const spec of dashboards)
+      for (const tile of spec.tiles) {
+        expect(filtered(tileQuery(spec, tile, true))).toBe(spec.audience !== "pre-release")
+        expect(filtered(tileQuery(spec, tile, false))).toBe(false)
+      }
   })
 })
 

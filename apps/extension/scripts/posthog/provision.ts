@@ -26,6 +26,7 @@ import {
   specErrors,
   type Tile,
   tileNameOf,
+  tileQuery,
 } from "./dashboards"
 import {
   definitionChanges,
@@ -35,7 +36,6 @@ import {
   type StoredDefinition,
   seedBatch,
 } from "./definitions"
-import { withTestAccountFilter } from "./queries"
 import {
   changedFields,
   computeLayouts,
@@ -237,7 +237,7 @@ async function reconcileDashboard(
   for (const tile of spec.tiles) {
     const insightTitle = insightName(dashboards, spec, tile)
     const existing = findInsight(state, dashboards, spec, tile)
-    const query = withTestAccountFilter(tile.query, cli.filterTestAccounts)
+    const query = tileQuery(spec, tile, cli.filterTestAccounts)
     if (!existing) {
       console.log(`  create insight "${insightTitle}"`)
       const created = await api.post<StoredInsight>("/insights/?include_dashboards=true", {
@@ -695,12 +695,12 @@ async function reconcileDefinitions(api: PosthogApi, catalogue: CatalogueSnapsho
 }
 
 async function checkQueries(api: PosthogApi, cli: Cli, dashboards: readonly Dashboard[]) {
-  const tiles = dashboards.flatMap((d) => d.tiles)
+  const tiles = dashboards.flatMap((spec) => spec.tiles.map((tile) => ({ spec, tile })))
   console.log(`\n▶ Query check (${tiles.length} tiles)`)
   const failures: string[] = []
-  for (const tile of tiles) {
+  for (const { spec, tile } of tiles) {
     try {
-      await api.query(withTestAccountFilter(tile.query, cli.filterTestAccounts).source)
+      await api.query(tileQuery(spec, tile, cli.filterTestAccounts).source)
     } catch (error) {
       failures.push(
         `  ✗ ${tile.name}: ${String((error as Error).message)

@@ -12,9 +12,11 @@ import {
   type Query,
   retention,
   SQL_NOT_TEST_ACCOUNT,
+  sqlList,
   stickiness,
   trend,
   users,
+  withTestAccountFilter,
 } from "./queries"
 
 export type CatalogueSnapshot = {
@@ -36,7 +38,14 @@ export type Dashboard = {
   readonly title: string
   readonly description: string
   readonly tiles: readonly Tile[]
+  /** Pre-release installs are the test accounts, so its tiles never apply the test-account filter. */
+  readonly audience?: "pre-release"
 }
+
+const PRE_RELEASE_VARIANTS = sqlList(["preview", "canary"])
+
+export const tileQuery = (spec: Dashboard, tile: Tile, filterTestAccounts: boolean): Query =>
+  withTestAccountFilter(tile.query, spec.audience !== "pre-release" && filterTestAccounts)
 
 export type Alert = {
   readonly name: string
@@ -703,6 +712,65 @@ LIMIT 100`),
             breakdown: "signer",
             display: "ActionsStackedBar",
           }),
+        },
+      ],
+    },
+    {
+      slug: "pre-release",
+      prefix: "Pre-release",
+      title: "Pre-release errors",
+      description:
+        "Exceptions from release candidates installed unpacked by QA (appVariant preview) and from canary builds, by build. Store installs never appear here.",
+      audience: "pre-release",
+      tiles: [
+        {
+          name: "Exceptions by build",
+          description:
+            "One row per pre-release build: the exceptions it reported, how many distinct errors, the installs that reported them, and when.",
+          size: "full",
+          query: hogql(`
+SELECT
+  properties.appVariant AS variant,
+  properties.appVersion AS version,
+  properties.appBuild AS build,
+  count() AS reported,
+  uniq(properties.$exception_fingerprint) AS errors,
+  uniq(distinct_id) AS installs,
+  min(timestamp) AS first_seen,
+  max(timestamp) AS last_seen
+FROM events
+WHERE event = '$exception' AND properties.appVariant IN (${PRE_RELEASE_VARIANTS}) AND {filters}
+GROUP BY variant, version, build
+ORDER BY last_seen DESC
+LIMIT 50`),
+        },
+        {
+          name: "Pre-release exceptions",
+          description:
+            "The exceptions pre-release builds reported, one row per fingerprint and build. in_production: store installs reported the same fingerprint in the last 90 days, so it is not new in this build.",
+          size: "full",
+          query: hogql(`
+SELECT
+  properties.exception_type AS type,
+  properties.$exception_fingerprint AS fingerprint,
+  properties.appVersion AS version,
+  properties.appBuild AS build,
+  properties.mechanism AS mechanism,
+  properties.handled AS handled,
+  fingerprint IN (
+    SELECT properties.$exception_fingerprint
+    FROM events
+    WHERE event = '$exception' AND properties.appVariant = 'production' AND timestamp > now() - toIntervalDay(90)
+  ) AS in_production,
+  count() AS reported,
+  uniq(distinct_id) AS installs,
+  topK(3)(properties.$screen_name) AS screens,
+  max(timestamp) AS last_seen
+FROM events
+WHERE event = '$exception' AND properties.appVariant IN (${PRE_RELEASE_VARIANTS}) AND {filters}
+GROUP BY type, fingerprint, version, build, mechanism, handled
+ORDER BY last_seen DESC
+LIMIT 100`),
         },
       ],
     },

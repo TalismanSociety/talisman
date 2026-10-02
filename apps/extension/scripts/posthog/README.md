@@ -36,7 +36,7 @@
 ## Change a dashboard, a funnel or an alert
 
 - Flow funnels and flow abandonment tiles come from `flowList()`. A new flow gets them on the next run with no change here. A funnel requires its started, submitted and completed events. The steps between are optional, because a branch of a flow skips some. A transaction flow's completed step counts `status` success only. A flow whose success is another property, such as swap's `swap_status` finished, has an entry in `SUCCESS_OVERRIDES` in `flows.ts`.
-- Other tiles live in `buildDashboards` in `dashboards.ts`. Build queries with the helpers in `queries.ts`. A SQL tile needs `{filters}` in its `WHERE` so that the date range and the test-account filter apply.
+- Other tiles live in `buildDashboards` in `dashboards.ts`. Build queries with the helpers in `queries.ts`. A SQL tile needs `{filters}` in its `WHERE` so that the date range and the test-account filter apply. A dashboard with `audience: "pre-release"` shows QA and canary installs, so its tiles never apply the test-account filter: filter on `appVariant` in the SQL instead.
 - Alerts live in `ALERTS` in `dashboards.ts`. An alert watches one series of a trend tile.
 
 `specErrors` checks the spec against the catalogue: every event and property a tile reads must be in the catalogue, each property must be declared by the event the tile reads it on, and every tile name must be unique. Several events share some properties, such as `surface` on `error_shown` and `search_performed`, so a tile that filters on one without its event fails the check. A real run refuses to start on an error. `dashboards.test.ts` runs the same check in CI, so renaming an event that a tile reads fails the tests.
