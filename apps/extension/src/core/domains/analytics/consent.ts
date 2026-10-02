@@ -13,17 +13,6 @@ export const consentFromSettings = ({
   error: useErrorTracking ? "granted" : "denied",
 })
 
-export const transmits = (kind: ConsentKind, transmission: Transmission): boolean => {
-  switch (transmission.mode) {
-    case "off":
-      return false
-    case "posthog":
-      return kind === "usage" ? transmission.usage : transmission.errorTracking
-    case "dev_log":
-      return true
-  }
-}
-
 export type Admission = Exclude<Disposition, "rejected" | "filtered">
 
 const ADMISSION_BY_CONSENT: Record<KindConsent, Admission> = {
@@ -36,8 +25,7 @@ export const admit = (
   kind: ConsentKind,
   consent: Consent,
   transmission: Transmission
-): Admission =>
-  transmits(kind, transmission) ? ADMISSION_BY_CONSENT[consent[kind]] : "dropped_off"
+): Admission => (transmission.mode === "off" ? "dropped_off" : ADMISSION_BY_CONSENT[consent[kind]])
 
 export type UsageTransition =
   | "none"

@@ -596,6 +596,26 @@ export default defineConfig({
               )
           },
         } satisfies Plugin,
+        // The Firefox build sends no analytics and no error reports, and AMO review checks it
+        ...(isFirefox
+          ? [
+              {
+                name: "fail-on-firefox-analytics",
+                apply: "build",
+                generateBundle(_options, bundle) {
+                  const leaks = Object.values(bundle)
+                    .filter(
+                      (file) => file.type === "chunk" && /z\.talisman\.xyz|phc_/.test(file.code)
+                    )
+                    .map((file) => file.fileName)
+                  if (leaks.length)
+                    this.error(
+                      `The Firefox build contains the PostHog destination:\n${leaks.join("\n")}`
+                    )
+                },
+              } satisfies Plugin,
+            ]
+          : []),
         // Watch monorepo packages directory in dev mode for hot reload
         // WXT's external file watching has a bug that skips step 0 (background script),
         // so we need to explicitly add the packages directory to Vite's watcher
@@ -627,6 +647,7 @@ export default defineConfig({
             "process.env.VERSION": JSON.stringify(pkg.version),
             "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
             "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+            "process.env.BROWSER": JSON.stringify(browser),
             "process.env.RELEASE": JSON.stringify(RELEASE_NAME),
             "process.env.BUILD_TYPE": JSON.stringify(BUILD_TYPE),
             "process.env.GIT_SHA": JSON.stringify(getGitSha()),
@@ -716,6 +737,7 @@ export default defineConfig({
         "process.env.VERSION": JSON.stringify(pkg.version),
         "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
         "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+        "process.env.BROWSER": JSON.stringify(browser),
         "process.env.RELEASE": JSON.stringify(RELEASE_NAME),
         "process.env.BUILD_TYPE": JSON.stringify(BUILD_TYPE),
         "process.env.GIT_SHA": JSON.stringify(getGitSha()),

@@ -1,13 +1,11 @@
 import { CONSENT_KINDS, type ConsentKind } from "@common/analytics/schema"
 import type { UiContext } from "@common/analytics/superProperties"
-import { IS_FIREFOX } from "@common/constants"
 import { log } from "@common/log"
 import { isEqual } from "lodash-es"
-import { combineLatest, distinctUntilChanged, firstValueFrom, map, type Observable } from "rxjs"
+import { distinctUntilChanged, firstValueFrom, map, type Observable } from "rxjs"
 
-import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
-import { admit, consentFromSettings, planConsent, transmits } from "./consent"
+import { admit, consentFromSettings, planConsent } from "./consent"
 import { type Environment, readEnvironment } from "./environment"
 import { type ParsedEvent, type ParseResult, parseTrackedEvent } from "./parse"
 import {
@@ -30,7 +28,7 @@ import {
   createDexieAnalyticsStore,
   createMemoryAnalyticsStore,
 } from "./store.queue"
-import { parseAnalyticsRemoteConfig, resolveTransmission, type Transmission } from "./transmission"
+import { TRANSMISSION, type Transmission } from "./transmission"
 import {
   createDevLogTransport,
   createPosthogTransport,
@@ -50,7 +48,7 @@ export type AnalyticsEngineDeps = {
   scheduler: FlushScheduler
   environment: () => Promise<Environment>
   consent$: Observable<Consent>
-  transmission$: Observable<Transmission>
+  transmission: Transmission
   transportFor: (transmission: Transmission) => Transport | null
   devLog: DevLog | null
 }
@@ -81,7 +79,7 @@ export class AnalyticsEngine {
   #tail: Promise<unknown>
   #state!: AnalyticsState
   #consent!: Consent
-  #transmission!: Transmission
+  #transmission: Transmission
   #held: QueuedEventRecord[] = []
   #inFlight: Partial<Record<ConsentKind, Promise<void>>> = {}
   #failures = 0
@@ -90,6 +88,7 @@ export class AnalyticsEngine {
   constructor(deps: AnalyticsEngineDeps) {
     this.#deps = deps
     this.#store = deps.store
+    this.#transmission = deps.transmission
     this.#tail = this.#started.promise.then(() => this.#init())
   }
 
@@ -102,13 +101,11 @@ export class AnalyticsEngine {
       for (const kind of CONSENT_KINDS) void this.flush(kind)
     })
     this.#started.resolve()
-    combineLatest([this.#deps.consent$, this.#deps.transmission$]).subscribe(
-      ([consent, transmission]) => {
-        this.#serial(() => this.#apply(consent, transmission)).catch((cause) =>
-          log.error("[analytics] consent or transmission change failed", { cause })
-        )
-      }
-    )
+    this.#deps.consent$.subscribe((consent) => {
+      this.#serial(() => this.#apply(consent)).catch((cause) =>
+        log.error("[analytics] consent change failed", { cause })
+      )
+    })
   }
 
   capture({ result, uiContext, realNow }: CaptureInput): Promise<Disposition> {
@@ -189,10 +186,7 @@ export class AnalyticsEngine {
     }
     try {
       if (!stored) await this.#store.commit({ state: this.#state })
-      ;[this.#consent, this.#transmission] = await Promise.all([
-        firstValueFrom(this.#deps.consent$),
-        firstValueFrom(this.#deps.transmission$),
-      ])
+      this.#consent = await firstValueFrom(this.#deps.consent$)
     } catch (cause) {
       log.error("[analytics] start failed, dropping every event", { cause })
       this.#inert = true
@@ -250,15 +244,9 @@ export class AnalyticsEngine {
     return admission
   }
 
-  async #apply(consent: Consent, transmission: Transmission) {
+  async #apply(consent: Consent) {
     if (this.#inert) return
     this.#consent = consent
-    this.#transmission = transmission
-
-    const blocked = CONSENT_KINDS.filter((kind) => !transmits(kind, transmission))
-    await this.#dropHeld((record) => blocked.includes(record.kind), "dropped_off")
-    await this.#purge(blocked)
-    if (transmission.mode === "off") await this.#deps.scheduler.clear()
 
     const plan = planConsent(this.#state.appliedConsent, consent)
     switch (plan.usage) {
@@ -370,16 +358,7 @@ export const analyticsEngine = new AnalyticsEngine({
   scheduler: createChromeAlarmScheduler(),
   environment: readEnvironment,
   consent$: settingsStore.observable.pipe(map(consentFromSettings), distinctUntilChanged(isEqual)),
-  transmission$: remoteConfigStore.observable.pipe(
-    map((config) =>
-      resolveTransmission({
-        isDevBuild: process.env.BUILD === "dev",
-        build: IS_FIREFOX ? "firefox" : "chrome",
-        config: parseAnalyticsRemoteConfig(config),
-      })
-    ),
-    distinctUntilChanged(isEqual)
-  ),
+  transmission: TRANSMISSION,
   transportFor: (transmission) => {
     if (transmission.mode === "posthog") return createPosthogTransport(transmission)
     if (transmission.mode === "dev_log" && devLog) return createDevLogTransport(devLog, Date.now)

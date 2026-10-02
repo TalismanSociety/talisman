@@ -1,5 +1,5 @@
 import type { ConsentKind } from "@common/analytics/schema"
-import { BehaviorSubject, Subject } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 import { describe, expect, it } from "vitest"
 
 import { AnalyticsEngine } from "./engine"
@@ -7,7 +7,7 @@ import type { Environment } from "./environment"
 import { type ParsedEvent, parseTrackedEvent } from "./parse"
 import { MIN_ALARM_DELAY_MS } from "./scheduler"
 import { type AnalyticsStore, createMemoryAnalyticsStore } from "./store.queue"
-import { parseAnalyticsRemoteConfig, resolveTransmission, type Transmission } from "./transmission"
+import type { Transmission } from "./transmission"
 import type { SendOutcome, Transport } from "./transport"
 import type { Consent, WireEvent } from "./types"
 
@@ -33,8 +33,6 @@ const POSTHOG: Transmission = {
   mode: "posthog",
   endpoint: "https://z.talisman.xyz/batch/",
   apiKey: "phc_test",
-  usage: true,
-  errorTracking: true,
 }
 
 const consent = (usage: Consent["usage"], error: Consent["error"] = "granted"): Consent => ({
@@ -85,8 +83,7 @@ const startWorker = (
   {
     consent: initialConsent,
     transmission = POSTHOG,
-    transmission$ = new BehaviorSubject(transmission),
-  }: { consent: Consent; transmission?: Transmission; transmission$?: Subject<Transmission> }
+  }: { consent: Consent; transmission?: Transmission }
 ) => {
   const consent$ = new BehaviorSubject(initialConsent)
   let onAlarm = () => {}
@@ -108,7 +105,7 @@ const startWorker = (
     },
     environment: async () => ENVIRONMENT,
     consent$,
-    transmission$,
+    transmission,
     transportFor: (t) => (t.mode === "posthog" || t.mode === "dev_log" ? world.transport : null),
     devLog: null,
   })
@@ -120,10 +117,6 @@ const startWorker = (
       engine.capture({ result: { ok: true, event }, uiContext: "dashboard", realNow }),
     setConsent: async (next: Consent) => {
       consent$.next(next)
-      return engine.inspect()
-    },
-    setTransmission: async (next: Transmission) => {
-      transmission$.next(next)
       return engine.inspect()
     },
     fireAlarm: async () => {
@@ -234,7 +227,7 @@ describe("AnalyticsEngine", () => {
       ])
     })
 
-    it("gates error events on useErrorTracking and errorTrackingEnabled, whatever the usage consent", async () => {
+    it("gates error events on useErrorTracking, whatever the usage consent", async () => {
       const world = createWorld()
       const worker = startWorker(world, { consent: consent("denied", "granted") })
 
@@ -244,10 +237,6 @@ describe("AnalyticsEngine", () => {
         (await world.store.load())?.errorId,
       ])
 
-      await worker.setTransmission({ ...POSTHOG, errorTracking: false })
-      expect(await worker.capture(errorEvent())).toBe("dropped_off")
-
-      await worker.setTransmission(POSTHOG)
       world.outcome = "retry"
       await worker.capture(errorEvent())
       await worker.engine.flush("error")
@@ -357,55 +346,18 @@ describe("AnalyticsEngine", () => {
       expect(world.sent).toHaveLength(2)
     })
 
-    it("the kill switch drops captures, purges the queue and clears the alarm", async () => {
+    it("a build that sends nothing drops every capture and queues nothing", async () => {
       const world = createWorld()
-      const worker = startWorker(world, { consent: consent("granted") })
-      await worker.capture()
-      await worker.capture(errorEvent())
-
-      const snapshot = await worker.setTransmission({ mode: "off" })
-
-      expect(snapshot.queued).toEqual({ usage: 0, error: 0 })
-      expect(world.alarmAt).toBeUndefined()
-      expect(await worker.capture()).toBe("dropped_off")
-    })
-
-    it("a browser build turned off drops and purges usage events only", async () => {
-      const world = createWorld()
-      const worker = startWorker(world, { consent: consent("granted") })
-      await worker.capture()
-      world.outcome = "retry"
-      await worker.capture(errorEvent())
-      await worker.engine.flush("error")
-
-      const snapshot = await worker.setTransmission({ ...POSTHOG, usage: false })
-
-      expect(snapshot.queued).toEqual({ usage: 0, error: 1 })
-      expect(await worker.capture()).toBe("dropped_off")
-      expect(await worker.capture(errorEvent())).toBe("queued")
-    })
-
-    it("a missing analytics section drops, purges and clears the alarm like the kill switch", async () => {
-      const unconfigured = resolveTransmission({
-        isDevBuild: false,
-        build: "chrome",
-        config: parseAnalyticsRemoteConfig({}),
+      const worker = startWorker(world, {
+        consent: consent("granted"),
+        transmission: { mode: "off" },
       })
-      const world = createWorld()
-      const worker = startWorker(world, { consent: consent("granted") })
-      world.outcome = "retry"
-      await worker.capture()
-      await worker.capture(errorEvent())
-      await worker.engine.flush("usage")
-      expect(world.alarmAt).toBeDefined()
 
-      const snapshot = await worker.setTransmission(unconfigured)
-
-      expect(snapshot.queued).toEqual({ usage: 0, error: 0 })
-      expect(world.alarmAt).toBeUndefined()
       expect(await worker.capture()).toBe("dropped_off")
       expect(await worker.capture(errorEvent())).toBe("dropped_off")
-      expect(await rows(world.store)).toEqual([])
+      expect(await worker.engine.admits("error")).toBe(false)
+      expect(await worker.queued()).toEqual({ usage: 0, error: 0 })
+      expect(world.alarmAt).toBeUndefined()
     })
   })
 
@@ -432,18 +384,7 @@ describe("AnalyticsEngine", () => {
 
       await expectInert(worker, world)
       await worker.setConsent(consent("granted", "denied"))
-      await worker.setTransmission(POSTHOG)
       await expectInert(worker, world)
-    })
-
-    it("drops every event when the remote config never arrives", async () => {
-      const world = createWorld()
-      const transmission$ = new Subject<Transmission>()
-      transmission$.complete()
-      const worker = startWorker(world, { consent: consent("granted"), transmission$ })
-
-      await expectInert(worker, world)
-      expect(await rows(world.store)).toEqual([])
     })
   })
 

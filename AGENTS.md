@@ -65,7 +65,7 @@ Product analytics go to PostHog. Events, properties and flows are defined once, 
   - an error toast without `cause` or `errorCategory` (type error);
   - a setting or app flag missing from `common/analytics/settings.ts` (type error);
   - a `<Route path>` that holds a value instead of words, `:param` and `*`.
-- Dev builds send nothing. They keep the last 500 events in a log. Prove that your events fire with `.claude/skills/verify/features/analytics-events.md`.
+- Dev builds send nothing. They keep the last 500 events in a log. The Firefox build sends nothing either, and its build fails if it contains the PostHog destination. Prove that your events fire with `.claude/skills/verify/features/analytics-events.md`.
 
 ## Dev build
 

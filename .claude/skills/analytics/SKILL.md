@@ -5,7 +5,7 @@ description: This skill should be used when a change adds or changes a wizard, a
 
 # Analytics in the Talisman extension
 
-Events, properties and flows are values in `apps/extension/src/common/analytics/`. `track()`, the background parser and PostHog's definitions all read them, so a wrong event is a type error and an event that nothing sends fails a test. Dev builds send nothing: they keep the last 500 events in a log.
+Events, properties and flows are values in `apps/extension/src/common/analytics/`. `track()`, the background parser and PostHog's definitions all read them, so a wrong event is a type error and an event that nothing sends fails a test. Dev builds send nothing: they keep the last 500 events in a log. The Firefox build sends nothing at all (`core/domains/analytics/transmission.ts`).
 
 ## Decide what the change needs
 
