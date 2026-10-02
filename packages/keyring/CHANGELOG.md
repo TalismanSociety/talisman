@@ -1,5 +1,15 @@
 # @talismn/keyring
 
+## 2.0.3
+
+### Patch Changes
+
+- 4dc5a3c: correct browser minimums in the README
+- a9ebed5: add package descriptions and update READMEs
+- Updated dependencies [a9ebed5]
+- Updated dependencies [f029165]
+  - @talismn/crypto@1.1.1
+
 ## 2.0.2
 
 ### Patch Changes

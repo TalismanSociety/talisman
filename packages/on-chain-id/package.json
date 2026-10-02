@@ -1,6 +1,6 @@
 {
   "name": "@talismn/on-chain-id",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Look up on-chain names (ENS) for account addresses, and resolve names to addresses",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",

@@ -1,5 +1,23 @@
 # @talismn/chain-connectors
 
+## 1.0.5
+
+### Patch Changes
+
+- eaef963: Solana transport fails over through all of a network's RPCs instead of using only the first, and starts each request at the RPC that answered last. A transaction resent after a failure that may have processed it skips preflight
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+- Updated dependencies [9ff568c]
+- Updated dependencies [24d5545]
+- Updated dependencies [9ff568c]
+- Updated dependencies [d779652]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/chaindata-provider@2.1.0
+  - @talismn/util@2.1.0
+
 ## 1.0.4
 
 ### Patch Changes
