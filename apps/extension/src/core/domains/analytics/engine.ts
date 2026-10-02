@@ -70,8 +70,6 @@ export type AnalyticsSnapshot = {
   alarmAt: number | undefined
 }
 
-type Step = <T>(work: () => Promise<T>) => Promise<T>
-
 export class AnalyticsEngine {
   readonly #deps: AnalyticsEngineDeps
   readonly #started = Promise.withResolvers<void>()
@@ -131,7 +129,7 @@ export class AnalyticsEngine {
   flush(kind: ConsentKind): Promise<void> {
     this.#inFlight[kind] ??= (async () => {
       try {
-        const outcome = await this.#drain(kind, (work) => this.#serial(work))
+        const outcome = await this.#drain(kind)
         if (outcome === "done") await this.#serial(() => this.#reschedule())
       } catch (cause) {
         log.error("[analytics] flush failed", { cause })
@@ -261,7 +259,6 @@ export class AnalyticsEngine {
         await this.#optIn("settings")
         break
       case "opt_out":
-        await this.#drain("usage", (work) => work())
         this.#state = { ...this.#state, session: null }
         break
       case "none":
@@ -305,12 +302,14 @@ export class AnalyticsEngine {
     await this.#setDisposition(await this.#store.purge(kinds), "purged")
   }
 
-  async #drain(kind: ConsentKind, step: Step): Promise<"done" | "retry"> {
-    const transport = await step(async () => this.#deps.transportFor(this.#transmission))
+  async #drain(kind: ConsentKind): Promise<"done" | "retry"> {
+    const transport = await this.#serial(async () => this.#deps.transportFor(this.#transmission))
     if (!transport) return "done"
     for (let batch = 0; batch < MAX_BATCHES_PER_FLUSH; batch++) {
-      const rows = await step(() =>
-        this.#store.due(this.#deps.clock(), { kind, limit: MAX_BATCH_SIZE })
+      const rows = await this.#serial(async () =>
+        admit(kind, this.#consent, this.#transmission) === "queued"
+          ? this.#store.due(this.#deps.clock(), { kind, limit: MAX_BATCH_SIZE })
+          : []
       )
       if (!rows.length) return "done"
 
@@ -318,11 +317,11 @@ export class AnalyticsEngine {
       if (outcome === "retry") {
         this.#failures++
         const delay = Math.max(MIN_ALARM_DELAY_MS, nextBackoffMs(this.#failures))
-        await step(() => this.#deps.scheduler.schedule(this.#deps.clock() + delay))
+        await this.#serial(() => this.#deps.scheduler.schedule(this.#deps.clock() + delay))
         return "retry"
       }
       this.#failures = 0
-      await step(() => this.#store.commit({ remove: rows.map((row) => row.uuid) }))
+      await this.#serial(() => this.#store.commit({ remove: rows.map((row) => row.uuid) }))
       if (rows.length < MAX_BATCH_SIZE) return "done"
     }
     return "done"

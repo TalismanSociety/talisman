@@ -179,7 +179,7 @@ describe("AnalyticsEngine", () => {
       expect(sentEvents(world)).toEqual([])
     })
 
-    it("granted → denied: sends the rows already due, purges the rest, sends nothing more", async () => {
+    it("granted → denied: purges every row and sends nothing, not even the rows already due", async () => {
       const world = createWorld()
       const worker = startWorker(world, { consent: consent("granted") })
       const due = await worker.capture()
@@ -189,15 +189,25 @@ describe("AnalyticsEngine", () => {
       const snapshot = await worker.setConsent(consent("denied"))
 
       expect(due).toBe("queued")
-      expect(sentEvents(world).map((event) => event.timestamp)).toEqual([
-        new Date(T0 + OFFSET).toISOString(),
-      ])
       expect(snapshot.queued.usage).toBe(0)
       expect(snapshot.session).toBeNull()
       expect(await worker.capture()).toBe("dropped_consent")
       world.now += 30 * MINUTE
       await worker.fireAlarm()
-      expect(sentEvents(world)).toHaveLength(1)
+      expect(sentEvents(world)).toEqual([])
+    })
+
+    it("a flush that started before the opt-out sends no batch after it", async () => {
+      const world = createWorld()
+      const worker = startWorker(world, { consent: consent("granted") })
+      await worker.capture()
+      world.now += OFFSET + MINUTE
+
+      const flushed = worker.engine.flush("usage")
+      await worker.setConsent(consent("denied"))
+      await flushed
+
+      expect(sentEvents(world)).toEqual([])
     })
 
     it("denied → granted from settings queues analytics_opt_in from settings", async () => {
