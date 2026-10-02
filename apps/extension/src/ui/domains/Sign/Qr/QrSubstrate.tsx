@@ -311,8 +311,8 @@ const SendPage = ({
 
   return (
     <>
-      <div className="flex h-full flex-col items-center justify-end gap-6">
-        <div className="relative flex aspect-square size-[80%] items-center justify-center rounded-xl bg-white p-12">
+      <div className="flex h-full flex-col items-center justify-end gap-6 [container-type:size]">
+        <div className="relative flex size-[min(80cqh,100cqw)] items-center justify-center rounded-xl bg-white p-12">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoaderIcon className="animate-spin-slow text-3xl! text-body-secondary" />
           </div>
