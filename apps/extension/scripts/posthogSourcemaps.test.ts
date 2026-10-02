@@ -8,8 +8,10 @@ import {
   assertInjection,
   cliSteps,
   planSourcemapUpload,
+  preflightSourcemapPlan,
   type RunCli,
   runSourcemapPlan,
+  type SourcemapPlan,
 } from "./posthogSourcemaps"
 
 const KEYS = { POSTHOG_CLI_API_KEY: "phx_test" }
@@ -41,10 +43,9 @@ describe("planSourcemapUpload", () => {
   it.each([
     ["no key", {}],
     ["a blank key", { POSTHOG_CLI_API_KEY: "  " }],
-  ])("skips with %s, and on the CLI's dry run", (_, env) => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env })).toEqual({
-      action: "skip",
-      reason: "no_credentials",
+  ])("fails with %s, and skips on the CLI's dry run", (_, env) => {
+    expect(planSourcemapUpload({ browser: "chrome", buildType: "canary", env })).toMatchObject({
+      action: "fail",
     })
     expect(
       planSourcemapUpload({
@@ -59,6 +60,7 @@ describe("planSourcemapUpload", () => {
     expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env: KEYS })).toEqual({
       action: "inject_and_upload",
       host: HOST,
+      apiKey: "phx_test",
     })
     expect(
       planSourcemapUpload({
@@ -66,7 +68,7 @@ describe("planSourcemapUpload", () => {
         buildType: "canary",
         env: { ...KEYS, POSTHOG_CLI_HOST: "http://127.0.0.1:9" },
       })
-    ).toEqual({ action: "inject_and_upload", host: "http://127.0.0.1:9" })
+    ).toEqual({ action: "inject_and_upload", host: "http://127.0.0.1:9", apiKey: "phx_test" })
   })
 })
 
@@ -119,6 +121,58 @@ describe("assertInjection", () => {
   })
 })
 
+const UPLOAD: SourcemapPlan = { action: "inject_and_upload", host: HOST, apiKey: "phx_test" }
+
+describe("preflightSourcemapPlan", () => {
+  const answering =
+    (status: number, key: object = {}): typeof fetch =>
+    async (url, init) => {
+      expect(String(url)).toBe(`${HOST}/api/personal_api_keys/@current`)
+      expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer phx_test")
+      return Response.json(key, { status })
+    }
+  const UPLOAD_KEY = { scopes: ["error_tracking:write"], scoped_teams: [639977] }
+
+  it.each([
+    ["a key limited to the project", UPLOAD_KEY],
+    ["an all-access key", { scopes: ["*"], scoped_teams: [], scoped_organizations: [] }],
+  ])("passes %s", async (_, key) => {
+    await expect(preflightSourcemapPlan(UPLOAD, answering(200, key))).resolves.toBeUndefined()
+  })
+
+  it.each([
+    ["an invalid key", 401, {}, /not a valid/],
+    [
+      "a key without the upload scope",
+      200,
+      { ...UPLOAD_KEY, scopes: ["query:read"] },
+      /error_tracking:write/,
+    ],
+    ["a key for another project", 200, { ...UPLOAD_KEY, scoped_teams: [1] }, /project 639977/],
+    [
+      "an organisation-wide key",
+      200,
+      { scopes: ["*"], scoped_organizations: ["org"] },
+      /project 639977/,
+    ],
+    ["a PostHog error", 503, {}, /HTTP 503/],
+  ])("fails %s", async (_, status, key, message) => {
+    await expect(preflightSourcemapPlan(UPLOAD, answering(status, key))).rejects.toThrow(message)
+  })
+
+  it("fails a fail plan and lets a skip through, both without a request", async () => {
+    const offline: typeof fetch = async () => {
+      throw new Error("request")
+    }
+    await expect(
+      preflightSourcemapPlan({ action: "fail", reason: "POSTHOG_CLI_API_KEY is not set" }, offline)
+    ).rejects.toThrow(/not set/)
+    await expect(
+      preflightSourcemapPlan({ action: "skip", reason: "firefox" }, offline)
+    ).resolves.toBeUndefined()
+  })
+})
+
 describe("runSourcemapPlan", () => {
   const recorder = (failAt?: "inject" | "upload") => {
     const calls: { args: readonly string[]; cwd: string }[] = []
@@ -131,14 +185,14 @@ describe("runSourcemapPlan", () => {
   const warnings: string[] = []
   const warn = (message: string) => warnings.push(message)
 
-  it("never starts the CLI on a skip, and warns only when the variables are missing", async () => {
+  it("never starts the CLI on a skip or a fail, and warns only on the dry run", async () => {
     const { calls, run } = recorder()
     warnings.length = 0
     await runSourcemapPlan({ action: "skip", reason: "firefox" }, { outDir: "/x", warn, run })
-    await runSourcemapPlan(
-      { action: "skip", reason: "no_credentials" },
-      { outDir: "/x", warn, run }
-    )
+    await runSourcemapPlan({ action: "skip", reason: "dry_run" }, { outDir: "/x", warn, run })
+    await expect(
+      runSourcemapPlan({ action: "fail", reason: "not set" }, { outDir: "/x", warn, run })
+    ).rejects.toThrow(/not set/)
     expect(calls).toEqual([])
     expect(warnings).toHaveLength(1)
   })
@@ -146,7 +200,7 @@ describe("runSourcemapPlan", () => {
   it("runs both steps from the temp dir, checking the injection in between", async () => {
     const { calls, run } = recorder()
     const dir = outDir({ "background.js": INJECTED })
-    await runSourcemapPlan({ action: "inject_and_upload", host: HOST }, { outDir: dir, warn, run })
+    await runSourcemapPlan(UPLOAD, { outDir: dir, warn, run })
     expect(calls.map(({ args }) => args[args.indexOf("sourcemap") + 1])).toEqual([
       "inject",
       "upload",
@@ -158,28 +212,23 @@ describe("runSourcemapPlan", () => {
     const failedInject = recorder("inject")
     const dir = outDir({ "background.js": INJECTED })
     await expect(
-      runSourcemapPlan(
-        { action: "inject_and_upload", host: HOST },
-        { outDir: dir, warn, run: failedInject.run }
-      )
+      runSourcemapPlan(UPLOAD, { outDir: dir, warn, run: failedInject.run })
     ).rejects.toThrow("inject failed")
     expect(failedInject.calls).toHaveLength(1)
 
     const notInjected = recorder()
     await expect(
-      runSourcemapPlan(
-        { action: "inject_and_upload", host: HOST },
-        { outDir: outDir({ "background.js": "" }), warn, run: notInjected.run }
-      )
+      runSourcemapPlan(UPLOAD, {
+        outDir: outDir({ "background.js": "" }),
+        warn,
+        run: notInjected.run,
+      })
     ).rejects.toThrow(/chunk ids missing/)
     expect(notInjected.calls).toHaveLength(1)
 
     const failedUpload = recorder("upload")
     await expect(
-      runSourcemapPlan(
-        { action: "inject_and_upload", host: HOST },
-        { outDir: dir, warn, run: failedUpload.run }
-      )
+      runSourcemapPlan(UPLOAD, { outDir: dir, warn, run: failedUpload.run })
     ).rejects.toThrow("upload failed")
   })
 })

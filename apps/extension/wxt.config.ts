@@ -11,7 +11,11 @@ import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
-import { planSourcemapUpload, runSourcemapPlan } from "./scripts/posthogSourcemaps"
+import {
+  planSourcemapUpload,
+  preflightSourcemapPlan,
+  runSourcemapPlan,
+} from "./scripts/posthogSourcemaps"
 import { log } from "./src/common/log"
 
 const pkg = require("./package.json")
@@ -343,6 +347,15 @@ export default defineConfig({
 
   // Build hooks
   hooks: {
+    "build:before": async (wxt) => {
+      await preflightSourcemapPlan(
+        planSourcemapUpload({
+          browser: wxt.config.browser,
+          buildType: BUILD_TYPE,
+          env: process.env,
+        })
+      )
+    },
     // Before zipping, upload the sourcemaps to PostHog, then delete them for production/canary
     // builds to prevent exposing source code in the distributed extension, and keep the package small
     "zip:extension:start": async (wxt) => {

@@ -22,8 +22,9 @@ const MUST_BE_INJECTED = ["background.js"]
 const MUST_NOT_BE_INJECTED = ["page.js", "content-scripts/content.js"]
 
 export type SourcemapPlan =
-  | { action: "skip"; reason: "firefox" | "no_sourcemaps" | "dry_run" | "no_credentials" }
-  | { action: "inject_and_upload"; host: string }
+  | { action: "skip"; reason: "firefox" | "no_sourcemaps" | "dry_run" }
+  | { action: "fail"; reason: string }
+  | { action: "inject_and_upload"; host: string; apiKey: string }
 
 /** Read `env` in the hook, after WXT loaded `.env`. */
 export const planSourcemapUpload = ({
@@ -39,8 +40,53 @@ export const planSourcemapUpload = ({
   if (buildType !== "production" && buildType !== "canary")
     return { action: "skip", reason: "no_sourcemaps" }
   if (env.POSTHOG_CLI_DRY_RUN === "true") return { action: "skip", reason: "dry_run" }
-  if (!env.POSTHOG_CLI_API_KEY?.trim()) return { action: "skip", reason: "no_credentials" }
-  return { action: "inject_and_upload", host: env.POSTHOG_CLI_HOST?.trim() || POSTHOG_API_HOST }
+  const apiKey = env.POSTHOG_CLI_API_KEY?.trim()
+  if (!apiKey)
+    return {
+      action: "fail",
+      reason: "POSTHOG_CLI_API_KEY is not set. POSTHOG_CLI_DRY_RUN=true builds without uploading",
+    }
+  return {
+    action: "inject_and_upload",
+    host: env.POSTHOG_CLI_HOST?.trim() || POSTHOG_API_HOST,
+    apiKey,
+  }
+}
+
+const UPLOAD_SCOPE = "error_tracking:write"
+
+type PersonalApiKey = {
+  scopes?: readonly string[]
+  scoped_teams?: readonly number[] | null
+  scoped_organizations?: readonly string[] | null
+}
+
+export const uploadKeyProblem = (status: number, key: PersonalApiKey): string | null => {
+  if (status === 401) return "POSTHOG_CLI_API_KEY is not a valid personal API key"
+  if (status !== 200) return `PostHog answered HTTP ${status} to the POSTHOG_CLI_API_KEY check`
+  if (!key.scopes?.some((scope) => scope === "*" || scope === UPLOAD_SCOPE))
+    return `POSTHOG_CLI_API_KEY lacks the ${UPLOAD_SCOPE} scope`
+  const teams = key.scoped_teams ?? []
+  const reachesProject = teams.length
+    ? teams.includes(Number(POSTHOG_PROJECT_ID))
+    : !key.scoped_organizations?.length
+  if (!reachesProject) return `POSTHOG_CLI_API_KEY is not limited to project ${POSTHOG_PROJECT_ID}`
+  return null
+}
+
+/** Runs before the build, so a key that cannot upload fails in seconds, not after the build. */
+export const preflightSourcemapPlan = async (
+  plan: SourcemapPlan,
+  request: typeof fetch = fetch
+): Promise<void> => {
+  if (plan.action === "fail") throw new Error(`[posthog sourcemaps] ${plan.reason}`)
+  if (plan.action !== "inject_and_upload") return
+  const res = await request(`${plan.host}/api/personal_api_keys/@current`, {
+    headers: { Authorization: `Bearer ${plan.apiKey}` },
+    signal: AbortSignal.timeout(30_000),
+  })
+  const problem = uploadKeyProblem(res.status, res.ok ? await res.json() : {})
+  if (problem) throw new Error(`[posthog sourcemaps] ${problem}`)
 }
 
 /** No `--release-*`: release injection calls the API at build time. Chunk ids alone are content-addressed. */
@@ -101,9 +147,10 @@ export const runSourcemapPlan = async (
 ): Promise<void> => {
   switch (plan.action) {
     case "skip":
-      if (plan.reason === "no_credentials" || plan.reason === "dry_run")
-        warn(`Source maps are not uploaded to PostHog (${plan.reason})`)
+      if (plan.reason === "dry_run") warn("Source maps are not uploaded to PostHog (dry_run)")
       return
+    case "fail":
+      throw new Error(`[posthog sourcemaps] ${plan.reason}`)
     case "inject_and_upload": {
       const [inject, upload] = cliSteps(outDir, plan.host)
       await run(inject, { cwd: tmpdir() })
