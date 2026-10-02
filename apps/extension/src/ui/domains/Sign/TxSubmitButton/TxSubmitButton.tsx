@@ -16,6 +16,7 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   className,
   disabled,
   isProcessing,
+  isFinalStep = true,
   onSubmit,
   onError,
   onPayloadLockChange,
@@ -25,10 +26,10 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   const markOverlayCompleted = useMarkOverlayCompleted()
   const handleSubmit = useCallback(
     (txId: string) => {
-      markOverlayCompleted()
+      if (isFinalStep) markOverlayCompleted()
       onSubmit(txId)
     },
-    [markOverlayCompleted, onSubmit]
+    [isFinalStep, markOverlayCompleted, onSubmit]
   )
 
   if (riskGate.isBlocked)

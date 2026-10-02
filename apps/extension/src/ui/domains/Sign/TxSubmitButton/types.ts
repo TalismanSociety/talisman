@@ -49,6 +49,8 @@ export type TxSubmitButtonProps<
   className?: string
   disabled?: boolean
   isProcessing?: boolean
+  /** false for an intermediate step, such as a token approval */
+  isFinalStep?: boolean
   /**
    *
    * @param txId hash for polkadot and ethereum, signature for solana

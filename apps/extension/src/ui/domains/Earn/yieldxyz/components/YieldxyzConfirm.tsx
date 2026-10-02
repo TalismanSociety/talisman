@@ -153,6 +153,7 @@ const SubmitButton: FC<{ wizard: YieldxyzConfirmWizard }> = ({
       onError={onSubmitError}
       disabled={!tx}
       isProcessing={isProcessing}
+      isFinalStep={!action || (txIndex ?? 0) >= action.transactions.length - 1}
     />
   )
 }

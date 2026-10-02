@@ -830,6 +830,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             containerId={containerId}
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
+            isFinalStep={false}
             onSubmit={onApprovalSubmitted}
             onError={onApprovalFailed}
             disabled={

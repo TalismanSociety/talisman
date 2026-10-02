@@ -150,6 +150,7 @@ export const SeekStakeConfirm: FC<{
             className="w-full"
             disabled={!!ethTx.error || !ethTx.transaction}
             isProcessing={isProcessing || isPreparing}
+            isFinalStep={!isApproval}
             onSubmit={onSubmit}
             onError={flows.staking.failed}
           />
