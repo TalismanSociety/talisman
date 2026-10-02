@@ -8,13 +8,12 @@ const source = { narrow: z.enum(["dapp", "settings"]) }
 export const networkTokenEvents = defineEventGroup(properties, {
   custom_network_saved: {
     description:
-      "The user added a network that is not in Talisman's network list, or edited a network. Editing a network from Talisman's list saves the user's own copy of it. network_id: the chain id for an Ethereum network, Talisman's id for a network from its list, custom for any other network the user added.",
+      "The user added a network that is not in Talisman's network list, or edited a network. Editing a network from Talisman's list saves the user's own copy of it. network_id: Talisman's id for a network from its list, custom for a network the user added.",
     props: {
       mode: { narrow: z.enum(["add", "edit"]) },
       platform: "required",
       network_id: "required",
       testnet: "required",
-      rpc_provider: "required",
       source,
     },
   },

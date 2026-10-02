@@ -13,7 +13,6 @@ export const dappRequestEvents = defineEventGroup(properties, {
     props: {
       method: dappMethod,
       platform: "required",
-      dapp_domain: "required",
       wallet_locked: "required",
       site_flagged: "required",
     },
@@ -24,7 +23,6 @@ export const dappRequestEvents = defineEventGroup(properties, {
     props: {
       method: dappMethod,
       platform: "required",
-      dapp_domain: "required",
       outcome: "required",
       time_to_decision_ms: "required",
       risk_verdict: "required",

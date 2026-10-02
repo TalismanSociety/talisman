@@ -55,7 +55,7 @@ describe("chaindata messages", () => {
     state.tokens = {}
   })
 
-  it("tells an added network from an edited one by what chaindata held before the handler", async () => {
+  it("tells an added network from an edited one by what chaindata held before the handler, and never reports its chain id", async () => {
     await handle("pri(chaindata.networks.upsert)", { network: evmNetwork }, () => {
       state.networks[evmNetwork.id] = { ...evmNetwork, __isCustom: true }
     })
@@ -68,9 +68,8 @@ describe("chaindata messages", () => {
     expect(tracked.calls[0][1]).toEqual({
       mode: "add",
       platform: "ethereum",
-      network_id: "8453",
+      network_id: "custom",
       testnet: false,
-      rpc_provider: "alchemy.com",
       source: "settings",
     })
   })
@@ -93,7 +92,6 @@ describe("chaindata messages", () => {
           platform: "polkadot",
           network_id: "custom",
           testnet: true,
-          rpc_provider: null,
           source: "settings",
         },
       ],
@@ -104,7 +102,6 @@ describe("chaindata messages", () => {
           platform: "polkadot",
           network_id: "polkadot",
           testnet: false,
-          rpc_provider: null,
           source: "settings",
         },
       ],
@@ -114,7 +111,7 @@ describe("chaindata messages", () => {
   })
 
   it("reports a token by network, an edit apart from an add, never its typed symbol or contract", async () => {
-    state.networks["8453"] = evmNetwork
+    state.networks["8453"] = { ...evmNetwork, __isKnown: true }
     const token = { id: TOKEN_ID, networkId: "8453", symbol: "ALICE", coingeckoId: "usd-coin" }
 
     await handle("pri(chaindata.tokens.upsert)", token, () => {
@@ -135,7 +132,7 @@ describe("chaindata messages", () => {
   })
 
   it("reports a Talisman token the user edits by its Talisman symbol", async () => {
-    state.networks["8453"] = evmNetwork
+    state.networks["8453"] = { ...evmNetwork, __isKnown: true }
     const token = { id: TOKEN_ID, networkId: "8453", symbol: "USDC" }
     state.tokens[TOKEN_ID] = { ...token, __isCustom: false, __isKnown: true }
 
@@ -159,7 +156,7 @@ describe("chaindata messages", () => {
   })
 
   it("sends only events the catalogue accepts", async () => {
-    state.networks["8453"] = evmNetwork
+    state.networks["8453"] = { ...evmNetwork, __isKnown: true }
     await handle("pri(chaindata.networks.upsert)", { network: dotNetwork })
     await handle("pri(chaindata.tokens.upsert)", { id: TOKEN_ID, networkId: "8453", symbol: "X" })
     await handle("pri(nfts.setFavorite)", { id: "n", isFavorite: true })

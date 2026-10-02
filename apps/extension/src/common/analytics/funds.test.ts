@@ -43,13 +43,13 @@ describe("networkIdForAnalytics", () => {
   const network = (id: string, platform: string, isCustom: boolean, isKnown: boolean) =>
     ({ id, platform, __isCustom: isCustom, __isKnown: isKnown }) as unknown as Network
 
-  it("keeps Talisman's id, edited or not, and an Ethereum chain id", () => {
+  it("keeps Talisman's id, edited or not", () => {
     expect(networkIdForAnalytics(network("polkadot", "polkadot", false, true))).toBe("polkadot")
     expect(networkIdForAnalytics(network("polkadot", "polkadot", true, true))).toBe("polkadot")
-    expect(networkIdForAnalytics(network("987654321", "ethereum", true, false))).toBe("987654321")
   })
 
-  it("hides a user-added genesis hash and a missing network", () => {
+  it("hides a user-added chain id, a user-added genesis hash and a missing network", () => {
+    expect(networkIdForAnalytics(network("987654321", "ethereum", true, false))).toBe("custom")
     expect(networkIdForAnalytics(network(`0x${"ab".repeat(32)}`, "polkadot", true, false))).toBe(
       "custom"
     )

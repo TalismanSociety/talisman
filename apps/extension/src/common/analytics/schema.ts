@@ -21,11 +21,6 @@ export type PropertyValueOf<D> = D extends PropertyDef<infer V> ? V : never
 
 const SLUG = /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/
 const SYMBOL = /^[\p{L}\p{N}._\-+$]{1,24}$/u
-const HOSTNAME =
-  /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/
-
-export const isHostname = (value: string): boolean => HOSTNAME.test(value)
-
 export const symbolForAnalytics = (symbol: string | null | undefined): string =>
   symbol && SYMBOL.test(symbol) ? symbol : "unknown"
 
@@ -82,8 +77,6 @@ export const p = {
     string(z.string().max(maxLength).regex(SLUG), description),
 
   symbol: (description: string) => string(z.string().regex(SYMBOL), description),
-
-  hostname: (description: string) => string(z.string().regex(HOSTNAME), description),
 
   routePattern: (description: string) => string(z.string().refine(isRoutePattern), description),
 

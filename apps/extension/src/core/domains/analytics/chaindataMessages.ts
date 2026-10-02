@@ -3,7 +3,6 @@ import {
   savedNetworkId,
   tokenSymbolForAnalytics,
 } from "@common/analytics/funds"
-import { toRpcProvider } from "@common/analytics/networks"
 import { isNetworkKnown } from "@talismn/chaindata-provider"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -30,7 +29,6 @@ const CHAINDATA_MESSAGES: { [M in ChaindataMessage]: Observe<M> } = {
         platform: network.platform,
         network_id: savedNetworkId(network, !!existing && isNetworkKnown(existing)),
         testnet: !!network.isTestnet,
-        rpc_provider: toRpcProvider(network.rpcs[0]),
         source: "settings",
       })
     }

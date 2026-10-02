@@ -1,7 +1,6 @@
-import { toDappDomain } from "@common/analytics/dapp"
 import { networkIdForAnalytics } from "@common/analytics/funds"
-import { networkToggledOf, tokenToggledOf, toRpcProvider } from "@common/analytics/networks"
-import type { ChainPlatform } from "@common/analytics/transactions"
+import { networkToggledOf, tokenToggledOf } from "@common/analytics/networks"
+import { type ChainPlatform, CUSTOM_NETWORK_ID } from "@common/analytics/transactions"
 
 import { requestStore } from "../../libs/requests/store"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -39,21 +38,17 @@ const countSites = async (type: ProviderType) => {
   return Object.values(sites).filter((site) => site[PLATFORM_ACCOUNTS[type]] !== undefined).length
 }
 
-const reportSiteUpdate = async (dappDomain: string | null, update: AuthorisedSiteUpdate) => {
+const reportSiteUpdate = async (update: AuthorisedSiteUpdate) => {
   for (const [key, platform] of Object.entries(CONNECTED_ACCOUNTS))
     if (key in update)
       track("dapp_connection_updated", {
         platform,
         account_count: update[key as keyof typeof CONNECTED_ACCOUNTS]?.length ?? 0,
-        dapp_domain: dappDomain,
       })
 
   if (update.ethChainId === undefined) return
   const network = await chaindataProvider.getNetworkById(String(update.ethChainId), "ethereum")
-  track("dapp_network_switched", {
-    network_id: networkIdForAnalytics(network),
-    dapp_domain: dappDomain,
-  })
+  track("dapp_network_switched", { network_id: networkIdForAnalytics(network) })
 }
 
 const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
@@ -65,7 +60,6 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
           method: "connect",
           platform: queued.request.provider,
           account_count: addresses.length,
-          dapp_domain: toDappDomain(queued.url),
         })
     }
   },
@@ -77,22 +71,17 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
           method: "signIn",
           platform: "solana",
           account_count: 1,
-          dapp_domain: toDappDomain(queued.url),
         })
     }
   },
-  "pri(sites.update)": ({ id, authorisedSite }) => {
-    const site = sitesAuthorisedStore.get(id)
-    return async () => reportSiteUpdate(toDappDomain((await site)?.url), authorisedSite)
-  },
-  "pri(sites.forget)": ({ id, type }) => {
-    const site = sitesAuthorisedStore.get(id)
-    return async () =>
-      track("dapp_connection_forgotten", {
-        platform: type,
-        dapp_domain: toDappDomain((await site)?.url),
-      })
-  },
+  "pri(sites.update)":
+    ({ authorisedSite }) =>
+    async () =>
+      reportSiteUpdate(authorisedSite),
+  "pri(sites.forget)":
+    ({ type }) =>
+    async () =>
+      track("dapp_connection_forgotten", { platform: type }),
   "pri(sites.forget.all)": ({ type }) => {
     const siteCount = countSites(type)
     return async () =>
@@ -115,9 +104,8 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
         track("custom_network_saved", {
           mode: "add",
           platform: "ethereum",
-          network_id: network.id,
+          network_id: CUSTOM_NETWORK_ID,
           testnet: !!network.isTestnet,
-          rpc_provider: toRpcProvider(network.rpcs?.[0]),
           source: "dapp",
         })
     }

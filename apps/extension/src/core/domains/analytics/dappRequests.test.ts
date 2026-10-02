@@ -262,14 +262,8 @@ describe("dapp request tracker on the request store", () => {
 
     const received = trackedCalls().filter(([event]) => event === "dapp_request_received")
     expect(received).toEqual([
-      [
-        "dapp_request_received",
-        expect.objectContaining({ dapp_domain: "app.example.com", wallet_locked: false }),
-      ],
-      [
-        "dapp_request_received",
-        expect.objectContaining({ dapp_domain: "app.example.com", wallet_locked: true }),
-      ],
+      ["dapp_request_received", expect.objectContaining({ wallet_locked: false })],
+      ["dapp_request_received", expect.objectContaining({ wallet_locked: true })],
     ])
     expect(JSON.stringify(trackedCalls())).not.toMatch(/swap|secret-ref|8443|pay/)
   })

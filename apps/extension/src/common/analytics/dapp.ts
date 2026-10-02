@@ -1,7 +1,5 @@
 import type { ValidRequests } from "@core/libs/requests/types"
 
-import { isPrivateHost } from "./networks"
-import { isHostname } from "./schema"
 import type { ChainPlatform } from "./transactions"
 
 export const DAPP_METHODS = [
@@ -57,19 +55,6 @@ export const describeDappRequest = (request: ValidRequests): DappRequestKind => 
               : "signTransaction",
         platform: "solana",
       }
-  }
-}
-
-export const toDappDomain = (url: string | undefined): string | null => {
-  if (!url) return null
-  try {
-    const { protocol, hostname } = new URL(url)
-    if (protocol === "ipfs:" || protocol === "ipns:") return protocol.slice(0, -1)
-    if (protocol !== "http:" && protocol !== "https:") return null
-    const host = hostname.toLowerCase()
-    return isHostname(host) && !isPrivateHost(host) ? host : null
-  } catch {
-    return null
   }
 }
 

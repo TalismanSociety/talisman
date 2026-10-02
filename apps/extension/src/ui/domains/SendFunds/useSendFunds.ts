@@ -529,7 +529,6 @@ const useSendFundsProvider = () => {
           token_symbol: tokenSymbolForAnalytics(token),
           ...(transaction?.platform === "ethereum" &&
             transaction.priority && { fee_priority: transaction.priority }),
-          send_max: sendMax,
           usd_bucket: toAmountBucket((sendMax ? maxAmount : transfer)?.fiat("usd")),
           fee_usd_bucket: toAmountBucket(estimatedFee?.fiat("usd")),
           recipient_source: recipientSource,

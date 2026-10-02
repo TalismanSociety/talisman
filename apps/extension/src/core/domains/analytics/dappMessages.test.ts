@@ -72,7 +72,6 @@ describe("dapp messages", () => {
           method: "connect",
           platform: "ethereum",
           account_count: 2,
-          dapp_domain: "app.example.com",
         },
       ],
     ])
@@ -84,10 +83,7 @@ describe("dapp messages", () => {
     await handle("pri(sites.requests.approveSolSignIn)", { id: "auth-sol-signIn.1", result: {} })
 
     expect(tracked.calls).toEqual([
-      [
-        "dapp_connection_approved",
-        { method: "signIn", platform: "solana", account_count: 1, dapp_domain: "app.example.com" },
-      ],
+      ["dapp_connection_approved", { method: "signIn", platform: "solana", account_count: 1 }],
     ])
   })
 
@@ -102,11 +98,8 @@ describe("dapp messages", () => {
     await handle("pri(sites.update)", { id: "app.example.com", authorisedSite: { ethChainId: 1 } })
 
     expect(tracked.calls).toEqual([
-      [
-        "dapp_connection_updated",
-        { platform: "ethereum", account_count: 0, dapp_domain: "app.example.com" },
-      ],
-      ["dapp_network_switched", { network_id: "1", dapp_domain: "app.example.com" }],
+      ["dapp_connection_updated", { platform: "ethereum", account_count: 0 }],
+      ["dapp_network_switched", { network_id: "1" }],
     ])
   })
 
@@ -117,9 +110,7 @@ describe("dapp messages", () => {
       delete state.sites["app.example.com"]
     })
 
-    expect(tracked.calls).toEqual([
-      ["dapp_connection_forgotten", { platform: "ethereum", dapp_domain: "app.example.com" }],
-    ])
+    expect(tracked.calls).toEqual([["dapp_connection_forgotten", { platform: "ethereum" }]])
   })
 
   it("counts the sites of the platform a forget all or disconnect all applies to", async () => {
@@ -142,7 +133,7 @@ describe("dapp messages", () => {
       expect(catalogue[event].schema.safeParse(props).success, event).toBe(true)
   })
 
-  it("reports a network a dapp adds as custom, with its RPC provider and never its URL", async () => {
+  it("reports a network a dapp adds as custom, never by its chain id or its RPC", async () => {
     state.requests["eth-network-add.1"] = { url: DAPP_URL, network }
 
     await handle("pri(eth.networks.add.approve)", { id: "eth-network-add.1" }, () => {
@@ -155,9 +146,8 @@ describe("dapp messages", () => {
         {
           mode: "add",
           platform: "ethereum",
-          network_id: CHAIN_ID,
+          network_id: "custom",
           testnet: false,
-          rpc_provider: "alchemy.com",
           source: "dapp",
         },
       ],
@@ -166,7 +156,7 @@ describe("dapp messages", () => {
 
   it("reports a listed network a dapp turns on as a toggle", async () => {
     state.requests["eth-network-add.1"] = { url: DAPP_URL, network }
-    state.networks[CHAIN_ID] = { ...network, isDefault: true }
+    state.networks[CHAIN_ID] = { ...network, isDefault: true, __isKnown: true }
 
     await handle("pri(eth.networks.add.approve)", { id: "eth-network-add.1" })
 
@@ -187,7 +177,7 @@ describe("dapp messages", () => {
   it("reports a token a dapp adds by network, never by its symbol or contract", async () => {
     const token = { id: TOKEN_ID, networkId: CHAIN_ID, symbol: "ALICE", coingeckoId: "usd-coin" }
     state.requests["eth-watchasset.1"] = { url: DAPP_URL, token }
-    state.networks[CHAIN_ID] = network
+    state.networks[CHAIN_ID] = { ...network, __isKnown: true }
 
     await handle("pri(eth.watchasset.requests.approve)", { id: "eth-watchasset.1" }, () => {
       state.tokens[TOKEN_ID] = { ...token, __isCustom: true, __isKnown: false }

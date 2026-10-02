@@ -11,22 +11,21 @@ export const dappEvents = defineEventGroup(properties, {
       method: { narrow: z.enum(["connect", "signIn"]) },
       platform: "required",
       account_count: "required",
-      dapp_domain: "required",
     },
   },
   dapp_connection_updated: {
     description:
       "The user changed which accounts a connected dapp can see, from the popup or the connected sites settings.",
-    props: { platform: "required", account_count: "required", dapp_domain: "required" },
+    props: { platform: "required", account_count: "required" },
   },
   dapp_network_switched: {
     description: "The user picked another Ethereum network for a connected dapp.",
-    props: { network_id: "required", dapp_domain: "required" },
+    props: { network_id: "required" },
   },
   dapp_connection_forgotten: {
     description:
       "The user forgot a connected site for one platform in settings: the dapp must ask to connect again.",
-    props: { platform: "required", dapp_domain: "required" },
+    props: { platform: "required" },
   },
   dapp_connections_forgotten: {
     description:

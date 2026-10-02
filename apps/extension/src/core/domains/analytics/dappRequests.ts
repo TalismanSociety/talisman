@@ -3,7 +3,6 @@ import {
   describeDappRequest,
   type RequestOutcome,
   type RiskVerdict,
-  toDappDomain,
 } from "@common/analytics/dapp"
 import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { toDurationMs } from "@common/analytics/schema"
@@ -20,7 +19,6 @@ export type Decision = { outcome: RequestDecision; at: number; errorCategory?: E
 type Pending = {
   method: DappMethod
   platform: ChainPlatform
-  dappDomain: string | null
   createdAt: number
   siteFlagged: boolean
   decision?: Decision
@@ -60,6 +58,9 @@ export const failureCategoryOf = (
 export const verdictOf = ({ verdict, siteFlagged }: Pick<Pending, "verdict" | "siteFlagged">) =>
   verdict ?? (siteFlagged ? "malicious" : "unscanned")
 
+const isFlaggedSite = (url: string | undefined) =>
+  !!url && URL.canParse(url) && isBlockaidMalicious(new URL(url).hostname)
+
 export const createDappRequestTracker = () => {
   const pending = new Map<string, Pending>()
 
@@ -67,19 +68,16 @@ export const createDappRequestTracker = () => {
     onFact(fact: RequestFact): void {
       if (fact.type === "created") {
         const { method, platform } = describeDappRequest(fact.request)
-        const dappDomain = toDappDomain(fact.request.url)
-        const siteFlagged = !!dappDomain && isBlockaidMalicious(dappDomain)
+        const siteFlagged = isFlaggedSite(fact.request.url)
         pending.set(fact.request.id, {
           method,
           platform,
-          dappDomain,
           createdAt: fact.at,
           siteFlagged,
         })
         track("dapp_request_received", {
           method,
           platform,
-          dapp_domain: dappDomain,
           wallet_locked: passwordStore.isLoggedIn.value !== "TRUE",
           site_flagged: siteFlagged,
         })
@@ -96,7 +94,6 @@ export const createDappRequestTracker = () => {
       track("dapp_request_resolved", {
         method: request.method,
         platform: request.platform,
-        dapp_domain: request.dappDomain,
         outcome,
         time_to_decision_ms: toDurationMs((decision?.at ?? fact.at) - request.createdAt),
         risk_verdict: verdictOf(request),

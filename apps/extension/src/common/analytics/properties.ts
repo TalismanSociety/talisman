@@ -89,7 +89,7 @@ export const properties = {
 
   platform: p.enum(CHAIN_PLATFORMS, "Chain platform, not the OS."),
   network_id: p.slug(
-    "Chaindata network id. custom: a network the user added. generic: an address copied in no network's format. custom_network_saved, custom_network_deleted and network_toggled report a user-added Ethereum network by its chain id, never custom."
+    "Chaindata network id. custom: a network the user added, whatever its platform. generic: an address copied in no network's format."
   ),
   tx_type: p.enum(
     TX_TYPES,
@@ -123,11 +123,6 @@ export const properties = {
   risk_verdict: p.enum(
     RISK_VERDICTS,
     "The latest risk scan verdict the request window showed. unscanned: no scan finished, or the request type has none."
-  ),
-  dapp_domain: p.nullable(
-    p.hostname(
-      "The dapp's hostname, without port. ipfs or ipns for those schemes. Null when it has none."
-    )
   ),
   wallet_locked: p.bool("The wallet was locked when the request arrived, so an unlock came first."),
   site_flagged: p.bool("The site scan had flagged the dapp as malicious when the request arrived."),
@@ -244,7 +239,6 @@ export const properties = {
   token_symbol: p.symbol(
     "Symbol of the token sent, bought, added or turned on. unknown: a symbol the catalogue cannot hold."
   ),
-  send_max: p.bool("The user sent the whole transferable balance with Max."),
   usd_bucket: p.enum(AMOUNT_BUCKETS, "USD value of the amount sent or swapped, as a range."),
   fee_usd_bucket: p.enum(
     AMOUNT_BUCKETS,
@@ -318,11 +312,6 @@ export const properties = {
     "What the user set out to do, as mobile names it. custom_network_saved: whether the user added or edited the network. staking_started: the staking action the modal opened for."
   ),
   testnet: p.bool("The network is a testnet."),
-  rpc_provider: p.nullable(
-    p.hostname(
-      "The registrable domain of the network's first RPC, such as alchemy.com. Null for a self-hosted node: an IP address, localhost or a private-network name."
-    )
-  ),
   enabled: p.bool(
     "Network and token events: the network or token is now turned on. staking_mev_shield_toggled: MEV Shield is now on. bittensor_settings_submitted: the account now accepts conviction-locked transfers."
   ),

@@ -20,7 +20,6 @@ export const send = defineFlow("send", {
       token_symbol: "required",
       signer: "required",
       fee_priority: "optional",
-      send_max: "required",
       usd_bucket: "required",
       fee_usd_bucket: "required",
       recipient_source: "required",

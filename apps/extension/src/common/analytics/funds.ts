@@ -82,10 +82,8 @@ export const RAMP_DIRECTIONS = ["buy", "sell"] as const
 export const REPLACE_TYPES = ["speed_up", "cancel"] as const
 export const TX_PHASES = ["pre_broadcast", "approval", "submit"] as const
 
-export const savedNetworkId = (
-  network: { id: string; platform: string },
-  known: boolean
-): string => (known || network.platform === "ethereum" ? network.id : CUSTOM_NETWORK_ID)
+export const savedNetworkId = (network: { id: string }, known: boolean): string =>
+  known ? network.id : CUSTOM_NETWORK_ID
 
 export const networkIdForAnalytics = (network: Network | null | undefined): string =>
   network ? savedNetworkId(network, isNetworkKnown(network)) : CUSTOM_NETWORK_ID
