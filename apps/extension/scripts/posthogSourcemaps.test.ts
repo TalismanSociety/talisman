@@ -10,10 +10,10 @@ import {
   planSourcemapUpload,
   type RunCli,
   runSourcemapPlan,
-  type SourcemapPlan,
 } from "./posthogSourcemaps"
 
-const KEYS = { POSTHOG_CLI_API_KEY: "phx_test", POSTHOG_CLI_PROJECT_ID: "1" }
+const KEYS = { POSTHOG_CLI_API_KEY: "phx_test" }
+const HOST = "https://us.posthog.com"
 
 const untouchable = new Proxy(
   {},
@@ -38,8 +38,11 @@ describe("planSourcemapUpload", () => {
     })
   })
 
-  it("skips when neither variable is set, and on the CLI's dry run", () => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env: {} })).toEqual({
+  it.each([
+    ["no key", {}],
+    ["a blank key", { POSTHOG_CLI_API_KEY: "  " }],
+  ])("skips with %s, and on the CLI's dry run", (_, env) => {
+    expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env })).toEqual({
       action: "skip",
       reason: "no_credentials",
     })
@@ -52,19 +55,10 @@ describe("planSourcemapUpload", () => {
     ).toEqual({ action: "skip", reason: "dry_run" })
   })
 
-  it.each([
-    ["a key without a project", { POSTHOG_CLI_API_KEY: "phx_test" }],
-    ["a project without a key", { POSTHOG_CLI_PROJECT_ID: "1" }],
-    ["a blank key", { ...KEYS, POSTHOG_CLI_API_KEY: "  " }],
-  ])("fails on %s", (_, env) => {
-    expect(planSourcemapUpload({ browser: "chrome", buildType: "canary", env })).toMatchObject({
-      action: "fail",
-    })
-  })
-
-  it("uploads a production or canary Chrome build with both variables", () => {
+  it("uploads a production or canary Chrome build with the key, to the project's API host", () => {
     expect(planSourcemapUpload({ browser: "chrome", buildType: "production", env: KEYS })).toEqual({
       action: "inject_and_upload",
+      host: HOST,
     })
     expect(
       planSourcemapUpload({
@@ -149,16 +143,14 @@ describe("runSourcemapPlan", () => {
     expect(warnings).toHaveLength(1)
   })
 
-  it("throws on a fail plan", async () => {
-    const plan: SourcemapPlan = { action: "fail", reason: "half configured" }
-    await expect(runSourcemapPlan(plan, { outDir: "/x", warn })).rejects.toThrow(/half configured/)
-  })
-
   it("runs both steps from the temp dir, checking the injection in between", async () => {
     const { calls, run } = recorder()
     const dir = outDir({ "background.js": INJECTED })
-    await runSourcemapPlan({ action: "inject_and_upload" }, { outDir: dir, warn, run })
-    expect(calls.map(({ args }) => args[3])).toEqual(["inject", "upload"])
+    await runSourcemapPlan({ action: "inject_and_upload", host: HOST }, { outDir: dir, warn, run })
+    expect(calls.map(({ args }) => args[args.indexOf("sourcemap") + 1])).toEqual([
+      "inject",
+      "upload",
+    ])
     expect(calls.every(({ cwd }) => cwd === tmpdir())).toBe(true)
   })
 
@@ -167,7 +159,7 @@ describe("runSourcemapPlan", () => {
     const dir = outDir({ "background.js": INJECTED })
     await expect(
       runSourcemapPlan(
-        { action: "inject_and_upload" },
+        { action: "inject_and_upload", host: HOST },
         { outDir: dir, warn, run: failedInject.run }
       )
     ).rejects.toThrow("inject failed")
@@ -176,7 +168,7 @@ describe("runSourcemapPlan", () => {
     const notInjected = recorder()
     await expect(
       runSourcemapPlan(
-        { action: "inject_and_upload" },
+        { action: "inject_and_upload", host: HOST },
         { outDir: outDir({ "background.js": "" }), warn, run: notInjected.run }
       )
     ).rejects.toThrow(/chunk ids missing/)
@@ -185,7 +177,7 @@ describe("runSourcemapPlan", () => {
     const failedUpload = recorder("upload")
     await expect(
       runSourcemapPlan(
-        { action: "inject_and_upload" },
+        { action: "inject_and_upload", host: HOST },
         { outDir: dir, warn, run: failedUpload.run }
       )
     ).rejects.toThrow("upload failed")

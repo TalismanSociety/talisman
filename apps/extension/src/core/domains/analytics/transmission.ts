@@ -1,3 +1,5 @@
+import { POSTHOG_INGEST_URL, POSTHOG_PROJECT_TOKEN } from "./posthogProject"
+
 export type Transmission =
   | { mode: "posthog"; endpoint: string; apiKey: string }
   | { mode: "dev_log" }
@@ -10,6 +12,6 @@ export const TRANSMISSION: Transmission =
       ? { mode: "dev_log" }
       : {
           mode: "posthog",
-          endpoint: "https://z.talisman.xyz/batch/",
-          apiKey: "phc_yu6w76nJUBWVNDu5PjpwWFjd3ko3WAu6ouWYyArtkW6b",
+          endpoint: POSTHOG_INGEST_URL,
+          apiKey: POSTHOG_PROJECT_TOKEN,
         }

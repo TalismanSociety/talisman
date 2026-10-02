@@ -4,15 +4,11 @@
 
 ## Run the provisioning
 
-1. Put these variables in `apps/extension/.env`:
+1. Put these variables in `apps/extension/.env`. The project id, the project token and the hosts are constants in `src/core/domains/analytics/posthogProject.ts`.
 
    | Variable | Value |
    | --- | --- |
    | `POSTHOG_PERSONAL_API_KEY` | A personal API key with the scopes listed under "API key scopes" |
-   | `POSTHOG_PROJECT_ID` | The numeric project id |
-   | `POSTHOG_PROJECT_TOKEN` | The project token. Only `--seed` uses it |
-   | `POSTHOG_HOST` | The ingestion host, `https://z.talisman.xyz`, with or without `/batch/`. Only `--seed` uses it |
-   | `POSTHOG_API_HOST` | Optional. The API host. The default is `https://us.posthog.com` |
    | `POSTHOG_ALERTS_DISCORD_WEBHOOK_URL` | Optional. Every alert also posts to this Discord webhook |
 
 2. Read what a run would change:

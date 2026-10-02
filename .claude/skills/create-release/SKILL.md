@@ -17,7 +17,7 @@ Check these before you read any history, so the changelog matches what ships:
 - On `dev`, working tree clean, level with `origin/dev` (`git fetch origin dev`, then `git status -sb`). When `dev` is behind, ask before you pull.
 - `pnpm dev` is not running: `lsof -nP -iTCP:8254 -sTCP:LISTEN` prints nothing. A commit while it runs breaks the dev build (see `AGENTS.md`). When it runs, ask the user whether to run `pnpm dev:kill`.
 - Docker answers `docker info`. The Firefox build runs in Docker.
-- `apps/extension/.env` exists. The production build and the translation download read it. The production build uploads source maps with `POSTHOG_CLI_API_KEY` and `POSTHOG_CLI_PROJECT_ID` from it, and fails if only one is set.
+- `apps/extension/.env` exists. The production build and the translation download read it. The production build uploads source maps with `POSTHOG_CLI_API_KEY` from it, and only warns when it is missing.
 
 Report every failed check and wait for the user. Do not work around one.
 

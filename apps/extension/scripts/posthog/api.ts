@@ -106,15 +106,15 @@ export class PosthogApi {
   }
 }
 
-export const ingest = async (host: string, projectToken: string, batch: readonly unknown[]) => {
-  const res = await fetch(`${host.replace(/(\/batch)?\/*$/, "")}/batch/`, {
+export const ingest = async (url: string, projectToken: string, batch: readonly unknown[]) => {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ api_key: projectToken, historical_migration: false, batch }),
   })
   if (!res.ok)
     throw new HttpError(
-      `POST ${host}/batch/ → HTTP ${res.status}\n${(await res.text()).slice(0, 500)}`,
+      `POST ${url} → HTTP ${res.status}\n${(await res.text()).slice(0, 500)}`,
       res.status
     )
 }

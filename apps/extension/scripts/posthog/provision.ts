@@ -5,6 +5,12 @@ import path from "node:path"
 import { pathToFileURL } from "node:url"
 import { parseArgs } from "node:util"
 
+import {
+  POSTHOG_API_HOST,
+  POSTHOG_INGEST_URL,
+  POSTHOG_PROJECT_ID,
+  POSTHOG_PROJECT_TOKEN,
+} from "../../src/core/domains/analytics/posthogProject"
 import { HttpError, ingest, PosthogApi } from "./api"
 import {
   ALERTS,
@@ -48,10 +54,6 @@ Usage: pnpm posthog:provision [-- flags]
 
 Env (apps/extension/.env):
   POSTHOG_PERSONAL_API_KEY   Personal API key (scopes in README.md)
-  POSTHOG_PROJECT_ID         Numeric project id
-  POSTHOG_API_HOST           API host (default https://us.posthog.com)
-  POSTHOG_PROJECT_TOKEN      Project token, for --seed
-  POSTHOG_HOST               Ingestion host, for --seed (the z.talisman.xyz proxy)
   POSTHOG_ALERTS_DISCORD_WEBHOOK_URL
                              Optional: every alert also posts to this Discord webhook
 
@@ -116,10 +118,6 @@ const parseCli = () => {
     catalogueDir: path.resolve(values.catalogue),
     verbose: values.verbose,
     apiKey: env.POSTHOG_PERSONAL_API_KEY,
-    projectId: env.POSTHOG_PROJECT_ID,
-    apiHost: (env.POSTHOG_API_HOST || "https://us.posthog.com").replace(/\/+$/, ""),
-    projectToken: env.POSTHOG_PROJECT_TOKEN,
-    ingestHost: env.POSTHOG_HOST,
     discordWebhookUrl,
   }
 }
@@ -601,8 +599,6 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 /** PostHog creates a definition only for an event it has received. */
 async function seed(api: PosthogApi, cli: Cli, catalogue: CatalogueSnapshot) {
   console.log("\n▶ Seed")
-  if (!cli.projectToken || !cli.ingestHost)
-    throw new Error("--seed needs POSTHOG_PROJECT_TOKEN and POSTHOG_HOST")
   const stored = await storedNames(api)
   const events = eventsToSeed(catalogue, stored.events, stored.properties)
   if (!events.length) {
@@ -619,7 +615,7 @@ async function seed(api: PosthogApi, cli: Cli, catalogue: CatalogueSnapshot) {
   )
   if (cli.dryRun) return
   for (let i = 0; i < batch.length; i += 50)
-    await ingest(cli.ingestHost, cli.projectToken, batch.slice(i, i + 50))
+    await ingest(POSTHOG_INGEST_URL, POSTHOG_PROJECT_TOKEN, batch.slice(i, i + 50))
 
   const wantEvents = events.map((e) => e.name)
   const wantProperties = [
@@ -742,8 +738,8 @@ function printPlan(
   dashboards: readonly Dashboard[],
   selected: readonly Dashboard[]
 ) {
-  console.log(`API host     ${cli.apiHost}`)
-  console.log(`Project      ${cli.projectId ?? "(unset)"}`)
+  console.log(`API host     ${POSTHOG_API_HOST}`)
+  console.log(`Project      ${POSTHOG_PROJECT_ID}`)
   console.log(`Catalogue    ${cli.catalogueDir}`)
   console.log(
     `             ${catalogue.events.length} events, ${catalogue.properties.length} properties, ${catalogue.flows.length} flows`
@@ -780,15 +776,21 @@ async function main() {
     )
     if (!cli.dryRun) process.exit(1)
   }
-  if (!cli.apiKey || !cli.projectId) {
+  if (!cli.apiKey) {
     if (cli.dryRun) {
-      console.log("\nNo POSTHOG_PERSONAL_API_KEY / POSTHOG_PROJECT_ID: plan only.")
+      console.log("\nNo POSTHOG_PERSONAL_API_KEY: plan only.")
       return
     }
-    throw new Error("POSTHOG_PERSONAL_API_KEY and POSTHOG_PROJECT_ID are required")
+    throw new Error("POSTHOG_PERSONAL_API_KEY is required")
   }
 
-  const api = new PosthogApi(cli.apiHost, cli.projectId, cli.apiKey, cli.dryRun, cli.verbose)
+  const api = new PosthogApi(
+    POSTHOG_API_HOST,
+    POSTHOG_PROJECT_ID,
+    cli.apiKey,
+    cli.dryRun,
+    cli.verbose
+  )
   const state = await loadState(api)
   const primary = dashboards.find((d) => d.slug === PRIMARY_DASHBOARD_SLUG)
   await reconcileProjectSettings(api, {
@@ -810,7 +812,7 @@ async function main() {
       const d = state.resolved.get(spec.slug)
       if (d)
         console.log(
-          `  ${dashboardName(dashboards, spec)}: ${cli.apiHost}/project/${cli.projectId}/dashboard/${d.id}`
+          `  ${dashboardName(dashboards, spec)}: ${POSTHOG_API_HOST}/project/${POSTHOG_PROJECT_ID}/dashboard/${d.id}`
         )
     }
   if (failedQueries || (cli.dryRun && errors.length)) process.exitCode = 1
