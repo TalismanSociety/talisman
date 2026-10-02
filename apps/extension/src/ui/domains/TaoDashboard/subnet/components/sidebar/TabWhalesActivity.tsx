@@ -8,7 +8,6 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import {
   useSubnetWhalesActivity,
   useSubnetWhalesFlow,
-  useTaoPrice,
   type WhaleTransaction,
   type WhaleTransactionType,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
@@ -17,6 +16,7 @@ import { AccountNameOrAddress } from "@ui/domains/TaoDashboard/shared/AccountNam
 import { TAO_SYMBOL } from "@ui/domains/TaoDashboard/shared/constants"
 import { TransactionAvatar } from "@ui/domains/TaoDashboard/shared/TransactionAvatar"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -123,7 +123,6 @@ type WhalesActivityEntry = NonNullable<WhalesActivityData>[number]
 const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid, period }) => {
   const { t } = useTranslation()
   const { data: rawTransactions, isLoading } = useSubnetWhalesActivity(netuid, period)
-  const { data: taoPrice } = useTaoPrice()
   const transactions = useMemo(
     () =>
       (rawTransactions ?? []).filter(
@@ -133,12 +132,8 @@ const WhalesActivityList: FC<{ netuid: number; period: TimePeriod }> = ({ netuid
     [rawTransactions]
   )
 
-  const taoUsdPrice = useMemo(() => {
-    if (!taoPrice?.price) return undefined
-    return parseFloat(taoPrice.price)
-  }, [taoPrice])
-
   const { alphaToken, taoToken } = useSubnetTokens(useTaoDashboardNetworkId(), netuid)
+  const taoUsdPrice = useTokenRates(taoToken?.id)?.usd?.price
 
   const tokensLoaded = !!taoToken && !!alphaToken
 
