@@ -3,7 +3,6 @@ import { z } from "zod/v4"
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** Mobile's staking choices, and the Earn position pages. */
 export const stakingEvents = defineEventGroup(properties, {
   staking_subnet_selected: {
     description: "The user picked the subnet to stake into in the Bittensor staking modal.",

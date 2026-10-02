@@ -1,7 +1,6 @@
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** tx_broadcast and tx_settled keep mobile's names and props, plus extension props. */
 export const transactionEvents = defineEventGroup(properties, {
   tx_signed: {
     description:

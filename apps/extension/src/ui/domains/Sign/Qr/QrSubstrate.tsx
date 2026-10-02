@@ -57,7 +57,6 @@ const FLOW_STEPS = {
 } as const satisfies Record<ScanState["page"], string | null>
 
 interface Props {
-  /** Who asked for the signature: a dapp request, or the wallet's own transaction. */
   requestedBy: SubmittedBy
   account: AccountPolkadotVault
   className?: string

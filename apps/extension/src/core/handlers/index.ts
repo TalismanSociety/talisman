@@ -98,7 +98,6 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     }
   }
 
-  // before the handler runs: an approval deletes its queued request when it completes
   const settleObservation = isExtension ? observeExtensionMessage(message, request) : null
 
   // handle the request and get a promise as a response

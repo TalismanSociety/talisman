@@ -3,7 +3,6 @@ import { z } from "zod/v4"
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** What a dapp can see and do once the user decided, beyond the request itself (dappRequests.ts). */
 export const dappEvents = defineEventGroup(properties, {
   dapp_connection_approved: {
     description:

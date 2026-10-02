@@ -4,7 +4,6 @@ import { RECEIVE_ENTRIES } from "../funds"
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** Send, swap, receive and the fee and allowance controls they share with dapp requests. */
 export const fundsEvents = defineEventGroup(properties, {
   swap_quote_received: {
     description:

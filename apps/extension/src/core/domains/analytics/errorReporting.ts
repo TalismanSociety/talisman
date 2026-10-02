@@ -21,11 +21,6 @@ const throttle = createExceptionThrottle()
 const resolveNetworkId = (networkId: string) =>
   analyticsNetworkId({ networkId }).catch(() => undefined)
 
-/**
- * The one intake for reports from every realm: schema, ignore list, scrubber, fingerprint,
- * throttle, then the engine (consent, transmission, error-only id, real time, immediate flush).
- * Every outcome lands in the dev log with its disposition.
- */
 export const receiveException = async (
   raw: unknown,
   uiContext: UiContext
@@ -49,7 +44,6 @@ export const receiveException = async (
   return analyticsEngine.capture({ result: { ...result, event }, uiContext, realNow })
 }
 
-/** Resolves to the event id when the report was queued, else null. Never rejects. */
 export const reportError = (
   thrown: unknown,
   options: ReportErrorOptions = {}
@@ -71,7 +65,6 @@ if (process.env.BUILD === "dev")
   Object.assign(globalThis, {
     talismanAnalytics: {
       ...(globalThis as { talismanAnalytics?: object }).talismanAnalytics,
-      /** Thrown from bundled code, so the dev log shows real background.js frames. */
       probeException: (message: string) =>
         setTimeout(() => {
           throw new Error(message)

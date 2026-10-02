@@ -73,7 +73,6 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
 }
 
 type DrawerProps = {
-  /** Stable snake_case id for analytics, chosen once: never rename it. */
   analyticsId: string
   anchor: DrawerAnchor
   children: ReactNode

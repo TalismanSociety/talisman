@@ -49,7 +49,6 @@ let controls: {
   setStep: (step: Step) => void
 }
 
-/** The pilot's shape: a provider mounted for the page, wrapping its Modal, active while open. */
 const Backup = ({ initiallyOpen = true }: { initiallyOpen?: boolean }) => {
   const [isOpen, setOpen] = useState(initiallyOpen)
   const [step, setStep] = useState<Step>("acknowledgement")

@@ -37,7 +37,6 @@ export type FlowSend = (
 
 const MAX_OPEN_PER_PORT = 16
 
-/** A closing page runs no code, and a transaction can settle after its page closed: the worker ends those attempts. */
 export class FlowTracker {
   readonly #ports = new Map<Port, PortState>()
 
@@ -134,7 +133,6 @@ export type LinkStorage = {
   write(records: readonly FlowLinkRecord[]): Promise<void>
 }
 
-/** Session storage: the worker can sleep and restart before a transaction settles. */
 export const createFlowLinks = (storage: LinkStorage): FlowLinks => {
   let queue: Promise<unknown> = Promise.resolve()
   const serialised = <T>(task: () => Promise<T>): Promise<T> => {

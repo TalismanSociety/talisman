@@ -17,7 +17,6 @@ import {
 import { createPortal } from "react-dom"
 
 type ModalProps = {
-  /** Stable snake_case id for analytics, chosen once: never rename it. */
   analyticsId: string
   children: ReactNode
   isOpen?: boolean

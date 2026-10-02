@@ -48,7 +48,6 @@ export const QuickUnlockSetting = () => {
           setSetupStep("passkey")
           const credential = await createQuickUnlockCredential(abort.signal)
           setSetupStep("enrol")
-          // the state reaches the flow on the next render, after submitted
           flows.quick_unlock_setup.step("enrol")
           flows.quick_unlock_setup.submitted()
           try {

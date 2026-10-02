@@ -22,10 +22,6 @@ const getIconSizeClass = (size: IconSize) => {
   }
 }
 
-/**
- * An error alert says what kind of failure it shows. null: it warns about what the request does
- * (an unlimited approval, a domain mismatch), which is no failure, so no error_shown is sent.
- */
 type AlertKind =
   | { type?: "warning"; errorCategory?: null }
   | { type: "error"; errorCategory: ErrorCategory | null }

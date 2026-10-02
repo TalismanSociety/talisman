@@ -12,14 +12,12 @@ import { keyringStore } from "../keyring/store"
 
 export type NetworkRef = { networkId: string } | { genesisHash: `0x${string}` }
 
-/** What a submit or approve message says about its transaction, read synchronously. */
 export type TxAttempt = {
   platform: ChainPlatform
   network: NetworkRef
   address: string
   txType: TxType
   submittedBy: SubmittedBy
-  /** The wallet signs, the dapp broadcasts. */
   signOnly: boolean
 }
 
@@ -43,7 +41,6 @@ export const signerOfAddress = async (address: string): Promise<Signer | null> =
   return account ? signerOf(account.type) : null
 }
 
-/** Null when the account is not the wallet's: nothing to attribute the transaction to. */
 export const resolveTxContext = async (attempt: TxAttempt): Promise<TxContext | null> => {
   const [networkId, signer] = await Promise.all([
     analyticsNetworkId(attempt.network),

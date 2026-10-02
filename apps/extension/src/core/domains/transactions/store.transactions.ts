@@ -15,13 +15,8 @@ import type {
   WalletTransactionInfo,
 } from "./types"
 
-/**
- * watch: a watcher or the cleanup saw it settle. sibling: a same-nonce transaction settled first.
- * dropped: the cleanup proved the chain never saw it. restart: the worker restart pass.
- */
 export type TxStatusReason = "watch" | "sibling" | "dropped" | "restart"
 
-/** A status change this store committed, published after the commit. */
 export type TxStatusFact = {
   row: WalletTransaction
   from: TransactionStatus
@@ -260,7 +255,6 @@ export const updateTransactionStatus = (
   confirmed?: boolean
 ) => applyTransactionStatus(id, status, { blockNumber, confirmed, reason: "watch" })
 
-/** The cleanup's verdict: the chain never saw it. Stored as "error", reported as dropped. */
 export const markTransactionDropped = (id: string) =>
   applyTransactionStatus(id, "error", { reason: "dropped" })
 

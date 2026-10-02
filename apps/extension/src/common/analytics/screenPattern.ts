@@ -1,4 +1,3 @@
-/** Capitals stay legal for `auth-sol-signIn`. */
 const ROUTE_WORD = /^[a-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$/
 const ROUTE_WORD_MAX_LENGTH = 30
 
@@ -14,11 +13,6 @@ export const isRoutePattern = (pattern: string): boolean =>
     pattern.length <= 128 &&
     pattern.slice(1).split("/").every(isRouteSegment))
 
-/**
- * What a matched pattern may still be waiting for. `descendant`: it ends in a prefix splat
- * (`portfolio/*`), so a descendant `<Routes>` names the screen once it renders. `redirect`: it
- * ends in a bare catch-all (`*`), which either is the screen or redirects within a frame.
- */
 export type PatternAwaits = "nothing" | "redirect" | "descendant"
 
 export type JoinedPattern = { pattern: string; awaits: PatternAwaits }

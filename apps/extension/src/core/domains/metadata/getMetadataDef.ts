@@ -164,7 +164,6 @@ export const fetchMetadataDefFromChain = async (
     fetchMethod(chain.id),
     chainConnectorDot.send(chain.id, "system_properties", [], true),
   ]).catch((rpcError) => {
-    // not a useful error, do not report it
     if (getErrorMessage(rpcError) === "RPC connect timeout reached") {
       log.error(rpcError)
       metadataUpdatesStore.set(genesisHash as HexString, false)

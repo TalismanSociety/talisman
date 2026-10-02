@@ -50,10 +50,6 @@ const walletAddressesByTokenId$ = combineLatest({
   distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
 )
 
-/**
- * The wallet's balances while they are live, else null. Fed by `walletBalances$` without
- * subscribing to it, so reading it never starts a balances aggregation.
- */
 export const liveWalletBalances$ = new BehaviorSubject<BalancesResult | null>(null)
 
 export const walletBalances$ = settingsStore.observable.pipe(

@@ -92,7 +92,6 @@ export const readEnvironment = (): Promise<Environment> => {
   return environment
 }
 
-/** Never reads the hash: the route can hold addresses. */
 export const uiContextFromSenderUrl = (url: string | undefined): UiContext => {
   if (!url || !URL.canParse(url)) return "background"
   const { pathname, searchParams } = new URL(url)

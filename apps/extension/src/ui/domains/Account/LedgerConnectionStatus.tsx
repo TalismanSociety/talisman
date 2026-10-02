@@ -10,7 +10,6 @@ export type LedgerConnectionStatusProps = {
   message: string
   className?: string
   onRetryClick?: () => void
-  /** Set with an error status: what kind of failure it shows. */
   errorCategory?: ErrorCategory
 }
 

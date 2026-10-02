@@ -60,7 +60,6 @@ export const isEventName = (name: string): name is EventName => Object.hasOwn(ca
 export type TrackRequest = {
   event: EventName
   properties: EventProperties
-  /** The page's current screen, stamped as `$screen_name`. An invalid one is dropped, never the event. */
   screen?: string
   transactionId?: string
 }

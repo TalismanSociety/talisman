@@ -73,8 +73,6 @@ export const createNotification = async (
     const options = getNotificationOptions(type, networkName, error)
     chrome.notifications.create(url, options)
   } catch (err) {
-    // not reported: pages import this module through the password store, and the worker's
-    // error reporting seam must stay out of pages
     log.error("Failed to create notification", { err })
   }
 }

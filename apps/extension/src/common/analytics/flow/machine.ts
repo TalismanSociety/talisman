@@ -246,7 +246,6 @@ export const abandonOnPageClose = (mirror: Mirror, now: number): Emission | null
     ? null
     : abandonment(mirror, "page_closed", toDurationMs(now - mirror.startedAtEpochMs))
 
-/** `properties`: what the settlement knows beyond its status. The flow keeps those its completed event declares. */
 export type Settled = {
   readonly status: SettledStatus
   readonly timeToSettleMs: number

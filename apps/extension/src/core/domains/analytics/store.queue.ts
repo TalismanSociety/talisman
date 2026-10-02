@@ -1,5 +1,3 @@
-// Its own IndexedDB database: chrome.storage.local goes into the support backup and is readable
-// from content scripts, and cache clearing wipes tables of the Talisman database.
 import type { ConsentKind } from "@common/analytics/schema"
 import { Dexie } from "dexie"
 

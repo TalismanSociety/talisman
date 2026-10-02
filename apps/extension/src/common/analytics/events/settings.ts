@@ -1,7 +1,6 @@
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** Mobile's names. Usage and error reporting consent are the engine's events, not settings. */
 export const settingsEvents = defineEventGroup(properties, {
   setting_changed: {
     description:

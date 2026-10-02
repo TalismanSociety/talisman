@@ -44,7 +44,6 @@ type TalismanLedgerErrorName =
   | "Unauthorized"
 
 export class TalismanLedgerError extends Error {
-  /** How `classifyError` in common/ recognises it: common cannot import this class. */
   readonly isTalismanLedgerError = true
 
   constructor(name: TalismanLedgerErrorName, message: string, options?: ErrorOptions) {

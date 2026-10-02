@@ -4,7 +4,6 @@ import { detectAddressEncoding } from "@talismn/crypto"
 
 import { CUSTOM_NETWORK_ID } from "./transactions"
 
-/** Mobile's send, swap and receive entries (dashboard, token_details), plus the extension's own. */
 export const SEND_ENTRIES = [
   "dashboard",
   "nav_menu",
@@ -39,7 +38,6 @@ export const RECEIVE_ENTRIES = [
 ] as const
 export type ReceiveEntry = (typeof RECEIVE_ENTRIES)[number]
 
-/** Mobile's `DestinationSource` (pasted and typed are one search field here), plus the extension's own. */
 export const RECIPIENT_SOURCES = [
   "own_account",
   "watched_account",
@@ -60,7 +58,6 @@ export const SWAP_PROTOCOLS = [
 ] as const
 export type SwapProtocol = (typeof SWAP_PROTOCOLS)[number]
 
-/** Mobile's final exchange statuses, plus unknown: the wallet stopped watching without one. */
 export const SWAP_OUTCOMES = [
   "finished",
   "failed",
@@ -78,15 +75,12 @@ export const RAMP_DIRECTIONS = ["buy", "sell"] as const
 export const REPLACE_TYPES = ["speed_up", "cancel"] as const
 export const TX_PHASES = ["pre_broadcast", "approval", "submit"] as const
 
-/** Custom and unknown networks read `custom`: a user-added id can be a genesis hash. */
 export const networkIdForAnalytics = (network: Network | null | undefined): string =>
   network && !isNetworkCustom(network) ? network.id : CUSTOM_NETWORK_ID
 
-/** An address copied in no network's format reads generic, as on mobile. */
 export const copiedNetworkId = (network: Network | null | undefined): string =>
   network ? networkIdForAnalytics(network) : "generic"
 
-/** Mobile's `<encoding>:<format>`, the encoding read from the copied address itself. */
 export const addressFormatOf = (address: string, legacy = false): string => {
   const format = legacy ? "legacy" : "standard"
   try {
@@ -104,7 +98,6 @@ const SWAP_TX_PROTOCOLS: Partial<Record<WalletTransactionInfo["type"], SwapProto
   "swap-forevermoney": "forevermoney",
 }
 
-/** What a stored swap says about itself, as `swap_completed` reports it. Null for any other transaction. */
 export const swapOfTransaction = (
   txInfo: WalletTransactionInfo | undefined
 ): { protocol: SwapProtocol; cross_chain: boolean } | null => {

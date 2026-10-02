@@ -17,10 +17,6 @@ type Observe<M extends ChaindataMessage> = (request: RequestTypes[M]) => () => P
 
 const networkOf = (networkId: string) => chaindataProvider.getNetworkById(networkId)
 
-/**
- * Only the settings pages send these. Each reads chaindata when the message arrives, before the
- * handler changes it: what was there decides between an add and an edit.
- */
 const CHAINDATA_MESSAGES: { [M in ChaindataMessage]: Observe<M> } = {
   "pri(chaindata.networks.upsert)": ({ network }) => {
     const before = networkOf(network.id)
@@ -80,13 +76,11 @@ const CHAINDATA_MESSAGES: { [M in ChaindataMessage]: Observe<M> } = {
 const isChaindataMessage = (type: MessageTypes): type is ChaindataMessage =>
   Object.hasOwn(CHAINDATA_MESSAGES, type)
 
-/** Null when the message is not a network or token change from settings. */
 export const observeChaindataMessage = (
   type: MessageTypes,
   request: unknown
 ): (() => Promise<void>) | null => {
   if (!isChaindataMessage(type)) return null
-  // each entry only ever receives its own message's request
   const observe = CHAINDATA_MESSAGES[type] as unknown as (request: unknown) => () => Promise<void>
   return observe(request)
 }

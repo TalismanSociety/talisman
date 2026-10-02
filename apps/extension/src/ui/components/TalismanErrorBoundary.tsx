@@ -36,8 +36,6 @@ export class TalismanErrorBoundary extends Component<
   componentDidCatch(error: Error, info: ErrorInfo): void {
     reportErrorShown({ surface: "boundary", category: classifyError(error) })
 
-    // the React component stack rides as the `cause`, which the report carries as a chained
-    // exception with its own frames
     if (error instanceof Error && info.componentStack && !error.cause) {
       const boundaryError = new Error(error.message)
       boundaryError.name = `React ErrorBoundary ${error.name}`

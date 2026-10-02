@@ -16,10 +16,6 @@ import { listSourceFiles, REPO_ROOT } from "./listSourceFiles"
  */
 const SRC = join(REPO_ROOT, "apps/extension/src")
 
-/**
- * Events mobile already sends under the same name, with the properties mobile requires. A flow
- * or event that takes one of these names must carry them, so one insight reads both apps.
- */
 const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   send_started: ["entry"],
   send_submitted: [
@@ -97,7 +93,6 @@ const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   buy_provider_launched: ["provider", "fiat_currency", "token_symbol", "network_id", "direction"],
   custom_network_saved: ["mode", "platform", "network_id", "testnet", "rpc_provider"],
   network_toggled: ["network_id", "enabled", "platform", "default_enabled"],
-  // mobile's token_id and coingecko_id stay out: an ERC-20 token id holds its contract address
   custom_token_added: ["network_id", "token_symbol", "has_coingecko_id"],
   token_toggled: ["token_symbol", "network_id", "enabled", "default_enabled"],
   custom_network_deleted: ["network_id", "platform"],
@@ -107,9 +102,7 @@ const MOBILE_SHARED: Readonly<Record<string, readonly string[]>> = {
   language_changed: ["language_code"],
   auto_lock_changed: ["timeout_ms"],
   account_switched: ["selection", "accounts_total"],
-  // mobile's token_id stays out, as on custom_token_added
   token_details_opened: ["symbol", "network_id"],
-  // mobile's query and query_redacted stay out: the extension never sends search text
   search_performed: ["surface", "query_length", "result_count"],
 }
 

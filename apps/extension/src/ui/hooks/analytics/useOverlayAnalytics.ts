@@ -8,7 +8,6 @@ type Gesture = Extract<DismissCause, "escape" | "backdrop">
 
 type OverlayLayer = {
   markCompleted(): void
-  /** The cause of this overlay's last close, for descendants that unmount with it. */
   closedCause(): DismissCause | null
 }
 
@@ -18,10 +17,6 @@ const openLayers: OverlayLayer[] = []
 
 export const markInnermostOverlayCompleted = () => openLayers.at(-1)?.markCompleted()
 
-/**
- * First that applies: the user finished what the overlay was for; the gesture that closed it;
- * the cause of the ancestor it unmounted with; anything else (its own buttons, code).
- */
 export const resolveDismiss = ({
   completed,
   gesture,
@@ -39,11 +34,6 @@ type OverlayState = {
   closedCause: DismissCause | null
 }
 
-/**
- * modal_opened and modal_closed for what rendered: mounted open or opened, then closed or
- * unmounted while open. A close that does not happen while the gesture's handler runs (an
- * `onDismiss` that steps back, or closes after a timer) reads `button`.
- */
 export const useOverlayAnalytics = ({ id, isOpen }: { id: string; isOpen: boolean }) => {
   const parent = useContext(OverlayAnalyticsContext)
   const state = useRef<OverlayState>({
@@ -98,7 +88,6 @@ export const useOverlayAnalytics = ({ id, isOpen }: { id: string; isOpen: boolea
       onDismiss &&
       (() => {
         state.current.gesture = gesture
-        // the close commits while the handler runs, or it was not this gesture's close
         setTimeout(() => {
           if (state.current.gesture === gesture) state.current.gesture = null
         })
@@ -110,7 +99,6 @@ export const useOverlayAnalytics = ({ id, isOpen }: { id: string; isOpen: boolea
   return { layer, dismissVia }
 }
 
-/** For what finishes an overlay's purpose, such as a transaction submitted inside it. */
 export const useMarkOverlayCompleted = () => {
   const layer = useContext(OverlayAnalyticsContext)
   return useCallback(() => layer?.markCompleted(), [layer])

@@ -9,10 +9,6 @@ const submitted = {
   yield_id: "required",
 } as const
 
-/**
- * yield.xyz actions run one to several transactions. submitted: the first one was sent.
- * completed: the last one confirmed.
- */
 export const earnDeposit = defineFlow("earn_deposit", {
   subject: "entering a yield.xyz Earn position",
   steps: ["token", "product", "account", "amount", "confirm"],

@@ -42,10 +42,8 @@ const ALARM_NAME = "talisman-autolock-alarm"
 
 export type LockReason = "manual" | "auto_lock" | "error"
 export type UnlockMethod = { method: "password" | "quick_unlock"; legacyPassword: boolean }
-/** Starting a session that is not an unlock: onboarding, or a password change while unlocked. */
 export type SessionStart = UnlockMethod | "onboarding" | "password_change"
 
-/** Published only on a real change of the login state, with its cause. */
 export type LockFact =
   | { type: "unlocked"; how: UnlockMethod }
   | { type: "locked"; reason: LockReason }
@@ -191,7 +189,6 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
       this.lockFacts$.next({ type: "unlocked", how: start })
   }
 
-  /** Returns whether the wallet was unlocked before the write. */
   async #writeSession(password: string | undefined) {
     // the session mutation must complete before the login status changes, or the transformed
     // password would still be retrievable while the wallet reports itself as locked

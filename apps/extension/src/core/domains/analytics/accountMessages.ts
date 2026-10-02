@@ -9,7 +9,6 @@ import { track } from "./track"
 
 type AddedAccount = { readonly origin: AccountOrigin; readonly walletType: ChainPlatform }
 
-/** One import: the accounts it added, in order. Mobile counts any account but contacts. */
 const reportAccountsAdded = (added: readonly AddedAccount[], hadAccount: boolean) => {
   const [first] = added
   if (!first) return
@@ -52,10 +51,6 @@ const isAccount = (account: Account) => account.type !== "contact"
 
 const walletTypeOf = (address: string) => chainPlatformOf(getAccountPlatformFromAddress(address))
 
-/**
- * Reads the keyring before the handler runs: `getAccounts` captures the current keyring
- * synchronously, so the handler's own change cannot show up in it.
- */
 const observeAdd = (originOf: (index: number, account: Account) => AccountOrigin | null) => {
   const before = keyringStore.getAccounts()
   return async (addresses: string[]) => {
@@ -109,7 +104,6 @@ type Observe<M extends AccountMessage> = (
   request: RequestTypes[M]
 ) => (response: ResponseTypes[M]) => Promise<void>
 
-/** Each runs when the message arrives, and returns what to run once the handler succeeded. */
 const ACCOUNT_MESSAGES: { [M in AccountMessage]: Observe<M> } = {
   "pri(accounts.add.derive)": (options) =>
     observeAdd((index) =>
@@ -162,13 +156,11 @@ const ACCOUNT_MESSAGES: { [M in AccountMessage]: Observe<M> } = {
 const isAccountMessage = (type: MessageTypes): type is AccountMessage =>
   Object.hasOwn(ACCOUNT_MESSAGES, type)
 
-/** Null when the message is not an account change: then nothing waits for its outcome. */
 export const observeAccountMessage = (
   type: MessageTypes,
   request: unknown
 ): ((response: unknown) => Promise<void>) | null => {
   if (!isAccountMessage(type)) return null
-  // each entry only ever receives its own message's request and response
   const observe = ACCOUNT_MESSAGES[type] as unknown as (
     request: unknown
   ) => (response: unknown) => Promise<void>

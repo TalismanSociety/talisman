@@ -9,9 +9,7 @@ type FormFieldContainerProps = {
   children: ReactNode
   error?: string | null
   noErrorRow?: boolean
-  /** The field an error belongs to, when the input inside has no `name`. */
   field?: string
-  /** What kind of failure the error is, when it is not the field's own validation. */
   errorCategory?: ErrorCategory
 }
 

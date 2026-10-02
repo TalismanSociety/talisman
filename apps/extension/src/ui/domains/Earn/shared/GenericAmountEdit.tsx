@@ -247,7 +247,6 @@ export const GenericAmountEdit: FC<{
   logo: string | null | undefined
   priceUsd: number | null
   error?: string | null
-  /** what kind of failure error is. null: a prompt, not a failure */
   errorCategory?: ErrorCategory | null
   onValueChanged: (value: bigint | null) => void
   onMaxClick: () => void

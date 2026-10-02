@@ -6,7 +6,6 @@ import { track } from "@ui/api/track"
 import i18next from "i18next"
 import { isEqual } from "lodash-es"
 
-/** Called on every UI write of a setting: only an allow-listed key whose value changed is sent. */
 export const reportSettingWrite = <K extends keyof SettingsStoreData>(
   key: K,
   previous: SettingsStoreData[K],

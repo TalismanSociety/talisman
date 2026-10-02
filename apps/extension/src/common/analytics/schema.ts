@@ -26,14 +26,12 @@ const HOSTNAME =
 
 export const isHostname = (value: string): boolean => HOSTNAME.test(value)
 
-/** A symbol `p.symbol` would reject reads unknown, so the event still goes out. */
 export const symbolForAnalytics = (symbol: string | null | undefined): string =>
   symbol && SYMBOL.test(symbol) ? symbol : "unknown"
 
 const MAX_COUNT = 1_000_000
 const MAX_DURATION_MS = 7 * 24 * 60 * 60_000
 
-/** A value `p.durationMs` accepts: whole, non-negative, capped rather than rejected. */
 export const toDurationMs = (ms: number): number =>
   Number.isNaN(ms) ? 0 : Math.min(MAX_DURATION_MS, Math.max(0, Math.round(ms)))
 
@@ -105,7 +103,6 @@ export const p = {
     schema: def.schema.nullable(),
   }),
 
-  /** `<left>|<right>`, each half valid for its own definition: a list of these stays enumerable. */
   pair: <L extends string, R extends string>(
     left: PropertyDef<L>,
     right: PropertyDef<R>,

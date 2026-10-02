@@ -57,11 +57,6 @@ const reportSiteUpdate = async (dappDomain: string | null, update: AuthorisedSit
   })
 }
 
-/**
- * Each runs when the message arrives, before the handler: the approvals delete their stored request,
- * and add the network or token that decides between a toggle and a custom add. Each returns what to
- * run once the handler succeeded.
- */
 const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
   "pri(sites.requests.approve)": ({ id, addresses = [] }) => {
     const queued = requestStore.getRequest(id)
@@ -151,13 +146,11 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
 const isDappMessage = (type: MessageTypes): type is DappMessage =>
   Object.hasOwn(DAPP_MESSAGES, type)
 
-/** Null when the message is not a dapp connection, network or token change. */
 export const observeDappMessage = (
   type: MessageTypes,
   request: unknown
 ): (() => Promise<void>) | null => {
   if (!isDappMessage(type)) return null
-  // each entry only ever receives its own message's request
   const observe = DAPP_MESSAGES[type] as unknown as (request: unknown) => () => Promise<void>
   return observe(request)
 }

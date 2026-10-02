@@ -20,21 +20,15 @@ export type Flow = Pick<
 
 const eventOf = (flow: Flow, lifecycle: Lifecycle) => flow.eventNames[lifecycle]
 
-/** Swap completes on the exchange's final status: a transaction that succeeded can still be refunded. */
 const SUCCESS_OVERRIDES: { readonly [N in FlowName]?: PropertyFilter } = {
   swap: prop("swap_status", "finished"),
 }
 const successOverrides = new Map<string, PropertyFilter>(Object.entries(SUCCESS_OVERRIDES))
 
-/** What the completed event must carry to count as a success. */
 export const successFilter = (flow: Flow): PropertyFilter | undefined =>
   successOverrides.get(flow.name) ??
   (flow.settlement === "transaction" ? prop("status", "success") : undefined)
 
-/**
- * A settled failure reads as drop-off at the last step. Steps are optional: a flow visits the
- * subset its branch needs (a staking provider, an add-account method).
- */
 export const flowFunnelSteps = (flow: Flow): EventsNode[] => {
   const started = eventOf(flow, "started")
   const completed = eventOf(flow, "completed")
@@ -86,7 +80,6 @@ const multiIf = (arms: readonly [string, string][], otherwise: string) =>
     ? `multiIf(${arms.map(([when, then]) => `${when}, ${then}`).join(", ")}, ${otherwise})`
     : otherwise
 
-/** Mapped per event, never by name suffix: `rename` and `lastStepAlias` break suffixes. */
 export const flowEventColumns = (flows: readonly Flow[]) => {
   const events = flowEvents(flows)
   const byEvent = (pick: (e: (typeof events)[number]) => string) =>

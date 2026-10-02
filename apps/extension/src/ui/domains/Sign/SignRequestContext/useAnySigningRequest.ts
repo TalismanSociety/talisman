@@ -22,9 +22,7 @@ type SignableRequest<T extends keyof SigningRequests, TApproveArgs extends unkno
   status: StatusOptions
   isEthereumRequest: boolean
   message?: string
-  /** What kind of failure the ERROR status shows. */
   errorCategory: ErrorCategory
-  /** Shows the approval failure, classified from what was thrown. */
   fail: (cause: unknown, message: string) => void
   approve: (...args: TApproveArgs) => Promise<void>
   reject: () => Promise<void>

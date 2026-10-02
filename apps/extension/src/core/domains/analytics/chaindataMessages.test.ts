@@ -29,7 +29,6 @@ vi.mock("../../rpcs/chaindata", () => ({
 const GENESIS = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
 const TOKEN_ID = "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
 
-/** The handler changes chaindata after the observer read it. */
 const handle = async (type: MessageTypes, request: unknown, afterHandler?: () => void) => {
   const settle = observeChaindataMessage(type, request) ?? observeNftMessage(type, request)
   afterHandler?.()

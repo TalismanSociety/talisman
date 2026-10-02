@@ -5,7 +5,6 @@ export type PropertyFilter = {
   readonly value?: readonly (string | number | boolean)[]
 }
 
-/** The filter lists what to keep, so `is_not`. */
 export const TEST_ACCOUNT_FILTERS: readonly PropertyFilter[] = [
   { key: "appVariant", type: "event", operator: "is_not", value: ["development", "preview"] },
 ]
@@ -62,11 +61,9 @@ type EvOptions = {
   readonly mathProperty?: string
   readonly name?: string
   readonly properties?: readonly PropertyFilter[]
-  /** A funnel step the conversion does not require. */
   readonly optional?: boolean
 }
 
-/** `null` is every event. */
 export const ev = (event: string | null, opts: EvOptions = {}): EventsNode => ({
   kind: "EventsNode",
   event,
@@ -237,7 +234,6 @@ export const sqlString = (value: string) =>
   `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`
 export const sqlList = (values: readonly string[]) => values.map(sqlString).join(", ")
 
-/** The test-account filter as SQL, for a scan that must not take `{filters}`'s date range. */
 export const SQL_NOT_TEST_ACCOUNT = TEST_ACCOUNT_FILTERS.map(
   ({ key, value }) => `ifNull(properties.${key}, '') NOT IN (${sqlList((value ?? []).map(String))})`
 ).join(" AND ")

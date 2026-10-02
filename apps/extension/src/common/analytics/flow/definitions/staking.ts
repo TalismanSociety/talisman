@@ -5,11 +5,6 @@ import { defineFlow } from "../defineFlow"
 
 const action = { narrow: z.enum(STAKING_ACTIONS) }
 
-/**
- * Every staking modal: Bittensor, nomination pools and SEEK. mode and direction name the action;
- * the worker completes it when the transaction settles. With MEV Shield the linked transaction is
- * the inner one, the staking call itself.
- */
 export const staking = defineFlow("staking", {
   subject: "a staking action",
   steps: ["subnet", "position", "validator", "hotkey", "form", "review"],

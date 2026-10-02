@@ -6,7 +6,6 @@ import { lineAt } from "./listSourceFiles"
 const STRING_OR_COMMENT =
   /("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\[\s\S]|[^`\\])*`)|\/\/[^\n]*|\/\*[\s\S]*?\*\//g
 
-/** Replaces comments with spaces, keeping strings, template literals and every newline. */
 export const stripComments = (code: string): string =>
   code.replace(
     STRING_OR_COMMENT,
@@ -40,7 +39,6 @@ export const providerCalls = (code: string): ProviderCall[] =>
 
 const EXTENSIONS = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]
 
-/** The file that defines `hook`: this one, or the one it imports it from (one hop, as Swap needs). */
 export const hookFile = (file: string, code: string, hook: string, srcRoot: string): string => {
   const defined = new RegExp(`(?:const|function)\\s+${hook}\\b`)
   if (defined.test(code)) return file

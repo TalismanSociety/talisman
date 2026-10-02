@@ -4,7 +4,6 @@ import type { ValidatorSortValue } from "@ui/domains/Staking/Bittensor/utils/val
 import type { BondOption } from "../hooks/types"
 import { ROOT_NETUID } from "./constants"
 
-/** staking_validator_selected, from any validator list: position is 1-based as sorted and searched. */
 export const trackValidatorSelected = ({
   hotkey,
   validators,

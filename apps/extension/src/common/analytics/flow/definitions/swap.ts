@@ -3,10 +3,6 @@ import { z } from "zod/v4"
 import { SWAP_ENTRIES } from "../../funds"
 import { defineFlow } from "../defineFlow"
 
-/**
- * The worker completes it: when the transaction fails on chain, or when the exchange the wallet
- * watches reaches its final status (swap_status).
- */
 export const swap = defineFlow("swap", {
   subject: "swapping tokens",
   steps: ["form", "recipient", "confirm"],

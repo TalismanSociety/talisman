@@ -20,12 +20,7 @@ const reportFailure = (cause: unknown) =>
 export type MessageOutcome = { ok: true; response: unknown } | { ok: false; error: unknown }
 
 type SubmissionPolicy<M extends MessageTypes> = {
-  /**
-   * Runs when the message arrives, before the handler: an approval deletes its stored request
-   * when it completes. Null: not a transaction (a message signature).
-   */
   readonly read: (request: RequestTypes[M]) => TxAttempt | null
-  /** Approvals can resolve `false` after refusing the request: not a signature. */
   readonly succeeded: (response: ResponseTypes[M]) => boolean
 }
 
@@ -71,10 +66,6 @@ const storedSubstrateSign = (id: string): TxAttempt | null => {
   }
 }
 
-/**
- * Every message that signs or broadcasts a transaction. Signet approvals are absent: Signet signs
- * outside the wallet, which never holds that signature.
- */
 const TX_SUBMISSION_POLICY = {
   "pri(eth.signing.signAndSend)": {
     read: ({ evmNetworkId, unsigned, txInfo }) =>
@@ -183,7 +174,6 @@ type MessagesWithRequestId = {
 
 export type RequestDecision = "approved" | "rejected" | "closed"
 
-/** What the user decided when the message arrived; a failed approval downgrades it. */
 const REQUEST_DECISIONS: Partial<Record<MessagesWithRequestId, RequestDecision>> = {
   "pri(eth.signing.approveSign)": "approved",
   "pri(eth.signing.approveSignHardware)": "approved",
@@ -220,7 +210,6 @@ type ErasedPolicy = {
 }
 
 const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
-  // each entry only ever receives its own message's request and response
   const policy = TX_SUBMISSION_POLICY[type] as unknown as ErasedPolicy
   let attempt: TxAttempt | null
   try {
@@ -236,7 +225,6 @@ const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
     context.then((ctx) => {
       if (!ctx) return
       if (!outcome.ok) {
-        // a failed sign-only approval is reported on its dapp request instead
         if (!signOnly)
           track("tx_broadcast_failed", { ...ctx, error_category: classifyError(outcome.error) })
         return
@@ -247,7 +235,6 @@ const observeSubmission = (type: TxSubmissionMessage, request: unknown) => {
     })
 }
 
-/** Each returns what to run once the handler succeeded, or null for a message it does not observe. */
 const CHANGE_OBSERVERS: readonly ((
   type: MessageTypes,
   request: unknown
@@ -258,11 +245,6 @@ const CHANGE_OBSERVERS: readonly ((
   observeNftMessage,
 ]
 
-/**
- * Called by `talismanHandler` for every extension message, before the handler runs. Returns
- * what to call with the handler's outcome, or null when the message concerns no transaction,
- * no dapp request decision and no change a `CHANGE_OBSERVERS` table reports.
- */
 export const observeExtensionMessage = (
   type: MessageTypes,
   request: unknown

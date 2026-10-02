@@ -5,7 +5,6 @@ const FLUSH_ALARM_NAME = "talisman-analytics-flush"
 export const MIN_ALARM_DELAY_MS = 30_000
 
 export interface FlushScheduler {
-  /** One-shot at `when`. Same name, so a second call replaces the first. */
   schedule(when: number): Promise<void>
   clear(): Promise<void>
   scheduledAt(): Promise<number | undefined>
@@ -27,7 +26,6 @@ export const createChromeAlarmScheduler = (): FlushScheduler => ({
 
 export type WakePlan = { type: "keep" } | { type: "clear" } | { type: "schedule"; at: number }
 
-/** The alarm decides when PostHog receives a request, so it never fires at a time set by the real clock alone. */
 export const planWake = ({
   sendTimes,
   now,

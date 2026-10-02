@@ -30,9 +30,8 @@ const reportFailure = (what: string) => (cause: unknown) =>
   log.error(`[analytics] ${what} failed`, { cause })
 
 /**
- * The background half of the central mechanisms: domain stores publish facts and never import
- * analytics, and this is their only subscriber. Call once, synchronously, at the top level of
- * the service worker: it registers an onInstalled listener.
+ * Call once, synchronously, at the top level of the service worker: it registers an onInstalled
+ * listener.
  */
 export const startAnalyticsMechanisms = () => {
   chrome.runtime.onInstalled.addListener((details) => {

@@ -55,7 +55,6 @@ export type TxSubmitButtonProps<
    * @returns
    */
   onSubmit: (txId: string) => void
-  /** The transaction failed before any node accepted it: the button has shown the error */
   onError?: (cause: unknown) => void
   /** true while a hardware or QR signer holds the payload */
   onPayloadLockChange?: PayloadLockListener

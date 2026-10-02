@@ -10,10 +10,6 @@ interface FallbackErrorBoundaryState {
   hasError: boolean
 }
 
-/**
- * Error boundary that catches errors in its children and renders a fallback UI.
- * Unlike TalismanErrorBoundary, it reports nothing.
- */
 export class FallbackErrorBoundary extends Component<
   FallbackErrorBoundaryProps,
   FallbackErrorBoundaryState

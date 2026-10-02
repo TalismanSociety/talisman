@@ -3,7 +3,6 @@ import type { ValidRequests } from "@core/libs/requests/types"
 import { isHostname } from "./schema"
 import type { ChainPlatform } from "./transactions"
 
-/** Solana names follow the wallet-standard features. */
 export const DAPP_METHODS = [
   "connect",
   "signIn",
@@ -26,10 +25,6 @@ export type DappMethod = (typeof DAPP_METHODS)[number]
 
 export type DappRequestKind = { method: DappMethod; platform: ChainPlatform }
 
-/**
- * From the stored request, never from the `pub(*)` call: `createRequest` never sees the call, and
- * several calls create the same request type (every `auth` request is `connect`).
- */
 export const describeDappRequest = (request: ValidRequests): DappRequestKind => {
   switch (request.type) {
     case "auth":
@@ -64,10 +59,6 @@ export const describeDappRequest = (request: ValidRequests): DappRequestKind => 
   }
 }
 
-/**
- * The hostname, without port, for http and https. `ipfs:` and `ipns:` hosts are content hashes,
- * so they become the scheme name. Anything else is null.
- */
 export const toDappDomain = (url: string | undefined): string | null => {
   if (!url) return null
   try {
@@ -81,10 +72,6 @@ export const toDappDomain = (url: string | undefined): string | null => {
   }
 }
 
-/**
- * "unscanned": no scan ran or none finished before the request ended. Connection requests carry
- * the site verdict only (malicious or unscanned).
- */
 export const RISK_VERDICTS = ["benign", "warning", "malicious", "error", "unscanned"] as const
 export type RiskVerdict = (typeof RISK_VERDICTS)[number]
 

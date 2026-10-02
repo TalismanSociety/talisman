@@ -2,9 +2,7 @@ import type { FlowLinkRecord } from "../domains/analytics/flowTracker"
 
 interface SessionStorageData {
   password?: string
-  /** Why the wallet last locked, for app_unlocked: gone after a browser or extension restart. */
   analyticsLastLockReason?: string
-  /** Transaction flows waiting for their transaction to settle. */
   analyticsFlowLinks?: FlowLinkRecord[]
 }
 

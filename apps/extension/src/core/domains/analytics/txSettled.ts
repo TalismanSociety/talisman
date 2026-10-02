@@ -12,11 +12,6 @@ import { analyticsNetworkId, signerOfAddress } from "./txContext"
 const isFinal = (status: TransactionStatus) =>
   status === "success" || status === "error" || status === "replaced"
 
-/**
- * One tx_settled per transaction, on its first entry into a final status: a later correction
- * (finality rewriting success into error) sends nothing. "unknown" is not final: the cleanup
- * settles it later.
- */
 export const settledStatusOf = (
   from: TransactionStatus,
   to: TransactionStatus,
@@ -24,7 +19,6 @@ export const settledStatusOf = (
 ): SettledStatus | null => {
   if (isFinal(from) || !isFinal(to)) return null
   if (reason === "dropped") return "dropped"
-  // the restart pass marks the losers of a nonce another transaction already won
   if (reason === "restart") return "replaced"
   return to as SettledStatus
 }
@@ -48,7 +42,6 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     ...(signer && { signer }),
   })
   const swap = swapOfTransaction(row.txInfo)
-  // its exchange status watcher starts now, and ends the flow with trackSwapOutcome
   if (swap && status === "success") return
   await flowTracker.settled(
     row.id,
@@ -60,7 +53,6 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
 const isSwapOutcome = (status: SwapStatus): status is SwapOutcome =>
   (SWAP_OUTCOMES as readonly string[]).includes(status)
 
-/** A swap ends when the exchange the wallet watches does: its transaction succeeded earlier. */
 export const trackSwapOutcome = async ({ row, status, at }: SwapOutcomeFact) => {
   const swap = swapOfTransaction(row.txInfo)
   if (!swap || !isSwapOutcome(status)) return

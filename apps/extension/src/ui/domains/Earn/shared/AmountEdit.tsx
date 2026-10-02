@@ -246,7 +246,6 @@ export const AmountEdit: FC<{
   value: bigint | null
   tokenId: string
   error?: string | null
-  /** what kind of failure error is. null: a prompt, such as asking for an amount, not a failure */
   errorCategory?: ErrorCategory | null
   onValueChanged: (value: bigint | null) => void
   onMaxClick: () => void

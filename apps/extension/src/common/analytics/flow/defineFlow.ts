@@ -139,7 +139,6 @@ export type FlowDef<N extends string = string, T extends FlowTypes = FlowTypes> 
 > & {
   readonly name: N
   readonly events: FlowEvents<N, T>
-  /** Never set: it carries the flow's types to `FlowReporter` and `Binding`. */
   readonly types?: T
 }
 
@@ -162,7 +161,6 @@ type FlowInput<
   readonly omit?: readonly O[]
   readonly rename?: R
   readonly lastStepAlias?: Alias
-  /** false for a flow nested in another flow's modal: its end is not what the modal was for. */
   readonly finishesOverlay?: boolean
 }
 

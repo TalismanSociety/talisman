@@ -2,7 +2,6 @@ import { toDurationMs } from "@common/analytics/schema"
 import { track } from "@ui/api/track"
 
 export type BalancesLoadPhase = {
-  /** performance.now() when this page first saw the wallet unlocked. */
   unlockedAt: number | null
   initialising: boolean | null
   done: boolean
@@ -20,10 +19,6 @@ export const INITIAL_BALANCES_LOAD_PHASE: BalancesLoadPhase = {
   done: false,
 }
 
-/**
- * Mobile's measureBalancesLoad: from the first unlock seen to the first time balances read not
- * initialising, `ready_at_unlock` when they already did at the unlock. Once per page.
- */
 export const stepBalancesLoad = (
   phase: BalancesLoadPhase,
   event: BalancesLoadEvent
@@ -54,17 +49,14 @@ const stepPage = (event: BalancesLoadEvent) => {
   if (timing) track("balances_loaded", timing)
 }
 
-/** A passive tap: pages that never show balances never start fetching them for this. */
 export const tapBalancesInitialising = (value: boolean) =>
   stepPage({ type: "initialising", value, at: performance.now() })
 
 let startedLocked: boolean | null = null
 
-/** A tap on the page's login state. */
 export const tapLoggedIn = (loggedIn: boolean) => {
   startedLocked ??= !loggedIn
   if (loggedIn) stepPage({ type: "unlocked", at: performance.now() })
 }
 
-/** The page showed the unlock screen first. */
 export const pageStartedLocked = () => startedLocked === true

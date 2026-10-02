@@ -9,7 +9,6 @@ export const LIVE_TIMEOUT_MS = 120_000
 
 export type TvlDue = { due: false } | { due: true; trigger: TvlSnapshot["trigger"] }
 
-/** A first-ever snapshot is daily: update only ever means a real update. */
 export const tvlDue = ({
   lastAt,
   lastVersion,
@@ -28,7 +27,6 @@ export const tvlDue = ({
 
 type TvlScheduleDeps = {
   admits: () => Promise<boolean>
-  /** Live balances, else null. Never a subscription that starts balances itself. */
   live$: Observable<BalancesResult | null>
   locked$: Observable<unknown>
   store: {
@@ -42,11 +40,6 @@ type TvlScheduleDeps = {
   liveTimeoutMs?: number
 }
 
-/**
- * Checked on each unlock. When no page shows balances, none go live and nothing is sent: the
- * next unlock tries again. One run at a time, and the cadence is recorded before the event is
- * queued, so two unlocks during the wait cannot send twice.
- */
 export const createTvlSchedule = ({
   admits,
   live$,

@@ -1,7 +1,6 @@
 import { RECEIVE_ENTRIES } from "../../funds"
 import { defineFlow } from "../defineFlow"
 
-/** A copy failure is error_shown with the clipboard category, inside the attempt. */
 export const receive = defineFlow("receive", {
   subject: "copying an address to receive funds",
   steps: ["account", "chain", "copy"],

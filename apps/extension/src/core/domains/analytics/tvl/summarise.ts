@@ -5,15 +5,12 @@ import type { AccountType } from "@talismn/keyring"
 
 export type TvlSnapshot = PropsOfEvent<Catalogue["tvl_snapshot"]>
 
-/** One token held by the owned or the watched accounts, priced in USD. */
 export type Holding = {
   owner: "owned" | "watched"
   tokenId: string
   networkId: string
-  /** null: no CoinGecko id, so never allow-listed. */
   coingeckoId: string | null
   usd: number
-  /** The part of `usd` that is staked. */
   stakedUsd: number
 }
 
@@ -33,7 +30,6 @@ export type TvlInputs = {
   quickUnlockEnabled: boolean
 }
 
-/** Mobile's threshold: from $1 a network or token counts as held. */
 const HELD_MIN_USD = 1
 const MAX_LIST_ITEMS = 100
 
@@ -55,7 +51,6 @@ const bucketedMostValuableFirst = (sums: readonly [string, number][]) =>
     .slice(0, MAX_LIST_ITEMS)
     .map(([id, usd]) => `${toAmountBucket(usd)}|${id}` as const)
 
-/** Ids leave this function only when they are on the allow-list; every other one is counted. */
 export const summariseTvl = (inputs: TvlInputs): TvlSnapshot => {
   const { accounts, holdings, allowedCoingeckoIds } = inputs
   const wallet = accounts.filter((account) => account.type !== "contact")

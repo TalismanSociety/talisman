@@ -1,9 +1,3 @@
-/**
- * Mobile's values keep mobile's meaning. Mobile classifies by error name only, which returns
- * `unknown` for every error that crossed a message port: here the background's verdict travels
- * with the rebuilt Error, and English messages are read as a last resort. A message is matched,
- * never sent.
- */
 export const ERROR_CATEGORIES = [
   "user_rejected",
   "insufficient_balance",
@@ -63,7 +57,6 @@ const LEDGER_CATEGORIES: Readonly<Record<string, ErrorCategory | null>> = {
   Timeout: "ledger_device_not_found",
   Network: "ledger_device_not_found",
   BrowserSecurity: "ledger_device_not_found",
-  // the wallet's own message wrapped as a Ledger error (an expired payload): the other rules decide
   Custom: null,
 }
 
@@ -138,7 +131,6 @@ export const CATEGORY_RULES: readonly CategoryRule[] = [
     category: "user_rejected",
   },
   { match: "message", pattern: /inability to pay some fees/i, category: "insufficient_fee" },
-  // yield.xyz: the account lacks the SOL a new Kamino account must hold for rent
   { match: "message", pattern: /InsufficientSolForRent/i, category: "insufficient_fee" },
   { match: "message", pattern: /insufficient funds for gas/i, category: "insufficient_gas" },
   {
@@ -171,7 +163,6 @@ export const CATEGORY_RULES: readonly CategoryRule[] = [
   },
   {
     match: "message",
-    // the keyring's own message when a password does not decrypt a stored secret
     pattern: /(incorrect|invalid|wrong) password|^unauthori[sz]ed$|^failed to decrypt data$/i,
     category: "wrong_password",
   },

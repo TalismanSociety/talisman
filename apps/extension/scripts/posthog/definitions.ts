@@ -61,7 +61,6 @@ export const definitionChanges = (spec: DefinitionSpec, stored: StoredDefinition
  */
 export const isSeedable = (event: EventDefinition) => event.kind !== "error"
 
-/** When only a super property is missing, the first seedable event carries it. */
 export const eventsToSeed = (
   catalogue: CatalogueSnapshot,
   storedEvents: ReadonlySet<string>,
@@ -91,7 +90,6 @@ export type SeedEvent = {
   readonly properties: Readonly<Record<string, string | number | boolean>>
 }
 
-/** Development variant, so the test-account filter hides them. */
 export const seedBatch = (
   catalogue: CatalogueSnapshot,
   events: readonly EventDefinition[],

@@ -41,7 +41,6 @@ const resolveImport = (from: string, specifier: string): string | undefined => {
     .find((file) => existsSync(file) && statSync(file).isFile())
 }
 
-/** The chain of runtime imports from `entry` to `target`, or null. */
 const importChain = (entry: string, target: string): string[] | null => {
   const parent = new Map<string, string | null>([[entry, null]])
   const queue = [entry]

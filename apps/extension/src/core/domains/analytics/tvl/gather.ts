@@ -24,7 +24,6 @@ const platformOf = (address: string) => {
   }
 }
 
-/** Native staking locks, nomination pools, and Bittensor stake, which is the whole dTao balance. */
 const stakedUsdOf = (balance: Balance) => {
   if (balance.token?.type === "substrate-dtao") return balance.total.fiat("usd") ?? 0
   const staked = [
@@ -101,7 +100,6 @@ export const gatherTvlInputs = async (
       .filter((network) => isNetworkActive(network, activeNetworks))
       .map((network) => network.id),
     customNetworkCount: networks.filter(isNetworkCustom).length,
-    // a custom network is never named: its id can be a genesis hash
     nativeCoingeckoIdOf: (networkId) => {
       const network = networksById.get(networkId)
       if (!network || isNetworkCustom(network)) return null

@@ -62,7 +62,6 @@ class RequestStore {
   // `observable` is kept up to date with the list of requests, and ensures that the front end
   // can easily set up a subscription to the data, and the state can show the correct message on the icon
   readonly observable = new ReplaySubject<ValidRequests[]>(1)
-  /** Each request is created once and ends once, whichever exit runs first. */
   readonly facts$ = new Subject<RequestFact>()
 
   allRequests(): AnyRespondableRequest[]

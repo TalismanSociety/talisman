@@ -17,7 +17,6 @@ const METHOD_OF_ROUTE: Readonly<Record<string, AccountMethod>> = {
   watched: "watch",
 }
 
-/** `/accounts/add/<method>/<sub>`: the menu's step is its screen, a sub-route picks accounts. */
 export const addAccountRoute = (
   pathname: string
 ): { method?: AccountMethod; step: AddAccountStep | null } => {
@@ -53,10 +52,6 @@ const [AccountAddFlowProvider, useAccountAddFlow] = provideContext(useAccountAdd
 
 export { AccountAddFlowProvider }
 
-/**
- * A step the route does not show: a modal, a device prompt or a stage of the form. The latest
- * one declared wins, and the route's step returns once none is.
- */
 export const useAddAccountStep = (step: AddAccountStep | null) => {
   const { declare } = useAccountAddFlow()
   const id = useId()

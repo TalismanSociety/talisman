@@ -245,7 +245,6 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
       }
 
       if (!(await copyAddress(formattedAddress, onQrClick))) return
-      // the active networks map can lack the network the row was listed for
       const network = chain ?? (chainId ? await firstValueFrom(getNetworkById$(chainId)) : null)
       flows.receive.completed({
         network_id: copiedNetworkId(network),

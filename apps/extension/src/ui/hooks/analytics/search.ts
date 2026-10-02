@@ -2,15 +2,10 @@ import type { SearchSurface } from "@common/analytics/portfolio"
 import { track } from "@ui/api/track"
 import { useEffect, useRef } from "react"
 
-/** How long a search must stay unchanged to count as the one the user settled on. */
 export const SEARCH_SETTLE_MS = 1000
 
 type Pending = { surface: SearchSurface; query: string; resultCount: number }
 
-/**
- * Mobile's search_performed: once per distinct search per mount, when it stayed unchanged for a
- * second or the list unmounted first. Only its length and result count leave the page.
- */
 export const useReportSearch = (surface: SearchSurface, query: string, resultCount: number) => {
   const reported = useRef(new Set<string>())
   const pending = useRef<Pending | null>(null)

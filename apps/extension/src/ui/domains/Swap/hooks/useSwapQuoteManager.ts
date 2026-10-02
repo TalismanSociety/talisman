@@ -135,7 +135,6 @@ export const useSwapQuoteManager = (params: {
     queryResults.every((r) => !r.isLoading && !r.isFetching) ||
     (!enabled && queryResults.length === 0)
 
-  // once per amount and token pair, as mobile: the 20 s refreshes are not new answers
   const quoteRequest = useRef<{ key: string; at: number; reported: boolean } | null>(null)
   useEffect(() => {
     if (!enabled || quoteRequest.current?.key === quoteInputKey) return

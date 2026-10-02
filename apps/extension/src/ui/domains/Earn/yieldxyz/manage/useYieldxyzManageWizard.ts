@@ -96,7 +96,7 @@ const useYieldxyzManageWizardProvider = ({
       action,
       address: position?.address,
       networkId: position?.networkId,
-      maxNativeValue: 0n, // managing a position never sends native tokens
+      maxNativeValue: 0n,
       refreshAction,
       submitActionTransaction,
       onCompleted,

@@ -9,10 +9,6 @@ import { useEffect } from "react"
 
 import { pageStartedLocked } from "./performance"
 
-/**
- * The first commit of a request window with its request, at the next frame: window load, unlock
- * and request fetch, not decoding, fees or the scan. Once per window.
- */
 export const useReportRequestRendered = (request: ValidRequests | undefined) => {
   useEffect(() => {
     if (!request || pageContext.requestId) return
@@ -36,13 +32,11 @@ const VERDICTS: Record<"Benign" | "Warning" | "Malicious" | "Error", RiskVerdict
   Error: "error",
 }
 
-/** The latest scan verdict of a request window; in-wallet scans have no request and send nothing. */
 export const reportRequestRisk = (validationResult: keyof typeof VERDICTS) => {
   const id = pageContext.requestId
   if (id) api.analyticsRequestRisk({ id, verdict: VERDICTS[validationResult] }).catch(() => {})
 }
 
-/** A token Blockaid calls spam is a warning; an unknown verdict means no scan finished. */
 const TOKEN_VERDICTS: Partial<Record<TokenRiskVerdict, keyof typeof VERDICTS>> = {
   Benign: "Benign",
   Warning: "Warning",
@@ -50,7 +44,6 @@ const TOKEN_VERDICTS: Partial<Record<TokenRiskVerdict, keyof typeof VERDICTS>> =
   Malicious: "Malicious",
 }
 
-/** The token scan of a watch asset request, as the request's risk verdict. */
 export const reportRequestTokenRisk = (verdict: TokenRiskVerdict) => {
   const validationResult = TOKEN_VERDICTS[verdict]
   if (validationResult) reportRequestRisk(validationResult)

@@ -9,7 +9,6 @@ export type Disposition =
   | "dropped_consent"
   | "dropped_off"
   | "rejected"
-  /** The intake's own policy dropped it: the exception ignore list or throttle. */
   | "filtered"
 
 export type RequestRiskReport = { id: string; verdict: RiskVerdict }

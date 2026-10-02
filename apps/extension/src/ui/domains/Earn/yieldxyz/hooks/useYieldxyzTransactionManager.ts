@@ -18,9 +18,7 @@ type UseYieldxyzTransactionManagerProps = {
   refreshAction: () => Promise<void>
   submitActionTransaction: (transactionId: string, hash: string) => Promise<void>
   onCompleted: () => void
-  /** a transaction of the action reached yield.xyz */
   onTransactionSent: () => void
-  /** a transaction of the action failed to submit, or failed on chain */
   onTransactionFailed: (cause: unknown) => void
 }
 

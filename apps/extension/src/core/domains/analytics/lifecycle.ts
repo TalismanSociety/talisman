@@ -9,10 +9,6 @@ import { track } from "./track"
 const isLockReason = (value: unknown): value is LockReason =>
   LOCK_REASONS.includes(value as LockReason)
 
-/**
- * install: app_installed waits in memory until consent, so it is lost if the worker dies first.
- * update: installs older than this analytics get their age from the update that brought it.
- */
 export const onInstalledForAnalytics = async ({
   reason,
   previousVersion,
@@ -29,10 +25,6 @@ export const onInstalledForAnalytics = async ({
   }
 }
 
-/**
- * The reason of the last lock lives in session storage, which a browser or extension restart
- * clears: an unlock with none stored followed a restart.
- */
 const reportLockFact = async (fact: LockFact) => {
   if (fact.type === "locked") {
     await sessionStorage.set({ analyticsLastLockReason: fact.reason })

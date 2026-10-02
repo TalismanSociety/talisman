@@ -4,7 +4,6 @@ import type { AccountType } from "@talismn/keyring"
 export const CHAIN_PLATFORMS = ["ethereum", "polkadot", "solana"] as const
 export type ChainPlatform = (typeof CHAIN_PLATFORMS)[number]
 
-/** Mobile's `Signer` plus the extension's own signers. */
 export const SIGNERS = ["local", "ledger", "vault", "signet", "watched"] as const
 export type Signer = (typeof SIGNERS)[number]
 
@@ -21,10 +20,8 @@ const SIGNER_OF_ACCOUNT_TYPE: Record<AccountType, Signer | null> = {
 
 export const signerOf = (type: AccountType): Signer | null => SIGNER_OF_ACCOUNT_TYPE[type]
 
-/** A user-added network: its id can be a genesis hash, and it says nothing shared across installs. */
 export const CUSTOM_NETWORK_ID = "custom"
 
-/** `txInfo.type` verbatim, as mobile, or "other" for rows without one. */
 export const TX_TYPES = [
   "transfer",
   "approve-erc20",
@@ -48,9 +45,5 @@ export const txTypeOf = (txInfo: Pick<WalletTransactionInfo, "type"> | undefined
 export const SUBMITTERS = ["wallet", "dapp"] as const
 export type SubmittedBy = (typeof SUBMITTERS)[number]
 
-/**
- * Mobile's three plus "dropped": the chain never saw it (the cleanup's verdict, stored as
- * "error"). "unknown" is not settled.
- */
 export const SETTLED_STATUSES = ["success", "error", "replaced", "dropped"] as const
 export type SettledStatus = (typeof SETTLED_STATUSES)[number]

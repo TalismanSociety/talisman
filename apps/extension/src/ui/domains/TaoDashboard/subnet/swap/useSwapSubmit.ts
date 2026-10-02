@@ -37,11 +37,8 @@ export function useSwapSubmit({
   account: Account | null
   direction: "buy" | "sell"
   resetValueIn: () => void
-  /** the amount typed: the first one starts a tao_trade attempt */
   valueIn: bigint | null
-  /** symbol of the token the amount is typed in */
   symbol: string | undefined
-  /** the TAO side of the trade, which prices it */
   taoPlancks: bigint | null
 }) {
   const { t } = useTranslation()

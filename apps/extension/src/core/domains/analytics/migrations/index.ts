@@ -10,15 +10,11 @@ const legacyAppStore = appStore as unknown as StorageProvider<{
 }>
 
 export const migratePosthogDistinctIdToAnalyticsStore: Migration = {
-  forward: new MigrationFunction(async () => {
-    // deprecated
-  }),
+  forward: new MigrationFunction(async () => {}),
 }
 
 export const migrateAnaliticsPurgePendingCaptures: Migration = {
-  forward: new MigrationFunction(async () => {
-    // deprecated
-  }),
+  forward: new MigrationFunction(async () => {}),
 }
 
 export const migrateRemoveLegacyAnalytics: Migration = {

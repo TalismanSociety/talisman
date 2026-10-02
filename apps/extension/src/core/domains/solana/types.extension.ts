@@ -54,7 +54,6 @@ export type RequestSolanaSignApprove = {
   id: SigningRequestID<"sol-sign">
 } & SolanaSignApproveResponse
 
-/** Sign-in is a Solana request too, though the sites domain stores its outcome. */
 export type RequestSolanaSignCancel = {
   id: SigningRequestID<"sol-sign"> | KnownRequestId<"auth-sol-signIn">
 }

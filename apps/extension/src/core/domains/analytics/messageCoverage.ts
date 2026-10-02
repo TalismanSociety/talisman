@@ -5,7 +5,6 @@ import type { MessageTypes, MessageTypesWithSubscriptions } from "../../types"
 type PriMessage = Extract<MessageTypes, `pri(${string})`>
 type PriSubscription = Extract<MessageTypesWithSubscriptions, `pri(${string})`>
 
-/** Subscriptions are reads unless listed: one that writes must say what it sends. */
 type MessageCoverage = { readonly [M in Exclude<PriMessage, PriSubscription>]: Coverage } & {
   readonly [M in PriSubscription]?: Exclude<Coverage, "read">
 }

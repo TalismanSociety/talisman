@@ -12,7 +12,6 @@ import {
   StringCoercer,
 } from "@posthog/core/error-tracking"
 
-/** Mobile's mechanisms plus `caught`: an error a call site caught and chose to report. */
 export const EXCEPTION_MECHANISMS = [
   "caught",
   "uncaught",
@@ -24,7 +23,6 @@ export type ExceptionMechanism = (typeof EXCEPTION_MECHANISMS)[number]
 export const isHandledMechanism = (mechanism: ExceptionMechanism): boolean =>
   mechanism === "caught" || mechanism === "error_boundary"
 
-/** One source for the builder's cuts and the worker's schema: a built report always parses. */
 export const EXCEPTION_LIMITS = {
   entries: 10,
   framesPerEntry: 50,
@@ -38,24 +36,15 @@ export const EXCEPTION_LIMITS = {
 } as const
 
 export type ReportErrorOptions = {
-  /** Only the global handlers and the error boundary pass another than `caught`. */
   mechanism?: ExceptionMechanism
-  /** A chaindata network id. The worker sends `custom` for user-added and unknown networks. */
   networkId?: string
 }
 
-/**
- * What a realm hands to the worker's intake, which treats it as untrusted: it parses, scrubs and
- * fingerprints it. Values are raw, so a report lives in memory and on the port only.
- */
 export type ExceptionReport = {
-  /** UUIDv4, the event uuid: the boundary shows it as its Error ID. */
   id: string
   mechanism: ExceptionMechanism
-  /** The thrown value first, then its `cause` chain, with this realm's chunk ids applied. */
   exceptions: readonly Exception[]
   networkId?: string
-  /** Pages only: the screen pattern when it threw. */
   screen?: string
 }
 
@@ -97,7 +86,6 @@ const withinLimits = ({ type, value, stacktrace, ...exception }: Exception): Exc
   }),
 })
 
-/** Never throws: it runs inside the global error handlers. */
 export const buildExceptionReport = (
   thrown: unknown,
   { mechanism = "caught", networkId, screen }: ReportErrorOptions & { screen?: string }

@@ -38,7 +38,6 @@ const DAPP_URL = "https://app.example.com/swap"
 const CHAIN_ID = "8453"
 const TOKEN_ID = `${CHAIN_ID}:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`
 
-/** The handler changes chaindata after the observer read it, as the approval handlers do. */
 const handle = async (type: MessageTypes, request: unknown, afterHandler?: () => void) => {
   const settle = observeDappMessage(type, request)
   afterHandler?.()

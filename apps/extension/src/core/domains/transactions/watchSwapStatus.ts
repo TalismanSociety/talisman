@@ -20,7 +20,6 @@ const RETRY_DELAY_MS = 5_000
 const NOT_FOUND_GRACE_PERIOD_MS = 10 * 60 * 1_000 // 10 minutes
 const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
 
-/** A watcher stopped on this status, stored before it is published. */
 export type SwapOutcomeFact = { row: WalletTransaction; status: SwapStatus; at: number }
 
 export const swapOutcomeFacts$ = new Subject<SwapOutcomeFact>()

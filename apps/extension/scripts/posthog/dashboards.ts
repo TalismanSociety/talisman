@@ -55,7 +55,6 @@ export type Alert = {
 
 type ExceptionPropertyName = Exclude<keyof ExceptionProperties, `$${string}` | "network_id">
 
-/** The worker's own properties on `$exception`, which is PostHog's event and so not in the catalogue. */
 const exceptionProperties: {
   readonly [K in ExceptionPropertyName]: Omit<PropertyDefinition, "name" | "isSuper">
 } = {
@@ -80,7 +79,6 @@ export const EXCEPTION_PROPERTIES: readonly PropertyDefinition[] = Object.entrie
   exceptionProperties
 ).map(([name, definition]) => ({ name, ...definition, isSuper: false }))
 
-/** Events PostHog defines itself, which tiles may name without a catalogue entry, with their properties. */
 export const BUILTIN_EVENTS: Readonly<Record<string, readonly string[]>> = {
   $exception: [...Object.keys(exceptionProperties), "network_id"],
 }
@@ -94,7 +92,6 @@ export const catalogueSnapshot = (
   flows,
 })
 
-/** Mobile's name, sent by the popup login since unit 5a. */
 export const UNLOCK_FAILED_EVENT = "app_unlock_failed"
 
 const MIN_SCREEN_VIEWS = 10
@@ -714,7 +711,6 @@ LIMIT 100`),
 
 export const PRIMARY_DASHBOARD_SLUG = "overview"
 
-/** Thresholds are starting points: tune them once the tiles have a baseline. */
 export const ALERTS: readonly Alert[] = [
   {
     name: "Transaction failure rate above 10%",
@@ -758,7 +754,6 @@ export const ALERTS: readonly Alert[] = [
   },
 ]
 
-/** Zero-padded so that sorting by name follows the spec order at any dashboard count. */
 const dashboardNumber = (dashboards: readonly Dashboard[], spec: Dashboard) =>
   String(dashboards.indexOf(spec) + 1).padStart(Math.max(2, String(dashboards.length).length), "0")
 
@@ -831,7 +826,6 @@ const breakdownsOf = (query: Query) =>
       ?.breakdowns ?? []
   ).map((b) => b.property)
 
-/** A property several events share, such as `surface`, means something only next to its event. */
 const undeclaredReads = (
   tile: Tile,
   declaredBy: ReadonlyMap<string, ReadonlySet<string>>,
@@ -876,7 +870,6 @@ export const specErrors = (
   const events = new Set(declaredBy.keys())
   const properties = new Set(catalogue.properties.map((p) => p.name))
   const superProperties = new Set(catalogue.properties.filter((p) => p.isSuper).map((p) => p.name))
-  /** An unknown property or event is reported once, by the checks above. */
   const isExempt = (property: string) =>
     property.startsWith("$") || superProperties.has(property) || !properties.has(property)
   const errors: string[] = []

@@ -140,7 +140,7 @@ const useYieldxyzExitWizardProvider = ({
       action,
       address: state.position?.address,
       networkId: state.position?.networkId,
-      maxNativeValue: 0n, // exiting a position never sends native tokens
+      maxNativeValue: 0n,
       refreshAction,
       submitActionTransaction,
       onCompleted,
@@ -192,7 +192,6 @@ const getExitableBalance = (position: YieldxyzPositionEnhanced | null) => {
   return activeBalances[0]
 }
 
-/** The USD value of the part of a balance the user exits: yield.xyz prices the whole balance. */
 const shareOfUsd = (
   balance: { amountUsd?: string | null; amountRaw: string } | undefined,
   amountOut: bigint | null

@@ -26,7 +26,6 @@ const GEOIP_DROPPED = [
   "$set_once",
 ]
 
-/** posthog-js capture features off in case it ever loads. */
 const PRIVACY_SETTINGS = {
   anonymize_ips: true,
   autocapture_opt_out: true,

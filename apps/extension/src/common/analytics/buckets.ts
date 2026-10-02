@@ -23,7 +23,6 @@ const AMOUNT_UPPER_BOUNDS: readonly [number, AmountBucket][] = [
   [100_000_000, "10M-100M"],
 ]
 
-/** Mobile's `toUsdBucket`: unknown, unpriced and invalid values fall into "0" so funnels line up. */
 export const toAmountBucket = (fiat: number | null | undefined): AmountBucket => {
   if (fiat == null || !Number.isFinite(fiat) || fiat <= 0) return "0"
   return AMOUNT_UPPER_BOUNDS.find(([bound]) => fiat < bound)?.[1] ?? ">100M"

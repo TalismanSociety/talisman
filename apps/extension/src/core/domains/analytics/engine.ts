@@ -126,7 +126,6 @@ export class AnalyticsEngine {
     })
   }
 
-  /** Whether an event of this kind would be queued now: no work for opted-out or pre-consent installs. */
   admits(kind: ConsentKind): Promise<boolean> {
     return this.#serial(async () => admit(kind, this.#consent, this.#transmission) === "queued")
   }

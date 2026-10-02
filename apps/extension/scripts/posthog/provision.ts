@@ -483,7 +483,7 @@ const discordCurrent = (fn: StoredFunction) => ({
   ),
 })
 
-/** Discord destinations per alert id. Without `full=true` the list omits template_id and inputs. */
+/** Without `full=true` the list omits template_id and inputs. */
 const loadDiscordDestinations = async (api: PosthogApi) => {
   const byAlertId = new Map<string, StoredFunction[]>()
   for (const fn of await api.listAll<StoredFunction>(

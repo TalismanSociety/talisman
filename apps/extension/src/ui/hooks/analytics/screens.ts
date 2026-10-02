@@ -7,19 +7,13 @@ import { useEffect, useRef } from "react"
 
 import { onScreenReported } from "./flows"
 
-/**
- * How long a pattern waits before it is the screen. A prefix splat waits for its descendant
- * `<Routes>`: React holds a suspended boundary's content back for at least 300 ms after its
- * fallback, and a lazy chunk or a data subscription can take longer. A catch-all waits for a
- * `<Navigate>` that replaces the location within a frame.
- */
+/** React holds a suspended boundary's content back for at least 300 ms after its fallback. */
 export const SETTLE_MS: Record<PatternAwaits, number> = {
   nothing: 0,
   redirect: 300,
   descendant: 2_000,
 }
 
-/** A splat screen replaced sooner than this was a redirect hop, not a screen the user saw. */
 const REDIRECT_MS = 100
 
 export type ScreenRegistration = { depth: number; joined: JoinedPattern; at: number }
@@ -28,10 +22,6 @@ type VirtualRegistration = { name: VirtualScreen; at: number }
 
 export type SettledScreen = { name: string; at: number }
 
-/**
- * A mounted shell screen wins (the last one mounted). Otherwise the deepest `<Routes>`, the latest
- * on a tie, once it waited what its pattern awaits.
- */
 export const settleScreen = ({
   virtual,
   routes,
@@ -61,7 +51,6 @@ let reported: SettledScreen | null = null
 let settleScheduled = false
 let timer: ReturnType<typeof setTimeout> | null = null
 
-/** Dwell runs from when each screen rendered, not from when it was reported. */
 const report = (screen: SettledScreen) => {
   if (screen.name === reported?.name) return
   const previous = reported
@@ -97,17 +86,12 @@ const settle = () => {
   report(settled)
 }
 
-/** After the commit's effects have all run, so the deepest registration is in. */
 const scheduleSettle = () => {
   if (settleScheduled) return
   settleScheduled = true
   requestAnimationFrame(settle)
 }
 
-/**
- * A splat screen left before it settled: reported when it was the screen on show long enough to
- * be seen, dropped when it was a redirect hop or a deeper pattern refined it.
- */
 const reportIfShown = (left: LiveRegistration) => {
   const shownFor = performance.now() - left.at
   if (left.refined || left.joined.awaits === "nothing" || shownFor < REDIRECT_MS) return
@@ -125,7 +109,6 @@ const useRegistrationId = () => {
   return id.current
 }
 
-/** Called by the tracked `<Routes>`. Null registers nothing: `screen={false}`. */
 export const useScreenRegistration = (joined: JoinedPattern | null, depth: number) => {
   const id = useRegistrationId()
   const pattern = joined?.pattern
@@ -148,7 +131,6 @@ export const useScreenRegistration = (joined: JoinedPattern | null, depth: numbe
   }, [id, pattern, awaits, depth])
 }
 
-/** Shell screens that replace the routed content without a location change. */
 export type VirtualScreen = "/login" | "/locked" | "/migrating" | "/phishing-page-detected/:url"
 
 export const useVirtualScreen = (name: VirtualScreen) => {

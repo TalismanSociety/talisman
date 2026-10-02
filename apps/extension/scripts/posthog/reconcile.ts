@@ -5,7 +5,6 @@ export const MANAGED_TAG = "aiec-managed"
 export const isManaged = (obj: { tags?: readonly string[] | null }) =>
   (obj.tags ?? []).includes(MANAGED_TAG)
 
-/** Stored order first, so an up-to-date list compares equal. */
 export const withTags = (
   stored: readonly string[] | null | undefined,
   required: readonly string[] = [MANAGED_TAG]
@@ -73,7 +72,6 @@ export const withoutSchemaVersion = (query: unknown) => {
   return { ...(query as object), source: rest }
 }
 
-/** Else the first candidate, to be renamed. */
 export const pickByName = <T extends { name: string }>(
   candidates: readonly T[],
   name: string

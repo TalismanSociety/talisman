@@ -58,7 +58,6 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     })
   }, [password])
 
-  // the error screen's checkbox turns error tracking on to send this report
   const [useErrorTracking] = useSetting("useErrorTracking")
   useEffect(() => {
     if (error && useErrorTracking) reportError(error)

@@ -148,7 +148,6 @@ const getExtrinsincResult = async (
     }
   } catch (error) {
     // errors commonly arise here due to misconfigured metadata
-    // this is difficult to debug and may not be solvable at our end, so we no longer report them
     log.error(error)
   }
 

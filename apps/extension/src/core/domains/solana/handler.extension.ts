@@ -85,7 +85,6 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         const { id } = request as RequestSolanaSignCancel
         const queued = requestStore.getRequest(id)
         assert(queued, "Unable to find request")
-        // the same error as closing the window, so the dapp sees no difference
         queued.reject(new Error("Cancelled"))
         return true
       }

@@ -7,11 +7,6 @@ import {
 import { api } from "./api"
 import { pageContext } from "./pageContext"
 
-/**
- * The page builds the exception list, because only this realm knows the chunk ids of its frames.
- * The worker scrubs, fingerprints, gates and queues it. Resolves to the event id when the report
- * was queued, else null. Never rejects.
- */
 export const reportError = (
   thrown: unknown,
   options: ReportErrorOptions = {}
@@ -26,5 +21,4 @@ export const reportError = (
   )
 }
 
-/** Call once per page, at module scope. */
 export const installErrorHandlers = () => installGlobalErrorHandlers(window, reportError)

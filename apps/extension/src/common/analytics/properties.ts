@@ -23,7 +23,6 @@ import { CHAIN_PLATFORMS, SETTLED_STATUSES, SIGNERS, SUBMITTERS, TX_TYPES } from
 
 export const UNLOCK_METHODS = ["password", "quick_unlock"] as const
 export const LOCK_REASONS = ["manual", "auto_lock", "error"] as const
-/** Mobile's `app_unlock_failed` reasons. */
 export const UNLOCK_FAILURES = ["rejected", "error"] as const
 export const ERROR_SURFACES = ["toast", "field", "alert", "screen", "boundary"] as const
 export const DISMISS_CAUSES = ["escape", "backdrop", "button", "completed"] as const

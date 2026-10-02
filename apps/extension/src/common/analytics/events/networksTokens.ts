@@ -5,10 +5,6 @@ import { defineEventGroup } from "../schema"
 
 const source = { narrow: z.enum(["dapp", "settings"]) }
 
-/**
- * Mobile's names. Token ids stay on the device: an ERC-20 id holds its contract address, so the
- * symbol and network name the token instead.
- */
 export const networkTokenEvents = defineEventGroup(properties, {
   custom_network_saved: {
     description:

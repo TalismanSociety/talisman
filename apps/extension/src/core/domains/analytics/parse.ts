@@ -13,20 +13,17 @@ export type ParsedCatalogueEvent = {
   readonly name: EventName
   readonly kind: ConsentKind
   readonly properties: EventProperties
-  /** The page's screen when the event fired, valid as a `$screen_name`. */
   readonly screen?: string
   readonly transactionId?: string
   readonly uuid?: never
 } & Brand
 
-/** Outside the catalogue: `$exception` is a PostHog built-in, kept out of the definitions sync. */
 export type ParsedException = {
   readonly name: "$exception"
   readonly kind: "error"
   readonly properties: ExceptionProperties
   readonly screen?: string
   readonly transactionId?: never
-  /** Minted in the realm that threw: the boundary shows it as its Error ID. */
   readonly uuid: string
 } & Brand
 

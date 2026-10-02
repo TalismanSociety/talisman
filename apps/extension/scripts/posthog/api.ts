@@ -90,7 +90,6 @@ export class PosthogApi {
     return this.#write<null>("DELETE", path)
   }
 
-  /** Writes nothing, so a dry run sends it. */
   query<T>(source: unknown) {
     return this.#send<T>("POST", "/query/", { query: source })
   }

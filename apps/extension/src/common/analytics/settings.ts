@@ -1,7 +1,6 @@
 import type { AppStoreData } from "@core/domains/app/store.app"
 import type { SettingsStoreData } from "@core/domains/app/store.settings"
 
-/** `setting_changed` keys: mobile's name where mobile has the same setting. */
 export const SETTING_KEYS = [
   "blurBalances",
   "hideSmallBalance",
@@ -38,7 +37,6 @@ export type SettingChange = { key: SettingKey; value: SettingValue }
 
 type SettingRule = { key: SettingKey; type: "boolean" | "enum" | "number" }
 
-/** Why a stored value is not a `setting_changed` key. */
 type NotASetting =
   | "consent: the engine reports it"
   | "own event"
@@ -49,7 +47,6 @@ type NotASetting =
 const bool = (key: SettingKey): SettingRule => ({ key, type: "boolean" })
 const enumOf = (key: SettingKey): SettingRule => ({ key, type: "enum" })
 
-/** Every setting decides: a new one does not compile until it is a key or says why it is not. */
 const SETTINGS: { readonly [K in keyof SettingsStoreData]-?: SettingRule | NotASetting } = {
   useErrorTracking: "consent: the engine reports it",
   useAnalyticsTracking: "consent: the engine reports it",
@@ -124,7 +121,6 @@ const toChange = (
   return parsed === undefined ? null : { key: rule.key, value: parsed }
 }
 
-/** Null when the stored key is not a user setting, or its value is not the declared type. */
 export const settingChangeOf = <K extends keyof SettingsStoreData>(
   key: K,
   value: SettingsStoreData[K]

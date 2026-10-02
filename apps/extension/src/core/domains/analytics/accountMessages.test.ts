@@ -32,7 +32,6 @@ const DOT_3 = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 
 const account = (type: Account["type"], address: string) => ({ type, address }) as Account
 
-/** Runs one message the way the handler port does: observe, let the handler change the keyring, settle. */
 const handle = async (
   type: MessageTypes,
   request: unknown,

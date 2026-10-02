@@ -1,9 +1,5 @@
 import { defineFlow } from "../defineFlow"
 
-/**
- * Mobile's onboarding ends with the first account, which the extension adds after these screens:
- * the background sends `onboarding_completed` then, so this flow's end takes another name.
- */
 export const onboarding = defineFlow("onboarding", {
   subject: "setting up the wallet",
   steps: [

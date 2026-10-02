@@ -4,7 +4,6 @@ import { SEARCH_SURFACES } from "../portfolio"
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-/** Mobile's names. A token id holds a contract address, so the symbol and network name the token. */
 export const portfolioEvents = defineEventGroup(properties, {
   token_details_opened: {
     description:

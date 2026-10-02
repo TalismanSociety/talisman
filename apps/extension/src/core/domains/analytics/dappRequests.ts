@@ -27,11 +27,6 @@ type Pending = {
   verdict?: RiskVerdict
 }
 
-/**
- * The request store's ending is authoritative when it is the decision itself (resolved,
- * rejected). A window or tab that closes while an approval is still running ends the request
- * first, so the decision recorded at the approve message wins over those endings.
- */
 export const outcomeOf = (
   ending: RequestEnding,
   decision: Decision | undefined
@@ -52,10 +47,6 @@ export const outcomeOf = (
   }
 }
 
-/**
- * Set only when the wallet refused or failed an approval the user gave: a rejection the user
- * chose carries no category.
- */
 export const failureCategoryOf = (
   outcome: RequestOutcome,
   decision: Decision | undefined,

@@ -10,7 +10,6 @@ import { useCallback } from "react"
 
 type AccountSelection = (typeof ACCOUNT_SELECTIONS)[number]
 
-/** Mobile's account_switched, from the account list of the popup or the dashboard sidebar. */
 export const useReportAccountSwitched = () => {
   const accountsTotal = useAccounts().length
   return useCallback(
@@ -26,10 +25,6 @@ export const useReportAccountSwitched = () => {
   )
 }
 
-/**
- * Mobile's token_details_opened, from the row that opens the page. The page groups a symbol across
- * networks: network_id only when one network holds it.
- */
 export const reportTokenDetailsOpened = (
   token: Token,
   network: Network | null,

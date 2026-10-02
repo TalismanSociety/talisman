@@ -26,7 +26,6 @@ import { markInnermostOverlayCompleted } from "./useOverlayAnalytics"
 
 const running = new Map<string, Attempt>()
 
-/** The user finished what the overlay on top was for: modal_closed then reads completed. */
 const finishes = (flow: FlowBase, lifecycle: Lifecycle) =>
   flow.finishesOverlay &&
   (lifecycle === "completed" || (lifecycle === "submitted" && flow.settlement === "transaction"))
@@ -129,7 +128,6 @@ export const useFlow = <N extends string, T extends FlowTypes>(
     }
   }, [flow, active])
 
-  // before the step: a render that changes both stamps the new step with the new attributes
   const attributesKey = JSON.stringify(attributes ?? null)
   useEffect(() => {
     const current: Attributes | null = JSON.parse(attributesKey)

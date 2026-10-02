@@ -14,7 +14,6 @@ import type { ExceptionEntry, ExceptionFrame } from "./types"
 
 const L = EXCEPTION_LIMITS
 
-/** Unknown keys (vars, context_line, module, a page's in_app) are stripped, never forwarded. */
 const frameSchema = z.object({
   platform: z.literal("web:javascript"),
   filename: z.string().max(L.filenameLength).optional(),
@@ -61,7 +60,6 @@ export const parseExceptionReport = (
     : rejected("$exception", describeIssues(parsed.error))
 }
 
-/** Sentry's ignoreErrors, matched on the raw root message and on `type: message`. */
 export const IGNORED_ERRORS = {
   window_closed: /No window with id: \d+/,
   ws_normal_closure: /disconnected from wss[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
@@ -170,11 +168,9 @@ export const EXCEPTION_THROTTLE = {
 } as const
 
 export type ExceptionThrottle = {
-  /** Only admitted occurrences count, so one looping error cannot use up the window. */
   admit(fingerprint: string, now: number): boolean
 }
 
-/** A fixed window per worker lifetime. The map holds admitted fingerprints only: at most `total`. */
 export const createExceptionThrottle = (
   limits: { [K in keyof typeof EXCEPTION_THROTTLE]: number } = EXCEPTION_THROTTLE
 ): ExceptionThrottle => {
