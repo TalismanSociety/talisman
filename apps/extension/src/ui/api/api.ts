@@ -16,6 +16,7 @@ export const api: MessageTypes = {
   keepalive: () => messageService.sendMessage("pri(keepalive)"),
   keepunlocked: () => messageService.sendMessage("pri(keepunlocked)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
+  analyticsTrack: (request) => messageService.sendMessage("pri(analytics.track)", request),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>
     messageService.sendMessage("pri(app.onboardCreatePassword)", { pass, passConfirm }),

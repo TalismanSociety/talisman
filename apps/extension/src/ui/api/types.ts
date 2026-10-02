@@ -1,3 +1,4 @@
+import type { TrackRequest } from "@common/analytics/catalogue"
 import type {
   AccountProxiesSubscriptionResponse,
   RequestAccountProxiesLoadDetails,
@@ -12,6 +13,7 @@ import type {
   RequestAddAccountKeypair,
   RequestAddressLookup,
 } from "@core/domains/accounts/types"
+import type { Disposition } from "@core/domains/analytics/exports"
 import type {
   ChangePasswordStatusUpdate,
   LoggedinType,
@@ -82,6 +84,7 @@ export default interface MessageTypes {
   keepalive: () => Promise<boolean>
   keepunlocked: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
+  analyticsTrack: (request: TrackRequest) => Promise<Disposition>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>

@@ -7,7 +7,7 @@ import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { BITTENSOR_NETWORK_IDS } from "@ui/state/bittensor"
-import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
+import { type FC, lazy, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
@@ -46,6 +46,9 @@ import { AddTokenPage } from "./routes/Tokens/AddTokenPage"
 import { EditTokenPage } from "./routes/Tokens/EditTokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
+
+const DevEventLogPage =
+  process.env.BUILD === "dev" ? lazy(() => import("./routes/Settings/DevEventLogPage")) : null
 
 const DashboardInner = () => {
   return (
@@ -133,6 +136,7 @@ const DashboardInner = () => {
           </Route>
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          {DevEventLogPage && <Route path="dev-event-log" element={<DevEventLogPage />} />}
           {/* Old routes redirects */}
           <Route
             path="qr-metadata"

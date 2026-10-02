@@ -10,6 +10,8 @@ declare namespace NodeJS {
     readonly SENTRY_DSN?: string
     readonly SENTRY_AUTH_TOKEN?: string
     readonly BUILD?: "production" | "canary" | "ci" | "qa" | "dev"
+    readonly BUILD_TYPE?: "production" | "canary" | "dev"
+    readonly GIT_SHA?: string
 
     // dev utilities
     readonly PASSWORD?: string

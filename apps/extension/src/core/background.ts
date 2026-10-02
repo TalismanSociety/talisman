@@ -3,6 +3,7 @@ import { log } from "@common/log"
 import { assert } from "@talismn/util"
 
 import { sentry } from "./config/sentry"
+import { analyticsEngine } from "./domains/analytics/engine"
 import { passwordStore } from "./domains/app/store.password"
 import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
@@ -18,6 +19,8 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 import { trackUiPort } from "./libs/uiOpenState"
 
 sentry.init("background")
+
+analyticsEngine.start()
 
 // the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
 // so capture uncaught errors and unhandled rejections with our own listeners.

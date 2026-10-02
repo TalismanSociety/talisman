@@ -1,4 +1,5 @@
 import {
+  ActivityIcon,
   AlertCircleIcon,
   GlobeIcon,
   LinkIcon,
@@ -85,6 +86,13 @@ export const DashboardSettingsSidebar = () => {
           icon={<GlobeIcon />}
         />
         <SidebarNavItem label={t("About")} to="/settings/about" icon={<TalismanHandIcon />} />
+        {process.env.BUILD === "dev" && (
+          <SidebarNavItem
+            label="Analytics event log"
+            to="/settings/dev-event-log"
+            icon={<ActivityIcon />}
+          />
+        )}
       </div>
     </div>
   )

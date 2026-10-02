@@ -4,7 +4,8 @@ import type { ValidRequests } from "../../libs/requests/types"
 import type { Address } from "../../types/base"
 import type { RemoteConfigData } from "./remote-config/fetchRemoteConfig"
 
-export type RemoteConfigStoreData = RemoteConfigData
+export type RemoteConfigStoreData = Omit<RemoteConfigData, "analytics"> &
+  Partial<Pick<RemoteConfigData, "analytics">>
 
 export interface QuickUnlockStoreData {
   /** Base64url-encoded WebAuthn credential ID */

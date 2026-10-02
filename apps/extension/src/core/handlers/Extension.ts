@@ -5,6 +5,7 @@ import { db } from "../db"
 import { queryCacheStore } from "../db/queryCache"
 import { AccountProxiesHandler } from "../domains/accountProxies"
 import { AccountsHandler } from "../domains/accounts"
+import { AnalyticsHandler } from "../domains/analytics/handler"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { BalancesHandler } from "../domains/balances"
@@ -47,6 +48,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       accountProxies: new AccountProxiesHandler(stores),
+      analytics: new AnalyticsHandler(stores),
       polkadotVault: new PolkadotVaultHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
