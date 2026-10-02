@@ -1,10 +1,13 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { TAO_DECIMALS } from "@talismn/balances"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
-import { useAccounts } from "@ui/state/accounts"
+import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useBalances } from "@ui/state/balances"
 import { useDotNetwork, useToken } from "@ui/state/chaindata"
@@ -13,7 +16,7 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
-
+import { stakingSubmittedReport } from "../../shared/stakingAnalytics"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorConvictionLockModal } from "../hooks/useBittensorConvictionLockModal"
 import { useBittensorConvictionLockPayload } from "../hooks/useBittensorConvictionLockPayload"
@@ -60,7 +63,7 @@ const DEFAULT_STATE: WizardState = {
  */
 const useBittensorConvictionLockWizardProvider = () => {
   const { t } = useTranslation()
-  const { close, args } = useBittensorConvictionLockModal()
+  const { close, args, isOpen } = useBittensorConvictionLockModal()
 
   const [
     {
@@ -209,14 +212,20 @@ const useBittensorConvictionLockWizardProvider = () => {
   const submitErrorMessage = feeErrorMessage ?? payloadErrorMessage
   const payloadToSubmit = submitErrorMessage ? undefined : payload
 
-  const errorMessage = useMemo(() => {
-    if (stakedTotal <= 0n) return t("This account has no stake on this subnet")
+  const amountError = useMemo<InlineError | null>(() => {
+    if (stakedTotal <= 0n)
+      return { message: t("This account has no stake on this subnet"), category: "input_invalid" }
     if (typeof plancks !== "bigint") return null
     if (isTopUp && plancks < existingLockAmount)
-      return t("A lock can only be increased, not reduced")
-    if (plancks > stakedTotal) return t("Amount exceeds your stake on this subnet")
+      return { message: t("A lock can only be increased, not reduced"), category: "input_invalid" }
+    if (plancks > stakedTotal)
+      return {
+        message: t("Amount exceeds your stake on this subnet"),
+        category: "insufficient_balance",
+      }
     return null
   }, [stakedTotal, plancks, isTopUp, existingLockAmount, t])
+  const errorMessage = amountError?.message ?? null
 
   const canContinue =
     !!effectiveHotkey &&
@@ -260,9 +269,49 @@ const useBittensorConvictionLockWizardProvider = () => {
 
   const closeInfoDrawer = useCallback(() => setShowInfoDrawer(false), [])
 
-  const onSubmitted = useCallback((hash: Hex) => {
-    setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
-  }, [])
+  const account = useAccountByAddress(address || null)
+
+  const onSubmitted = useCallback(
+    (hash: Hex) => {
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: baseToken?.symbol,
+        usd: null,
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
+    },
+    [account, network, baseToken?.symbol]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "lock" },
+    attributes: { staking_type: "bittensor", direction: "lock", netuid },
+    step:
+      step === "confirm"
+        ? "review"
+        : step === "form"
+          ? activePicker === "hotkey"
+            ? "hotkey"
+            : "form"
+          : null,
+  })
+
+  useErrorShown({ shown: feeErrorMessage, surface: "alert", category: "insufficient_fee" })
+  useErrorShown({
+    shown: payloadErrorMessage,
+    surface: "alert",
+    category: classifyError(errorPayload),
+  })
+  useErrorShown({
+    shown: amountError?.message,
+    surface: "field",
+    category: amountError?.category ?? "input_invalid",
+    field: "amount",
+  })
 
   return {
     step,

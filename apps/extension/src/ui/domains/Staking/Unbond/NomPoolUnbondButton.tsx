@@ -24,7 +24,7 @@ export const NomPoolUnbondButton: FC<{
   )
 
   const handleClick = useCallback(() => {
-    open({ tokenId, address, poolId })
+    open({ entry: "token_details", tokenId, address, poolId })
   }, [address, open, poolId, tokenId])
 
   if (!canUnstake) return null // no nompool/tao staking on this network

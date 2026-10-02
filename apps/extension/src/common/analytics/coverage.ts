@@ -1,7 +1,7 @@
 import type { EventName } from "./catalogue"
 import type { FlowName } from "./flow/registry"
 
-export type PendingArea = "5d" | "5e"
+export type PendingArea = "5e"
 
 type PermanentExemption = "transport" | "navigation" | "housekeeping"
 

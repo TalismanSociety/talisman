@@ -172,6 +172,24 @@ describe("useFlow", () => {
     expect(closes()).toEqual(["escape"])
   })
 
+  it("leaves the modal to its gesture when a flow nested in it completes", () => {
+    const VaultSign = () => {
+      useFlow(flows.vault_sign, { entry: "wallet", step: "scan_signature" })
+      return null
+    }
+    render(
+      <>
+        <Backup />
+        <VaultSign />
+      </>
+    )
+
+    act(() => flows.vault_sign.completed())
+    fireEvent.keyDown(window, { key: "Escape" })
+
+    expect(closes()).toEqual(["escape"])
+  })
+
   it("abandons on Escape, with modal_closed reading escape", () => {
     render(<Backup />)
     act(() => controls.setStep("show"))

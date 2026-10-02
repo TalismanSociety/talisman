@@ -1,4 +1,6 @@
-import { BUY_ENTRIES } from "../../funds"
+import { z } from "zod/v4"
+
+import { BUY_ENTRIES, RAMP_DIRECTIONS } from "../../funds"
 import { defineFlow } from "../defineFlow"
 
 export const buy = defineFlow("buy", {
@@ -12,7 +14,7 @@ export const buy = defineFlow("buy", {
       fiat_currency: "required",
       token_symbol: "required",
       network_id: "required",
-      direction: "required",
+      direction: { narrow: z.enum(RAMP_DIRECTIONS) },
     },
   },
   omit: ["submitted"],

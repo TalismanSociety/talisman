@@ -127,6 +127,7 @@ export type FlowBase = {
   readonly attributes: readonly string[]
   readonly settlement: Settlement
   readonly omit: readonly Omittable[]
+  readonly finishesOverlay: boolean
   readonly abandonedStepProperty: string
   readonly eventNames: { readonly [L in Lifecycle]?: string }
   readonly events: EventGroup
@@ -161,6 +162,8 @@ type FlowInput<
   readonly omit?: readonly O[]
   readonly rename?: R
   readonly lastStepAlias?: Alias
+  /** false for a flow nested in another flow's modal: its end is not what the modal was for. */
+  readonly finishesOverlay?: boolean
 }
 
 type TypesOf<
@@ -322,6 +325,7 @@ export const defineFlow = <
     attributes: Object.keys(input.attributes ?? {}),
     settlement,
     omit,
+    finishesOverlay: input.finishesOverlay ?? true,
     abandonedStepProperty,
     eventNames,
     events: events as unknown as FlowEvents<N, TypesOf<Steps, Entries, A, X, S, O, R, Alias>>,

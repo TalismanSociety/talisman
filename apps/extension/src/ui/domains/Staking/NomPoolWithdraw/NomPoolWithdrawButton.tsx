@@ -23,7 +23,7 @@ export const NomPoolWithdrawButton: FC<{
   )
 
   const handleClick = useCallback(() => {
-    open({ tokenId, address })
+    open({ entry: "token_details", tokenId, address })
   }, [address, open, tokenId])
 
   if (!canWithdraw) return null // no nompool staking on this network

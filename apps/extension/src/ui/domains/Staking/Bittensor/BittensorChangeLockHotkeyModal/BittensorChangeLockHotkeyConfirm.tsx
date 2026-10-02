@@ -7,10 +7,10 @@ import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   BITTENSOR_CHANGE_LOCK_HOTKEY_MODAL_CONTAINER_ID,
   useBittensorChangeLockHotkeyWizard,
@@ -150,6 +150,7 @@ export const BittensorChangeLockHotkeyConfirm = () => {
         payload={payload}
         txMetadata={txMetadata}
         onSubmitted={onSubmitted}
+        onError={flows.staking.failed}
         disabled={!payload}
         className="shrink-0"
       />

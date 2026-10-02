@@ -28,7 +28,8 @@ const running = new Map<string, Attempt>()
 
 /** The user finished what the overlay on top was for: modal_closed then reads completed. */
 const finishes = (flow: FlowBase, lifecycle: Lifecycle) =>
-  lifecycle === "completed" || (lifecycle === "submitted" && flow.settlement === "transaction")
+  flow.finishesOverlay &&
+  (lifecycle === "completed" || (lifecycle === "submitted" && flow.settlement === "transaction"))
 
 const apply = (name: string, action: Action) => {
   const attempt = running.get(name)

@@ -14,6 +14,7 @@ import {
   TX_PHASES,
 } from "./funds"
 import { p } from "./schema"
+import { EARN_SYSTEMS, STAKING_ACTIONS, STAKING_TYPES, VALIDATOR_SORTS } from "./staking"
 import { CHAIN_PLATFORMS, SETTLED_STATUSES, SIGNERS, SUBMITTERS, TX_TYPES } from "./transactions"
 
 export const UNLOCK_METHODS = ["password", "quick_unlock"] as const
@@ -282,7 +283,10 @@ export const properties = {
   is_revoke: p.bool("The approval resets an existing allowance to zero, as some tokens require."),
   replace_type: p.enum(REPLACE_TYPES, "How the user replaced a pending transaction."),
   tab: p.enum(RAMP_DIRECTIONS, "The buy and sell tab the modal opened on."),
-  direction: p.enum(RAMP_DIRECTIONS, "Whether the user went on to buy or to sell crypto."),
+  direction: p.enum(
+    [...RAMP_DIRECTIONS, ...STAKING_ACTIONS],
+    "What the transaction does with the user's value. buy_provider_launched: whether the user went on to buy or to sell crypto. tao_trade events: whether the user buys or sells subnet alpha. Staking events: the staking action, as mobile."
+  ),
   provider: p.enum(RAMP_PROVIDERS, "The ramp provider the user went on to."),
   fiat_currency: p.slug("The fiat currency code the user picked, such as USD."),
   address_format: p.slug(
@@ -296,8 +300,8 @@ export const properties = {
     "Which check flagged the site: the community phishing lists, or Blockaid's site scan."
   ),
   mode: p.enum(
-    ["add", "edit"],
-    "custom_network_saved: whether the user added or edited the network."
+    ["add", "edit", ...STAKING_ACTIONS],
+    "What the user set out to do, as mobile names it. custom_network_saved: whether the user added or edited the network. staking_started: the staking action the modal opened for."
   ),
   testnet: p.bool("The network is a testnet."),
   rpc_provider: p.nullable(
@@ -305,7 +309,42 @@ export const properties = {
       "The registrable domain of the network's first RPC, such as alchemy.com. Null for a self-hosted node: an IP address, localhost or a private-network name."
     )
   ),
-  enabled: p.bool("The network or token is now turned on."),
+  enabled: p.bool(
+    "Network and token events: the network or token is now turned on. staking_mev_shield_toggled: MEV Shield is now on. bittensor_settings_submitted: the account now accepts conviction-locked transfers."
+  ),
   default_enabled: p.bool("The network or token is on by default, when the user has not set it."),
   has_coingecko_id: p.bool("The token has a CoinGecko id, so the wallet can price it."),
+
+  staking_type: p.enum(
+    STAKING_TYPES,
+    "The staking system: Bittensor stake, a nomination pool, or SEEK staking on Ethereum."
+  ),
+  netuid: p.count("The Bittensor subnet, by its number. 0 is root."),
+  is_root: p.bool("The Bittensor subnet is root, netuid 0."),
+  symbol: p.symbol(
+    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. unknown: a symbol the catalogue cannot hold."
+  ),
+  mev_shield: p.bool(
+    "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."
+  ),
+  is_default: p.bool(
+    "The value is the wallet's default. staking_validator_selected: the validator the remote config recommends for the subnet. staking_slippage_changed: the default slippage tolerance."
+  ),
+  is_featured: p.bool("The validator is featured in the validator list."),
+  sort: p.enum(VALIDATOR_SORTS, "The order the validator list was sorted in."),
+  searched: p.bool("The user had typed a search in the list when they picked."),
+  position: p.count("1-based position of the pick in the list, as sorted and searched."),
+  preset: p.bool("The user picked a preset value: the Reset button, not a typed value."),
+  system: p.enum(
+    EARN_SYSTEMS,
+    "The Earn system behind the position: yield.xyz, SEEK staking, or a read-only DeFi position."
+  ),
+  yield_id: p.nullable(
+    p.slug(
+      "The yield.xyz product id, such as ethereum-eth-lido-staking. Null for another system, or an id that embeds an address."
+    )
+  ),
+  earn_action: p.slug(
+    "The yield.xyz pending action the user ran on a position, lowercased: claim_rewards, withdraw, restake_rewards and the like."
+  ),
 } as const

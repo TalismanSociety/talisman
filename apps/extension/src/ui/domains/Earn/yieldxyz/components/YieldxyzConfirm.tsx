@@ -31,6 +31,7 @@ export type YieldxyzConfirmWizard = {
   stepIndex: number | null
   isProcessing: boolean
   onSubmit: (txId: string) => Promise<void>
+  onSubmitError: (cause: unknown) => void
 }
 
 export const YieldxyzConfirmBody: FC<{
@@ -118,7 +119,7 @@ const StepsProgress: FC<{ wizard: YieldxyzConfirmWizard }> = ({
 }
 
 const SubmitButton: FC<{ wizard: YieldxyzConfirmWizard }> = ({
-  wizard: { transaction, isProcessing, onSubmit, stepIndex: txIndex, action },
+  wizard: { transaction, isProcessing, onSubmit, onSubmitError, stepIndex: txIndex, action },
 }) => {
   const { t } = useTranslation()
 
@@ -149,6 +150,7 @@ const SubmitButton: FC<{ wizard: YieldxyzConfirmWizard }> = ({
       label={`${t("Approve")} (${(txIndex ?? 0) + 1}/${action?.transactions.length ?? "?"})`}
       className="w-full"
       onSubmit={onSubmit}
+      onError={onSubmitError}
       disabled={!tx}
       isProcessing={isProcessing}
     />

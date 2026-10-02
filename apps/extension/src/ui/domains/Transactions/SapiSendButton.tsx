@@ -275,9 +275,14 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         notifyPayloadExpired(t)
         return
       }
-      const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
+      const { hash, innerHash } = await sapi.submit(
+        submitPayload,
+        undefined,
+        submitTxInfo,
+        submitMode
+      )
       setIsSubmitting(false)
-      onSubmitted(hash)
+      onSubmitted(hash, innerHash)
     } catch (err) {
       setIsSubmitting(false)
       log.error("Failed to submit", { submitPayload, err })

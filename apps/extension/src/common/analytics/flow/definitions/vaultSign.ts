@@ -10,4 +10,5 @@ export const vaultSign = defineFlow("vault_sign", {
   steps: ["show_qr", "update_metadata", "scan_signature"],
   entries: SUBMITTERS,
   omit: ["submitted", "failed"],
+  finishesOverlay: false,
 })

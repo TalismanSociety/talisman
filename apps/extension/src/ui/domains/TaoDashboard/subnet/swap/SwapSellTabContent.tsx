@@ -1,6 +1,5 @@
 import { Button } from "@ui/components/Button"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { BittensorSlippageModal } from "./BittensorSlippageModal"
@@ -63,21 +62,20 @@ const TabContent: FC = () => {
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { canSubmit } = useSwapSell()
-  const { isOpen, open, close } = useOpenClose()
+  const { canSubmit, confirm } = useSwapSell()
 
   return (
     <>
       <Button
         fullWidth
         color="sell"
-        onClick={open}
+        onClick={confirm.open}
         disabled={!canSubmit}
         className="h-24 w-full rounded border-none text-black"
       >
         {t("Sell")}
       </Button>
-      <SwapSellConfirmModal isOpen={isOpen} onClose={close} />
+      <SwapSellConfirmModal isOpen={confirm.isOpen} onClose={confirm.close} />
     </>
   )
 }

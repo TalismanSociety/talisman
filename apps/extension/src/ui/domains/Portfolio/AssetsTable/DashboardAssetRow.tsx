@@ -41,8 +41,8 @@ export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = getUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const { canBond } = useBondButton({ balances })
-  const { canUnbond } = useUnbondButton({ balances })
+  const { canBond } = useBondButton({ entry: "portfolio", balances })
+  const { canUnbond } = useUnbondButton({ entry: "portfolio", balances })
   const showStakeButtons = canBond || canUnbond
   const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 

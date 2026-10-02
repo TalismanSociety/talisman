@@ -49,7 +49,12 @@ describe("Bittensor wizard modals", () => {
   it("resets the claim wizard when reopened for the same target", () => {
     render(<BittensorClaimModal />, { wrapper })
     const { result } = renderHook(() => useBittensorClaimModal(), { wrapper })
-    const args = { networkId: "bittensor", address: "5Coldkey", hotkey: "5Hotkey" }
+    const args = {
+      entry: "token_details" as const,
+      networkId: "bittensor",
+      address: "5Coldkey",
+      hotkey: "5Hotkey",
+    }
 
     expectWizardResetOnReopen(() => result.current.open(args))
   })
@@ -57,7 +62,12 @@ describe("Bittensor wizard modals", () => {
   it("resets the conviction lock wizard when reopened for the same target", () => {
     render(<BittensorConvictionLockModal />, { wrapper })
     const { result } = renderHook(() => useBittensorConvictionLockModal(), { wrapper })
-    const args = { networkId: "bittensor", netuid: 1, address: "5Coldkey" }
+    const args = {
+      entry: "token_details" as const,
+      networkId: "bittensor",
+      netuid: 1,
+      address: "5Coldkey",
+    }
 
     expectWizardResetOnReopen(() => result.current.open(args))
   })

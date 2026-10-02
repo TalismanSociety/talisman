@@ -139,8 +139,8 @@ export const SeekGetFeeDiscountsDrawer = ({
           {totalOwned && totalOwned.planck > 0n && (
             <Button
               onClick={() => {
-                openSeekStakingModal({ action: "stake" })
                 onCloseModal()
+                openSeekStakingModal({ entry: "fee_discount", action: "stake" })
               }}
             >
               {t("Stake")} {tokenSymbol}

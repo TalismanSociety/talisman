@@ -40,12 +40,15 @@ describe("flowUsesIn", () => {
       "useFlow(flows.send, { step, entry })",
       "useFlow(flows.swap, { entry })",
       "flows.send.completed()",
+      "<Button onError={flows.send.failed} />",
       'const x = "flows.swap.completed("',
     ].join("\n")
     const uses = flowUsesIn(stripComments(code))
     expect(uses.useFlow).toEqual(["send", "swap"])
     expect(uses.boundSteps).toEqual(["send"])
-    expect(uses.reports.map((r) => `${r.flow}.${r.method}`)).toContain("send.completed")
+    expect(uses.reports.map((r) => `${r.flow}.${r.method}`)).toEqual(
+      expect.arrayContaining(["send.completed", "send.failed"])
+    )
   })
 
   it("counts parentheses for call arguments", () => {

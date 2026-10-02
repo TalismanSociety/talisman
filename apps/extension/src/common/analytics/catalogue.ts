@@ -9,6 +9,7 @@ import { networkTokenEvents } from "./events/networksTokens"
 import { overlayEvents } from "./events/overlays"
 import { performanceEvents } from "./events/performance"
 import { screenEvents } from "./events/screens"
+import { stakingEvents } from "./events/staking"
 import { transactionEvents } from "./events/transactions"
 import { flowEventGroup } from "./flow/defineFlow"
 import { FLOWS } from "./flow/registry"
@@ -37,6 +38,7 @@ const groups = [
   fundsEvents,
   dappEvents,
   networkTokenEvents,
+  stakingEvents,
   flowEventGroup(FLOWS),
 ] as const
 

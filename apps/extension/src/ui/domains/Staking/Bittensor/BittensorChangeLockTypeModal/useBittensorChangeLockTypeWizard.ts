@@ -1,9 +1,12 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
-import { useAccounts } from "@ui/state/accounts"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useDotNetwork, useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
@@ -11,7 +14,7 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
-
+import { stakingSubmittedReport } from "../../shared/stakingAnalytics"
 import type { ConvictionLockType } from "../components/BittensorLockTypePicker"
 import { useBittensorChangeLockTypeModal } from "../hooks/useBittensorChangeLockTypeModal"
 import { useBittensorChangeLockTypePayload } from "../hooks/useBittensorChangeLockTypePayload"
@@ -53,7 +56,7 @@ const DEFAULT_STATE: WizardState = {
  */
 const useBittensorChangeLockTypeWizardProvider = () => {
   const { t } = useTranslation()
-  const { close, args } = useBittensorChangeLockTypeModal()
+  const { close, args, isOpen } = useBittensorChangeLockTypeModal()
 
   const [{ step, activePicker, networkId, netuid, address, makePerpetual, hash }, setWizardState] =
     useState<WizardState>(() =>
@@ -182,9 +185,36 @@ const useBittensorChangeLockTypeWizardProvider = () => {
     }))
   }, [])
 
-  const onSubmitted = useCallback((hash: Hex) => {
-    setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
-  }, [])
+  const account = useAccountByAddress(address || null)
+
+  const onSubmitted = useCallback(
+    (hash: Hex) => {
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: baseToken?.symbol,
+        usd: null,
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
+    },
+    [account, network, baseToken?.symbol]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "change_lock_type" },
+    attributes: { staking_type: "bittensor", direction: "change_lock_type", netuid },
+    step: step === "confirm" ? "review" : step === "form" ? "form" : null,
+  })
+
+  useErrorShown({ shown: feeErrorMessage, surface: "alert", category: "insufficient_fee" })
+  useErrorShown({
+    shown: payloadErrorMessage,
+    surface: "alert",
+    category: classifyError(errorPayload),
+  })
 
   return {
     step,

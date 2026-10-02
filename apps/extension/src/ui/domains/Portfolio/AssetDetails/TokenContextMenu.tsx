@@ -77,6 +77,7 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
     const acc = accounts?.find((s) => s.canBondNomPool)
     if (!acc) return
     return {
+      entry: "token_details",
       tokenId,
       address: acc.address,
       poolId: acc.poolId ?? poolId,
@@ -116,7 +117,7 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   )
 
   const handleClick = useCallback(() => {
-    open({ tokenId: token.id, address: selectedAccount?.address })
+    open({ entry: "token_details", tokenId: token.id, address: selectedAccount?.address })
   }, [open, token.id, selectedAccount?.address])
 
   if (!isBittensorDTao || !hasPosition) return null
@@ -151,6 +152,7 @@ const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
+      entry: "token_details",
       networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,
@@ -189,6 +191,7 @@ const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
+      entry: "token_details",
       networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,

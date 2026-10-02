@@ -37,7 +37,12 @@ export const BittensorClaimButton: FC<{
 
   const handleClick = useCallback(() => {
     if (!rootToken?.hotkey) return
-    open({ networkId: rootToken.networkId, address, hotkey: rootToken.hotkey })
+    open({
+      entry: "token_details",
+      networkId: rootToken.networkId,
+      address,
+      hotkey: rootToken.hotkey,
+    })
   }, [address, open, rootToken])
 
   if (!rootToken || !isAccountOwned(account)) return null

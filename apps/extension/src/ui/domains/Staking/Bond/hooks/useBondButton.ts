@@ -1,3 +1,4 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Address } from "@core/types/base"
 import { type Balance, type Balances, findDTaoConvictionLock } from "@talismn/balances"
@@ -14,9 +15,11 @@ import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondMod
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({
+  entry,
   balances,
   ignoreExistingSettings,
 }: {
+  entry: StakingEntry
   balances: Balances | null | undefined
   // for now only used for bittensor to prevent reusing existing netuid
   ignoreExistingSettings?: boolean
@@ -56,6 +59,7 @@ export const useBondButton = ({
         case "bittensor": {
           const { address, networkId, hotkey, netuid } = bestBondableBalance
           handleOpenBittensorModal({
+            entry,
             stakeDirection: "bond",
             address,
             networkId,
@@ -65,17 +69,18 @@ export const useBondButton = ({
           break
         }
         case "seek": {
-          openSeekStakingModal({ action: "stake", address: bestBondableBalance.address })
+          openSeekStakingModal({ entry, action: "stake", address: bestBondableBalance.address })
           break
         }
         case "nominationPool": {
           const { address, tokenId, poolId } = bestBondableBalance
-          open({ address, tokenId, poolId })
+          open({ entry, address, tokenId, poolId })
           break
         }
       }
     },
     [
+      entry,
       bestBondableBalance,
       handleOpenBittensorModal,
       ignoreExistingSettings,

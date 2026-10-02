@@ -6,6 +6,7 @@ import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -22,9 +23,7 @@ import {
   useRef,
   useState,
 } from "react"
-
 import { useTranslation } from "react-i18next"
-
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -265,9 +264,16 @@ const AmountEdit = () => {
     displayMode,
     toggleDisplayMode,
     inputErrorMessage,
+    inputErrorCategory,
     maxPlancks,
     setPlancks,
   } = useBondWizard()
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputErrorCategory ?? "input_invalid",
+    field: "amount",
+  })
 
   const onSetMaxClick = useCallback(() => {
     if (!maxPlancks) return

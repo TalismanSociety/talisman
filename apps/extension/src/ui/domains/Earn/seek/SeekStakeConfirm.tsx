@@ -21,10 +21,10 @@ import {
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   NetworkDisplay,
   SEEK_STAKING_MODAL_CONTAINER_ID,
@@ -151,6 +151,7 @@ export const SeekStakeConfirm: FC<{
             disabled={!!ethTx.error || !ethTx.transaction}
             isProcessing={isProcessing || isPreparing}
             onSubmit={onSubmit}
+            onError={flows.staking.failed}
           />
         </div>
       </ModalDialog>

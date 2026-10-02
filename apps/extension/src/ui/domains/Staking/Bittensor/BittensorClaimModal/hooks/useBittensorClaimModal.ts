@@ -1,8 +1,10 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import type { Address } from "@core/types/base"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
 export type BittensorClaimModalInput = {
+  entry: StakingEntry
   networkId: DotNetworkId
   /** explicit claim target: when address+hotkey are set the position picker is skipped */
   address?: Address

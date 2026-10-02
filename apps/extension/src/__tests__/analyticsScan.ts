@@ -96,9 +96,9 @@ export const flowUsesIn = (strippedCode: string): FlowUse => ({
   boundSteps: [...strippedCode.matchAll(/\buseFlow\(\s*flows\.(\w+)/g)]
     .filter((match) => /\bstep\b/.test(callArguments(strippedCode, match.index + 7)))
     .map((match) => match[1]),
-  reports: [...strippedCode.matchAll(/\bflows\.(\w+)\.(step|submitted|completed|failed)\(/g)].map(
-    (match) => ({ flow: match[1], method: match[2] })
-  ),
+  reports: [
+    ...strippedCode.matchAll(/\bflows\.(\w+)\.(step|submitted|completed|failed)\b\s*[(,})]/g),
+  ].map((match) => ({ flow: match[1], method: match[2] })),
 })
 
 export type RoutePath = { index: number; text: string; kind: "literal" | "template" }

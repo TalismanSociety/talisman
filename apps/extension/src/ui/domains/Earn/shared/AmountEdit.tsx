@@ -1,3 +1,4 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { BalanceFormatter } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
@@ -6,6 +7,7 @@ import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -21,9 +23,7 @@ import {
   useRef,
   useState,
 } from "react"
-
 import { useTranslation } from "react-i18next"
-
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import { Tokens } from "../../Asset/Tokens"
@@ -246,11 +246,19 @@ export const AmountEdit: FC<{
   value: bigint | null
   tokenId: string
   error?: string | null
+  /** what kind of failure error is. null: a prompt, such as asking for an amount, not a failure */
+  errorCategory?: ErrorCategory | null
   onValueChanged: (value: bigint | null) => void
   onMaxClick: () => void
   onTokenClick?: () => void
-}> = ({ tokenId, value, error, onValueChanged, onTokenClick, onMaxClick }) => {
+}> = ({ tokenId, value, error, errorCategory, onValueChanged, onTokenClick, onMaxClick }) => {
   const { t } = useTranslation()
+  useErrorShown({
+    shown: errorCategory !== null && error,
+    surface: "field",
+    category: errorCategory ?? "input_invalid",
+    field: "amount",
+  })
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const [isTokenEdit, setIsTokenEdit] = useState(true)

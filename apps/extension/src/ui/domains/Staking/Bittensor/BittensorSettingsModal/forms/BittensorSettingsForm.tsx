@@ -3,6 +3,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { Toggle } from "@ui/components/Toggle"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { sortBittensorNetworkIds, useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -151,6 +152,7 @@ export const BittensorSettingsForm = () => {
             label={t("Confirm")}
             payload={payload}
             onSubmitted={onSubmitted}
+            onError={flows.bittensor_settings.failed}
             txMetadata={txMetadata}
             disabled={!canSubmit}
           />

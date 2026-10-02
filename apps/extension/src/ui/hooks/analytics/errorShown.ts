@@ -10,6 +10,9 @@ export type ErrorSurface = (typeof ERROR_SURFACES)[number]
 
 type ErrorShown = { surface: ErrorSurface; category: ErrorCategory; field?: string }
 
+/** An inline error with its category, known where the condition that raises it is checked. */
+export type InlineError = { message: string; category: ErrorCategory }
+
 export const reportErrorShown = ({ surface, category, field }: ErrorShown) => {
   const attempt = recordErrorOnInnermostFlow(category)
   track("error_shown", {

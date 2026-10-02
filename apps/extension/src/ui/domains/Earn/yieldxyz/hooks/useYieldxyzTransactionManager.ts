@@ -1,3 +1,4 @@
+import { attachErrorCategory } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import type { ActionDto } from "@core/domains/earn/exports"
 import type { NetworkId } from "@talismn/chaindata-provider"
@@ -5,7 +6,6 @@ import { useQuery } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { getYieldxyzStepMaxNativeValue } from "./provider-transaction-guards"
 import type { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
@@ -18,6 +18,10 @@ type UseYieldxyzTransactionManagerProps = {
   refreshAction: () => Promise<void>
   submitActionTransaction: (transactionId: string, hash: string) => Promise<void>
   onCompleted: () => void
+  /** a transaction of the action reached yield.xyz */
+  onTransactionSent: () => void
+  /** a transaction of the action failed to submit, or failed on chain */
+  onTransactionFailed: (cause: unknown) => void
 }
 
 /**
@@ -33,6 +37,8 @@ export const useYieldxyzTransactionManager = ({
   refreshAction,
   submitActionTransaction,
   onCompleted,
+  onTransactionSent,
+  onTransactionFailed,
 }: UseYieldxyzTransactionManagerProps) => {
   const { t } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -73,11 +79,14 @@ export const useYieldxyzTransactionManager = ({
         if (!transactionId) return
         await submitActionTransaction(transactionId, txId)
         setPendingTxId(transactionId)
+        onTransactionSent()
+      } catch (err) {
+        onTransactionFailed(err)
       } finally {
         setIsSubmitting(false)
       }
     },
-    [nextTransaction, submitActionTransaction]
+    [nextTransaction, submitActionTransaction, onTransactionSent, onTransactionFailed]
   )
 
   // simple polling to refresh action while a tx is pending
@@ -116,6 +125,12 @@ export const useYieldxyzTransactionManager = ({
           subtitle: t("Transaction failed"),
           errorCategory: "dispatch_failed",
         })
+        onTransactionFailed(
+          attachErrorCategory(
+            new Error(`yield.xyz transaction ${pendingTx.status}`),
+            "dispatch_failed"
+          )
+        )
         setPendingTxId(null)
         break
 
@@ -135,5 +150,6 @@ export const useYieldxyzTransactionManager = ({
     transaction,
     isProcessing: isSubmitting || !!pendingTx,
     onSubmit,
+    onSubmitError: onTransactionFailed,
   }
 }

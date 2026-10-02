@@ -22,5 +22,6 @@ export const send = defineFlow("send", {
 | `omit` | `"submitted"` or `"failed"`, for a flow that has none. `_completed` and `_abandoned` always exist |
 | `rename` | Mobile's name for a lifecycle event, where mobile already has one |
 | `lastStepAlias` | A registry property that `_abandoned` writes the last step under instead of `last_step` (mobile's `stage`) |
+| `finishesOverlay` | `false` for a flow that runs inside another flow's modal, such as `vault_sign` inside a staking modal: its end does not mark the modal completed |
 
 A failure does not end the attempt: the user can retry under the same `flow_id`. Each attempt ends with one `_completed` or one `_abandoned`.

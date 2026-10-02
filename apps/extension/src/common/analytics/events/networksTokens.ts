@@ -14,7 +14,7 @@ export const networkTokenEvents = defineEventGroup(properties, {
     description:
       "The user added a network that is not in Talisman's network list. network_id is the id the network was saved under: the chain id for an Ethereum network.",
     props: {
-      mode: "required",
+      mode: { narrow: z.enum(["add", "edit"]) },
       platform: "required",
       network_id: "required",
       testnet: "required",

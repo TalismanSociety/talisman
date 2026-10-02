@@ -17,6 +17,7 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 | A `provideContext` provider | Add one line to `FLOW_PROVIDERS` |
 | An error toast | Pass `cause: err`, or `errorCategory` when nothing was thrown |
 | An inline form error from a caught failure | `setError(field, { type: classifyError(err), message })`, and `errorCategory={errorCategoryOfField(errors.field)}` on its `FormFieldContainer` |
+| An inline error a hook computes | Return an `InlineError` (`{ message, category }`) where the condition is checked, and `useErrorShown` where it renders |
 | A `SignAlertMessage type="error"` | `errorCategory`: the failure it shows, or `null` when it warns about what the request does (an unlimited approval, a domain mismatch), which sends no `error_shown` |
 | A `<Route path>` | Use words, `:param` and `*`, never a value |
 
@@ -27,7 +28,7 @@ Screens, modals, error toasts, transactions and dapp requests are tracked centra
 1. Create `common/analytics/flow/definitions/<name>.ts` with `defineFlow("<name>", { subject, steps, … })`. Add it to `FLOWS` in `flow/registry.ts`. The options are in `references/define-flow.md`.
 2. Add any extra property to `properties.ts`, with a sentence that says what the value means.
 3. In the hook that holds the steps, call `useFlow(flows.<name>, { step, entry, attributes, active })`. Pass `active: isOpen` when the provider stays mounted while the modal is closed.
-4. Report from event handlers and async code: `flows.<name>.submitted(…)` where the user confirms, `flows.<name>.failed(err)` in the catch that shows the error, and `flows.<name>.completed(…)` where the user finishes. A flow with `settlement: "transaction"` passes `transactionId` to `submitted` and never calls `completed`: the worker sends it when the transaction settles. `TxSubmitButton` and `SapiSendButton` take `onError`, called after their own error toast: report `failed` there.
+4. Report from event handlers and async code: `flows.<name>.submitted(…)` where the user confirms, `flows.<name>.failed(err)` in the catch that shows the error, and `flows.<name>.completed(…)` where the user finishes. A flow with `settlement: "transaction"` passes `transactionId` to `submitted` and never calls `completed`: the worker sends it when the transaction settles. `TxSubmitButton` and `SapiSendButton` take `onError`, called after their own error toast: pass the reporter itself, `onError={flows.<name>.failed}`. A Bittensor MEV Shield submit calls `onSubmitted(hash, innerHash)`: link `innerHash`, the staking call (`stakingTransactionId`).
 5. Classify the flow's messages as `{ flow: "<name>" }` in `MESSAGE_COVERAGE`, and its provider as `{ flow: "<name>" }` in `FLOW_PROVIDERS`.
 6. Prove it with `.claude/skills/verify/features/analytics-events.md`.
 

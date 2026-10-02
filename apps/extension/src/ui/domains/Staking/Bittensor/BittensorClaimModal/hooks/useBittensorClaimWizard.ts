@@ -1,13 +1,15 @@
 import { BITTENSOR_NETWORK_ID } from "@core/domains/bittensor/exports"
-import type { DTaoClaimTarget } from "@talismn/balances"
+import { BalanceFormatter, type DTaoClaimTarget } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalances } from "@ui/state/balances"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
-
+import { stakingSubmittedReport } from "../../../shared/stakingAnalytics"
 import { useBittensorClaimCandidates } from "../../hooks/useBittensorClaimCandidates"
 import { useBittensorClaimPayload } from "../../hooks/useBittensorClaimPayload"
 import { useBittensorFeeError } from "../../hooks/useBittensorFeeError"
@@ -21,7 +23,7 @@ type WizardState = {
 }
 
 const useBittensorClaimWizardProvider = () => {
-  const { args } = useBittensorClaimModal()
+  const { args, isOpen } = useBittensorClaimModal()
 
   // when opened without a full target the user picks the position in the modal
   const isTargetExplicit = !!(args?.address && args?.hotkey)
@@ -85,9 +87,34 @@ const useBittensorClaimWizardProvider = () => {
     feeTokenId: nativeTokenId,
   })
 
-  const onSubmitted = useCallback((txHash?: Hex) => {
-    if (txHash) setWizardState((prev) => ({ ...prev, hash: txHash }))
-  }, [])
+  const network = useNetworkById(networkId)
+  const tokenRates = useTokenRates(nativeTokenId)
+
+  const onSubmitted = useCallback(
+    (txHash?: Hex) => {
+      if (!txHash) return
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: nativeToken?.symbol,
+        usd:
+          typeof claimablePlancks === "bigint"
+            ? new BalanceFormatter(claimablePlancks, nativeToken?.decimals, tokenRates).fiat("usd")
+            : null,
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: txHash })
+      setWizardState((prev) => ({ ...prev, hash: txHash }))
+    },
+    [account, network, nativeToken?.symbol, nativeToken?.decimals, claimablePlancks, tokenRates]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "claim" },
+    attributes: { staking_type: "bittensor", direction: "claim", netuid: 0 },
+    step: hash ? null : target ? "form" : "position",
+  })
 
   return {
     networkId,

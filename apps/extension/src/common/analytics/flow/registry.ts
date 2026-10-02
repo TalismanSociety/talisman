@@ -1,7 +1,9 @@
 import { type FlowBase, flowRegistry, type Lifecycle } from "./defineFlow"
 import { accountProxyAdd, accountProxyRemove } from "./definitions/accountProxy"
 import { addAccount } from "./definitions/addAccount"
+import { bittensorSettings } from "./definitions/bittensorSettings"
 import { buy } from "./definitions/buy"
+import { earnDeposit, earnManage, earnWithdraw } from "./definitions/earn"
 import { onboarding } from "./definitions/onboarding"
 import { passwordChange } from "./definitions/passwordChange"
 import { passwordMigration } from "./definitions/passwordMigration"
@@ -9,7 +11,9 @@ import { quickUnlockSetup } from "./definitions/quickUnlockSetup"
 import { receive } from "./definitions/receive"
 import { recoveryPhraseBackup } from "./definitions/recoveryPhraseBackup"
 import { send } from "./definitions/send"
+import { staking } from "./definitions/staking"
 import { swap } from "./definitions/swap"
+import { taoTrade } from "./definitions/taoTrade"
 import { vaultSign } from "./definitions/vaultSign"
 import { walletReset } from "./definitions/walletReset"
 
@@ -27,7 +31,13 @@ export const FLOWS = flowRegistry(
   swap,
   buy,
   receive,
-  vaultSign
+  vaultSign,
+  staking,
+  bittensorSettings,
+  taoTrade,
+  earnDeposit,
+  earnWithdraw,
+  earnManage
 )
 
 export type Flows = typeof FLOWS

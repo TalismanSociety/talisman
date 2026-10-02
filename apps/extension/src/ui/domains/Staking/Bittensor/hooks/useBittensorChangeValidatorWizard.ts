@@ -1,13 +1,15 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import type { Address } from "@core/types/base"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
 import type { Hex } from "viem"
-
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
+import { stakingSubmittedReport } from "../../shared/stakingAnalytics"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
 import { useDTaoRootStakeHoldGate } from "./dTao/useDTaoRootStakeHold"
 import { useBittensorChangeValidatorModal } from "./useBittensorChangeValidatorModal"
@@ -33,11 +35,20 @@ type WizardState = {
 }
 
 export type ChangeValidatorOpenOptions = {
+  entry: StakingEntry
   tokenId: TokenId
   address?: Address
   /** When provided, the position selector shows all positions for this subnet instead of filtering by tokenId. */
   netuid?: number
 }
+
+const FLOW_STEPS = {
+  "form": "form",
+  "select-position": "position",
+  "select-validator": "validator",
+  "review": "review",
+  "follow-up": null,
+} as const satisfies Record<ChangeValidatorStep, FlowStep<typeof flows.staking> | null>
 
 const DEFAULT_STATE: WizardState = {
   step: "form",
@@ -48,7 +59,7 @@ const DEFAULT_STATE: WizardState = {
 }
 
 const useBittensorChangeValidatorWizardProvider = () => {
-  const { close, args } = useBittensorChangeValidatorModal()
+  const { close, args, isOpen } = useBittensorChangeValidatorModal()
   const [{ step, newHotkey, hash, tokenId, address }, setWizardState] = useState<WizardState>(
     () => Object.assign({}, DEFAULT_STATE, args) // init with params passed to modal
   )
@@ -143,9 +154,34 @@ const useBittensorChangeValidatorWizardProvider = () => {
     [setNewHotkey, setStep]
   )
 
-  const onSubmitted = useCallback((hash: Hex) => {
-    if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-  }, [])
+  const network = useNetworkById(networkId)
+
+  const onSubmitted = useCallback(
+    (hash: Hex) => {
+      if (!hash) return
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: token?.symbol,
+        usd: currentPosition?.balance.free.fiat("usd"),
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+    },
+    [account, network, token?.symbol, currentPosition?.balance.free]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "change_validator" },
+    attributes: {
+      staking_type: "bittensor",
+      direction: "change_validator",
+      ...(token && { netuid: token.netuid }),
+    },
+    step: FLOW_STEPS[step],
+  })
 
   // Current hotkey from the token (for display in form)
   const currentHotkey = token?.hotkey ?? null
