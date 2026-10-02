@@ -22,7 +22,7 @@ export type SuperProperties = {
   appVariant: AppVariant
   browser: Browser
   os: string
-  locale: string
+  browser_language: string
   ui_context: UiContext
   $lib: "talisman-extension"
   $lib_version: string
@@ -53,8 +53,9 @@ export const superPropertyDefinitions: {
     description: "Operating system, from chrome.runtime.getPlatformInfo().",
     posthogType: "String",
   },
-  locale: {
-    description: "Browser locale (navigator.language), not the wallet language.",
+  browser_language: {
+    description:
+      "Language of the browser, without its region: en for en-AU. Not the wallet language. unknown: the browser gave none. Usage events only.",
     posthogType: "String",
   },
   ui_context: {

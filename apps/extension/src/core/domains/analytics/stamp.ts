@@ -57,6 +57,12 @@ const placeInTime = (
   return advanceSession(current, realNow, drawOffset)
 }
 
+const environmentOf = (event: ParsedEvent, environment: Environment) => {
+  if (event.kind !== "error") return environment
+  const { browser_language: _, ...shared } = environment
+  return shared
+}
+
 export const stampEvent = ({
   event,
   uiContext,
@@ -84,7 +90,7 @@ export const stampEvent = ({
       timestamp: new Date(at).toISOString(),
       uuid,
       properties: redactProperties({
-        ...environment,
+        ...environmentOf(event, environment),
         ui_context: uiContext,
         ...(event.screen && { $screen_name: event.screen }),
         ...event.properties,

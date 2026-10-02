@@ -18,7 +18,7 @@ const ENVIRONMENT: Environment = {
   appVariant: "development",
   browser: "chrome",
   os: "mac",
-  locale: "en-AU",
+  browser_language: "en",
   $lib: "talisman-extension",
   $lib_version: "3.10.1",
   $app_version: "3.10.1",
@@ -176,9 +176,10 @@ describe("stampEvent", () => {
     expect(catalogue.tvl_snapshot.unlinked).toBe(true)
   })
 
-  it("an error event has an id of its own, real time and no session", () => {
+  it("an error event has an id of its own, real time, no session and no browser language", () => {
     const { record, state } = stamp({ ...optIn(), kind: "error" })
 
+    expect(record.wire.properties).not.toHaveProperty("browser_language")
     expect(record.wire.distinct_id).toBe(record.uuid)
     expect(record.sendAt).toBe(Date.UTC(2026, 9, 2, 12))
     expect(record.wire.properties).not.toHaveProperty("$session_id")

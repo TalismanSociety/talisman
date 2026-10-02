@@ -21,7 +21,7 @@ const ENVIRONMENT: Environment = {
   appVariant: "development",
   browser: "chrome",
   os: "mac",
-  locale: "en-AU",
+  browser_language: "en",
   $lib: "talisman-extension",
   $lib_version: "3.10.1",
   $app_version: "3.10.1",

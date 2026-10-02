@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { detectBrowser, resolveAppVariant, uiContextFromSenderUrl } from "./environment"
+import {
+  detectBrowser,
+  resolveAppVariant,
+  toBrowserLanguage,
+  uiContextFromSenderUrl,
+} from "./environment"
 
 describe("resolveAppVariant", () => {
   it.each([
@@ -30,6 +35,21 @@ describe("detectBrowser", () => {
     [undefined, "Mozilla/5.0 (Macintosh) Gecko/20100101 Firefox/143.0", "firefox"],
   ])("%o %s: %s", (brandList, userAgent, expected) => {
     expect(detectBrowser({ brands: brandList, userAgent })).toBe(expected)
+  })
+})
+
+describe("toBrowserLanguage", () => {
+  it.each([
+    ["en-AU", "en"],
+    ["fr-CA", "fr"],
+    ["zh-Hant-TW", "zh"],
+    ["DE", "de"],
+    ["fil", "fil"],
+    ["", "unknown"],
+    [undefined, "unknown"],
+    ["x-kevin-private", "unknown"],
+  ])("%s -> %s", (locale, language) => {
+    expect(toBrowserLanguage(locale)).toBe(language)
   })
 })
 

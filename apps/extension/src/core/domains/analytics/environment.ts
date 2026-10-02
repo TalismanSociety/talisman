@@ -40,6 +40,11 @@ export const detectBrowser = ({
   return BRANDS.find(([brand]) => brands.some((entry) => entry.brand === brand))?.[1] ?? "other"
 }
 
+export const toBrowserLanguage = (locale: string | undefined): string => {
+  const language = locale?.split("-")[0].toLowerCase() ?? ""
+  return /^[a-z]{2,3}$/.test(language) ? language : "unknown"
+}
+
 const POSTHOG_OS: Record<string, string> = {
   mac: "Mac OS X",
   win: "Windows",
@@ -82,7 +87,7 @@ export const readEnvironment = (): Promise<Environment> => {
       }),
       browser,
       os,
-      locale: nav.language,
+      browser_language: toBrowserLanguage(nav.language),
       $lib: "talisman-extension",
       $lib_version: version,
       $app_version: version,
