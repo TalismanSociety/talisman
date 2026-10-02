@@ -42,10 +42,22 @@ describe("migrateRemoveLegacyAnalytics", () => {
     expect(app).toMatchObject({ onboarded: "TRUE", hideGetStarted: true })
   })
 
-  it("keeps the analytics consent setting", async () => {
+  it("turns usage analytics off: the consent given to the legacy analytics does not carry over", async () => {
     await migrateRemoveLegacyAnalytics.forward.apply(context)
 
     const { settings } = await chrome.storage.local.get("settings")
-    expect(settings).toEqual({ useAnalyticsTracking: true })
+    expect(settings).toMatchObject({ useAnalyticsTracking: false })
+  })
+
+  it.each([
+    ["declined", { useAnalyticsTracking: false }],
+    ["not chosen yet", {}],
+  ])("leaves a consent that was %s as it is", async (_label, stored) => {
+    await chrome.storage.local.set({ settings: stored })
+
+    await migrateRemoveLegacyAnalytics.forward.apply(context)
+
+    const { settings } = await chrome.storage.local.get("settings")
+    expect(settings).toEqual(stored)
   })
 })

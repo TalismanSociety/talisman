@@ -1,6 +1,7 @@
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import type { StorageProvider } from "../../../libs/Store"
 import { appStore } from "../../app/store.app"
+import { settingsStore } from "../../app/store.settings"
 
 const legacyAppStore = appStore as unknown as StorageProvider<{
   posthogDistinctId: string
@@ -26,5 +27,7 @@ export const migrateRemoveLegacyAnalytics: Migration = {
       "analyticsReportCreatedAt",
       "lastWalletUpgradedEvent",
     ])
+    if (await settingsStore.get("useAnalyticsTracking"))
+      await settingsStore.set({ useAnalyticsTracking: false })
   }),
 }
