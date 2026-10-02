@@ -1,3 +1,4 @@
+import type { SendEntry } from "@common/analytics/funds"
 import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
 import { type Address, Balances } from "@talismn/balances"
@@ -21,6 +22,7 @@ const isCompatibleAddress = (from: Address, to: Address) => {
 }
 
 export const useSendFundsPopup = (
+  entry: SendEntry,
   account: Account | null | undefined,
   tokenId?: TokenId,
   tokenSymbol?: string,
@@ -80,8 +82,8 @@ export const useSendFundsPopup = (
 
   const openSendFundsPopup = useCallback(() => {
     if (!canSendFunds) return
-    api.sendFundsOpen({ from: account?.address, tokenId, tokenSymbol, to })
-  }, [account?.address, canSendFunds, to, tokenId, tokenSymbol])
+    api.sendFundsOpen({ entry, from: account?.address, tokenId, tokenSymbol, to })
+  }, [account?.address, canSendFunds, entry, to, tokenId, tokenSymbol])
 
   return { canSendFunds, cannotSendFundsReason, openSendFundsPopup }
 }

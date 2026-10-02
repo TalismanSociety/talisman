@@ -165,20 +165,7 @@ const Content = () => {
             <Setting
               iconLeft={AlertCircleIcon}
               title={t("Error reporting")}
-              subtitle={
-                <Trans t={t}>
-                  Send anonymised error reports to Talisman (via{" "}
-                  <a
-                    className="text-grey-200 hover:text-body"
-                    href="https://www.sentry.io"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    Sentry
-                  </a>
-                  )
-                </Trans>
-              }
+              subtitle={t("Send anonymised error reports to Talisman")}
             >
               <Toggle
                 checked={useErrorTracking}

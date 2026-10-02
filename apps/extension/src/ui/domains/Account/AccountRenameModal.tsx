@@ -37,7 +37,7 @@ export const AccountRenameModal = () => {
   const { account, close, isOpen } = useAccountRenameModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="account_rename" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Rename account")} onCloseClick={close}>
         {account?.address ? (
           <AccountRename address={account.address} onConfirm={close} onCancel={close} />

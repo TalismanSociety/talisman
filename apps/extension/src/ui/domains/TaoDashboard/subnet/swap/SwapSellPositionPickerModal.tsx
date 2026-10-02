@@ -65,7 +65,12 @@ export const SwapSellPositionPickerModal: FC<Props> = ({
   )
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
+    <Modal
+      analyticsId="swap_sell_position_picker"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={onClose}
+    >
       <PopupSizeModalContainer id="swap-sell-position-picker-modal">
         <ModalDialog
           variant="wizard"

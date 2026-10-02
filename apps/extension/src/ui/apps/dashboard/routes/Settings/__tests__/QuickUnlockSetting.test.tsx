@@ -30,6 +30,9 @@ vi.mock("@ui/state/quickUnlock", () => ({
   useIsQuickUnlockEnrolled: () => mockUseIsEnrolled(),
 }))
 
+const trackFlowEvent = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track: vi.fn(), trackFlowEvent }))
+
 vi.mock("@ui/state/remoteConfig", () => ({
   useFeatureFlag: (...args: unknown[]) => mockUseFeatureFlag(...args),
 }))
@@ -152,5 +155,68 @@ describe("QuickUnlockSetting", () => {
     await waitFor(() => expect(mockCreateCredential).toHaveBeenCalled())
     // match the stable part of the subtitle, the authenticator names are copy that may change
     expect(screen.getByText(/unlock your wallet/i)).toBeDefined()
+  })
+})
+
+describe("QuickUnlockSetting analytics", () => {
+  const sent = () =>
+    trackFlowEvent.mock.calls.map(([event, { flow_id: _, duration_ms: __, ...props }]) => ({
+      event,
+      ...props,
+    }))
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockIsAvailable.mockResolvedValue(true)
+    mockUseIsEnrolled.mockReturnValue(false)
+    mockUseFeatureFlag.mockReturnValue(true)
+  })
+
+  test("keeps one attempt across a cancelled prompt and the retry that enables it", async () => {
+    mockCreateCredential.mockRejectedValueOnce(new DOMException("cancelled", "NotAllowedError"))
+    render(<QuickUnlockSetting />)
+    const toggle = await screen.findByRole("checkbox")
+
+    fireEvent.click(toggle)
+    await waitFor(() => expect(sent().at(-1)?.event).toBe("quick_unlock_setup_failed"))
+
+    mockCreateCredential.mockResolvedValue({ credentialId: "c", prfSalt: "s", prfOutput: "p" })
+    mockEnroll.mockResolvedValue(true)
+    fireEvent.click(toggle)
+    await waitFor(() => expect(sent().at(-1)?.event).toBe("quick_unlock_enabled"))
+
+    expect(sent()).toEqual([
+      { event: "quick_unlock_setup_started" },
+      { event: "quick_unlock_setup_step_viewed", step: "passkey" },
+      { event: "quick_unlock_setup_failed", last_step: "passkey", error_category: "user_rejected" },
+      { event: "quick_unlock_setup_step_viewed", step: "enrol" },
+      { event: "quick_unlock_setup_submitted", last_step: "enrol" },
+      { event: "quick_unlock_enabled" },
+    ])
+    expect(new Set(trackFlowEvent.mock.calls.map(([, { flow_id }]) => flow_id)).size).toBe(1)
+  })
+
+  test("abandons with the last error when the user leaves after a refusal", async () => {
+    mockCreateCredential.mockResolvedValue({ credentialId: "c", prfSalt: "s", prfOutput: "p" })
+    mockEnroll.mockRejectedValue(new Error("Please log in again"))
+    const { unmount } = render(<QuickUnlockSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+    await waitFor(() => expect(sent().at(-1)?.event).toBe("quick_unlock_setup_failed"))
+    unmount()
+
+    expect(sent().at(-1)).toEqual({
+      event: "quick_unlock_setup_abandoned",
+      last_step: "enrol",
+      abandon_cause: "left",
+      error_category: "unknown",
+    })
+  })
+
+  test("starts nothing while the user only looks at the setting", async () => {
+    render(<QuickUnlockSetting />)
+    await screen.findByRole("checkbox")
+
+    expect(trackFlowEvent).not.toHaveBeenCalled()
   })
 })

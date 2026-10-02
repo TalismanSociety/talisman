@@ -11,6 +11,9 @@ import type {
 
 const getQuoteMock = vi.fn()
 
+const track = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track }))
+
 vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({}),
 }))
@@ -132,5 +135,49 @@ describe("useSwapQuoteManager", () => {
 
     await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(200n))
     expect(result.current.isQuoteDataCurrent).toBe(true)
+  })
+
+  it("reports quotes once per amount and token pair, not on a refresh", async () => {
+    track.mockClear()
+    getQuoteMock.mockResolvedValueOnce([makeQuote(100n)])
+    getQuoteMock.mockResolvedValueOnce([makeQuote(101n)])
+    getQuoteMock.mockRejectedValueOnce(new Error("Quote failed"))
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let params = {
+      fromTokenId: "from-token",
+      toTokenId: "to-token",
+      fromSupportMap,
+      toSupportMap,
+      fromAmount: 1n,
+      fromAddress: "0x111",
+      toAddress: "0x222",
+      selectedProtocol: null,
+      selectedSubProtocol: undefined,
+      quoteSorting: "bestRate" as const,
+    }
+    const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })
+
+    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(1))
+    await queryClient.refetchQueries({ queryKey: ["swap-quote"] })
+    await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(101n))
+
+    expect(track.mock.calls).toEqual([
+      [
+        "swap_quote_received",
+        { quote_count: 1, protocols: ["lifi"], latency_ms: expect.any(Number) },
+      ],
+    ])
+
+    params = { ...params, fromAmount: 2n }
+    rerender()
+
+    await waitFor(() => expect(track).toHaveBeenCalledTimes(2))
+    expect(track).toHaveBeenLastCalledWith("swap_quote_failed", {
+      protocol: "lifi",
+      error_category: "unknown",
+    })
   })
 })

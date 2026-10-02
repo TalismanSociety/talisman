@@ -49,12 +49,15 @@ export type TxSubmitButtonProps<
   className?: string
   disabled?: boolean
   isProcessing?: boolean
+  /** false for an intermediate step, such as a token approval */
+  isFinalStep?: boolean
   /**
    *
    * @param txId hash for polkadot and ethereum, signature for solana
    * @returns
    */
   onSubmit: (txId: string) => void
+  onError?: (cause: unknown) => void
   /** true while a hardware or QR signer holds the payload */
   onPayloadLockChange?: PayloadLockListener
 }

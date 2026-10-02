@@ -1,6 +1,5 @@
 import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
@@ -99,51 +98,24 @@ const NavButton: FC<{
   )
 }
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Navigation",
-  featureVersion: 3,
-  page: "Portfolio",
-}
-
 const HorizontalNav = () => {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
 
   const navigate = useNavigate()
   const handlePortfolioClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Portfolio button",
-    })
     navigate(`/portfolio/tokens${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleEarnClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Earn button",
-    })
     navigate(`/earn${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleActivityClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Activity button",
-    })
     navigate(`/tx-history${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleSettingsClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Settings button",
-    })
     navigate("/settings/general")
   }, [navigate])
 

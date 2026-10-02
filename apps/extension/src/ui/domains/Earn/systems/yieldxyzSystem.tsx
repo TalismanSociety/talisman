@@ -253,6 +253,7 @@ const useActionOpener = () => {
   return useCallback<EarnActionOpener>(
     (opportunity, context) =>
       modal.open({
+        entry: "discover",
         pickerTokenId: context.tokenId,
         discoverOnly: context.discoverOnly,
         productId: (opportunity as YieldxyzEarnOpportunity).product.id,

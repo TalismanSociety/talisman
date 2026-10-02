@@ -24,7 +24,7 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
   const { t } = useTranslation()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
+    <Modal analyticsId="export_all_accounts" containerId="main" isOpen={isOpen} onDismiss={onClose}>
       <ModalDialog
         title={t("Export all accounts as JSON")}
         className="h-auto w-125.75"

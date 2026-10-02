@@ -22,7 +22,12 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}>
+    <Drawer
+      analyticsId="bittensor_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
+    >
       <DrawerContent className="flex flex-col items-center gap-8">
         <div className="font-bold text-body">{t("Subnet staking warning")}</div>
         <p className="text-body-secondary text-sm">

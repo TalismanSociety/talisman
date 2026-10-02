@@ -18,6 +18,10 @@ export const useBittensorSubnetSlippage = (netuid: number | null | undefined) =>
     return parsed.success ? parsed.data : DEFAULT_USER_MAX_SLIPPAGE
   }, [netuid, rawSlippage])
 
+  const isDefault =
+    (SUBNET_SLIPPAGE_SCHEMA.safeParse(rawSlippage).data ?? DEFAULT_USER_MAX_SLIPPAGE) ===
+    DEFAULT_USER_MAX_SLIPPAGE
+
   const setSlippage = useCallback(
     (value: number) => {
       // throws if fails
@@ -26,5 +30,5 @@ export const useBittensorSubnetSlippage = (netuid: number | null | undefined) =>
     [setRawSlippage]
   )
 
-  return [slippage, setSlippage] as const
+  return [slippage, setSlippage, isDefault] as const
 }

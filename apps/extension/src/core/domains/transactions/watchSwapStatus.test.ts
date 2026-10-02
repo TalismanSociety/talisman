@@ -20,7 +20,7 @@ vi.mock("../forevermoney/deliveryStatus", async (importOriginal) => ({
 
 import { db } from "../../db"
 import type { WalletTransactionEth } from "./types"
-import { watchSwapStatus } from "./watchSwapStatus"
+import { resumeSwapWatchers, swapOutcomeFacts$, watchSwapStatus } from "./watchSwapStatus"
 
 // --- Helpers ---
 
@@ -80,6 +80,22 @@ describe("watchSwapStatus bittensor-evm", () => {
 
     expect(await getSwapStatus()).toBe("finished")
     expect(mockSleep).not.toHaveBeenCalled()
+  })
+
+  it("publishes the status it stops on, once", async () => {
+    await insertTransfer()
+    mockSleep.mockImplementationOnce(async () => {
+      await db.transactionsV2.update(HASH, { confirmed: true })
+    })
+    const outcomes: [string, string][] = []
+    const subscription = swapOutcomeFacts$.subscribe(({ row, status }) =>
+      outcomes.push([row.id, status])
+    )
+
+    await watchSwapStatus(HASH)
+    subscription.unsubscribe()
+
+    expect(outcomes).toEqual([[HASH, "finished"]])
   })
 
   it("keeps confirming until the confirmation lands", async () => {
@@ -215,5 +231,26 @@ describe("watchSwapStatus forevermoney", () => {
     await watchSwapStatus(HASH)
 
     expect(await getSwapStatus()).toBe("finished")
+  })
+})
+
+describe("resumeSwapWatchers", () => {
+  beforeEach(async () => {
+    await db.transactionsV2.clear()
+    vi.clearAllMocks()
+  })
+
+  it("publishes unknown for a swap whose exchange was never found before the restart", async () => {
+    await insertTransfer({ swapStatus: "not_found", timestamp: Date.now() - 11 * 60 * 1_000 })
+    const outcomes: [string, string][] = []
+    const subscription = swapOutcomeFacts$.subscribe(({ row, status }) =>
+      outcomes.push([row.id, status])
+    )
+
+    await resumeSwapWatchers()
+    subscription.unsubscribe()
+
+    expect(await getSwapStatus()).toBe("unknown")
+    expect(outcomes).toEqual([[HASH, "unknown"]])
   })
 })

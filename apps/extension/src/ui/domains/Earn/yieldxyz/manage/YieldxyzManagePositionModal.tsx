@@ -11,7 +11,12 @@ export const YieldxyzManagePositionModal: FC = () => {
   const { isOpen, close, args } = useYieldxyzManageModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="yieldxyz_manage_position"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="YieldxyzManagePositionModal" />}>
           <YieldxyzManageWizardProvider

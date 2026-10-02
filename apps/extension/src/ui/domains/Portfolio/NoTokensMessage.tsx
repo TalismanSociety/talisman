@@ -1,6 +1,5 @@
 import { CopyIcon, CreditCardIcon } from "@talismn/icons"
 import { PillButton } from "@ui/components/PillButton"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,21 +14,18 @@ type NoTokensMessageProps = {
 
 export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    open({ address: selectedAccount?.address, qr: true })
-    genericEvent("open receive", { from: "NoTokensMessage" })
-  }, [selectedAccount?.address, genericEvent, open])
+    open({ entry: "no_tokens", address: selectedAccount?.address, qr: true })
+  }, [selectedAccount?.address, open])
 
   const showBuyCrypto = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
   const handleBuyCryptoClick = useCallback(() => {
-    genericEvent("open ramps", { from: "NoTokensMessage" })
-    openRampsModal()
-  }, [genericEvent, openRampsModal])
+    openRampsModal({ entry: "no_tokens" })
+  }, [openRampsModal])
 
   return (
     <div className="flex flex-col items-center justify-center rounded bg-field py-36 text-body-secondary">

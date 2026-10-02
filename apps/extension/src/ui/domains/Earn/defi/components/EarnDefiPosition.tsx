@@ -1,5 +1,6 @@
 import type { DefiPosition, DefiPositionItem } from "@core/domains/defi/exports"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { IconButton } from "@ui/components/IconButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -8,7 +9,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useDefiPosition } from "@ui/state/defi"
-import { type FC, useMemo } from "react"
+import { type FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { useDefiItemValueUsd } from "../useDefiItemValueUsd"
@@ -21,6 +22,9 @@ import { PositionTotal } from "./PositionTotal"
 
 export const EarnDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)
+  useEffect(() => {
+    track("earn_position_opened", { system: "defi", yield_id: null })
+  }, [])
 
   if (!position) return null
 

@@ -12,6 +12,7 @@ import { Toggle } from "@ui/components/Toggle"
 import type { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
@@ -103,6 +104,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
   const submit = useCallback(
     async ({ name, address, isPortfolio }: FormData) => {
+      flows.add_account.submitted()
       const notificationId = notify(
         {
           type: "processing",
@@ -122,6 +124,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           },
         ])
 
+        flows.add_account.completed()
         onSuccess(addr)
 
         notifyUpdate(notificationId, {
@@ -130,10 +133,12 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
           subtitle: name,
         })
       } catch (err) {
+        flows.add_account.failed(err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

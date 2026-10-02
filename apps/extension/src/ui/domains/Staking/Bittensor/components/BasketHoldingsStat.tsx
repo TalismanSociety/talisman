@@ -215,7 +215,13 @@ export const BasketHoldingsViewAllModal: FC<{
   }, [breakdown, search])
 
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss} className="size-full">
+    <Modal
+      analyticsId="basket_holdings_view_all"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+      className="size-full"
+    >
       <ModalDialog
         variant="wizard"
         onBackClick={onDismiss}

@@ -154,7 +154,12 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
   ]
 
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      analyticsId="bittensor_lock_type_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <ModalDialog
         variant="wizard"
         title={t("Lock Type")}

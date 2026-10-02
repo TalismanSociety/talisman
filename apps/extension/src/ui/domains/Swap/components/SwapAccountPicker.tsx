@@ -95,7 +95,12 @@ export const SwapAccountPicker = memo(
           )}
         </button>
 
-        <Modal containerId="swap-modal" isOpen={open} onDismiss={() => setOpen(false)}>
+        <Modal
+          analyticsId="swap_account_picker"
+          containerId="swap-modal"
+          isOpen={open}
+          onDismiss={() => setOpen(false)}
+        >
           <SwapAccountPickerModalContent
             title={title}
             subtitle={subtitle}

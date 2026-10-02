@@ -1,5 +1,6 @@
 import type { AccountProxiesMessages } from "../domains/accountProxies/types"
 import type { AccountsMessages } from "../domains/accounts/types"
+import type { AnalyticsMessages } from "../domains/analytics/types"
 import type { AppMessages } from "../domains/app/types"
 import type { BalancesMessages } from "../domains/balances/types"
 import type { BittensorMessages } from "../domains/bittensor/types"
@@ -52,6 +53,7 @@ export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = AllMess
 type AllMessages = PolkadotRequestSignatures &
   AccountsMessages &
   AccountProxiesMessages &
+  AnalyticsMessages &
   AppMessages &
   AuthorisedSiteMessages &
   BalancesMessages &

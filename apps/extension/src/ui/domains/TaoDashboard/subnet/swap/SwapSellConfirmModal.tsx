@@ -29,7 +29,7 @@ export const SwapSellConfirmModal: FC<{ isOpen: boolean; onClose: () => void }> 
   isOpen,
   onClose,
 }) => (
-  <Modal isOpen={isOpen}>
+  <Modal analyticsId="swap_sell_confirm" isOpen={isOpen}>
     <ModalContent onClose={onClose} />
   </Modal>
 )

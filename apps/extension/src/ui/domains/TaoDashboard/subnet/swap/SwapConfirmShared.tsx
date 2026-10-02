@@ -16,6 +16,7 @@ import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDis
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
@@ -456,6 +457,7 @@ export const SwapConfirmSendButton: FC<{
       label={label}
       payload={payload}
       onSubmitted={handleSubmit}
+      onError={flows.tao_trade.failed}
       txMetadata={txMetadata}
       txInfo={txInfo}
       disabled={!canSubmit}

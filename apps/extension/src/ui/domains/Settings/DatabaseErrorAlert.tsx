@@ -1,43 +1,23 @@
 import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { errorsStore } from "@core/domains/app/store.errors"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Card } from "@ui/components/Card"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useErrorsStoreValue } from "@ui/state/errors"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-const ANALYTICS_PAGES: Record<"popup" | "fullscreen", AnalyticsPage> = {
-  popup: {
-    container: "Popup",
-    feature: "Portfolio",
-    featureVersion: 1,
-    page: "Database Unavailable",
-  },
-  fullscreen: {
-    container: "Fullscreen",
-    feature: "Portfolio",
-    featureVersion: 1,
-    page: "Database Unavailable",
-  },
-}
-
-export type Props = {
-  container: keyof typeof ANALYTICS_PAGES
-}
-
-export const DatabaseErrorAlert = ({ container }: Props) => {
+export const DatabaseErrorAlert = () => {
   const { t } = useTranslation()
 
   const databaseUnavailable = useErrorsStoreValue("databaseUnavailable")
   const databaseQuotaExceeded = useErrorsStoreValue("databaseQuotaExceeded")
   const isOpen = databaseUnavailable || databaseQuotaExceeded
+  useErrorShown({ shown: isOpen && "database", surface: "screen", category: "storage" })
 
-  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(
-    useMemo(() => ANALYTICS_PAGES[container], [container])
-  )
+  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload()
   const dismiss = useCallback(
     () => errorsStore.set({ databaseUnavailable: false, databaseQuotaExceeded: false }),
     []

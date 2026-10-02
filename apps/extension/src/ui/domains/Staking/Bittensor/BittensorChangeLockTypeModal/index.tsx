@@ -34,7 +34,7 @@ export const BittensorChangeLockTypeModal: FC = () => {
   const { isOpen, args, close } = useBittensorChangeLockTypeModal()
 
   return (
-    <Modal isOpen={isOpen && !!args} onDismiss={close}>
+    <Modal analyticsId="bittensor_change_lock_type" isOpen={isOpen && !!args} onDismiss={close}>
       <PopupSizeModalContainer id={BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID}>
         {!!args && (
           <BittensorChangeLockTypeWizardProvider

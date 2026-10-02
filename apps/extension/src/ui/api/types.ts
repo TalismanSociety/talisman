@@ -1,3 +1,5 @@
+import type { TrackRequest } from "@common/analytics/catalogue"
+import type { ExceptionReport } from "@common/analytics/exceptionReport"
 import type {
   AccountProxiesSubscriptionResponse,
   RequestAccountProxiesLoadDetails,
@@ -12,8 +14,8 @@ import type {
   RequestAddAccountKeypair,
   RequestAddressLookup,
 } from "@core/domains/accounts/types"
+import type { Disposition, RequestRiskReport } from "@core/domains/analytics/exports"
 import type {
-  AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   LoggedinType,
   QuickUnlockAuthenticateResult,
@@ -62,6 +64,7 @@ import type {
 } from "@core/domains/sitesAuthorised/types"
 import type {
   RequestSolanaSignApprove,
+  RequestSolanaSignCancel,
   ResponseSolanaRpcSend,
   ResponseSolanaSubmit,
   SolRpcRequest,
@@ -83,6 +86,9 @@ export default interface MessageTypes {
   keepalive: () => Promise<boolean>
   keepunlocked: () => Promise<boolean>
   unsubscribe: (id: string) => Promise<null>
+  analyticsTrack: (request: TrackRequest) => Promise<Disposition>
+  analyticsException: (report: ExceptionReport) => Promise<Disposition>
+  analyticsRequestRisk: (report: RequestRiskReport) => Promise<boolean>
   // UNSORTED
   onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>
@@ -129,8 +135,7 @@ export default interface MessageTypes {
   approveSignVrf: (id: SigningRequestID<"vrf-sign">) => Promise<boolean>
 
   // app message types -------------------------------------------------------
-  analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
-  sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
+  sendFundsOpen: (request: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
@@ -290,6 +295,7 @@ export default interface MessageTypes {
     txInfo?: WalletTransactionInfo
   ) => Promise<ResponseSolanaSubmit>
   solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
+  solSignCancel: (id: RequestSolanaSignCancel["id"]) => Promise<boolean>
 
   // substrate chain metadata
   subChainMetadata: (

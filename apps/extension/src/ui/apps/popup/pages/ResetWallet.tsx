@@ -4,7 +4,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,6 +34,7 @@ const ConfirmDrawer = ({
 
   const handleReset = useCallback(async () => {
     setResetting(true)
+    flows.wallet_reset.completed()
     // don't wait for the response here, or the normal onboarding tab will open
     api.resetWallet()
     window.close()
@@ -42,7 +43,7 @@ const ConfirmDrawer = ({
   const isMatch = useMemo(() => confirmText?.toLowerCase() === "reset wallet", [confirmText])
 
   return (
-    <Drawer isOpen={isOpen} anchor="bottom">
+    <Drawer analyticsId="reset_wallet_confirm" isOpen={isOpen} anchor="bottom">
       <DrawerContent>
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
@@ -86,12 +87,8 @@ const ConfirmDrawer = ({
 
 export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void }) => {
   const { t } = useTranslation()
-  const { popupOpenEvent } = useAnalytics()
   const { open, isOpen } = useOpenClose()
-
-  useEffect(() => {
-    popupOpenEvent("reset wallet")
-  }, [popupOpenEvent])
+  useFlow(flows.wallet_reset, { step: isOpen ? "confirm" : "warning" })
 
   return (
     <PopupLayout>

@@ -1,8 +1,10 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { BalanceFormatter } from "@talismn/balances"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { tokensToPlanck } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useTokenRatesFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -17,9 +19,7 @@ import {
   useRef,
   useState,
 } from "react"
-
 import { useTranslation } from "react-i18next"
-
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import { Tokens } from "../../Asset/Tokens"
@@ -247,6 +247,7 @@ export const GenericAmountEdit: FC<{
   logo: string | null | undefined
   priceUsd: number | null
   error?: string | null
+  errorCategory?: ErrorCategory | null
   onValueChanged: (value: bigint | null) => void
   onMaxClick: () => void
   onTokenClick?: () => void
@@ -257,11 +258,18 @@ export const GenericAmountEdit: FC<{
   priceUsd,
   value,
   error,
+  errorCategory,
   onValueChanged,
   onTokenClick,
   onMaxClick,
 }) => {
   const { t } = useTranslation()
+  useErrorShown({
+    shown: errorCategory !== null && error,
+    surface: "field",
+    category: errorCategory ?? "input_invalid",
+    field: "amount",
+  })
   const [isTokenEdit, setIsTokenEdit] = useState(true)
 
   const toggleIsTokenEdit = useCallback(() => {

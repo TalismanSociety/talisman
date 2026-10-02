@@ -2,6 +2,7 @@ import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
@@ -45,7 +46,7 @@ export const RenameFolderModal = () => {
   const { id, name, treeName, close, isOpen } = useRenameFolderModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="rename_folder" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Rename Folder")} onCloseClick={close}>
         {id !== null && name !== null && treeName !== null && (
           <RenameFolder
@@ -111,6 +112,7 @@ const RenameFolder = ({
     async ({ name: newName }: FormData) => {
       try {
         await api.accountsCatalogRunActions([{ type: "renameFolder", tree: treeName, id, newName }])
+        track("item_renamed", { item: "folder" })
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -150,7 +152,7 @@ const RenameFolder = ({
 
   return (
     <form className={className} onSubmit={handleSubmit(submit)}>
-      <FormFieldContainer label={t("Folder name")} error={errors.name?.message}>
+      <FormFieldContainer field="name" label={t("Folder name")} error={errors.name?.message}>
         <FormFieldInputText
           {...registerName}
           ref={handleNameRef}

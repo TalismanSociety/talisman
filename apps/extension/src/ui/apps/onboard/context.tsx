@@ -1,6 +1,7 @@
 import { passwordStore } from "@core/domains/app/store.password"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { api } from "@ui/api"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAppState, useIsOnboarded } from "@ui/state/app"
 import { provideContext } from "@ui/util/provideContext"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
@@ -19,8 +20,13 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
   const [stage, setStage] = useState<number>(0)
   const [passwordExists, setPasswordExists] = useState(false)
-  const [, updateOnboarded] = useAppState("onboarded")
+  const [onboarded, updateOnboarded] = useAppState("onboarded")
   const navigate = useNavigate()
+
+  useFlow(flows.onboarding, {
+    active: onboarded !== "TRUE",
+    entry: isResettingWallet ? "reset" : "install",
+  })
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
     setData((prev) => ({ ...prev, ...fields }))
@@ -39,6 +45,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [])
 
   const setOnboarded = useCallback(() => {
+    flows.onboarding.completed()
     updateOnboarded("TRUE")
     navigate("/success")
   }, [navigate, updateOnboarded])

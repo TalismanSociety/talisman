@@ -1,5 +1,9 @@
+import type { FlowLinkRecord } from "../domains/analytics/flowTracker"
+
 interface SessionStorageData {
   password?: string
+  analyticsLastLockReason?: string
+  analyticsFlowLinks?: FlowLinkRecord[]
 }
 
 abstract class TalismanSessionStorage {

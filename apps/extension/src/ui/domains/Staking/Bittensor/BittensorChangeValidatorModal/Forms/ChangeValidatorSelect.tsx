@@ -2,6 +2,7 @@ import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import {
   useCallback,
@@ -12,7 +13,6 @@ import {
   useState,
   useTransition,
 } from "react"
-
 import { useTranslation } from "react-i18next"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
@@ -26,6 +26,7 @@ import type { BondOption as BondOptionType } from "../../hooks/types"
 import { useBittensorChangeValidatorWizard } from "../../hooks/useBittensorChangeValidatorWizard"
 import { useCombinedBittensorValidatorsData } from "../../hooks/useCombinedBittensorValidatorsData"
 import { ROOT_NETUID } from "../../utils/constants"
+import { trackValidatorSelected } from "../../utils/trackValidatorSelected"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
 
 export const ChangeValidatorSelect = () => {
@@ -68,11 +69,21 @@ export const ChangeValidatorSelect = () => {
     )
   }, [sortedValidators, search])
 
+  const remoteConfig = useRemoteConfig()
   const handleSubmit = useCallback(
     (hotkey: string) => {
+      if (netuid !== null)
+        trackValidatorSelected({
+          hotkey,
+          validators: displayedValidators,
+          netuid,
+          defaultHotkey: remoteConfig.bittensor.defaultValidatorsBySubnet[netuid],
+          sort: sortMethod,
+          searched: !!search,
+        })
       selectValidator(hotkey)
     },
-    [selectValidator]
+    [displayedValidators, netuid, remoteConfig, search, selectValidator, sortMethod]
   )
 
   const [, startTransition] = useTransition()

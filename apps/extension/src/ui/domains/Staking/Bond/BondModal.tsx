@@ -58,7 +58,7 @@ export const BondModal = () => {
   const { isOpen, args, openKey, close } = useBondModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="bond" containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="NomPoolBondModal" />}>
         {args && (
           <BondWizardProvider key={openKey}>

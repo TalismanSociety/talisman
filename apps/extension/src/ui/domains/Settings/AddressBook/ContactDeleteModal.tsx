@@ -1,41 +1,26 @@
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import type { ContactModalProps } from "./types"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Address book contact delete",
-}
-
 export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
   const { t } = useTranslation()
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   const handleDelete = useCallback(async () => {
     close()
     if (contact) {
       await api.accountForget(contact.address)
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: "Interact",
-        action: "Delete address book contact",
-      })
     }
   }, [close, contact])
 
   const contactName = contact?.name || ""
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="contact_delete" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Delete contact")}>
         <div className="my-12 text-body-secondary">
           <Trans values={{ contactName }} t={t}>

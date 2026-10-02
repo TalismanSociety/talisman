@@ -33,7 +33,7 @@ export const ChangePasswordModal = ({
   }, [progressStage, t])
 
   return (
-    <Modal isOpen={isOpen}>
+    <Modal analyticsId="change_password" isOpen={isOpen}>
       <ModalDialog title={t("Changing password")} className="h-auto">
         <ProcessAnimation status="processing" className="my-8 h-35" />
         <div className="flex flex-col gap-5">

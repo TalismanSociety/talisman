@@ -19,6 +19,7 @@ import { Spacer } from "@ui/components/Spacer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useAccounts } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -164,6 +165,7 @@ export const AccountAddMnemonicForm = () => {
 
       if (mode === "multi") navigate("multiple")
       else {
+        flows.add_account.submitted()
         const notificationId = notify(
           {
             type: "processing",
@@ -185,6 +187,7 @@ export const AccountAddMnemonicForm = () => {
             },
           ])
 
+          flows.add_account.completed()
           onSuccess(address)
           notifyUpdate(notificationId, {
             type: "success",
@@ -192,10 +195,12 @@ export const AccountAddMnemonicForm = () => {
             subtitle: name,
           })
         } catch (err) {
+          flows.add_account.failed(err)
           notifyUpdate(notificationId, {
             type: "error",
             title: t("Error importing account"),
             subtitle: getErrorMessage(err, t("Unknown error")),
+            cause: err,
           })
         }
       }

@@ -12,7 +12,13 @@ export const BittensorSlippageDrawer: FC<{
   netuid: number | null
 }> = ({ containerId, isOpen, netuid, onClose }) => {
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onClose} containerId={containerId}>
+    <Drawer
+      analyticsId="bittensor_bond_slippage"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={onClose}
+      containerId={containerId}
+    >
       <Content netuid={netuid} onClose={onClose} />
     </Drawer>
   )
