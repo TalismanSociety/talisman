@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process"
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { join, relative } from "node:path"
 
 import { POSTHOG_API_HOST, POSTHOG_PROJECT_ID } from "../src/core/domains/analytics/posthogProject"
 
@@ -148,13 +148,72 @@ export const assertInjection = (outDir: string): void => {
     )
 }
 
-export type RunCli = (args: readonly string[], options: { cwd: string }) => Promise<void>
+const CHUNK_ID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+const CHUNK_ID_TRAILER = new RegExp(`\\n${CHUNK_ID_COMMENT}(${CHUNK_ID})\\n?$`)
 
-const runCli: RunCli = (args, { cwd }) =>
+const chunkIdSnippet = (id: string) =>
+  `!function(){try{var e="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&(e._posthogChunkIds=e._posthogChunkIds||{},e._posthogChunkIds[n]="${id}")}catch(e){}}();`
+
+/** What inject of the pinned CLI does to a script: its chunk id snippet in front, its comment behind. */
+export const isOnlyInjected = (before: string, after: string): boolean => {
+  const id = after.match(CHUNK_ID_TRAILER)?.[1]
+  if (!id) return false
+  const snippet = chunkIdSnippet(id)
+  return (
+    after.startsWith(snippet) &&
+    after.slice(snippet.length).replace(CHUNK_ID_TRAILER, "").trimEnd() === before.trimEnd()
+  )
+}
+
+type ShippedFiles = ReadonlyMap<string, Buffer>
+
+export const readShippedFiles = (outDir: string): ShippedFiles =>
+  new Map(
+    readdirSync(outDir, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile() && !entry.name.endsWith(".map"))
+      .map((entry) => {
+        const path = join(entry.parentPath, entry.name)
+        return [relative(outDir, path), readFileSync(path)]
+      })
+  )
+
+/** The CLI is a downloaded binary that edits the scripts the extension ships: allow it chunk ids only. */
+export const assertOnlyInjected = (before: ShippedFiles, outDir: string): void => {
+  const after = readShippedFiles(outDir)
+  const altered = [...new Set([...before.keys(), ...after.keys()])].filter((file) => {
+    const was = before.get(file)
+    const is = after.get(file)
+    if (!was || !is) return true
+    if (was.equals(is)) return false
+    return !(file.endsWith(".js") && isOnlyInjected(was.toString("utf8"), is.toString("utf8")))
+  })
+  if (altered.length)
+    throw new Error(
+      `[posthog sourcemaps] the CLI changed more than chunk ids in ${altered.join(", ")}`
+    )
+}
+
+const CLI_ENV = ["PATH", "HOME", "TMPDIR", "PNPM_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME"] as const
+
+/** The CLI gets its key and what `pnpm dlx` needs, never the rest of the build's env. */
+export const cliEnv = (env: NodeJS.ProcessEnv, apiKey: string): Record<string, string> => ({
+  ...Object.fromEntries(
+    CLI_ENV.flatMap((name) => (env[name] === undefined ? [] : [[name, env[name]]]))
+  ),
+  POSTHOG_CLI_API_KEY: apiKey,
+  POSTHOG_CLI_PROJECT_ID: POSTHOG_PROJECT_ID,
+})
+
+export type RunCli = (
+  args: readonly string[],
+  options: { cwd: string; apiKey: string }
+) => Promise<void>
+
+const runCli: RunCli = (args, { cwd, apiKey }) =>
   new Promise((resolve, reject) => {
     const child = spawn("pnpm", args, {
       cwd,
-      env: { ...process.env, POSTHOG_CLI_PROJECT_ID: POSTHOG_PROJECT_ID },
+      env: cliEnv(process.env, apiKey) as NodeJS.ProcessEnv,
       stdio: "inherit",
       timeout: CLI_STEP_TIMEOUT_MS,
     })
@@ -184,9 +243,12 @@ export const runSourcemapPlan = async (
       throw new Error(`[posthog sourcemaps] ${plan.reason}`)
     case "inject_and_upload": {
       const [inject, upload] = cliSteps(outDir, plan)
-      await run(inject, { cwd: tmpdir() })
+      const options = { cwd: tmpdir(), apiKey: plan.apiKey }
+      const shipped = readShippedFiles(outDir)
+      await run(inject, options)
       assertInjection(outDir)
-      await run(upload, { cwd: tmpdir() })
+      await run(upload, options)
+      assertOnlyInjected(shipped, outDir)
     }
   }
 }

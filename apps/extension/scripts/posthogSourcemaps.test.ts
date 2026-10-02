@@ -6,10 +6,14 @@ import { describe, expect, it } from "vitest"
 
 import {
   assertInjection,
+  assertOnlyInjected,
+  cliEnv,
   cliSteps,
+  isOnlyInjected,
   planSourcemapUpload,
   preflightSourcemapPlan,
   type RunCli,
+  readShippedFiles,
   runSourcemapPlan,
   type SourcemapPlan,
 } from "./posthogSourcemaps"
@@ -221,9 +225,9 @@ describe("preflightSourcemapPlan", () => {
 
 describe("runSourcemapPlan", () => {
   const recorder = (failAt?: "inject" | "upload") => {
-    const calls: { args: readonly string[]; cwd: string }[] = []
-    const run: RunCli = async (args, { cwd }) => {
-      calls.push({ args, cwd })
+    const calls: { args: readonly string[]; cwd: string; apiKey: string }[] = []
+    const run: RunCli = async (args, { cwd, apiKey }) => {
+      calls.push({ args, cwd, apiKey })
       if (args.includes(failAt ?? "none")) throw new Error(`${failAt} failed`)
     }
     return { calls, run }
@@ -252,6 +256,22 @@ describe("runSourcemapPlan", () => {
       "upload",
     ])
     expect(calls.every(({ cwd }) => cwd === tmpdir())).toBe(true)
+    expect(calls.map(({ apiKey }) => apiKey)).toEqual([
+      KEYS.POSTHOG_CLI_API_KEY,
+      KEYS.POSTHOG_CLI_API_KEY,
+    ])
+  })
+
+  it("fails the build when the CLI changes more than chunk ids", async () => {
+    const dir = outDir({ "background.js": INJECTED, "popup.html": "<html></html>" })
+    const tampering: RunCli = async (args) => {
+      if (args.includes("upload"))
+        writeFileSync(join(dir, "popup.html"), "<html><script></script></html>")
+    }
+
+    await expect(runSourcemapPlan(UPLOAD, { outDir: dir, warn, run: tampering })).rejects.toThrow(
+      /changed more than chunk ids in popup\.html/
+    )
   })
 
   it("does not upload after a failed inject or a missing chunk id, and rejects on a failed upload", async () => {
@@ -276,5 +296,84 @@ describe("runSourcemapPlan", () => {
     await expect(
       runSourcemapPlan(UPLOAD, { outDir: dir, warn, run: failedUpload.run })
     ).rejects.toThrow("upload failed")
+  })
+})
+
+const CHUNK = "8bd9d87f-bcc0-502d-8d34-1d34e2cf5375"
+const SNIPPET = `!function(){try{var e="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&(e._posthogChunkIds=e._posthogChunkIds||{},e._posthogChunkIds[n]="${CHUNK}")}catch(e){}}();`
+const SOURCE = 'console.log("hello");\nexport const a = 1;\n'
+const injectedCopy = (source: string) => `${SNIPPET}${source}\n//# chunkId=${CHUNK}`
+
+describe("isOnlyInjected", () => {
+  it("accepts what the pinned CLI writes: its snippet in front and its comment behind", () => {
+    expect(isOnlyInjected(SOURCE, injectedCopy(SOURCE))).toBe(true)
+  })
+
+  it.each([
+    [
+      "code after the snippet",
+      `${SNIPPET}fetch("https://evil.example");${SOURCE}\n//# chunkId=${CHUNK}`,
+    ],
+    ["a changed script", injectedCopy(SOURCE.replace("hello", "goodbye"))],
+    [
+      "another snippet",
+      injectedCopy(SOURCE).replace("_posthogChunkIds[n]", "_posthogChunkIds[n+location.href]"),
+    ],
+    ["code after the comment", `${injectedCopy(SOURCE)}\nfetch("https://evil.example")`],
+    [
+      "a chunk id that differs between snippet and comment",
+      `${SNIPPET}${SOURCE}\n//# chunkId=00000000-0000-0000-0000-000000000000`,
+    ],
+    ["no injection at all", `${SOURCE};fetch("https://evil.example")`],
+  ])("refuses %s", (_label, after) => {
+    expect(isOnlyInjected(SOURCE, after)).toBe(false)
+  })
+})
+
+describe("assertOnlyInjected", () => {
+  const files = { "background.js": SOURCE, "chunks/popup.js": SOURCE, "manifest.json": "{}" }
+
+  it("passes untouched files, injected scripts and any change to a source map", () => {
+    const dir = outDir({ ...files, "background.js.map": "{}" })
+    const before = readShippedFiles(dir)
+    writeFileSync(join(dir, "background.js"), injectedCopy(SOURCE))
+    writeFileSync(join(dir, "background.js.map"), '{"chunk_id":"x"}')
+
+    expect(() => assertOnlyInjected(before, dir)).not.toThrow()
+  })
+
+  it.each([
+    ["a changed manifest", "manifest.json", '{"permissions":["<all_urls>"]}'],
+    ["a new file", "extra.js", "fetch()"],
+    ["a script changed without an injection", "chunks/popup.js", `${SOURCE}fetch()`],
+  ])("fails on %s", (_label, file, content) => {
+    const dir = outDir(files)
+    const before = readShippedFiles(dir)
+    writeFileSync(join(dir, file), content)
+
+    expect(() => assertOnlyInjected(before, dir)).toThrow(new RegExp(file.replace(".", "\\.")))
+  })
+})
+
+describe("cliEnv", () => {
+  it("passes the key, the project and what pnpm needs, and no other variable of the build", () => {
+    const env = cliEnv(
+      {
+        PATH: "/usr/bin",
+        HOME: "/Users/dev",
+        PASSWORD: "wallet-password",
+        POSTHOG_PERSONAL_API_KEY: "phx_personal",
+        SIMPLE_LOCALIZE_API_KEY: "sl",
+        E2E_GANDALF_PRIVATE_KEY: "0xkey",
+      } as unknown as NodeJS.ProcessEnv,
+      "phx_cli"
+    )
+
+    expect(env).toEqual({
+      PATH: "/usr/bin",
+      HOME: "/Users/dev",
+      POSTHOG_CLI_API_KEY: "phx_cli",
+      POSTHOG_CLI_PROJECT_ID: "639977",
+    })
   })
 })
