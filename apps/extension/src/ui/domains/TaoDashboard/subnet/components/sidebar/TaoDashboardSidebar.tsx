@@ -7,10 +7,9 @@ import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TabSignals } from "./TabSignals"
-import { TabSocialFeeds } from "./TabSocialFeeds"
 import { TabWhalesActivity } from "./TabWhalesActivity"
 
-type TabType = "signals" | "social" | "whale"
+type TabType = "signals" | "whale"
 
 export const TaoDashboardSidebar: FC<{
   netuid: number
@@ -37,7 +36,6 @@ const TabSelector: FC<{
   const tabs = useMemo<NavTabConfig<TabType>[]>(
     () => [
       { value: "signals", label: t("Signals") },
-      { value: "social", label: t("Social Feeds") },
       { value: "whale", label: t("Whale Activity") },
     ],
     [t]
@@ -53,8 +51,6 @@ const TabContent: FC<{
   switch (activeTab) {
     case "signals":
       return <TabSignals netuid={netuid} />
-    case "social":
-      return <TabSocialFeeds netuid={netuid} />
     case "whale":
       return <TabWhalesActivity netuid={netuid} />
   }

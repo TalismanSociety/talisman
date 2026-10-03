@@ -5,8 +5,8 @@ import {
   type SubnetLeaderboardRow,
   useSubnetLeaderboardEntry,
 } from "@ui/domains/TaoDashboard/hooks/useSn45Api"
-import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/SentimentBadge"
 import type { TimePeriod } from "@ui/domains/TaoDashboard/shared/types"
+import { useSentimentLabelFromScore100Pos } from "@ui/domains/TaoDashboard/shared/useSentimentLabelFromScore100Pos"
 import {
   getColorFromScore100Neg,
   useScore1To100Neg,
@@ -94,7 +94,11 @@ const SentimentTrend: FC<
           )}
           className={cn(sentChangeColor)}
         >
-          {sentChangeScore > 0 ? `+${sentChangeScore}` : sentChangeScore}
+          {data.sentimentVelocity === null
+            ? t("N/A")
+            : sentChangeScore > 0
+              ? `+${sentChangeScore}`
+              : sentChangeScore}
         </SentimentField>
       </div>
     </div>
