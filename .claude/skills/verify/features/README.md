@@ -6,7 +6,7 @@ The maintained source for verifying the user-facing behaviour of the Talisman ex
 
 - `.claude/skills/verify/bin/doctor.mjs` prints only `PASS` lines.
 - `$RUN` exists and `tabs.sh baseline "$RUN"` ran.
-- `ab` is `agent-browser --session talisman --cdp 9223`.
+- `ab` is `.claude/skills/verify/bin/ab`, as [`../SKILL.md`](../SKILL.md) step 3 defines it: agent-browser on this checkout's browser.
 - The wallet holds the test accounts in [Test accounts](#test-accounts).
 - `EXT` is `chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno`.
 - The dev Chrome window may be narrow (1050 px seen). Wide dashboard layouts then clip: a clipped control can ignore `ab find … click`. Use the direct route in the feature file, or click through `ab eval`.
