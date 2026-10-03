@@ -1,5 +1,12 @@
 # @talismn/balances
 
+## 3.0.6
+
+### Patch Changes
+
+- Updated dependencies [4883ad1]
+  - @talismn/sapi@2.1.0
+
 ## 3.0.5
 
 ### Patch Changes
