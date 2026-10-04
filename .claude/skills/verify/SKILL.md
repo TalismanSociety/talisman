@@ -134,6 +134,7 @@ All in `.claude/skills/verify/bin/`, run from the repo root. Each finds the CDP 
 ## Gotchas
 
 - **Blank page, doctor says "dashboard renders: FAIL" with a 404 on `localhost:8254/src/...?t=…`**: the dev server holds a module graph from before a file rename (a pull or checkout while it ran). `touch` the files that import the missing module; if it stays blank, restart `pnpm dev` (only if you started it) or ask the user.
+- **`pnpm dev` exits with `read ECONNRESET` right after `Built extension in`, on Linux**: Chromium could not open a window and quit. `~/.talisman-dev/chrome-data/chrome-err.log` shows `Failed to connect to Wayland display`. The agent shell does not inherit `WAYLAND_DISPLAY` from the desktop session. Start the build with `WAYLAND_DISPLAY=$(ls "$XDG_RUNTIME_DIR" | grep -m1 -x 'wayland-[0-9]*')` exported.
 - **Blank page with no 404, or a dapp request with no popup**: the running service worker is from an older build. See `AGENTS.md` → "Dev build" (reload the extension).
 - **`wait --text` is case-sensitive**; Playwright `getByText` is not. Copy the text from `ab snapshot` or `ab eval 'document.body.innerText'`.
 - **A route change renders async**: after a click that navigates, `ab wait --text` for the new heading before `find`.
