@@ -61,6 +61,8 @@ export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
   dynamicTokens$?: ReplaySubject<Token[]>
+  /** Chaindata file to download instead of the default one from the TalismanSociety/chaindata repository */
+  chaindataUrl?: string
 }
 
 export class ChaindataProvider implements IChaindataProvider {
@@ -73,6 +75,7 @@ export class ChaindataProvider implements IChaindataProvider {
     persistedStorage,
     customChaindata$,
     dynamicTokens$,
+    chaindataUrl,
   }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
@@ -81,7 +84,7 @@ export class ChaindataProvider implements IChaindataProvider {
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, chaindataUrl)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 

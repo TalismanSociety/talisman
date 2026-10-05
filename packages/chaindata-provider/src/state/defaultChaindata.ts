@@ -1,17 +1,21 @@
 import { switchMapChunked } from "@talismn/util"
 import { firstValueFrom, Observable, type Subject, shareReplay } from "rxjs"
 
+import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import type { ChaindataStorage } from "../provider/ChaindataProvider"
 import { chaindataEqualWithYield, parseChaindataFileChunked } from "./chunkedValidation"
-import { githubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
+import { getRemoteChaindata$ } from "./remoteChaindata"
 import type { Chaindata } from "./schema"
 import { isChaindataValidated, markChaindataValidated } from "./validatedCache"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 
-export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
+export const getDefaultChaindata$ = (
+  storage$: Subject<ChaindataStorage>,
+  url = DEFAULT_CHAINDATA_URL
+) => {
   // ref-memo of the last validated input: storage$ is a ReplaySubject which replays its
   // last value whenever the shareReplay below recovers from refCount 0 — without this,
   // every re-subscription would re-validate the whole dataset
@@ -45,8 +49,14 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
   )
 
   return new Observable<Chaindata>((subscriber) => {
-    const githubToStorageSubscription = githubChaindata$.subscribe({
+    const remoteToStorageSubscription = getRemoteChaindata$(url).subscribe({
       error: async () => {
+        // initChaindata is a snapshot of the default chaindata, not of a custom file
+        if (url !== DEFAULT_CHAINDATA_URL)
+          return log.info(
+            "[defaultChaindata$] Custom chaindata url, skipping initial data provision"
+          )
+
         const storageData = await firstValueFrom(storageValidated$)
 
         if (
@@ -60,7 +70,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
           )
 
         try {
-          // if fetching from github fails, and if DB is empty, provision it with initial data
+          // if fetching the default chaindata fails, and if DB is empty, provision it with initial data
           log.info("[defaultChaindata$] Importing initial chaindata file")
           const validation = await parseChaindataFileChunked(initChaindata)
           if (!validation.success) {
@@ -76,30 +86,32 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
           return
         }
       },
-      next: async (githubData) => {
+      next: async (remoteData) => {
         const now = performance.now()
         try {
           const storageData = await firstValueFrom(storageValidated$)
 
-          const shouldUpdate = !(await chaindataEqualWithYield(storageData, githubData))
+          const shouldUpdate = !(await chaindataEqualWithYield(storageData, remoteData))
           if (!shouldUpdate)
             return log.debug(
               `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`
             )
 
-          // update local chaindata if github chaindata is different
+          // update local chaindata if remote chaindata is different
           log.debug(
-            `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`
+            `[defaultChaindata$] Updating chaindata in DB (networks:${remoteData.networks.length}, tokens:${remoteData.tokens.length}, meta:${remoteData.miniMetadatas.length})`
           )
-          storage$.next(githubData)
+          storage$.next(remoteData)
 
-          log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
+          log.info(
+            `[defaultChaindata$] Db synchronized with remote chaindata :${performance.now() - now}ms`
+          )
         } catch (cause) {
           log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
         }
       },
     })
-    subscriber.add(githubToStorageSubscription)
+    subscriber.add(remoteToStorageSubscription)
 
     const outputFromStorageSubscription = storageValidated$.subscribe(subscriber)
     subscriber.add(outputFromStorageSubscription)
