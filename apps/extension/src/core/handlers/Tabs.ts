@@ -47,6 +47,7 @@ import { genericAsyncSubscription } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
   readonly #routes: Record<string, TabsHandler> = {}
+  readonly #redirectedPorts = new WeakSet<Port>()
 
   constructor(stores: TabStore) {
     super(stores)
@@ -256,10 +257,12 @@ export default class Tabs extends TabsHandler {
     await this.redirectToPhishingPage(tabs, "blockaid")
   }
 
-  private async redirectIfPhishing(url: string): Promise<boolean> {
+  private async redirectIfPhishing(url: string, port: Port): Promise<boolean> {
     const source = await getPhishingSource(url)
     if (!source) return false
+    if (this.#redirectedPorts.has(port)) return true
 
+    this.#redirectedPorts.add(port)
     track("phishing_site_blocked", { protection_source: source })
     chrome.tabs
       .query({ url: url.split("#")[0] })
@@ -276,7 +279,7 @@ export default class Tabs extends TabsHandler {
     url: string
   ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
-      return this.redirectIfPhishing(url)
+      return this.redirectIfPhishing(url, port)
     }
     // Always check for onboarding before doing anything else
     // Because of chrome extensions can be synchronised on multiple computers,
@@ -285,7 +288,7 @@ export default class Tabs extends TabsHandler {
     await this.stores.app.ensureOnboarded()
 
     // check for phishing on all requests
-    const isPhishing = await this.redirectIfPhishing(url)
+    const isPhishing = await this.redirectIfPhishing(url, port)
     if (isPhishing) return
 
     if (await shouldScanSite(type, request, () => this.isEthereumConnected(url)))
