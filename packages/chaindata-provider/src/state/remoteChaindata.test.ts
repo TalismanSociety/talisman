@@ -14,7 +14,10 @@ const mockFetchChaindata = vi.mocked(fetchChaindata)
 
 const validChaindata = makeChaindata()
 
-describe("githubChaindata$", () => {
+const URL_A = "https://example.com/a/chaindata.min.json"
+const URL_B = "https://example.com/b/chaindata.min.json"
+
+describe("getRemoteChaindata$", () => {
   let sub: Subscription | undefined
 
   beforeEach(() => {
@@ -33,17 +36,17 @@ describe("githubChaindata$", () => {
     vi.resetModules()
     // re-register the mock after module reset
     vi.doMock("./net", () => ({ fetchChaindata: mockFetchChaindata }))
-    const mod = await import("./githubChaindata")
-    return mod.githubChaindata$
+    const mod = await import("./remoteChaindata")
+    return mod.getRemoteChaindata$
   }
 
   it("emits data on first subscription", async () => {
     mockFetchChaindata.mockResolvedValueOnce(validChaindata)
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
     const result = await new Promise<Chaindata>((resolve, reject) => {
-      sub = githubChaindata$.subscribe({ next: resolve, error: reject })
+      sub = remoteChaindata$.subscribe({ next: resolve, error: reject })
     })
 
     expect(result.networks).toHaveLength(3)
@@ -55,10 +58,10 @@ describe("githubChaindata$", () => {
     const testError = new Error("Network failure")
     mockFetchChaindata.mockRejectedValueOnce(testError)
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
     const error = await new Promise<Error>((resolve) => {
-      sub = githubChaindata$.subscribe({
+      sub = remoteChaindata$.subscribe({
         next: () => resolve(new Error("Should not emit")),
         error: resolve,
       })
@@ -70,7 +73,7 @@ describe("githubChaindata$", () => {
   it("aborts in-flight fetch on unsubscribe", async () => {
     // fetchChaindata never resolves so the observable stays pending
     mockFetchChaindata.mockImplementation(
-      (signal?: AbortSignal) =>
+      (_url?: string, signal?: AbortSignal) =>
         new Promise<Chaindata>((_resolve, reject) => {
           signal?.addEventListener("abort", () =>
             reject(Object.assign(new Error("aborted"), { name: "AbortError" }))
@@ -78,13 +81,13 @@ describe("githubChaindata$", () => {
         })
     )
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
-    sub = githubChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    sub = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
 
     // The fetchChaindata was called with a signal
     expect(mockFetchChaindata).toHaveBeenCalledOnce()
-    const signal = mockFetchChaindata.mock.calls[0]![0] as AbortSignal
+    const signal = mockFetchChaindata.mock.calls[0]![1] as AbortSignal
     expect(signal.aborted).toBe(false)
 
     // Unsubscribe should abort
@@ -98,10 +101,10 @@ describe("githubChaindata$", () => {
 
     mockFetchChaindata.mockResolvedValueOnce(validChaindata).mockResolvedValueOnce(secondChaindata)
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
     const emissions: Chaindata[] = []
-    sub = githubChaindata$.subscribe({
+    sub = remoteChaindata$.subscribe({
       next: (data) => emissions.push(data),
       error: () => {},
     })
@@ -124,10 +127,10 @@ describe("githubChaindata$", () => {
   it("does not re-fetch within the 60s debounce window", async () => {
     mockFetchChaindata.mockResolvedValue(validChaindata)
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
     const emissions: Chaindata[] = []
-    sub = githubChaindata$.subscribe({
+    sub = remoteChaindata$.subscribe({
       next: (data) => emissions.push(data),
       error: () => {},
     })
@@ -152,9 +155,9 @@ describe("githubChaindata$", () => {
   it("schedules next refresh after successful fetch", async () => {
     mockFetchChaindata.mockResolvedValue(validChaindata)
 
-    const githubChaindata$ = await importFresh()
+    const remoteChaindata$ = (await importFresh())(URL_A)
 
-    sub = githubChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    sub = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
 
     // First fetch
     await vi.advanceTimersByTimeAsync(0)
@@ -169,5 +172,47 @@ describe("githubChaindata$", () => {
     await vi.advanceTimersByTimeAsync(300_000)
     await vi.advanceTimersByTimeAsync(0)
     expect(mockFetchChaindata).toHaveBeenCalledTimes(3)
+  })
+
+  it("fetches the url it was created for", async () => {
+    mockFetchChaindata.mockResolvedValue(validChaindata)
+
+    const getRemoteChaindata$ = await importFresh()
+    sub = getRemoteChaindata$(URL_A).subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mockFetchChaindata).toHaveBeenCalledOnce()
+    expect(mockFetchChaindata).toHaveBeenCalledWith(URL_A, expect.any(AbortSignal))
+  })
+
+  it("shares one source per url", async () => {
+    const getRemoteChaindata$ = await importFresh()
+
+    expect(getRemoteChaindata$(URL_A)).toBe(getRemoteChaindata$(URL_A))
+    expect(getRemoteChaindata$(URL_A)).not.toBe(getRemoteChaindata$(URL_B))
+  })
+
+  it("keeps data and refresh timing separate per url", async () => {
+    const chaindataA = makeChaindata()
+    const chaindataB = makeChaindata()
+    mockFetchChaindata.mockImplementation(async (url) => (url === URL_A ? chaindataA : chaindataB))
+
+    const getRemoteChaindata$ = await importFresh()
+
+    const emissionsA: Chaindata[] = []
+    sub = getRemoteChaindata$(URL_A).subscribe({ next: (d) => emissionsA.push(d), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+
+    // URL_A was just fetched, so its 60s debounce window is open: URL_B must not wait for it
+    const emissionsB: Chaindata[] = []
+    const subB = getRemoteChaindata$(URL_B).subscribe({
+      next: (d) => emissionsB.push(d),
+      error: vi.fn(),
+    })
+    await vi.advanceTimersByTimeAsync(0)
+    subB.unsubscribe()
+
+    expect(emissionsA).toEqual([chaindataA])
+    expect(emissionsB).toEqual([chaindataB])
   })
 })

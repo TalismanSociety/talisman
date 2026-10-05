@@ -5,6 +5,8 @@ import { CHAINDATA_PUB_FOLDER } from "../constants"
 
 const PRIMARY_URL = `https://raw.githubusercontent.com/TalismanSociety/chaindata/main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
 const FALLBACK_URL = `https://cdn.jsdelivr.net/gh/TalismanSociety/chaindata@main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
+const CUSTOM_URL =
+  "https://raw.githubusercontent.com/TalismanSociety/signet/main/chaindata.min.json"
 
 const mockFetch = vi.fn<typeof globalThis.fetch>()
 vi.stubGlobal("fetch", mockFetch)
@@ -112,7 +114,7 @@ describe("net / fetchChaindata", () => {
 
     const { fetchChaindata } = await import("./net")
 
-    await expect(fetchChaindata(abortController.signal)).rejects.toThrow(
+    await expect(fetchChaindata(PRIMARY_URL, abortController.signal)).rejects.toThrow(
       "The operation was aborted"
     )
   })
@@ -123,9 +125,31 @@ describe("net / fetchChaindata", () => {
     mockFetch.mockResolvedValueOnce(okResponse(validData))
 
     const { fetchChaindata } = await import("./net")
-    await fetchChaindata(controller.signal)
+    await fetchChaindata(PRIMARY_URL, controller.signal)
 
     expect(mockFetch).toHaveBeenCalledWith(PRIMARY_URL, { signal: controller.signal })
+  })
+
+  it("fetches a custom url instead of the default one", async () => {
+    mockFetch.mockResolvedValueOnce(okResponse(makeChaindata()))
+
+    const { fetchChaindata } = await import("./net")
+    const result = await fetchChaindata(CUSTOM_URL)
+
+    expect(mockFetch).toHaveBeenCalledOnce()
+    expect(mockFetch).toHaveBeenCalledWith(CUSTOM_URL, { signal: undefined })
+    expect(result.networks).toHaveLength(3)
+  })
+
+  it("does not fall back to jsdelivr when a custom url returns HTTP error", async () => {
+    mockFetch.mockResolvedValueOnce(errorResponse(500, "Internal Server Error"))
+
+    const { fetchChaindata } = await import("./net")
+
+    await expect(fetchChaindata(CUSTOM_URL)).rejects.toThrow(
+      `Failed to fetch from ${CUSTOM_URL}: 500 Internal Server Error`
+    )
+    expect(mockFetch).toHaveBeenCalledOnce()
   })
 })
 
@@ -193,7 +217,7 @@ describe("net / fetchChaindata with slashed branch", () => {
       const original = await importOriginal<typeof import("../constants")>()
       return {
         ...original,
-        githubChaindataDistUrl: `https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/test-branch/${CHAINDATA_PUB_FOLDER}`,
+        DEFAULT_CHAINDATA_URL: `https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/test-branch/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`,
       }
     })
 

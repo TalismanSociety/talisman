@@ -1,0 +1,54 @@
+import { isAbortError } from "@talismn/util"
+import { Observable, shareReplay } from "rxjs"
+
+import log from "../log"
+import { fetchChaindata } from "./net"
+import type { Chaindata } from "./schema"
+
+const REFRESH_INTERVAL = 300_000 // 5 mins
+
+const remoteChaindataByUrl = new Map<string, Observable<Chaindata>>()
+
+export const getRemoteChaindata$ = (url: string) => {
+  const existing = remoteChaindataByUrl.get(url)
+  if (existing) return existing
+
+  const remoteChaindata$ = createRemoteChaindata$(url)
+  remoteChaindataByUrl.set(url, remoteChaindata$)
+  return remoteChaindata$
+}
+
+const createRemoteChaindata$ = (url: string) => {
+  let lastUpdatedAt = 0
+
+  return new Observable<Chaindata>((subscriber) => {
+    const controller = new AbortController()
+    subscriber.add(() => controller.abort())
+
+    let timeout: ReturnType<typeof setTimeout> | null = null
+    subscriber.add(() => timeout && clearTimeout(timeout))
+
+    const refresh = async () => {
+      try {
+        const delay = Math.max(0, lastUpdatedAt + 60_000 - Date.now())
+        if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
+        if (controller.signal.aborted) return
+
+        log.debug("[remoteChaindata$] Refreshing chaindata from", url)
+        const data = await fetchChaindata(url, controller.signal)
+        lastUpdatedAt = Date.now()
+
+        // data is already validated by fetchChaindata (net.ts)
+        subscriber.next(data)
+      } catch (error) {
+        if (isAbortError(error)) return
+
+        log.error("Failed to fetch chaindata", error)
+        if (!subscriber.closed) subscriber.error(error)
+      } finally {
+        if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
+      }
+    }
+    refresh()
+  }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}

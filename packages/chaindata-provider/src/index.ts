@@ -1,5 +1,5 @@
 export * from "./chaindata"
-export { MINIMETADATA_VERSION } from "./constants"
+export { DEFAULT_CHAINDATA_URL, MINIMETADATA_VERSION } from "./constants"
 export * from "./getBlockExplorerUrls"
 export * from "./isAccountPlatformCompatibleWithNetwork"
 export * from "./legacy/Chain"
