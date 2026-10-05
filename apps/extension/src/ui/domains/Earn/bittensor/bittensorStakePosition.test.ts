@@ -128,6 +128,8 @@ describe("toBittensorStakePositions", () => {
       validatorName: "Yuma",
       stake: 2n * TAO,
       claimable: TAO,
+      stakeUsd: 600,
+      claimableUsd: 300,
       totalUsd: 900,
       lock: { kind: "root-stake-hold", unlockAtBlock: 1234 },
       canSign: true,

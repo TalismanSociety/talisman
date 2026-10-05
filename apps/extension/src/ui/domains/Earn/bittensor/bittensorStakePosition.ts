@@ -41,6 +41,8 @@ export type BittensorStakePosition = {
   validatorName: string | null
   stake: bigint
   claimable: bigint
+  stakeUsd: number
+  claimableUsd: number
   totalUsd: number
   lock: BittensorStakeLock | null
   canSign: boolean
@@ -94,6 +96,8 @@ export const toBittensorStakePositions = (
     if (stake === 0n && claimable === 0n) continue
 
     const rootStakeHold = kind === "root" ? findDTaoRootStakeHold(balance.toJSON()) : null
+    const stakeUsd = balance.free.fiat("usd") ?? 0
+    const totalUsd = balance.total.fiat("usd") ?? 0
 
     positions.push({
       id: `bittensor-${balance.tokenId}-${balance.address}`,
@@ -111,7 +115,9 @@ export const toBittensorStakePositions = (
       validatorName: validatorsByHotkey[token.hotkey]?.name || null,
       stake,
       claimable,
-      totalUsd: balance.total.fiat("usd") ?? 0,
+      stakeUsd,
+      claimableUsd: totalUsd - stakeUsd,
+      totalUsd,
       lock: rootStakeHold
         ? { kind: "root-stake-hold", unlockAtBlock: rootStakeHold.unlockAtBlock }
         : kind === "subnet"
