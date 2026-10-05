@@ -41,7 +41,14 @@ const TabSelector: FC<{
     [t]
   )
 
-  return <TaoDashboardNavTabs tabs={tabs} selected={activeTab} onSelect={onTabChange} />
+  return (
+    <TaoDashboardNavTabs
+      tabs={tabs}
+      selected={activeTab}
+      onSelect={onTabChange}
+      className="self-end"
+    />
+  )
 }
 
 const TabContent: FC<{
