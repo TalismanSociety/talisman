@@ -1,4 +1,5 @@
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import type { Account } from "@core/domains/keyring/exports"
 import { type AmountWithLabel, type BalanceJson, Balances } from "@talismn/balances"
 import {
@@ -15,6 +16,7 @@ import { describe, expect, it } from "vitest"
 import { parseBittensorPositionRoute } from "./bittensorPositionRoute"
 import {
   type BittensorStakePositionContext,
+  isBittensorDefiPosition,
   toBittensorStakePositions,
   toEarnPosition,
 } from "./bittensorStakePosition"
@@ -274,5 +276,24 @@ describe("parseBittensorPositionRoute", () => {
     expect(parseBittensorPositionRoute(SUBNET_BASE.id, OWNER)).toBeNull()
     expect(parseBittensorPositionRoute(subNativeTokenId(NETWORK_ID), OWNER)).toBeNull()
     expect(parseBittensorPositionRoute(SUBNET.id, undefined)).toBeNull()
+  })
+})
+
+describe("isBittensorDefiPosition", () => {
+  const defiPosition = (overrides: Partial<DefiPosition>) =>
+    ({
+      id: "position",
+      name: "TAO",
+      type: "deposit",
+      defiId: "protocol",
+      defiName: "Protocol",
+      symbol: "TAO",
+      ...overrides,
+    }) as DefiPosition
+
+  it("treats staking rows and rows naming Bittensor as the system's stake", () => {
+    expect(isBittensorDefiPosition(defiPosition({ type: "staking" }))).toBe(true)
+    expect(isBittensorDefiPosition(defiPosition({ defiName: "Bittensor Staking" }))).toBe(true)
+    expect(isBittensorDefiPosition(defiPosition({}))).toBe(false)
   })
 })
