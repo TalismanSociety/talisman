@@ -1,5 +1,6 @@
 import { catalogue, type EventName } from "@common/analytics/catalogue"
 import type { EventProperties } from "@common/analytics/schema"
+import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { MessageTypes } from "../../types"
@@ -113,20 +114,27 @@ describe("dapp messages", () => {
     expect(tracked.calls).toEqual([["dapp_connection_forgotten", { platform: "ethereum" }]])
   })
 
-  it("counts the sites of the platform a forget all or disconnect all applies to", async () => {
+  it("counts the sites a forget all or disconnect all changes: Talisman's web app and sites without accounts aside", async () => {
     state.sites = {
       "a.example.com": { url: "https://a.example.com", ethAddresses: [] },
       "b.example.com": { url: "https://b.example.com", ethAddresses: ["0x1"], addresses: [] },
       "c.example.com": { url: "https://c.example.com", addresses: ["5Gr"] },
+      [TALISMAN_WEB_APP_DOMAIN]: {
+        url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+        addresses: [],
+        connectAllSubstrate: true,
+      },
     }
 
     await handle("pri(sites.disconnect.all)", { type: "ethereum" })
+    await handle("pri(sites.disconnect.all)", { type: "polkadot" })
     await handle("pri(sites.forget.all)", { type: "polkadot" }, () => {
       state.sites = {}
     })
 
     expect(tracked.calls).toEqual([
-      ["dapp_connections_disconnected", { platform: "ethereum", site_count: 2 }],
+      ["dapp_connections_disconnected", { platform: "ethereum", site_count: 1 }],
+      ["dapp_connections_disconnected", { platform: "polkadot", site_count: 1 }],
       ["dapp_connections_forgotten", { platform: "polkadot", site_count: 2 }],
     ])
     for (const [event, props = {}] of tracked.calls)
