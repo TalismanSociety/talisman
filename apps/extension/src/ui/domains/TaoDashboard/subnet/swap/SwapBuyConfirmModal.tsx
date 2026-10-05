@@ -211,12 +211,13 @@ const FeeEstimateValue = () => {
 }
 
 const TalismanFeeLabel = () => {
-  const { netuid } = useSwapBuy()
+  const { netuid, confirm } = useSwapBuy()
   return (
     <SwapConfirmTalismanFeeLabel
       netuid={netuid}
       containerId={CONTAINER_ID}
       direction="taoToAlpha"
+      onCloseModal={confirm.close}
     />
   )
 }
