@@ -49,6 +49,8 @@ export type ChaindataStorage = {
   networks: Network[]
   tokens: Token[]
   miniMetadatas: AnyMiniMetadata[]
+  /** Custom chaindata url the data was downloaded from, undefined for the default chaindata */
+  chaindataUrl?: string
 }
 
 /** By default, chaindata will be stored in memory and not persisted. */
@@ -91,9 +93,13 @@ export class ChaindataProvider implements IChaindataProvider {
     tryToDeleteOldChaindataDb()
 
     // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
+    const restoreStorage = (storage: ChaindataStorage | undefined): ChaindataStorage =>
+      storage?.chaindataUrl === customChaindataUrl
+        ? { ...DEFAULT_STORAGE, ...storage }
+        : DEFAULT_STORAGE
     const mergedStorage = isPromise(persistedStorage)
-      ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
-      : { ...DEFAULT_STORAGE, ...persistedStorage }
+      ? persistedStorage.then(restoreStorage)
+      : restoreStorage(persistedStorage)
     this.#storage$ = replaySubjectFrom(mergedStorage)
     const defaultChaindata$ = getDefaultChaindata$(this.#storage$, customChaindataUrl)
 

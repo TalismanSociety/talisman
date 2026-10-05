@@ -104,7 +104,10 @@ export const getDefaultChaindata$ = (
         log.debug(
           `[defaultChaindata$] Updating chaindata in DB (networks:${remoteData.networks.length}, tokens:${remoteData.tokens.length}, meta:${remoteData.miniMetadatas.length})`
         )
-        storage$.next(remoteData)
+        const taggedData = { ...remoteData, chaindataUrl }
+        storage$.next(
+          isChaindataValidated(remoteData) ? markChaindataValidated(taggedData) : taggedData
+        )
 
         log.info(
           `[defaultChaindata$] Db synchronized with remote chaindata :${performance.now() - now}ms`
