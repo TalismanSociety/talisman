@@ -36,7 +36,12 @@ export const EarnDepositModal: FC = () => {
   )
 
   return (
-    <Modal containerId="main" isOpen={isOpen && !!args?.opportunities.length} onDismiss={close}>
+    <Modal
+      analyticsId="earn_deposit"
+      containerId="main"
+      isOpen={isOpen && !!args?.opportunities.length}
+      onDismiss={close}
+    >
       <PopupSizeModalContainer id="earn-provider-modal">
         <ModalDialog
           variant="wizard"

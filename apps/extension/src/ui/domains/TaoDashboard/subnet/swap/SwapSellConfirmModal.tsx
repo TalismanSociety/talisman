@@ -29,7 +29,7 @@ export const SwapSellConfirmModal: FC<{ isOpen: boolean; onClose: () => void }> 
   isOpen,
   onClose,
 }) => (
-  <Modal isOpen={isOpen}>
+  <Modal analyticsId="swap_sell_confirm" isOpen={isOpen}>
     <ModalContent onClose={onClose} />
   </Modal>
 )
@@ -206,12 +206,13 @@ const FeeEstimateValue = () => {
 }
 
 const TalismanFeeLabel = () => {
-  const { netuid } = useSwapSell()
+  const { netuid, confirm } = useSwapSell()
   return (
     <SwapConfirmTalismanFeeLabel
       netuid={netuid}
       containerId={CONTAINER_ID}
       direction="alphaToTao"
+      onCloseModal={confirm.close}
     />
   )
 }

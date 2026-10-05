@@ -16,7 +16,8 @@ export const usePortfolioEarnButton = (balances: Balances) => {
   }, [balances, yieldxyzInputTokenIds])
 
   const openEarnModal = useCallback(() => {
-    if (yieldxyzTokenIds) openYieldxyzModal({ pickerTokenIds: yieldxyzTokenIds })
+    if (yieldxyzTokenIds)
+      openYieldxyzModal({ entry: "portfolio", pickerTokenIds: yieldxyzTokenIds })
   }, [yieldxyzTokenIds, openYieldxyzModal])
 
   return {

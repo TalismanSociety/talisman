@@ -29,7 +29,13 @@ const NetworkDetailsDrawer: FC<{
   }, [network])
 
   return (
-    <Drawer containerId="main" isOpen={isOpen} onDismiss={onClose} anchor="bottom">
+    <Drawer
+      analyticsId="network_details"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={onClose}
+      anchor="bottom"
+    >
       <DrawerContent className="flex max-h-full flex-col text-body-secondary text-sm">
         <h3 className="text-sm">{title ?? t("Network Details")}</h3>
         <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">

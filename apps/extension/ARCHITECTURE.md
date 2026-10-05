@@ -62,7 +62,6 @@ Data flows `ui/domains` → `ui/state` or `ui/hooks` → `ui/api` → `PortMessa
 
 ```
 core/
-├── config/      Sentry setup
 ├── db/          Dexie (IndexedDB) schema and upgrades
 ├── domains/     Business logic, one folder per domain (camelCase)
 ├── handlers/    Message routing: Extension.ts (pri), Tabs.ts (pub)

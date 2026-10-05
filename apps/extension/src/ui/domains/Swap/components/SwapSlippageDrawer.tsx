@@ -13,7 +13,13 @@ export const SwapSlippageDrawer: FC<{
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onClose} containerId={containerId}>
+    <Drawer
+      analyticsId="swap_slippage"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={onClose}
+      containerId={containerId}
+    >
       <DrawerContent className="flex flex-col items-center gap-4">
         <div className="pb-8 font-bold text-body">{t("Slippage Tolerance")}</div>
         <SwapSlippageForm onClose={onClose} />

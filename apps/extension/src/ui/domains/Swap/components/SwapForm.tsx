@@ -195,6 +195,7 @@ export const SwapForm = () => {
           </Button>
 
           <Drawer
+            analyticsId="swap_approve_recipient"
             isOpen={isApproveRecipient}
             onDismiss={() => setSwapView("form")}
             anchor="bottom"

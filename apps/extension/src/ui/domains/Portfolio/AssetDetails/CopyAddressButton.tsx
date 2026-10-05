@@ -3,7 +3,6 @@ import { CopyIcon } from "@talismn/icons"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { type FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -16,16 +15,15 @@ type CopyAddressButtonProps = {
 const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
   const { t } = useTranslation()
   const { selectedAccount } = usePortfolioNavigation()
-  const { genericEvent } = useAnalytics()
   const { open } = useCopyAddressModal()
 
   const handleClick = useCallback(() => {
     open({
+      entry: "token_details",
       address: selectedAccount?.address,
       networkId,
     })
-    genericEvent("open receive", { from: "asset details" })
-  }, [selectedAccount?.address, genericEvent, open, networkId])
+  }, [selectedAccount?.address, open, networkId])
 
   return (
     <Tooltip>

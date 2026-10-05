@@ -54,7 +54,12 @@ export const BittensorNetworkPicker: FC<BittensorNetworkPickerProps> = ({
   const { t } = useTranslation()
 
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      analyticsId="bittensor_network_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <ModalDialog
         variant="wizard"
         title={t("Select Network")}

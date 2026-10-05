@@ -1,19 +1,16 @@
-import { log } from "@common/log"
 import {
   addressFromMnemonic,
   base58,
   base64,
   encryptPjsKeystore,
-  getAccountPlatformFromAddress,
   getPublicKeySolana,
   hex,
   type KeypairCurve,
 } from "@talismn/crypto"
-import type { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
+import type { AddAccountKeypairOptions } from "@talismn/keyring"
 import { assert, stringToU8a } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
@@ -45,44 +42,7 @@ import type {
   ResponseAccountsExport,
 } from "./types"
 
-// existing values for the method field, prior to keyring migration
-type AnalyticsAccountMethod =
-  | "derived"
-  | "seed"
-  | "privateKey"
-  | "json"
-  | "qr"
-  | "hardware"
-  | "watched"
-
 export default class AccountsHandler extends ExtensionHandler {
-  private async captureAccountCreateEvent(
-    address: string,
-    method: AccountType | AnalyticsAccountMethod
-  ) {
-    let type = "unknown"
-    try {
-      type = getAccountPlatformFromAddress(address)
-
-      // match with legacy naming
-      if (type === "polkadot") type = "substrate"
-    } catch {
-      log.warn("Unknown encoding for address", address)
-    }
-
-    // match with legacy naming
-    if (method === "ledger-polkadot") method = "hardware"
-    if (method === "ledger-ethereum") method = "hardware"
-    if (method === "polkadot-vault") method = "qr"
-    if (method === "watch-only") method = "watched"
-
-    talismanAnalytics.capture("account create", {
-      type,
-      method,
-      isOnboarded: await this.stores.app.getIsOnboarded(),
-    })
-  }
-
   private async accountCreateJson({
     unlockedPairs,
   }: RequestAccountCreateFromJson): Promise<string[]> {
@@ -99,20 +59,12 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const accounts = await keyringStore.addAccountKeypairMulti(options)
 
-    return accounts.map((a) => {
-      if (a.type === "keypair") this.captureAccountCreateEvent(a.address, "json")
-      return a.address
-    })
+    return accounts.map((a) => a.address)
   }
 
   private async accountForget({ address }: RequestAccountForget): Promise<boolean> {
     const account = await keyringStore.getAccount(address)
     assert(account, "Unable to find account")
-
-    talismanAnalytics.capture("account forget", {
-      type: account.type,
-      curve: account.type === "keypair" ? account.curve : undefined,
-    })
 
     await keyringStore.removeAccount(address)
 
@@ -136,8 +88,6 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(account && account.type === "keypair", "Account not found")
 
     const { err, val } = await withSecretKey(address, (secretKey, curve) => {
-      talismanAnalytics.capture("account export", { type: curve, mode: "json" })
-
       return {
         exportedJson: encodePjsKeyringPairJson(
           { address: account.address, name: account.name, curve },
@@ -203,8 +153,6 @@ export default class AccountsHandler extends ExtensionHandler {
     await this.stores.password.checkPassword(password)
 
     const { err, val } = await withSecretKey(address, async (secretKey, curve) => {
-      talismanAnalytics.capture("account export", { type: curve, mode: "pk" })
-
       switch (curve) {
         case "ethereum":
           return hex.encode(secretKey)
@@ -296,8 +244,6 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const accounts = await keyringStore.addAccountExternalMulti(options)
 
-    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
-
     return accounts.map((a) => a.address)
   }
 
@@ -306,8 +252,6 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(password, "Not logged in")
 
     const accounts = await keyringStore.addAccountDeriveMulti(options)
-
-    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
 
     return accounts.map((a) => a.address)
   }
@@ -322,8 +266,6 @@ export default class AccountsHandler extends ExtensionHandler {
     }))
 
     const accounts = await keyringStore.addAccountKeypairMulti(deserializedOptions)
-
-    for (const account of accounts) this.captureAccountCreateEvent(account.address, account.type)
 
     return accounts.map((a) => a.address)
   }

@@ -21,11 +21,11 @@ Preconditions:
 
 - **Open the dapp.** `ab tab new "https://example.org"`. `ab eval 'typeof window.talismanEth'` returns `"object"`.
 - **Request accounts without blocking.** `ab eval 'window.__req = window.talismanEth.request({ method: "eth_requestAccounts" }).then(r => (window.__res = r), e => (window.__err = e.message)); "sent"'`.
-- **Answer the popup.** `.claude/skills/verify/bin/popup-url.sh` prints `…/popup.html#/auth/<id>`. `ab tab new "<that url>"`, `ab snapshot -i -c`. `Guardians EVM` is preselected and the button reads `Connect 1`: check that in a screenshot, do not click the row (that toggles it). Click `Connect 1`. Both popup tabs close.
+- **Answer the popup.** `.claude/skills/verify/bin/popup-url.sh` prints `…/popup.html#/auth/<id>`. `ab tab new "<that url>"`, `ab snapshot -i -c`. `Guardians EVM` is preselected and the button reads `Connect 1`: check that in a screenshot, do not click the row (that toggles it). Click `Connect 1`. The popup also has `Reject`. Both popup tabs close.
 - **Prove the connection.** Back on the dapp tab: `ab eval 'window.__res'` returns an array with the Guardians EVM address in lower case. `sitesAuthorized` now has an `example.org` entry.
 - **Sign a message.** `ab eval 'window.__sig = window.talismanEth.request({ method: "personal_sign", params: ["0x68656c6c6f", window.__res[0]] }).then(r => (window.__sigRes = r), e => (window.__sigErr = e.message)); "sent"'`. Open the `#/eth-sign/<id>` popup the same way, check that the signer name contains `Guardians`, click `Approve`. `ab eval 'window.__sigRes'` is a `0x…` signature of 132 characters.
-- **Connect Substrate.** `ab eval 'window.__sub = window.injectedWeb3.talisman.enable("verify").then(e => e.accounts.get()).then(a => (window.__subRes = a.map(x => x.name)), e => (window.__subErr = String(e.message))); "sent"'`. Open the `#/auth/<id>` popup: nothing is preselected and `Connect` is disabled. Click the `Guardians SUB` row, then click the connect button by its `@ref` (its accessible name is `Connect1`, so `find role button --name "Connect 1"` fails). `window.__subRes` is `["Guardians SUB"]`.
-- **Reject.** Send a second `personal_sign`, click `Cancel` in its popup. `window.__sigErr` reads "User Rejected Request".
+- **Connect Substrate.** `ab eval 'window.__sub = window.injectedWeb3.talisman.enable("verify").then(e => e.accounts.get()).then(a => (window.__subRes = a.map(x => x.name)), e => (window.__subErr = String(e.message))); "sent"'`. Open the `#/auth/<id>` popup: nothing is preselected and `Connect` is disabled. The popup also shows an unchecked `Ethereum accounts` switch: leave it off. Click the `Guardians SUB` row, then click the connect button by its `@ref` (its accessible name is `Connect1`, so `find role button --name "Connect 1"` fails). `window.__subRes` is `["Guardians SUB"]`.
+- **Reject.** Send a second `personal_sign`, click `Cancel` in its popup. `window.__sigErr` reads "User Rejected Request". A connection popup rejects with `Reject` instead (`data-testid` `connection-reject-button`), with the same error text.
 - **Undo.** Forget `example.org` as in [Connected sites](./connected-sites.md).
 
 ## Gotchas
@@ -37,3 +37,4 @@ Preconditions:
 - A dapp request that hangs with no popup is a stale service worker: run the doctor.
 - `wallet_revokePermissions` leaves an empty `sitesAuthorized` entry. Forget the site in Settings for a clean state.
 - Dapp-signed Substrate transactions show in Activity as "Unknown": expected.
+- The toolbar popup over a dapp tab (connected accounts, the EVM network pill) opens with `sw-eval.mjs 'chrome.action.openPopup()'` while the dapp tab is the active tab. Neither agent-browser nor Playwright lists that `popup.html?embedded` target: drive it with `Runtime.evaluate` over its `webSocketDebuggerUrl` from `curl -s localhost:9223/json/list`.

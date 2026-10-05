@@ -1,6 +1,5 @@
 import { Button } from "@ui/components/Button"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalances } from "@ui/state/balances"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -64,21 +63,20 @@ const TabContent: FC = () => {
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { canSubmit } = useSwapBuy()
-  const { isOpen, open, close } = useOpenClose()
+  const { canSubmit, confirm } = useSwapBuy()
 
   return (
     <>
       <Button
         fullWidth
         color="buy"
-        onClick={open}
+        onClick={confirm.open}
         disabled={!canSubmit}
         className="h-24 w-full rounded border-none text-black"
       >
         {t("Buy")}
       </Button>
-      <SwapBuyConfirmModal isOpen={isOpen} onClose={close} />
+      <SwapBuyConfirmModal isOpen={confirm.isOpen} onClose={confirm.close} />
     </>
   )
 }

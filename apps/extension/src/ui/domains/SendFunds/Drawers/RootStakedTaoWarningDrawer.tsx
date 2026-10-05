@@ -16,7 +16,13 @@ export const RootStakedTaoWarningDrawer = ({
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
+    <Drawer
+      analyticsId="root_staked_tao_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
       <DrawerContent className="gap flex flex-col items-center text-center">
         <div className="flex size-24 items-center justify-center rounded-full bg-alert-warn/10">
           <AlertTriangleIcon className="inline-block size-12 text-alert-warn" />

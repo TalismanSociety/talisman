@@ -26,6 +26,7 @@ export const ErrorMessageDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="error_message"
       anchor="bottom"
       isOpen={!!content && message === content}
       containerId={containerId}

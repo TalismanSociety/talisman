@@ -26,7 +26,13 @@ export const RecipientWarningDrawer = ({
   const chain = useNetworkByGenesisHash(genesisHash)
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
+    <Drawer
+      analyticsId="recipient_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
       <DrawerContent className="text-center">
         <div>
           <InfoIcon className="inline-block text-3xl text-primary-500" />

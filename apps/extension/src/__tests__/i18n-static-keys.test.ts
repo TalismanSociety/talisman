@@ -25,7 +25,7 @@ describe("translation keys", () => {
     expect(findDynamicKeys(`const a = i18next.t(\n  \`Stake $\{symbol}\`\n)`)).toEqual([1])
     expect(findDynamicKeys('const a = t("Stake {{symbol}} now", { symbol })')).toEqual([])
     expect(findDynamicKeys("const a = t(`Copy failed`)")).toEqual([])
-    expect(findDynamicKeys(`genericEvent(\`$\{type} Bond\`)`)).toEqual([])
+    expect(findDynamicKeys(`log.debug(\`$\{type} Bond\`)`)).toEqual([])
   })
 
   it("are static strings", () => {

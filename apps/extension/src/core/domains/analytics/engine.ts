@@ -1,0 +1,389 @@
+import { CONSENT_KINDS, type ConsentKind } from "@common/analytics/schema"
+import type { UiContext } from "@common/analytics/superProperties"
+import { log } from "@common/log"
+import { isEqual } from "lodash-es"
+import { distinctUntilChanged, firstValueFrom, from, map, type Observable, switchMap } from "rxjs"
+
+import { settingsStore } from "../app/store.settings"
+import { admit, consentFromSettings, planConsent } from "./consent"
+import { type Environment, readEnvironment } from "./environment"
+import { removeLegacyAnalyticsBeforeUnlock } from "./legacy"
+import { type ParsedEvent, type ParseResult, parseTrackedEvent } from "./parse"
+import {
+  createChromeAlarmScheduler,
+  type FlushScheduler,
+  MIN_ALARM_DELAY_MS,
+  planWake,
+} from "./scheduler"
+import { drawOffsetMs } from "./session"
+import { KIND_POLICY, stampEvent } from "./stamp"
+import {
+  createStorageDevLog,
+  type DevLog,
+  type DevLogDisposition,
+  type DevLogEntry,
+  devLogStore,
+} from "./store.devLog"
+import {
+  type AnalyticsStore,
+  createDexieAnalyticsStore,
+  createMemoryAnalyticsStore,
+} from "./store.queue"
+import { TRANSMISSION, type Transmission } from "./transmission"
+import {
+  createDevLogTransport,
+  createPosthogTransport,
+  MAX_BATCH_SIZE,
+  nextBackoffMs,
+  type Transport,
+} from "./transport"
+import type { AnalyticsState, Consent, Disposition, QueuedEventRecord } from "./types"
+
+const MAX_HELD_EVENTS = 200
+const MAX_BATCHES_PER_FLUSH = 10
+
+export type AnalyticsEngineDeps = {
+  clock: () => number
+  drawOffset: () => number
+  store: AnalyticsStore
+  scheduler: FlushScheduler
+  environment: () => Promise<Environment>
+  consent$: Observable<Consent>
+  transmission: Transmission
+  transportFor: (transmission: Transmission) => Transport | null
+  devLog: DevLog | null
+}
+
+export type CaptureInput = {
+  result: ParseResult
+  uiContext: UiContext
+  realNow: number
+}
+
+export type AnalyticsSnapshot = {
+  consent: Consent
+  transmission: Transmission
+  appliedConsent: Consent | null
+  session: AnalyticsState["session"]
+  held: number
+  queued: Record<ConsentKind, number>
+  sendTimes: number[]
+  alarmAt: number | undefined
+}
+
+export class AnalyticsEngine {
+  readonly #deps: AnalyticsEngineDeps
+  readonly #started = Promise.withResolvers<void>()
+  #store: AnalyticsStore
+  #tail: Promise<unknown>
+  #state!: AnalyticsState
+  #consent!: Consent
+  #transmission: Transmission
+  #held: QueuedEventRecord[] = []
+  #inFlight: Partial<Record<ConsentKind, Promise<void>>> = {}
+  #failures = 0
+  #inert = false
+
+  constructor(deps: AnalyticsEngineDeps) {
+    this.#deps = deps
+    this.#store = deps.store
+    this.#transmission = deps.transmission
+    this.#tail = this.#started.promise.then(() => this.#init())
+  }
+
+  /**
+   * Call once, synchronously, at the top level of the service worker: it registers the alarm
+   * listener.
+   */
+  start(): void {
+    this.#deps.scheduler.onFire(() => {
+      for (const kind of CONSENT_KINDS) void this.flush(kind)
+    })
+    this.#started.resolve()
+    this.#deps.consent$.subscribe((consent) => {
+      this.#serial(() => this.#apply(consent)).catch((cause) =>
+        log.error("[analytics] consent change failed", { cause })
+      )
+    })
+  }
+
+  capture({ result, uiContext, realNow }: CaptureInput): Promise<Disposition> {
+    return this.#serial(async () => {
+      if (result.ok) return this.#capture(result.event, uiContext, realNow, result.issues)
+      if (result.disposition === "rejected")
+        log.warn("[analytics] rejected event", result.name, result.issues)
+      await this.#log({
+        id: crypto.randomUUID(),
+        name: result.name,
+        capturedAt: realNow,
+        disposition: result.disposition,
+        issues: result.issues,
+      })
+      return result.disposition
+    })
+  }
+
+  admits(kind: ConsentKind): Promise<boolean> {
+    return this.#serial(async () => admit(kind, this.#consent, this.#transmission) === "queued")
+  }
+
+  flush(kind: ConsentKind): Promise<void> {
+    this.#inFlight[kind] ??= (async () => {
+      try {
+        const outcome = await this.#drain(kind)
+        if (outcome === "done") await this.#serial(() => this.#reschedule())
+      } catch (cause) {
+        log.error("[analytics] flush failed", { cause })
+      } finally {
+        delete this.#inFlight[kind]
+      }
+    })()
+    return this.#inFlight[kind]
+  }
+
+  /** The next usage event starts a session, so it carries an id that nothing ties to the last one. */
+  endSession(): Promise<void> {
+    return this.#serial(async () => {
+      if (this.#inert || !this.#state.session) return
+      this.#state = { ...this.#state, session: null }
+      await this.#store.commit({ state: this.#state })
+    })
+  }
+
+  inspect(): Promise<AnalyticsSnapshot> {
+    return this.#serial(async () => {
+      const queued = await Promise.all(
+        CONSENT_KINDS.map(async (kind) => {
+          const rows = await this.#store.due(Number.POSITIVE_INFINITY, {
+            kind,
+            limit: Number.MAX_SAFE_INTEGER,
+          })
+          return [kind, rows.length] as const
+        })
+      )
+      return {
+        consent: this.#consent,
+        transmission: this.#transmission,
+        appliedConsent: this.#state.appliedConsent,
+        session: this.#state.session,
+        held: this.#held.length,
+        queued: Object.fromEntries(queued) as Record<ConsentKind, number>,
+        sendTimes: await this.#store.sendTimes(),
+        alarmAt: await this.#deps.scheduler.scheduledAt(),
+      }
+    })
+  }
+
+  #serial<T>(work: () => Promise<T>): Promise<T> {
+    const run = this.#tail.then(work, work)
+    this.#tail = run.catch(() => {})
+    return run
+  }
+
+  async #init() {
+    const stored = await this.#store.load().catch((cause) => {
+      log.warn("[analytics] IndexedDB unavailable, queueing in memory", { cause })
+      this.#store = createMemoryAnalyticsStore()
+      return undefined
+    })
+    this.#state = stored ?? { session: null, appliedConsent: null }
+    try {
+      if (!stored) await this.#store.commit({ state: this.#state })
+      this.#consent = await firstValueFrom(this.#deps.consent$)
+    } catch (cause) {
+      log.error("[analytics] start failed, dropping every event", { cause })
+      this.#inert = true
+      this.#consent = { usage: "denied", error: "denied" }
+      this.#transmission = { mode: "off" }
+    }
+  }
+
+  async #capture(
+    event: ParsedEvent,
+    uiContext: UiContext,
+    realNow: number,
+    issues?: readonly string[]
+  ): Promise<Disposition> {
+    const admission = admit(event.kind, this.#consent, this.#transmission)
+    if (admission === "dropped_consent" || admission === "dropped_off") {
+      await this.#log({
+        id: crypto.randomUUID(),
+        name: event.name,
+        capturedAt: realNow,
+        disposition: admission,
+        issues,
+      })
+      return admission
+    }
+
+    const { record, state } = stampEvent({
+      event,
+      uiContext,
+      environment: await this.#deps.environment(),
+      state: this.#state,
+      realNow,
+      drawOffset: this.#deps.drawOffset,
+    })
+    this.#state = state
+    if (admission === "held") {
+      this.#held = [...this.#held, record].slice(-MAX_HELD_EVENTS)
+      await this.#store.commit({ state })
+    } else {
+      await this.#store.commit({ state, put: [record] })
+    }
+    await this.#log({
+      id: record.uuid,
+      name: event.name,
+      capturedAt: realNow,
+      disposition: admission,
+      wire: record.wire,
+      issues,
+    })
+
+    if (admission === "queued") {
+      if (KIND_POLICY[event.kind].flushImmediately) void this.flush(event.kind)
+      else await this.#reschedule()
+    }
+    return admission
+  }
+
+  async #apply(consent: Consent) {
+    if (this.#inert) return
+    this.#consent = consent
+
+    const plan = planConsent(this.#state.appliedConsent, consent)
+    switch (plan.usage) {
+      case "decline":
+        await this.#dropHeld((record) => record.kind === "usage", "dropped_consent")
+        break
+      case "opt_in_onboarding":
+        await this.#releaseHeld()
+        await this.#optIn("onboarding")
+        break
+      case "opt_in_settings":
+        await this.#optIn("settings")
+        break
+      case "opt_out":
+        this.#state = { ...this.#state, session: null }
+        break
+      case "none":
+        break
+    }
+    await this.#purge(plan.purge)
+
+    this.#state = { ...this.#state, appliedConsent: consent }
+    await this.#store.commit({ state: this.#state })
+    await this.#reschedule()
+  }
+
+  async #optIn(source: "onboarding" | "settings") {
+    const result = parseTrackedEvent({ event: "analytics_opt_in", properties: { source } })
+    if (result.ok) await this.#capture(result.event, "background", this.#deps.clock())
+  }
+
+  async #releaseHeld() {
+    const released = this.#held
+    this.#held = []
+    if (!released.length) return
+    await this.#store.commit({ put: released })
+    await this.#setDisposition(
+      released.map((record) => record.uuid),
+      "released"
+    )
+  }
+
+  async #dropHeld(matches: (record: QueuedEventRecord) => boolean, disposition: DevLogDisposition) {
+    const dropped = this.#held.filter(matches)
+    if (!dropped.length) return
+    this.#held = this.#held.filter((record) => !matches(record))
+    await this.#setDisposition(
+      dropped.map((record) => record.uuid),
+      disposition
+    )
+  }
+
+  async #purge(kinds: readonly ConsentKind[]) {
+    if (!kinds.length) return
+    await this.#setDisposition(await this.#store.purge(kinds), "purged")
+  }
+
+  async #drain(kind: ConsentKind): Promise<"done" | "retry"> {
+    const transport = await this.#serial(async () => this.#deps.transportFor(this.#transmission))
+    if (!transport) return "done"
+    for (let batch = 0; batch < MAX_BATCHES_PER_FLUSH; batch++) {
+      const rows = await this.#serial(async () =>
+        admit(kind, this.#consent, this.#transmission) === "queued"
+          ? this.#store.due(this.#deps.clock(), { kind, limit: MAX_BATCH_SIZE })
+          : []
+      )
+      if (!rows.length) return "done"
+
+      const outcome = await transport(rows.map((row) => row.wire))
+      if (outcome === "retry") {
+        this.#failures++
+        const delay = Math.max(MIN_ALARM_DELAY_MS, nextBackoffMs(this.#failures))
+        await this.#serial(() => this.#deps.scheduler.schedule(this.#deps.clock() + delay))
+        return "retry"
+      }
+      this.#failures = 0
+      await this.#serial(() => this.#store.commit({ remove: rows.map((row) => row.uuid) }))
+      if (rows.length < MAX_BATCH_SIZE) return "done"
+    }
+    return "done"
+  }
+
+  async #reschedule() {
+    if (!this.#deps.transportFor(this.#transmission)) return
+    const plan = planWake({
+      sendTimes: await this.#store.sendTimes(),
+      now: this.#deps.clock(),
+      scheduledAt: await this.#deps.scheduler.scheduledAt(),
+      drawDelay: this.#deps.drawOffset,
+    })
+    if (plan.type === "schedule") await this.#deps.scheduler.schedule(plan.at)
+    if (plan.type === "clear") await this.#deps.scheduler.clear()
+  }
+
+  async #log(entry: DevLogEntry) {
+    await this.#deps.devLog?.record([entry])
+  }
+
+  async #setDisposition(ids: readonly string[], disposition: DevLogDisposition) {
+    if (ids.length) await this.#deps.devLog?.setDisposition(ids, disposition)
+  }
+}
+
+const devLog = devLogStore && createStorageDevLog(devLogStore)
+
+const legacyRemoval = removeLegacyAnalyticsBeforeUnlock().catch((cause) =>
+  log.error("[analytics] legacy analytics removal failed", { cause })
+)
+
+export const analyticsEngine = new AnalyticsEngine({
+  clock: Date.now,
+  drawOffset: drawOffsetMs,
+  store: createDexieAnalyticsStore(),
+  scheduler: createChromeAlarmScheduler(),
+  environment: readEnvironment,
+  consent$: from(legacyRemoval).pipe(
+    switchMap(() => settingsStore.observable),
+    map(consentFromSettings),
+    distinctUntilChanged(isEqual)
+  ),
+  transmission: TRANSMISSION,
+  transportFor: (transmission) => {
+    if (transmission.mode === "posthog") return createPosthogTransport(transmission)
+    if (transmission.mode === "dev_log" && devLog) return createDevLogTransport(devLog, Date.now)
+    return null
+  },
+  devLog,
+})
+
+if (process.env.BUILD === "dev")
+  Object.assign(globalThis, {
+    talismanAnalytics: {
+      log: async () => (await devLogStore?.get())?.entries,
+      inspect: () => analyticsEngine.inspect(),
+      flush: () => Promise.all(CONSENT_KINDS.map((kind) => analyticsEngine.flush(kind))),
+    },
+  })

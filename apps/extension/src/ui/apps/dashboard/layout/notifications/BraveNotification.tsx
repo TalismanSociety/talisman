@@ -34,7 +34,7 @@ export const BraveWarningNotification = () => {
         onActionClick={open}
         onClose={handleHide}
       />
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="brave_warning_notification" isOpen={isOpen} onDismiss={close}>
         <ModalDialog className="h-auto" title={t("Attention Brave Users")} onCloseClick={close}>
           <BraveWarningModal />
         </ModalDialog>

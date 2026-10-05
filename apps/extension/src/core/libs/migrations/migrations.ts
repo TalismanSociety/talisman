@@ -5,6 +5,7 @@ import {
 import {
   migrateAnaliticsPurgePendingCaptures,
   migratePosthogDistinctIdToAnalyticsStore,
+  migrateRemoveLegacyAnalytics,
 } from "../../domains/analytics/migrations"
 import {
   cleanBadContacts,
@@ -51,6 +52,7 @@ export const migrations: Migrations = [
   migrateNftsV2,
   migrateAssetDiscoveryV3,
   repairAutoLockMinutes,
+  migrateRemoveLegacyAnalytics,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:

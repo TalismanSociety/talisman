@@ -1,12 +1,10 @@
 import { Balances } from "@talismn/balances"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnDiscoverToolbar } from "@ui/domains/Earn/components/EarnDiscoverToolbar"
 import { EarnPositionsToolbar } from "@ui/domains/Earn/components/EarnPositionsToolbar"
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { useEarnOpportunitiesByTokenId } from "@ui/domains/Earn/hooks/useEarnOpportunitiesByTokenId"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo, useState } from "react"
@@ -15,13 +13,6 @@ import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 import { DashboardTopActions } from "../../DashboardTopActions"
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Earn",
-  featureVersion: 1,
-  page: "Earn Home",
-}
 
 type DashboardEarnOutletContext = {
   search: string
@@ -72,25 +63,11 @@ export const DashboardEarnPage: FC = () => {
 export const DashboardEarnPositionsRoute: FC = () => {
   const { search } = useDashboardEarnOutletContext()
 
-  useAnalyticsPageView({
-    container: "Fullscreen",
-    feature: "Earn",
-    featureVersion: 1,
-    page: "Earn Positions",
-  })
-
   return <DashboardEarnPositionsTab search={search} />
 }
 
 export const DashboardEarnDiscoverRoute: FC = () => {
   const { search } = useDashboardEarnOutletContext()
-
-  useAnalyticsPageView({
-    container: "Fullscreen",
-    feature: "Earn",
-    featureVersion: 1,
-    page: "Earn Discover",
-  })
 
   return <DashboardEarnDiscoverTab search={search} />
 }
@@ -124,7 +101,7 @@ const EarnPageHeader = () => {
             />
           )}
         </div>
-        <DashboardTopActions analyticsPage={ANALYTICS_PAGE} />
+        <DashboardTopActions />
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import type { TimePeriodDto } from "@core/domains/earn/exports"
 import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
@@ -8,6 +9,8 @@ import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
@@ -32,6 +35,7 @@ export const YieldxyzEnterStepAmount = () => {
   const [createActionError, setCreateActionError] = useState<{
     amountIn: bigint | null
     message: string
+    category: ErrorCategory
   } | null>(null)
   const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
   const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
@@ -47,7 +51,12 @@ export const YieldxyzEnterStepAmount = () => {
       await createAction()
       goTo("confirm")
     } catch (err) {
-      setCreateActionError({ amountIn, message: getErrorMessage(err, t("Unknown error")) })
+      flows.earn_deposit.failed(err)
+      setCreateActionError({
+        amountIn,
+        message: getErrorMessage(err, t("Unknown error")),
+        category: classifyError(err),
+      })
     } finally {
       setProcessing(false)
     }
@@ -82,7 +91,7 @@ export const YieldxyzEnterStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <DepositAmountEdit createActionError={createActionError?.message} />
+          <DepositAmountEdit createActionError={createActionError} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -211,9 +220,17 @@ const NetworkDisplay = () => {
   )
 }
 
-const DepositAmountEdit: FC<{ createActionError?: string }> = ({ createActionError }) => {
-  const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
-    useYieldxyzEnterWizard()
+const DepositAmountEdit: FC<{ createActionError?: InlineError | null }> = ({
+  createActionError,
+}) => {
+  const {
+    tokenIn,
+    amountIn,
+    validationError,
+    validationErrorCategory,
+    onAmountInChanged,
+    setMaxAmountIn,
+  } = useYieldxyzEnterWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
@@ -223,7 +240,8 @@ const DepositAmountEdit: FC<{ createActionError?: string }> = ({ createActionErr
       value={amountIn}
       onValueChanged={onAmountInChanged}
       onMaxClick={setMaxAmountIn}
-      error={validationError ?? createActionError}
+      error={validationError ?? createActionError?.message}
+      errorCategory={validationError ? validationErrorCategory : createActionError?.category}
     />
   )
 }

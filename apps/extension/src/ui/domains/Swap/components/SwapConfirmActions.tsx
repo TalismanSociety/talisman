@@ -1,9 +1,16 @@
+import { toAmountBucket } from "@common/analytics/buckets"
+import { classifyError } from "@common/analytics/errorCategory"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
+import { toSlippagePercent } from "@common/analytics/schema"
+import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import { BalanceFormatter } from "@talismn/balances"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
 import { getErrorMessage, isErrorOfName } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Skeleton } from "@ui/components/Skeleton"
@@ -27,18 +34,22 @@ import { QuoteDuration } from "@ui/domains/Swap/components/QuoteDuration"
 import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
 import { QuoteNote } from "@ui/domains/Swap/components/QuoteNote"
 import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
-import { useSwapSlippage } from "../hooks/useSwapSlippage"
+import { SWAP_SLIPPAGE_DEFAULT, useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
 import {
   classifyFeeEstimationError,
@@ -119,8 +130,22 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     }
   }, [approvalEthTx.transaction, approvalTxInfo, fromToken?.networkId])
 
+  const protocol = swapModule?.protocol
+  const onApprovalFailed = useCallback(
+    (cause: unknown) => {
+      if (protocol) flows.swap.failed(cause, { protocol, phase: "approval" })
+    },
+    [protocol]
+  )
+
   const onApprovalSubmitted = useCallback(
     async (txId: string) => {
+      if (protocol)
+        track("swap_approval_submitted", {
+          protocol,
+          network_id: networkIdForAnalytics(fromNetwork),
+          is_revoke: needsRevoke,
+        })
       if (!publicClient) {
         log.warn("publicClient unavailable for approval receipt polling, skipping wait")
         incrementApprovalCounter()
@@ -142,12 +167,22 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             : t("Approval failed"),
           type: "error",
           subtitle: getErrorMessage(cause, t("Unknown error")).slice(0, 100),
+          cause,
         })
+        onApprovalFailed(cause)
       } finally {
         setIsApproving(false)
       }
     },
-    [incrementApprovalCounter, publicClient, t]
+    [
+      fromNetwork,
+      incrementApprovalCounter,
+      needsRevoke,
+      onApprovalFailed,
+      protocol,
+      publicClient,
+      t,
+    ]
   )
 
   const substrateNetwork = useNetworkById(fromToken?.networkId ?? undefined)
@@ -565,6 +600,67 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     })
   }, [swapError, t, fromToken?.symbol, feeToken?.symbol])
 
+  useErrorShown({ shown: swapError?.type, surface: "alert", category: classifyError(swapError) })
+
+  const fromAccount = useAccountByAddress(fromAddress)
+  const toNetwork = useNetworkById(toToken?.networkId)
+  const fromTokenRates = useTokenRates(fromTokenId ?? undefined)
+  const feeTokenRates = useTokenRates(activeFeeTokenId ?? undefined)
+  const swapReport = useMemo(() => {
+    const signer = fromAccount && signerOf(fromAccount.type)
+    if (!protocol || !fromToken || !toToken || !signer) return null
+    const usdOf = (
+      planck: bigint | string | null,
+      decimals: number,
+      rates: typeof feeTokenRates
+    ) => (planck === null ? null : new BalanceFormatter(planck, decimals, rates).fiat("usd"))
+    return {
+      protocol,
+      platform: fromToken.platform,
+      from_network_id: networkIdForAnalytics(fromNetwork),
+      to_network_id: networkIdForAnalytics(toNetwork),
+      from_symbol: tokenSymbolForAnalytics(fromToken),
+      to_symbol: tokenSymbolForAnalytics(toToken),
+      signer,
+      cross_chain: fromToken.networkId !== toToken.networkId,
+      usd_bucket: toAmountBucket(usdOf(fromAmount, fromToken.decimals, fromTokenRates)),
+      fee_usd_bucket: toAmountBucket(
+        feeToken ? usdOf(feePlanck, feeToken.decimals, feeTokenRates) : null
+      ),
+      slippage_percent: supportsSlippage ? toSlippagePercent(slippagePercent) : null,
+      slippage_is_default: supportsSlippage ? slippagePercent === SWAP_SLIPPAGE_DEFAULT : null,
+    }
+  }, [
+    feePlanck,
+    feeToken,
+    feeTokenRates,
+    fromAccount,
+    fromAmount,
+    fromNetwork,
+    fromToken,
+    fromTokenRates,
+    protocol,
+    slippagePercent,
+    supportsSlippage,
+    toNetwork,
+    toToken,
+  ])
+
+  const handleSwapSubmitted = useCallback(
+    (hash: string) => {
+      if (swapReport) flows.swap.submitted({ ...swapReport, transactionId: hash })
+      onSwapSubmitted(hash)
+    },
+    [onSwapSubmitted, swapReport]
+  )
+
+  const onSwapFailed = useCallback(
+    (cause: unknown) => {
+      if (protocol) flows.swap.failed(cause, { protocol, phase: "submit" })
+    },
+    [protocol]
+  )
+
   const isDisabled = useMemo(
     () =>
       !isReady ||
@@ -735,7 +831,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             containerId={containerId}
             tx={approvalTx}
             label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
+            isFinalStep={false}
             onSubmit={onApprovalSubmitted}
+            onError={onApprovalFailed}
             disabled={
               !isReady ||
               !approvalTx ||
@@ -750,7 +848,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             containerId={containerId}
             tx={swapTx}
             label={t("Confirm Swap")}
-            onSubmit={onSwapSubmitted}
+            onSubmit={handleSwapSubmitted}
+            onError={onSwapFailed}
             disabled={isDisabled}
             isProcessing={isExchangeLoading && hasSubmittedApproval}
           />

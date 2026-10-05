@@ -194,6 +194,7 @@ const SendButton = () => {
   const {
     network,
     onSubmitted,
+    onSubmitFailed,
     transaction,
     txInfo,
     dtaoRootStakeHoldGate,
@@ -278,6 +279,7 @@ const SendButton = () => {
         <TxSubmitButton
           label={t("Confirm")}
           onSubmit={handleSubmit}
+          onError={onSubmitFailed}
           onPayloadLockChange={setIsLocked}
           tx={tx}
           disabled={!isReady || !canConfirm || dtaoRootStakeHoldGate.isBlocked}

@@ -100,6 +100,7 @@ const MnemonicRenameForm: FC<{
   return (
     <form onSubmit={handleSubmit(submit)}>
       <FormFieldContainer
+        field="name"
         label={t("Choose a new name for this recovery phrase")}
         error={errors.name?.message}
       >
@@ -153,7 +154,7 @@ export const MnemonicRenameModal = () => {
   const { mnemonic, close, isOpen } = useMnemonicRenameModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="mnemonic_rename" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Rename recovery phrase")} onCloseClick={close}>
         {!!mnemonic && (
           <MnemonicRenameForm mnemonic={mnemonic} onConfirm={close} onCancel={close} />

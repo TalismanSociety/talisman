@@ -46,7 +46,7 @@ export const SelectValidatorPill: FC<{
           <SettingsIcon />
         </div>
       </PillButton>
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="select_validator" isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-validator-picker-modal">
           <ModalDialog
             variant="wizard"

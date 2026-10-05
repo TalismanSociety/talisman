@@ -1,6 +1,7 @@
 import { AlertCircleIcon } from "@talismn/icons"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useTranslation } from "react-i18next"
-
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
@@ -24,8 +25,14 @@ export const UnbondReview = () => {
     isLoadingFeeEstimate,
     errorFeeEstimate,
     errorMessage,
+    errorCategory,
     poolId,
   } = useUnbondWizard()
+  useErrorShown({
+    shown: errorMessage,
+    surface: "alert",
+    category: errorCategory ?? "input_invalid",
+  })
 
   if (!account) return null
 
@@ -94,6 +101,7 @@ export const UnbondReview = () => {
         loading={!payload}
         payload={payload ?? undefined}
         onSubmitted={onSubmitted}
+        onError={flows.staking.failed}
         txMetadata={txMetadata}
       />
     </div>

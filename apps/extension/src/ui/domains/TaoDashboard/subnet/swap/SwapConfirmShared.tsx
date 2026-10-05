@@ -16,6 +16,7 @@ import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDis
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
@@ -313,7 +314,8 @@ export const SwapConfirmTalismanFeeLabel: FC<{
   netuid?: number | null
   containerId: string
   direction: "taoToAlpha" | "alphaToTao"
-}> = ({ netuid, containerId, direction }) => {
+  onCloseModal: () => void
+}> = ({ netuid, containerId, direction, onCloseModal }) => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
   const { tier } = useGetSeekDiscount()
@@ -390,7 +392,7 @@ export const SwapConfirmTalismanFeeLabel: FC<{
       <SeekGetFeeDiscountsDrawer
         isOpen={isOpen}
         onDismiss={close}
-        onCloseModal={close}
+        onCloseModal={onCloseModal}
         containerId={containerId}
       />
     </div>
@@ -456,6 +458,7 @@ export const SwapConfirmSendButton: FC<{
       label={label}
       payload={payload}
       onSubmitted={handleSubmit}
+      onError={flows.tao_trade.failed}
       txMetadata={txMetadata}
       txInfo={txInfo}
       disabled={!canSubmit}

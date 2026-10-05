@@ -1,9 +1,10 @@
+import { networkToggledOf } from "@common/analytics/networks"
 import type { ActiveNetworks } from "@core/domains/chaindata/store.activeNetworks"
 import { activeNetworksStore, isNetworkActive } from "@core/domains/chaindata/store.activeNetworks"
 import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { ListButton } from "@ui/components/ListButton"
 import { Modal } from "@ui/components/Modal"
@@ -21,7 +22,6 @@ import { cn } from "@ui/util/cn"
 import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 import { getPlatformLabel, type PlatformOption } from "./usePlatformOptions"
 
@@ -131,10 +131,18 @@ export const NetworksList: FC<{
           {t("Deactivate all")}
         </button>
 
-        <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
+        <Modal
+          analyticsId="networks_reset_all"
+          isOpen={ocResetAllModal.isOpen}
+          onDismiss={ocResetAllModal.close}
+        >
           <ResetAllNetworksModalContent platform={platform} onClose={ocResetAllModal.close} />
         </Modal>
-        <Modal isOpen={ocDeactivateAllModal.isOpen} onDismiss={ocDeactivateAllModal.close}>
+        <Modal
+          analyticsId="networks_deactivate_all"
+          isOpen={ocDeactivateAllModal.isOpen}
+          onDismiss={ocDeactivateAllModal.close}
+        >
           <DeactivateNetworksModalContent
             platform={platform}
             onClose={ocDeactivateAllModal.close}
@@ -194,22 +202,15 @@ const NetworkRow: FC<{
 
   const navigate = useNavigate()
   const handleNetworkClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "chain settings button",
-      properties: {
-        chainId: network.id,
-      },
-    })
     navigate(`/settings/networks-tokens/network/${network.id}`)
   }, [navigate, network.id])
 
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       activeNetworksStore.setActive(network.id, e.target.checked)
+      track("network_toggled", networkToggledOf(network, e.target.checked, "settings"))
     },
-    [network.id]
+    [network]
   )
 
   return (
@@ -244,6 +245,7 @@ const ResetAllNetworksModalContent: FC<{
 }> = ({ platform, onClose }) => {
   const { t } = useTranslation()
   const networks = useNetworks({ activeOnly: false, includeTestnets: true, platform })
+  const activeNetworksState = useActiveNetworksState()
 
   const handleClick = useCallback(async () => {
     activeNetworksStore.mutate((prev) => {
@@ -251,8 +253,11 @@ const ResetAllNetworksModalContent: FC<{
       for (const networkId of networks.map((network) => network.id)) delete newState[networkId]
       return newState
     })
+    track("networks_reset", {
+      count: networks.filter((network) => network.id in activeNetworksState).length,
+    })
     onClose()
-  }, [networks, onClose])
+  }, [networks, onClose, activeNetworksState])
 
   return (
     <ModalDialog
@@ -312,6 +317,7 @@ const DeactivateNetworksModalContent: FC<{
       ...prev,
       ...Object.fromEntries(networkIds.map((networkId) => [networkId, false])),
     }))
+    track("networks_deactivated", { count: networkIds.length, unused_only: mode === "unused" })
 
     onClose()
   }, [activeNetworkIds, mode, onClose, unusedNetworkIds])

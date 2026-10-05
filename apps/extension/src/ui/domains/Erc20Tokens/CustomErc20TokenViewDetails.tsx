@@ -24,7 +24,13 @@ export const CustomErc20TokenViewDetails = ({
   return (
     <>
       <PillButton onClick={open}>{t("View Details")}</PillButton>
-      <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
+      <Drawer
+        analyticsId="custom_erc20_token_view_details"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+        anchor="bottom"
+      >
         <DrawerContent className="flex max-h-full flex-col text-body-secondary text-sm">
           <h3 className="text-sm">{t("Token Details")}</h3>
           <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">

@@ -1,5 +1,7 @@
+import { toSlippagePercent } from "@common/analytics/schema"
 import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PillButton } from "@ui/components/PillButton"
@@ -7,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   SUBNET_SLIPPAGE_SCHEMA,
   useBittensorSubnetSlippage,
@@ -29,7 +30,13 @@ export const BittensorSlippageForm: FC<{
 
   const handleSubmit = useCallback(() => {
     try {
-      setSlippage(Number(slippageEdit))
+      const slippagePercent = Number(slippageEdit)
+      setSlippage(slippagePercent)
+      track("staking_slippage_changed", {
+        slippage_percent: toSlippagePercent(slippagePercent),
+        preset: false,
+        is_default: slippagePercent === DEFAULT_USER_MAX_SLIPPAGE,
+      })
       onClose()
     } catch (err) {
       log.error("Invalid slippage input:", err)
@@ -38,6 +45,11 @@ export const BittensorSlippageForm: FC<{
 
   const handleReset = useCallback(() => {
     setSlippage(DEFAULT_USER_MAX_SLIPPAGE)
+    track("staking_slippage_changed", {
+      slippage_percent: DEFAULT_USER_MAX_SLIPPAGE,
+      preset: true,
+      is_default: true,
+    })
     setSlippageEdit(String(DEFAULT_USER_MAX_SLIPPAGE))
   }, [setSlippage])
 

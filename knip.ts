@@ -50,6 +50,8 @@ const config: KnipConfig = {
         "entrypoints/support/index.html",
         "i18next.config.ts",
         "scripts/i18nextTransDefaults.ts",
+        // Guard 1 of analytics: a record that `satisfies` checks against every message type
+        "src/core/domains/analytics/messageCoverage.ts",
       ],
       project: ["src/**/*.{ts,tsx,css}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],

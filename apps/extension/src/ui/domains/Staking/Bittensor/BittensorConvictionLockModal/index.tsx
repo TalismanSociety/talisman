@@ -34,7 +34,7 @@ export const BittensorConvictionLockModal: FC = () => {
   const { isOpen, args, openKey, close } = useBittensorConvictionLockModal()
 
   return (
-    <Modal isOpen={isOpen && !!args} onDismiss={close}>
+    <Modal analyticsId="bittensor_conviction_lock" isOpen={isOpen && !!args} onDismiss={close}>
       <PopupSizeModalContainer id={BITTENSOR_LOCK_MODAL_CONTAINER_ID}>
         {!!args && (
           <BittensorConvictionLockWizardProvider key={openKey}>

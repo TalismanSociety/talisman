@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import type { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
@@ -145,6 +146,7 @@ const useLedgerAccounts = <TDef extends LedgerAccountDefEvmOrSol, TPathType>(
         log.error("Failed to load page", { err })
         setConnectionStatus({
           status: "error",
+          errorCategory: classifyError(error),
           message: error.message,
           onRetryClick: () => loadPage(pageIndex),
         })

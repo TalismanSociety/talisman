@@ -1,13 +1,14 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { IS_FIREFOX } from "@common/constants"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningMessage } from "@ui/components/CapsLockWarningMessage"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PasswordStrength } from "@ui/components/PasswordStrength"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import imgPassword from "@ui/theme/images/onboard_password_character.png"
 import { cn } from "@ui/util/cn"
 import { useCallback, useEffect } from "react"
@@ -45,16 +46,8 @@ const schema = yup
 
   .required()
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Onboarding",
-  featureVersion: 5,
-  page: "Onboarding - Step 2 - Password",
-}
-
 export const PasswordPage = () => {
   const { t } = useTranslation()
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()
 
@@ -102,21 +95,21 @@ export const PasswordPage = () => {
       try {
         await createPassword(password, passwordConfirm)
       } catch (e) {
-        setError("password", { message: getErrorMessage(e, t("Unknown error")) })
+        flows.onboarding.failed(e)
+        setError("password", {
+          type: classifyError(e),
+          message: getErrorMessage(e, t("Unknown error")),
+        })
         return
       }
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: "Submit",
-        action: "Choose password continue button",
-      })
+      flows.onboarding.submitted({ biometrics_offered: false })
       navigateNext()
     },
     [setError, createPassword, navigateNext, t]
   )
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-150 min-w-150">
+    <OnboardLayout withBack className="min-h-150 min-w-150">
       {/* biome-ignore lint/a11y/useAltText: legacy */}
       <img src={imgPassword} width="960" className="fixed top-62.5 left-32 opacity-30" />
       {passwordExists && (
@@ -155,7 +148,10 @@ export const PasswordPage = () => {
                   <CapsLockWarningMessage />
                 </div>
               </div>
-              <FormFieldContainer error={errors.password?.message}>
+              <FormFieldContainer
+                error={errors.password?.message}
+                errorCategory={errorCategoryOfField(errors.password)}
+              >
                 <FormFieldInputText
                   {...register("password")}
                   type="password"

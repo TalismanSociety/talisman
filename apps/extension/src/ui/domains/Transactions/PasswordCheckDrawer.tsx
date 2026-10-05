@@ -75,6 +75,7 @@ const PasswordCheckDrawerContent: FC<
           notify({
             type: "error",
             title: t("Incorrect password"),
+            errorCategory: "wrong_password",
           })
         }
       } catch (err) {
@@ -83,6 +84,7 @@ const PasswordCheckDrawerContent: FC<
           type: "error",
           title: t("Password check failed"),
           subtitle: getErrorMessage(err, t("Unknown error")).slice(0, 200),
+          cause: err,
         })
       }
     },
@@ -141,7 +143,13 @@ export const PasswordCheckDrawer: FC<PasswordCheckDrawerProps> = ({
   }, [onDismiss])
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={handleDismiss}>
+    <Drawer
+      analyticsId="password_check"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+      onDismiss={handleDismiss}
+    >
       <PasswordCheckDrawerContent
         onVerified={onVerified}
         onDismiss={handleDismiss}

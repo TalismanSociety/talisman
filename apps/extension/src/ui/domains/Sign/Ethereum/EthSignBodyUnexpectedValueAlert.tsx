@@ -24,7 +24,7 @@ export const EthSignBodyUnexpectedValueAlert: FC = () => {
   if (!nativeToken || !decodedTx?.value || !alertContainer) return null
 
   return createPortal(
-    <SignAlertMessage type="error">
+    <SignAlertMessage type="error" errorCategory={null}>
       <Trans t={t}>
         This transaction also sends{" "}
         <TokensAndFiat planck={decodedTx.value} tokenId={nativeToken.id} noCountUp noTooltip /> from

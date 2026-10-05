@@ -53,7 +53,7 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({
   const displayTx = tx ?? cachedTx
 
   return (
-    <Modal isOpen={isOpen} onDismiss={onClose} containerId="main">
+    <Modal analyticsId="tx_history" isOpen={isOpen} onDismiss={onClose} containerId="main">
       {!!displayTx && (
         <DialogWrapper tx={displayTx} onClose={onClose}>
           <ModalContent

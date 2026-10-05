@@ -24,7 +24,7 @@ export const MnemonicBackupModalRouter = () => {
   }, [stage])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="mnemonic_backup" containerId="main" isOpen={isOpen} onDismiss={close}>
       {Component && <Component />}
     </Modal>
   )

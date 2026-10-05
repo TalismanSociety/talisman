@@ -18,7 +18,6 @@ import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hook
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/state/balances"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
@@ -32,14 +31,12 @@ import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const { open, canOpen } = useViewOnExplorer(token.contractAddress, token.networkId)
 
   const handleClick = useCallback(() => {
     open()
-    genericEvent("open view on explorer", { from: "token menu" })
-  }, [genericEvent, open])
+  }, [open])
 
   if (!canOpen) return null
 
@@ -48,12 +45,10 @@ const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
 
 const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
     window.open(urlJoin("https://coingecko.com/en/coins/", coingeckoId), "_blank")
-    genericEvent("open view on coingecko", { from: "token menu" })
-  }, [coingeckoId, genericEvent])
+  }, [coingeckoId])
 
   if (!coingeckoId) return null
 
@@ -62,19 +57,16 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
 
 const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
     api.dashboardOpen(`/settings/networks-tokens/tokens/${tokenId}`)
-    genericEvent("open view token details", { from: "token menu" })
-  }, [genericEvent, tokenId])
+  }, [tokenId])
 
   return <ContextMenuItem onClick={handleClick}>{t("View Token Details")}</ContextMenuItem>
 }
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const { open } = useBondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
@@ -85,6 +77,7 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
     const acc = accounts?.find((s) => s.canBondNomPool)
     if (!acc) return
     return {
+      entry: "token_details",
       tokenId,
       address: acc.address,
       poolId: acc.poolId ?? poolId,
@@ -94,8 +87,7 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const handleClick = useCallback(() => {
     if (!openArgs) return
     open(openArgs)
-    genericEvent("open inline staking modal", { tokenId: openArgs.tokenId })
-  }, [genericEvent, open, openArgs])
+  }, [open, openArgs])
 
   if (!openArgs) return null
 
@@ -104,7 +96,6 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
 
 const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open } = useBittensorChangeValidatorModal()
   const { selectedAccount } = usePortfolioNavigation()
@@ -126,9 +117,8 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   )
 
   const handleClick = useCallback(() => {
-    open({ tokenId: token.id, address: selectedAccount?.address })
-    genericEvent("open change validator modal", { tokenId: token.id })
-  }, [open, token.id, genericEvent, selectedAccount?.address])
+    open({ entry: "token_details", tokenId: token.id, address: selectedAccount?.address })
+  }, [open, token.id, selectedAccount?.address])
 
   if (!isBittensorDTao || !hasPosition) return null
 
@@ -137,7 +127,6 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
 
 const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open } = useBittensorChangeLockTypeModal()
   const { selectedAccount } = usePortfolioNavigation()
@@ -163,12 +152,12 @@ const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
+      entry: "token_details",
       networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,
     })
-    genericEvent("open change conviction lock type modal", { tokenId: token.id })
-  }, [genericEvent, lockBalance, open, token])
+  }, [lockBalance, open, token])
 
   if (!isBittensorDTao || !lockBalance) return null
 
@@ -177,7 +166,6 @@ const ChangeLockTypeMenuItem: FC<{ token: Token }> = ({ token }) => {
 
 const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open } = useBittensorChangeLockHotkeyModal()
   const { selectedAccount } = usePortfolioNavigation()
@@ -203,12 +191,12 @@ const ChangeLockHotkeyMenuItem: FC<{ token: Token }> = ({ token }) => {
   const handleClick = useCallback(() => {
     if (!lockBalance || token.type !== "substrate-dtao") return
     open({
+      entry: "token_details",
       networkId: token.networkId,
       netuid: token.netuid,
       address: lockBalance.address,
     })
-    genericEvent("open change conviction lock hotkey modal", { tokenId: token.id })
-  }, [genericEvent, lockBalance, open, token])
+  }, [lockBalance, open, token])
 
   if (!isBittensorDTao || !lockBalance) return null
 

@@ -35,7 +35,12 @@ export const SwapProviderPickerModal: FC<{
   )
 
   return (
-    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={onClose}>
+    <Modal
+      analyticsId="swap_provider_picker"
+      containerId="swap-modal"
+      isOpen={isOpen}
+      onDismiss={onClose}
+    >
       <ModalDialog variant="wizard" title={t("Provider")} onBackClick={onClose}>
         <div className="flex flex-col gap-[12px]">
           {sortedQuotes.map(({ quote }, idx) => {

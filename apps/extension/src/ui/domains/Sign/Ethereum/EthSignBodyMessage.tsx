@@ -1,10 +1,10 @@
 import { log } from "@common/log"
-import { sentry } from "@core/config/sentry"
 import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
 import { parseSiweMessage } from "@core/domains/ethereum/siwe"
 import type { Account } from "@core/domains/keyring/exports"
 import type { EthSignRequest } from "@core/domains/signing/types"
 import { isHexString } from "@talismn/util"
+import { reportError } from "@ui/api/errorReporting"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { decodeEvmTypedData } from "@ui/domains/Ethereum/util/decodeEvmTypedData"
@@ -63,7 +63,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
 
         return convertToYaml(typedMessage)
       } catch (err) {
-        sentry.captureException(err)
+        reportError(err)
       }
     }
     // a 32 bytes payload is a hash, not text - can be tested when approving NFT listings on tofunft.com
@@ -160,11 +160,12 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
       )}
 
       {isInvalidVerifyingContract && (
-        <SignAlertMessage type="error" className="mt-8">
+        <SignAlertMessage type="error" errorCategory="unsupported" className="mt-8">
           {t("Verifying contract's address is invalid.")}
         </SignAlertMessage>
       )}
       <Drawer
+        analyticsId="eth_sign_message_details"
         anchor="bottom"
         containerId="main"
         isOpen={ocViewDetails.isOpen}

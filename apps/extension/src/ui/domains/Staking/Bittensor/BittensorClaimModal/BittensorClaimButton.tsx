@@ -1,7 +1,6 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapPlusIcon } from "@talismn/icons"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useToken } from "@ui/state/chaindata"
@@ -24,8 +23,6 @@ export const BittensorClaimButton: FC<{
   const account = useAccountByAddress(address)
   const bittensorNetworkIds = useBittensorNetworkIds()
 
-  const { genericEvent } = useAnalytics()
-
   // claims are per-validator: only per-hotkey root position tokens can be claimed
   const rootToken = useMemo(
     () =>
@@ -40,9 +37,13 @@ export const BittensorClaimButton: FC<{
 
   const handleClick = useCallback(() => {
     if (!rootToken?.hotkey) return
-    open({ networkId: rootToken.networkId, address, hotkey: rootToken.hotkey })
-    genericEvent("open bittensor claim modal", { from: "asset details", tokenId })
-  }, [address, genericEvent, open, rootToken, tokenId])
+    open({
+      entry: "token_details",
+      networkId: rootToken.networkId,
+      address,
+      hotkey: rootToken.hotkey,
+    })
+  }, [address, open, rootToken])
 
   if (!rootToken || !isAccountOwned(account)) return null
 

@@ -1,6 +1,5 @@
 // biome-ignore-all lint/correctness/noChildrenProp: legacy
 
-import { sentry } from "@core/config/sentry"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
@@ -13,7 +12,7 @@ import {
 import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
+import { reportError } from "@ui/api/errorReporting"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -29,7 +28,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAnyNetwork } from "@ui/state/chaindata"
 import { t } from "i18next"
@@ -40,22 +38,10 @@ import { z } from "zod/v4"
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Network",
-}
-
 export const EditNetworkPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
   const network = useAnyNetwork(id)
-
-  useAnalyticsPageView(ANALYTICS_PAGE, {
-    id,
-    mode: network ? "Edit" : "Add",
-  })
 
   if (!network) return null
 
@@ -260,7 +246,11 @@ const NetworkForm: FC = () => {
         <form.Field
           name="blockExplorerUrl"
           children={(field) => (
-            <FormFieldContainer label="Block Explorer Url" error={field.state.meta.errors[0]}>
+            <FormFieldContainer
+              field="blockExplorerUrl"
+              label="Block Explorer Url"
+              error={field.state.meta.errors[0]}
+            >
               <FormFieldInputText
                 type="text"
                 value={field.state.value}
@@ -386,7 +376,11 @@ const NetworkForm: FC = () => {
           </div>
         </div>
       </form>
-      <Modal isOpen={ocConfirmRemove.isOpen} onDismiss={ocConfirmRemove.close}>
+      <Modal
+        analyticsId="network_remove_confirm"
+        isOpen={ocConfirmRemove.isOpen}
+        onDismiss={ocConfirmRemove.close}
+      >
         <ConfirmRemove onClose={ocConfirmRemove.close} network={network} />
       </Modal>
     </>
@@ -407,6 +401,7 @@ const CopyChainIdButton: FC<{ chainId: string; className?: string }> = ({ chainI
         type: "error",
         title: "Error",
         subtitle: getErrorMessage(err, "Failed to chain ID"),
+        cause: err,
       })
     }
   }, [chainId])
@@ -439,11 +434,12 @@ const ConfirmRemove: FC<{
       await api.networkRemove(network.id)
       isNetworkKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
-      sentry.captureException(err)
+      reportError(err)
       notify({
         type: "error",
         title: t("Error"),
         subtitle: getErrorMessage(err, t("Failed to remove")),
+        cause: err,
       })
       setConfirming(false)
     }

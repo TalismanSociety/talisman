@@ -1,8 +1,7 @@
-import { base58, ed25519, isEthereumAddress } from "@talismn/crypto"
+import { base58, ed25519 } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
 import { serializeOffchainMessage } from "@talismn/solana"
 import { assert } from "@talismn/util"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import type { KnownRequestIdOnly } from "../../libs/requests/types"
@@ -46,9 +45,6 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const updateConnectAll: Pick<AuthorizedSite, "connectAllSubstrate"> = {}
     if ("addresses" in authorisedSite) updateConnectAll.connectAllSubstrate = undefined
     await this.stores.sites.updateSite(id, { ...authorisedSite, ...updateConnectAll })
-    talismanAnalytics.capture("authorised site update addresses", {
-      url: id,
-    })
     return true
   }
 
@@ -56,12 +52,6 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.capture("authorised site approve", {
-      url: queued.idStr,
-      authType: queued.request.provider,
-      withEthAccounts:
-        queued.request.provider === "ethereum" ? undefined : addresses.some(isEthereumAddress),
-    })
     const { resolve } = queued
     resolve({ addresses })
 
@@ -73,10 +63,6 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { reject } = queued
-    talismanAnalytics.capture("authorised site reject", {
-      url: queued.idStr,
-      authType: queued.request.provider,
-    })
     reject(new Error("Rejected"))
 
     return true

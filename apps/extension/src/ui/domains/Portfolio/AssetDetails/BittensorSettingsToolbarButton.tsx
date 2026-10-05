@@ -5,7 +5,6 @@ import { SettingsIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBittensorSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal/hooks/useBittensorSettingsModal"
 import type { BittensorSettingsOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorSettingsModal/hooks/useBittensorSettingsWizard"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { type FC, useCallback, useMemo } from "react"
@@ -21,7 +20,6 @@ export const BittensorSettingsToolbarButton: FC<{
   const accounts = useAccounts("owned")
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open: openBittensorSettingsModal } = useBittensorSettingsModal()
-  const { genericEvent } = useAnalytics()
 
   const openArgs = useMemo<BittensorSettingsOpenOptions | null>(() => {
     const balance = balances.each
@@ -48,8 +46,7 @@ export const BittensorSettingsToolbarButton: FC<{
   const handleClick = useCallback(() => {
     if (!openArgs) return
     openBittensorSettingsModal(openArgs)
-    genericEvent("open bittensor settings", { from: "token menu" })
-  }, [genericEvent, openArgs, openBittensorSettingsModal])
+  }, [openArgs, openBittensorSettingsModal])
 
   if (!openArgs) return null
 

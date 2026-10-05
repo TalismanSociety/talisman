@@ -1,6 +1,7 @@
 import { useRiskAnalysisSubmitGate } from "@ui/domains/Sign/risk-analysis/useRiskAnalysisSubmitGate"
+import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { cn } from "@ui/util/cn"
-import type { FC } from "react"
+import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
@@ -15,11 +16,21 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   className,
   disabled,
   isProcessing,
+  isFinalStep = true,
   onSubmit,
+  onError,
   onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const riskGate = useRiskAnalysisSubmitGate()
+  const markOverlayCompleted = useMarkOverlayCompleted()
+  const handleSubmit = useCallback(
+    (txId: string) => {
+      if (isFinalStep) markOverlayCompleted()
+      onSubmit(txId)
+    },
+    [isFinalStep, markOverlayCompleted, onSubmit]
+  )
 
   if (riskGate.isBlocked)
     return (
@@ -54,7 +65,8 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           containerId={containerId}
           label={label}
           tx={tx}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
+          onError={onError}
           onPayloadLockChange={onPayloadLockChange}
           className={className}
         />
@@ -65,7 +77,8 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           containerId={containerId}
           label={label}
           tx={tx}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
+          onError={onError}
           onPayloadLockChange={onPayloadLockChange}
           className={className}
         />
@@ -76,7 +89,8 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           containerId={containerId}
           label={label}
           tx={tx}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
+          onError={onError}
           onPayloadLockChange={onPayloadLockChange}
           className={className}
         />

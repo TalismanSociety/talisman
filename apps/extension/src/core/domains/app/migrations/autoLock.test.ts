@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // ── Mock dependencies ──────────────────────────────────────────────
 
-vi.mock("../../../config/sentry", () => ({
-  sentry: { captureException: vi.fn() },
+vi.mock("../../analytics/errorReporting", () => ({
+  reportError: vi.fn(),
 }))
 
 vi.mock("../../../rpcs/chaindata", () => ({ chaindataProvider: {} }))

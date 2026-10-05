@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { chromium } from "@playwright/test"
+import { cdpPort } from "./cdp-port.mjs"
 
 const EXTENSION = "chrome-extension://akcdepjilgckjbngkhjghfnmnnkdnmno"
 const expression = process.argv[2]
@@ -10,7 +11,11 @@ if (!expression) {
   process.exit(2)
 }
 
-const browser = await chromium.connectOverCDP("http://localhost:9223")
+const port = cdpPort()
+const browser = await chromium.connectOverCDP(`http://localhost:${port}`).catch(() => {
+  process.stderr.write(`no browser answers CDP on :${port}\n`)
+  process.exit(1)
+})
 const worker = browser
   .contexts()[0]
   .serviceWorkers()

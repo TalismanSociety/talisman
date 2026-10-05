@@ -234,7 +234,7 @@ describe("PasswordStore autolock timer", () => {
         store.resetAutolockTimer(15, { preserveExisting: true })
       })
 
-      await store.setPassword("hashed-password")
+      await store.setPassword("hashed-password", { method: "password", legacyPassword: false })
 
       expect(store.isLoggedIn.value).toBe("TRUE")
       await vi.waitFor(() =>
@@ -282,7 +282,7 @@ describe("PasswordStore autolock timer", () => {
       store.isLoggedIn.next("TRUE")
       activeAlarms.set(ALARM_NAME, { name: ALARM_NAME, scheduledTime: Date.now() + 60_000 })
 
-      await store.clearPassword()
+      await store.clearPassword("manual")
 
       expect(store.isLoggedIn.value).toBe("FALSE")
       expect(chromeMock.alarms.clear).toHaveBeenCalledWith(ALARM_NAME)

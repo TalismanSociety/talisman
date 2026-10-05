@@ -2,10 +2,9 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { log } from "@common/log"
 import { PhishingDetector } from "@metamask/phishing-controller"
 import { Dexie } from "dexie"
-
-import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"
 import { sessionStorage } from "../../../util/sessionStorageCompat"
+import { reportError } from "../../analytics/errorReporting"
 import { getHostName } from "../helpers"
 import { initialPhishingList } from "./initial-phishing-list"
 
@@ -217,7 +216,7 @@ function persistBlob<T>(store: ReturnType<typeof getBlobStore<T>>, data: T, labe
     const isDbClosed =
       cause instanceof Dexie.DatabaseClosedError || cause.name === Dexie.errnames.DatabaseClosed
     if (!isDbClosed) {
-      sentry.captureException(new Error(`Failed to persist ${label}`, { cause }))
+      reportError(new Error(`Failed to persist ${label}`, { cause }))
     }
   })
 }

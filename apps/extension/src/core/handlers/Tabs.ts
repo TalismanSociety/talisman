@@ -3,10 +3,11 @@ import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { assert } from "@talismn/util"
 import { combineLatest } from "rxjs"
-import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
 import type { RequestAccountList } from "../domains/accounts/types"
+import { reportError } from "../domains/analytics/errorReporting"
+import { track } from "../domains/analytics/track"
 import { getPhishingSource, type PhishingSource } from "../domains/app/protector"
 import { maliciousOrigin$, requestSiteScan } from "../domains/app/protector/blockaidSiteScan"
 import { shouldScanSite } from "../domains/app/protector/shouldScanSite"
@@ -29,7 +30,6 @@ import type {
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "../types"
@@ -47,11 +47,12 @@ import { genericAsyncSubscription } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
   readonly #routes: Record<string, TabsHandler> = {}
+  readonly #redirectedPorts = new WeakSet<Port>()
 
   constructor(stores: TabStore) {
     super(stores)
     maliciousOrigin$.subscribe((origin) => {
-      this.redirectMaliciousOrigin(origin).catch((err) => sentry.captureException(err))
+      this.redirectMaliciousOrigin(origin).catch((err) => reportError(err))
     })
 
     // routing to sub-handlers
@@ -235,12 +236,6 @@ export default class Tabs extends TabsHandler {
     return `${dashboard}#${PHISHING_PAGE_REDIRECT}/${website}?source=${source}`
   }
 
-  private reportPhishingRedirect(url: string, source: PhishingSource): void {
-    const properties = { url, source }
-    sentry.captureEvent({ message: "Redirect from phishing site", extra: properties })
-    talismanAnalytics.capture("Redirect from phishing site", properties)
-  }
-
   private async redirectToPhishingPage(
     tabs: chrome.tabs.Tab[],
     source: PhishingSource
@@ -249,9 +244,7 @@ export default class Tabs extends TabsHandler {
       tabs.map(async ({ id, url: tabUrl }) => {
         if (typeof id !== "number" || !tabUrl) return
         const url = this.phishingLandingUrl(tabUrl, source)
-        await chrome.tabs
-          .update(id, { url })
-          .catch((err) => sentry.captureException(err, { extra: { url } }))
+        await chrome.tabs.update(id, { url }).catch((err) => reportError(err))
       })
     )
   }
@@ -260,19 +253,21 @@ export default class Tabs extends TabsHandler {
     const tabs = (await chrome.tabs.query({ url: `${origin}/*` })).filter(
       ({ url }) => url && new URL(url).origin === origin
     )
-    for (const { url } of tabs) if (url) this.reportPhishingRedirect(url, "blockaid")
+    for (const _tab of tabs) track("phishing_site_blocked", { protection_source: "blockaid" })
     await this.redirectToPhishingPage(tabs, "blockaid")
   }
 
-  private async redirectIfPhishing(url: string): Promise<boolean> {
+  private async redirectIfPhishing(url: string, port: Port): Promise<boolean> {
     const source = await getPhishingSource(url)
     if (!source) return false
+    if (this.#redirectedPorts.has(port)) return true
 
-    this.reportPhishingRedirect(url, source)
+    this.#redirectedPorts.add(port)
+    track("phishing_site_blocked", { protection_source: source })
     chrome.tabs
       .query({ url: url.split("#")[0] })
       .then((tabs) => this.redirectToPhishingPage(tabs, source))
-      .catch((err) => sentry.captureException(err))
+      .catch((err) => reportError(err))
     return true
   }
 
@@ -284,7 +279,7 @@ export default class Tabs extends TabsHandler {
     url: string
   ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
-      return this.redirectIfPhishing(url)
+      return this.redirectIfPhishing(url, port)
     }
     // Always check for onboarding before doing anything else
     // Because of chrome extensions can be synchronised on multiple computers,
@@ -293,7 +288,7 @@ export default class Tabs extends TabsHandler {
     await this.stores.app.ensureOnboarded()
 
     // check for phishing on all requests
-    const isPhishing = await this.redirectIfPhishing(url)
+    const isPhishing = await this.redirectIfPhishing(url, port)
     if (isPhishing) return
 
     if (await shouldScanSite(type, request, () => this.isEthereumConnected(url)))

@@ -1,7 +1,6 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { gt } from "semver"
 
-import type { GeneralReport } from "../../libs/GeneralReport"
 import { StorageProvider } from "../../libs/Store"
 import { TalismanNotOnboardedError } from "./errors"
 
@@ -27,9 +26,6 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  analyticsReportCreatedAt?: number
-  analyticsReport?: GeneralReport
-  lastWalletUpgradedEvent?: string
   hideBackupWarningUntil?: number
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null

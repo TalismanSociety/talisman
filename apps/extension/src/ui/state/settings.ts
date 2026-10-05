@@ -1,6 +1,7 @@
 import type { SettingsStoreData } from "@core/domains/app/store.settings"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { bind } from "@react-rxjs/core"
+import { reportSettingWrite } from "@ui/hooks/analytics/settings"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 
@@ -20,11 +21,10 @@ export const useSetting = <K extends keyof SettingsStoreData, V = SettingsStoreD
 
   const setState = useCallback(
     async (value: SetStateAction<V>) => {
-      if (typeof value === "function") {
-        const setter = value as (prev: V) => V
-        value = setter((await firstValueFrom(getSettingValue$(key))) as V)
-      }
-      await settingsStore.set({ [key]: value })
+      const previous = (await firstValueFrom(getSettingValue$(key))) as V
+      const next = typeof value === "function" ? (value as (prev: V) => V)(previous) : value
+      await settingsStore.set({ [key]: next })
+      reportSettingWrite(key, previous as SettingsStoreData[K], next as SettingsStoreData[K])
     },
     [key]
   )

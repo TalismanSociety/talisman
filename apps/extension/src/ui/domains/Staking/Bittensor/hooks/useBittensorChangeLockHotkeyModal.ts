@@ -1,7 +1,9 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
 export type BittensorChangeLockHotkeyModalArgs = {
+  entry: StakingEntry
   /** the bittensor network the subnet lives on */
   networkId: DotNetworkId
   /** the subnet the conviction lock exists on */
