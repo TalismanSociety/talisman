@@ -1,6 +1,7 @@
 import { networkIdForAnalytics } from "@common/analytics/funds"
 import { networkToggledOf, tokenToggledOf } from "@common/analytics/networks"
 import { type ChainPlatform, CUSTOM_NETWORK_ID } from "@common/analytics/transactions"
+import { isTalismanHostname } from "@core/util/isTalismanHostname"
 
 import { requestStore } from "../../libs/requests/store"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -33,10 +34,18 @@ const PLATFORM_ACCOUNTS: Record<ProviderType, keyof typeof CONNECTED_ACCOUNTS> =
   solana: "solAddresses",
 }
 
-const countSites = async (type: ProviderType) => {
+const countSites = async (type: ProviderType, changes: (accounts: string[]) => boolean) => {
   const sites = await sitesAuthorisedStore.get()
-  return Object.values(sites).filter((site) => site[PLATFORM_ACCOUNTS[type]] !== undefined).length
+  return Object.entries(sites).filter(([host, site]) => {
+    if (type === "polkadot" && isTalismanHostname(host)) return false
+    const accounts = site[PLATFORM_ACCOUNTS[type]]
+    return accounts !== undefined && changes(accounts)
+  }).length
 }
+
+const countSitesForgotten = (type: ProviderType) => countSites(type, () => true)
+const countSitesDisconnected = (type: ProviderType) =>
+  countSites(type, (accounts) => accounts.length > 0)
 
 const reportSiteUpdate = async (update: AuthorisedSiteUpdate) => {
   for (const [key, platform] of Object.entries(CONNECTED_ACCOUNTS))
@@ -83,12 +92,12 @@ const DAPP_MESSAGES: { [M in DappMessage]: Observe<M> } = {
     async () =>
       track("dapp_connection_forgotten", { platform: type }),
   "pri(sites.forget.all)": ({ type }) => {
-    const siteCount = countSites(type)
+    const siteCount = countSitesForgotten(type)
     return async () =>
       track("dapp_connections_forgotten", { platform: type, site_count: await siteCount })
   },
   "pri(sites.disconnect.all)": ({ type }) => {
-    const siteCount = countSites(type)
+    const siteCount = countSitesDisconnected(type)
     return async () =>
       track("dapp_connections_disconnected", { platform: type, site_count: await siteCount })
   },
