@@ -21,11 +21,16 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   const [stage, setStage] = useState<number>(0)
   const [passwordExists, setPasswordExists] = useState(false)
   const [onboarded, updateOnboarded] = useAppState("onboarded")
+  const [sawOnboarded, setSawOnboarded] = useState(onboarded === "TRUE")
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (onboarded === "TRUE") setSawOnboarded(true)
+  }, [onboarded])
 
   useFlow(flows.onboarding, {
     active: onboarded !== "TRUE",
-    entry: isResettingWallet ? "reset" : "install",
+    entry: isResettingWallet || sawOnboarded ? "reset" : "install",
   })
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {

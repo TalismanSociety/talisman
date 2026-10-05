@@ -192,6 +192,9 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async resetWallet() {
+    await analyticsEngine
+      .endSession()
+      .catch((cause) => log.error("[analytics] failed to end the session on reset", { cause }))
     this.stores.app.set({ onboarded: "FALSE" })
 
     await this.stores.password.reset()
@@ -204,7 +207,6 @@ export default class AppHandler extends ExtensionHandler {
     await this.stores.sites.clear()
     // since all accounts are being wiped, account catalog also needs to be wiped.
     await this.stores.accountsCatalog.clear()
-    await analyticsEngine.endSession()
 
     return true
   }
