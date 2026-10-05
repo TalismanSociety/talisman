@@ -1,7 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { log } from "@common/log"
 import type { Trees } from "@core/domains/accounts/helpers.catalog"
-import type { AnalyticsCaptureRequest } from "@core/domains/app/types"
 import type { BalanceSubscriptionResponse } from "@core/domains/balances/types"
 import type { Account } from "@core/domains/keyring/exports"
 import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
@@ -46,11 +45,8 @@ const authorisedSites = {
 const sitesStore = new SitesAuthorizedStore(authorisedSites)
 
 const mockedApiMethods = {
-  analyticsCapture: vi
-    .fn()
-    .mockImplementation(
-      (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true))
-    ),
+  analyticsTrack: vi.fn().mockResolvedValue("queued"),
+  analyticsRequestRisk: vi.fn().mockResolvedValue(true),
   accountsSubscribe: vi.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
     cb([
       {

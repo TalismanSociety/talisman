@@ -29,6 +29,7 @@ export const EthSignMessageRequest = () => {
     reject,
     status,
     message,
+    errorCategory,
     account,
     network,
     isValid,
@@ -61,12 +62,12 @@ export const EthSignMessageRequest = () => {
         <PopupFooter>
           <Suspense fallback={null}>
             {isAccountOfType(account, "watch-only") && (
-              <SignAlertMessage className="mb-6" type="error">
+              <SignAlertMessage className="mb-6" type="error" errorCategory="unsupported">
                 {t("Cannot sign with a watch-only account.")}
               </SignAlertMessage>
             )}
             {errorMessage && (
-              <SignAlertMessage className="mb-6" type="error">
+              <SignAlertMessage className="mb-6" type="error" errorCategory={errorCategory}>
                 {errorMessage}
               </SignAlertMessage>
             )}

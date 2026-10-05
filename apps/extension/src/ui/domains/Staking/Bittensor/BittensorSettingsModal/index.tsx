@@ -13,7 +13,7 @@ export const BittensorSettingsModal = () => {
   const { isOpen, args, openKey, close } = useBittensorSettingsModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="bittensor_settings" containerId="main" isOpen={isOpen} onDismiss={close}>
       <div
         id={BITTENSOR_SETTINGS_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals & drawers
         className={cn(

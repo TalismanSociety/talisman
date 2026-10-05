@@ -1,18 +1,23 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
+import { type EarnEntry, yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import type { Balance } from "@talismn/balances"
+import { type Balance, BalanceFormatter } from "@talismn/balances"
 import { isTokenInTypes, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { useYieldxyzProduct } from "@ui/state/yieldxyz"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { valueReport } from "../../../Staking/shared/stakingAnalytics"
 import { useDummyTransaction } from "../../hooks/useDummyTransaction"
-
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
@@ -20,6 +25,7 @@ import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzTransactionMa
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {
+  entry: EarnEntry
   address?: string
   pickerTokenId?: TokenId // used to open the wizard at the "product" step for a specific token
   pickerTokenIds?: TokenId[] // used to restrict token selection when opening the wizard from portfolio
@@ -128,12 +134,26 @@ const useYieldxyzEnterWizardProvider = ({
 
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountIn || !tokenIn || !balance) return [null, null]
-    if (!isAccountOwned(account)) return [null, t("Unable to transact with external accounts")]
-    if (state.amountIn > balance.transferable.planck) return [null, t("Insufficient balance")]
+    if (!isAccountOwned(account))
+      return [
+        null,
+        {
+          message: t("Unable to transact with external accounts"),
+          category: "unsupported" as const,
+        },
+      ]
+    if (state.amountIn > balance.transferable.planck)
+      return [
+        null,
+        { message: t("Insufficient balance"), category: "insufficient_balance" as const },
+      ]
 
     const inputs = { amount: planckToTokens(state.amountIn.toString(), tokenIn.decimals) }
     return [inputs, null]
   }, [state.amountIn, tokenIn, balance, account, t])
+
+  const validationErrorCategory: ErrorCategory =
+    talismanValidationError?.category ?? "input_invalid"
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: product?.mechanics.arguments?.enter,
@@ -205,8 +225,35 @@ const useYieldxyzEnterWizardProvider = ({
         address: state.address,
         yieldId: state.productId,
       })
-    if (isOpen) close()
+    if (isOpen) {
+      flows.earn_deposit.completed()
+      close()
+    }
   }, [close, isOpen, state.address, state.productId])
+
+  useFlow(flows.earn_deposit, {
+    active: isOpen && !!stateInit,
+    entry: stateInit?.entry ?? "discover",
+    step: state.step,
+  })
+
+  const tokenRates = useTokenRates(tokenIn?.id)
+  const refSent = useRef(false)
+  const onTransactionSent = useCallback(() => {
+    if (refSent.current) return
+    refSent.current = true
+    const report = valueReport({
+      account,
+      network,
+      symbol: tokenSymbolForAnalytics(tokenIn),
+      usd:
+        state.amountIn === null
+          ? null
+          : new BalanceFormatter(state.amountIn, tokenIn?.decimals, tokenRates).fiat("usd"),
+    })
+    if (report)
+      flows.earn_deposit.submitted({ ...report, yield_id: yieldIdForAnalytics(state.productId) })
+  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId])
 
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return
@@ -235,15 +282,18 @@ const useYieldxyzEnterWizardProvider = ({
     return state.amountIn ?? 0n
   }, [tokenIn, state.amountIn])
 
-  const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
-    action,
-    address: state.address,
-    networkId: tokenIn?.networkId ?? null,
-    maxNativeValue,
-    refreshAction,
-    submitActionTransaction,
-    onCompleted,
-  })
+  const { stepIndex, transaction, isProcessing, onSubmit, onSubmitError } =
+    useYieldxyzTransactionManager({
+      action,
+      address: state.address,
+      networkId: tokenIn?.networkId ?? null,
+      maxNativeValue,
+      refreshAction,
+      submitActionTransaction,
+      onCompleted,
+      onTransactionSent,
+      onTransactionFailed: flows.earn_deposit.failed,
+    })
 
   return {
     ...state,
@@ -251,7 +301,8 @@ const useYieldxyzEnterWizardProvider = ({
     network,
     balance,
     product,
-    validationError: talismanValidationError ?? yieldxyzValidationError,
+    validationError: talismanValidationError?.message ?? yieldxyzValidationError,
+    validationErrorCategory,
     goTo,
     goBack,
     canGoBack,
@@ -261,6 +312,7 @@ const useYieldxyzEnterWizardProvider = ({
     onProductChanged,
     onPickerTokenChanged,
     onSubmit,
+    onSubmitError,
     isLoadingBalance: balancesStatus === "initialising",
     isLoadingProduct: status === "loading" && !product,
     isLoadingAction,

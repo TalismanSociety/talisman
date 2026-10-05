@@ -1,3 +1,4 @@
+import { networkIdForAnalytics } from "@common/analytics/funds"
 import type { EthGasSettings } from "@core/domains/ethereum/types"
 import type {
   EthPriorityOptionName,
@@ -5,10 +6,11 @@ import type {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { track } from "@ui/api/track"
 import { Drawer } from "@ui/components/Drawer"
 import { PillButton } from "@ui/components/PillButton"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
 import type { TransactionRequest } from "viem"
@@ -16,16 +18,6 @@ import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
 import { CustomGasSettingsFormLegacy } from "./CustomGasSettingsFormLegacy"
 import { useFeePriorityOptionsUI } from "./common"
 import { FeeOptionsSelectForm } from "./FeeOptionsForm"
-
-const OpenFeeSelectTracker = () => {
-  const { genericEvent } = useAnalytics()
-
-  useEffect(() => {
-    genericEvent("open evm fee select")
-  }, [genericEvent])
-
-  return null
-}
 
 type EthFeeSelectProps = {
   tx: TransactionRequest
@@ -55,7 +47,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   className,
 }) => {
   const options = useFeePriorityOptionsUI()
-  const { genericEvent } = useAnalytics()
+  const network = useNetworkById(useToken(tokenId)?.networkId)
 
   const [showCustomSettings, setShowCustomSettings] = useState(false)
   const { isOpen, open, close } = useOpenClose()
@@ -65,12 +57,17 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   }, [isOpen])
 
   const setPriority = useCallback(
-    (priority: EthPriorityOptionName) => {
-      genericEvent("evm fee change", { priority })
-      if (onChange) onChange(priority)
+    (next: EthPriorityOptionName) => {
+      if (onChange) onChange(next)
+      if (gasSettingsByPriority && (next !== priority || next === "custom"))
+        track("fee_priority_changed", {
+          fee_priority: next,
+          network_id: networkIdForAnalytics(network),
+          gas_type: gasSettingsByPriority.type,
+        })
       close()
     },
-    [close, genericEvent, onChange]
+    [close, gasSettingsByPriority, network, onChange, priority]
   )
 
   const handleSelect = useCallback(
@@ -107,6 +104,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
         <span className="align-middle">{options[priority].label}</span>
       </PillButton>
       <Drawer
+        analyticsId="eth_fee_select"
         containerId={drawerContainerId}
         isOpen={isOpen && !disabled}
         anchor="bottom"
@@ -143,8 +141,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
             networkUsage={networkUsage}
           />
         )}
-
-        <OpenFeeSelectTracker />
       </Drawer>
     </>
   )

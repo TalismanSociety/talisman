@@ -8,6 +8,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { type QueryFunction, type QueryKey, useQuery } from "@tanstack/react-query"
+import { reportRequestRisk } from "@ui/hooks/analytics/requestWindow"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -165,6 +166,10 @@ export const useRiskAnalysisBase = <
 
     return undefined
   }, [platform, result])
+
+  useEffect(() => {
+    if (validationResult) reportRequestRisk(validationResult)
+  }, [validationResult])
 
   const tokensMap = useTokensMap()
 

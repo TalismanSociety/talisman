@@ -1,7 +1,7 @@
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -118,6 +118,7 @@ export const ChangeValidatorReview = () => {
           label={t("Change Validator")}
           payload={payload}
           onSubmitted={onSubmitted}
+          onError={flows.staking.failed}
           txMetadata={txMetadata}
           disabled={isDisabled}
         />

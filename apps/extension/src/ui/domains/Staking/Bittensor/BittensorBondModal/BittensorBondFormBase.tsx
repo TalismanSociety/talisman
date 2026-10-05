@@ -4,6 +4,7 @@ import { SwapIcon } from "@talismn/icons"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -18,9 +19,7 @@ import {
   useRef,
   useState,
 } from "react"
-
 import { useTranslation } from "react-i18next"
-
 import { currencyConfig } from "../../../Asset/currencyConfig"
 import { Fiat } from "../../../Asset/Fiat"
 import { TokenLogo } from "../../../Asset/TokenLogo"
@@ -284,9 +283,16 @@ const AmountEdit = () => {
     displayMode,
     toggleDisplayMode,
     inputErrorMessage,
+    inputErrorCategory,
     maxPlancks,
     setPlancks,
   } = useBittensorBondWizard()
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputErrorCategory ?? "input_invalid",
+    field: "amount",
+  })
 
   const onSetMaxClick = useCallback(() => {
     if (!maxPlancks) return

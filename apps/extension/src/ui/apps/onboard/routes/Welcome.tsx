@@ -1,9 +1,7 @@
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@common/constants"
 import { ArrowRightIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { TalismanColouredHandWhiteTextLogo } from "@ui/theme/logos"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useState } from "react"
@@ -17,22 +15,6 @@ import logoPolkadot from "../assets/polkadot.svg?url"
 import logoSonic from "../assets/sonic.svg?url"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Onboarding",
-  featureVersion: 5,
-  page: "Onboarding - Step 1 - Welcome",
-}
-
-const handleLinkClick = (action: string) => () => {
-  sendAnalyticsEvent({
-    ...ANALYTICS_PAGE,
-    name: "GotoExternal",
-    action,
-    site: "Talisman Docs",
-  })
-}
 
 const NetworkItem: FC<{ logo: string; label: string }> = ({ logo, label }) => {
   return (
@@ -68,18 +50,12 @@ const SupportedNetworks = () => {
 
 export const WelcomePage = () => {
   const { t } = useTranslation()
-  useAnalyticsPageView(ANALYTICS_PAGE)
   const { reset, setStage } = useOnboard()
   const navigate = useNavigate()
 
   const handleNextClick = useCallback(
     () => async () => {
       reset()
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: "Goto",
-        action: "Onboarding Welcome -> Password",
-      })
       navigate("/password")
     },
     [navigate, reset]
@@ -90,7 +66,7 @@ export const WelcomePage = () => {
   }, [setStage])
 
   return (
-    <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-150 min-w-135">
+    <OnboardLayout className="min-h-150 min-w-135">
       <div className="my-40 flex flex-col items-center justify-center gap-20">
         <div className="welcome-text flex select-none flex-col items-center gap-14 text-center xl:w-190">
           <div className="flex flex-col items-center gap-10 text-white xl:w-163">
@@ -129,7 +105,6 @@ export const WelcomePage = () => {
                 target="_blank"
                 rel="noreferrer noopener"
                 className="text-body"
-                onClick={handleLinkClick("Terms of Service")}
               >
                 Terms of Service
               </a>{" "}
@@ -139,7 +114,6 @@ export const WelcomePage = () => {
                 target="_blank"
                 rel="noreferrer noopener"
                 className="text-body"
-                onClick={handleLinkClick("Privacy Policy")}
               >
                 Privacy Policy
               </a>

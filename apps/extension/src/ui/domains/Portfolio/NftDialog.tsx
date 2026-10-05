@@ -89,6 +89,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         type: "error",
         title: t("Request failed"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
     setIsRefreshing(false)
@@ -545,6 +546,7 @@ const NftDialogInner: FC<{
 
   return (
     <Modal
+      analyticsId="nft_dialog"
       isOpen={isOpen}
       onDismiss={handleDismiss}
       className={cn(

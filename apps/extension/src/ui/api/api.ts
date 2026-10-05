@@ -16,6 +16,10 @@ export const api: MessageTypes = {
   keepalive: () => messageService.sendMessage("pri(keepalive)"),
   keepunlocked: () => messageService.sendMessage("pri(keepunlocked)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
+  analyticsTrack: (request) => messageService.sendMessage("pri(analytics.track)", request),
+  analyticsException: (report) => messageService.sendMessage("pri(analytics.exception)", report),
+  analyticsRequestRisk: (report) =>
+    messageService.sendMessage("pri(analytics.requestRisk)", report),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>
     messageService.sendMessage("pri(app.onboardCreatePassword)", { pass, passConfirm }),
@@ -38,8 +42,7 @@ export const api: MessageTypes = {
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
-  analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
-  sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
+  sendFundsOpen: (request) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
@@ -283,6 +286,7 @@ export const api: MessageTypes = {
     }) as Promise<ResponseSolanaSubmit>,
   solSignApprove: (req) =>
     messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
+  solSignCancel: (id) => messageService.sendMessage("pri(solana.sign.cancel)", { id }),
 
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),

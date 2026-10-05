@@ -1,7 +1,6 @@
 import { ArrowDownIcon, RepeatIcon, SendIcon, TaoIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
@@ -17,11 +16,10 @@ import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 type TopActionsProps = {
-  analyticsPage: AnalyticsPage
   disabled?: boolean
 }
 
-export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
+export const TopActions = ({ disabled }: TopActionsProps) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { open: openSwapModal } = useSwapModal()
@@ -39,40 +37,28 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
     () =>
       [
         {
-          analyticsPage,
-          analyticsName: "Goto" as const,
-          analyticsAction: "Send Funds button",
           label: t("Send"),
           icon: SendIcon,
-          onClick: () => api.sendFundsOpen().then(() => window.close()),
+          onClick: () => api.sendFundsOpen({ entry: "dashboard" }).then(() => window.close()),
           disabled: disableActions,
           disabledReason,
         },
         {
-          analyticsPage,
-          analyticsName: "Goto" as const,
-          analyticsAction: "open receive",
           label: t("Receive"),
           icon: ArrowDownIcon,
-          onClick: () => openCopyAddressModal(),
+          onClick: () => openCopyAddressModal({ entry: "dashboard" }),
           disabled: disableActions,
           disabledReason,
         },
         {
-          analyticsPage,
-          analyticsName: "Goto" as const,
-          analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: () => openSwapModal({}),
+          onClick: () => openSwapModal({ entry: "dashboard" }),
           disabled: disableActions,
           disabledReason,
         },
         isBittensorEnabled
           ? {
-              analyticsPage,
-              analyticsName: "Goto" as const,
-              analyticsAction: "open tao dashboard",
               label: t("Trade TAO"),
               icon: TaoIcon,
               onClick: () =>
@@ -84,7 +70,6 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
           : null,
       ].filter(isNotNil),
     [
-      analyticsPage,
       disableActions,
       disabledReason,
       openCopyAddressModal,
@@ -108,9 +93,6 @@ export const TopActions = ({ analyticsPage, disabled }: TopActionsProps) => {
 }
 
 type ActionProps = {
-  analyticsPage: AnalyticsPage
-  analyticsName: AnalyticsEventName
-  analyticsAction?: string
   label: string
   tooltip?: string
   icon: FC<{ className?: string }>
@@ -120,9 +102,6 @@ type ActionProps = {
 }
 
 const Action: FC<ActionProps> = ({
-  analyticsPage,
-  analyticsName,
-  analyticsAction,
   label,
   tooltip,
   icon: Icon,
@@ -133,14 +112,9 @@ const Action: FC<ActionProps> = ({
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       event.stopPropagation()
-      sendAnalyticsEvent({
-        ...analyticsPage,
-        name: analyticsName,
-        action: analyticsAction,
-      })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName, analyticsPage]
+    [onClick]
   )
 
   return (

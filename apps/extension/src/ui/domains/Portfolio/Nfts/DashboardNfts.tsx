@@ -2,10 +2,12 @@ import type { NftCollection, NftData } from "@core/domains/nfts/exports"
 import { StarIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useReportSearch } from "@ui/hooks/analytics/search"
 import { useIntersection } from "@ui/hooks/reactUseCompat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { useIsFavoriteNft, useNfts } from "@ui/state/nfts"
+import { usePortfolioSearch } from "@ui/state/portfolio"
 import { useSetting } from "@ui/state/settings"
 import { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,6 +40,7 @@ const NoNftFound = () => {
 export const DashboardNfts: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
   const data = useNfts()
+  useReportSearch("portfolio_nfts", usePortfolioSearch(), data.nfts.length)
 
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
 

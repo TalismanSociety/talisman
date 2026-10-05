@@ -19,8 +19,12 @@ export const StakeUnstakeButtons: FC<{
     [balances, isPortfolio]
   )
 
-  const { canBond, onClick: onStakeClick } = useBondButton({ balances, ignoreExistingSettings })
-  const { canUnbond, onClick: onUnstakeClick } = useUnbondButton({ balances })
+  const { canBond, onClick: onStakeClick } = useBondButton({
+    entry: "portfolio",
+    balances,
+    ignoreExistingSettings,
+  })
+  const { canUnbond, onClick: onUnstakeClick } = useUnbondButton({ entry: "portfolio", balances })
 
   if (!canBond && !canUnbond) return null
 

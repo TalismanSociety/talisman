@@ -9,7 +9,6 @@ import { privateKeyToAccount } from "viem/accounts"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { extensionStores } from "../../handlers/stores"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -136,7 +135,6 @@ describe("EthHandler", () => {
     vi.spyOn(chainConnectorEvm, "getPublicClientForEvmNetwork").mockResolvedValue(
       walletClient as never
     )
-    vi.spyOn(talismanAnalytics, "captureDelayed").mockResolvedValue(undefined)
   })
 
   afterEach(() => {

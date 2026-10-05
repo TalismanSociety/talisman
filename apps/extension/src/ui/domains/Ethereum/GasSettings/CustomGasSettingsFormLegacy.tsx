@@ -18,7 +18,6 @@ import { notify } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { WithTooltip } from "@ui/components/WithTooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import {
   type FC,
   type FormEventHandler,
@@ -149,14 +148,6 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   onConfirm,
 }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
-
-  useEffect(() => {
-    genericEvent("open custom gas settings", {
-      network: Number(txDetails.evmNetworkId),
-      gasType: gasSettingsByPriority?.type,
-    })
-  }, [gasSettingsByPriority?.type, genericEvent, txDetails.evmNetworkId])
 
   const customSettings = gasSettingsByPriority.custom
 
@@ -250,11 +241,6 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       try {
         const gasSettings = gasSettingsFromFormData(formData)
 
-        genericEvent("set custom gas settings", {
-          network: Number(txDetails.evmNetworkId),
-          gasType: gasSettings.type,
-        })
-
         onConfirm(gasSettings)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
@@ -262,10 +248,11 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId, t]
+    [onConfirm, t]
   )
 
   const {

@@ -61,7 +61,13 @@ export const ForfeitWarningDrawer = ({
   const { tokensToBeReaped } = useSendFunds()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
+    <Drawer
+      analyticsId="forfeit_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
       <DrawerContent className="text-center">
         <div>
           <InfoIcon className="inline-block text-3xl text-primary-500" />

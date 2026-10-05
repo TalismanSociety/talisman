@@ -12,7 +12,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 
 import { db } from "../../db"
 import { extensionStores } from "../../handlers/stores"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -149,7 +148,6 @@ describe("SigningHandler", () => {
   beforeEach(() => {
     requestStore.clearRequests()
     vi.spyOn(chaindataProvider, "getNetworkByGenesisHash").mockResolvedValue(POLKADOT)
-    vi.spyOn(talismanAnalytics, "captureDelayed").mockResolvedValue(undefined)
     vi.spyOn(passwordStore, "getPassword").mockResolvedValue("hashed")
     vi.spyOn(passwordStore, "clearPassword").mockResolvedValue(undefined)
     useSecretKey(hexToU8a(MORTAL.secretKey), MORTAL.curve)
@@ -177,12 +175,6 @@ describe("SigningHandler", () => {
         MORTAL.signature,
         { siteUrl: DAPP_URL, notifications: true }
       )
-      expect(talismanAnalytics.captureDelayed).toHaveBeenCalledWith("sign transaction approve", {
-        dapp: DAPP_URL,
-        hostName: "app.example.com",
-        chain: "polkadot",
-        networkType: "substrate",
-      })
     })
 
     it("still signs, without watching, on a chain missing from chaindata", async () => {
@@ -284,10 +276,6 @@ describe("SigningHandler", () => {
         expect(sr25519Verify(u8aWrapBytes(message), signature, publicKey)).toBe(true)
         expect(sr25519Verify(message, signature, publicKey)).toBe(false)
         expect(watchSubstrateTransaction).not.toHaveBeenCalled()
-        expect(talismanAnalytics.captureDelayed).toHaveBeenCalledWith(
-          "sign approve",
-          expect.objectContaining({ networkType: "substrate" })
-        )
       })
 
       it("does not wrap an already wrapped message twice", async () => {
@@ -343,9 +331,9 @@ describe("SigningHandler", () => {
   })
 
   describe.each([
-    ["pri(signing.approveSign.hardware)", "ledger-polkadot", "ledger"],
-    ["pri(signing.approveSign.qr)", "polkadot-vault", "qr"],
-  ] as const)("%s", (type, accountType, hardwareType) => {
+    ["pri(signing.approveSign.hardware)", "ledger-polkadot"],
+    ["pri(signing.approveSign.qr)", "polkadot-vault"],
+  ] as const)("%s", (type, accountType) => {
     const externalAccount = account({ type: accountType } as Partial<Account>)
 
     it("resolves with the external signature and watches the transaction", async () => {
@@ -365,13 +353,6 @@ describe("SigningHandler", () => {
         MORTAL.signature,
         { siteUrl: DAPP_URL, notifications: true }
       )
-      expect(talismanAnalytics.captureDelayed).toHaveBeenCalledWith("sign transaction approve", {
-        dapp: DAPP_URL,
-        hostName: "app.example.com",
-        chain: "polkadot",
-        networkType: "substrate",
-        hardwareType,
-      })
     })
 
     it("assembles the signed transaction when the wallet altered the payload", async () => {
@@ -447,9 +428,6 @@ describe("SigningHandler", () => {
 
       await expect(response).rejects.toThrow("Cancelled")
       expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
-      expect(talismanAnalytics.captureDelayed).toHaveBeenCalledWith("sign reject", {
-        networkType: "substrate",
-      })
     })
 
     it("rejects a VRF request", async () => {
@@ -458,9 +436,6 @@ describe("SigningHandler", () => {
       await send("pri(signing.cancel)", { id })
 
       await expect(response).rejects.toThrow("Cancelled")
-      expect(talismanAnalytics.captureDelayed).toHaveBeenCalledWith("vrf sign reject", {
-        networkType: "substrate",
-      })
     })
   })
 

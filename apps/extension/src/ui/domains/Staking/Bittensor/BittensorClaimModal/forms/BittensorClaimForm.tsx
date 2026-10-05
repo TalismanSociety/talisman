@@ -4,9 +4,10 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { BittensorClaimAlert } from "../../components/BittensorClaimAlert"
@@ -60,6 +61,12 @@ export const BittensorClaimForm = () => {
     nativeToken?.symbol,
     t,
   ])
+  useErrorShown({
+    shown: claimError,
+    surface: "alert",
+    category: isClaimUnavailable ? "unsupported" : "input_invalid",
+  })
+  useErrorShown({ shown: feeErrorMessage, surface: "alert", category: "insufficient_fee" })
 
   return (
     <BittensorModalLayout
@@ -132,6 +139,7 @@ export const BittensorClaimForm = () => {
           label={t("Confirm")}
           payload={payload}
           onSubmitted={onSubmitted}
+          onError={flows.staking.failed}
           txMetadata={txMetadata}
         />
       ) : (

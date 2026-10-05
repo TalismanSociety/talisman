@@ -2,6 +2,7 @@ import type { SolNetworkId } from "@talismn/chaindata-provider"
 
 // import { SolTransactionJson } from "@talismn/solana"
 
+import type { KnownRequestId } from "../../libs/requests/types"
 import type { SigningRequestID } from "../signing/types"
 import type { WalletTransactionInfo } from "../transactions/types"
 
@@ -53,9 +54,14 @@ export type RequestSolanaSignApprove = {
   id: SigningRequestID<"sol-sign">
 } & SolanaSignApproveResponse
 
+export type RequestSolanaSignCancel = {
+  id: SigningRequestID<"sol-sign"> | KnownRequestId<"auth-sol-signIn">
+}
+
 export type SolanaExtensionMessages = {
   "pri(solana.rpc.send)": [RequestSolanaRpcSend, ResponseSolanaRpcSend]
   "pri(solana.rpc.submit)": [RequestSolanaSubmit, ResponseSolanaSubmit]
   // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   "pri(solana.sign.approve)": [RequestSolanaSignApprove, void]
+  "pri(solana.sign.cancel)": [RequestSolanaSignCancel, boolean]
 }

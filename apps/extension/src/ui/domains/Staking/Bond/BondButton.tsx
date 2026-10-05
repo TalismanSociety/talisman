@@ -10,7 +10,7 @@ export const BondButton: FC<{
   balances: Balances
 }> = ({ balances }) => {
   const { t } = useTranslation()
-  const { onClick, isBonding } = useBondButton({ balances })
+  const { onClick, isBonding } = useBondButton({ entry: "token_details", balances })
 
   if (!onClick) return null
 

@@ -62,7 +62,7 @@ export const NomPoolWithdrawModal = () => {
   const { isOpen, args, openKey, close } = useNomPoolWithdrawModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="nom_pool_withdraw" containerId="main" isOpen={isOpen} onDismiss={close}>
       <Suspense fallback={<SuspenseTracker name="NomPoolWithdrawModal" />}>
         {args && (
           <NomPoolWithdrawWizardProvider key={openKey}>

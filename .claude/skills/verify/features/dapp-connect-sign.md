@@ -37,3 +37,4 @@ Preconditions:
 - A dapp request that hangs with no popup is a stale service worker: run the doctor.
 - `wallet_revokePermissions` leaves an empty `sitesAuthorized` entry. Forget the site in Settings for a clean state.
 - Dapp-signed Substrate transactions show in Activity as "Unknown": expected.
+- The toolbar popup over a dapp tab (connected accounts, the EVM network pill) opens with `sw-eval.mjs 'chrome.action.openPopup()'` while the dapp tab is the active tab. Neither agent-browser nor Playwright lists that `popup.html?embedded` target: drive it with `Runtime.evaluate` over its `webSocketDebuggerUrl` from `curl -s localhost:9223/json/list`.

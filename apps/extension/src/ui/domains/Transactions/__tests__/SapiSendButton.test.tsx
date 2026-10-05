@@ -162,8 +162,23 @@ describe("SapiSendButton", () => {
 
       await waitFor(() => {
         expect(mockSubmit).toHaveBeenCalled()
-        expect(mockOnSubmitted).toHaveBeenCalledWith("0xabc")
+        expect(mockOnSubmitted).toHaveBeenCalledWith("0xabc", undefined)
       })
+    })
+
+    it("passes on the inner hash of a MEV Shield submit, the staking call itself", async () => {
+      mockSubmit.mockResolvedValueOnce({ hash: "0xabc", innerHash: "0xdef" })
+
+      render(
+        <SapiSendButton
+          payload={mockPayload}
+          onSubmitted={mockOnSubmitted}
+          mode="bittensor-mev-shield"
+        />
+      )
+      fireEvent.click(screen.getByTestId("send-button"))
+
+      await waitFor(() => expect(mockOnSubmitted).toHaveBeenCalledWith("0xabc", "0xdef"))
     })
 
     it("opens password drawer when checkPassword is true", () => {
@@ -211,7 +226,7 @@ describe("SapiSendButton", () => {
 
       await waitFor(() => {
         expect(mockSubmit).toHaveBeenCalled()
-        expect(mockOnSubmitted).toHaveBeenCalledWith("0xdef")
+        expect(mockOnSubmitted).toHaveBeenCalledWith("0xdef", undefined)
       })
     })
 

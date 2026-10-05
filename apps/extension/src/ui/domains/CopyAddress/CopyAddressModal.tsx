@@ -9,6 +9,7 @@ export const CopyAddressModal = () => {
 
   return (
     <Modal
+      analyticsId="copy_address"
       isOpen={isOpen}
       onDismiss={close}
       className={cn(

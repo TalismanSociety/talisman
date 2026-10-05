@@ -29,7 +29,12 @@ export const NetworkFilterPicker: FC<NetworkFilterPickerProps> = ({
   onDismiss,
 }) => {
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      analyticsId="network_filter_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <NetworkFilterPickerContent
         networks={networks}
         selectedNetworkId={selectedNetworkId}

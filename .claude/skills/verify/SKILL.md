@@ -100,6 +100,7 @@ Everything goes in `$RUN` (under `.tmp/`, gitignored). Cleanup keeps it.
 - For each step, capture the user action and the resulting state: the filled form before submit, and the screen after.
 - Prove the side effect from a second view: `sw-eval.mjs` output saved as `$RUN/<nn>-<what>.json`, or the same data read in a different page (Settings, Activity).
 - A mutation proof includes its undo: remove what the run added, and capture that state too.
+- When the change adds or changes analytics (a flow, a `track()` event, a `reportError`), also run [`features/analytics-events.md`](features/analytics-events.md) for its events and save the `trace` output as `$RUN/<nn>-events.json`.
 - Write `$RUN/notes.md`: feature id, entry point used, instance reused or started, and each entry point you skipped with the reason. A skipped entry point stays unverified: do not report it as verified through another path.
 
 ## 5. Cleanup

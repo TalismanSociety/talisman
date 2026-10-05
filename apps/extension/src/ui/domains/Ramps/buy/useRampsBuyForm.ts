@@ -19,6 +19,7 @@ const ensureTokenEnabled = async ({ tokenId }: RampsFormData) => {
 
 export const useRampsBuyForm = (defaults: RampsFormSharedData) =>
   useRampsForm(defaults, {
+    direction: "buy",
     useCurrencies: useRampsBuyCurrencies,
     useTokens: useRampsBuyTokens,
     useQuotes: useRampsBuyQuotes,

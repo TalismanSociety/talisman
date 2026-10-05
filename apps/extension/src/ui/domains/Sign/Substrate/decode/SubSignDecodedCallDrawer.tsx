@@ -21,6 +21,7 @@ export const SubSignDecodedCallDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="sub_sign_decoded_call"
       anchor="right"
       isOpen={isOpen && !!decodedCall}
       containerId="main"

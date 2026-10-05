@@ -20,7 +20,6 @@ import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
@@ -87,7 +86,6 @@ const EditAllowanceForm: FC<{
   onSubmit: (limit: bigint) => void | Promise<void>
 }> = ({ account, token, spender, allowance, onSubmit, onCancel }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const schema = useMemo(
     () =>
@@ -121,7 +119,6 @@ const EditAllowanceForm: FC<{
   const submit = useCallback(
     async ({ limit }: FormData) => {
       try {
-        genericEvent("set custom allowance")
         const newLimit = limit ? parseUnits(limit, token.decimals) : ERC20_UNLIMITED_ALLOWANCE
         await onSubmit(newLimit)
       } catch (err) {
@@ -130,10 +127,11 @@ const EditAllowanceForm: FC<{
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },
-    [genericEvent, onSubmit, token.decimals, t]
+    [onSubmit, token.decimals, t]
   )
 
   // don't bubble up submit event to the parent approval form
@@ -257,7 +255,13 @@ export const SignParamAllowanceButton: FC<{
           </TooltipContent>
         )}
       </Tooltip>
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="edit_allowance"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <EditAllowanceForm
           account={account}
           token={token}

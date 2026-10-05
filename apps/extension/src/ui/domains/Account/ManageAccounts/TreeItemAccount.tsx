@@ -59,11 +59,7 @@ export const TreeItemAccount: FC<{
         </div>
 
         <div data-no-dnd="true">
-          <AccountContextMenu
-            analyticsFrom="settings - accounts"
-            address={address}
-            hideManageAccounts
-          />
+          <AccountContextMenu address={address} hideManageAccounts />
         </div>
       </div>
     </div>

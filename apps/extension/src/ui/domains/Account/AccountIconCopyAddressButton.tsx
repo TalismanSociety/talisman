@@ -18,6 +18,7 @@ export const AccountIconCopyAddressButton: FC<
 
   const handleAvatarClick = useCallback(() => {
     open({
+      entry: "account_icon",
       address,
       networkId: chain?.id,
     })

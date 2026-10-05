@@ -126,6 +126,7 @@ export const ProtocolOptionsModal: FC<{
 }> = ({ isOpen, options, selected, onChange, onClose }) => {
   return (
     <Modal
+      analyticsId="protocol_options"
       isOpen={isOpen}
       onDismiss={onClose}
       className={cn(

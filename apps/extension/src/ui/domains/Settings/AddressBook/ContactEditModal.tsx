@@ -1,17 +1,17 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
-import type { HexString } from "@talismn/util"
+import { getErrorMessage, type HexString } from "@talismn/util"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useNetworks } from "@ui/state/chaindata"
 import { keyBy } from "lodash-es"
 import { useCallback, useMemo } from "react"
@@ -31,13 +31,6 @@ const schema = yup.object({
   name: yup.string().required(" "),
   genesisHash: yup.mixed<HexString>(),
 })
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Address book contact edit",
-}
 
 export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
   const { t } = useTranslation()
@@ -83,14 +76,9 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
       try {
         const { name, genesisHash } = formData
         await api.accountUpdateContact({ ...contact, name, genesisHash })
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Interact",
-          action: "Edit address book contact",
-        })
         close()
       } catch (error) {
-        setError("name", error as Error)
+        setError("name", { type: classifyError(error), message: getErrorMessage(error) })
       }
     },
     [close, contact, setError]
@@ -118,15 +106,17 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
     return contact.address
   }, [contact.address, isAddressSs58, genesisHash, compatibleNetworksByGenesisHash])
 
-  useAnalyticsPageView(ANALYTICS_PAGE)
-
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="contact_edit" isOpen={isOpen} onDismiss={close}>
       <div id="edit-contact-modal" className="h-150 max-h-full w-100 overflow-hidden">
         <ModalDialog title={t("Edit contact")} className="size-full">
           <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
             <div className="grow">
-              <FormFieldContainer error={errors.name?.message} label={t("Name")}>
+              <FormFieldContainer
+                error={errors.name?.message}
+                errorCategory={errorCategoryOfField(errors.name)}
+                label={t("Name")}
+              >
                 <FormFieldInputText
                   type="text"
                   {...register("name")}

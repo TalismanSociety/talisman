@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Routes } from "@ui/components/Routes"
+import { Navigate, Route } from "react-router-dom"
 
 import type { AccountAddPageProps } from "../types"
 import { AddLedgerSelectAccount } from "./AddLedgerSelectAccount"

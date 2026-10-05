@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import { Spacer } from "@ui/components/Spacer"
 import {
@@ -54,6 +55,7 @@ export const ConnectLedgerBase: FC<ConnectLedgerBaseProps> = ({
       log.error("ConnectLedgerSubstrateGeneric", { error })
       setConnectionStatus({
         status: "error",
+        errorCategory: classifyError(error),
         message: error.message,
         onRetryClick: connect,
       })

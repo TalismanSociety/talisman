@@ -43,10 +43,16 @@ const BraveWarningPopupBanner = () => {
 
   return (
     <>
-      <Drawer isOpen={showWarning} containerId="main" anchor="bottom" onDismiss={handleClose}>
+      <Drawer
+        analyticsId="brave_warning_banner"
+        isOpen={showWarning}
+        containerId="main"
+        anchor="bottom"
+        onDismiss={handleClose}
+      >
         <BraveWarningCard className="m-0! rounded-b-none!" onLearnMoreClick={open} />
       </Drawer>
-      <Modal isOpen={isOpen} anchor="bottom" onDismiss={close}>
+      <Modal analyticsId="brave_warning_details" isOpen={isOpen} anchor="bottom" onDismiss={close}>
         <ModalDialog className="h-auto" title={t("Attention Brave Users")} onCloseClick={close}>
           <BraveWarningModal popup />
         </ModalDialog>

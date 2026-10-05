@@ -1,5 +1,4 @@
 import { bind } from "@react-rxjs/core"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { Spacer } from "@ui/components/Spacer"
@@ -10,32 +9,23 @@ import {
   ManageAccountsWelcome,
 } from "@ui/domains/Account/ManageAccounts"
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { accounts$, accountsCatalog$ } from "@ui/state/accounts"
 import { balancesHydrate$ } from "@ui/state/balances"
 import { useTranslation } from "react-i18next"
 import { combineLatest } from "rxjs"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Accounts",
-}
 
 const [usePreload] = bind(combineLatest([accounts$, accountsCatalog$, balancesHydrate$]))
 
 const Content = () => {
   const { t } = useTranslation()
   usePreload()
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <>
       <HeaderBlock title={t("Manage Accounts")} text={t("Organise and sort your accounts")} />
       <Spacer large />
       <ManageAccountsProvider>
-        <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
+        <ManageAccountsToolbar />
         <Spacer />
         <ManageAccountsLists />
       </ManageAccountsProvider>

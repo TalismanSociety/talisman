@@ -1,22 +1,13 @@
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { TopActions } from "@ui/apps/popup/components/TopActions"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useSelectedCurrency, useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type MouseEventHandler, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Portfolio Home",
-}
 
 type Props = {
   className?: string
@@ -31,15 +22,13 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
   const toggleCurrency = useToggleCurrency()
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
-  const { genericEvent } = useAnalytics()
 
   const toggleHideBalance: MouseEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       event.stopPropagation()
-      genericEvent("toggle hide balance")
       setHideBalances((prev) => !prev)
     },
-    [genericEvent, setHideBalances]
+    [setHideBalances]
   )
 
   return (
@@ -84,7 +73,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           />
         </div>
       </div>
-      <TopActions analyticsPage={ANALYTICS_PAGE} disabled={disabled} />
+      <TopActions disabled={disabled} />
     </div>
   )
 }

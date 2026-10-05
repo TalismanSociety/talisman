@@ -69,7 +69,7 @@ export const AutoLockDrawer = () => {
   const { isOpen } = useAutoLockDrawerOpenClose()
 
   return (
-    <Drawer anchor="right" isOpen={isOpen} containerId="main">
+    <Drawer analyticsId="auto_lock" anchor="right" isOpen={isOpen} containerId="main">
       <AutoLockDrawerContent />
     </Drawer>
   )

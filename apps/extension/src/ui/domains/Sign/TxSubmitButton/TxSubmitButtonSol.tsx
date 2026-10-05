@@ -20,6 +20,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   label,
   className,
   onSubmit,
+  onError,
   onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
@@ -46,10 +47,12 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           title: `Failed to submit`,
           type: "error",
           subtitle: getErrorMessage(cause, t("Unknown error")),
+          cause,
         })
+        onError?.(cause)
       }
     },
-    [onSubmit, tx, t]
+    [onSubmit, onError, tx, t]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -69,11 +72,13 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         title: `Failed to submit`,
         type: "error",
         subtitle: getErrorMessage(cause, t("Unknown error")),
+        cause,
       })
+      onError?.(cause)
     } finally {
       setIsSubmitting(false)
     }
-  }, [onSubmit, tx, t])
+  }, [onSubmit, onError, tx, t])
 
   const payload = useMemo<SolSignPayload>(() => {
     return { type: "transaction", transaction: tx.payload }

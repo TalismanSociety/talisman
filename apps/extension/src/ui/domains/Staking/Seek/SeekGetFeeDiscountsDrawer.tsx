@@ -63,7 +63,13 @@ export const SeekGetFeeDiscountsDrawer = ({
   const tokenSymbol = token?.symbol || "SEEK"
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={onDismiss}>
+    <Drawer
+      analyticsId="seek_get_fee_discounts"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+      onDismiss={onDismiss}
+    >
       <DrawerContent className="flex flex-col items-center gap-12">
         <div className="flex w-full items-center justify-between">
           <div className="flex-1 text-center font-bold text-body">{t("Get Fee Discounts")}</div>
@@ -133,8 +139,8 @@ export const SeekGetFeeDiscountsDrawer = ({
           {totalOwned && totalOwned.planck > 0n && (
             <Button
               onClick={() => {
-                openSeekStakingModal({ action: "stake" })
                 onCloseModal()
+                openSeekStakingModal({ entry: "fee_discount", action: "stake" })
               }}
             >
               {t("Stake")} {tokenSymbol}
@@ -144,7 +150,8 @@ export const SeekGetFeeDiscountsDrawer = ({
             className="px-2"
             primary
             onClick={() => {
-              openSwapModal({ toTokenId: remoteConfig.seek.tokenId })
+              onCloseModal()
+              openSwapModal({ entry: "seek", toTokenId: remoteConfig.seek.tokenId })
             }}
           >
             {t("Buy")} {tokenSymbol}

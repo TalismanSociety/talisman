@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
@@ -6,6 +7,7 @@ import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -49,6 +51,7 @@ export const EnterPasswordForm = () => {
         } else throw new Error(t("Incorrect password"))
       } catch (err) {
         setError("password", {
+          type: classifyError(err),
           message: getErrorMessage(err, t("Unknown error")),
         })
       }
@@ -82,7 +85,11 @@ export const EnterPasswordForm = () => {
       </p>
       <p className="text-body-secondary text-sm">{t("Enter your current password to continue")}</p>
       <form onSubmit={handleSubmit(submit)}>
-        <FormFieldContainer error={errors.password?.message} className="mb-4">
+        <FormFieldContainer
+          error={errors.password?.message}
+          errorCategory={errorCategoryOfField(errors.password)}
+          className="mb-4"
+        >
           <FormFieldInputText
             {...register("password")}
             type="password"

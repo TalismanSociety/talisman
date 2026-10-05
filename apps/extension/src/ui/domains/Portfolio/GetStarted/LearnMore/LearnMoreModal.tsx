@@ -1,4 +1,3 @@
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
@@ -9,13 +8,6 @@ import { useNavigate } from "react-router-dom"
 import { LearnMoreContent } from "./LearnMoreContent"
 import { useLearnMoreModal } from "./useLearnMoreModal"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Learn More",
-}
-
 export const LearnMoreModal = () => {
   const { t } = useTranslation()
   const { isOpen, close } = useLearnMoreModal()
@@ -23,16 +15,15 @@ export const LearnMoreModal = () => {
   const navigate = useNavigate()
 
   const goTo = useCallback(
-    (action: string, path: string) => () => {
+    (path: string) => () => {
       close()
-      sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action })
       navigate(path)
     },
     [close, navigate]
   )
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close} containerId="main">
+    <Modal analyticsId="learn_more" isOpen={isOpen} onDismiss={close} containerId="main">
       <ModalDialog
         title={t("Learn More")}
         onCloseClick={close}
@@ -40,10 +31,10 @@ export const LearnMoreModal = () => {
       >
         <ScrollContainer className="h-full w-full">
           <LearnMoreContent
-            onAddHardwareClick={goTo("Add hardware accounts", "/accounts/add?methodType=connect")}
-            onCurrenciesClick={goTo("Change currencies", "/settings/general/currency")}
-            onManageAccountsClick={goTo("Manage accounts", "/settings/accounts")}
-            onMnemonicsClick={goTo("Manage mnemonics", "/settings/mnemonics")}
+            onAddHardwareClick={goTo("/accounts/add?methodType=connect")}
+            onCurrenciesClick={goTo("/settings/general/currency")}
+            onManageAccountsClick={goTo("/settings/accounts")}
+            onMnemonicsClick={goTo("/settings/mnemonics")}
           />
         </ScrollContainer>
       </ModalDialog>

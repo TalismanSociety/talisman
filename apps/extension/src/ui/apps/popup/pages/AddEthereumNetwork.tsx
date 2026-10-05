@@ -37,6 +37,7 @@ export const AddEthereumNetwork = () => {
         type: "error",
         title: t("Failed to add network"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [request, t])

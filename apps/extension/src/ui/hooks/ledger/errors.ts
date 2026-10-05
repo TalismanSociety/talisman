@@ -44,6 +44,8 @@ type TalismanLedgerErrorName =
   | "Unauthorized"
 
 export class TalismanLedgerError extends Error {
+  readonly isTalismanLedgerError = true
+
   constructor(name: TalismanLedgerErrorName, message: string, options?: ErrorOptions) {
     super(message, options)
     this.name = name || "Unknown"
