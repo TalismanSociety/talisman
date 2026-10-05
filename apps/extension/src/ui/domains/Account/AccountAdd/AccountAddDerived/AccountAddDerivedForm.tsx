@@ -31,7 +31,7 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { cn } from "@ui/util/cn"
-import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
+import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
@@ -207,15 +207,20 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
     },
   })
 
-  const { generateMnemonic, isOpen: isCreatingPhrase } = useMnemonicCreateModal()
-  useAddAccountStep(isCreatingPhrase ? "new_phrase" : null)
+  const { generateMnemonic } = useMnemonicCreateModal()
+  const [isNewPhraseStep, setIsNewPhraseStep] = useState(false)
+  useAddAccountStep(isNewPhraseStep ? "new_phrase" : null)
 
   const submit = useCallback(
     async ({ name, platform, mnemonicId, derivationPath }: FormData) => {
       const curve = getDefaultCurveForAccountPlatform(platform)
 
+      if (mnemonicId === null) setIsNewPhraseStep(true)
       const mnemonicOptions = mnemonicId === null ? await generateMnemonic() : null
-      if (mnemonicId === null && mnemonicOptions === null) return // user cancelled the wizard
+      if (mnemonicId === null && mnemonicOptions === null) {
+        setIsNewPhraseStep(false)
+        return // user cancelled the wizard
+      }
 
       const option: RequestAddAccountDerive[number] = mnemonicOptions
         ? {
@@ -258,6 +263,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         })
       } catch (err) {
         flows.add_account.failed(err)
+        setIsNewPhraseStep(false)
         log.error("Failed to create account", err)
         notifyUpdate(notificationId, {
           type: "error",
