@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 // the system that handles an opportunity (yield.xyz aggregator vs the seek staking integration).
 // note: "provider" is reserved for the protocol *within* yield.xyz (morpho, aave, …), so the
 // yield.xyz-vs-seek distinction is a "system".
-export type EarnSystemId = "yieldxyz" | "seek"
+export type EarnSystemId = "yieldxyz" | "seek" | "bittensor"
 
 export type EarnProvider = {
   id: string

@@ -1,4 +1,5 @@
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
+import type { DefiPosition } from "@core/domains/defi/exports"
 import { type Account, isAccountOwned } from "@core/domains/keyring/exports"
 import {
   BalanceFormatter,
@@ -197,3 +198,13 @@ export const toEarnPosition = ({
     rowAction,
   }
 }
+
+// a DeFi row overlapping a root position on native TAO is the same stake only when it is a staking
+// row or names Bittensor; unrelated TAO exposure on the same address stays visible
+export const isBittensorDefiPosition = (position: DefiPosition) =>
+  position.type === "staking" ||
+  /bittensor|subtensor/.test(
+    [position.id, position.name, position.defiId, position.defiName, position.symbol ?? ""]
+      .join(" ")
+      .toLowerCase()
+  )
