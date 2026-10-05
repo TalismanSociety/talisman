@@ -108,6 +108,9 @@ const usePositions = () => {
       detailUrl: `/earn/positions/seek/${encodeURIComponent(position.address)}`,
       tokenIds: [config.tokenId],
       searchTerms: ["SEEK", "SEEK Staking", "staking"],
+      subtitle: null,
+      lock: null,
+      rowAction: null,
     }))
   }, [
     apr,

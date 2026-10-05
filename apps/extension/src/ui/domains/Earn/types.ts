@@ -1,5 +1,6 @@
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
+import type { ReactNode } from "react"
 
 // the system that handles an opportunity (yield.xyz aggregator vs the seek staking integration).
 // note: "provider" is reserved for the protocol *within* yield.xyz (morpho, aave, …), so the
@@ -57,4 +58,14 @@ export type EarnPosition = {
   detailUrl: string
   tokenIds: TokenId[]
   searchTerms: string[]
+  // required-nullable so every mapper decides
+  subtitle: EarnPositionSubtitle | null
+  lock: EarnPositionLock | null
+  rowAction: EarnPositionRowAction | null
 }
+
+export type EarnPositionSubtitle = { label: string; icon: ReactNode | null }
+
+export type EarnPositionLock = { label: string }
+
+export type EarnPositionRowAction = { kind: "claim"; label: string; onClick: () => void }

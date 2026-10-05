@@ -121,6 +121,9 @@ const mapYieldPosition = (
       ...yp.balances.map((b) => b.token.symbol),
       ...yp.balances.map((b) => b.token.name),
     ],
+    subtitle: null,
+    lock: null,
+    rowAction: null,
   }
 }
 
