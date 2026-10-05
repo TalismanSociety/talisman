@@ -31,6 +31,7 @@ import {
   TokenSchema,
   type TokenType,
 } from "../chaindata"
+import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
@@ -65,6 +66,15 @@ export type ChaindataProviderOptions = {
   chaindataUrl?: string
 }
 
+const parseCustomChaindataUrl = (chaindataUrl: string | undefined) => {
+  if (chaindataUrl === undefined || chaindataUrl === DEFAULT_CHAINDATA_URL) return undefined
+  try {
+    return new URL(chaindataUrl).href
+  } catch (cause) {
+    throw new Error(`Invalid chaindataUrl: "${chaindataUrl}"`, { cause })
+  }
+}
+
 export class ChaindataProvider implements IChaindataProvider {
   #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
@@ -77,6 +87,7 @@ export class ChaindataProvider implements IChaindataProvider {
     dynamicTokens$,
     chaindataUrl,
   }: ChaindataProviderOptions = {}) {
+    const customChaindataUrl = parseCustomChaindataUrl(chaindataUrl)
     tryToDeleteOldChaindataDb()
 
     // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
@@ -84,7 +95,7 @@ export class ChaindataProvider implements IChaindataProvider {
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, chaindataUrl)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, customChaindataUrl)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 
