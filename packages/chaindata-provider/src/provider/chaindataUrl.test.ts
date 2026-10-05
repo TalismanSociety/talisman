@@ -101,7 +101,7 @@ describe("ChaindataProvider chaindataUrl", () => {
   })
 
   it("downloads the custom file again after a failed download", async () => {
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] })
     mockFetch.mockResolvedValueOnce(errorResponse())
     mockFetch.mockImplementation(async () => okResponse(chaindataA))
 
