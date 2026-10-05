@@ -28,8 +28,8 @@ export class AnalyticsHandler extends ExtensionHandler {
         const result = parseTrackedEvent(request)
         const uiContext = uiContextFromSenderUrl(port.sender?.url)
         const realNow = Date.now()
-        const disposition = await analyticsEngine.capture({ result, uiContext, realNow })
         if (result.ok) flowTracker.observe(port, uiContext, result.event, realNow)
+        const disposition = await analyticsEngine.capture({ result, uiContext, realNow })
         return disposition as ResponseType<TMessageType>
       }
       case "pri(analytics.exception)":
