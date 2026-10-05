@@ -1,6 +1,12 @@
+import { toAmountBucket } from "@common/analytics/buckets"
 import { classifyError } from "@common/analytics/errorCategory"
-import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
+import {
+  networkIdForAnalytics,
+  tokenIdForAnalytics,
+  tokenSymbolForAnalytics,
+} from "@common/analytics/funds"
 import { toDurationMs } from "@common/analytics/schema"
+import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
@@ -79,6 +85,24 @@ export const useSwapQuoteManager = (params: {
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
   const toNetwork = useNetworkById(toToken?.networkId)
+  const quoteReport = useMemo(
+    () => ({
+      from_network_id: networkIdForAnalytics(fromNetwork),
+      to_network_id: networkIdForAnalytics(toNetwork),
+      from_symbol: tokenSymbolForAnalytics(fromToken),
+      to_symbol: tokenSymbolForAnalytics(toToken),
+      from_token_id: tokenIdForAnalytics(fromToken),
+      to_token_id: tokenIdForAnalytics(toToken),
+      usd_bucket: toAmountBucket(
+        fromToken && fromAmount !== null
+          ? new BalanceFormatter(fromAmount, fromToken.decimals, tokenRates[fromToken.id]).fiat(
+              "usd"
+            )
+          : null
+      ),
+    }),
+    [fromAmount, fromNetwork, fromToken, toNetwork, toToken, tokenRates]
+  )
 
   const enabled = enabledProp && Boolean(fromTokenId && toTokenId && fromAmount)
   const quoteInputKey = useMemo(
@@ -152,19 +176,13 @@ export const useSwapQuoteManager = (params: {
     if (!enabled || !isAllQuotesSettled || request?.key !== quoteInputKey || request.reported)
       return
     request.reported = true
-    const pair = {
-      from_network_id: networkIdForAnalytics(fromNetwork),
-      to_network_id: networkIdForAnalytics(toNetwork),
-      from_symbol: tokenSymbolForAnalytics(fromToken),
-      to_symbol: tokenSymbolForAnalytics(toToken),
-    }
     queryResults.forEach((result, index) => {
       const protocol = applicableModules[index]?.protocol
       if (result.isError && protocol)
         track("swap_quote_failed", {
           protocol,
           error_category: classifyError(result.error),
-          ...pair,
+          ...quoteReport,
         })
     })
     const quotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
@@ -173,18 +191,9 @@ export const useSwapQuoteManager = (params: {
         quote_count: quotes.length,
         protocols: [...new Set(quotes.map((quote) => quote.protocol))],
         latency_ms: toDurationMs(performance.now() - request.at),
+        ...quoteReport,
       })
-  }, [
-    applicableModules,
-    enabled,
-    fromNetwork,
-    fromToken,
-    isAllQuotesSettled,
-    queryResults,
-    quoteInputKey,
-    toNetwork,
-    toToken,
-  ])
+  }, [applicableModules, enabled, isAllQuotesSettled, queryResults, quoteInputKey, quoteReport])
   const hasQuoteErrorLive = queryResults.length > 0 && queryResults.every((r) => r.isError)
 
   // Stable dependencies: only change when actual query data/error state updates

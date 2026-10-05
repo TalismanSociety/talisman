@@ -100,6 +100,8 @@ describe("property builders", () => {
     ["slug", p.slug("."), "polkadot-asset-hub", "two words"],
     ["slug", p.slug("."), "eth_signTypedData_v4", "-leading-dash"],
     ["symbol", p.symbol("."), "USDC.e", "not a symbol"],
+    ["tokenId", p.tokenId("."), "1:evm-erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "a b"],
+    ["tokenId", p.tokenId("."), "kusama-asset-hub:substrate-foreignassets:N4Ig+Dg", "a/b"],
     ["routePattern", p.routePattern("."), "/portfolio/tokens/:symbol", "/portfolio?tab=nfts"],
     ["routePattern", p.routePattern("."), "/", "portfolio"],
     ["list", p.list(p.slug("."), ".", { maxItems: 2 }), ["a", "b"], ["a", "b", "c"]],
@@ -127,6 +129,7 @@ describe("property builders", () => {
         "routePattern",
         "slug",
         "symbol",
+        "tokenId",
       ].sort()
     )
   })

@@ -264,6 +264,12 @@ export const properties = {
   ),
   from_symbol: p.symbol("Symbol of the token swapped from."),
   to_symbol: p.symbol("Symbol of the token swapped to."),
+  from_token_id: p.tokenId(
+    "Chaindata token id of the token swapped from. custom: a token outside the chaindata catalogue, such as one the user added."
+  ),
+  to_token_id: p.tokenId(
+    "Chaindata token id of the token swapped to. custom: a token outside the chaindata catalogue, such as one the user added."
+  ),
   cross_chain: p.bool("The swap moves value from one network to another."),
   slippage_percent: p.nullable(
     p.number(

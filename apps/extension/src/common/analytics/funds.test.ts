@@ -5,6 +5,7 @@ import {
   addressFormatOf,
   networkIdForAnalytics,
   swapOfTransaction,
+  tokenIdForAnalytics,
   tokenSymbolForAnalytics,
 } from "./funds"
 
@@ -83,5 +84,30 @@ describe("tokenSymbolForAnalytics", () => {
   it("reads a symbol the catalogue rejects and no token as unknown", () => {
     expect(tokenSymbolForAnalytics(token("SN 12 alpha", false, true))).toBe("unknown")
     expect(tokenSymbolForAnalytics(null)).toBe("unknown")
+  })
+})
+
+describe("tokenIdForAnalytics", () => {
+  const token = (id: string, isKnown: boolean) =>
+    ({ id, __isCustom: !isKnown, __isKnown: isKnown }) as unknown as Token
+
+  it("keeps the id of a chaindata token, long or not", () => {
+    expect(tokenIdForAnalytics(token("polkadot:substrate-native", true))).toBe(
+      "polkadot:substrate-native"
+    )
+    const foreignAsset = `polkadot-asset-hub:substrate-foreignassets:N4Ig${"Dghg+".repeat(50)}`
+    expect(tokenIdForAnalytics(token(foreignAsset, true))).toBe(foreignAsset)
+  })
+
+  it("hides a user-added token and a missing one", () => {
+    expect(
+      tokenIdForAnalytics(token("1:evm-erc20:0x1111111111111111111111111111111111111111", false))
+    ).toBe("custom")
+    expect(tokenIdForAnalytics(null)).toBe("custom")
+  })
+
+  it("is unknown for an id the property cannot hold", () => {
+    expect(tokenIdForAnalytics(token("polkadot:substrate-tokens:a/b", true))).toBe("unknown")
+    expect(tokenIdForAnalytics(token(`polkadot:${"a".repeat(320)}`, true))).toBe("unknown")
   })
 })

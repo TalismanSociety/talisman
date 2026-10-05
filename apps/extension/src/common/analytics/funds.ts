@@ -2,13 +2,14 @@ import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
   isNetworkKnown,
   isTokenCustom,
+  isTokenKnown,
   type Network,
   networkIdFromTokenId,
   type Token,
 } from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
 
-import { symbolForAnalytics } from "./schema"
+import { symbolForAnalytics, tokenIdStringForAnalytics } from "./schema"
 import { CUSTOM_NETWORK_ID } from "./transactions"
 
 export const SEND_ENTRIES = [
@@ -90,6 +91,9 @@ export const networkIdForAnalytics = (network: Network | null | undefined): stri
 
 export const tokenSymbolForAnalytics = (token: Token | null | undefined): string =>
   token && !isTokenCustom(token) ? symbolForAnalytics(token.symbol) : "unknown"
+
+export const tokenIdForAnalytics = (token: Token | null | undefined): string =>
+  token && isTokenKnown(token) ? tokenIdStringForAnalytics(token.id) : "custom"
 
 export const copiedNetworkId = (network: Network | null | undefined): string =>
   network ? networkIdForAnalytics(network) : "generic"

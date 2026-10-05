@@ -8,7 +8,18 @@ export const fundsEvents = defineEventGroup(properties, {
   swap_quote_received: {
     description:
       "Swap quotes came back for one amount and token pair, once every provider answered. Not sent again when they refresh.",
-    props: { quote_count: "required", protocols: "required", latency_ms: "required" },
+    props: {
+      quote_count: "required",
+      protocols: "required",
+      latency_ms: "required",
+      from_network_id: "required",
+      to_network_id: "required",
+      from_symbol: "required",
+      to_symbol: "required",
+      from_token_id: "required",
+      to_token_id: "required",
+      usd_bucket: "required",
+    },
   },
   swap_quote_failed: {
     description:
@@ -20,6 +31,9 @@ export const fundsEvents = defineEventGroup(properties, {
       to_network_id: "required",
       from_symbol: "required",
       to_symbol: "required",
+      from_token_id: "required",
+      to_token_id: "required",
+      usd_bucket: "required",
     },
   },
   swap_approval_submitted: {

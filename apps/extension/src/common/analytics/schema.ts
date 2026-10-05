@@ -24,6 +24,10 @@ const SYMBOL = /^[\p{L}\p{N}._\-+$]{1,24}$/u
 export const symbolForAnalytics = (symbol: string | null | undefined): string =>
   symbol && SYMBOL.test(symbol) ? symbol : "unknown"
 
+const TOKEN_ID = /^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,319}$/
+export const tokenIdStringForAnalytics = (tokenId: string): string =>
+  TOKEN_ID.test(tokenId) ? tokenId : "unknown"
+
 const MAX_COUNT = 1_000_000
 const MAX_DURATION_MS = 7 * 24 * 60 * 60_000
 
@@ -81,6 +85,8 @@ export const p = {
     string(z.string().max(maxLength).regex(SLUG), description),
 
   symbol: (description: string) => string(z.string().regex(SYMBOL), description),
+
+  tokenId: (description: string) => string(z.string().regex(TOKEN_ID), description),
 
   routePattern: (description: string) => string(z.string().refine(isRoutePattern), description),
 

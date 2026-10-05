@@ -15,19 +15,16 @@ const track = vi.hoisted(() => vi.fn())
 vi.mock("@ui/api/track", () => ({ track }))
 
 vi.mock("@ui/state/tokenRates", () => ({
-  useTokenRatesMap: () => ({}),
+  useTokenRatesMap: () => ({ "from-token": { usd: { price: 25 } } }),
 }))
 
 vi.mock("@ui/state/chaindata", () => ({
   useToken: (tokenId?: string) =>
-    tokenId
-      ? {
-          id: tokenId,
-          symbol: tokenId === "from-token" ? "DOT" : "USDC",
-          networkId: tokenId === "from-token" ? "polkadot" : "ethereum",
-          __isKnown: true,
-        }
-      : null,
+    tokenId === "from-token"
+      ? { id: tokenId, symbol: "DOT", __isKnown: true, decimals: 0, networkId: "polkadot" }
+      : tokenId === "to-token"
+        ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
+        : null,
   useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
 }))
 
@@ -79,6 +76,15 @@ const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
 ])
 
 const toSupportMap = new Map<string, Set<SupportedSwapProtocol>>([["to-token", new Set(["lifi"])]])
+
+const pair = {
+  from_network_id: "polkadot",
+  to_network_id: "ethereum",
+  from_symbol: "DOT",
+  to_symbol: "USDC",
+  from_token_id: "from-token",
+  to_token_id: "to-token",
+}
 
 describe("useSwapQuoteManager", () => {
   let queryClient: QueryClient
@@ -180,7 +186,13 @@ describe("useSwapQuoteManager", () => {
     expect(track.mock.calls).toEqual([
       [
         "swap_quote_received",
-        { quote_count: 1, protocols: ["lifi"], latency_ms: expect.any(Number) },
+        {
+          quote_count: 1,
+          protocols: ["lifi"],
+          latency_ms: expect.any(Number),
+          ...pair,
+          usd_bucket: "10-100",
+        },
       ],
     ])
 
@@ -191,10 +203,8 @@ describe("useSwapQuoteManager", () => {
     expect(track).toHaveBeenLastCalledWith("swap_quote_failed", {
       protocol: "lifi",
       error_category: "unknown",
-      from_network_id: "polkadot",
-      to_network_id: "ethereum",
-      from_symbol: "DOT",
-      to_symbol: "USDC",
+      ...pair,
+      usd_bucket: "10-100",
     })
   })
 })

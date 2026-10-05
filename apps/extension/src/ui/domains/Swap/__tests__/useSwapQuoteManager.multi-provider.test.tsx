@@ -18,14 +18,11 @@ vi.mock("@ui/state/tokenRates", () => ({
 
 vi.mock("@ui/state/chaindata", () => ({
   useToken: (tokenId?: string) =>
-    tokenId
-      ? {
-          id: tokenId,
-          symbol: tokenId === "from-token" ? "DOT" : "USDC",
-          networkId: tokenId === "from-token" ? "polkadot" : "ethereum",
-          __isKnown: true,
-        }
-      : null,
+    tokenId === "from-token"
+      ? { id: tokenId, symbol: "DOT", __isKnown: true, decimals: 10, networkId: "polkadot" }
+      : tokenId === "to-token"
+        ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
+        : null,
   useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
 }))
 
