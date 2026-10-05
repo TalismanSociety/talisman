@@ -82,6 +82,26 @@ describe("onboarding analytics", () => {
     ])
   })
 
+  it("restarts as a reset when a mounted page sees the wallet onboarded, then wiped", () => {
+    const { rerender } = render(<Onboarding />)
+    act(() => onboard.setOnboarded())
+    act(() => {
+      app.onboarded = "TRUE"
+      rerender(<Onboarding />)
+    })
+    act(() => {
+      app.onboarded = "FALSE"
+      rerender(<Onboarding />)
+    })
+
+    expect(flowEvents()).toEqual([
+      expect.objectContaining({ event: "onboarding_started", entry: "install" }),
+      expect.objectContaining({ event: "onboarding_setup_completed" }),
+      expect.objectContaining({ event: "onboarding_started", entry: "reset" }),
+    ])
+    expect(flowEvents()[2].flow_id).not.toBe(flowEvents()[0].flow_id)
+  })
+
   it("starts nothing when the wallet is already onboarded", () => {
     app.onboarded = "TRUE"
     render(<Onboarding />)
