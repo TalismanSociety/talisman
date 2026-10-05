@@ -80,8 +80,9 @@ const EarnPositionRow: FC<{
         type="button"
         className={cn(
           "grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
-          EARN_GRID_COLS,
-          IS_POPUP ? "px-6 text-xs" : "px-8"
+          IS_POPUP
+            ? "grid-cols-[minmax(0,1fr)_auto] gap-4 px-6 text-xs"
+            : cn(EARN_GRID_COLS, "px-8")
         )}
         onClick={() => navigate(position.detailUrl)}
       >
@@ -140,9 +141,14 @@ const EarnPositionRow: FC<{
             <EarnPositionYield apr={position.apr} rateType={position.rateType} />
           </div>
         )}
-        <div className="flex flex-col items-end justify-center gap-1 text-right">
-          <div className="flex h-9 items-center gap-2">
-            <DisplayTokensList displayTokens={position.displayTokens} />
+        <div
+          className={cn(
+            "flex min-w-0 flex-col items-end justify-center gap-1 text-right",
+            IS_POPUP && "max-w-[180px]"
+          )}
+        >
+          <div className="flex h-9 max-w-full items-center gap-2">
+            <DisplayTokensList displayTokens={position.displayTokens} className="min-w-0 shrink" />
             {position.lock && (
               <Tooltip>
                 <TooltipTrigger asChild>
