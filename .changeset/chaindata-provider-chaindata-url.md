@@ -2,4 +2,4 @@
 "@talismn/chaindata-provider": minor
 ---
 
-add a chaindataUrl option to ChaindataProvider to download a custom chaindata file instead of the default one
+add a chaindataUrl option to ChaindataProvider to download a custom chaindata file instead of the default one, and export DEFAULT_CHAINDATA_URL
