@@ -1,8 +1,10 @@
 import { classifyError } from "@common/analytics/errorCategory"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { toDurationMs } from "@common/analytics/schema"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useRef, useState } from "react"
 
@@ -73,6 +75,10 @@ export const useSwapQuoteManager = (params: {
   } = params
 
   const tokenRates = useTokenRatesMap()
+  const fromToken = useToken(fromTokenId ?? undefined)
+  const toToken = useToken(toTokenId ?? undefined)
+  const fromNetwork = useNetworkById(fromToken?.networkId)
+  const toNetwork = useNetworkById(toToken?.networkId)
 
   const enabled = enabledProp && Boolean(fromTokenId && toTokenId && fromAmount)
   const quoteInputKey = useMemo(
@@ -146,10 +152,20 @@ export const useSwapQuoteManager = (params: {
     if (!enabled || !isAllQuotesSettled || request?.key !== quoteInputKey || request.reported)
       return
     request.reported = true
+    const pair = {
+      from_network_id: networkIdForAnalytics(fromNetwork),
+      to_network_id: networkIdForAnalytics(toNetwork),
+      from_symbol: tokenSymbolForAnalytics(fromToken),
+      to_symbol: tokenSymbolForAnalytics(toToken),
+    }
     queryResults.forEach((result, index) => {
       const protocol = applicableModules[index]?.protocol
       if (result.isError && protocol)
-        track("swap_quote_failed", { protocol, error_category: classifyError(result.error) })
+        track("swap_quote_failed", {
+          protocol,
+          error_category: classifyError(result.error),
+          ...pair,
+        })
     })
     const quotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
     if (quotes.length)
@@ -158,7 +174,17 @@ export const useSwapQuoteManager = (params: {
         protocols: [...new Set(quotes.map((quote) => quote.protocol))],
         latency_ms: toDurationMs(performance.now() - request.at),
       })
-  }, [applicableModules, enabled, isAllQuotesSettled, queryResults, quoteInputKey])
+  }, [
+    applicableModules,
+    enabled,
+    fromNetwork,
+    fromToken,
+    isAllQuotesSettled,
+    queryResults,
+    quoteInputKey,
+    toNetwork,
+    toToken,
+  ])
   const hasQuoteErrorLive = queryResults.length > 0 && queryResults.every((r) => r.isError)
 
   // Stable dependencies: only change when actual query data/error state updates

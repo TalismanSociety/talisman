@@ -16,6 +16,19 @@ vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({}),
 }))
 
+vi.mock("@ui/state/chaindata", () => ({
+  useToken: (tokenId?: string) =>
+    tokenId
+      ? {
+          id: tokenId,
+          symbol: tokenId === "from-token" ? "DOT" : "USDC",
+          networkId: tokenId === "from-token" ? "polkadot" : "ethereum",
+          __isKnown: true,
+        }
+      : null,
+  useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
+}))
+
 vi.mock("../swaps.api", () => {
   const swapModules = [
     {

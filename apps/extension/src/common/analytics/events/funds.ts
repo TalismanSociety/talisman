@@ -13,7 +13,14 @@ export const fundsEvents = defineEventGroup(properties, {
   swap_quote_failed: {
     description:
       "A swap provider failed to quote for one amount and token pair, once per provider when every provider answered.",
-    props: { protocol: "required", error_category: "required" },
+    props: {
+      protocol: "required",
+      error_category: "required",
+      from_network_id: "required",
+      to_network_id: "required",
+      from_symbol: "required",
+      to_symbol: "required",
+    },
   },
   swap_approval_submitted: {
     description:
