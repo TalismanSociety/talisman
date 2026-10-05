@@ -1,5 +1,5 @@
 import type { ConsentKind } from "@common/analytics/schema"
-import { BehaviorSubject } from "rxjs"
+import { ReplaySubject } from "rxjs"
 import { describe, expect, it } from "vitest"
 
 import { AnalyticsEngine } from "./engine"
@@ -83,9 +83,10 @@ const startWorker = (
   {
     consent: initialConsent,
     transmission = POSTHOG,
-  }: { consent: Consent; transmission?: Transmission }
+  }: { consent?: Consent; transmission?: Transmission }
 ) => {
-  const consent$ = new BehaviorSubject(initialConsent)
+  const consent$ = new ReplaySubject<Consent>(1)
+  if (initialConsent) consent$.next(initialConsent)
   let onAlarm = () => {}
   const engine = new AnalyticsEngine({
     clock: () => world.now,
@@ -142,6 +143,20 @@ describe("AnalyticsEngine", () => {
       expect(await worker.capture()).toBe("held")
       expect((await worker.engine.inspect()).held).toBe(1)
       expect(await rows(world.store)).toEqual([])
+    })
+
+    it("a capture before consent is known waits for it: a late denial drops it and sends nothing", async () => {
+      const world = createWorld()
+      const worker = startWorker(world, {})
+      const early = worker.capture()
+
+      const snapshot = await worker.setConsent(consent("denied"))
+
+      expect(await early).toBe("dropped_consent")
+      expect(snapshot.queued.usage).toBe(0)
+      world.now += 30 * MINUTE
+      await worker.fireAlarm()
+      expect(sentEvents(world)).toEqual([])
     })
 
     it("pending → granted: queues the held events with their timestamps, then analytics_opt_in from onboarding", async () => {
