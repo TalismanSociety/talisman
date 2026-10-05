@@ -92,11 +92,11 @@ export class ChaindataProvider implements IChaindataProvider {
     const customChaindataUrl = parseCustomChaindataUrl(chaindataUrl)
     tryToDeleteOldChaindataDb()
 
-    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
+    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys, and drop it when it was downloaded from another chaindataUrl
     const restoreStorage = (storage: ChaindataStorage | undefined): ChaindataStorage =>
       storage?.chaindataUrl === customChaindataUrl
         ? { ...DEFAULT_STORAGE, ...storage }
-        : DEFAULT_STORAGE
+        : { ...DEFAULT_STORAGE }
     const mergedStorage = isPromise(persistedStorage)
       ? persistedStorage.then(restoreStorage)
       : restoreStorage(persistedStorage)

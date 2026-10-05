@@ -74,15 +74,24 @@ describe("ChaindataProvider chaindataUrl", () => {
     expect(await firstValueFrom(provider.networks$)).toEqual([])
   })
 
-  it("keeps the default file, its jsdelivr fallback and the bundled chaindata without the option", async () => {
-    mockFetch.mockImplementation(async () => errorResponse())
+  it.each([
+    ["without the option", undefined],
+    ["with the default url", DEFAULT_CHAINDATA_URL],
+  ])(
+    "keeps the default file, its jsdelivr fallback and the bundled chaindata %s",
+    async (_, chaindataUrl) => {
+      mockFetch.mockImplementation(async () => errorResponse())
 
-    const provider = await createProvider()
-    const networks = await until(provider.networks$, (networks) => networks.length > 0)
+      const provider = await createProvider({ chaindataUrl })
+      const networks = await until(provider.networks$, (networks) => networks.length > 0)
 
-    expect(networks.length).toBeGreaterThan(0)
-    expect(mockFetch.mock.calls.map(([url]) => url)).toEqual([DEFAULT_CHAINDATA_URL, JSDELIVR_URL])
-  })
+      expect(networks.length).toBeGreaterThan(0)
+      expect(mockFetch.mock.calls.map(([url]) => url)).toEqual([
+        DEFAULT_CHAINDATA_URL,
+        JSDELIVR_URL,
+      ])
+    }
+  )
 
   it("gives two providers with different urls their own data", async () => {
     mockFetch.mockImplementation(async (url) =>
@@ -111,6 +120,22 @@ describe("ChaindataProvider chaindataUrl", () => {
     const networks = await until(provider.networks$, (networks) => networks.length > 0)
 
     expect(networkIds(networks)).toEqual(networkIds(chaindataA.networks))
+  })
+
+  it("downloads the default file again after a failed download", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] })
+    mockFetch.mockResolvedValueOnce(errorResponse())
+    mockFetch.mockResolvedValueOnce(errorResponse())
+    mockFetch.mockImplementation(async () => okResponse(chaindataB))
+
+    const provider = await createProvider({ persistedStorage: chaindataA })
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    await vi.advanceTimersByTimeAsync(60_000)
+    const networks = await until(provider.networks$, (networks) =>
+      networks.some(({ id }) => id === "424242")
+    )
+
+    expect(networkIds(networks)).toEqual(networkIds(chaindataB.networks))
   })
 
   it("restores the persisted data of the same custom file", async () => {
