@@ -76,8 +76,9 @@ beforeAll(async () => {
   await refreshPhishingLists()
 })
 
-afterEach(() => {
+afterEach(async () => {
   setDefaultFetchResponses()
+  await chrome.storage.session.clear()
 })
 
 it("Checks phishing sites", async () => {
@@ -156,8 +157,21 @@ it("Does not re-arm refresh timers after dispose", async () => {
 it("Can add an exception to phishing sites", async () => {
   const badsite = "https://badsite.com"
   expect(await isPhishingSite(badsite)).toBeTruthy()
-  addException(badsite)
+  await addException(badsite)
   expect(await isPhishingSite(badsite)).toBeFalsy()
+})
+
+it("Keeps exceptions across a service worker restart", async () => {
+  const badsite = "https://badsite.com"
+  const blockedPath = "https://sites.google.com/view/1incha"
+  await addException(badsite)
+  await addException(blockedPath)
+
+  dispose()
+
+  expect(await isPhishingSite(badsite)).toBeFalsy()
+  expect(await isPhishingSite(blockedPath)).toBeFalsy()
+  expect(await isPhishingSite("https://sites.google.com/view/other-phish")).toBeTruthy()
 })
 
 it("Scopes path-specific exceptions to the exact URL without query or fragment", async () => {
@@ -168,14 +182,14 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
   const blockedPath = "https://sites.google.com/view/1incha?ref=from-link#section"
   expect(await isPhishingSite(blockedPath)).toBeTruthy()
 
-  addException(blockedPath)
+  await addException(blockedPath)
 
   expect(await isPhishingSite("https://sites.google.com/view/1incha?ref=another-link")).toBeFalsy()
   expect(await isPhishingSite("https://sites.google.com/view/other-phish")).toBeTruthy()
 })
 
 it("Skips update when fetch returns 304", async () => {
-  addException("https://badsite.com")
+  await addException("https://badsite.com")
   mockFetch.mockResolvedValue(new Response(null, { status: 304 }))
   await refreshPhishingLists()
   // badsite.com was excepted before refresh — should remain so

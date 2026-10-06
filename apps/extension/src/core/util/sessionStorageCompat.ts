@@ -2,6 +2,7 @@ import type { FlowLinkRecord } from "../domains/analytics/flowTracker"
 
 interface SessionStorageData {
   password?: string
+  phishingExceptions?: { hosts: string[]; urls: string[] }
   analyticsLastLockReason?: string
   analyticsFlowLinks?: FlowLinkRecord[]
 }
