@@ -3,7 +3,7 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { isAccountOwned } from "@core/domains/keyring/exports"
+import type { Account, AccountType } from "@core/domains/keyring/exports"
 import {
   type DotNetwork,
   getNetworkGenesisHash,
@@ -18,7 +18,14 @@ import {
   isAddressValid,
   isSs58Address,
 } from "@talismn/crypto"
-import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
+import {
+  EyeIcon,
+  LoaderIcon,
+  SignetIcon,
+  TalismanHandIcon,
+  UserIcon,
+  XOctagonIcon,
+} from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
@@ -34,6 +41,22 @@ import { Trans, useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"
+
+type RecipientGroup = Extract<
+  RecipientSource,
+  "own_account" | "signet_vault" | "watched_account" | "contact"
+>
+
+const RECIPIENT_GROUP_BY_ACCOUNT_TYPE: Record<AccountType, RecipientGroup> = {
+  keypair: "own_account",
+  "ledger-ethereum": "own_account",
+  "ledger-polkadot": "own_account",
+  "ledger-solana": "own_account",
+  "polkadot-vault": "own_account",
+  signet: "signet_vault",
+  "watch-only": "watched_account",
+  contact: "contact",
+}
 
 const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
   const { t } = useTranslation()
@@ -147,13 +170,17 @@ export const SendFundsRecipientPicker = () => {
     )
   }, [compatibleRecipients, search])
 
-  // group results by category
-  const [ownedAccounts, watchedAccounts, contacts] = useMemo(() => {
-    return [
-      matchingAccounts.filter(isAccountOwned),
-      matchingAccounts.filter((a) => a.type === "watch-only"),
-      matchingAccounts.filter((a) => a.type === "contact"),
-    ]
+  const groups = useMemo(() => {
+    const groups: Record<RecipientGroup, Account[]> = {
+      own_account: [],
+      signet_vault: [],
+      watched_account: [],
+      contact: [],
+    }
+    for (const account of matchingAccounts) {
+      groups[RECIPIENT_GROUP_BY_ACCOUNT_TYPE[account.type]].push(account)
+    }
+    return groups
   }, [matchingAccounts])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
@@ -270,7 +297,7 @@ export const SendFundsRecipientPicker = () => {
             )}
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={contacts}
+              accounts={groups.contact}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={selectFrom("contact")}
@@ -283,7 +310,7 @@ export const SendFundsRecipientPicker = () => {
             />
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={ownedAccounts}
+              accounts={groups.own_account}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={selectFrom("own_account")}
@@ -298,7 +325,22 @@ export const SendFundsRecipientPicker = () => {
             />
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={watchedAccounts}
+              accounts={groups.signet_vault}
+              genesisHash={getNetworkGenesisHash(network)}
+              selected={to}
+              onSelect={selectFrom("signet_vault")}
+              header={
+                <>
+                  <SignetIcon className="mr-2 inline-block align-text-top" />
+                  {t("Signet Vaults")}
+                </>
+              }
+              showBalances
+              tokenId={tokenId}
+            />
+            <SendFundsAccountsList
+              allowZeroBalance
+              accounts={groups.watched_account}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={selectFrom("watched_account")}

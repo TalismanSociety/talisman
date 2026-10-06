@@ -48,6 +48,7 @@ export type ReceiveEntry = (typeof RECEIVE_ENTRIES)[number]
 
 export const RECIPIENT_SOURCES = [
   "own_account",
+  "signet_vault",
   "watched_account",
   "contact",
   "typed",

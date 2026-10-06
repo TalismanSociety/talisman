@@ -246,7 +246,7 @@ export const properties = {
   gas_type: p.enum(GAS_TYPES, "How the EVM network prices gas."),
   recipient_source: p.enum(
     RECIPIENT_SOURCES,
-    "How the user picked the recipient. typed: an address entered in the search field, typed or pasted. prefilled: the send opened with a recipient. unknown: none of these was seen."
+    "How the user picked the recipient. signet_vault: a Signet multisig vault the wallet holds. typed: an address entered in the search field, typed or pasted. prefilled: the send opened with a recipient. unknown: none of these was seen."
   ),
   phase: p.enum(
     TX_PHASES,
