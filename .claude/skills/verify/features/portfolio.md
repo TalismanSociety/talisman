@@ -19,10 +19,10 @@ A user sees the fiat total and token balances of all accounts, or of one account
 
 Preconditions:
 
-- The wallet is unlocked and holds the `Guardians` accounts.
+- The wallet is unlocked and holds at least one account. This recipe only reads, so any account works; the steps use `<sub1>`.
 
 - **Open all accounts.** `ab tab new "$EXT/dashboard.html#/portfolio"`, `ab wait --text "All Accounts"`. The URL settles on `#/portfolio/tokens`. The sidebar lists each account with a fiat value. Screenshot.
-- **Select one account.** `ab find text "Guardians SUB" click`. The URL gains `?account=<address>` and the header shows `Guardians SUB` with its total. Wait for the token rows: skeleton rows show while balances load.
+- **Select one account.** `ab find text "<sub1 name>" click`. The URL gains `?account=<address>` and the header shows the account name with its total. Wait for the token rows: skeleton rows show while balances load.
 - **Search.** `ab find placeholder "Search" fill "TAO"`. Only matching tokens stay.
 - **Open a token.** Click a token row by its snapshot ref (for example `TAO`), without a hover first. The URL becomes `#/portfolio/tokens/TAO?account=<address>` and the page shows per-network rows for that token.
 - **Cross-check.** The same wallet in the popup: `ab tab new "$EXT/popup.html#/portfolio"` shows "Total Portfolio" and one row per account; `#/portfolio/tokens` shows the token rows. The total matches the dashboard within the rounding of the currency.

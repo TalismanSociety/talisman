@@ -90,7 +90,7 @@ ab() { .claude/skills/verify/bin/ab "$@"; }
 - **Background state:** `.claude/skills/verify/bin/sw-eval.mjs '<async expression>'` evaluates in the service worker and prints JSON. Use it to prove side effects, for example `chrome.storage.local.get("keyring")` for accounts, `chrome.storage.local.get("sitesAuthorized")` for dapp connections.
 - **Headless UI modals and anything agent-browser cannot see:** a Playwright script in `.tmp/` that imports `cdpPort` from `../.claude/skills/verify/bin/cdp-port.mjs` and calls ``chromium.connectOverCDP(`http://localhost:${cdpPort()}`)`` (example in `AGENTS.md`). `browser.close()` only disconnects.
 
-Signing: sign only with a test account, whose name starts with `Guardians` (setup in [`features/README.md`](features/README.md#test-accounts)). Read the signer name in the popup before you click Approve or Sign. Runs from several worktrees share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. The setup funds one sender (`Guardians SUB`), so send from one run at a time.
+Signing: sign only with an account the developer declared as a test account (see [`features/README.md`](features/README.md#test-accounts)). Read the signer in the popup before you click Approve or Sign. Runs from several worktrees share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. The setup funds one sender (`<sub1>`), so send from one run at a time.
 
 ## 4. Evidence
 
