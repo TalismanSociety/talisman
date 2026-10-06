@@ -21,7 +21,6 @@ export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
 export const REMOTE_CONFIG_API_URL = "https://wrc.talisman.xyz"
 export const COINS_API_URL = "https://coins.talisman.xyz"
 
-export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
 // Wallet-specific invite link
