@@ -140,4 +140,5 @@ All in `.claude/skills/verify/bin/`, run from the repo root. Each finds the CDP 
 - **`wait --text` is case-sensitive**; Playwright `getByText` is not. Copy the text from `ab snapshot` or `ab eval 'document.body.innerText'`.
 - **A route change renders async**: after a click that navigates, `ab wait --text` for the new heading before `find`.
 - **`agent-browser console` is not tab-scoped**: its buffer holds messages from earlier pages. To attribute a console message, listen with Playwright on the page you opened.
+- **Doctor says "wallet is unlocked: FAIL" right after a fresh `pnpm dev` start, with `PASSWORD` set**: the autologin in the login popup is still running. Run the doctor again before you act on the hint.
 - **Unlock**: use the password field only. Quick Unlock opens a native Touch ID prompt on the user's machine.
