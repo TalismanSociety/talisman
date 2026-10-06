@@ -1,4 +1,4 @@
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/constants"
+import { SIGNET_APP_URL } from "@common/constants"
 import { log } from "@common/log"
 import { ArrowRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -91,8 +91,8 @@ export const ConnectSignetPage = () => {
             {t(
               "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
             )}
-            <Link to={SIGNET_LANDING_URL} target="_blank" className="text-primary-500">
-              {SIGNET_LANDING_URL}
+            <Link to={SIGNET_APP_URL} target="_blank" className="text-primary-500">
+              {SIGNET_APP_URL}
             </Link>
           </>
         }
