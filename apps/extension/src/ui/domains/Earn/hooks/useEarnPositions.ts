@@ -85,6 +85,9 @@ const mapDefiPosition = (
       ...dp.breakdown.map((b) => b.symbol),
       ...dp.breakdown.map((b) => b.name),
     ],
+    subtitle: null,
+    lock: null,
+    rowAction: null,
   }
 }
 

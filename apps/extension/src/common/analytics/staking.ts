@@ -25,7 +25,7 @@ export type StakingAction = (typeof STAKING_ACTIONS)[number]
 export const EARN_ENTRIES = ["discover", "portfolio", "position"] as const
 export type EarnEntry = (typeof EARN_ENTRIES)[number]
 
-export const EARN_SYSTEMS = ["yieldxyz", "seek", "defi"] as const
+export const EARN_SYSTEMS = ["yieldxyz", "seek", "bittensor", "defi"] as const
 
 export const VALIDATOR_SORTS = ["featured", "name", "totalStaked", "totalStakers", "apr"] as const
 

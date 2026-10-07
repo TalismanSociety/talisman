@@ -1,6 +1,7 @@
 import { useRef } from "react"
 
 import type { EarnSystemId } from "../types"
+import { bittensorSystem } from "./bittensorSystem"
 import { seekSystem } from "./seekSystem"
 import type {
   EarnActionOpener,
@@ -17,6 +18,7 @@ import { yieldxyzSystem } from "./yieldxyzSystem"
 const EARN_SYSTEMS_BY_ID: Record<EarnSystemId, EarnSystem> = {
   yieldxyz: yieldxyzSystem,
   seek: seekSystem,
+  bittensor: bittensorSystem,
 }
 
 // Fixed-order, fixed-length module constant — safe to call hooks over (rules of hooks require a

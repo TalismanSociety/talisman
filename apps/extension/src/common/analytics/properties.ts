@@ -341,7 +341,7 @@ export const properties = {
   preset: p.bool("The user picked a preset value: the Reset button, not a typed value."),
   system: p.enum(
     EARN_SYSTEMS,
-    "The Earn system behind the position: yield.xyz, SEEK staking, or a read-only DeFi position."
+    "The Earn system behind the position: yield.xyz, SEEK staking, Bittensor staking, or a read-only DeFi position."
   ),
   yield_id: p.nullable(
     p.slug(

@@ -4,6 +4,7 @@ import type { FC } from "react"
 import { Navigate, Route } from "react-router-dom"
 
 import { PopupLayout } from "../../Layout/PopupLayout"
+import { PopupBittensorStakingPositionPage } from "./PopupBittensorStakingPositionPage"
 import { PopupEarnDefiPositionPage } from "./PopupEarnDefiPositionPage"
 import { PopupEarnDiscoverRoute, PopupEarnPage, PopupEarnPositionsRoute } from "./PopupEarnPage"
 import { PopupSeekStakingPositionPage } from "./PopupSeekStakingPositionPage"
@@ -24,6 +25,10 @@ export const PopupEarnRoutes: FC = () => {
             element={<PopupYieldxyzYieldPositionsPage />}
           />
           <Route path="positions/seek/:address" element={<PopupSeekStakingPositionPage />} />
+          <Route
+            path="positions/bittensor/:tokenId/:address"
+            element={<PopupBittensorStakingPositionPage />}
+          />
           <Route path="positions/defi/:positionId" element={<PopupEarnDefiPositionPage />} />
         </Routes>
       </PopupLayout>

@@ -1,6 +1,6 @@
 import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
+import { ChevronDownIcon, ChevronRightIcon, CoinsHandIcon, LockIcon } from "@talismn/icons"
 import type { LoadableStatus } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { NoAssetsFoundSymbol } from "@ui/components/NoAssetsFoundSymbol"
@@ -26,6 +26,7 @@ import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPos
 import { useEarnPositions } from "../hooks/useEarnPositions"
 import { AccountDisplay } from "../shared/AccountDisplay"
 import { formatAprPercent } from "../shared/formatAprPercent"
+import type { EarnPositionRowAction } from "../types"
 import { EARN_GRID_COLS } from "./EarnAvailableProducts"
 import { EarnTypeBadge } from "./EarnTypeBadge"
 
@@ -43,6 +44,32 @@ const EarnPositionYield: FC<{
   )
 }
 
+const ROW_ACTION_ICONS: Record<EarnPositionRowAction["kind"], FC<{ className?: string }>> = {
+  claim: CoinsHandIcon,
+}
+
+const EarnPositionRowActionButton: FC<{ action: EarnPositionRowAction }> = ({ action }) => {
+  const Icon = ROW_ACTION_ICONS[action.kind]
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            action.onClick()
+          }}
+          className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-lg text-primary hover:bg-primary/20"
+        >
+          <Icon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{action.label}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 const EarnPositionRow: FC<{
   position: EarnPosition
   status: LoadableStatus
@@ -51,15 +78,16 @@ const EarnPositionRow: FC<{
   const navigate = useNavigateWithQuery()
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
-        EARN_GRID_COLS,
-        IS_POPUP ? "px-6 text-xs" : "px-8"
-      )}
+    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users open the position with the stretched button, whose click bubbles here
+    // biome-ignore lint/a11y/noStaticElementInteractions: the row catches clicks on its tooltip triggers, which sit above the stretched button
+    <div
       onClick={() => navigate(position.detailUrl)}
+      className={cn(
+        "relative grid h-28 w-full cursor-pointer items-center overflow-hidden text-sm hover:bg-grey-750",
+        IS_POPUP ? "grid-cols-[minmax(0,1fr)_auto] gap-4 px-6 text-xs" : cn(EARN_GRID_COLS, "px-8")
+      )}
     >
+      <button type="button" aria-label={position.title} className="absolute inset-0" />
       <div className={cn("flex items-center overflow-hidden", IS_POPUP ? "gap-4" : "gap-6")}>
         <AssetLogo url={position.logoUrl} className="size-16 shrink-0" />
         <div className="flex min-w-0 grow flex-col justify-center gap-1 overflow-hidden text-left">
@@ -68,7 +96,7 @@ const EarnPositionRow: FC<{
             {position.networkId && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex shrink-0">
+                  <span className="relative inline-flex shrink-0">
                     <NetworkLogo networkId={position.networkId} className="size-[1.2em]" />
                   </span>
                 </TooltipTrigger>
@@ -91,9 +119,22 @@ const EarnPositionRow: FC<{
           <div className="flex items-center gap-3 truncate text-body-secondary">
             <AccountDisplay
               address={position.address}
-              className="gap-[0.4em]"
+              className="relative gap-[0.4em]"
               iconClassName="text-[1.2em]"
             />
+            {position.subtitle && (
+              <>
+                <span className="text-grey-600">|</span>
+                <span className="flex min-w-0 items-center gap-[0.4em]">
+                  {position.subtitle.icon && (
+                    <span className="inline-flex shrink-0 text-[1.2em]">
+                      {position.subtitle.icon}
+                    </span>
+                  )}
+                  <span className="truncate">{position.subtitle.label}</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -102,15 +143,47 @@ const EarnPositionRow: FC<{
           <EarnPositionYield apr={position.apr} rateType={position.rateType} />
         </div>
       )}
-      <div className="flex flex-col items-end justify-center gap-1 text-right">
-        <div className="flex h-9 items-center">
-          <DisplayTokensList displayTokens={position.displayTokens} />
-        </div>
-        <div className={cn("text-body-secondary", status === "loading" && "animate-pulse")}>
-          <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
+      <div className="flex min-w-0 items-center justify-end gap-6">
+        {!IS_POPUP && position.rowAction && (
+          <div className="relative shrink-0">
+            <EarnPositionRowActionButton action={position.rowAction} />
+          </div>
+        )}
+        <div
+          className={cn(
+            "flex min-w-0 flex-col items-end justify-center gap-1 text-right",
+            IS_POPUP && "max-w-[180px]"
+          )}
+        >
+          <div className="flex h-9 max-w-full items-center gap-2">
+            <DisplayTokensList displayTokens={position.displayTokens} className="min-w-0 shrink" />
+            {position.lock && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="relative inline-flex shrink-0 text-body-secondary">
+                    <LockIcon />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{position.lock.label}</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div
+            className={cn(
+              "flex items-center gap-2 text-body-secondary",
+              status === "loading" && "animate-pulse"
+            )}
+          >
+            {IS_POPUP && position.apr !== null && (
+              <span className="whitespace-nowrap text-primary">
+                {[position.rateType, formatAprPercent(position.apr)].filter(Boolean).join(" ")}
+              </span>
+            )}
+            <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
+          </div>
         </div>
       </div>
-    </button>
+    </div>
   )
 }
 
@@ -123,7 +196,10 @@ const DisplayTokensList: FC<{
 
   const content = (
     <div
-      className={cn("flex w-full shrink-0 items-center truncate font-bold text-body", className)}
+      className={cn(
+        "relative flex w-full shrink-0 items-center truncate font-bold text-body",
+        className
+      )}
     >
       {visibleTokens.map((token, i, arr) => (
         <Fragment key={token.tokenId ?? token.symbol}>
