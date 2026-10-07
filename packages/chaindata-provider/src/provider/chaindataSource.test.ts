@@ -12,6 +12,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { makeChaindata, makeEthNetwork, makeEvmNativeToken } from "../__fixtures__/chaindata"
+import { CHAINDATA_PUB_FOLDER, DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import { isNetworkCustom } from "../state/combinedChaindata"
@@ -52,25 +53,70 @@ const until = <T>(source$: Observable<T>, predicate: (value: T) => boolean) =>
 
 const ids = (items: { id: string }[]) => items.map(({ id }) => id).sort()
 
-const settle = () => new Promise((resolve) => setTimeout(resolve, 200))
+const okResponse = (data: ChaindataFile) => new Response(JSON.stringify(data), { status: 200 })
+const errorResponse = () => new Response(null, { status: 500, statusText: "Internal Server Error" })
 
 const subscriptions: Subscription[] = []
 
-const createProvider = (options: ChaindataProviderOptions) => {
-  const provider = new ChaindataProvider(options)
+const createProvider = (
+  options: ChaindataProviderOptions,
+  Provider: typeof ChaindataProvider = ChaindataProvider
+) => {
+  const provider = new Provider(options)
   subscriptions.push(provider.networks$.subscribe())
   return provider
 }
 
+afterEach(() => {
+  for (const sub of subscriptions.splice(0)) sub.unsubscribe()
+  vi.useRealTimers()
+})
+
+describe("ChaindataProvider default chaindata", () => {
+  const JSDELIVR_URL = `https://cdn.jsdelivr.net/gh/TalismanSociety/chaindata@main/${CHAINDATA_PUB_FOLDER}/chaindata.min.json`
+
+  // a fresh module graph per test: the default chaindata source is shared module state
+  const createDefaultProvider = async (options: ChaindataProviderOptions = {}) => {
+    const { ChaindataProvider } = await import("./ChaindataProvider")
+    return createProvider(options, ChaindataProvider)
+  }
+
+  beforeEach(() => {
+    vi.resetModules()
+    mockFetch.mockReset()
+  })
+
+  it("falls back to jsdelivr then to the bundled chaindata when the default file fails", async () => {
+    mockFetch.mockImplementation(async () => errorResponse())
+
+    const provider = await createDefaultProvider()
+    const networks = await until(provider.networks$, (networks) => networks.length > 0)
+
+    expect(networks.length).toBeGreaterThan(0)
+    expect(mockFetch.mock.calls.map(([url]) => url)).toEqual([DEFAULT_CHAINDATA_URL, JSDELIVR_URL])
+  })
+
+  it("downloads the default file again after a failed download", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] })
+    mockFetch.mockResolvedValueOnce(errorResponse())
+    mockFetch.mockResolvedValueOnce(errorResponse())
+    mockFetch.mockImplementation(async () => okResponse(chaindataB))
+
+    const provider = await createDefaultProvider({ persistedStorage: chaindataA })
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    await vi.advanceTimersByTimeAsync(60_000)
+    const networks = await until(provider.networks$, (networks) =>
+      networks.some(({ id }) => id === "424242")
+    )
+
+    expect(ids(networks)).toEqual(ids(chaindataB.networks))
+  })
+})
+
 describe("ChaindataProvider chaindata$", () => {
   beforeEach(() => {
     mockFetch.mockReset()
-    vi.mocked(log.error).mockClear()
-  })
-
-  afterEach(() => {
-    for (const sub of subscriptions.splice(0)) sub.unsubscribe()
-    vi.useRealTimers()
+    vi.clearAllMocks()
   })
 
   it("emits the networks and tokens of a provided object and never downloads the default file", async () => {
@@ -89,9 +135,13 @@ describe("ChaindataProvider chaindata$", () => {
     const provider = createProvider({
       chaindata$: throwError(() => new Error("provided source failed")),
     })
-    await settle()
 
-    expect(await firstValueFrom(provider.networks$)).toEqual([])
+    const networks = await firstValueFrom(provider.networks$)
+
+    expect(log.info).not.toHaveBeenCalledWith(
+      "[defaultChaindata$] Importing initial chaindata file"
+    )
+    expect(networks).toEqual([])
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
@@ -117,8 +167,12 @@ describe("ChaindataProvider chaindata$", () => {
     await until(provider.networks$, (networks) => networks.length > 0)
 
     chaindata$.next({ ...chaindataB, tokens: [] })
-    await vi.waitFor(() => expect(log.error).toHaveBeenCalled())
-    await settle()
+    await vi.waitFor(() =>
+      expect(log.error).toHaveBeenCalledWith(
+        "[defaultChaindata$] Invalid chaindata provided",
+        expect.anything()
+      )
+    )
 
     expect(ids(await firstValueFrom(provider.networks$))).toEqual(ids(chaindataA.networks))
     expect(ids((await firstValueFrom(provider.storage$)).networks)).toEqual(
