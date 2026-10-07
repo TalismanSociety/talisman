@@ -10,12 +10,21 @@ const REFRESH_INTERVAL = 300_000 // 5 mins
 const remoteChaindataByUrl = new Map<string, Observable<Chaindata>>()
 
 export const getRemoteChaindata$ = (url: string) => {
-  const existing = remoteChaindataByUrl.get(url)
+  const href = parseChaindataUrl(url)
+  const existing = remoteChaindataByUrl.get(href)
   if (existing) return existing
 
-  const remoteChaindata$ = createRemoteChaindata$(url)
-  remoteChaindataByUrl.set(url, remoteChaindata$)
+  const remoteChaindata$ = createRemoteChaindata$(href)
+  remoteChaindataByUrl.set(href, remoteChaindata$)
   return remoteChaindata$
+}
+
+const parseChaindataUrl = (url: string) => {
+  try {
+    return new URL(url).href
+  } catch (cause) {
+    throw new Error(`Invalid chaindata url: "${url}"`, { cause })
+  }
 }
 
 const createRemoteChaindata$ = (url: string) => {
