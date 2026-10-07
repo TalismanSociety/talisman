@@ -75,70 +75,77 @@ const EarnPositionRow: FC<{
   const navigate = useNavigateWithQuery()
 
   return (
-    <div className="relative w-full">
+    <div
+      className={cn(
+        "relative grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
+        IS_POPUP ? "grid-cols-[minmax(0,1fr)_auto] gap-4 px-6 text-xs" : cn(EARN_GRID_COLS, "px-8")
+      )}
+    >
       <button
         type="button"
-        className={cn(
-          "grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
-          IS_POPUP
-            ? "grid-cols-[minmax(0,1fr)_auto] gap-4 px-6 text-xs"
-            : cn(EARN_GRID_COLS, "px-8")
-        )}
+        aria-label={position.title}
+        className="absolute inset-0"
         onClick={() => navigate(position.detailUrl)}
-      >
-        <div className={cn("flex items-center overflow-hidden", IS_POPUP ? "gap-4" : "gap-6")}>
-          <AssetLogo url={position.logoUrl} className="size-16 shrink-0" />
-          <div className="flex min-w-0 grow flex-col justify-center gap-1 overflow-hidden text-left">
-            <div className="flex h-9 items-center gap-2 truncate text-body">
-              <span className="truncate">{position.title}</span>
-              {position.networkId && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex shrink-0">
-                      <NetworkLogo networkId={position.networkId} className="size-[1.2em]" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <NetworkName networkId={position.networkId} />
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              {!!position.type && position.type !== "unknown" && (
-                <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
-                  {position.type}
-                </EarnTypeBadge>
-              )}
-              {position.isReadOnly && (
-                <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
-                  {t("View Only")}
-                </EarnTypeBadge>
-              )}
-            </div>
-            <div className="flex items-center gap-3 truncate text-body-secondary">
-              <AccountDisplay
-                address={position.address}
-                className="gap-[0.4em]"
-                iconClassName="text-[1.2em]"
-              />
-              {position.subtitle && (
-                <>
-                  <span className="text-grey-600">|</span>
-                  <span className="flex min-w-0 items-center gap-[0.4em]">
-                    {position.subtitle.icon && (
-                      <span className="inline-flex shrink-0 text-[1.2em]">
-                        {position.subtitle.icon}
-                      </span>
-                    )}
-                    <span className="truncate">{position.subtitle.label}</span>
+      />
+      <div className={cn("flex items-center overflow-hidden", IS_POPUP ? "gap-4" : "gap-6")}>
+        <AssetLogo url={position.logoUrl} className="size-16 shrink-0" />
+        <div className="flex min-w-0 grow flex-col justify-center gap-1 overflow-hidden text-left">
+          <div className="flex h-9 items-center gap-2 truncate text-body">
+            <span className="truncate">{position.title}</span>
+            {position.networkId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="relative inline-flex shrink-0">
+                    <NetworkLogo networkId={position.networkId} className="size-[1.2em]" />
                   </span>
-                </>
-              )}
-            </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <NetworkName networkId={position.networkId} />
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {!!position.type && position.type !== "unknown" && (
+              <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
+                {position.type}
+              </EarnTypeBadge>
+            )}
+            {position.isReadOnly && (
+              <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
+                {t("View Only")}
+              </EarnTypeBadge>
+            )}
+          </div>
+          <div className="flex items-center gap-3 truncate text-body-secondary">
+            <AccountDisplay
+              address={position.address}
+              className="relative gap-[0.4em]"
+              iconClassName="text-[1.2em]"
+            />
+            {position.subtitle && (
+              <>
+                <span className="text-grey-600">|</span>
+                <span className="flex min-w-0 items-center gap-[0.4em]">
+                  {position.subtitle.icon && (
+                    <span className="inline-flex shrink-0 text-[1.2em]">
+                      {position.subtitle.icon}
+                    </span>
+                  )}
+                  <span className="truncate">{position.subtitle.label}</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
-        {!IS_POPUP && (
-          <div className="flex flex-col items-end justify-center gap-1 text-right">
-            <EarnPositionYield apr={position.apr} rateType={position.rateType} />
+      </div>
+      {!IS_POPUP && (
+        <div className="flex flex-col items-end justify-center gap-1 text-right">
+          <EarnPositionYield apr={position.apr} rateType={position.rateType} />
+        </div>
+      )}
+      <div className="flex min-w-0 items-center justify-end gap-6">
+        {!IS_POPUP && position.rowAction && (
+          <div className="relative shrink-0">
+            <EarnPositionRowActionButton action={position.rowAction} />
           </div>
         )}
         <div
@@ -152,7 +159,7 @@ const EarnPositionRow: FC<{
             {position.lock && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex shrink-0 text-body-secondary">
+                  <span className="relative inline-flex shrink-0 text-body-secondary">
                     <LockIcon />
                   </span>
                 </TooltipTrigger>
@@ -174,12 +181,7 @@ const EarnPositionRow: FC<{
             <FiatFromUsd amount={position.totalAmountUsd} noCountUp isBalance />
           </div>
         </div>
-      </button>
-      {!IS_POPUP && position.rowAction && (
-        <div className="absolute top-1/2 left-[70%] ml-8 -translate-y-1/2">
-          <EarnPositionRowActionButton action={position.rowAction} />
-        </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -193,7 +195,10 @@ const DisplayTokensList: FC<{
 
   const content = (
     <div
-      className={cn("flex w-full shrink-0 items-center truncate font-bold text-body", className)}
+      className={cn(
+        "relative flex w-full shrink-0 items-center truncate font-bold text-body",
+        className
+      )}
     >
       {visibleTokens.map((token, i, arr) => (
         <Fragment key={token.tokenId ?? token.symbol}>
