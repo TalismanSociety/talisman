@@ -37,17 +37,18 @@ const parseChaindataUrl = (url: string) => {
 
 const createRemoteChaindata$ = (url: string) => {
   let lastUpdatedAt = 0
-  // a subscriber arriving within MIN_REFRESH_INTERVAL of a download would otherwise wait it out with no data
-  let recentData: Chaindata | null = null
+  let lastData: Chaindata | null = null
 
   return new Observable<Chaindata>((subscriber) => {
-    if (recentData) subscriber.next(recentData)
-
     const controller = new AbortController()
     subscriber.add(() => controller.abort())
 
     let timeout: ReturnType<typeof setTimeout> | null = null
     subscriber.add(() => timeout && clearTimeout(timeout))
+
+    // the refresh below waits out MIN_REFRESH_INTERVAL, so a subscriber arriving within it gets the last download meanwhile
+    if (lastData && Date.now() < lastUpdatedAt + MIN_REFRESH_INTERVAL) subscriber.next(lastData)
+    else lastData = null
 
     const refresh = async () => {
       try {
@@ -58,10 +59,7 @@ const createRemoteChaindata$ = (url: string) => {
         log.debug("[remoteChaindata$] Refreshing chaindata from", url)
         const data = await fetchChaindata(url, controller.signal)
         lastUpdatedAt = Date.now()
-        recentData = data
-        setTimeout(() => {
-          if (recentData === data) recentData = null
-        }, MIN_REFRESH_INTERVAL)
+        lastData = data
 
         // data is already validated by fetchChaindata (net.ts)
         subscriber.next(data)

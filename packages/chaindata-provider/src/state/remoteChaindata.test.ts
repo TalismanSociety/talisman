@@ -165,11 +165,16 @@ describe("getRemoteChaindata$", () => {
     const emissions: Chaindata[] = []
     sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
 
-    expect(emissions).toEqual([validChaindata])
+    expect(emissions).toHaveLength(1)
+    expect(emissions[0]).toBe(validChaindata)
     expect(mockFetchChaindata).toHaveBeenCalledTimes(1)
 
-    await vi.advanceTimersByTimeAsync(50_000)
-    expect(emissions).toEqual([validChaindata, secondChaindata])
+    await vi.advanceTimersByTimeAsync(49_000)
+    expect(emissions).toHaveLength(1)
+
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(emissions).toHaveLength(2)
+    expect(emissions[1]).toBe(secondChaindata)
     expect(mockFetchChaindata).toHaveBeenCalledTimes(2)
   })
 
@@ -182,7 +187,7 @@ describe("getRemoteChaindata$", () => {
     const first = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
     await vi.advanceTimersByTimeAsync(0)
     first.unsubscribe()
-    await vi.advanceTimersByTimeAsync(61_000)
+    await vi.advanceTimersByTimeAsync(60_000)
 
     const emissions: Chaindata[] = []
     sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
