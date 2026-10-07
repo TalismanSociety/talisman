@@ -1,4 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
+import { taoToAlpha } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
@@ -9,6 +10,7 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
+import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import {
   type ChangeEventHandler,
   type FC,
@@ -180,8 +182,17 @@ const TokenInput = () => {
   )
 }
 
+const taoToAmountIn = (
+  taoPlancks: bigint | null,
+  isSubnetUnbond: boolean,
+  alphaPrice: bigint | null | undefined
+) => {
+  if (taoPlancks === null || !isSubnetUnbond) return taoPlancks
+  return typeof alphaPrice === "bigint" ? taoToAlpha(taoPlancks, alphaPrice) : null
+}
+
 const FiatInput = () => {
-  const { nativeToken, tokenRates, amountTao, setPlancks, isSubnetUnbond, swapPrice } =
+  const { nativeToken, tokenRates, amountIn, amountTao, setPlancks, isSubnetUnbond, alphaPrice } =
     useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
@@ -191,52 +202,27 @@ const FiatInput = () => {
   }, [currency, amountTao])
 
   const [value, setValue] = useState(formattedValue)
-  const refSkipSync = useRef(false)
+  const refTypedAmountIn = useRef<bigint | null | undefined>(undefined)
 
   useEffect(() => {
-    if (refSkipSync.current) {
-      refSkipSync.current = false
-      return
-    }
+    if (amountIn === refTypedAmountIn.current) return
     setValue(formattedValue)
-  }, [formattedValue])
+  }, [amountIn, formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      refSkipSync.current = true
       const nextValue = e.target.value
       setValue(nextValue)
 
-      if (
-        nativeToken &&
-        tokenRates?.[currency]?.price &&
-        nextValue &&
-        typeof swapPrice === "bigint"
-      ) {
-        try {
-          const fiat = parseFloat(nextValue)
-          let tokens: string = (fiat / tokenRates[currency].price).toFixed(
-            Math.ceil(nativeToken.decimals / 3)
-          )
+      const price = tokenRates?.[currency]?.price
+      const taoPlancks =
+        nativeToken && price ? fiatToPlancks(nextValue, price, nativeToken.decimals) : null
+      const nextAmountIn = taoToAmountIn(taoPlancks, isSubnetUnbond, alphaPrice)
 
-          if (isSubnetUnbond) {
-            tokens = String(
-              (
-                Number(tokens) * Number(planckToTokens(swapPrice.toString(), nativeToken.decimals))
-              ).toFixed(Math.ceil(nativeToken.decimals / 3))
-            )
-          }
-          const plancks = tokensToPlanck(tokens, nativeToken.decimals)
-          return setPlancks(BigInt(plancks))
-        } catch {
-          // invalid input, ignore
-        }
-      }
-
-      return setPlancks(null)
+      refTypedAmountIn.current = nextAmountIn
+      setPlancks(nextAmountIn)
     },
-
-    [nativeToken, tokenRates, currency, swapPrice, setPlancks, isSubnetUnbond]
+    [nativeToken, tokenRates, currency, alphaPrice, setPlancks, isSubnetUnbond]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
