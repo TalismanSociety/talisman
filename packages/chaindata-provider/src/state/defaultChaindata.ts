@@ -13,11 +13,11 @@ import {
 import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import type { ChaindataStorage } from "../provider/ChaindataProvider"
-import { chaindataEqualWithYield, parseChaindataFileChunked } from "./chunkedValidation"
+import { chaindataEqualWithYield } from "./chunkedValidation"
 import initChaindata from "./initChaindata.json"
 import { getRemoteChaindata$ } from "./remoteChaindata"
 import type { Chaindata, ChaindataFile } from "./schema"
-import { isChaindataValidated, markChaindataValidated } from "./validatedCache"
+import { validateChaindata } from "./validatedCache"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 
@@ -30,14 +30,12 @@ const getRetryDelay = (retryCount: number) =>
 const validateProvidedChaindata = (providedChaindata$: Observable<ChaindataFile>) =>
   providedChaindata$.pipe(
     switchMapChunked(async (data, { slicer }) => {
-      if (isChaindataValidated(data)) return data
-
-      const validation = await parseChaindataFileChunked(data, { slicer })
+      const validation = await validateChaindata(data, { slicer })
       if (!validation.success) {
         log.error("[defaultChaindata$] Invalid chaindata provided", { error: validation.error })
         return null
       }
-      return markChaindataValidated(validation.data)
+      return validation.data
     }),
     filter(isNotNil),
     tap({ error: (cause) => log.error("[defaultChaindata$] Provided chaindata failed", { cause }) })
@@ -47,34 +45,20 @@ export const getDefaultChaindata$ = (
   storage$: Subject<ChaindataStorage>,
   providedChaindata$?: Observable<ChaindataFile>
 ) => {
-  // ref-memo of the last validated input: storage$ is a ReplaySubject which replays its
-  // last value whenever the shareReplay below recovers from refCount 0 — without this,
-  // every re-subscription would re-validate the whole dataset
-  let lastInput: ChaindataStorage | null = null
-  let lastOutput: Chaindata = EMPTY_DATA
-
   const storageValidated$ = storage$.pipe(
     switchMapChunked(async (data, { slicer }) => {
-      // objects marked by fetchChaindata / validateProvidedChaindata / the initChaindata
-      // provisioning below have already been validated: pass them through without re-validating
-      if (isChaindataValidated(data)) return data
-      if (data === lastInput) return lastOutput
-
       const start = performance.now()
-      const validation = await parseChaindataFileChunked(data, { slicer })
+      const validation = await validateChaindata(data, { slicer })
       log.debug(
         "[storageValidated$] Chaindata schema validation: %sms",
         (performance.now() - start).toFixed(2)
       )
-      if (!validation.success)
-        log.warn("[storageValidated$] Chaindata schema validation failed", {
-          error: validation.error,
-        })
+      if (validation.success) return validation.data
 
-      lastInput = data
-      // schema is invalid, fallback to empty data
-      lastOutput = validation.success ? markChaindataValidated(validation.data) : EMPTY_DATA
-      return lastOutput
+      log.warn("[storageValidated$] Chaindata schema validation failed", {
+        error: validation.error,
+      })
+      return EMPTY_DATA
     }),
     shareReplay({ bufferSize: 1, refCount: true })
   )
@@ -96,14 +80,14 @@ export const getDefaultChaindata$ = (
       try {
         // if fetching the default chaindata fails, and if DB is empty, provision it with initial data
         log.info("[defaultChaindata$] Importing initial chaindata file")
-        const validation = await parseChaindataFileChunked(initChaindata)
+        const validation = await validateChaindata(initChaindata)
         if (!validation.success) {
           log.error("[defaultChaindata$] initChaindata failed schema validation", {
             error: validation.error,
           })
           return
         }
-        storage$.next(markChaindataValidated(validation.data))
+        storage$.next(validation.data)
         log.info("[defaultChaindata$] Initial chaindata file imported successfully")
       } catch (cause) {
         log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })

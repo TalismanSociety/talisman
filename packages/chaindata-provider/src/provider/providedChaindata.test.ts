@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { makeChaindata, makeEthNetwork, makeEvmNativeToken } from "../__fixtures__/chaindata"
 import log from "../log"
+import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import { isNetworkCustom } from "../state/combinedChaindata"
 import { getRemoteChaindata$ } from "../state/remoteChaindata"
 import type { ChaindataFile } from "../state/schema"
@@ -21,6 +22,11 @@ import { ChaindataProvider, type ChaindataProviderOptions } from "./ChaindataPro
 vi.mock("../state/oldDb", () => ({
   tryToDeleteOldChaindataDb: vi.fn(),
 }))
+
+vi.mock("../state/chunkedValidation", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../state/chunkedValidation")>()
+  return { ...actual, parseChaindataFileChunked: vi.fn(actual.parseChaindataFileChunked) }
+})
 
 vi.mock("../log", () => ({
   default: {
@@ -164,6 +170,21 @@ describe("ChaindataProvider chaindata$", () => {
 
     expect(ids(networks)).toEqual(ids([...chaindataA.networks, ...chaindataB.networks]))
     expect(networks.filter(isNetworkCustom).map(({ id }) => id)).toEqual(["424242"])
+  })
+
+  it("validates a provided object once across resubscriptions", async () => {
+    const chaindata: ChaindataFile = JSON.parse(JSON.stringify(chaindataA))
+    const provider = new ChaindataProvider({ chaindata$: chaindata })
+    const parsedInputs = () =>
+      vi.mocked(parseChaindataFileChunked).mock.calls.filter(([input]) => input === chaindata)
+
+    for (let i = 0; i < 2; i++) {
+      const subscription = provider.networks$.subscribe()
+      await until(provider.networks$, (networks) => networks.length > 0)
+      subscription.unsubscribe()
+    }
+
+    expect(parsedInputs()).toHaveLength(1)
   })
 
   it("downloads the chaindata file of a url given through getRemoteChaindata$", async () => {
