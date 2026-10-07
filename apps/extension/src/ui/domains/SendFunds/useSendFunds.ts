@@ -28,6 +28,7 @@ import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useB
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
 import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond"
+import { getSweepableRemainder } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { flows } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
@@ -379,19 +380,41 @@ const useSendFundsProvider = () => {
           }
         }
 
-        // leaving 0 < remainder < nominator minimum would get the position force-swept by the
-        // chain (clear_small_nominations): require a full send or a sufficient remainder
-        const remaining = (balance?.free.planck ?? 0n) - transfer.planck
-        if (typeof dtaoMinTaoKeep === "bigint" && remaining > 0n) {
-          const minAlphaKeep = taoToAlphaCeil(dtaoMinTaoKeep, dtaoAlphaPrice)
-          if (remaining < minAlphaKeep)
+        if (typeof dtaoMinTaoKeep === "bigint") {
+          const stake = balance?.free.planck ?? 0n
+          const sweepableRemainder = getSweepableRemainder({
+            stake,
+            amount: transfer.planck,
+            maxAmount: stake,
+            minKeep: taoToAlphaCeil(dtaoMinTaoKeep, dtaoAlphaPrice),
+            minAmount: taoToAlphaCeil(dtaoMinTaoTransfer, dtaoAlphaPrice),
+          })
+          if (sweepableRemainder) {
+            const minTao = new BalanceFormatter(dtaoMinTaoKeep, feeToken?.decimals).tokens
             return {
               isValid: false,
-              error: t("Send everything or keep at least {{amount}} {{symbol}}", {
-                amount: formatDecimals(new BalanceFormatter(minAlphaKeep, token.decimals).tokens),
-                symbol: token.symbol,
-              }),
+              error:
+                sweepableRemainder.maxPartial === null
+                  ? t(
+                      "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Send everything.",
+                      {
+                        minTao,
+                        taoSymbol: feeToken?.symbol,
+                      }
+                    )
+                  : t(
+                      "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Send everything, or at most {{amount}} {{symbol}}.",
+                      {
+                        minTao,
+                        taoSymbol: feeToken?.symbol,
+                        amount: formatDecimals(
+                          new BalanceFormatter(sweepableRemainder.maxPartial, token.decimals).tokens
+                        ),
+                        symbol: token.symbol,
+                      }
+                    ),
             }
+          }
         }
       }
 

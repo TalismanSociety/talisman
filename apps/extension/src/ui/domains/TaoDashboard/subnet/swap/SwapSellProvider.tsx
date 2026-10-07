@@ -1,6 +1,7 @@
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
+import { formatDecimals } from "@talismn/util"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
@@ -9,6 +10,7 @@ import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
 } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import { getSweepableRemainder } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
@@ -160,6 +162,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
     slippage,
+    minTaoBond,
     minAlphaBond,
     minAlphaUnstake,
     swapPrice,
@@ -230,6 +233,20 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
+  const sweepableRemainder = useMemo(
+    () =>
+      balanceTokenIn && typeof minAlphaBond === "bigint"
+        ? getSweepableRemainder({
+            stake: balanceTokenIn.free.planck,
+            amount: state.valueIn ?? 0n,
+            maxAmount: maxValueIn,
+            minKeep: minAlphaBond,
+            minAmount: minAlphaUnstake ?? 0n,
+          })
+        : null,
+    [balanceTokenIn, minAlphaBond, state.valueIn, maxValueIn, minAlphaUnstake]
+  )
+
   const inputError = useMemo<InlineError | null>(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
@@ -268,24 +285,32 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
         category: "input_invalid",
       }
 
-    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
-    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
-    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
-    // but a partial sell landing in that range would unexpectedly close the position: block it.
-    const remaining = balanceTokenIn.free.planck - state.valueIn
-    if (
-      typeof minAlphaBond === "bigint" &&
-      state.valueIn < maxValueIn &&
-      remaining > 0n &&
-      remaining < minAlphaBond
-    )
+    if (sweepableRemainder) {
+      const minTao = new BalanceFormatter(minTaoBond ?? 0n, tokenOut?.decimals).tokens
       return {
-        message: t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-          amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
-          symbol: tokenIn.symbol,
-        }),
+        message:
+          sweepableRemainder.maxPartial === null
+            ? t(
+                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything.",
+                {
+                  minTao,
+                  taoSymbol: tokenOut?.symbol,
+                }
+              )
+            : t(
+                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything, or at most {{amount}} {{symbol}}.",
+                {
+                  minTao,
+                  taoSymbol: tokenOut?.symbol,
+                  amount: formatDecimals(
+                    new BalanceFormatter(sweepableRemainder.maxPartial, tokenIn.decimals).tokens
+                  ),
+                  symbol: tokenIn.symbol,
+                }
+              ),
         category: "input_invalid",
       }
+    }
 
     return null
   }, [
@@ -296,11 +321,14 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
-    minAlphaBond,
+    sweepableRemainder,
+    minTaoBond,
     minAlphaUnstake,
     state.valueIn,
     t,
     tokenIn,
+    tokenOut?.decimals,
+    tokenOut?.symbol,
   ])
 
   const inputErrorMessage = inputError?.message ?? null
@@ -329,6 +357,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     balanceTokenOut,
     valueIn: state.valueIn,
     maxValueIn,
+    maxPartialValueIn: sweepableRemainder?.maxPartial ?? null,
     valueOut,
     taoToken: tokenOut,
     dtaoToken: tokenIn,

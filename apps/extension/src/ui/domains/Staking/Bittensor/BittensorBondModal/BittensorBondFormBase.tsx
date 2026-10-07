@@ -285,6 +285,7 @@ const AmountEdit = () => {
     inputErrorMessage,
     inputErrorCategory,
     maxPlancks,
+    maxPartialUnstakePlancks,
     setPlancks,
   } = useBittensorBondWizard()
   useErrorShown({
@@ -298,6 +299,11 @@ const AmountEdit = () => {
     if (!maxPlancks) return
     setPlancks(maxPlancks)
   }, [maxPlancks, setPlancks])
+
+  const onSetMaxPartialClick = useCallback(() => {
+    if (maxPartialUnstakePlancks === null) return
+    setPlancks(maxPartialUnstakePlancks)
+  }, [maxPartialUnstakePlancks, setPlancks])
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
@@ -330,9 +336,19 @@ const AmountEdit = () => {
             </PillButton>
           </div>
           <div className="h-16">
-            <div className="line-clamp-2 text-center text-brand-orange text-xs">
-              {inputErrorMessage}
-            </div>
+            {maxPartialUnstakePlancks === null ? (
+              <div className="line-clamp-2 text-center text-brand-orange text-xs">
+                {inputErrorMessage}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onSetMaxPartialClick}
+                className="line-clamp-2 w-full text-center text-brand-orange text-xs underline-offset-2 hover:underline"
+              >
+                {inputErrorMessage}
+              </button>
+            )}
           </div>
         </>
       )}

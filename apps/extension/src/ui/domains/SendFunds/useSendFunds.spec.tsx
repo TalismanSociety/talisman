@@ -545,12 +545,22 @@ describe("useSendFunds", () => {
       })
     })
 
-    it("rejects a remainder the chain would sweep", () => {
+    it("rejects a remainder the chain would sweep, with the largest amount that keeps it", () => {
+      state.wizard.amount = (7n * ALPHA_UNIT).toString()
+      state.dtao.minTaoKeep = 2n * ALPHA_UNIT
+
+      expect(render().current).toMatchObject({
+        isValid: false,
+        error: "Bittensor closes stakes worth less than 2 TAO. Send everything, or at most 6 SN1.",
+      })
+    })
+
+    it("asks to send everything when no partial amount keeps the stake open", () => {
       state.dtao.minTaoKeep = 5n * ALPHA_UNIT
 
       expect(render().current).toMatchObject({
         isValid: false,
-        error: "Send everything or keep at least 10 SN1",
+        error: "Bittensor closes stakes worth less than 5 TAO. Send everything.",
       })
     })
 

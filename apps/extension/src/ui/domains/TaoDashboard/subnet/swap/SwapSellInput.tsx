@@ -31,6 +31,7 @@ export const SwapSellInput: FC = () => {
     tokenIn,
     valueIn,
     maxValueIn,
+    maxPartialValueIn,
     onValueChange,
     inputErrorMessage,
   } = useSwapSell()
@@ -50,6 +51,11 @@ export const SwapSellInput: FC = () => {
   const handleMaxClick = useCallback(() => {
     onValueChange(maxValueIn)
   }, [maxValueIn, onValueChange])
+
+  const handleMaxPartialClick = useCallback(() => {
+    if (maxPartialValueIn === null) return
+    onValueChange(maxPartialValueIn)
+  }, [maxPartialValueIn, onValueChange])
 
   return (
     <div className="flex w-full flex-col gap-5 overflow-hidden">
@@ -91,14 +97,17 @@ export const SwapSellInput: FC = () => {
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div
+              <button
+                type="button"
+                onClick={handleMaxPartialClick}
                 className={cn(
-                  "invisible w-full truncate text-alert-error text-xs",
-                  inputErrorMessage && "visible"
+                  "invisible line-clamp-2 w-full text-left text-alert-error text-xs",
+                  inputErrorMessage && "visible",
+                  maxPartialValueIn !== null && "underline-offset-2 hover:underline"
                 )}
               >
                 {inputErrorMessage || t("Error")}
-              </div>
+              </button>
             </TooltipTrigger>
             {inputErrorMessage && <TooltipContent>{inputErrorMessage}</TooltipContent>}
           </Tooltip>

@@ -15,6 +15,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { formatDecimals } from "@talismn/util"
 import { track } from "@ui/api/track"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
@@ -39,6 +40,7 @@ import { ROOT_NETUID } from "../utils/constants"
 import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getBittensorFullExitUnstake } from "../utils/fullExitUnstake"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
+import { getSweepableRemainder } from "../utils/nominationRemainder"
 import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
 import { useBittensorBondModal } from "./useBittensorBondModal"
 import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
@@ -324,6 +326,7 @@ const useBittensorBondWizardProvider = () => {
     errorFeeEstimate,
     isLoadingFeeEstimate,
     currentHotkey,
+    minTaoBond,
     minTaoBondForInput,
     minAlphaBond,
     minTaoStakeForInput,
@@ -649,6 +652,27 @@ const useBittensorBondWizardProvider = () => {
     })
   const knownTransferableTao = freshTransferableTao ?? nativeBalance?.transferable.planck ?? null
 
+  const sweepableRemainder = useMemo(
+    () =>
+      stakeDirection === "unbond" && typeof minAlphaBond === "bigint"
+        ? getSweepableRemainder({
+            stake: totalStakedPlancks,
+            amount: amountIn ?? 0n,
+            maxAmount: availableToUnstakePlancks,
+            minKeep: minAlphaBond,
+            minAmount: minAlphaUnstake ?? 0n,
+          })
+        : null,
+    [
+      stakeDirection,
+      minAlphaBond,
+      totalStakedPlancks,
+      amountIn,
+      availableToUnstakePlancks,
+      minAlphaUnstake,
+    ]
+  )
+
   const unstakeInputError = useMemo<InlineError | null>(() => {
     if (rootStakeHoldGate.message)
       return { message: rootStakeHoldGate.message, category: "input_invalid" }
@@ -688,22 +712,29 @@ const useBittensorBondWizardProvider = () => {
         }
       return { message: t("Insufficient balance"), category: "insufficient_balance" }
     }
-    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
-    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
-    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
-    // but a partial unstake landing in that range would unexpectedly close the position: block it.
-    if (
-      typeof minAlphaBond === "bigint" &&
-      (amountIn || 0n) < availableToUnstakePlancks &&
-      newStakeTotal > 0n &&
-      newStakeTotal < minAlphaBond &&
-      (amountIn || 0n) > 0n
-    ) {
+    if (sweepableRemainder) {
+      const minTao = new BalanceFormatter(minTaoBond ?? 0n, nativeToken?.decimals).tokens
       return {
-        message: t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-          amount: new BalanceFormatter(minAlphaBond, dtaoToken?.decimals).tokens,
-          symbol: dtaoToken?.symbol,
-        }),
+        message:
+          sweepableRemainder.maxPartial === null
+            ? t(
+                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything.",
+                {
+                  minTao,
+                  taoSymbol: nativeToken?.symbol,
+                }
+              )
+            : t(
+                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything, or at most {{amount}} {{symbol}}.",
+                {
+                  minTao,
+                  taoSymbol: nativeToken?.symbol,
+                  amount: formatDecimals(
+                    new BalanceFormatter(sweepableRemainder.maxPartial, dtaoToken?.decimals).tokens
+                  ),
+                  symbol: dtaoToken?.symbol,
+                }
+              ),
         category: "input_invalid",
       }
     }
@@ -729,8 +760,10 @@ const useBittensorBondWizardProvider = () => {
     totalStakedPlancks,
     availableToUnstakePlancks,
     effectiveLocked,
-    newStakeTotal,
-    minAlphaBond,
+    sweepableRemainder,
+    minTaoBond,
+    nativeToken?.decimals,
+    nativeToken?.symbol,
     amountAlpha?.planck,
     minAlphaUnstake,
     t,
@@ -781,6 +814,7 @@ const useBittensorBondWizardProvider = () => {
     maxPlancks,
     inputErrorMessage,
     inputErrorCategory: inputError?.category,
+    maxPartialUnstakePlancks: sweepableRemainder?.maxPartial ?? null,
     stakeDirection,
     dtaoBalance,
     availableToUnstakePlancks,
