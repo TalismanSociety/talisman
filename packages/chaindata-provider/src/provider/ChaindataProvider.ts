@@ -8,8 +8,10 @@ import { isEqual, keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
   firstValueFrom,
+  isObservable,
   map,
   type Observable,
+  of,
   type ReplaySubject,
   shareReplay,
 } from "rxjs"
@@ -31,12 +33,11 @@ import {
   TokenSchema,
   type TokenType,
 } from "../chaindata"
-import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
-import type { Chaindata, CustomChaindata } from "../state/schema"
+import type { Chaindata, ChaindataFile, CustomChaindata } from "../state/schema"
 import type { IChaindataProvider } from "./ChaindataProviderInterface"
 
 /**
@@ -49,8 +50,6 @@ export type ChaindataStorage = {
   networks: Network[]
   tokens: Token[]
   miniMetadatas: AnyMiniMetadata[]
-  /** Custom chaindata url the data was downloaded from, undefined for the default chaindata */
-  chaindataUrl?: string
 }
 
 /** By default, chaindata will be stored in memory and not persisted. */
@@ -64,17 +63,18 @@ export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
   dynamicTokens$?: ReplaySubject<Token[]>
-  /** Chaindata file to download instead of the default one from the TalismanSociety/chaindata repository */
-  chaindataUrl?: string
-}
-
-const parseCustomChaindataUrl = (chaindataUrl: string | undefined) => {
-  if (chaindataUrl === undefined || chaindataUrl === DEFAULT_CHAINDATA_URL) return undefined
-  try {
-    return new URL(chaindataUrl).href
-  } catch (cause) {
-    throw new Error(`Invalid chaindataUrl: "${chaindataUrl}"`, { cause })
-  }
+  /**
+   * Replaces the default chaindata downloaded from the TalismanSociety/chaindata repository.
+   *
+   * The provider subscribes to `chaindata$` only while the provider itself has subscribers.
+   * Pass a replaying observable (a `BehaviorSubject`, or `shareReplay(1)` without `refCount`),
+   * otherwise values emitted while nothing is subscribed are lost. A failed observable is
+   * resubscribed with backoff, so only a cold observable can recover.
+   *
+   * `persistedStorage` seeds the data whichever source is used: clear it when you switch
+   * sources. Only the provider without `chaindata$` falls back to the bundled chaindata.
+   */
+  chaindata$?: Observable<ChaindataFile> | ChaindataFile
 }
 
 export class ChaindataProvider implements IChaindataProvider {
@@ -87,21 +87,18 @@ export class ChaindataProvider implements IChaindataProvider {
     persistedStorage,
     customChaindata$,
     dynamicTokens$,
-    chaindataUrl,
+    chaindata$,
   }: ChaindataProviderOptions = {}) {
-    const customChaindataUrl = parseCustomChaindataUrl(chaindataUrl)
     tryToDeleteOldChaindataDb()
 
-    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys, and drop it when it was downloaded from another chaindataUrl
-    const restoreStorage = (storage: ChaindataStorage | undefined): ChaindataStorage =>
-      storage?.chaindataUrl === customChaindataUrl
-        ? { ...DEFAULT_STORAGE, ...storage }
-        : { ...DEFAULT_STORAGE }
+    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
     const mergedStorage = isPromise(persistedStorage)
-      ? persistedStorage.then(restoreStorage)
-      : restoreStorage(persistedStorage)
+      ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
+      : { ...DEFAULT_STORAGE, ...persistedStorage }
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, customChaindataUrl)
+    const providedChaindata$ =
+      chaindata$ && (isObservable(chaindata$) ? chaindata$ : of(chaindata$))
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, providedChaindata$)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 

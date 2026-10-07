@@ -1,7 +1,7 @@
 import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
-import { type ChunkedParseResult, parseChaindataFileChunked } from "./chunkedValidation"
-import { markChaindataValidated } from "./validatedCache"
+import type { ChunkedParseResult } from "./chunkedValidation"
+import { validateChaindata } from "./validatedCache"
 
 // exported for tests
 export const getFallbackUrl = (url: string) => {
@@ -64,12 +64,7 @@ const fetchJson = async <T>(
 // export because of generate-init-data script
 export const fetchChaindata = (url = DEFAULT_CHAINDATA_URL, signal?: AbortSignal) =>
   fetchJson(url, {
-    validate: async (data, signal) => {
-      const result = await parseChaindataFileChunked(data, { signal })
-      // mark so storageValidated$ doesn't re-validate this exact object on every emission
-      if (result.success) markChaindataValidated(result.data)
-      return result
-    },
+    validate: (data, signal) => validateChaindata(data, { signal }),
     signal,
     // jsdelivr caches for up to 12 hours, which would serve stale data for a custom file updated more often
     fallbackUrl: url === DEFAULT_CHAINDATA_URL ? getFallbackUrl(url) : null,

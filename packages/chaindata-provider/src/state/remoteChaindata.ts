@@ -6,20 +6,38 @@ import { fetchChaindata } from "./net"
 import type { Chaindata } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
+const MIN_REFRESH_INTERVAL = 60_000
 
 const remoteChaindataByUrl = new Map<string, Observable<Chaindata>>()
 
+/**
+ * Downloads the chaindata file at `url` and refreshes it every 5 minutes. Equivalent spellings
+ * of a url share one observable. Throws if `url` is not a valid url.
+ *
+ * Emitted objects are shared and already validated: treat them as immutable, and filter them
+ * by returning new objects.
+ */
 export const getRemoteChaindata$ = (url: string) => {
-  const existing = remoteChaindataByUrl.get(url)
+  const href = parseChaindataUrl(url)
+  const existing = remoteChaindataByUrl.get(href)
   if (existing) return existing
 
-  const remoteChaindata$ = createRemoteChaindata$(url)
-  remoteChaindataByUrl.set(url, remoteChaindata$)
+  const remoteChaindata$ = createRemoteChaindata$(href)
+  remoteChaindataByUrl.set(href, remoteChaindata$)
   return remoteChaindata$
+}
+
+const parseChaindataUrl = (url: string) => {
+  try {
+    return new URL(url).href
+  } catch (cause) {
+    throw new Error(`Invalid chaindata url: "${url}"`, { cause })
+  }
 }
 
 const createRemoteChaindata$ = (url: string) => {
   let lastUpdatedAt = 0
+  let lastData: Chaindata | null = null
 
   return new Observable<Chaindata>((subscriber) => {
     const controller = new AbortController()
@@ -28,15 +46,20 @@ const createRemoteChaindata$ = (url: string) => {
     let timeout: ReturnType<typeof setTimeout> | null = null
     subscriber.add(() => timeout && clearTimeout(timeout))
 
+    // the refresh below waits out MIN_REFRESH_INTERVAL, so a subscriber arriving within it gets the last download meanwhile
+    if (lastData && Date.now() < lastUpdatedAt + MIN_REFRESH_INTERVAL) subscriber.next(lastData)
+    else lastData = null
+
     const refresh = async () => {
       try {
-        const delay = Math.max(0, lastUpdatedAt + 60_000 - Date.now())
+        const delay = Math.max(0, lastUpdatedAt + MIN_REFRESH_INTERVAL - Date.now())
         if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
         if (controller.signal.aborted) return
 
         log.debug("[remoteChaindata$] Refreshing chaindata from", url)
         const data = await fetchChaindata(url, controller.signal)
         lastUpdatedAt = Date.now()
+        lastData = data
 
         // data is already validated by fetchChaindata (net.ts)
         subscriber.next(data)

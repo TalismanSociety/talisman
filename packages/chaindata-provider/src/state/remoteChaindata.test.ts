@@ -152,6 +152,51 @@ describe("getRemoteChaindata$", () => {
     expect(emissions).toHaveLength(2)
   })
 
+  it("gives a subscriber arriving within 60s of a download that download at once", async () => {
+    const secondChaindata = makeChaindata()
+    mockFetchChaindata.mockResolvedValueOnce(validChaindata).mockResolvedValueOnce(secondChaindata)
+
+    const remoteChaindata$ = (await importFresh())(URL_A)
+    const first = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+    first.unsubscribe()
+    await vi.advanceTimersByTimeAsync(10_000)
+
+    const emissions: Chaindata[] = []
+    sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
+
+    expect(emissions).toHaveLength(1)
+    expect(emissions[0]).toBe(validChaindata)
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(49_000)
+    expect(emissions).toHaveLength(1)
+
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(emissions).toHaveLength(2)
+    expect(emissions[1]).toBe(secondChaindata)
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(2)
+  })
+
+  it("makes a subscriber arriving more than 60s after a download wait for a new one", async () => {
+    mockFetchChaindata
+      .mockResolvedValueOnce(validChaindata)
+      .mockReturnValueOnce(new Promise(() => {}))
+
+    const remoteChaindata$ = (await importFresh())(URL_A)
+    const first = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+    first.unsubscribe()
+    await vi.advanceTimersByTimeAsync(60_000)
+
+    const emissions: Chaindata[] = []
+    sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(emissions).toEqual([])
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(2)
+  })
+
   it("schedules next refresh after successful fetch", async () => {
     mockFetchChaindata.mockResolvedValue(validChaindata)
 
@@ -190,6 +235,29 @@ describe("getRemoteChaindata$", () => {
 
     expect(getRemoteChaindata$(URL_A)).toBe(getRemoteChaindata$(URL_A))
     expect(getRemoteChaindata$(URL_A)).not.toBe(getRemoteChaindata$(URL_B))
+  })
+
+  it("shares one source for equivalent spellings of a url and fetches its normalised form", async () => {
+    mockFetchChaindata.mockResolvedValue(validChaindata)
+    const getRemoteChaindata$ = await importFresh()
+
+    const remoteChaindata$ = getRemoteChaindata$("HTTPS://Example.com:443/a/chaindata.min.json")
+    sub = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(remoteChaindata$).toBe(getRemoteChaindata$(URL_A))
+    expect(mockFetchChaindata).toHaveBeenCalledWith(URL_A, expect.any(AbortSignal))
+  })
+
+  it.each(["", "chaindata.min.json"])("throws on the invalid url %j", async (url) => {
+    const getRemoteChaindata$ = await importFresh()
+
+    expect(() => getRemoteChaindata$(url)).toThrow(
+      expect.objectContaining({
+        message: `Invalid chaindata url: "${url}"`,
+        cause: expect.any(TypeError),
+      })
+    )
   })
 
   it("keeps data and refresh timing separate per url", async () => {
