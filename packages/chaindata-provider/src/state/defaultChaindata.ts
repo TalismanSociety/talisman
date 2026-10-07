@@ -1,4 +1,4 @@
-import { isNotNil, switchMapChunked } from "@talismn/util"
+import { type ChunkedProjectContext, isAbortError, isNotNil, switchMapChunked } from "@talismn/util"
 import {
   filter,
   firstValueFrom,
@@ -95,27 +95,27 @@ export const getDefaultChaindata$ = (
       }
     }
 
-    const syncToStorage = async (sourceData: Chaindata) => {
+    const getStorageUpdate = async (sourceData: Chaindata, { slicer }: ChunkedProjectContext) => {
       const now = performance.now()
       try {
         const storageData = await firstValueFrom(storageValidated$)
+        if (!(await chaindataEqualWithYield(storageData, sourceData, { slicer }))) return sourceData
 
-        const shouldUpdate = !(await chaindataEqualWithYield(storageData, sourceData))
-        if (!shouldUpdate)
-          return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
-
-        // update local chaindata if source chaindata is different
-        log.debug(
-          `[defaultChaindata$] Updating chaindata in DB (networks:${sourceData.networks.length}, tokens:${sourceData.tokens.length}, meta:${sourceData.miniMetadatas.length})`
-        )
-        storage$.next(sourceData)
-
-        log.info(
-          `[defaultChaindata$] Db synchronized with chaindata source :${performance.now() - now}ms`
-        )
+        log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
+        return null
       } catch (cause) {
+        if (isAbortError(cause)) throw cause
         log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
+        return null
       }
+    }
+
+    const writeToStorage = (sourceData: Chaindata) => {
+      log.debug(
+        `[defaultChaindata$] Updating chaindata in DB (networks:${sourceData.networks.length}, tokens:${sourceData.tokens.length}, meta:${sourceData.miniMetadatas.length})`
+      )
+      storage$.next(sourceData)
+      log.info("[defaultChaindata$] Db synchronized with chaindata source")
     }
 
     // initChaindata is a snapshot of the default chaindata, not of a provided one
@@ -125,9 +125,11 @@ export const getDefaultChaindata$ = (
 
     const sourceToStorageSubscription = source$
       .pipe(
-        retry({ delay: (_, retryCount) => timer(getRetryDelay(retryCount)), resetOnSuccess: true })
+        retry({ delay: (_, retryCount) => timer(getRetryDelay(retryCount)), resetOnSuccess: true }),
+        switchMapChunked(getStorageUpdate),
+        filter(isNotNil)
       )
-      .subscribe(syncToStorage)
+      .subscribe(writeToStorage)
     subscriber.add(sourceToStorageSubscription)
 
     const outputFromStorageSubscription = storageValidated$.subscribe(subscriber)
