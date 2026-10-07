@@ -66,10 +66,10 @@ export type ChaindataProviderOptions = {
   /**
    * Replaces the default chaindata downloaded from the TalismanSociety/chaindata repository.
    *
-   * The provider subscribes to an observable only while it has subscribers. Pass a replaying
-   * observable (a `BehaviorSubject`, or `shareReplay(1)` without `refCount`): values emitted
-   * while nothing is subscribed are lost. A failed observable is resubscribed with backoff,
-   * so only a cold observable can recover.
+   * The provider subscribes to `chaindata$` only while the provider itself has subscribers.
+   * Pass a replaying observable (a `BehaviorSubject`, or `shareReplay(1)` without `refCount`),
+   * otherwise values emitted while nothing is subscribed are lost. A failed observable is
+   * resubscribed with backoff, so only a cold observable can recover.
    *
    * `persistedStorage` seeds the data whichever source is used: clear it when you switch
    * sources. Only the provider without `chaindata$` falls back to the bundled chaindata.
