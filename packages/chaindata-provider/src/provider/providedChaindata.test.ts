@@ -120,7 +120,7 @@ describe("ChaindataProvider chaindata$", () => {
     )
   })
 
-  it("subscribes again to the provided observable after it fails", async () => {
+  it("logs the failure and subscribes again to the provided observable after it fails", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] })
     let attempts = 0
     const chaindata$ = defer(() =>
@@ -133,6 +133,9 @@ describe("ChaindataProvider chaindata$", () => {
 
     expect(ids(networks)).toEqual(ids(chaindataA.networks))
     expect(attempts).toBe(2)
+    expect(log.error).toHaveBeenCalledWith("[defaultChaindata$] Provided chaindata failed", {
+      cause: new Error("provided source failed"),
+    })
   })
 
   it("restores the persisted data before the provided observable emits", async () => {

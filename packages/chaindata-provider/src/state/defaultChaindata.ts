@@ -39,7 +39,8 @@ const validateProvidedChaindata = (providedChaindata$: Observable<ChaindataFile>
       }
       return markChaindataValidated(validation.data)
     }),
-    filter(isNotNil)
+    filter(isNotNil),
+    tap({ error: (cause) => log.error("[defaultChaindata$] Provided chaindata failed", { cause }) })
   )
 
 export const getDefaultChaindata$ = (
