@@ -56,7 +56,10 @@ const EarnPositionRowActionButton: FC<{ action: EarnPositionRowAction }> = ({ ac
       <TooltipTrigger asChild>
         <button
           type="button"
-          onClick={action.onClick}
+          onClick={(event) => {
+            event.stopPropagation()
+            action.onClick()
+          }}
           className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-lg text-primary hover:bg-primary/20"
         >
           <Icon />
@@ -75,18 +78,16 @@ const EarnPositionRow: FC<{
   const navigate = useNavigateWithQuery()
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users open the position with the stretched button, whose click bubbles here
+    // biome-ignore lint/a11y/noStaticElementInteractions: the row catches clicks on its tooltip triggers, which sit above the stretched button
     <div
+      onClick={() => navigate(position.detailUrl)}
       className={cn(
-        "relative grid h-28 w-full items-center overflow-hidden text-sm hover:bg-grey-750",
+        "relative grid h-28 w-full cursor-pointer items-center overflow-hidden text-sm hover:bg-grey-750",
         IS_POPUP ? "grid-cols-[minmax(0,1fr)_auto] gap-4 px-6 text-xs" : cn(EARN_GRID_COLS, "px-8")
       )}
     >
-      <button
-        type="button"
-        aria-label={position.title}
-        className="absolute inset-0"
-        onClick={() => navigate(position.detailUrl)}
-      />
+      <button type="button" aria-label={position.title} className="absolute inset-0" />
       <div className={cn("flex items-center overflow-hidden", IS_POPUP ? "gap-4" : "gap-6")}>
         <AssetLogo url={position.logoUrl} className="size-16 shrink-0" />
         <div className="flex min-w-0 grow flex-col justify-center gap-1 overflow-hidden text-left">
