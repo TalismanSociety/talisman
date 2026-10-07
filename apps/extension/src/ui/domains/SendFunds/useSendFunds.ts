@@ -27,8 +27,6 @@ import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dT
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond"
-import { getSweepableRemainder } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { flows } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
@@ -148,7 +146,7 @@ const useSendFundsProvider = () => {
   const dtaoAvailable = useDTaoSubnetAvailable(from, tokenId)
 
   // dtao transfers are transfer_stake staking operations: the chain enforces a minimum
-  // TAO-equivalent amount, and sweeps sender positions left below the nominator minimum
+  // TAO-equivalent amount
   const isDTao = token?.type === "substrate-dtao"
   const dtaoNetworkId = isDTao ? (token.networkId as DotNetworkId) : null
   const dtaoNetuid = isDTao ? token.netuid : null
@@ -157,7 +155,6 @@ const useSendFundsProvider = () => {
     netuid: dtaoNetuid,
   })
   const dtaoMinTaoTransfer = useGetBittensorDefaultMinStake({ networkId: dtaoNetworkId })
-  const { data: dtaoMinTaoKeep } = useGetBittensorMinJoinBond({ networkId: dtaoNetworkId })
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // a transfer_stake off the pair would revert with RootStakeLocked
@@ -379,43 +376,6 @@ const useSendFundsProvider = () => {
             }),
           }
         }
-
-        if (typeof dtaoMinTaoKeep === "bigint") {
-          const stake = balance?.free.planck ?? 0n
-          const sweepableRemainder = getSweepableRemainder({
-            stake,
-            amount: transfer.planck,
-            maxAmount: stake,
-            minKeep: taoToAlphaCeil(dtaoMinTaoKeep, dtaoAlphaPrice),
-            minAmount: taoToAlphaCeil(dtaoMinTaoTransfer, dtaoAlphaPrice),
-          })
-          if (sweepableRemainder) {
-            const minTao = new BalanceFormatter(dtaoMinTaoKeep, feeToken?.decimals).tokens
-            return {
-              isValid: false,
-              error:
-                sweepableRemainder.maxPartial === null
-                  ? t(
-                      "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Send everything.",
-                      {
-                        minTao,
-                        taoSymbol: feeToken?.symbol,
-                      }
-                    )
-                  : t(
-                      "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Send everything, or at most {{amount}} {{symbol}}.",
-                      {
-                        minTao,
-                        taoSymbol: feeToken?.symbol,
-                        amount: formatDecimals(
-                          new BalanceFormatter(sweepableRemainder.maxPartial, token.decimals).tokens
-                        ),
-                        symbol: token.symbol,
-                      }
-                    ),
-            }
-          }
-        }
       }
 
       if (
@@ -509,10 +469,8 @@ const useSendFundsProvider = () => {
     transaction,
     transfer,
     balance?.transferable.planck,
-    balance?.free.planck,
     dtaoAlphaPrice,
     dtaoMinTaoTransfer,
-    dtaoMinTaoKeep,
     dtaoLockedTransferBlocked,
     dtaoRootStakeHoldGate,
     feeToken,
