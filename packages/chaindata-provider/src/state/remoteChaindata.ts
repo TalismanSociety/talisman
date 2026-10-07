@@ -9,6 +9,13 @@ const REFRESH_INTERVAL = 300_000 // 5 mins
 
 const remoteChaindataByUrl = new Map<string, Observable<Chaindata>>()
 
+/**
+ * Downloads the chaindata file at `url` and refreshes it every 5 minutes. Equivalent spellings
+ * of a url share one observable. Throws if `url` is not a valid url.
+ *
+ * Emitted objects are shared and already validated: treat them as immutable, and filter them
+ * by returning new objects.
+ */
 export const getRemoteChaindata$ = (url: string) => {
   const href = parseChaindataUrl(url)
   const existing = remoteChaindataByUrl.get(href)
