@@ -6,6 +6,7 @@ import { fetchChaindata } from "./net"
 import type { Chaindata } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
+const MIN_REFRESH_INTERVAL = 60_000
 
 const remoteChaindataByUrl = new Map<string, Observable<Chaindata>>()
 
@@ -36,8 +37,12 @@ const parseChaindataUrl = (url: string) => {
 
 const createRemoteChaindata$ = (url: string) => {
   let lastUpdatedAt = 0
+  // a subscriber arriving within MIN_REFRESH_INTERVAL of a download would otherwise wait it out with no data
+  let recentData: Chaindata | null = null
 
   return new Observable<Chaindata>((subscriber) => {
+    if (recentData) subscriber.next(recentData)
+
     const controller = new AbortController()
     subscriber.add(() => controller.abort())
 
@@ -46,13 +51,17 @@ const createRemoteChaindata$ = (url: string) => {
 
     const refresh = async () => {
       try {
-        const delay = Math.max(0, lastUpdatedAt + 60_000 - Date.now())
+        const delay = Math.max(0, lastUpdatedAt + MIN_REFRESH_INTERVAL - Date.now())
         if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
         if (controller.signal.aborted) return
 
         log.debug("[remoteChaindata$] Refreshing chaindata from", url)
         const data = await fetchChaindata(url, controller.signal)
         lastUpdatedAt = Date.now()
+        recentData = data
+        setTimeout(() => {
+          if (recentData === data) recentData = null
+        }, MIN_REFRESH_INTERVAL)
 
         // data is already validated by fetchChaindata (net.ts)
         subscriber.next(data)

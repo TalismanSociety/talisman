@@ -152,6 +152,46 @@ describe("getRemoteChaindata$", () => {
     expect(emissions).toHaveLength(2)
   })
 
+  it("gives a subscriber arriving within 60s of a download that download at once", async () => {
+    const secondChaindata = makeChaindata()
+    mockFetchChaindata.mockResolvedValueOnce(validChaindata).mockResolvedValueOnce(secondChaindata)
+
+    const remoteChaindata$ = (await importFresh())(URL_A)
+    const first = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+    first.unsubscribe()
+    await vi.advanceTimersByTimeAsync(10_000)
+
+    const emissions: Chaindata[] = []
+    sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
+
+    expect(emissions).toEqual([validChaindata])
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(50_000)
+    expect(emissions).toEqual([validChaindata, secondChaindata])
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(2)
+  })
+
+  it("makes a subscriber arriving more than 60s after a download wait for a new one", async () => {
+    mockFetchChaindata
+      .mockResolvedValueOnce(validChaindata)
+      .mockReturnValueOnce(new Promise(() => {}))
+
+    const remoteChaindata$ = (await importFresh())(URL_A)
+    const first = remoteChaindata$.subscribe({ next: vi.fn(), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+    first.unsubscribe()
+    await vi.advanceTimersByTimeAsync(61_000)
+
+    const emissions: Chaindata[] = []
+    sub = remoteChaindata$.subscribe({ next: (data) => emissions.push(data), error: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(emissions).toEqual([])
+    expect(mockFetchChaindata).toHaveBeenCalledTimes(2)
+  })
+
   it("schedules next refresh after successful fetch", async () => {
     mockFetchChaindata.mockResolvedValue(validChaindata)
 
