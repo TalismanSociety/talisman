@@ -90,7 +90,7 @@ ab() { .claude/skills/verify/bin/ab "$@"; }
 - **Background state:** `.claude/skills/verify/bin/sw-eval.mjs '<async expression>'` evaluates in the service worker and prints JSON. Use it to prove side effects, for example `chrome.storage.local.get("keyring")` for accounts, `chrome.storage.local.get("sitesAuthorized")` for dapp connections.
 - **Headless UI modals and anything agent-browser cannot see:** a Playwright script in `.tmp/` that imports `cdpPort` from `../.claude/skills/verify/bin/cdp-port.mjs` and calls ``chromium.connectOverCDP(`http://localhost:${cdpPort()}`)`` (example in `AGENTS.md`). `browser.close()` only disconnects.
 
-Signing: sign only with a test account, whose name starts with `Guardians` (setup in [`features/README.md`](features/README.md#test-accounts)). Read the signer name in the popup before you click Approve or Sign. Runs from several worktrees share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. The setup funds one sender (`Guardians SUB`), so send from one run at a time.
+Signing: sign only with an account the developer declared as a test account (see [`features/README.md`](features/README.md#test-accounts)). Read the signer in the popup before you click Approve or Sign. Runs from several worktrees share these accounts: two sends from one account on one network at the same time take the same nonce, and one fails. The setup funds one sender (`<sub1>`), so send from one run at a time.
 
 ## 4. Evidence
 
@@ -100,6 +100,7 @@ Everything goes in `$RUN` (under `.tmp/`, gitignored). Cleanup keeps it.
 - For each step, capture the user action and the resulting state: the filled form before submit, and the screen after.
 - Prove the side effect from a second view: `sw-eval.mjs` output saved as `$RUN/<nn>-<what>.json`, or the same data read in a different page (Settings, Activity).
 - A mutation proof includes its undo: remove what the run added, and capture that state too.
+- When the change adds or changes analytics (a flow, a `track()` event, a `reportError`), also run [`features/analytics-events.md`](features/analytics-events.md) for its events and save the `trace` output as `$RUN/<nn>-events.json`.
 - Write `$RUN/notes.md`: feature id, entry point used, instance reused or started, and each entry point you skipped with the reason. A skipped entry point stays unverified: do not report it as verified through another path.
 
 ## 5. Cleanup
@@ -139,4 +140,5 @@ All in `.claude/skills/verify/bin/`, run from the repo root. Each finds the CDP 
 - **`wait --text` is case-sensitive**; Playwright `getByText` is not. Copy the text from `ab snapshot` or `ab eval 'document.body.innerText'`.
 - **A route change renders async**: after a click that navigates, `ab wait --text` for the new heading before `find`.
 - **`agent-browser console` is not tab-scoped**: its buffer holds messages from earlier pages. To attribute a console message, listen with Playwright on the page you opened.
+- **Doctor says "wallet is unlocked: FAIL" right after a fresh `pnpm dev` start, with `PASSWORD` set**: the autologin in the login popup is still running. Run the doctor again before you act on the hint.
 - **Unlock**: use the password field only. Quick Unlock opens a native Touch ID prompt on the user's machine.

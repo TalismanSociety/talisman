@@ -9,6 +9,7 @@ import {
   serializeTransaction,
   signTransactionWithSecretKey,
 } from "@talismn/solana"
+import { assert } from "@talismn/util"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -17,7 +18,7 @@ import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
-import type { RequestSolanaSignApprove } from "./types.extension"
+import type { RequestSolanaSignApprove, RequestSolanaSignCancel } from "./types.extension"
 
 export class SolanaExtensionHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -78,6 +79,14 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         })
 
         return { signature: sig }
+      }
+
+      case "pri(solana.sign.cancel)": {
+        const { id } = request as RequestSolanaSignCancel
+        const queued = requestStore.getRequest(id)
+        assert(queued, "Unable to find request")
+        queued.reject(new Error("Cancelled"))
+        return true
       }
 
       case "pri(solana.sign.approve)": {

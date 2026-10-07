@@ -14,7 +14,13 @@ export const ProxyDelayDrawer: FC<{
   onSave: (delay: string) => void
 }> = ({ containerId, isOpen, onClose, delay, onSave }) => {
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onClose} containerId={containerId}>
+    <Drawer
+      analyticsId="proxy_delay"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={onClose}
+      containerId={containerId}
+    >
       <Content delay={delay} onSave={onSave} onClose={onClose} />
     </Drawer>
   )

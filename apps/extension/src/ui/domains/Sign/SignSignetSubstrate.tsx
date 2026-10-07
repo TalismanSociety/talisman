@@ -3,6 +3,7 @@ import type { SignerPayloadRaw } from "@core/domains/signing/types"
 import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import { XCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,6 +15,11 @@ type Props = {
 }
 
 const SignetSignetError: React.FC<{ call: boolean; network: boolean }> = ({ call, network }) => {
+  useErrorShown({
+    shown: call ? "call" : network && "network",
+    surface: "alert",
+    category: "unsupported",
+  })
   if (!call && !network) return null
   return (
     <div className="flex w-full items-center justify-center gap-4 rounded-sm bg-grey-800 p-6">

@@ -39,7 +39,7 @@ export const SelectSenderAccountPill: FC<{
       >
         {account ? <AccountDisplay address={account.address} /> : t("Select Account")}
       </button>
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="select_sender_account" isOpen={isOpen} onDismiss={close}>
         <PopupSizeModalContainer id="select-sender-account-pickermodal">
           <ModalDialog
             variant="wizard"

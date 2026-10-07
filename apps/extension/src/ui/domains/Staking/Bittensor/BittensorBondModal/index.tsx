@@ -13,7 +13,7 @@ export const BittensorBondModal = () => {
   const { isOpen, args, openKey, close } = useBittensorBondModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="bittensor_bond" containerId="main" isOpen={isOpen} onDismiss={close}>
       <div
         id={STAKING_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals & drawers
         className={cn(

@@ -501,6 +501,7 @@ const SubnetRow: FC<{
       e.stopPropagation()
       if (!canStake) return
       openBondModal({
+        entry: "tao_dashboard",
         stakeDirection: "bond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
@@ -515,6 +516,7 @@ const SubnetRow: FC<{
       e.stopPropagation()
       if (!canUnstake) return
       openBondModal({
+        entry: "tao_dashboard",
         stakeDirection: "unbond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
@@ -774,9 +776,9 @@ const RootSubnetActions: FC<{
       if (!canClaim) return
       // single candidate: open on it directly, no picker needed
       const single = candidates.length === 1 ? candidates[0] : null
-      if (single) return openClaimModal(single.target)
+      if (single) return openClaimModal({ entry: "tao_dashboard", ...single.target })
       // no explicit position: the modal shows a picker over the selected accounts' claims
-      openClaimModal({ networkId, addresses })
+      openClaimModal({ entry: "tao_dashboard", networkId, addresses })
     },
     [canClaim, candidates, openClaimModal, networkId, addresses]
   )

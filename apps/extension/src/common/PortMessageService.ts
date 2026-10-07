@@ -3,6 +3,7 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
+import { attachErrorCategory, isErrorCategory } from "@common/analytics/errorCategory"
 import { PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
 import type {
@@ -193,6 +194,7 @@ export default class PortMessageService {
       code?: number
       rpcData?: unknown
       isEthProviderRpcError?: boolean
+      errorCategory?: unknown
     }
   ): void {
     const handler = this.handlers[data.id]
@@ -229,15 +231,15 @@ export default class PortMessageService {
 
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
     else if (data.error) {
-      if (data.isEthProviderRpcError) {
-        handler.reject(
-          new WrappedEthProviderRpcError(
+      const error = data.isEthProviderRpcError
+        ? new WrappedEthProviderRpcError(
             data.error,
             data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
             data.rpcData
           )
-        )
-      } else handler.reject(new Error(data.error))
+        : new Error(data.error)
+      if (isErrorCategory(data.errorCategory)) attachErrorCategory(error, data.errorCategory)
+      handler.reject(error)
     } else handler.resolve(data.response)
   }
 }

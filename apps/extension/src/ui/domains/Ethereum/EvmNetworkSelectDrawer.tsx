@@ -223,6 +223,7 @@ export const EvmNetworkSelectDrawer: FC<{ isOpen: boolean; onClose: () => void }
 
   return (
     <Drawer
+      analyticsId="evm_network_select"
       className="w-full"
       containerId="main"
       anchor="right"

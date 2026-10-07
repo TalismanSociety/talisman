@@ -1,3 +1,4 @@
+import type { SubmittedBy } from "@common/analytics/transactions"
 import { POLKADOT_VAULT_DOCS_URL } from "@common/constants"
 import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
@@ -11,10 +12,11 @@ import { Drawer } from "@ui/components/Drawer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { type ReactElement, useEffect, useMemo, useState } from "react"
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -47,7 +49,15 @@ type ScanState =
   // waiting for user to scan qr code from their device to return the signature
   | { page: "RECEIVE" }
 
+const FLOW_STEPS = {
+  INIT: null,
+  SEND: "show_qr",
+  UPDATE_METADATA: "update_metadata",
+  RECEIVE: "scan_signature",
+} as const satisfies Record<ScanState["page"], string | null>
+
 interface Props {
+  requestedBy: SubmittedBy
   account: AccountPolkadotVault
   className?: string
   buttonClassName?: string
@@ -65,6 +75,7 @@ interface Props {
 }
 
 export const QrSubstrate = ({
+  requestedBy,
   account,
   className = "",
   buttonClassName = "",
@@ -89,6 +100,18 @@ export const QrSubstrate = ({
   const { t } = useTranslation()
   const [scanState, setScanState] = useState<ScanState>(
     skipInit && !disabled ? { page: "SEND" } : { page: "INIT" }
+  )
+  useFlow(flows.vault_sign, {
+    active: scanState.page !== "INIT",
+    entry: requestedBy,
+    step: FLOW_STEPS[scanState.page],
+  })
+  const handleSignature = useCallback(
+    (result: { signature: `0x${string}` }) => {
+      flows.vault_sign.completed()
+      onSignature?.(result)
+    },
+    [onSignature]
   )
   const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
@@ -216,7 +239,7 @@ export const QrSubstrate = ({
          */}
         {scanState.page === "RECEIVE" && onSignature && (
           <div className="flex h-full flex-col items-center justify-between">
-            <ScanQr type="signature" onScan={onSignature} size={280} />
+            <ScanQr type="signature" onScan={handleSignature} size={280} />
             <div className="mt-10 max-w-md text-center text-body-secondary leading-10">
               {t("Scan the Polkadot Vault QR code.")}
               <br />
@@ -312,13 +335,19 @@ const SendPage = ({
   return (
     <>
       <div className="flex h-full flex-col items-center justify-end gap-6">
-        <div className="relative flex aspect-square size-[80%] items-center justify-center rounded-xl bg-white p-12">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <LoaderIcon className="animate-spin-slow text-3xl! text-body-secondary" />
+        <div className="flex min-h-0 w-full flex-1 items-end justify-center [container-type:size]">
+          <div className="relative flex size-[min(100cqh,100cqw)] items-center justify-center rounded-xl bg-white p-12">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <LoaderIcon className="animate-spin-slow text-3xl! text-body-secondary" />
+            </div>
+            {payload && (
+              <SignPayloadQrCode
+                account={account}
+                payload={payload}
+                shortMetadata={shortMetadata}
+              />
+            )}
           </div>
-          {payload && (
-            <SignPayloadQrCode account={account} payload={payload} shortMetadata={shortMetadata} />
-          )}
         </div>
         <div>
           <Checkbox
@@ -377,6 +406,7 @@ const SendPage = ({
       </div>
 
       <Drawer
+        analyticsId="qr_substrate_unable_to_sign"
         anchor="bottom"
         isOpen={!qrCodeSource && !!chain}
         containerId={containerId}
@@ -409,6 +439,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_chainspec"
         anchor="bottom"
         isOpen={!!scanState.showChainspecDrawer}
         containerId={containerId}
@@ -456,6 +487,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_enable_network"
         anchor="bottom"
         isOpen={!!scanState.showEnableNetwork}
         containerId={containerId}
@@ -500,6 +532,7 @@ const SendPage = ({
       </Drawer>
 
       <Drawer
+        analyticsId="qr_substrate_update_metadata"
         anchor="bottom"
         isOpen={!!scanState.showUpdateMetadataDrawer}
         containerId={containerId}

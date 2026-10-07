@@ -1,4 +1,6 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { sleep } from "@talismn/util"
+import { reportToastError } from "@ui/hooks/analytics/errorShown"
 import { type Id, type ToastContent, type ToastOptions, toast } from "react-toastify"
 
 import { Notification, type NotificationProps } from "./Notification"
@@ -10,11 +12,16 @@ const DEFAULT_OPTIONS: ToastOptions = {
   autoClose: 2000,
 }
 
+const categoryOf = (content: Extract<NotificationProps, { type: "error" }>): ErrorCategory =>
+  content.errorCategory ?? classifyError(content.cause)
+
 export const notify = (content: NotificationProps, options: ToastOptions = {}): Id => {
-  return toast(<Notification {...content} />, {
+  const toastId = toast(<Notification {...content} />, {
     ...DEFAULT_OPTIONS,
     ...options,
   })
+  if (content.type === "error") reportToastError(toastId, categoryOf(content))
+  return toastId
 }
 
 export const notifyCustom = (content: ToastContent<unknown>, options: ToastOptions = {}): Id => {
@@ -32,11 +39,12 @@ export const notifyUpdate = async (
   // toast.isActive may return false if the toast is not yet rendered
   await sleep(50)
 
-  if (toast.isActive(toastId))
+  if (toast.isActive(toastId)) {
     toast.update(toastId, {
       ...DEFAULT_OPTIONS,
       render: () => <Notification {...content} />,
       ...options,
     })
-  else notify(content, options)
+    if (content.type === "error") reportToastError(toastId, categoryOf(content))
+  } else notify(content, options)
 }

@@ -1,4 +1,3 @@
-import { IS_FIREFOX } from "@common/constants"
 import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import { isAccountOwned } from "@talismn/keyring"
 
@@ -6,6 +5,7 @@ import { db } from "../db"
 import { queryCacheStore } from "../db/queryCache"
 import { AccountProxiesHandler } from "../domains/accountProxies"
 import { AccountsHandler } from "../domains/accounts"
+import { AnalyticsHandler } from "../domains/analytics/handler"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { BalancesHandler } from "../domains/balances"
@@ -30,8 +30,6 @@ import TokenRatesHandler from "../domains/tokenRates/handler"
 import { cleanupAllDroppedTransactions } from "../domains/transactions/cleanupDroppedTransactions"
 import { updateTransactionsRestart } from "../domains/transactions/store.transactions"
 import { resumeSwapWatchers } from "../domains/transactions/watchSwapStatus"
-import { talismanAnalytics } from "../libs/Analytics"
-import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
 import type { MessageTypes, RequestType, ResponseType } from "../types"
 import type { Port, RequestIdOnly } from "../types/base"
@@ -50,6 +48,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       accountProxies: new AccountProxiesHandler(stores),
+      analytics: new AnalyticsHandler(stores),
       polkadotVault: new PolkadotVaultHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
@@ -107,18 +106,6 @@ export default class Extension extends ExtensionHandler {
     // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
     this.stores.errors.set({ databaseUnavailable: false, databaseQuotaExceeded: false })
 
-    // prune old db error logs
-    const now = Date.now()
-    const pruneLogFilter = (timestamp: number) => now - timestamp <= 1_209_600_000 // 14 days in milliseconds
-    this.stores.errors.mutate((store) => {
-      store.StartupLog.push(now)
-      store.StartupLog = store.StartupLog.filter(pruneLogFilter)
-      store.DexieAbortLog = store.DexieAbortLog.filter(pruneLogFilter)
-      store.DexieDatabaseClosedLog = store.DexieDatabaseClosedLog.filter(pruneLogFilter)
-      store.DexieQuotaExceededLog = store.DexieQuotaExceededLog.filter(pruneLogFilter)
-      return store
-    })
-
     keyringStore.accounts$.subscribe(async (accounts) => {
       const sites = await stores.sites.get()
 
@@ -145,36 +132,6 @@ export default class Extension extends ExtensionHandler {
 
     // hides the get started component has soon as the wallet owns funds
     hideGetStartedOnceFunded()
-
-    // if BUILD is not "dev", submit a "wallet upgraded" event to posthog
-    if (process.env.BUILD !== "dev") {
-      ;(async () => {
-        // don't send "wallet upgraded" event if analytics is disabled, or wallet is not onboarded
-        const allowTracking = await this.stores.settings.get("useAnalyticsTracking")
-        const onboarded = await this.stores.app.getIsOnboarded()
-        if (!allowTracking || !onboarded || IS_FIREFOX) return
-
-        const lastWalletUpgradedEvent = await this.stores.app.get("lastWalletUpgradedEvent")
-
-        // short circuit if we've already sent a "wallet upgraded" event for this version
-        if (lastWalletUpgradedEvent === process.env.VERSION) return
-
-        // make sure we create a new report for this version of the wallet, not re-use one we created last version
-        await this.stores.app.delete(["analyticsReportCreatedAt", "analyticsReport"])
-
-        await spawnTaskToCreateNewReport({
-          // don't refresh balances in the background, just send the existing db cache
-          refreshBalances: false,
-
-          // the primary purpose of the "wallet upgraded" event is to submit the opt-in general report.
-          // `waitForReportCreated: true` lets us wait for the report to be created before we submit the event.
-          waitForReportCreated: true,
-        })
-
-        await talismanAnalytics.capture("wallet upgraded")
-        await this.stores.app.set({ lastWalletUpgradedEvent: process.env.VERSION })
-      })()
-    }
   }
 
   private cleanup() {

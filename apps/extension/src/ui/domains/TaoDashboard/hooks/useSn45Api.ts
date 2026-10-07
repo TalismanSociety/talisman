@@ -157,37 +157,6 @@ export const useSubnetHolders = (netuid: number | null | undefined, period: Time
   })
 }
 
-export const useSubnetSentiment = (netuid: number | null | undefined, period?: TimePeriod) => {
-  const isEnabled = useIsSn45Enabled()
-  return useQuery({
-    queryKey: ["sn45", isEnabled, "subnetSentiment", netuid, period],
-    queryFn: async ({ signal }) => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetSentiment(String(netuid), { period }, { signal })
-      return response.data
-    },
-    enabled: isEnabled && !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-  })
-}
-
-// Hook to get subnet tweets
-export const useSubnetTweets = (netuid: number | null | undefined, period: TimePeriod = "1m") => {
-  const isEnabled = useIsSn45Enabled()
-  return useQuery({
-    queryKey: ["sn45", isEnabled, "subnetTweets", netuid, period],
-    queryFn: async ({ signal }) => {
-      if (!netuid) return null
-      const response = await sn45Api.v1.getSubnetTweets(String(netuid), { period }, { signal })
-      return response.data
-    },
-    enabled: isEnabled && !!netuid,
-    refetchInterval: 60_000,
-    staleTime: 30_000,
-  })
-}
-
 export const useSubnetWhalesFlow = (netuid: number | null | undefined, period?: TimePeriod) => {
   const isEnabled = useIsSn45Enabled()
   return useQuery({

@@ -292,7 +292,7 @@ const MnemonicsList = () => {
       updateSearchParams(searchParams, { replace: true })
       if (notBackedUp.length === 1) {
         // open the backup modal for the only mnemonic that is not backed up
-        openBackup(notBackedUp[0].id)
+        openBackup(notBackedUp[0].id, "reminder")
       }
     }
   }, [searchParams, notBackedUp, openBackup, updateSearchParams])

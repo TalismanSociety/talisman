@@ -142,7 +142,10 @@ const usePositions = () => {
 
 const useActionOpener = () => {
   const modal = useSeekStakingModal()
-  return useCallback<EarnActionOpener>(() => modal.open({ action: "stake" }), [modal])
+  return useCallback<EarnActionOpener>(
+    () => modal.open({ entry: "earn", action: "stake" }),
+    [modal]
+  )
 }
 
 export const seekSystem: EarnSystem = {

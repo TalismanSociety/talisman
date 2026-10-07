@@ -2,6 +2,7 @@ import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
@@ -22,7 +23,7 @@ export const NewFolderModal = () => {
   const { close, isOpen } = useNewFolderModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="new_folder" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("New Folder")} onCloseClick={close} className="h-auto w-92">
         <NewFolder onConfirm={close} onCancel={close} />
       </ModalDialog>
@@ -82,6 +83,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
 
       try {
         await api.accountsCatalogRunActions([{ type: "addFolder", tree: treeName, name }])
+        track("folder_created", { tree: treeName })
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -121,7 +123,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
 
   return (
     <form className={className} onSubmit={handleSubmit(submit)}>
-      <FormFieldContainer label={t("Folder name")} error={errors.name?.message}>
+      <FormFieldContainer field="name" label={t("Folder name")} error={errors.name?.message}>
         <FormFieldInputText
           {...registerName}
           ref={handleNameRef}

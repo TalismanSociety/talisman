@@ -5,7 +5,6 @@ import { sr25519SignVrf } from "@talismn/substrate-vrf"
 import type { HexString } from "@talismn/util"
 import { addTrailingSlash, assert, u8aToHex, u8aWrapBytes, validateHexString } from "@talismn/util"
 import { isEqual } from "lodash-es"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
@@ -14,7 +13,6 @@ import type { MessageTypes, RequestType, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { urlToOrigin } from "../../util/urlToDomain"
-import { getHostName } from "../app/helpers"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
 import { assembleSubstrateTransaction, signSubstratePayload } from "./signSubstratePayload"
@@ -57,26 +55,19 @@ export default class SigningHandler extends ExtensionHandler {
     // the approval paths share an id space
     assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
-    const { reject, request, resolve, url } = queued
+    const { reject, request, resolve } = queued
 
     const address = encodeAnyAddress(queued.account.address)
 
     const result = await withSecretKey(address, async (secretKey, curve) => {
       const { payload: originalPayload } = request
       const payload = modifiedPayload || originalPayload
-      const { ok, val: hostName } = getHostName(url)
-      const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
-        dapp: url,
-        hostName: ok ? hostName : undefined,
-      }
-
       let signature: HexString | undefined
       let signedTransaction: HexString | Uint8Array | undefined
 
       if (isJsonPayload(payload)) {
         const genesisHash = validateHexString(payload.genesisHash)
         const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
-        analyticsProperties.chain = chain?.id ?? genesisHash
 
         const signed = await signSubstratePayload(payload, secretKey, curve, {
           // chaindata override of the signature type prefix (LAOS signing quirk),
@@ -107,14 +98,6 @@ export default class SigningHandler extends ExtensionHandler {
         // (matches polkadot-js RequestBytesSign.sign)
         signature = u8aToHex(signSubstrate(curve, secretKey, u8aWrapBytes(payload.data)))
       }
-
-      talismanAnalytics.captureDelayed(
-        isJsonPayload(payload) ? "sign transaction approve" : "sign approve",
-        {
-          ...analyticsProperties,
-          networkType: "substrate",
-        }
-      )
 
       resolve({
         id,
@@ -149,13 +132,6 @@ export default class SigningHandler extends ExtensionHandler {
 
       const signature = u8aToHex(sr25519SignVrf(secretKey, data, { origin: origin.val, context }))
 
-      const { ok, val: hostName } = getHostName(url)
-      talismanAnalytics.captureDelayed("vrf sign approve", {
-        dapp: url,
-        hostName: ok ? hostName : undefined,
-        networkType: "substrate",
-      })
-
       resolve({ id, signature })
     })
     if (!result.ok) rejectApprovalFailure(reject, result.val)
@@ -172,22 +148,15 @@ export default class SigningHandler extends ExtensionHandler {
     // the approval paths share an id space
     assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
-    const { request, url, account } = queued
+    const { request, url } = queued
     const { payload: originalPayload } = request
     const payload = modifiedPayload || originalPayload
-
-    const { ok, val: hostName } = getHostName(url)
-    const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
-      dapp: url,
-      hostName: ok ? hostName : undefined,
-    }
 
     let signedTransaction: HexString | Uint8Array | undefined
 
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
       const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
-      analyticsProperties.chain = chain?.id ?? payload.genesisHash
 
       if (chain) {
         if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload)) {
@@ -209,22 +178,6 @@ export default class SigningHandler extends ExtensionHandler {
 
     queued.resolve({ id, signature, signedTransaction })
 
-    const hardwareType: "ledger" | "qr" | undefined =
-      account.type === "ledger-polkadot"
-        ? "ledger"
-        : account.type === "polkadot-vault"
-          ? "qr"
-          : undefined
-
-    talismanAnalytics.captureDelayed(
-      isJsonPayload(payload) ? "sign transaction approve" : "sign approve",
-      {
-        ...analyticsProperties,
-        networkType: "substrate",
-        hardwareType,
-      }
-    )
-
     return true
   }
 
@@ -235,10 +188,6 @@ export default class SigningHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.captureDelayed(
-      queued.type === "vrf-sign" ? "vrf sign reject" : "sign reject",
-      { networkType: "substrate" }
-    )
     queued.reject(new Error("Cancelled"))
 
     return true

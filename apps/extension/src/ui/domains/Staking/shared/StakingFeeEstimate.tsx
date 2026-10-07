@@ -1,9 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { cn } from "@ui/util/cn"
-
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 
 export const StakingFeeEstimate: FC<{
@@ -17,6 +17,12 @@ export const StakingFeeEstimate: FC<{
   tokensClassName?: string
 }> = ({ error, isLoading, plancks, tokenId, noCountUp, noFiat, className, tokensClassName }) => {
   const { t } = useTranslation()
+  useErrorShown({
+    shown: error ? "fee" : null,
+    surface: "field",
+    category: classifyError(error),
+    field: "fee",
+  })
   return (
     <>
       {error ? (

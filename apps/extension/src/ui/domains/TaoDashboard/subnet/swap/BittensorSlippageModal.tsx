@@ -10,7 +10,7 @@ export const BittensorSlippageModal: FC = () => {
   const { isOpen, close, args } = useBittensorSlippageModal()
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="tao_swap_slippage" isOpen={isOpen} onDismiss={close}>
       {args && <Content netuid={args.netuid} onClose={close} />}
     </Modal>
   )

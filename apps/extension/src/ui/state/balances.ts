@@ -12,6 +12,7 @@ import {
 } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import { tapBalancesInitialising } from "@ui/hooks/analytics/performance"
 import isEqual from "lodash-es/isEqual"
 import {
   combineLatest,
@@ -21,6 +22,7 @@ import {
   Observable,
   ReplaySubject,
   shareReplay,
+  tap,
   throttleTime,
 } from "rxjs"
 
@@ -70,7 +72,8 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   rawBalances$.pipe(
     map((balances) => balances.status === "initialising"),
-    distinctUntilChanged()
+    distinctUntilChanged(),
+    tap(tapBalancesInitialising)
   ),
   true
 )

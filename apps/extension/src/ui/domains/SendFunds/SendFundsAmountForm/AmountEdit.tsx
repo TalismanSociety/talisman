@@ -4,6 +4,7 @@ import { tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { PillButton } from "@ui/components/PillButton"
 import { WithTooltip } from "@ui/components/WithTooltip"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -240,7 +241,13 @@ const TokenDisplay = () => {
 }
 
 const ErrorMessage = () => {
-  const { error, errorDetails } = useSendFunds()
+  const { error, errorDetails, errorCategory = "input_invalid" } = useSendFunds()
+  useErrorShown({
+    shown: error && errorCategory,
+    surface: "field",
+    category: errorCategory,
+    field: "amount",
+  })
 
   return error ? (
     <WithTooltip tooltip={errorDetails}>

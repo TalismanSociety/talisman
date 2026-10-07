@@ -30,7 +30,7 @@ const BatchActionButton: FC<{
       <button type="button" onClick={open} className={className}>
         {children}
       </button>
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="authorised_sites_batch_action" isOpen={isOpen} onDismiss={close}>
         <ModalDialog onCloseClick={close} title={confirmTitle} className="h-auto border-grey-800">
           <p className="text-body-secondary">{confirmDescription}</p>
           <div className="mt-8 grid grid-cols-2 gap-8">
@@ -53,8 +53,13 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   const handleForgetAll = useCallback(async () => {
     try {
       return await api.authorizedSitesForgetAll(providerType)
-    } catch {
-      notify({ type: "error", title: t("Error"), subtitle: t("Failed to forget all sites") })
+    } catch (err) {
+      notify({
+        type: "error",
+        title: t("Error"),
+        subtitle: t("Failed to forget all sites"),
+        cause: err,
+      })
       return false
     }
   }, [providerType, t])
@@ -62,8 +67,13 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   const handleDisconnectAll = useCallback(async () => {
     try {
       return await api.authorizedSitesDisconnectAll(providerType)
-    } catch {
-      notify({ type: "error", title: t("Error"), subtitle: t("Failed to disconnect all sites") })
+    } catch (err) {
+      notify({
+        type: "error",
+        title: t("Error"),
+        subtitle: t("Failed to disconnect all sites"),
+        cause: err,
+      })
       return false
     }
   }, [providerType, t])

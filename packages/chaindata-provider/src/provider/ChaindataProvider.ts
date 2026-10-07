@@ -31,6 +31,7 @@ import {
   TokenSchema,
   type TokenType,
 } from "../chaindata"
+import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
@@ -48,6 +49,8 @@ export type ChaindataStorage = {
   networks: Network[]
   tokens: Token[]
   miniMetadatas: AnyMiniMetadata[]
+  /** Custom chaindata url the data was downloaded from, undefined for the default chaindata */
+  chaindataUrl?: string
 }
 
 /** By default, chaindata will be stored in memory and not persisted. */
@@ -61,6 +64,17 @@ export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
   dynamicTokens$?: ReplaySubject<Token[]>
+  /** Chaindata file to download instead of the default one from the TalismanSociety/chaindata repository */
+  chaindataUrl?: string
+}
+
+const parseCustomChaindataUrl = (chaindataUrl: string | undefined) => {
+  if (chaindataUrl === undefined || chaindataUrl === DEFAULT_CHAINDATA_URL) return undefined
+  try {
+    return new URL(chaindataUrl).href
+  } catch (cause) {
+    throw new Error(`Invalid chaindataUrl: "${chaindataUrl}"`, { cause })
+  }
 }
 
 export class ChaindataProvider implements IChaindataProvider {
@@ -73,15 +87,21 @@ export class ChaindataProvider implements IChaindataProvider {
     persistedStorage,
     customChaindata$,
     dynamicTokens$,
+    chaindataUrl,
   }: ChaindataProviderOptions = {}) {
+    const customChaindataUrl = parseCustomChaindataUrl(chaindataUrl)
     tryToDeleteOldChaindataDb()
 
-    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
+    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys, and drop it when it was downloaded from another chaindataUrl
+    const restoreStorage = (storage: ChaindataStorage | undefined): ChaindataStorage =>
+      storage?.chaindataUrl === customChaindataUrl
+        ? { ...DEFAULT_STORAGE, ...storage }
+        : { ...DEFAULT_STORAGE }
     const mergedStorage = isPromise(persistedStorage)
-      ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
-      : { ...DEFAULT_STORAGE, ...persistedStorage }
+      ? persistedStorage.then(restoreStorage)
+      : restoreStorage(persistedStorage)
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, customChaindataUrl)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 

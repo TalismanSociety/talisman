@@ -1,26 +1,16 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useTranslation } from "react-i18next"
 
 import { ReactComponent as ImgSuccess } from "../assets/success.svg"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
-const SUCCESS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Onboarding",
-  featureVersion: 5,
-  page: "Onboarding - Step 5 - Success",
-}
-
 export const SuccessPage = () => {
   const { t } = useTranslation()
-  useAnalyticsPageView(SUCCESS_PAGE)
   const { completeOnboarding } = useOnboard()
 
   return (
-    <OnboardLayout analytics={SUCCESS_PAGE} className="min-h-120 min-w-147.5">
+    <OnboardLayout className="min-h-120 min-w-147.5">
       <div className="flex w-92.25 flex-col items-center justify-center gap-12 p-12">
         <div className="whitespace-nowrap text-center text-lg uppercase">
           {t("Welcome, brave Seeker!")}

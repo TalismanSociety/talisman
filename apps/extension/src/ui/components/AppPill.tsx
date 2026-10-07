@@ -1,4 +1,4 @@
-import { sentry } from "@core/config/sentry"
+import { reportError } from "@ui/api/errorReporting"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { type FC, useMemo } from "react"
 
@@ -11,7 +11,7 @@ export const AppPill: FC<{ url?: string }> = ({ url }) => {
       const typedUrl = new URL(url)
       return typedUrl.hostname
     } catch (err) {
-      sentry.captureException(err)
+      reportError(err)
       return null
     }
   }, [url])

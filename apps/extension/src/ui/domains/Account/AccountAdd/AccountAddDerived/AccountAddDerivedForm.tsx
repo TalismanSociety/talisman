@@ -25,17 +25,19 @@ import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useDebouncedValue } from "@ui/hooks/useDebouncedValue"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { cn } from "@ui/util/cn"
-import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
+import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import * as yup from "yup"
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
+import { useAddAccountStep } from "../flow"
 import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -206,13 +208,19 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   })
 
   const { generateMnemonic } = useMnemonicCreateModal()
+  const [isNewPhraseStep, setIsNewPhraseStep] = useState(false)
+  useAddAccountStep(isNewPhraseStep ? "new_phrase" : null)
 
   const submit = useCallback(
     async ({ name, platform, mnemonicId, derivationPath }: FormData) => {
       const curve = getDefaultCurveForAccountPlatform(platform)
 
+      if (mnemonicId === null) setIsNewPhraseStep(true)
       const mnemonicOptions = mnemonicId === null ? await generateMnemonic() : null
-      if (mnemonicId === null && mnemonicOptions === null) return // user cancelled the wizard
+      if (mnemonicId === null && mnemonicOptions === null) {
+        setIsNewPhraseStep(false)
+        return // user cancelled the wizard
+      }
 
       const option: RequestAddAccountDerive[number] = mnemonicOptions
         ? {
@@ -232,6 +240,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             name,
           }
 
+      flows.add_account.submitted()
       const notificationId = notify(
         {
           type: "processing",
@@ -244,6 +253,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       try {
         const [address] = await api.accountAddDerive([option])
 
+        flows.add_account.completed()
         onSuccess(address)
 
         notifyUpdate(notificationId, {
@@ -252,11 +262,14 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           subtitle: name,
         })
       } catch (err) {
+        flows.add_account.failed(err)
+        setIsNewPhraseStep(false)
         log.error("Failed to create account", err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

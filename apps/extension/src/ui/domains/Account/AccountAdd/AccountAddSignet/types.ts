@@ -1,14 +1,11 @@
-export type SignetVault = {
-  address: string
-  name: string
-  chain: {
-    squidIds: {
-      chainData: string
-      txHistory: string
-    }
-    chainName: string
-    logo: string
-    genesisHash: `0x${string}`
-    isTestnet: boolean
-  }
-}
+import { z } from "zod/v4"
+
+export const signetVaultSchema = z.object({
+  address: z.string(),
+  name: z.string(),
+  chain: z.object({
+    genesisHash: z.templateLiteral(["0x", z.string().regex(/^[0-9a-fA-F]{64}$/)]),
+  }),
+})
+
+export type SignetVault = z.infer<typeof signetVaultSchema>

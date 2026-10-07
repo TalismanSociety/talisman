@@ -1,6 +1,7 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
 import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
+import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -20,13 +21,27 @@ const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"
 
 type SwapProviderProps = {
   stateInit: SwapInit | null
+  isOpen?: boolean
 }
+
+const STEP_OF_VIEW = {
+  "form": "form",
+  "approve-recipient": "recipient",
+  "confirm": "confirm",
+  "submitted": null,
+} as const satisfies Record<SwapView, FlowStep<typeof flows.swap> | null>
 
 export type { SwapView } from "./swap-modules/common.swap-module"
 
-export const useSwapContextProvider = ({ stateInit }: SwapProviderProps) => {
+export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProviderProps) => {
   // -- View --
   const [swapView, setSwapView] = useState<SwapView>("form")
+  useFlow(flows.swap, {
+    active: isOpen && !!stateInit,
+    entry: stateInit?.entry ?? "dashboard",
+    started: { prefill_from_token: !!stateInit?.fromTokenId },
+    step: STEP_OF_VIEW[swapView],
+  })
 
   // -- Core form state --
   const [fromTokenId, setFromTokenId] = useState<string | null>(null)

@@ -7,6 +7,7 @@ import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { type CSSProperties, type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -65,7 +66,11 @@ export const UnlockJsonAccountsButton: FC = () => {
         resetField("password")
       } catch (err) {
         log.error("failed to unlock", { err })
-        setError("password", { message: t("Incorrect password") }, { shouldFocus: true })
+        setError(
+          "password",
+          { type: "wrong_password", message: t("Incorrect password") },
+          { shouldFocus: true }
+        )
       }
     },
     [clearErrors, resetField, setError, t, unlockAccounts]
@@ -117,7 +122,7 @@ export const UnlockJsonAccountsButton: FC = () => {
       <Button type="button" onClick={open} disabled={!requiresAccountUnlock}>
         {t("Unlock")}
       </Button>
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="unlock_json_accounts" isOpen={isOpen} onDismiss={close}>
         <ModalDialog className="h-auto" title={t("Unlock accounts")} onCloseClick={close}>
           <div className="w-full text-right text-body-secondary">
             <Trans
@@ -146,7 +151,10 @@ export const UnlockJsonAccountsButton: FC = () => {
             )}
           </div>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
-            <FormFieldContainer error={errors.password?.message}>
+            <FormFieldContainer
+              error={errors.password?.message}
+              errorCategory={errorCategoryOfField(errors.password)}
+            >
               <FormFieldInputText
                 before={<KeyIcon className="opacity-50" />}
                 {...register("password")}

@@ -62,12 +62,18 @@ export const MnemonicSetPvVerifierModal = () => {
         type: "error",
         title: t("Failed to change PV verifier"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [close, mnemonic, t])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="mnemonic_set_pv_verifier"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <ModalDialog
         className="h-auto"
         title={t("Set as Polkadot Vault Verifier")}

@@ -54,7 +54,7 @@ export const AccountRemoveModal = () => {
   }, [account, close, location.pathname, navigate])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="account_remove" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog className="h-auto" title={t("Remove account")} onCloseClick={close}>
         <div className="text-body-secondary text-sm">
           <p className="text-sm">

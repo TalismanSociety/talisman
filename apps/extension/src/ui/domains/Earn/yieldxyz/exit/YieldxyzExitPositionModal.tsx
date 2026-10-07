@@ -11,7 +11,12 @@ export const YieldxyzExitPositionModal: FC = () => {
   const { isOpen, close, args: position } = useYieldxyzExitModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal
+      analyticsId="yieldxyz_exit_position"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="YieldxyzExitPositionModal" />}>
           <YieldxyzExitWizardProvider position={position}>

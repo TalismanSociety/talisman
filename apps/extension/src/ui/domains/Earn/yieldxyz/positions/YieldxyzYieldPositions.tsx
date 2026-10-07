@@ -1,9 +1,11 @@
+import { yieldIdForAnalytics } from "@common/analytics/staking"
 import { YIELD_API_BASE_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { BalanceDto, YieldDto } from "@core/domains/earn/exports"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, MoreHorizontalIcon, ZapPlusIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import {
   ContextMenu,
@@ -30,7 +32,6 @@ import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
 import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
@@ -56,6 +57,10 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
   useEffect(() => {
     log.debug("[earn] YieldxyzYieldPositions", { positions })
   }, [positions])
+
+  useEffect(() => {
+    track("earn_position_opened", { system: "yieldxyz", yield_id: yieldIdForAnalytics(yieldId) })
+  }, [yieldId])
 
   if (!product) return null
 
@@ -410,6 +415,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
 
   const onAddToPositionClick = useCallback(() => {
     openEnter({
+      entry: "position",
       address: position.address,
       productId: position.product.id,
     })

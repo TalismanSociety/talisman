@@ -2,9 +2,9 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { log } from "@common/log"
 import { PhishingDetector } from "@metamask/phishing-controller"
 import { Dexie } from "dexie"
-
-import { sentry } from "../../../config/sentry"
 import { getBlobStore } from "../../../db/blobs"
+import { sessionStorage } from "../../../util/sessionStorageCompat"
+import { reportError } from "../../analytics/errorReporting"
 import { getHostName } from "../helpers"
 import { initialPhishingList } from "./initial-phishing-list"
 
@@ -216,7 +216,7 @@ function persistBlob<T>(store: ReturnType<typeof getBlobStore<T>>, data: T, labe
     const isDbClosed =
       cause instanceof Dexie.DatabaseClosedError || cause.name === Dexie.errnames.DatabaseClosed
     if (!isDbClosed) {
-      sentry.captureException(new Error(`Failed to persist ${label}`, { cause }))
+      reportError(new Error(`Failed to persist ${label}`, { cause }))
     }
   })
 }
@@ -271,7 +271,7 @@ let lifecycleGeneration = 0
 function ensureInitialised(): Promise<void> {
   if (!initialised) {
     const generation = lifecycleGeneration
-    const promise = restoreFromBlobStore().then(async ({ hasMetamaskCache }) => {
+    const promise = restorePersistedState().then(async ({ hasMetamaskCache }) => {
       if (generation !== lifecycleGeneration || initialised !== promise) return
       if (!hasMetamaskCache) await refreshPhishingLists()
       if (generation !== lifecycleGeneration || initialised !== promise) return
@@ -283,12 +283,19 @@ function ensureInitialised(): Promise<void> {
   return initialised
 }
 
-/** Restore cached phishing data from the blob store. Dexie auto-opens the DB on first query. */
-async function restoreFromBlobStore(): Promise<{ hasMetamaskCache: boolean }> {
+/** Restore cached phishing data and user exceptions. Dexie auto-opens the DB on first query. */
+async function restorePersistedState(): Promise<{ hasMetamaskCache: boolean }> {
   let hasMetamaskCache = false
 
   try {
-    const [mmBlob, pdBlob] = await Promise.all([metamaskBlobStore.get(), polkadotBlobStore.get()])
+    const [mmBlob, pdBlob, exceptions] = await Promise.all([
+      metamaskBlobStore.get(),
+      polkadotBlobStore.get(),
+      sessionStorage.get("phishingExceptions"),
+    ])
+
+    for (const host of exceptions?.hosts ?? []) talismanAllowHosts.add(host)
+    for (const url of exceptions?.urls ?? []) talismanAllowUrls.add(url)
 
     if (mmBlob && isValidMetamaskList(mmBlob.data)) {
       metamaskDetector = buildMetamaskDetector(mmBlob.data)
@@ -377,8 +384,17 @@ export function isExemptHost(host: string): boolean {
   )
 }
 
-/** Whitelist a URL so it is no longer flagged as phishing for this session. */
-export function addException(url: string): boolean {
+// session storage outlives service worker suspension, but not a browser or extension restart
+function saveExceptions() {
+  return sessionStorage.set({
+    phishingExceptions: { hosts: [...talismanAllowHosts], urls: [...talismanAllowUrls] },
+  })
+}
+
+/** Allow a URL so it is no longer flagged as phishing until the browser restarts. */
+export async function addException(url: string): Promise<boolean> {
+  await ensureInitialised()
+
   const { val: host, ok } = getHostName(url)
   if (!ok) return false
 
@@ -390,10 +406,12 @@ export function addException(url: string): boolean {
     if (!urlException) return false
 
     talismanAllowUrls.add(urlException)
+    await saveExceptions()
     return true
   }
 
   talismanAllowHosts.add(host)
+  await saveExceptions()
   return true
 }
 

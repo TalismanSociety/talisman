@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import { Balances } from "@talismn/balances"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -11,7 +10,6 @@ import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs
 import { useEarnOpportunitiesByTokenId } from "@ui/domains/Earn/hooks/useEarnOpportunitiesByTokenId"
 import { useDefaultTaoDashboardNetworkId } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -33,13 +31,6 @@ import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
 import { TopActions } from "../../components/TopActions"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
 import { PopupEarnPositionsTab } from "./PopupEarnPositionsTab"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Earn",
-  featureVersion: 1,
-  page: "Earn Home",
-}
 
 type PopupEarnOutletContext = {
   search: string
@@ -99,7 +90,7 @@ const PopupEarnHeader = () => {
             />
           )}
         </div>
-        <TopActions analyticsPage={ANALYTICS_PAGE} />
+        <TopActions />
       </div>
     </div>
   )
@@ -200,25 +191,11 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
 export const PopupEarnPositionsRoute: FC = () => {
   const { search } = usePopupEarnOutletContext()
 
-  useAnalyticsPageView({
-    container: "Popup",
-    feature: "Earn",
-    featureVersion: 1,
-    page: "Earn Positions",
-  })
-
   return <PopupEarnPositionsTab search={search} />
 }
 
 export const PopupEarnDiscoverRoute: FC = () => {
   const { search } = usePopupEarnOutletContext()
-
-  useAnalyticsPageView({
-    container: "Popup",
-    feature: "Earn",
-    featureVersion: 1,
-    page: "Earn Discover",
-  })
 
   return <PopupEarnDiscoverTab search={search} />
 }

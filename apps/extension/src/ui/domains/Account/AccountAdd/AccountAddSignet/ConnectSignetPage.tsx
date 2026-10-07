@@ -1,4 +1,4 @@
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@common/constants"
+import { SIGNET_APP_URL } from "@common/constants"
 import { log } from "@common/log"
 import { ArrowRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -7,10 +7,12 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { notify } from "@ui/components/Notifications"
 import { Spacer } from "@ui/components/Spacer"
+import { flows } from "@ui/hooks/analytics/flows"
 import { signet } from "@ui/util/signet"
 import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
+import { useAddAccountStep } from "../flow"
 
 import { useSignetConnect } from "./context"
 
@@ -33,6 +35,7 @@ export const ConnectSignetPage = () => {
   const { signetUrl, signetUrlOrigin, setSignetUrl, setVaults } = useSignetConnect()
   const { t } = useTranslation()
   const [isConnecting, setIsConnecting] = useState(false)
+  useAddAccountStep(isConnecting ? "connect_device" : null)
 
   const handleContinue = useCallback(
     async (e: React.FormEvent) => {
@@ -45,9 +48,15 @@ export const ConnectSignetPage = () => {
           setVaults(res)
           navigate("accounts")
         } else {
-          notify({ type: "error", title: t("Connection failed"), subtitle: "No vault selected" })
+          notify({
+            type: "error",
+            title: t("Connection failed"),
+            subtitle: "No vault selected",
+            errorCategory: "input_invalid",
+          })
         }
       } catch (err) {
+        flows.add_account.failed(err)
         notify({
           type: "error",
           title: t("Connection failed"),
@@ -57,6 +66,7 @@ export const ConnectSignetPage = () => {
               : typeof err === "string"
                 ? err
                 : "Please try again.",
+          cause: err,
         })
 
         log.error("Failed to connect to Signet", { err })
@@ -81,8 +91,8 @@ export const ConnectSignetPage = () => {
             {t(
               "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
             )}
-            <Link to={SIGNET_LANDING_URL} target="_blank" className="text-primary-500">
-              {SIGNET_LANDING_URL}
+            <Link to={SIGNET_APP_URL} target="_blank" className="text-primary-500">
+              {SIGNET_APP_URL}
             </Link>
           </>
         }

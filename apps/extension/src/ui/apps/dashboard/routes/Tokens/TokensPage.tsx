@@ -1,7 +1,7 @@
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { track } from "@ui/api/track"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -13,28 +13,19 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Spacer } from "@ui/components/Spacer"
 import { TogglePill } from "@ui/components/TogglePill"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useBalancesHydrate } from "@ui/state/balances"
-import { useAnyNetwork, useNetworks } from "@ui/state/chaindata"
+import { useActiveTokensState, useAnyNetwork, useNetworks } from "@ui/state/chaindata"
 import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { type PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Tokens",
-}
-
 const Content = () => {
   const { t } = useTranslation()
   useBalancesHydrate() // preload
 
-  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -82,11 +73,6 @@ const Content = () => {
   ])
 
   const handleAddToken = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add token button",
-    })
     navigate("./add")
   }, [navigate])
 
@@ -167,7 +153,11 @@ const Content = () => {
         networkId={networkId}
         search={search}
       />
-      <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
+      <Modal
+        analyticsId="tokens_reset_all"
+        isOpen={ocResetAllModal.isOpen}
+        onDismiss={ocResetAllModal.close}
+      >
         <ResetStatesModalContent onClose={ocResetAllModal.close} />
       </Modal>
     </>
@@ -184,11 +174,13 @@ const ResetStatesModalContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { t } = useTranslation()
+  const activeTokens = useActiveTokensState()
 
   const handleClick = useCallback(async () => {
     activeTokensStore.mutate(() => ({}))
+    track("tokens_reset", { count: Object.keys(activeTokens).length })
     onClose()
-  }, [onClose])
+  }, [onClose, activeTokens])
 
   return (
     <ModalDialog className="h-auto" title={t("Reset tokens")} onCloseClick={onClose}>

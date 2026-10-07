@@ -1,15 +1,18 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
 import type { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { provideContext } from "@ui/util/provideContext"
 import { isEqual } from "lodash-es"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
+import { valueReport } from "../../../Staking/shared/stakingAnalytics"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzTransactionManager"
@@ -46,8 +49,19 @@ const useYieldxyzExitWizardProvider = ({
 
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountOut || !position?.product.token || !balance) return [null, null]
-    if (!isAccountOwned(account)) return [null, t("Unable to transact with external accounts")]
-    if (state.amountOut > BigInt(balance.amountRaw)) return [null, t("Insufficient balance")]
+    if (!isAccountOwned(account))
+      return [
+        null,
+        {
+          message: t("Unable to transact with external accounts"),
+          category: "unsupported" as const,
+        },
+      ]
+    if (state.amountOut > BigInt(balance.amountRaw))
+      return [
+        null,
+        { message: t("Insufficient balance"), category: "insufficient_balance" as const },
+      ]
 
     const inputs = {
       amount: planckToTokens(state.amountOut.toString(), balance.token.decimals),
@@ -56,6 +70,9 @@ const useYieldxyzExitWizardProvider = ({
     }
     return [inputs, null]
   }, [state.amountOut, position?.product.token, balance, account, t])
+
+  const validationErrorCategory: ErrorCategory =
+    talismanValidationError?.category ?? "input_invalid"
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: state.position?.product?.mechanics.arguments?.exit,
@@ -88,33 +105,60 @@ const useYieldxyzExitWizardProvider = ({
   const onCompleted = useCallback(() => {
     // do not await the refresh or UI will flicker
     if (state.position) api.yieldxyzPositionRefresh(state.position)
-    if (isOpen) close()
+    if (isOpen) {
+      flows.earn_withdraw.completed()
+      close()
+    }
   }, [close, isOpen, state.position])
+
+  useFlow(flows.earn_withdraw, { active: isOpen && !!position, step: state.step })
+
+  const refSent = useRef(false)
+  const onTransactionSent = useCallback(() => {
+    if (refSent.current) return
+    refSent.current = true
+    const report = valueReport({
+      account,
+      network,
+      symbol: balance?.token.symbol,
+      usd: shareOfUsd(balance, state.amountOut),
+    })
+    if (report)
+      flows.earn_withdraw.submitted({
+        ...report,
+        yield_id: yieldIdForAnalytics(state.position?.yieldId),
+      })
+  }, [account, network, balance, state.amountOut, state.position?.yieldId])
 
   const setMaxAmountOut = useCallback(() => {
     if (!balance) return
     setState((state) => ({ ...state, amountOut: BigInt(balance.amountRaw) }))
   }, [balance])
 
-  const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
-    action,
-    address: state.position?.address,
-    networkId: state.position?.networkId,
-    maxNativeValue: 0n, // exiting a position never sends native tokens
-    refreshAction,
-    submitActionTransaction,
-    onCompleted,
-  })
+  const { stepIndex, transaction, isProcessing, onSubmit, onSubmitError } =
+    useYieldxyzTransactionManager({
+      action,
+      address: state.position?.address,
+      networkId: state.position?.networkId,
+      maxNativeValue: 0n,
+      refreshAction,
+      submitActionTransaction,
+      onCompleted,
+      onTransactionSent,
+      onTransactionFailed: flows.earn_withdraw.failed,
+    })
 
   return {
     ...state,
     network,
     balance,
-    validationError: talismanValidationError ?? yieldxyzValidationError,
+    validationError: talismanValidationError?.message ?? yieldxyzValidationError,
+    validationErrorCategory,
     goTo,
     onAmountOutChanged,
     setMaxAmountOut,
     onSubmit,
+    onSubmitError,
     isLoadingAction,
     isProcessing,
     action,
@@ -146,4 +190,12 @@ const getExitableBalance = (position: YieldxyzPositionEnhanced | null) => {
   }
 
   return activeBalances[0]
+}
+
+const shareOfUsd = (
+  balance: { amountUsd?: string | null; amountRaw: string } | undefined,
+  amountOut: bigint | null
+) => {
+  if (!balance?.amountUsd || amountOut === null || BigInt(balance.amountRaw) === 0n) return null
+  return (Number(balance.amountUsd) * Number(amountOut)) / Number(balance.amountRaw)
 }

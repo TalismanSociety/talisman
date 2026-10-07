@@ -1,3 +1,4 @@
+import { accountMoveOf } from "@common/analytics/accounts"
 import type { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import type { Account } from "@core/domains/keyring/exports"
 import {
@@ -9,14 +10,16 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
+import { isEqual } from "lodash-es"
 import { type CSSProperties, type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 import { KeyboardSensor, MouseSensor } from "./DragAndDrop"
 import { TreeItem, TreeItems } from "./TreeItems"
 import type { UiTree, UiTreePosition } from "./types"
-import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
+import { folderIdOf, getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
 const DRAGGED_OVERLAY_STYLE: CSSProperties = {
   opacity: 0.95,
@@ -72,20 +75,31 @@ export const ManageAccountsList: FC<{
           await api.accountsCatalogRunActions([
             { type: "reorder", tree: treeName, items: uiTreeToDataTree(newItems) },
           ])
+          const { parentId } = over.data.current as UiTreePosition
+          if (!isEqual(newItems, items))
+            track("account_moved", {
+              item: itemsMap[active.id as string]?.type ?? "account",
+              action: accountMoveOf(
+                folderIdOf(items, active.id as string),
+                parentId === "root" ? undefined : parentId
+              ),
+              tree: treeName,
+            })
 
           setItems(newItems)
-        } catch {
+        } catch (err) {
           notify({
             type: "error",
             title: t("Error"),
             subtitle: t("Failed to reorder"),
+            cause: err,
           })
         }
       }
 
       return setDraggedItemId(null)
     },
-    [items, t, treeName]
+    [items, itemsMap, t, treeName]
   )
 
   return (

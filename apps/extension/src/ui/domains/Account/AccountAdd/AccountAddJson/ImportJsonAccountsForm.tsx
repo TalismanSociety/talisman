@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -155,6 +156,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
 
   const handleImportClick = useCallback(async () => {
     setIsImporting(true)
+    flows.add_account.submitted()
 
     const count = accounts?.filter((a) => a.selected).length
 
@@ -172,6 +174,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
 
     try {
       const addresses = await importAccounts()
+      flows.add_account.completed()
       onSuccess(addresses[0])
       notifyUpdate(notificationId, {
         type: "success",
@@ -179,10 +182,12 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         subtitle: "",
       })
     } catch (err) {
+      flows.add_account.failed(err)
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Error importing account"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
     setIsImporting(false)

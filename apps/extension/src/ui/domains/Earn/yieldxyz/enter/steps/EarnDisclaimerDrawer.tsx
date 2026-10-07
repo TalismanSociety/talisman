@@ -21,7 +21,7 @@ export const EarnDisclaimerDrawer: FC<EarnDisclaimerDrawerProps> = ({
   const [, setHideDisclaimer] = useAppState("hideEarnDisclaimer")
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId="earn-modal">
+    <Drawer analyticsId="earn_disclaimer" anchor="bottom" isOpen={isOpen} containerId="earn-modal">
       <DrawerContent className="flex flex-col items-center gap-8">
         <div className="font-bold text-body">{t("Accept Terms to Continue")}</div>
         <p className="text-body-secondary text-sm">

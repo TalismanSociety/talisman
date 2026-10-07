@@ -1,6 +1,7 @@
 import { appStore } from "@core/domains/app/store.app"
 import { XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { IconButton } from "@ui/components/IconButton"
 import { useAccounts } from "@ui/state/accounts"
@@ -107,6 +108,7 @@ const useBackupBanner = () => {
   const onSnoozeClick = useCallback(() => {
     // always snooze for 3 days
     appStore.snoozeBackupReminder()
+    track("backup_reminder_snoozed", { session_only: false })
   }, [])
 
   /** for the X icon button */
@@ -115,6 +117,7 @@ const useBackupBanner = () => {
     if (hasFundsInNotBackedUpMnemonics) setIsSessionSnoozed(true)
     // if user has no funds, snooze for 3 days
     else appStore.snoozeBackupReminder()
+    track("backup_reminder_snoozed", { session_only: hasFundsInNotBackedUpMnemonics })
   }, [hasFundsInNotBackedUpMnemonics, setIsSessionSnoozed])
 
   const onBackupClick = useCallback(async () => {

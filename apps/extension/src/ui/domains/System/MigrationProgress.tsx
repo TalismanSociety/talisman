@@ -1,6 +1,8 @@
 import { appStore } from "@core/domains/app/store.app"
 import { TalismanHandIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { useAppState } from "@ui/state/app"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
@@ -10,6 +12,12 @@ export const MigrationProgress = () => {
   const { t } = useTranslation()
 
   const [migration] = useAppState("currentMigration")
+  useVirtualScreen("/migrating")
+  useErrorShown({
+    shown: !!migration?.errors?.length && migration.name,
+    surface: "screen",
+    category: "unknown",
+  })
   if (!migration) return null
 
   return (

@@ -64,6 +64,7 @@ export const BittensorSubnetBondForm = () => {
     <>
       <BittensorBondFormBase BondTypeDetails={SubnetStakeDetails} />
       <Drawer
+        analyticsId="subnet_risk"
         anchor="bottom"
         isOpen={isSubnetRiskDrawerOpen}
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}

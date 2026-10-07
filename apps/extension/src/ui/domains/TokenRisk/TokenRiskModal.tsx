@@ -17,7 +17,7 @@ export const TokenRiskModal: FC<{
   const { t } = useTranslation()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal analyticsId="token_risk" containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
       <PopupSizeModalContainer id="token-risk-modal">
         <ModalDialog
           variant="wizard"

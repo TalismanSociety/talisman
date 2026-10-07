@@ -100,7 +100,10 @@ export const EthSignBodyMessagePermit: FC<{
         )}
       </div>
       {!isRevoke && (
-        <SignAlertMessage type={isUnlimited || expiry.isFarFuture ? "error" : "warning"}>
+        <SignAlertMessage
+          type={isUnlimited || expiry.isFarFuture ? "error" : "warning"}
+          errorCategory={null}
+        >
           {isUnlimited
             ? t(
                 "This signature lets this contract spend all of these tokens on your behalf, with no further approval from you."

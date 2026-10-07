@@ -77,7 +77,6 @@ pnpm build
 pnpm build:firefox
 
 # Production builds (Chrome Web Store / Firefox Add-ons)
-# Enables Sentry sourcemap upload
 pnpm build:prod
 pnpm build:prod:firefox  # Local build; the release build runs via Docker (root: pnpm build:extension:prod:firefox)
 
@@ -94,20 +93,35 @@ Firefox production builds use a **two-pass Docker build** to ensure reproducibil
 
 | Variable            | Required | Description                                     |
 | ------------------- | -------- | ----------------------------------------------- |
-| `SENTRY_AUTH_TOKEN` | Chrome   | Sentry token for sourcemap upload (build only warns without it) |
-| `SENTRY_DSN`        | Chrome   | Sentry DSN used at runtime                      |
-| `POSTHOG_AUTH_TOKEN`| Chrome   | PostHog analytics token                         |
+| `POSTHOG_CLI_API_KEY` | Chrome release | PostHog personal API key with only the `error_tracking:write` scope, limited to the project. Uploads the source maps |
+| `POSTHOG_CLI_HOST` | No | PostHog API host. The default is `https://us.posthog.com` |
 | `SIMPLE_LOCALIZE_API_KEY` | Release | Used by `pnpm chore:download-translations` |
 | `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
 
 Put local values in `apps/extension/.env`. `.env.sample` lists every variable that you can set there, including dev-only and e2e variables. The build scripts set `BUILD_TYPE`.
 
-#### Sourcemap Handling
+#### Source maps
 
-- **Production/Canary Chrome builds**: Generate hidden sourcemaps (no inline reference in JS)
-- **Sentry upload**: Sourcemaps are uploaded to Sentry for error tracking (Chrome only)
-- **Firefox production/canary builds**: No sourcemaps
-- **Cleanup**: Sourcemaps are automatically deleted before zipping to keep them out of the final distribution
+Production and canary Chrome builds make hidden source maps (no inline reference in the JS) and upload them to PostHog, so error tracking shows exceptions at their source line. The `zip:extension:start` hook in `wxt.config.ts` runs `scripts/posthogSourcemaps.ts`, in this order:
+
+1. `@posthog/cli sourcemap inject` adds a chunk id to each bundle. `page.js` and `content-scripts/` are left out: they run in web pages and report no errors.
+2. `@posthog/cli sourcemap upload` uploads the maps under the release `talisman-extension` `<version>+<git sha>`, for example `3.10.1+de76c562f`. A canary build adds `-canary` to the version: `3.10.1-canary+de76c562f`.
+3. The hook deletes every `.map` file. Maps never ship in the zip.
+
+Before the build starts, the `build:before` hook checks the key with PostHog. The key must be set and valid, hold `error_tracking:write`, and reach the project in `src/core/domains/analytics/posthogProject.ts`.
+
+The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcemaps.ts`. Its first run downloads the CLI binary from GitHub. It gets its key and nothing else of the build's env, and the build fails if it changed anything in the output beyond the chunk ids.
+
+| Situation | Result |
+| --- | --- |
+| Firefox build | Skipped. Firefox builds have no source maps, and the Docker build stays reproducible |
+| `pnpm dev`, `wxt build` and CI builds | Skipped. They make no maps |
+| `POSTHOG_CLI_API_KEY` missing, invalid, without the scope or for another project | The build fails before it starts |
+| Inject or upload fails | The build fails, and no zip is made |
+
+Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. Each build is its own release. A chunk that an earlier build already uploaded keeps that build's release and map, even when its map changed without its code changing (a comment edit, another output folder): the stored map still resolves that code.
+
+To build a production zip without uploading while the keys are in `.env`, set `POSTHOG_CLI_DRY_RUN=true` in the shell. The zip then has no chunk ids.
 
 ### Output Directories
 
@@ -120,12 +134,12 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 
 ### Build Variants
 
-| Build Type  | Name Suffix | Version Name Example   | Sentry Upload |
-| ----------- | ----------- | ---------------------- | ------------- |
-| Production  | (none)      | `3.1.16`                  | ✅ (Chrome)   |
-| Canary      | ` - Canary` | `3.1.16 canary - abc1234` | ✅ (Chrome)   |
-| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    | ❌            |
-| Local Build | (none)      | `3.1.16 dev - abc1234`    | ❌            |
+| Build Type  | Name Suffix | Version Name Example      | Source map upload |
+| ----------- | ----------- | ------------------------- | ----------------- |
+| Production  | (none)      | `3.1.16`                  | ✅ (Chrome)       |
+| Canary      | ` - Canary` | `3.1.16 canary - abc1234` | ✅ (Chrome)       |
+| Dev Server  | ` - Dev`    | `3.1.16 dev - abc1234`    | ❌                |
+| Local Build | (none)      | `3.1.16 dev - abc1234`    | ❌                |
 
 ### How Production Builds Work
 
@@ -174,8 +188,7 @@ The main configuration file controls:
 | Package resolution | Source (`src/`) | Source (`src/`)                           |
 | Icon suffix        | `-dev`          | `-prod` / `-canary`                       |
 | Minification       | Disabled        | Enabled                                   |
-| Source maps        | Separate `.map` files | Chrome: hidden (uploaded to Sentry, then deleted). Firefox: none |
-| Sentry upload      | No              | Chrome only                               |
+| Source maps        | Separate `.map` files | Chrome: hidden (uploaded to PostHog, then deleted). Firefox: none |
 
 ## Testing
 

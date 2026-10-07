@@ -17,7 +17,8 @@ import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
 
 export const PolkadotSignTransactionRequest: FC = () => {
-  const { url, request, status, message, account, chain, payload } = usePolkadotSigningRequest()
+  const { url, request, status, message, errorCategory, account, chain, payload } =
+    usePolkadotSigningRequest()
 
   const { genesisHash, specVersion } = useMemo(() => {
     return payload && isJsonPayload(payload)
@@ -51,7 +52,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
           <div id="sign-alerts-inject"></div>
           <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
           {errorMessage && (
-            <SignAlertMessage className="mb-6" type="error">
+            <SignAlertMessage className="mb-6" type="error" errorCategory={errorCategory}>
               {errorMessage}
             </SignAlertMessage>
           )}

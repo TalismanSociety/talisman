@@ -38,7 +38,12 @@ export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDra
   }
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
+    <Drawer
+      analyticsId="bittensor_conviction_lock_info"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+    >
       <DrawerContent className="flex flex-col items-center gap-8">
         <div className="flex size-24 items-center justify-center rounded-full bg-primary/10">
           <HelpCircleIcon className="inline-block size-12 text-primary" />

@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
@@ -10,6 +11,7 @@ import {
 } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
@@ -147,15 +149,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
-  const {
-    isMevShieldDisabled,
-    isMevShieldFeatureDisabled,
-    withMevShield,
-    setIsMevProtectionEnabled,
-    txMode,
-    onSubmit,
-  } = useSwapSubmit({ netuid, account, direction: "sell", resetValueIn })
-
   const { data: sapi } = useScaleApi(networkId)
 
   const {
@@ -179,6 +172,24 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     address,
     networkId,
     remarkType: "swap",
+  })
+
+  const {
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    withMevShield,
+    setIsMevProtectionEnabled,
+    txMode,
+    onSubmit,
+    confirm,
+  } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "sell",
+    resetValueIn,
+    valueIn: state.valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: typeof valueOut === "bigint" ? valueOut : null,
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
@@ -219,21 +230,24 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
-  const inputErrorMessage = useMemo(() => {
+  const inputError = useMemo<InlineError | null>(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
     if (state.valueIn > maxValueIn) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      return effectiveLocked > 0n && state.valueIn <= balanceTokenIn.free.planck
-        ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
+      if (effectiveLocked > 0n && state.valueIn <= balanceTokenIn.free.planck)
+        return {
+          message: t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
             amount: new BalanceFormatter(effectiveLocked, tokenIn.decimals).tokens,
             symbol: tokenIn.symbol,
-          })
-        : t("Insufficient balance")
+          }),
+          category: "input_invalid",
+        }
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
     }
 
     if (knownTransferableTao === null && isErrorTransferableTao)
-      return t("Failed to load TAO balance")
+      return { message: t("Failed to load TAO balance"), category: "rpc" }
 
     // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
     // the wallet sends, so the fee always comes from free TAO
@@ -243,13 +257,16 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
       existentialDeposit &&
       existentialDeposit.planck + combinedFeeEstimate > knownTransferableTao
     )
-      return t("Insufficient TAO to cover fee")
+      return { message: t("Insufficient TAO to cover fee"), category: "insufficient_fee" }
 
     if (typeof minAlphaUnstake === "bigint" && state.valueIn < minAlphaUnstake)
-      return t("Minimum unbond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
-        symbol: tokenIn.symbol,
-      })
+      return {
+        message: t("Minimum unbond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
+          symbol: tokenIn.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
     // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
@@ -262,10 +279,13 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
       remaining > 0n &&
       remaining < minAlphaBond
     )
-      return t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
-        symbol: tokenIn.symbol,
-      })
+      return {
+        message: t("Unstake everything or keep at least {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
+          symbol: tokenIn.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     return null
   }, [
@@ -282,6 +302,14 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     t,
     tokenIn,
   ])
+
+  const inputErrorMessage = inputError?.message ?? null
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputError?.category ?? "input_invalid",
+    field: "amount",
+  })
 
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
@@ -331,6 +359,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     txInfo,
     txMode,
     onSubmit,
+    confirm,
 
     onValueChange,
   }

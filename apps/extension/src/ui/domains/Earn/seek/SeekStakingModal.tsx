@@ -1,6 +1,9 @@
+import { attachErrorCategory, type ErrorCategory } from "@common/analytics/errorCategory"
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
+import type { StakingAction, StakingEntry } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformEthereum } from "@core/domains/keyring/exports"
-import type { Balances } from "@talismn/balances"
+import { BalanceFormatter, type Balances } from "@talismn/balances"
 import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
@@ -25,11 +28,14 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
+import { stakingSubmittedReport } from "@ui/domains/Staking/shared/stakingAnalytics"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { useTransaction } from "@ui/state/transactions"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -99,21 +105,35 @@ export const SeekStakingModal: FC = () => {
   const { isOpen, close, args } = useSeekStakingModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="seek_staking" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id={SEEK_STAKING_MODAL_CONTAINER_ID}>
         {args && (
-          <SeekStakingForm action={args.action} initialAddress={args.address} isOpen={isOpen} />
+          <SeekStakingForm
+            entry={args.entry}
+            action={args.action}
+            initialAddress={args.address}
+            isOpen={isOpen}
+          />
         )}
       </PopupSizeModalContainer>
     </Modal>
   )
 }
 
+const STAKING_ACTION_OF_SEEK = {
+  stake: "stake",
+  requestWithdrawal: "unstake",
+  completeWithdrawal: "withdraw",
+  cancelWithdrawal: "cancel_unstake",
+  getReward: "claim",
+} as const satisfies Record<SeekStakingAction, StakingAction>
+
 const SeekStakingForm: FC<{
+  entry: StakingEntry
   action: SeekStakingAction
   initialAddress?: string
   isOpen: boolean
-}> = ({ action, initialAddress, isOpen }) => {
+}> = ({ entry, action, initialAddress, isOpen }) => {
   const { t } = useTranslation()
   const { close } = useSeekStakingModal()
   const config = useSeekStakingConfig()
@@ -222,40 +242,53 @@ const SeekStakingForm: FC<{
     [action]
   )
 
-  const error = useMemo(() => {
+  const amountError = useMemo<{ message: string; category: ErrorCategory | null } | null>(() => {
     if (!token || !account || !isAccountOwned(account) || !isAccountPlatformEthereum(account))
-      return t("Select an owned Ethereum account")
+      return {
+        message: t("Select an owned Ethereum account"),
+        category: account ? "input_invalid" : null,
+      }
     if (!isAmountAction(action)) return null
-    if (!amount || amount <= 0n) return t("Enter an amount")
+    if (!amount || amount <= 0n) return { message: t("Enter an amount"), category: null }
+    if (amount > maxAmount && action === "requestWithdrawal")
+      return { message: t("Amount exceeds staked balance"), category: "insufficient_balance" }
     if (amount > maxAmount)
-      return action === "requestWithdrawal"
-        ? t("Amount exceeds staked balance")
-        : t("Amount exceeds available balance")
+      return { message: t("Amount exceeds available balance"), category: "insufficient_balance" }
     if (
       action === "stake" &&
       metadata.data?.minStakeAmount &&
       amount < metadata.data.minStakeAmount
     )
-      return t("Minimum stake is {{amount}} {{symbol}}", {
-        amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
-        symbol: token.symbol,
-      })
+      return {
+        message: t("Minimum stake is {{amount}} {{symbol}}", {
+          amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
+          symbol: token.symbol,
+        }),
+        category: "input_invalid",
+      }
     if (action === "requestWithdrawal") {
       if ((position.data?.pendingWithdrawal.amount ?? 0n) > 0n)
-        return t("Complete or cancel your pending unstake before requesting another one")
+        return {
+          message: t("Complete or cancel your pending unstake before requesting another one"),
+          category: "input_invalid",
+        }
       const remaining = (position.data?.staked ?? 0n) - amount
       if (
         remaining > 0n &&
         metadata.data?.minStakeAmount &&
         remaining < metadata.data.minStakeAmount
       )
-        return t("Unstake all, or leave at least {{amount}} {{symbol}} staked", {
-          amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
-          symbol: token.symbol,
-        })
+        return {
+          message: t("Unstake all, or leave at least {{amount}} {{symbol}} staked", {
+            amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
+            symbol: token.symbol,
+          }),
+          category: "input_invalid",
+        }
     }
     return null
   }, [account, action, amount, maxAmount, metadata.data, position.data, t, token])
+  const error = amountError?.message ?? null
 
   const txRequest = useMemo(() => {
     if (!address || error || !token) return undefined
@@ -345,9 +378,38 @@ const SeekStakingForm: FC<{
     [address, config.networkId, config.stakingContractAddress, queryClient]
   )
 
-  const handleSubmit = useCallback((hash: string) => {
-    setSubmittedHash(hash)
-  }, [])
+  const tokenRates = useTokenRates(token?.id)
+  const reportSubmitted = useCallback(
+    (hash: string) => {
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: tokenSymbolForAnalytics(token),
+        usd:
+          amount === null
+            ? null
+            : new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd"),
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+    },
+    [account, network, token, amount, tokenRates]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen,
+    entry,
+    started: { mode: STAKING_ACTION_OF_SEEK[action] },
+    attributes: { staking_type: "seek", direction: STAKING_ACTION_OF_SEEK[action] },
+    step: submittedHash ? null : isConfirmStep ? "review" : "form",
+  })
+
+  const handleSubmit = useCallback(
+    (hash: string) => {
+      reportSubmitted(hash)
+      setSubmittedHash(hash)
+    },
+    [reportSubmitted]
+  )
 
   const handleReviewClick = useCallback(() => {
     setHasApprovalStep(isApproval)
@@ -360,10 +422,11 @@ const SeekStakingForm: FC<{
 
   const handleConfirmSubmit = useCallback(
     (hash: string) => {
+      if (!isApproval) reportSubmitted(hash)
       refProcessedHash.current = null
       setPending({ hash, isApproval })
     },
-    [isApproval]
+    [isApproval, reportSubmitted]
   )
 
   // walks the confirm screen transactions: on approval success, refresh the allowance before
@@ -391,7 +454,16 @@ const SeekStakingForm: FC<{
         break
       case "error":
         refProcessedHash.current = pending.hash
-        notify({ type: "error", title: t("Error"), subtitle: t("Transaction failed") })
+        notify({
+          type: "error",
+          title: t("Error"),
+          subtitle: t("Transaction failed"),
+          errorCategory: "dispatch_failed",
+        })
+        if (pending.isApproval)
+          flows.staking.failed(
+            attachErrorCategory(new Error("SEEK approval failed"), "dispatch_failed")
+          )
         setPending(null)
         break
       case "replaced":
@@ -477,6 +549,7 @@ const SeekStakingForm: FC<{
               tokenId={token.id}
               value={amount}
               error={error}
+              errorCategory={amountError?.category}
               onValueChanged={setAmount}
               onMaxClick={handleMaxClick}
             />
@@ -550,6 +623,7 @@ const SeekStakingForm: FC<{
             disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
             isProcessing={ethTx.isLoading || allowance.isFetching}
             onSubmit={handleSubmit}
+            onError={flows.staking.failed}
           />
         )}
       </div>
@@ -603,6 +677,7 @@ const SeekAccountPickerModal: FC<{
 
   return (
     <Modal
+      analyticsId="seek_account_picker"
       containerId={SEEK_STAKING_MODAL_CONTAINER_ID}
       isOpen={isOpen}
       onDismiss={onBackClick}

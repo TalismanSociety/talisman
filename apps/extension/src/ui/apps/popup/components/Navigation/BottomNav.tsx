@@ -7,7 +7,6 @@ import {
   TrendingUpIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { cn } from "@ui/util/cn"
@@ -21,13 +20,6 @@ import {
   useQuickSettingsOpenClose,
 } from "./QuickSettings"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Navigation",
-  featureVersion: 3,
-  page: "Portfolio",
-}
-
 export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -35,41 +27,21 @@ export const BottomNav = () => {
   const { close: closeQuickSettings, isOpen: isQuickSettingsOpen } = useQuickSettingsOpenClose()
 
   const handleHomeClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Home button",
-    })
     navigate("/portfolio")
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
   const handleTxHistoryClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Recent activity button",
-    })
     navigate("/tx-history")
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
   const handleEarnClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Earn button",
-    })
     navigate("/earn")
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
   const handleExpandClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Fullscreen button",
-    })
     // assume paths are the same in dashboard
     // portfolio pages supports account/folder query string arguments to stay in sync with popup
     api.dashboardOpen(`${location.pathname}${location.search}`)
@@ -77,11 +49,6 @@ export const BottomNav = () => {
   }, [location.pathname, location.search])
 
   const handleMoreClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Interact",
-      action: "More button",
-    })
     open()
   }, [open])
 

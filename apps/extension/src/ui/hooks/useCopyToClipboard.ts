@@ -26,6 +26,7 @@ export const useCopyToClipboard = () => {
           {
             type: "error",
             title: t(`Copy failed`),
+            errorCategory: "clipboard",
           },
           { toastId }
         )

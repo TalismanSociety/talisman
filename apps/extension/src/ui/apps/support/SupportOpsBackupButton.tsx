@@ -19,7 +19,7 @@ export const SupportOpsBackup = () => {
         onClick={open}
       />
 
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="support_backup" isOpen={isOpen} onDismiss={close}>
         <BackupModalDialog onClose={close} />
       </Modal>
     </>
