@@ -8,6 +8,7 @@ import {
   ZapOffIcon,
   ZapPlusIcon,
 } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -26,7 +27,7 @@ import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useBalance } from "@ui/state/balances"
-import { type FC, type ReactNode, useMemo } from "react"
+import { type FC, type ReactNode, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { formatAprPercent } from "../shared/formatAprPercent"
@@ -48,6 +49,9 @@ export const BittensorStakingPositionPage: FC<{ tokenId: TokenId; address: strin
   address,
 }) => {
   const { t } = useTranslation()
+  useEffect(() => {
+    track("earn_position_opened", { system: "bittensor", yield_id: null })
+  }, [])
   const position = useBittensorStakePosition(tokenId, address)
 
   if (!position)
