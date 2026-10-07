@@ -4,16 +4,16 @@ import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useGetBittensorDefaultMinStake } from "./useGetBittensorDefaultMinStake"
 
-type GetBittensorMinJoinBond = {
+type GetBittensorNominatorMinStake = {
   networkId: DotNetworkId | null | undefined
 }
 
-export const useGetBittensorMinJoinBond = ({ networkId }: GetBittensorMinJoinBond) => {
+export const useGetBittensorNominatorMinStake = ({ networkId }: GetBittensorNominatorMinStake) => {
   const { data: sapi } = useScaleApi(networkId)
   const defaultMinStake = useGetBittensorDefaultMinStake({ networkId })
 
   return useQuery({
-    queryKey: ["useGetBittensorMinJoinBond", sapi?.id, defaultMinStake.toString()],
+    queryKey: ["useGetBittensorNominatorMinStake", sapi?.id, defaultMinStake.toString()],
     queryFn: async () => {
       if (!sapi) return null
 

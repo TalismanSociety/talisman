@@ -127,8 +127,8 @@ vi.mock("@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice", () => ({
 vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake", () => ({
   useGetBittensorDefaultMinStake: () => mocks.state.dtao.minTaoTransfer,
 }))
-vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond", () => ({
-  useGetBittensorMinJoinBond: () => ({ data: mocks.state.dtao.minTaoKeep }),
+vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorNominatorMinStake", () => ({
+  useGetBittensorNominatorMinStake: () => ({ data: mocks.state.dtao.minTaoKeep }),
 }))
 vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha", () => ({
   useGetBittensorAcceptsLockedAlpha: () => ({

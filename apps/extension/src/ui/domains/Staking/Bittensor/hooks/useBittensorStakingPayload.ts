@@ -23,7 +23,7 @@ import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
 import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
 import { useGetBittensorDefaultMinStake } from "./useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
+import { useGetBittensorNominatorMinStake } from "./useGetBittensorNominatorMinStake"
 import { useGetSubnetFee } from "./useGetSubnetFee"
 
 type UseBittensorStakingPayloadProps = {
@@ -63,7 +63,7 @@ export const useBittensorStakingPayload = ({
     data: minTaoBond,
     isLoading: isLoadingMinTaoBond,
     isError: isErrorMinTaoBond,
-  } = useGetBittensorMinJoinBond({ networkId })
+  } = useGetBittensorNominatorMinStake({ networkId })
 
   const {
     data: alphaPrice,

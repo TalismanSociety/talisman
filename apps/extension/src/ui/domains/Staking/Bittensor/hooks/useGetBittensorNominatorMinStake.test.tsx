@@ -11,9 +11,9 @@ vi.mock("@ui/hooks/sapi/useScaleApi", () => ({
   useScaleApi: (...args: unknown[]) => useScaleApiMock(...args),
 }))
 
-import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
+import { useGetBittensorNominatorMinStake } from "./useGetBittensorNominatorMinStake"
 
-describe("useGetBittensorMinJoinBond", () => {
+describe("useGetBittensorNominatorMinStake", () => {
   let queryClient: QueryClient
 
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe("useGetBittensorMinJoinBond", () => {
   )
 
   const render = () =>
-    renderHook(() => useGetBittensorMinJoinBond({ networkId: "bittensor" }), { wrapper })
+    renderHook(() => useGetBittensorNominatorMinStake({ networkId: "bittensor" }), { wrapper })
 
   it("is the chain's nominator minimum, not the raw factor (finney spec 473: 0.02 TAO)", async () => {
     getStorageMock.mockResolvedValue(10_000_000n)
