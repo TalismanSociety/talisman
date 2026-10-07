@@ -21,4 +21,8 @@ describe("fiatToPlancks", () => {
     expect(fiatToPlancks("-1", TAO_PRICE, TAO_DECIMALS)).toBeNull()
     expect(fiatToPlancks("1", 0, TAO_DECIMALS)).toBeNull()
   })
+
+  it("returns null when the amount overflows", () => {
+    expect(fiatToPlancks("1e308", 0.0039, TAO_DECIMALS)).toBeNull()
+  })
 })

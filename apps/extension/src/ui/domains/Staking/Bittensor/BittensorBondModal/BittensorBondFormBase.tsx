@@ -1,5 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { taoToAlpha } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
@@ -10,7 +10,6 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import {
   type ChangeEventHandler,
   type FC,
@@ -19,7 +18,6 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react"
 import { useTranslation } from "react-i18next"
 import { currencyConfig } from "../../../Asset/currencyConfig"
@@ -36,12 +34,14 @@ import { BittensorStakingModalHeader } from "../components/BittensorStakingModal
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { ROOT_NETUID } from "../utils/constants"
+import { amountToFiat, type FiatConversion, fiatToAmount } from "../utils/fiatAmount"
 import {
   BittensorAvailableToUnstake,
   BittensorConvictionLockedRow,
 } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
 import { BittensorClaimRewardsRow } from "./Forms/BittensorClaimRewardsRow"
+import { useAmountField } from "./useAmountField"
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
@@ -102,8 +102,16 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { nativeToken, dtaoToken, amountTao, amountAlpha, isSubnetUnbond, setPlancks, netuid } =
-    useBittensorBondWizard()
+  const {
+    nativeToken,
+    dtaoToken,
+    amountIn,
+    amountTao,
+    amountAlpha,
+    isSubnetUnbond,
+    setPlancks,
+    netuid,
+  } = useBittensorBondWizard()
 
   const symbol = useMemo(() => {
     if (isSubnetUnbond) {
@@ -117,34 +125,23 @@ const TokenInput = () => {
     [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond]
   )
 
-  const [value, setValue] = useState(formattedValue)
-  const refSkipSync = useRef(false)
-
-  useEffect(() => {
-    if (refSkipSync.current) {
-      refSkipSync.current = false
-      return
-    }
-    setValue(formattedValue)
-  }, [formattedValue])
-
-  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      refSkipSync.current = true
-      const nextValue = e.target.value
-      setValue(nextValue)
-
-      if (!nativeToken || !nextValue.trim()) return setPlancks(null)
-
+  const parse = useCallback(
+    (text: string) => {
+      if (!nativeToken || !text.trim()) return null
       try {
-        const plancks = tokensToPlanck(nextValue, nativeToken.decimals)
-        setPlancks(BigInt(plancks))
+        return BigInt(tokensToPlanck(text, nativeToken.decimals))
       } catch {
-        // invalid input, ignore
-        setPlancks(null)
+        return null
       }
     },
-    [setPlancks, nativeToken]
+    [nativeToken]
+  )
+
+  const [value, setValue] = useAmountField(amountIn, formattedValue, parse, setPlancks)
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => setValue(e.target.value),
+    [setValue]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -182,47 +179,34 @@ const TokenInput = () => {
   )
 }
 
-const taoToAmountIn = (
-  taoPlancks: bigint | null,
-  isSubnetUnbond: boolean,
-  alphaPrice: bigint | null | undefined
-) => {
-  if (taoPlancks === null || !isSubnetUnbond) return taoPlancks
-  return typeof alphaPrice === "bigint" ? taoToAlpha(taoPlancks, alphaPrice) : null
-}
-
 const FiatInput = () => {
   const { nativeToken, tokenRates, amountIn, amountTao, setPlancks, isSubnetUnbond, alphaPrice } =
     useBittensorBondWizard()
   const currency = useSelectedCurrency()
+  const decimals = nativeToken?.decimals
 
-  const formattedValue = useMemo(() => {
-    const val = amountTao?.fiat(currency) ?? ""
-    return val ? String(Number(val.toFixed(2))) : val
-  }, [currency, amountTao])
+  const conversion = useMemo<FiatConversion | null>(() => {
+    const fiatPrice = tokenRates?.[currency]?.price
+    const taoPerUnit = isSubnetUnbond ? alphaPrice : ALPHA_PRICE_SCALE
+    if (decimals === undefined || !fiatPrice || typeof taoPerUnit !== "bigint") return null
+    return { fiatPrice, decimals, taoPerUnit }
+  }, [tokenRates, currency, isSubnetUnbond, alphaPrice, decimals])
 
-  const [value, setValue] = useState(formattedValue)
-  const refTypedAmountIn = useRef<bigint | null | undefined>(undefined)
+  const formattedValue = useMemo(
+    () => (amountIn !== null && conversion ? amountToFiat(amountIn, conversion) : ""),
+    [amountIn, conversion]
+  )
 
-  useEffect(() => {
-    if (amountIn === refTypedAmountIn.current) return
-    setValue(formattedValue)
-  }, [amountIn, formattedValue])
+  const parse = useCallback(
+    (text: string) => (conversion ? fiatToAmount(text, conversion) : null),
+    [conversion]
+  )
+
+  const [value, setValue] = useAmountField(amountIn, formattedValue, parse, setPlancks)
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const nextValue = e.target.value
-      setValue(nextValue)
-
-      const price = tokenRates?.[currency]?.price
-      const taoPlancks =
-        nativeToken && price ? fiatToPlancks(nextValue, price, nativeToken.decimals) : null
-      const nextAmountIn = taoToAmountIn(taoPlancks, isSubnetUnbond, alphaPrice)
-
-      refTypedAmountIn.current = nextAmountIn
-      setPlancks(nextAmountIn)
-    },
-    [nativeToken, tokenRates, currency, alphaPrice, setPlancks, isSubnetUnbond]
+    (e) => setValue(e.target.value),
+    [setValue]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
