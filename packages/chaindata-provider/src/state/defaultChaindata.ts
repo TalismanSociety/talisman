@@ -1,5 +1,14 @@
-import { switchMapChunked } from "@talismn/util"
-import { firstValueFrom, Observable, retry, type Subject, shareReplay, tap, timer } from "rxjs"
+import { isNotNil, switchMapChunked } from "@talismn/util"
+import {
+  filter,
+  firstValueFrom,
+  Observable,
+  retry,
+  type Subject,
+  shareReplay,
+  tap,
+  timer,
+} from "rxjs"
 
 import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
@@ -7,7 +16,7 @@ import type { ChaindataStorage } from "../provider/ChaindataProvider"
 import { chaindataEqualWithYield, parseChaindataFileChunked } from "./chunkedValidation"
 import initChaindata from "./initChaindata.json"
 import { getRemoteChaindata$ } from "./remoteChaindata"
-import type { Chaindata } from "./schema"
+import type { Chaindata, ChaindataFile } from "./schema"
 import { isChaindataValidated, markChaindataValidated } from "./validatedCache"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
@@ -18,10 +27,24 @@ const RETRY_MAX_DELAY = 300_000
 const getRetryDelay = (retryCount: number) =>
   Math.min(RETRY_BASE_DELAY * 2 ** (retryCount - 1), RETRY_MAX_DELAY)
 
-/** `chaindataUrl` is undefined for the default chaindata */
+const validateProvidedChaindata = (providedChaindata$: Observable<ChaindataFile>) =>
+  providedChaindata$.pipe(
+    switchMapChunked(async (data, { slicer }) => {
+      if (isChaindataValidated(data)) return data
+
+      const validation = await parseChaindataFileChunked(data, { slicer })
+      if (!validation.success) {
+        log.error("[defaultChaindata$] Invalid chaindata provided", { error: validation.error })
+        return null
+      }
+      return markChaindataValidated(validation.data)
+    }),
+    filter(isNotNil)
+  )
+
 export const getDefaultChaindata$ = (
   storage$: Subject<ChaindataStorage>,
-  chaindataUrl?: string
+  providedChaindata$?: Observable<ChaindataFile>
 ) => {
   // ref-memo of the last validated input: storage$ is a ReplaySubject which replays its
   // last value whenever the shareReplay below recovers from refCount 0 — without this,
@@ -31,9 +54,9 @@ export const getDefaultChaindata$ = (
 
   const storageValidated$ = storage$.pipe(
     switchMapChunked(async (data, { slicer }) => {
-      // objects marked by fetchChaindata / the initChaindata provisioning below have
-      // already been validated: pass them through without re-validating
-      if (isChaindataValidated(data)) return data as Chaindata
+      // objects marked by fetchChaindata / validateProvidedChaindata / the initChaindata
+      // provisioning below have already been validated: pass them through without re-validating
+      if (isChaindataValidated(data)) return data
       if (data === lastInput) return lastOutput
 
       const start = performance.now()
@@ -57,10 +80,6 @@ export const getDefaultChaindata$ = (
 
   return new Observable<Chaindata>((subscriber) => {
     const provisionInitialChaindata = async () => {
-      // initChaindata is a snapshot of the default chaindata, not of a custom file
-      if (chaindataUrl)
-        return log.info("[defaultChaindata$] Custom chaindata url, skipping initial data provision")
-
       const storageData = await firstValueFrom(storageValidated$)
 
       if (
@@ -91,39 +110,40 @@ export const getDefaultChaindata$ = (
       }
     }
 
-    const syncToStorage = async (remoteData: Chaindata) => {
+    const syncToStorage = async (sourceData: Chaindata) => {
       const now = performance.now()
       try {
         const storageData = await firstValueFrom(storageValidated$)
 
-        const shouldUpdate = !(await chaindataEqualWithYield(storageData, remoteData))
+        const shouldUpdate = !(await chaindataEqualWithYield(storageData, sourceData))
         if (!shouldUpdate)
           return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
 
-        // update local chaindata if remote chaindata is different
+        // update local chaindata if source chaindata is different
         log.debug(
-          `[defaultChaindata$] Updating chaindata in DB (networks:${remoteData.networks.length}, tokens:${remoteData.tokens.length}, meta:${remoteData.miniMetadatas.length})`
+          `[defaultChaindata$] Updating chaindata in DB (networks:${sourceData.networks.length}, tokens:${sourceData.tokens.length}, meta:${sourceData.miniMetadatas.length})`
         )
-        const taggedData = { ...remoteData, chaindataUrl }
-        storage$.next(
-          isChaindataValidated(remoteData) ? markChaindataValidated(taggedData) : taggedData
-        )
+        storage$.next(sourceData)
 
         log.info(
-          `[defaultChaindata$] Db synchronized with remote chaindata :${performance.now() - now}ms`
+          `[defaultChaindata$] Db synchronized with chaindata source :${performance.now() - now}ms`
         )
       } catch (cause) {
         log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
       }
     }
 
-    const remoteToStorageSubscription = getRemoteChaindata$(chaindataUrl ?? DEFAULT_CHAINDATA_URL)
+    // initChaindata is a snapshot of the default chaindata, not of a provided one
+    const source$ = providedChaindata$
+      ? validateProvidedChaindata(providedChaindata$)
+      : getRemoteChaindata$(DEFAULT_CHAINDATA_URL).pipe(tap({ error: provisionInitialChaindata }))
+
+    const sourceToStorageSubscription = source$
       .pipe(
-        tap({ error: provisionInitialChaindata }),
         retry({ delay: (_, retryCount) => timer(getRetryDelay(retryCount)), resetOnSuccess: true })
       )
       .subscribe(syncToStorage)
-    subscriber.add(remoteToStorageSubscription)
+    subscriber.add(sourceToStorageSubscription)
 
     const outputFromStorageSubscription = storageValidated$.subscribe(subscriber)
     subscriber.add(outputFromStorageSubscription)

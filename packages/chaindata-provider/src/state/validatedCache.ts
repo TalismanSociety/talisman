@@ -1,3 +1,5 @@
+import type { Chaindata } from "./schema"
+
 /**
  * Tracks objects that have already passed chaindata schema validation, so the expensive
  * validation (thousands of tokens) runs at most ONCE per object instead of on every
@@ -8,10 +10,10 @@
  */
 const validated = new WeakSet<object>()
 
-export const markChaindataValidated = <T extends object>(data: T): T => {
+export const markChaindataValidated = (data: Chaindata): Chaindata => {
   validated.add(data)
   return data
 }
 
-export const isChaindataValidated = (data: unknown): boolean =>
+export const isChaindataValidated = (data: unknown): data is Chaindata =>
   typeof data === "object" && data !== null && validated.has(data)

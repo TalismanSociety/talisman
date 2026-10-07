@@ -18,8 +18,10 @@ export {
   isTokenKnown,
   isTokenTestnet,
 } from "./state/combinedChaindata"
+export { getRemoteChaindata$ } from "./state/remoteChaindata"
 export {
   type Chaindata,
+  type ChaindataFile,
   ChaindataFileSchema,
   type CustomChaindata,
   CustomChaindataSchema,

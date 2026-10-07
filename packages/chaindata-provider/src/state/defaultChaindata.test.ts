@@ -1,4 +1,4 @@
-import { firstValueFrom, ReplaySubject, Subject } from "rxjs"
+import { firstValueFrom, of, ReplaySubject, Subject, throwError } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -66,7 +66,6 @@ vi.mock("../log", () => ({
 import { getDefaultChaindata$ } from "./defaultChaindata"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
-const CUSTOM_URL = "https://example.com/chaindata.min.json"
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -276,23 +275,18 @@ describe("getDefaultChaindata$", () => {
       expect(values).toHaveLength(1)
     })
 
-    it("custom url error + storage empty → does NOT provision", async () => {
-      const result$ = getDefaultChaindata$(storage$, CUSTOM_URL)
+    it("provided source error + storage empty → does NOT provision", async () => {
+      const result$ = getDefaultChaindata$(
+        storage$,
+        throwError(() => new Error("provided source failed"))
+      )
       const { values, waitForCount } = trackEmissions(result$)
 
       storage$.next({ networks: [], tokens: [], miniMetadatas: [] })
       await waitForCount(1)
-
       const nextSpy = vi.spyOn(storage$, "next")
-      vi.mocked(log.info).mockClear()
 
-      mockRemoteChaindata$.error(new Error("fetch failed"))
-
-      await vi.waitFor(() =>
-        expect(log.info).toHaveBeenCalledWith(
-          expect.stringContaining("Custom chaindata url, skipping initial data provision")
-        )
-      )
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
       expect(nextSpy).not.toHaveBeenCalled()
       expect(values).toEqual([EMPTY_DATA])
@@ -302,11 +296,12 @@ describe("getDefaultChaindata$", () => {
   // ── GitHub sync ─────────────────────────────────────────────────
 
   describe("github sync", () => {
-    it("syncs from the default chaindata url unless a custom one is given", () => {
-      getDefaultChaindata$(storage$).subscribe().unsubscribe()
-      getDefaultChaindata$(storage$, CUSTOM_URL).subscribe().unsubscribe()
+    it("syncs from the default chaindata url unless a source is provided", () => {
+      getDefaultChaindata$(storage$, of(makeChaindata())).subscribe().unsubscribe()
+      expect(requestedUrls).toEqual([])
 
-      expect(requestedUrls).toEqual([DEFAULT_CHAINDATA_URL, CUSTOM_URL])
+      getDefaultChaindata$(storage$).subscribe().unsubscribe()
+      expect(requestedUrls).toEqual([DEFAULT_CHAINDATA_URL])
     })
 
     it("github emits data different from storage → storage updated → new validated data emitted", async () => {
