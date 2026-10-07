@@ -1,8 +1,11 @@
-import { tokensToPlanck } from "@talismn/util"
+import BigNumber from "bignumber.js"
 
 export const fiatToPlancks = (fiat: string, price: number, decimals: number): bigint | null => {
-  const tokens = Number(fiat) / price
-  if (!fiat.trim() || !Number.isFinite(tokens) || tokens < 0) return null
+  const plancks = BigNumber(fiat.trim())
+    .shiftedBy(decimals)
+    .div(price)
+    .integerValue(BigNumber.ROUND_HALF_UP)
+  if (!plancks.isFinite() || plancks.isNegative()) return null
 
-  return BigInt(tokensToPlanck(tokens.toFixed(decimals), decimals))
+  return BigInt(plancks.toFixed())
 }
