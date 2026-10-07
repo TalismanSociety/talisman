@@ -70,11 +70,13 @@ export const useBittensorStakingPayload = ({
     isError: isErrorAlphaPrice,
   } = useBittensorAlphaPrice({ networkId, netuid })
 
-  // an partial unstake operation will fail if the remaining stake is less than the alpha equivalent of minTaoBond
+  // the chain sweeps a remaining stake worth less than minTaoBond, valued at the price after the
+  // unstake lands: value it at the worst price the slippage tolerance accepts
   const minAlphaBond = useMemo(() => {
     if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
-    return taoToAlphaCeil(minTaoBond, alphaPrice)
-  }, [minTaoBond, alphaPrice])
+    const worstAlphaPrice = (alphaPrice * BigInt(Math.round((100 - slippage) * 100))) / 10_000n
+    return taoToAlphaCeil(minTaoBond, worstAlphaPrice > 0n ? worstAlphaPrice : alphaPrice)
+  }, [minTaoBond, alphaPrice, slippage])
 
   const minTaoStake = useGetBittensorDefaultMinStake({ networkId })
 
