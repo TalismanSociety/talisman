@@ -17,6 +17,7 @@ import {
   getLimitPrice,
   getSwapSimulation,
 } from "../utils/helpers"
+import { getRemainderFloorPrice } from "../utils/nominationRemainder"
 import type { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
@@ -69,14 +70,6 @@ export const useBittensorStakingPayload = ({
     isLoading: isLoadingAlphaPrice,
     isError: isErrorAlphaPrice,
   } = useBittensorAlphaPrice({ networkId, netuid })
-
-  // the chain sweeps a remaining stake worth less than minTaoBond, valued at the price after the
-  // unstake lands: value it at the worst price the slippage tolerance accepts
-  const minAlphaBond = useMemo(() => {
-    if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
-    const worstAlphaPrice = (alphaPrice * BigInt(Math.round((100 - slippage) * 100))) / 10_000n
-    return taoToAlphaCeil(minTaoBond, worstAlphaPrice > 0n ? worstAlphaPrice : alphaPrice)
-  }, [minTaoBond, alphaPrice, slippage])
 
   const minTaoStake = useGetBittensorDefaultMinStake({ networkId })
 
@@ -158,6 +151,16 @@ export const useBittensorStakingPayload = ({
     const tolerance = slippage / 100 // percentage to decimal
     return getLimitPrice(simulation, direction, tolerance)
   }, [simulation, direction, slippage])
+
+  const minAlphaBond = useMemo(() => {
+    if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
+    const floorPrice = getRemainderFloorPrice({
+      alphaPrice,
+      slippage,
+      priceLimit: direction === "alphaToTao" ? (priceLimit ?? null) : null,
+    })
+    return taoToAlphaCeil(minTaoBond, floorPrice)
+  }, [minTaoBond, alphaPrice, slippage, direction, priceLimit])
 
   const priceImpact = useMemo(() => {
     if (!alphaPrice || !swapPrice) return null

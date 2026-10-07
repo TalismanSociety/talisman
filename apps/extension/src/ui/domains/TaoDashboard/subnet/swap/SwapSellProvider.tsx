@@ -1,7 +1,6 @@
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
-import { formatDecimals } from "@talismn/util"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
@@ -10,7 +9,10 @@ import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
 } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
-import { getSweepableRemainder } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
+import {
+  getSweepableRemainder,
+  getSweepableRemainderError,
+} from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
@@ -233,19 +235,35 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
-  const sweepableRemainder = useMemo(
-    () =>
-      balanceTokenIn && typeof minAlphaBond === "bigint"
-        ? getSweepableRemainder({
-            stake: balanceTokenIn.free.planck,
-            amount: state.valueIn ?? 0n,
-            maxAmount: maxValueIn,
-            minKeep: minAlphaBond,
-            minAmount: minAlphaUnstake ?? 0n,
-          })
-        : null,
-    [balanceTokenIn, minAlphaBond, state.valueIn, maxValueIn, minAlphaUnstake]
-  )
+  const sweepableRemainderError = useMemo(() => {
+    if (!balanceTokenIn || !tokenIn || !tokenOut) return null
+    if (typeof minAlphaBond !== "bigint" || typeof minTaoBond !== "bigint") return null
+    const remainder = getSweepableRemainder({
+      stake: balanceTokenIn.free.planck,
+      amount: state.valueIn ?? 0n,
+      maxAmount: maxValueIn,
+      minKeep: minAlphaBond,
+      minAmount: minAlphaUnstake ?? 0n,
+    })
+    return (
+      remainder &&
+      getSweepableRemainderError(t, remainder, {
+        minTao: minTaoBond,
+        tao: tokenOut,
+        alpha: tokenIn,
+      })
+    )
+  }, [
+    balanceTokenIn,
+    tokenIn,
+    tokenOut,
+    minAlphaBond,
+    minTaoBond,
+    state.valueIn,
+    maxValueIn,
+    minAlphaUnstake,
+    t,
+  ])
 
   const inputError = useMemo<InlineError | null>(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
@@ -276,6 +294,8 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     )
       return { message: t("Insufficient TAO to cover fee"), category: "insufficient_fee" }
 
+    if (sweepableRemainderError) return sweepableRemainderError
+
     if (typeof minAlphaUnstake === "bigint" && state.valueIn < minAlphaUnstake)
       return {
         message: t("Minimum unbond is {{amount}} {{symbol}}", {
@@ -284,33 +304,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
         }),
         category: "input_invalid",
       }
-
-    if (sweepableRemainder) {
-      const minTao = new BalanceFormatter(minTaoBond ?? 0n, tokenOut?.decimals).tokens
-      return {
-        message:
-          sweepableRemainder.maxPartial === null
-            ? t(
-                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything.",
-                {
-                  minTao,
-                  taoSymbol: tokenOut?.symbol,
-                }
-              )
-            : t(
-                "Bittensor closes stakes worth less than {{minTao}} {{taoSymbol}}. Unstake everything, or at most {{amount}} {{symbol}}.",
-                {
-                  minTao,
-                  taoSymbol: tokenOut?.symbol,
-                  amount: formatDecimals(
-                    new BalanceFormatter(sweepableRemainder.maxPartial, tokenIn.decimals).tokens
-                  ),
-                  symbol: tokenIn.symbol,
-                }
-              ),
-        category: "input_invalid",
-      }
-    }
 
     return null
   }, [
@@ -321,14 +314,11 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
-    sweepableRemainder,
-    minTaoBond,
+    sweepableRemainderError,
     minAlphaUnstake,
     state.valueIn,
     t,
     tokenIn,
-    tokenOut?.decimals,
-    tokenOut?.symbol,
   ])
 
   const inputErrorMessage = inputError?.message ?? null
@@ -357,7 +347,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     balanceTokenOut,
     valueIn: state.valueIn,
     maxValueIn,
-    maxPartialValueIn: sweepableRemainder?.maxPartial ?? null,
     valueOut,
     taoToken: tokenOut,
     dtaoToken: tokenIn,
@@ -382,6 +371,10 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
+    inputErrorFillAmount:
+      sweepableRemainderError && inputError === sweepableRemainderError
+        ? sweepableRemainderError.fillAmount
+        : null,
     canSubmit,
     payload,
     txMetadata,
