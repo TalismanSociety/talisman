@@ -6,7 +6,6 @@ import { useBittensorChangeLockTypeModal } from "@ui/domains/Staking/Bittensor/h
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBittensorConvictionLockModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorConvictionLockModal"
 import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { IS_POPUP } from "@ui/util/constants"
 import { useCallback } from "react"
@@ -27,7 +26,7 @@ export type BittensorPositionActions = Record<
   BittensorPositionAction
 >
 
-export const useBittensorPositionActions = (from: "earn positions" | "earn position page") => {
+export const useBittensorPositionActions = () => {
   const { open: openBond } = useBittensorBondModal()
   const { open: openChangeValidator } = useBittensorChangeValidatorModal()
   const { open: openClaim } = useBittensorClaimModal()
@@ -35,7 +34,6 @@ export const useBittensorPositionActions = (from: "earn positions" | "earn posit
   const { open: openChangeLockType } = useBittensorChangeLockTypeModal()
   const { open: openChangeLockHotkey } = useBittensorChangeLockHotkeyModal()
   const navigate = useNavigateWithQuery()
-  const { genericEvent } = useAnalytics()
 
   return useCallback(
     (position: BittensorStakePosition): BittensorPositionActions => {
@@ -43,50 +41,36 @@ export const useBittensorPositionActions = (from: "earn positions" | "earn posit
       const hasStake = position.stake > 0n
       const hasConvictionLock = position.lock?.kind === "conviction-lock"
 
-      const action = (
-        isAvailable: boolean,
-        eventName: string,
-        open: () => void
-      ): BittensorPositionAction => ({
+      const action = (isAvailable: boolean, open: () => void): BittensorPositionAction => ({
         isAvailable,
         run: () => {
-          if (!isAvailable) return
-          genericEvent(eventName, { from, tokenId })
-          open()
+          if (isAvailable) open()
         },
       })
 
       return {
-        stake: action(canSign, "open bittensor stake modal", () =>
-          openBond({ stakeDirection: "bond", networkId, netuid, address, hotkey })
+        stake: action(canSign, () =>
+          openBond({ entry: "earn", stakeDirection: "bond", networkId, netuid, address, hotkey })
         ),
-        unstake: action(canSign && hasStake, "open bittensor unstake modal", () =>
-          openBond({ stakeDirection: "unbond", networkId, netuid, address, hotkey })
+        unstake: action(canSign && hasStake, () =>
+          openBond({ entry: "earn", stakeDirection: "unbond", networkId, netuid, address, hotkey })
         ),
-        changeValidator: action(canSign && hasStake, "open change validator modal", () =>
-          openChangeValidator({ tokenId, address })
+        changeValidator: action(canSign && hasStake, () =>
+          openChangeValidator({ entry: "earn", tokenId, address })
         ),
-        claim: action(
-          canSign && position.kind === "root" && position.claimable > 0n,
-          "open bittensor claim modal",
-          () => openClaim({ networkId, address, hotkey })
+        claim: action(canSign && position.kind === "root" && position.claimable > 0n, () =>
+          openClaim({ entry: "earn", networkId, address, hotkey })
         ),
-        createLock: action(
-          canSign && position.kind === "subnet" && hasStake,
-          "open bittensor conviction lock modal",
-          () => openConvictionLock({ networkId, netuid, address, hotkey })
+        createLock: action(canSign && position.kind === "subnet" && hasStake, () =>
+          openConvictionLock({ entry: "earn", networkId, netuid, address, hotkey })
         ),
-        changeLockType: action(
-          canSign && hasConvictionLock,
-          "open change conviction lock type modal",
-          () => openChangeLockType({ networkId, netuid, address })
+        changeLockType: action(canSign && hasConvictionLock, () =>
+          openChangeLockType({ entry: "earn", networkId, netuid, address })
         ),
-        changeLockHotkey: action(
-          canSign && hasConvictionLock,
-          "open change conviction lock hotkey modal",
-          () => openChangeLockHotkey({ networkId, netuid, address })
+        changeLockHotkey: action(canSign && hasConvictionLock, () =>
+          openChangeLockHotkey({ entry: "earn", networkId, netuid, address })
         ),
-        viewDetails: action(true, "open tao dashboard", () => {
+        viewDetails: action(true, () => {
           const url = getTaoDashboardUrl(networkId, position.kind === "subnet" ? netuid : undefined)
           if (IS_POPUP) api.dashboardOpen(url)
           else navigate(url)
@@ -94,8 +78,6 @@ export const useBittensorPositionActions = (from: "earn positions" | "earn posit
       }
     },
     [
-      from,
-      genericEvent,
       navigate,
       openBond,
       openChangeValidator,

@@ -62,7 +62,7 @@ export const BittensorStakingPositionPage: FC<{ tokenId: TokenId; address: strin
 }
 
 const BittensorStakingPosition: FC<{ position: BittensorStakePosition }> = ({ position }) => {
-  const getActions = useBittensorPositionActions("earn position page")
+  const getActions = useBittensorPositionActions()
   const actions = useMemo(() => getActions(position), [getActions, position])
   const positions = useMemo(() => [position], [position])
   const apy = useBittensorPositionsApy(positions)(position)

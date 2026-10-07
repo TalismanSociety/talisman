@@ -25,7 +25,7 @@ const usePositions = (): EarnSystemPositionsResult => {
   const { t } = useTranslation()
   const positions = useBittensorStakePositions()
   const getApy = useBittensorPositionsApy(positions)
-  const getActions = useBittensorPositionActions("earn positions")
+  const getActions = useBittensorPositionActions()
 
   return useMemo(
     () => ({
@@ -52,7 +52,11 @@ const useActionOpener = () => {
   const { open } = useBittensorBondModal()
   return useCallback<EarnActionOpener>(
     (opportunity) =>
-      open({ stakeDirection: "bond", networkId: opportunity.networkId as DotNetworkId }),
+      open({
+        entry: "earn",
+        stakeDirection: "bond",
+        networkId: opportunity.networkId as DotNetworkId,
+      }),
     [open]
   )
 }
