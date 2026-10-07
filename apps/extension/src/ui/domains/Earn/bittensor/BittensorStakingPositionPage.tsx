@@ -228,12 +228,12 @@ const BalanceCard: FC<{ label: string; badge?: ReactNode; children: ReactNode }>
   badge,
   children,
 }) => (
-  <div className="flex flex-col overflow-hidden rounded bg-grey-850 px-10">
-    <div className="flex h-20 w-full items-center justify-between gap-4 font-bold">
+  <div className="flex flex-col overflow-hidden rounded bg-grey-850">
+    <div className="flex h-20 w-full items-center justify-between gap-4 bg-grey-800 px-10 font-bold">
       <span className="truncate">{label}</span>
       {badge}
     </div>
-    {children}
+    <div className="px-10">{children}</div>
   </div>
 )
 
