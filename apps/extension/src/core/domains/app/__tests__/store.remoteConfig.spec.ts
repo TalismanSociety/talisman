@@ -24,27 +24,27 @@ describe("RemoteConfigStore", () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
-          postHogUrl: "https://stale.posthog.url",
+          coingecko: { apiUrl: "https://stale.posthog.url" },
         },
       })
 
       const freshConfig = {
         ...DEFAULT_REMOTE_CONFIG,
-        postHogUrl: "https://fresh-from-server.url",
+        coingecko: { apiUrl: "https://fresh-from-server.url" },
       }
       mockFetchRemoteConfig.mockResolvedValue(freshConfig)
 
       await remoteConfigStore.reset()
 
       const config = await remoteConfigStore.get()
-      expect(config.postHogUrl).toBe("https://fresh-from-server.url")
+      expect(config.coingecko.apiUrl).toBe("https://fresh-from-server.url")
     })
 
     test("falls back to build-time defaults when fetch fails", async () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
-          postHogUrl: "https://stale.posthog.url",
+          coingecko: { apiUrl: "https://stale.posthog.url" },
         },
       })
       mockFetchRemoteConfig.mockRejectedValue(new Error("Network error"))
@@ -52,7 +52,7 @@ describe("RemoteConfigStore", () => {
       await remoteConfigStore.reset()
 
       const config = await remoteConfigStore.get()
-      expect(config.postHogUrl).toBe(DEFAULT_REMOTE_CONFIG.postHogUrl)
+      expect(config.coingecko.apiUrl).toBe(DEFAULT_REMOTE_CONFIG.coingecko.apiUrl)
       expect(config.featureFlags).toEqual(DEFAULT_REMOTE_CONFIG.featureFlags)
     })
   })
@@ -62,7 +62,7 @@ describe("RemoteConfigStore", () => {
       const fetchedConfig = {
         ...DEFAULT_REMOTE_CONFIG,
         featureFlags: { ...DEFAULT_REMOTE_CONFIG.featureFlags, I18N: true },
-        postHogUrl: "https://fetched.posthog.url",
+        coingecko: { apiUrl: "https://fetched.posthog.url" },
       }
       mockFetchRemoteConfig.mockResolvedValue(fetchedConfig)
 
@@ -70,7 +70,7 @@ describe("RemoteConfigStore", () => {
 
       const config = await remoteConfigStore.get()
       expect(config.featureFlags.I18N).toBe(true)
-      expect(config.postHogUrl).toBe("https://fetched.posthog.url")
+      expect(config.coingecko.apiUrl).toBe("https://fetched.posthog.url")
     })
 
     test("keeps defaults on fetch failure", async () => {
@@ -85,7 +85,7 @@ describe("RemoteConfigStore", () => {
     test("keeps Chrome storage config on fetch failure (normal startup)", async () => {
       const existingConfig = {
         ...DEFAULT_REMOTE_CONFIG,
-        postHogUrl: "https://previously-fetched.url",
+        coingecko: { apiUrl: "https://previously-fetched.url" },
       }
       await chrome.storage.local.set({ remoteConfig: existingConfig })
       mockFetchRemoteConfig.mockRejectedValue(new Error("Network error"))
@@ -93,7 +93,7 @@ describe("RemoteConfigStore", () => {
       await remoteConfigStore.init()
 
       const config = await remoteConfigStore.get()
-      expect(config.postHogUrl).toBe("https://previously-fetched.url")
+      expect(config.coingecko.apiUrl).toBe("https://previously-fetched.url")
     })
   })
 
@@ -102,13 +102,13 @@ describe("RemoteConfigStore", () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
-          postHogUrl: "https://old-version.url",
+          coingecko: { apiUrl: "https://old-version.url" },
         },
       })
 
       const freshConfig = {
         ...DEFAULT_REMOTE_CONFIG,
-        postHogUrl: "https://fresh-from-server.url",
+        coingecko: { apiUrl: "https://fresh-from-server.url" },
       }
       mockFetchRemoteConfig.mockResolvedValue(freshConfig)
 
@@ -117,14 +117,14 @@ describe("RemoteConfigStore", () => {
       await remoteConfigStore.init()
 
       const config = await remoteConfigStore.get()
-      expect(config.postHogUrl).toBe("https://fresh-from-server.url")
+      expect(config.coingecko.apiUrl).toBe("https://fresh-from-server.url")
     })
 
     test("falls back to build-time defaults when fetch fails after upgrade", async () => {
       await chrome.storage.local.set({
         remoteConfig: {
           ...DEFAULT_REMOTE_CONFIG,
-          postHogUrl: "https://old-version.url",
+          coingecko: { apiUrl: "https://old-version.url" },
         },
       })
       mockFetchRemoteConfig.mockRejectedValue(new Error("Network blocked"))
@@ -133,7 +133,7 @@ describe("RemoteConfigStore", () => {
       await remoteConfigStore.init()
 
       const config = await remoteConfigStore.get()
-      expect(config.postHogUrl).toBe(DEFAULT_REMOTE_CONFIG.postHogUrl)
+      expect(config.coingecko.apiUrl).toBe(DEFAULT_REMOTE_CONFIG.coingecko.apiUrl)
     })
   })
 })
