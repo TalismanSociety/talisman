@@ -2,7 +2,7 @@ import { isNetworkKnown, type Network, type Token } from "@talismn/chaindata-pro
 
 import { networkIdForAnalytics, savedNetworkId, tokenSymbolForAnalytics } from "./funds"
 
-type ToggleSource = "dapp" | "settings"
+type ToggleSource = "dapp" | "settings" | "token_picker"
 
 export const networkToggledOf = (network: Network, enabled: boolean, source: ToggleSource) => ({
   network_id: savedNetworkId(network, isNetworkKnown(network)),
