@@ -85,9 +85,12 @@ const TokenRows: FC<{
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
+  const getItemKey = useCallback((index: number) => tokens[index]?.id ?? index, [tokens])
+
   const virtualizer = useVirtualizer({
     count: tokens.length,
     estimateSize: () => 58,
+    getItemKey,
     overscan: 5,
     getScrollElement: () => refContainer.current,
   })
