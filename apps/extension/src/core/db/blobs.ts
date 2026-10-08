@@ -18,6 +18,7 @@ export type DbBlobId =
   | "phishing-polkadot"
   | "account-proxies"
   | "proxy-pallet-cache"
+  | "nft-metadata"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

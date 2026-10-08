@@ -118,7 +118,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
         </ContextMenuItem>
-        {!nft.id.startsWith("subscan:") && (
+        {!nft.id.startsWith("substrate:") && (
           <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
             {t("Refresh Metadata")}
           </ContextMenuItem>
