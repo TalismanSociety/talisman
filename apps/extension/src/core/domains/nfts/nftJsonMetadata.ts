@@ -20,38 +20,33 @@ export type NftJsonMetadata = {
 type CachedJson = { at: number; json: NftJsonMetadata | null }
 
 const FETCH_TIMEOUT = 10_000
-const FAILURE_RETRY_DELAY = 4 * 60 * 60 * 1000
-const MAX_CACHED_URIS = 2000
+const ONE_DAY = 24 * 60 * 60 * 1000
+const SUCCESS_TTL = 7 * ONE_DAY
+const FAILURE_TTL = ONE_DAY
 
 const queue = new PQueue({ concurrency: 4 })
 
 const blobStore = getBlobStore<Record<string, CachedJson>>("nft-metadata")
 
-// insertion order is kept equal to ascending `at`, so the first keys are the ones to evict
 const cache = new Map<string, CachedJson>()
 const cacheChanged$ = new Subject<void>()
 
+const isFresh = ({ at, json }: CachedJson) => Date.now() - at < (json ? SUCCESS_TTL : FAILURE_TTL)
+
+const freshEntries = (entries: Iterable<[string, CachedJson]>) =>
+  [...entries].filter(([, entry]) => isFresh(entry))
+
 const cacheLoaded = walletReady.then(async () => {
   const stored = await blobStore.get()
-  for (const [uri, entry] of Object.entries(stored ?? {}).sort(([, a], [, b]) => a.at - b.at))
-    cache.set(uri, entry)
+  for (const [uri, entry] of freshEntries(Object.entries(stored ?? {}))) cache.set(uri, entry)
 
   cacheChanged$.pipe(debounceTime(1_000)).subscribe(() => {
-    blobStore.set(Object.fromEntries(cache))
+    blobStore.set(Object.fromEntries(freshEntries(cache)))
   })
 })
 
-const putInCache = (uri: string, json: NftJsonMetadata | null) => {
-  cache.delete(uri)
-  cache.set(uri, { at: Date.now(), json })
-  for (const oldest of cache.keys()) {
-    if (cache.size <= MAX_CACHED_URIS) break
-    cache.delete(oldest)
-  }
-}
-
 const rememberInCache = (uri: string, json: NftJsonMetadata | null) => {
-  putInCache(uri, json)
+  cache.set(uri, { at: Date.now(), json })
   cacheChanged$.next()
 }
 
@@ -62,12 +57,7 @@ export const fetchNftJsonMetadata = async (
   await cacheLoaded
 
   const cached = cache.get(uri)
-  if (cached?.json) {
-    // refresh recency in memory only, persisting it on every read would rewrite the blob each refresh
-    putInCache(uri, cached.json)
-    return cached.json
-  }
-  if (cached && Date.now() - cached.at < FAILURE_RETRY_DELAY) return null
+  if (cached && isFresh(cached)) return cached.json
 
   try {
     const json = await queue.add(() => downloadNftJsonMetadata(uri, signal), { signal })
