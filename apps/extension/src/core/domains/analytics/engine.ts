@@ -2,12 +2,11 @@ import { CONSENT_KINDS, type ConsentKind } from "@common/analytics/schema"
 import type { UiContext } from "@common/analytics/superProperties"
 import { log } from "@common/log"
 import { isEqual } from "lodash-es"
-import { distinctUntilChanged, firstValueFrom, from, map, type Observable, switchMap } from "rxjs"
+import { distinctUntilChanged, firstValueFrom, map, type Observable } from "rxjs"
 
 import { settingsStore } from "../app/store.settings"
 import { admit, consentFromSettings, planConsent } from "./consent"
 import { type Environment, readEnvironment } from "./environment"
-import { removeLegacyAnalyticsBeforeUnlock } from "./legacy"
 import { type ParsedEvent, type ParseResult, parseTrackedEvent } from "./parse"
 import {
   createChromeAlarmScheduler,
@@ -355,21 +354,13 @@ export class AnalyticsEngine {
 
 const devLog = devLogStore && createStorageDevLog(devLogStore)
 
-const legacyRemoval = removeLegacyAnalyticsBeforeUnlock().catch((cause) =>
-  log.error("[analytics] legacy analytics removal failed", { cause })
-)
-
 export const analyticsEngine = new AnalyticsEngine({
   clock: Date.now,
   drawOffset: drawOffsetMs,
   store: createDexieAnalyticsStore(),
   scheduler: createChromeAlarmScheduler(),
   environment: readEnvironment,
-  consent$: from(legacyRemoval).pipe(
-    switchMap(() => settingsStore.observable),
-    map(consentFromSettings),
-    distinctUntilChanged(isEqual)
-  ),
+  consent$: settingsStore.observable.pipe(map(consentFromSettings), distinctUntilChanged(isEqual)),
   transmission: TRANSMISSION,
   transportFor: (transmission) => {
     if (transmission.mode === "posthog") return createPosthogTransport(transmission)
