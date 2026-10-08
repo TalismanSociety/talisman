@@ -8,6 +8,7 @@ import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
+import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import BigNumber from "bignumber.js"
 import {
   type ChangeEventHandler,
@@ -154,14 +155,12 @@ const FiatInput = () => {
       const nextValue = e.target.value ?? ""
       refSkipSync.current = true
       setValue(nextValue)
-      const num = Number(nextValue)
       const tokenRate = tokenRates?.[currency]
+      const plancks =
+        token && tokenRate ? fiatToPlancks(nextValue, tokenRate.price, token.decimals) : null
 
-      if (token && tokenRate && nextValue.length && !Number.isNaN(num)) {
-        const fiat = parseFloat(nextValue)
-        const tokens = (fiat / tokenRate.price).toFixed(Math.ceil(token.decimals / 3))
-        set("amount", tokensToPlanck(tokens, token.decimals))
-      } else remove("amount")
+      if (plancks === null) remove("amount")
+      else set("amount", plancks.toString())
     },
     [currency, remove, sendMax, set, token, tokenRates]
   )

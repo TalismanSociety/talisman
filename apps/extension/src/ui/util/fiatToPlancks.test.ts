@@ -22,7 +22,19 @@ describe("fiatToPlancks", () => {
     expect(fiatToPlancks("1", 0, TAO_DECIMALS)).toBeNull()
   })
 
-  it("returns null when the amount overflows", () => {
-    expect(fiatToPlancks("1e308", 0.0039, TAO_DECIMALS)).toBeNull()
+  it("returns null when the amount is infinite", () => {
+    expect(fiatToPlancks("Infinity", TAO_PRICE, TAO_DECIMALS)).toBeNull()
+  })
+
+  it("converts amounts beyond floating point range", () => {
+    expect(fiatToPlancks("1e308", 0.5, 0)).toBe(2n * 10n ** 308n)
+  })
+
+  it("converts exactly for tokens with 18 decimals", () => {
+    expect(fiatToPlancks("200", 2_000, 18)).toBe(10n ** 17n)
+  })
+
+  it("supports tokens with more than 100 decimals", () => {
+    expect(fiatToPlancks("1", 1, 101)).toBe(10n ** 101n)
   })
 })

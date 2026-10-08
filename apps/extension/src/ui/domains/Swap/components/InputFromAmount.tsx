@@ -4,6 +4,7 @@ import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
+import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
@@ -30,19 +31,8 @@ const parseAmountInput = ({
   if (editFiat) {
     if (!tokenRate) return { kind: "unavailable", amount: null }
 
-    try {
-      const fiatAmount = Number.parseFloat(value)
-      if (Number.isNaN(fiatAmount)) return { kind: "invalid", amount: null }
-
-      const tokens = (fiatAmount / tokenRate).toFixed(Math.ceil(decimals / 3))
-      const planck = tokensToPlanck(tokens, decimals)
-
-      return isNotNil(planck)
-        ? { kind: "valid", amount: BigInt(planck) }
-        : { kind: "invalid", amount: null }
-    } catch {
-      return { kind: "invalid", amount: null }
-    }
+    const amount = fiatToPlancks(value, tokenRate, decimals)
+    return amount === null ? { kind: "invalid", amount: null } : { kind: "valid", amount }
   }
 
   try {

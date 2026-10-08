@@ -11,6 +11,7 @@ import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
+import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import {
   type ChangeEventHandler,
   type FC,
@@ -200,22 +201,10 @@ const FiatInput = () => {
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && tokenRates?.[currency]?.price && e.target.value) {
-        try {
-          const fiat = parseFloat(e.target.value)
-          const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(token.decimals / 3))
-          const plancks = tokensToPlanck(tokens, token.decimals)
-          refSkipSync.current = true
-          setValue(e.target.value)
-          return setPlancks(BigInt(plancks))
-        } catch {
-          // invalid input, ignore
-        }
-      }
-
+      const price = tokenRates?.[currency]?.price
       refSkipSync.current = true
       setValue(e.target.value)
-      return setPlancks(null)
+      setPlancks(token && price ? fiatToPlancks(e.target.value, price, token.decimals) : null)
     },
 
     [currency, setPlancks, token, tokenRates]
