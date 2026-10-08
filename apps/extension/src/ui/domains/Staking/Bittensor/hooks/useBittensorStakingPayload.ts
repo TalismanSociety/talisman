@@ -17,12 +17,13 @@ import {
   getLimitPrice,
   getSwapSimulation,
 } from "../utils/helpers"
+import { getRemainderFloorPrice } from "../utils/nominationRemainder"
 import type { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
 import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
 import { useGetBittensorDefaultMinStake } from "./useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "./useGetBittensorMinJoinBond"
+import { useGetBittensorNominatorMinStake } from "./useGetBittensorNominatorMinStake"
 import { useGetSubnetFee } from "./useGetSubnetFee"
 
 type UseBittensorStakingPayloadProps = {
@@ -62,19 +63,13 @@ export const useBittensorStakingPayload = ({
     data: minTaoBond,
     isLoading: isLoadingMinTaoBond,
     isError: isErrorMinTaoBond,
-  } = useGetBittensorMinJoinBond({ networkId })
+  } = useGetBittensorNominatorMinStake({ networkId })
 
   const {
     data: alphaPrice,
     isLoading: isLoadingAlphaPrice,
     isError: isErrorAlphaPrice,
   } = useBittensorAlphaPrice({ networkId, netuid })
-
-  // an partial unstake operation will fail if the remaining stake is less than the alpha equivalent of minTaoBond
-  const minAlphaBond = useMemo(() => {
-    if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
-    return taoToAlphaCeil(minTaoBond, alphaPrice)
-  }, [minTaoBond, alphaPrice])
 
   const minTaoStake = useGetBittensorDefaultMinStake({ networkId })
 
@@ -156,6 +151,16 @@ export const useBittensorStakingPayload = ({
     const tolerance = slippage / 100 // percentage to decimal
     return getLimitPrice(simulation, direction, tolerance)
   }, [simulation, direction, slippage])
+
+  const minAlphaBond = useMemo(() => {
+    if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
+    const floorPrice = getRemainderFloorPrice({
+      alphaPrice,
+      slippage,
+      priceLimit: direction === "alphaToTao" ? (priceLimit ?? null) : null,
+    })
+    return taoToAlphaCeil(minTaoBond, floorPrice)
+  }, [minTaoBond, alphaPrice, slippage, direction, priceLimit])
 
   const priceImpact = useMemo(() => {
     if (!alphaPrice || !swapPrice) return null

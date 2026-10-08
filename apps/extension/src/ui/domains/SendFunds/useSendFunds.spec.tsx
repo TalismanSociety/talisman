@@ -127,8 +127,8 @@ vi.mock("@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice", () => ({
 vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake", () => ({
   useGetBittensorDefaultMinStake: () => mocks.state.dtao.minTaoTransfer,
 }))
-vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond", () => ({
-  useGetBittensorMinJoinBond: () => ({ data: mocks.state.dtao.minTaoKeep }),
+vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorNominatorMinStake", () => ({
+  useGetBittensorNominatorMinStake: () => ({ data: mocks.state.dtao.minTaoKeep }),
 }))
 vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha", () => ({
   useGetBittensorAcceptsLockedAlpha: () => ({
@@ -545,13 +545,10 @@ describe("useSendFunds", () => {
       })
     })
 
-    it("rejects a remainder the chain would sweep", () => {
+    it("lets a transfer leave less than the nominator minimum: transfer_stake never sweeps it", () => {
       state.dtao.minTaoKeep = 5n * ALPHA_UNIT
 
-      expect(render().current).toMatchObject({
-        isValid: false,
-        error: "Send everything or keep at least 10 SN1",
-      })
+      expect(render().current).toMatchObject({ isValid: true, error: undefined })
     })
 
     it("warns when the transfer moves locked stake to a recipient who accepts it", () => {

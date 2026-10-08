@@ -9,6 +9,10 @@ import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
 } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import {
+  getSweepableRemainder,
+  getSweepableRemainderError,
+} from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
@@ -160,6 +164,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
     slippage,
+    minTaoBond,
     minAlphaBond,
     minAlphaUnstake,
     swapPrice,
@@ -230,6 +235,36 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
+  const sweepableRemainderError = useMemo(() => {
+    if (!balanceTokenIn || !tokenIn || !tokenOut) return null
+    if (typeof minAlphaBond !== "bigint" || typeof minTaoBond !== "bigint") return null
+    const remainder = getSweepableRemainder({
+      stake: balanceTokenIn.free.planck,
+      amount: state.valueIn ?? 0n,
+      maxAmount: maxValueIn,
+      minKeep: minAlphaBond,
+      minAmount: minAlphaUnstake ?? 0n,
+    })
+    return (
+      remainder &&
+      getSweepableRemainderError(t, remainder, {
+        minTao: minTaoBond,
+        tao: tokenOut,
+        alpha: tokenIn,
+      })
+    )
+  }, [
+    balanceTokenIn,
+    tokenIn,
+    tokenOut,
+    minAlphaBond,
+    minTaoBond,
+    state.valueIn,
+    maxValueIn,
+    minAlphaUnstake,
+    t,
+  ])
+
   const inputError = useMemo<InlineError | null>(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
@@ -259,29 +294,12 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     )
       return { message: t("Insufficient TAO to cover fee"), category: "insufficient_fee" }
 
+    if (sweepableRemainderError) return sweepableRemainderError
+
     if (typeof minAlphaUnstake === "bigint" && state.valueIn < minAlphaUnstake)
       return {
         message: t("Minimum unbond is {{amount}} {{symbol}}", {
           amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
-          symbol: tokenIn.symbol,
-        }),
-        category: "input_invalid",
-      }
-
-    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
-    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
-    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
-    // but a partial sell landing in that range would unexpectedly close the position: block it.
-    const remaining = balanceTokenIn.free.planck - state.valueIn
-    if (
-      typeof minAlphaBond === "bigint" &&
-      state.valueIn < maxValueIn &&
-      remaining > 0n &&
-      remaining < minAlphaBond
-    )
-      return {
-        message: t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-          amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
           symbol: tokenIn.symbol,
         }),
         category: "input_invalid",
@@ -296,7 +314,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
-    minAlphaBond,
+    sweepableRemainderError,
     minAlphaUnstake,
     state.valueIn,
     t,
@@ -353,6 +371,10 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
+    inputErrorFillAmount:
+      sweepableRemainderError && inputError === sweepableRemainderError
+        ? sweepableRemainderError.fillAmount
+        : null,
     canSubmit,
     payload,
     txMetadata,

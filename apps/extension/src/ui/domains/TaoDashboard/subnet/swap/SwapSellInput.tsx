@@ -33,6 +33,7 @@ export const SwapSellInput: FC = () => {
     maxValueIn,
     onValueChange,
     inputErrorMessage,
+    inputErrorFillAmount,
   } = useSwapSell()
 
   const { t } = useTranslation()
@@ -50,6 +51,11 @@ export const SwapSellInput: FC = () => {
   const handleMaxClick = useCallback(() => {
     onValueChange(maxValueIn)
   }, [maxValueIn, onValueChange])
+
+  const handleFillClick = useCallback(() => {
+    if (inputErrorFillAmount === null) return
+    onValueChange(inputErrorFillAmount)
+  }, [inputErrorFillAmount, onValueChange])
 
   return (
     <div className="flex w-full flex-col gap-5 overflow-hidden">
@@ -91,14 +97,24 @@ export const SwapSellInput: FC = () => {
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "invisible w-full truncate text-alert-error text-xs",
-                  inputErrorMessage && "visible"
-                )}
-              >
-                {inputErrorMessage || t("Error")}
-              </div>
+              {inputErrorFillAmount === null ? (
+                <div
+                  className={cn(
+                    "invisible line-clamp-2 w-full text-alert-error text-xs",
+                    inputErrorMessage && "visible"
+                  )}
+                >
+                  {inputErrorMessage || t("Error")}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleFillClick}
+                  className="line-clamp-2 w-full text-left text-alert-error text-xs underline-offset-2 hover:underline"
+                >
+                  {inputErrorMessage}
+                </button>
+              )}
             </TooltipTrigger>
             {inputErrorMessage && <TooltipContent>{inputErrorMessage}</TooltipContent>}
           </Tooltip>
