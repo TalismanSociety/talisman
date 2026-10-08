@@ -15,7 +15,7 @@ describe("the worker's engine", () => {
     vi.spyOn(chrome.runtime, "getPlatformInfo").mockRejectedValue(new Error("not in a browser"))
   })
 
-  it("withdraws the legacy opt-in before it reads consent: app_updated before the first unlock is dropped", async () => {
+  it("keeps the opt-in given before the upgrade: app_updated before the first unlock is queued", async () => {
     await chrome.storage.local.set({
       analytics: LEGACY_QUEUE,
       settings: { useAnalyticsTracking: true, useErrorTracking: true },
@@ -32,10 +32,11 @@ describe("the worker's engine", () => {
       realNow: Date.now(),
     })
 
-    expect(disposition).toBe("dropped_consent")
-    expect((await analyticsEngine.inspect()).queued.usage).toBe(0)
-    const { analytics, settings } = await chrome.storage.local.get(["analytics", "settings"])
-    expect(analytics).toBeUndefined()
-    expect(settings).toMatchObject({ useAnalyticsTracking: false })
+    expect(disposition).toBe("queued")
+    const { consent, queued } = await analyticsEngine.inspect()
+    expect(consent).toEqual({ usage: "granted", error: "granted" })
+    expect(queued.usage).toBe(1)
+    const { settings } = await chrome.storage.local.get("settings")
+    expect(settings).toEqual({ useAnalyticsTracking: true, useErrorTracking: true })
   })
 })
