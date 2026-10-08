@@ -1,5 +1,15 @@
 # @talismn/chaindata-provider
 
+## 2.2.0
+
+### Minor Changes
+
+- 73ef02d: add a chaindata$ option to ChaindataProvider to replace the default chaindata with your own object or observable, export getRemoteChaindata$, DEFAULT_CHAINDATA_URL and the ChaindataFile type, and retry the chaindata download after a failure
+
+### Patch Changes
+
+- d583bf8: generate init data
+
 ## 2.1.0
 
 ### Minor Changes

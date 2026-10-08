@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 2.1.0
+
+### Minor Changes
+
+- 4883ad1: add getStorageValues to read several keys of a storage entry in one state_queryStorageAt request, and an optional block hash to getRuntimeCallValue
+
 ## 2.0.3
 
 ### Patch Changes
