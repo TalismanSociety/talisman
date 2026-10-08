@@ -14,7 +14,8 @@ vi.mock("../../db/blobs", () => ({
 
 vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
 
-const FOUR_HOURS = 4 * 60 * 60 * 1000
+const ONE_DAY = 24 * 60 * 60 * 1000
+const SEVEN_DAYS = 7 * ONE_DAY
 const URI = "https://example.com/1.json"
 
 const jsonResponse = (body: unknown) => ({ ok: true, status: 200, json: async () => body })
@@ -102,7 +103,7 @@ describe("fetchNftJsonMetadata", () => {
   })
 
   it("reuses metadata persisted by a previous session", async () => {
-    blob.stored = { [URI]: { at: 0, json: { name: "Stored" } } }
+    blob.stored = { [URI]: { at: Date.now(), json: { name: "Stored" } } }
     const { fetchNftJsonMetadata } = await loadModule()
 
     expect(await fetchNftJsonMetadata(URI, new AbortController().signal)).toEqual({
@@ -111,7 +112,7 @@ describe("fetchNftJsonMetadata", () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it("yields no metadata on failure and retries only after four hours", async () => {
+  it("yields no metadata on failure and retries only after a day", async () => {
     const { fetchNftJsonMetadata } = await loadModule()
     const signal = new AbortController().signal
     fetchMock.mockResolvedValueOnce(notFound())
@@ -119,7 +120,7 @@ describe("fetchNftJsonMetadata", () => {
     fetchMock.mockResolvedValueOnce(jsonResponse("not an object"))
 
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
-    vi.advanceTimersByTime(FOUR_HOURS - 1)
+    vi.advanceTimersByTime(ONE_DAY - 1)
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
@@ -127,7 +128,7 @@ describe("fetchNftJsonMetadata", () => {
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(2)
 
-    vi.advanceTimersByTime(FOUR_HOURS)
+    vi.advanceTimersByTime(ONE_DAY)
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(3)
   })
@@ -148,23 +149,42 @@ describe("fetchNftJsonMetadata", () => {
     })
   })
 
-  it("evicts the least recently used URI past 2000 entries", async () => {
+  it("serves every URI of a large wallet from cache on the next refresh", async () => {
     const { fetchNftJsonMetadata } = await loadModule()
     const signal = new AbortController().signal
     fetchMock.mockImplementation(async (url: string) => jsonResponse({ name: url }))
+    const uris = Array.from({ length: 3000 }, (_, i) => `https://example.com/${i}.json`)
 
-    for (let i = 0; i < 2000; i++) {
-      await fetchNftJsonMetadata(`https://example.com/${i}.json`, signal)
-      vi.advanceTimersByTime(1)
-    }
-    await fetchNftJsonMetadata("https://example.com/0.json", signal)
+    for (const uri of uris) await fetchNftJsonMetadata(uri, signal)
+    for (const uri of uris) await fetchNftJsonMetadata(uri, signal)
+
+    expect(fetchMock).toHaveBeenCalledTimes(3000)
+  })
+
+  it("refetches metadata seven days after downloading it", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Before" }))
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "After" }))
+
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(SEVEN_DAYS - 1)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Before" })
+
     vi.advanceTimersByTime(1)
-    await fetchNftJsonMetadata("https://example.com/new.json", signal)
-    expect(fetchMock).toHaveBeenCalledTimes(2001)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "After" })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
 
-    await fetchNftJsonMetadata("https://example.com/0.json", signal)
-    expect(fetchMock).toHaveBeenCalledTimes(2001)
-    await fetchNftJsonMetadata("https://example.com/1.json", signal)
-    expect(fetchMock).toHaveBeenCalledTimes(2002)
+  it("drops expired entries when persisting", async () => {
+    blob.stored = { "https://example.com/old.json": { at: 0, json: { name: "Old" } } }
+    vi.setSystemTime(SEVEN_DAYS)
+    const { fetchNftJsonMetadata } = await loadModule()
+    fetchMock.mockResolvedValue(jsonResponse({ name: "Item" }))
+
+    await fetchNftJsonMetadata(URI, new AbortController().signal)
+    await vi.advanceTimersByTimeAsync(1_000)
+
+    expect(Object.keys(blob.set.mock.calls[0][0])).toEqual([URI])
   })
 })
