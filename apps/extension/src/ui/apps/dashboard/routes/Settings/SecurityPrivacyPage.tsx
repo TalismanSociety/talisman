@@ -165,7 +165,20 @@ const Content = () => {
             <Setting
               iconLeft={AlertCircleIcon}
               title={t("Error reporting")}
-              subtitle={t("Send anonymised error reports to Talisman")}
+              subtitle={
+                <Trans t={t}>
+                  Send anonymised error reports to Talisman (via{" "}
+                  <a
+                    className="text-grey-200 hover:text-body"
+                    href="https://posthog.com"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    PostHog
+                  </a>
+                  )
+                </Trans>
+              }
             >
               <Toggle
                 checked={useErrorTracking}
