@@ -19,7 +19,7 @@ export type DbBlobId =
   | "account-proxies"
   | "proxy-pallet-cache"
 
-export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
+export type DbBlobItem = { id: DbBlobId; data: Uint8Array<ArrayBuffer> }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
   set: (data: Data) => db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) }),
@@ -28,7 +28,8 @@ export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
       const blob = await db.blobs.get(id)
       if (!blob?.data) return null
 
-      return JSON.parse(pako.inflate(blob.data, { toText: true })) as Data
+      const inflated = new Response(blob.data).body?.pipeThrough(new DecompressionStream("deflate"))
+      return (await new Response(inflated).json()) as Data
     } catch (err) {
       log.error("Error parsing blob data", { id, err })
       return null
