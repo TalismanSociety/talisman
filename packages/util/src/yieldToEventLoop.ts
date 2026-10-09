@@ -2,8 +2,13 @@
  * Returns a promise that resolves in a NEW macrotask, letting the host event loop
  * (react-native touch handling, browser rendering, node timers) run before continuing.
  *
- * Uses `MessageChannel` where available (browser/node — avoids the setTimeout nested-call
- * clamp of ~4ms, which matters when yielding every ~10ms), and falls back to `setTimeout(0)`.
+ * Prefers `scheduler.postTask` at background priority where it exists: the continuation then
+ * waits for pending work such as IPC replies and incoming messages, which a `MessageChannel`
+ * task can starve.
+ *
+ * Otherwise uses `MessageChannel` where available (browser/node — avoids the setTimeout
+ * nested-call clamp of ~4ms, which matters when yielding every ~10ms), and falls back to
+ * `setTimeout(0)`.
  *
  * The fallback is required on react-native (Hermes), where `MessageChannel` does not exist.
  * NOTE: `setImmediate` must NOT be used for this on react-native — it flushes within the
@@ -17,7 +22,14 @@ type MinimalMessagePort = {
   close: () => void
 }
 
+type MinimalScheduler = {
+  postTask: (task: () => void, options: { priority: "background" }) => Promise<void>
+}
+
 export const yieldToEventLoop = (): Promise<void> => {
+  const { scheduler } = globalThis as { scheduler?: MinimalScheduler }
+  if (scheduler) return scheduler.postTask(() => {}, { priority: "background" })
+
   if (typeof MessageChannel !== "undefined") {
     return new Promise((resolve) => {
       const channel = new MessageChannel()
