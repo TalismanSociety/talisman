@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [c45cff8]
+  - @talismn/util@2.1.1
+
 ## 2.2.0
 
 ### Minor Changes
