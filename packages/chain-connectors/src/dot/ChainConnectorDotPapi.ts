@@ -1,5 +1,6 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 
+import log from "../log"
 import { StaleRpcError } from "./ChainConnectorDot"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
@@ -21,7 +22,8 @@ export type PapiClient = {
  * Runs `@talismn/balances` over a dapp's polkadot-api clients, so the dapp and its balances share one socket per chain.
  *
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
- * best block and reporting the values that changed, like the node does.
+ * best block and reporting the values that changed, like the node does. A failed query is retried at the next block:
+ * balances treats a subscription error as final.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #getClient: (networkId: DotNetworkId) => PapiClient | undefined
@@ -78,7 +80,8 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
         for (const [key, value] of changes) values.set(key, value)
         if (changes.length || !delivered) report(null, { block: result.block, changes })
       } catch (error) {
-        if (active && query >= latestResult) report(error as Error, null)
+        if (active)
+          log.warn(`state_queryStorageAt failed on ${networkId}, retrying at the next block`, error)
       }
     }
 

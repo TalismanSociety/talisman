@@ -7,7 +7,7 @@ type Changes = [`0x${string}`, `0x${string}` | null][]
 
 const createFakeClient = () => {
   const observers = new Set<{ next: (blocks: { hash: string }[]) => void }>()
-  const pending = new Map<string, (changes: Changes) => void>()
+  const pending = new Map<string, (changes: Changes | Error) => void>()
   const requests: { method: string; params: unknown[] }[] = []
 
   const client: PapiClient = {
@@ -15,8 +15,12 @@ const createFakeClient = () => {
       requests.push({ method, params })
       if (method !== "state_queryStorageAt") return Promise.resolve(`${method} result` as Reply)
       const blockHash = params[1] as `0x${string}`
-      return new Promise<Reply>((resolve) =>
-        pending.set(blockHash, (changes) => resolve([{ block: blockHash, changes }] as Reply))
+      return new Promise<Reply>((resolve, reject) =>
+        pending.set(blockHash, (changes) =>
+          changes instanceof Error
+            ? reject(changes)
+            : resolve([{ block: blockHash, changes }] as Reply)
+        )
       )
     },
     bestBlocks$: {
@@ -30,7 +34,7 @@ const createFakeClient = () => {
   const newBestBlock = (hash: string) => {
     for (const observer of observers) observer.next([{ hash }])
   }
-  const answer = async (hash: string, changes: Changes) => {
+  const answer = async (hash: string, changes: Changes | Error) => {
     pending.get(hash)?.(changes)
     await vi.waitFor(() => Promise.resolve())
   }
@@ -137,6 +141,19 @@ describe("ChainConnectorDotPapi", () => {
     fake.newBestBlock("0x2")
     await fake.answer("0x2", [["0xa", "0x02"]])
     await fake.answer("0x1", [["0xa", "0x01"]])
+
+    expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
+  })
+
+  it("retries a failed query at the next block instead of ending the subscription", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(new ChainConnectorDotPapi(() => fake.client), ["0xa"])
+    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", new Error("State already discarded"))
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", [["0xa", "0x02"]])
 
     expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
   })
