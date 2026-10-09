@@ -88,13 +88,9 @@ const getRawStorageUpdates$ = (
       },
       timeout
     )
-    promUnsub.catch((error) => subscriber.error(error))
 
     return () => {
-      promUnsub.then(
-        (unsub) => unsub("state_unsubscribeStorage"),
-        () => {}
-      )
+      promUnsub.then((unsub) => unsub("state_unsubscribeStorage"))
     }
   })
 

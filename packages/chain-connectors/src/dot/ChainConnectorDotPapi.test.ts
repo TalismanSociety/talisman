@@ -7,23 +7,24 @@ import { ChainConnectorDotPapi, type PapiClient } from "./ChainConnectorDotPapi"
 type Changes = [`0x${string}`, `0x${string}` | null][]
 
 const createFakeClient = () => {
-  const observers = new Set<{ next: (blocks: { hash: string }[]) => void }>()
-  const pending = new Map<string, (changes: Changes | Error) => void>()
-  const requests: { method: string; params: unknown[] }[] = []
+  type Observer = Parameters<PapiClient["bestBlocks$"]["subscribe"]>[0]
+  const observers = new Set<Observer>()
+  const pending = new Map<string, (reply: Changes | Error | null) => void>()
+  const requests: { method: string; params: unknown[]; abortSignal?: AbortSignal }[] = []
 
   const client: PapiClient = {
     _request: <Reply>(method: string, params: unknown[], abortSignal?: AbortSignal) => {
-      requests.push({ method, params })
+      requests.push({ method, params, abortSignal })
       if (method === "system_health") return Promise.resolve("system_health result" as Reply)
+      if (method === "ignores_abort") return new Promise<Reply>(() => {})
 
       const blockHash = params[1] as `0x${string}`
       return new Promise<Reply>((resolve, reject) => {
         abortSignal?.addEventListener("abort", () => reject(new Error("Aborted")))
-        pending.set(blockHash, (changes) =>
-          changes instanceof Error
-            ? reject(changes)
-            : resolve([{ block: blockHash, changes }] as Reply)
-        )
+        pending.set(blockHash, (reply) => {
+          if (reply instanceof Error) reject(reply)
+          else resolve((reply && [{ block: blockHash, changes: reply }]) as Reply)
+        })
       })
     },
     bestBlocks$: {
@@ -37,8 +38,8 @@ const createFakeClient = () => {
   const newBestBlock = (hash: string) => {
     for (const observer of observers) observer.next([{ hash }])
   }
-  const answer = async (hash: string, changes: Changes | Error) => {
-    pending.get(hash)?.(changes)
+  const answer = async (hash: string, reply: Changes | Error | null) => {
+    pending.get(hash)?.(reply)
     await vi.advanceTimersByTimeAsync(0)
   }
   const queriedBlocks = () =>
@@ -46,7 +47,7 @@ const createFakeClient = () => {
       .filter(({ method }) => method === "state_queryStorageAt")
       .map(({ params }) => params[1])
 
-  return { client, observers, newBestBlock, answer, queriedBlocks }
+  return { client, requests, observers, newBestBlock, answer, queriedBlocks }
 }
 
 const subscribeStorage = (fake: ReturnType<typeof createFakeClient>, timeout?: number | false) => {
@@ -88,10 +89,20 @@ describe("ChainConnectorDotPapi", () => {
     )
   })
 
-  it("aborts a request that gets no answer", async () => {
+  it("times out a request that gets no answer, and aborts it", async () => {
     const fake = createFakeClient()
     const sent = new ChainConnectorDotPapi(() => fake.client).send("polkadot", "never_answered", [])
-    const rejection = expect(sent).rejects.toThrow("Aborted")
+    const rejection = expect(sent).rejects.toThrow("Timeout")
+
+    await vi.advanceTimersByTimeAsync(30_000)
+    await rejection
+    expect(fake.requests[0]?.abortSignal?.aborted).toBe(true)
+  })
+
+  it("times out a request even when the client ignores the abort signal", async () => {
+    const fake = createFakeClient()
+    const sent = new ChainConnectorDotPapi(() => fake.client).send("polkadot", "ignores_abort", [])
+    const rejection = expect(sent).rejects.toThrow("Timeout")
 
     await vi.advanceTimersByTimeAsync(30_000)
     await rejection
@@ -183,20 +194,52 @@ describe("ChainConnectorDotPapi", () => {
     ])
   })
 
-  it("reports the error when the first queries keep failing", async () => {
+  it("retries at the next block after a malformed reply", async () => {
     const fake = createFakeClient()
     const { callback } = subscribeStorage(fake, false)
 
-    for (const block of ["0x1", "0x2", "0x3"]) {
-      fake.newBestBlock(block)
-      await fake.answer(block, failure)
-    }
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", null)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", [["0xa", "0x02"]])
 
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2"])
+    expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
+  })
+
+  it("reports the error when the first queries keep failing, and stops querying", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", failure)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    fake.newBestBlock("0x4")
+    await fake.answer("0x3", failure)
+
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3"])
     expect(callback.mock.calls).toEqual([[failure, null]])
     expect(fake.observers.size).toBe(0)
   })
 
-  it("stops following blocks and drops pending answers once unsubscribed", async () => {
+  it("reports an error when the client's block stream fails or ends", async () => {
+    const fake = createFakeClient()
+    const errored = subscribeStorage(fake)
+    const streamFailure = new Error("follow failed")
+    for (const observer of fake.observers) observer.error(streamFailure)
+    expect(errored.callback.mock.calls).toEqual([[streamFailure, null]])
+
+    const ended = subscribeStorage(fake)
+    for (const observer of fake.observers) observer.complete()
+    expect(ended.callback).toHaveBeenCalledWith(
+      new Error("polkadot-api client for polkadot stopped following blocks"),
+      null
+    )
+  })
+
+  it("stops following blocks and aborts the query in flight once unsubscribed", async () => {
     const fake = createFakeClient()
     const { callback, unsubscribe } = subscribeStorage(fake)
 
@@ -205,6 +248,7 @@ describe("ChainConnectorDotPapi", () => {
     await fake.answer("0x1", [["0xa", "0x01"]])
 
     expect(fake.observers.size).toBe(0)
+    expect(fake.requests[0]?.abortSignal?.aborted).toBe(true)
     expect(callback).not.toHaveBeenCalled()
   })
 

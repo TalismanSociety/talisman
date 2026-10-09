@@ -151,24 +151,6 @@ describe("getRpcQueryPack$", () => {
     expect(error).toEqual(new Error("ws error"))
     sub.unsubscribe()
   })
-
-  it("errors the stream when the subscription cannot start", async () => {
-    const { connector } = makeFakeConnector()
-    const failure = new Error("No polkadot-api client for network kusama")
-    ;(connector.subscribe as ReturnType<typeof vi.fn>).mockRejectedValueOnce(failure)
-
-    let error: unknown
-    getRpcQueryPack$(
-      connector,
-      "kusama",
-      makeQueries(1, (i, value) => `${i}:${value}`)
-    ).subscribe({
-      error: (e) => (error = e),
-    })
-
-    await drainUntil(() => error !== undefined)
-    expect(error).toBe(failure)
-  })
 })
 
 describe("fetchRpcQueryPack", () => {

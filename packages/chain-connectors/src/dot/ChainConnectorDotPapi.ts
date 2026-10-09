@@ -18,6 +18,7 @@ export type PapiClient = {
     subscribe: (observer: {
       next: (blocks: { hash: string }[]) => void
       error: (error: unknown) => void
+      complete: () => void
     }) => { unsubscribe: () => void }
   }
 }
@@ -31,14 +32,14 @@ export type PapiClient = {
  * treats a subscription error as final and would stop updating that network.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
-  #getClient: (networkId: DotNetworkId) => PapiClient | undefined
+  #clientFor: (networkId: DotNetworkId) => PapiClient | undefined
 
-  constructor(getClient: (networkId: DotNetworkId) => PapiClient | undefined) {
-    this.#getClient = getClient
+  constructor(clientFor: (networkId: DotNetworkId) => PapiClient | undefined) {
+    this.#clientFor = clientFor
   }
 
   async send<T = unknown>(networkId: DotNetworkId, method: string, params: unknown[]): Promise<T> {
-    return requestWithTimeout<T>(this.getClient(networkId), method, params)
+    return requestWithTimeout<T>(this.getClient(networkId), method, params, new AbortController())
   }
 
   async subscribe(
@@ -57,10 +58,11 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     const values = new Map<HexString, HexString | null>()
     let bestBlockHash: string | undefined
     let queriedBlockHash: string | undefined
-    let querying = false
+    let inFlight: AbortController | undefined
     let delivered = false
     let failures = 0
     let active = true
+    let subscription: { unsubscribe: () => void } | undefined
     const staleTimer = timeout
       ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
       : undefined
@@ -68,11 +70,17 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     const stop = () => {
       active = false
       clearTimeout(staleTimer)
-      subscription.unsubscribe()
+      inFlight?.abort()
+      subscription?.unsubscribe()
+    }
+
+    const finish = (error: Error) => {
+      if (!active) return
+      stop()
+      callback(error, null)
     }
 
     const reportChanges = (result: StorageChanges) => {
-      failures = 0
       const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
       for (const [key, value] of changes) values.set(key, value)
       if (!changes.length) return
@@ -88,44 +96,44 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
           `state_queryStorageAt failed on ${networkId}, retrying at the next block`,
           error
         )
-
-      stop()
-      callback(error, null)
+      finish(error)
     }
 
     const queryBestBlock = async () => {
-      if (querying || !bestBlockHash || bestBlockHash === queriedBlockHash) return
+      if (!active || inFlight || !bestBlockHash || bestBlockHash === queriedBlockHash) return
       const blockHash = bestBlockHash
       queriedBlockHash = blockHash
-      querying = true
+      const controller = new AbortController()
+      inFlight = controller
 
-      const outcome = await requestWithTimeout<StorageChanges[]>(client, "state_queryStorageAt", [
-        keys,
-        blockHash,
-      ]).then(
-        ([result]) => result ?? new Error(`Empty state_queryStorageAt response on ${networkId}`),
-        (error: Error) => error
-      )
-      querying = false
-      if (!active) return
-
-      queryBestBlock()
-      if (outcome instanceof Error) reportFailure(outcome)
-      else reportChanges(outcome)
+      try {
+        const [result] = await requestWithTimeout<StorageChanges[]>(
+          client,
+          "state_queryStorageAt",
+          [keys, blockHash],
+          controller
+        )
+        if (!active) return
+        if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
+        reportChanges(result)
+      } catch (error) {
+        if (active) reportFailure(error as Error)
+      } finally {
+        if (inFlight === controller) inFlight = undefined
+        queryBestBlock()
+      }
     }
 
-    const subscription = client.bestBlocks$.subscribe({
+    subscription = client.bestBlocks$.subscribe({
       next: ([best]) => {
         bestBlockHash = best?.hash
         queryBestBlock()
       },
-      error: (error) => {
-        if (!active) return
-        active = false
-        clearTimeout(staleTimer)
-        callback(error as Error, null)
-      },
+      error: (error) => finish(error as Error),
+      complete: () =>
+        finish(new Error(`polkadot-api client for ${networkId} stopped following blocks`)),
     })
+    if (!active) subscription.unsubscribe()
 
     return stop
   }
@@ -133,14 +141,31 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
   async reset() {}
 
   private getClient(networkId: DotNetworkId): PapiClient {
-    const client = this.#getClient(networkId)
+    const client = this.#clientFor(networkId)
     if (!client) throw new Error(`No polkadot-api client for network ${networkId}`)
     return client
   }
 }
 
-const requestWithTimeout = <T>(client: PapiClient, method: string, params: unknown[]) => {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), RESPONSE_TIMEOUT)
-  return client._request<T>(method, params, controller.signal).finally(() => clearTimeout(timer))
-}
+/** rejects on its own timer too, so a client that ignores the abort signal cannot hang the caller */
+const requestWithTimeout = <T>(
+  client: PapiClient,
+  method: string,
+  params: unknown[],
+  controller: AbortController
+) =>
+  new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      controller.abort()
+      reject(new Error("Timeout"))
+    }, RESPONSE_TIMEOUT)
+    try {
+      client
+        ._request<T>(method, params, controller.signal)
+        .then(resolve, reject)
+        .finally(() => clearTimeout(timer))
+    } catch (error) {
+      clearTimeout(timer)
+      reject(error)
+    }
+  })
