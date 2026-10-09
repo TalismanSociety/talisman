@@ -41,7 +41,7 @@ const getSortKey = (
   isPriority: isPriority?.(token) ?? false,
   isTransferable: isTransferableToken(token),
   isPinned: id === pinnedTokenId,
-  fiat: balances.sum.fiat(currency).transferable,
+  fiat: balances.count ? balances.sum.fiat(currency).transferable : 0,
   hasBalance: balances.each.some((balance) => balance.transferable.planck > 0n),
   nativeRank: getNativeRank(token.id),
   symbol: token.symbol,
