@@ -14,12 +14,21 @@ vi.mock("../../db/blobs", () => ({
 
 vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
 
+const TEN_MINUTES = 10 * 60 * 1000
 const ONE_DAY = 24 * 60 * 60 * 1000
 const SEVEN_DAYS = 7 * ONE_DAY
+const THIRTY_DAYS = 30 * ONE_DAY
 const URI = "https://example.com/1.json"
 
 const jsonResponse = (body: unknown) => ({ ok: true, status: 200, json: async () => body })
-const notFound = () => ({ ok: false, status: 404, json: async () => ({}) })
+const httpError = (status: number) => ({ ok: false, status, json: async () => ({}) })
+const notFound = () => httpError(404)
+const timeout = () => new DOMException("The operation timed out", "TimeoutError")
+const stored = (json: unknown, attemptedAt: number, nextAttemptAt = attemptedAt + SEVEN_DAYS) => ({
+  json,
+  attemptedAt,
+  nextAttemptAt,
+})
 
 const fetchMock = vi.fn()
 
@@ -120,7 +129,7 @@ describe("fetchNftJsonMetadata", () => {
   })
 
   it("reuses metadata persisted by a previous session", async () => {
-    blob.stored = { [URI]: { at: Date.now(), json: { name: "Stored" } } }
+    blob.stored = { [URI]: stored({ name: "Stored" }, Date.now()) }
     const { fetchNftJsonMetadata } = await loadModule()
 
     expect(await fetchNftJsonMetadata(URI, new AbortController().signal)).toEqual({
@@ -129,25 +138,76 @@ describe("fetchNftJsonMetadata", () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it("yields no metadata on failure and retries only after a day", async () => {
+  const retriesAfter = async (delay: number, failOnce: () => void) => {
     const { fetchNftJsonMetadata } = await loadModule()
     const signal = new AbortController().signal
-    fetchMock.mockResolvedValueOnce(notFound())
-    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"))
-    fetchMock.mockResolvedValueOnce(jsonResponse("not an object"))
+    failOnce()
+    fetchMock.mockResolvedValue(jsonResponse({ name: "Later" }))
 
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
-    vi.advanceTimersByTime(ONE_DAY - 1)
+    vi.advanceTimersByTime(delay - 1)
     expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
     vi.advanceTimersByTime(1)
-    expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Later" })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  }
+
+  const respondsOnce = (response: unknown) => () => fetchMock.mockResolvedValueOnce(response)
+  const rejectsOnce = (error: unknown) => () => fetchMock.mockRejectedValueOnce(error)
+
+  it.each([
+    ["HTTP 404", respondsOnce(notFound())],
+    ["HTTP 403", respondsOnce(httpError(403))],
+    ["JSON that is not an object", respondsOnce(jsonResponse("not an object"))],
+  ])("retries a definitive failure (%s) after a day", (_, failOnce) =>
+    retriesAfter(ONE_DAY, failOnce)
+  )
+
+  it.each([
+    ["network error", rejectsOnce(new TypeError("Failed to fetch"))],
+    ["timeout", rejectsOnce(timeout())],
+    ["HTTP 429", respondsOnce(httpError(429))],
+    ["HTTP 503", respondsOnce(httpError(503))],
+  ])("retries a transient failure (%s) after ten minutes", (_, failOnce) =>
+    retriesAfter(TEN_MINUTES, failOnce)
+  )
+
+  it("keeps the previous metadata when a refetch fails, then retries", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Before" }))
+    fetchMock.mockResolvedValueOnce(httpError(503))
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "After" }))
+
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(SEVEN_DAYS)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Before" })
     expect(fetchMock).toHaveBeenCalledTimes(2)
 
-    vi.advanceTimersByTime(ONE_DAY)
-    expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
+    vi.advanceTimersByTime(TEN_MINUTES - 1)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Before" })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    vi.advanceTimersByTime(1)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "After" })
     expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it("persists stale metadata so it survives a restart during an outage", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Before" }))
+    fetchMock.mockResolvedValue(httpError(503))
+
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(SEVEN_DAYS)
+    await fetchNftJsonMetadata(URI, signal)
+    await vi.advanceTimersByTimeAsync(1_000)
+
+    const persisted = blob.set.mock.calls.at(-1)?.[0]
+    expect(persisted[URI].json).toEqual({ name: "Before" })
   })
 
   it("throws on abort without recording a failure", async () => {
@@ -193,15 +253,21 @@ describe("fetchNftJsonMetadata", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it("drops expired entries when persisting", async () => {
-    blob.stored = { "https://example.com/old.json": { at: 0, json: { name: "Old" } } }
-    vi.setSystemTime(SEVEN_DAYS)
+  it("drops entries not attempted for thirty days when persisting", async () => {
+    blob.stored = {
+      "https://example.com/forgotten.json": stored({ name: "Forgotten" }, 0),
+      "https://example.com/expired.json": stored({ name: "Expired" }, THIRTY_DAYS - SEVEN_DAYS),
+    }
+    vi.setSystemTime(THIRTY_DAYS)
     const { fetchNftJsonMetadata } = await loadModule()
     fetchMock.mockResolvedValue(jsonResponse({ name: "Item" }))
 
     await fetchNftJsonMetadata(URI, new AbortController().signal)
     await vi.advanceTimersByTimeAsync(1_000)
 
-    expect(Object.keys(blob.set.mock.calls[0][0])).toEqual([URI])
+    expect(Object.keys(blob.set.mock.calls[0][0])).toEqual([
+      "https://example.com/expired.json",
+      URI,
+    ])
   })
 })

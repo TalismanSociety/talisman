@@ -17,12 +17,19 @@ export type NftJsonMetadata = {
   attributes?: NftAttribute[]
 }
 
-type CachedJson = { at: number; json: NftJsonMetadata | null }
+type FailureKind = "definitive" | "transient"
+
+type CachedJson = { json: NftJsonMetadata | null; attemptedAt: number; nextAttemptAt: number }
 
 const FETCH_TIMEOUT = 10_000
-const ONE_DAY = 24 * 60 * 60 * 1000
+const ONE_MINUTE = 60 * 1000
+const ONE_DAY = 24 * 60 * ONE_MINUTE
 const SUCCESS_TTL = 7 * ONE_DAY
-const FAILURE_TTL = ONE_DAY
+const RETRY_DELAY: Record<FailureKind, number> = {
+  definitive: ONE_DAY,
+  transient: 10 * ONE_MINUTE,
+}
+const KEEP_UNREFERENCED_FOR = 30 * ONE_DAY
 
 const queue = new PQueue({ concurrency: 4 })
 
@@ -32,22 +39,48 @@ const cache = new Map<string, CachedJson>()
 const cacheChanged$ = new Subject<void>()
 const inflight = new Map<string, Promise<NftJsonMetadata | null>>()
 
-const isFresh = ({ at, json }: CachedJson) => Date.now() - at < (json ? SUCCESS_TTL : FAILURE_TTL)
+class MetadataFetchError extends Error {
+  constructor(
+    message: string,
+    readonly kind: FailureKind
+  ) {
+    super(message)
+  }
+}
 
-const freshEntries = (entries: Iterable<[string, CachedJson]>) =>
-  [...entries].filter(([, entry]) => isFresh(entry))
+const isCurrent = ({ nextAttemptAt }: CachedJson) => Date.now() < nextAttemptAt
+
+const isCachedJson = (entry: unknown): entry is CachedJson =>
+  typeof entry === "object" &&
+  entry !== null &&
+  typeof (entry as CachedJson).attemptedAt === "number" &&
+  typeof (entry as CachedJson).nextAttemptAt === "number"
+
+const keptEntries = (entries: Iterable<[string, unknown]>): [string, CachedJson][] =>
+  [...entries].filter(
+    (entry): entry is [string, CachedJson] =>
+      isCachedJson(entry[1]) && Date.now() - entry[1].attemptedAt < KEEP_UNREFERENCED_FOR
+  )
 
 const cacheLoaded = walletReady.then(async () => {
   const stored = await blobStore.get()
-  for (const [uri, entry] of freshEntries(Object.entries(stored ?? {}))) cache.set(uri, entry)
+  for (const [uri, entry] of keptEntries(Object.entries(stored ?? {}))) cache.set(uri, entry)
 
   cacheChanged$.pipe(debounceTime(1_000)).subscribe(() => {
-    blobStore.set(Object.fromEntries(freshEntries(cache)))
+    blobStore.set(Object.fromEntries(keptEntries(cache)))
   })
 })
 
-const rememberInCache = (uri: string, json: NftJsonMetadata | null) => {
-  cache.set(uri, { at: Date.now(), json })
+const rememberSuccess = (uri: string, json: NftJsonMetadata) => {
+  const now = Date.now()
+  cache.set(uri, { json, attemptedAt: now, nextAttemptAt: now + SUCCESS_TTL })
+  cacheChanged$.next()
+}
+
+const rememberFailure = (uri: string, kind: FailureKind) => {
+  const now = Date.now()
+  const json = cache.get(uri)?.json ?? null
+  cache.set(uri, { json, attemptedAt: now, nextAttemptAt: now + RETRY_DELAY[kind] })
   cacheChanged$.next()
 }
 
@@ -58,7 +91,7 @@ export const fetchNftJsonMetadata = async (
   await cacheLoaded
 
   const cached = cache.get(uri)
-  if (cached && isFresh(cached)) return cached.json
+  if (cached && isCurrent(cached)) return cached.json
 
   const download = inflight.get(uri) ?? startDownload(uri, signal)
   const json = await download
@@ -71,14 +104,14 @@ const startDownload = (uri: string, signal: AbortSignal) => {
     .add(() => downloadNftJsonMetadata(uri, signal), { signal })
     .then(
       (json) => {
-        rememberInCache(uri, json)
+        rememberSuccess(uri, json)
         return json
       },
       (err) => {
         if (signal.aborted) return null
         log.warn("[nfts] failed to fetch NFT metadata", { uri, error: getErrorMessage(err) })
-        rememberInCache(uri, null)
-        return null
+        rememberFailure(uri, err instanceof MetadataFetchError ? err.kind : "transient")
+        return cache.get(uri)?.json ?? null
       }
     )
     .finally(() => inflight.delete(uri))
@@ -86,14 +119,20 @@ const startDownload = (uri: string, signal: AbortSignal) => {
   return download
 }
 
+const isTransientStatus = (status: number) => status === 429 || status >= 500
+
 const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
   const response = await fetch(uri, {
     signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT)]),
   })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  if (!response.ok)
+    throw new MetadataFetchError(
+      `HTTP ${response.status}`,
+      isTransientStatus(response.status) ? "transient" : "definitive"
+    )
 
   const json = parseNftJsonMetadata(await response.json())
-  if (!json) throw new Error("NFT metadata is not a JSON object")
+  if (!json) throw new MetadataFetchError("NFT metadata is not a JSON object", "definitive")
   return json
 }
 
