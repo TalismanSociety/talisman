@@ -22,8 +22,8 @@ describe("normaliseMetadataUri", () => {
 
   it.each([
     "https://dyndata.chaotic.art/v1/metadata/ahp/158/2407162256",
-    "http://example.com/nft/1.json",
-  ])("keeps the http(s) URL %s as is", (url) => {
+    "https://example.com:8443/nft/1.json?v=2",
+  ])("keeps the public https URL %s as is", (url) => {
     expect(normaliseMetadataUri(url)).toBe(url)
   })
 
@@ -36,6 +36,13 @@ describe("normaliseMetadataUri", () => {
     "/metadata/1.json",
     "1.json",
     "Qmshort",
+    "http://example.com/nft/1.json",
+    "https://127.0.0.1/nft/1.json",
+    "https://[::1]/nft/1.json",
+    "https://localhost/nft/1.json",
+    "https://localhost:3000/nft/1.json",
+    "https://nas.local/nft/1.json",
+    "https://intranet/nft/1.json",
   ])("rejects %j", (raw) => {
     expect(normaliseMetadataUri(raw)).toBeNull()
   })

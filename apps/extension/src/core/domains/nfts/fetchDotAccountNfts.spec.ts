@@ -107,8 +107,8 @@ const NETWORK_ERROR_URL = `${CHAOTIC}/256/4235681442`
 const respond = async (url: string) => {
   if (url === NETWORK_ERROR_URL) throw new TypeError("Failed to fetch")
   return url in JSON_BY_URL
-    ? { ok: true, status: 200, json: async () => JSON_BY_URL[url] }
-    : { ok: false, status: 404, json: async () => ({}) }
+    ? new Response(JSON.stringify(JSON_BY_URL[url]))
+    : new Response("{}", { status: 404 })
 }
 
 const OWNED = [

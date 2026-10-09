@@ -30,6 +30,11 @@ const RETRY_DELAY: Record<FailureKind, number> = {
   transient: 10 * ONE_MINUTE,
 }
 const KEEP_UNREFERENCED_FOR = 30 * ONE_DAY
+const MAX_BODY_BYTES = 256 * 1024
+const MAX_NAME_LENGTH = 200
+const MAX_DESCRIPTION_LENGTH = 2000
+const MAX_ATTRIBUTES = 50
+const MAX_ATTRIBUTE_LENGTH = 100
 
 const queue = new PQueue({ concurrency: 4 })
 
@@ -131,35 +136,70 @@ const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
       isTransientStatus(response.status) ? "transient" : "definitive"
     )
 
-  const json = parseNftJsonMetadata(await response.json())
+  const json = parseNftJsonMetadata(parseJson(await readBodyText(response)))
   if (!json) throw new MetadataFetchError("NFT metadata is not a JSON object", "definitive")
   return json
+}
+
+const tooLarge = () => new MetadataFetchError("NFT metadata exceeds the size cap", "definitive")
+
+const readBodyText = async (response: Response) => {
+  if (Number(response.headers.get("content-length")) > MAX_BODY_BYTES) throw tooLarge()
+  const reader = response.body?.getReader()
+  if (!reader) return ""
+
+  const decoder = new TextDecoder()
+  let text = ""
+  let size = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) return text + decoder.decode()
+    size += value.byteLength
+    if (size > MAX_BODY_BYTES) {
+      await reader.cancel()
+      throw tooLarge()
+    }
+    text += decoder.decode(value, { stream: true })
+  }
+}
+
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new MetadataFetchError("NFT metadata is not valid JSON", "definitive")
+  }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
-const optionalString = (value: unknown) => (typeof value === "string" ? value : undefined)
+const optionalString = (value: unknown, maxLength = Number.POSITIVE_INFINITY) =>
+  typeof value === "string" ? value.slice(0, maxLength) : undefined
 
-const isAttributeValue = (value: unknown): value is NftAttribute["value"] =>
-  typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+const truncateAttributeValue = (value: unknown): NftAttribute["value"] | undefined => {
+  if (typeof value === "string") return value.slice(0, MAX_ATTRIBUTE_LENGTH)
+  if (typeof value === "number" || typeof value === "boolean") return value
+  return undefined
+}
 
 const parseAttributes = (value: unknown): NftAttribute[] | undefined => {
   if (!Array.isArray(value)) return undefined
-  return value.flatMap((attribute) =>
-    isRecord(attribute) &&
-    typeof attribute.trait_type === "string" &&
-    isAttributeValue(attribute.value)
-      ? [{ trait_type: attribute.trait_type, value: attribute.value }]
-      : []
-  )
+  return value
+    .flatMap((attribute) => {
+      if (!isRecord(attribute)) return []
+      const trait_type = optionalString(attribute.trait_type, MAX_ATTRIBUTE_LENGTH)
+      const value = truncateAttributeValue(attribute.value)
+      return trait_type !== undefined && value !== undefined ? [{ trait_type, value }] : []
+    })
+    .slice(0, MAX_ATTRIBUTES)
 }
 
 export const parseNftJsonMetadata = (value: unknown): NftJsonMetadata | null => {
   if (!isRecord(value)) return null
   return {
-    name: optionalString(value.name),
-    description: optionalString(value.description),
+    name: optionalString(value.name, MAX_NAME_LENGTH),
+    description: optionalString(value.description, MAX_DESCRIPTION_LENGTH),
     image: optionalString(value.image),
     animation_url: optionalString(value.animation_url),
     external_url: optionalString(value.external_url),

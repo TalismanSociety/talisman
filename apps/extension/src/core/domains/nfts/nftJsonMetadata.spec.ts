@@ -20,8 +20,8 @@ const SEVEN_DAYS = 7 * ONE_DAY
 const THIRTY_DAYS = 30 * ONE_DAY
 const URI = "https://example.com/1.json"
 
-const jsonResponse = (body: unknown) => ({ ok: true, status: 200, json: async () => body })
-const httpError = (status: number) => ({ ok: false, status, json: async () => ({}) })
+const jsonResponse = (body: unknown) => new Response(JSON.stringify(body))
+const httpError = (status: number) => new Response("{}", { status })
 const notFound = () => httpError(404)
 const timeout = () => new DOMException("The operation timed out", "TimeoutError")
 const stored = (json: unknown, attemptedAt: number, nextAttemptAt = attemptedAt + SEVEN_DAYS) => ({
@@ -84,6 +84,25 @@ describe("parseNftJsonMetadata", () => {
         { trait_type: "Level", value: 2 },
       ],
     })
+  })
+
+  it("truncates oversized text and attribute lists", async () => {
+    const { parseNftJsonMetadata } = await loadModule()
+    const parsed = parseNftJsonMetadata({
+      name: "n".repeat(250),
+      description: "d".repeat(2500),
+      attributes: Array.from({ length: 60 }, (_, i) => ({
+        trait_type: `t${i}`.padEnd(150, "x"),
+        value: "v".repeat(150),
+      })),
+    })
+
+    expect(parsed?.name).toHaveLength(200)
+    expect(parsed?.description).toHaveLength(2000)
+    expect(parsed?.attributes).toHaveLength(50)
+    expect(parsed?.attributes?.[0].trait_type).toHaveLength(100)
+    expect(parsed?.attributes?.[0].value).toHaveLength(100)
+    expect(parsed?.attributes?.[49].trait_type.startsWith("t49")).toBe(true)
   })
 
   it("reads attributes under the traits key", async () => {
@@ -161,6 +180,15 @@ describe("fetchNftJsonMetadata", () => {
     ["HTTP 404", respondsOnce(notFound())],
     ["HTTP 403", respondsOnce(httpError(403))],
     ["JSON that is not an object", respondsOnce(jsonResponse("not an object"))],
+    ["malformed JSON", respondsOnce(new Response("{oops"))],
+    [
+      "a content-length above 256 KiB",
+      respondsOnce(new Response("{}", { headers: { "content-length": String(257 * 1024) } })),
+    ],
+    [
+      "a streamed body above 256 KiB",
+      respondsOnce(new Response(`{"name":"${"x".repeat(257 * 1024)}"}`)),
+    ],
   ])("retries a definitive failure (%s) after a day", (_, failOnce) =>
     retriesAfter(ONE_DAY, failOnce)
   )
