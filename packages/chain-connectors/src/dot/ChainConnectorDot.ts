@@ -8,6 +8,7 @@ import {
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 
 import log from "../log"
+import type { WsProviderFactory } from "./createSharedWsProvider"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 // errors that require an rpc fallback
@@ -90,12 +91,17 @@ type Connection = {
  */
 export class ChainConnectorDot implements IChainConnectorDot {
   #chaindataChainProvider: IChaindataNetworkProvider
+  #getWsProvider: WsProviderFactory
 
   #connections: Record<DotNetworkId, Connection> = {}
   #pendingConnections: Record<DotNetworkId, Promise<Connection>> = {}
 
-  constructor(chaindataChainProvider: IChaindataNetworkProvider) {
+  constructor(
+    chaindataChainProvider: IChaindataNetworkProvider,
+    options: { getWsProvider?: WsProviderFactory } = {}
+  ) {
     this.#chaindataChainProvider = chaindataChainProvider
+    this.#getWsProvider = options.getWsProvider ?? getWsProvider
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -248,10 +254,8 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
       // the connection may have been replaced by a reset() since we subscribed
       const current = this.#connections[chainId]
-      // if we are the last user the connection is about to be destroyed: skip the
-      // unsubscribe call, server-side subscriptions die with the socket anyway
-      const isLastUser = !!current && current.users.size === 1 && current.users.has(socketUserId)
-      if (subscription.serverSubId !== null && current && !isLastUser)
+      // a shared socket outlives this connection, so its server-side subscriptions must be closed explicitly
+      if (subscription.serverSubId !== null && current)
         try {
           current.client.request(unsubscribeMethod, [subscription.serverSubId]).catch((error) => {
             if (!isDestroyedError(error)) log.warn(`Failed to unsubscribe from ${chainId}`, error)
@@ -286,6 +290,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
         fresh.subscriptions = connection.subscriptions
         this.#connections[chainId] = fresh
         for (const subscription of fresh.subscriptions) this.startSubscription(fresh, subscription)
+        this.adoptCurrentStatus(fresh)
       } catch (error) {
         log.warn(`Failed to recreate connection for ${chainId} after reset`, error)
         for (const subscription of connection.subscriptions)
@@ -361,6 +366,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
         this.#pendingConnections[chainId] = this.createConnection(chainId)
           .then((created) => {
             this.#connections[chainId] = created
+            this.adoptCurrentStatus(created)
             return created
           })
           .finally(() => {
@@ -386,7 +392,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     // will be assigned below - the provider config needs to reference the connection
     let connection: Connection = null as unknown as Connection
 
-    const provider = getWsProvider(rpcs, {
+    const provider = this.#getWsProvider(rpcs, {
       onStatusChanged: (status: StatusChange) => this.handleStatusChange(connection, status),
     })
 
@@ -456,6 +462,12 @@ export class ChainConnectorDot implements IChainConnectorDot {
         }, STALE_NOTIFY_TIMEOUT)
       }
     }
+  }
+
+  /** a shared socket may already be connected, in which case no CONNECTED event will follow */
+  private adoptCurrentStatus(connection: Connection) {
+    const status = connection.provider.getStatus()
+    if (status.type === WsEvent.CONNECTED) this.handleStatusChange(connection, status)
   }
 
   private releaseConnection(chainId: DotNetworkId, socketUserId: SocketUserId): void {
