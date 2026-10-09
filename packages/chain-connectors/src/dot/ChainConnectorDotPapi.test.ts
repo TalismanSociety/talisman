@@ -224,7 +224,7 @@ describe("ChainConnectorDotPapi", () => {
     expect(fake.observers.size).toBe(0)
   })
 
-  it("reports an error when the client's block stream fails or ends", async () => {
+  it("reports an error when the block stream fails, or ends as a client other than polkadot-api's can", async () => {
     const fake = createFakeClient()
     const errored = subscribeStorage(fake)
     const streamFailure = new Error("follow failed")
