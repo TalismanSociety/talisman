@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
+    "polkadot-api": "2.2.0",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
