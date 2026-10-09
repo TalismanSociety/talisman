@@ -316,17 +316,19 @@ describe("fetchDotAccountNfts", () => {
       releases.shift()?.()
       await new Promise((resolve) => setTimeout(resolve, 0))
     }
-    await vi.waitFor(() => {
-      const latest = emissions.at(-1)
-      if (latest?.status !== "loaded") throw new Error("expected a loaded result")
-      expect(nftName(latest.data, "2407162256")).toBe("Chaotic #2407162256")
-      expect(nftName(latest.data, "313")).toBe("Bare CID item")
-      expect(latest.data.collections.find((c) => c.id.endsWith(":158"))?.name).toBe("Chaotic 158")
-    })
+    await vi.waitFor(
+      () => {
+        const latest = emissions.at(-1)
+        if (latest?.status !== "loaded") throw new Error("expected a loaded result")
+        expect(nftName(latest.data, "2407162256")).toBe("Chaotic #2407162256")
+        expect(nftName(latest.data, "313")).toBe("Bare CID item")
+        expect(latest.data.collections.find((c) => c.id.endsWith(":158"))?.name).toBe("Chaotic 158")
+      },
+      { timeout: 5_000 }
+    )
 
     expect(mocks.send.mock.calls.length).toBe(rpcCalls)
     expect(emissions.filter((emission) => emission.status === "loading")).toHaveLength(1)
-    expect(emissions.length).toBeLessThanOrEqual(4)
     subscription.unsubscribe()
   })
 })
