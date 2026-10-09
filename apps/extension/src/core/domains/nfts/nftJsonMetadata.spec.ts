@@ -102,6 +102,23 @@ describe("fetchNftJsonMetadata", () => {
     expect(Object.keys(blob.set.mock.calls[0][0])).toEqual([URI, "https://example.com/2.json"])
   })
 
+  it("shares one download between concurrent callers of the same URI", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    fetchMock.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve(jsonResponse({ name: "Item" })), 50))
+    )
+
+    const signal = new AbortController().signal
+    const results = Promise.all([
+      fetchNftJsonMetadata(URI, signal),
+      fetchNftJsonMetadata(URI, signal),
+    ])
+    await vi.advanceTimersByTimeAsync(50)
+
+    expect(await results).toEqual([{ name: "Item" }, { name: "Item" }])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it("reuses metadata persisted by a previous session", async () => {
     blob.stored = { [URI]: { at: Date.now(), json: { name: "Stored" } } }
     const { fetchNftJsonMetadata } = await loadModule()

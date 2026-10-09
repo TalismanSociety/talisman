@@ -30,6 +30,7 @@ const blobStore = getBlobStore<Record<string, CachedJson>>("nft-metadata")
 
 const cache = new Map<string, CachedJson>()
 const cacheChanged$ = new Subject<void>()
+const inflight = new Map<string, Promise<NftJsonMetadata | null>>()
 
 const isFresh = ({ at, json }: CachedJson) => Date.now() - at < (json ? SUCCESS_TTL : FAILURE_TTL)
 
@@ -59,16 +60,30 @@ export const fetchNftJsonMetadata = async (
   const cached = cache.get(uri)
   if (cached && isFresh(cached)) return cached.json
 
-  try {
-    const json = await queue.add(() => downloadNftJsonMetadata(uri, signal), { signal })
-    rememberInCache(uri, json)
-    return json
-  } catch (err) {
-    signal.throwIfAborted()
-    log.warn("[nfts] failed to fetch NFT metadata", { uri, error: getErrorMessage(err) })
-    rememberInCache(uri, null)
-    return null
-  }
+  const download = inflight.get(uri) ?? startDownload(uri, signal)
+  const json = await download
+  signal.throwIfAborted()
+  return json
+}
+
+const startDownload = (uri: string, signal: AbortSignal) => {
+  const download = queue
+    .add(() => downloadNftJsonMetadata(uri, signal), { signal })
+    .then(
+      (json) => {
+        rememberInCache(uri, json)
+        return json
+      },
+      (err) => {
+        if (signal.aborted) return null
+        log.warn("[nfts] failed to fetch NFT metadata", { uri, error: getErrorMessage(err) })
+        rememberInCache(uri, null)
+        return null
+      }
+    )
+    .finally(() => inflight.delete(uri))
+  inflight.set(uri, download)
+  return download
 }
 
 const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
