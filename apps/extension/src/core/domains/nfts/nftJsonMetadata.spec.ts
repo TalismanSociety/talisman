@@ -29,6 +29,7 @@ const stored = (json: unknown, attemptedAt: number, nextAttemptAt = attemptedAt 
   json,
   attemptedAt,
   nextAttemptAt,
+  failures: 0,
 })
 
 const fetchMock = vi.fn()
@@ -202,6 +203,48 @@ describe("fetchNftJsonMetadata", () => {
   ])("retries a transient failure (%s) after ten minutes", (_, failOnce) =>
     retriesAfter(TEN_MINUTES, failOnce)
   )
+
+  it("doubles the transient retry delay on each consecutive failure, up to a day", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    fetchMock.mockRejectedValue(timeout())
+
+    const attemptsAfter = async (delay: number) => {
+      vi.advanceTimersByTime(delay)
+      await fetchNftJsonMetadata(URI, signal)
+      return fetchMock.mock.calls.length
+    }
+
+    expect(await attemptsAfter(0)).toBe(1)
+    expect(await attemptsAfter(TEN_MINUTES)).toBe(2)
+    expect(await attemptsAfter(2 * TEN_MINUTES - 1)).toBe(2)
+    expect(await attemptsAfter(1)).toBe(3)
+    expect(await attemptsAfter(4 * TEN_MINUTES)).toBe(4)
+    for (let i = 0; i < 10; i++) await attemptsAfter(ONE_DAY)
+    const capped = fetchMock.mock.calls.length
+    expect(await attemptsAfter(ONE_DAY)).toBe(capped + 1)
+  })
+
+  it("resets the transient retry delay after a success", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    fetchMock.mockRejectedValueOnce(timeout())
+    fetchMock.mockRejectedValueOnce(timeout())
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Item" }))
+    fetchMock.mockRejectedValueOnce(timeout())
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Again" }))
+
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(TEN_MINUTES)
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(2 * TEN_MINUTES)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Item" })
+    vi.advanceTimersByTime(SEVEN_DAYS)
+    await fetchNftJsonMetadata(URI, signal)
+    vi.advanceTimersByTime(TEN_MINUTES)
+    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Again" })
+    expect(fetchMock).toHaveBeenCalledTimes(5)
+  })
 
   it("keeps the previous metadata when a refetch fails, then retries", async () => {
     const { fetchNftJsonMetadata } = await loadModule()
