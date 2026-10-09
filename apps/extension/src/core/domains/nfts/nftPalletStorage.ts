@@ -25,8 +25,8 @@ export const NFT_PALLETS: NftPallet[] = [
   },
 ]
 
-type MetadataBuilder = ReturnType<typeof parseMetadataRpc>["builder"]
-type StorageCodec = ReturnType<MetadataBuilder["buildStorage"]>
+type ParsedMetadata = ReturnType<typeof parseMetadataRpc>
+type StorageCodec = ReturnType<ParsedMetadata["builder"]["buildStorage"]>
 
 export type NftPalletStorage = {
   pallet: NftPalletName
@@ -37,26 +37,30 @@ export type NftPalletStorage = {
 
 export type OwnedNftItem = { collection: number; item: number }
 
+const hasStorageEntries = ({ unifiedMetadata }: ParsedMetadata, pallet: NftPallet) => {
+  const entries = unifiedMetadata.pallets.find(({ name }) => name === pallet.name)?.storage?.items
+  return [pallet.accountEntry, pallet.itemMetadataEntry, pallet.collectionMetadataEntry].every(
+    (entry) => entries?.some(({ name }) => name === entry)
+  )
+}
+
 export const buildNftPalletStorage = (
-  builder: MetadataBuilder,
+  parsed: ParsedMetadata,
   pallet: NftPallet
 ): NftPalletStorage | null => {
-  try {
-    return {
-      pallet: pallet.name,
-      account: builder.buildStorage(pallet.name, pallet.accountEntry),
-      itemMetadata: builder.buildStorage(pallet.name, pallet.itemMetadataEntry),
-      collectionMetadata: builder.buildStorage(pallet.name, pallet.collectionMetadataEntry),
-    }
-  } catch {
-    // buildStorage throws when the pallet or entry is not in the runtime metadata
-    return null
+  if (!hasStorageEntries(parsed, pallet)) return null
+  const { builder } = parsed
+  return {
+    pallet: pallet.name,
+    account: builder.buildStorage(pallet.name, pallet.accountEntry),
+    itemMetadata: builder.buildStorage(pallet.name, pallet.itemMetadataEntry),
+    collectionMetadata: builder.buildStorage(pallet.name, pallet.collectionMetadataEntry),
   }
 }
 
 export const buildNftPalletStorages = (metadataRpc: `0x${string}`): NftPalletStorage[] => {
-  const { builder } = parseMetadataRpc(metadataRpc)
-  return NFT_PALLETS.flatMap((pallet) => buildNftPalletStorage(builder, pallet) ?? [])
+  const parsed = parseMetadataRpc(metadataRpc)
+  return NFT_PALLETS.flatMap((pallet) => buildNftPalletStorage(parsed, pallet) ?? [])
 }
 
 export const getOwnedItemsKeyPrefix = (storage: NftPalletStorage, address: string) =>

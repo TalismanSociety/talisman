@@ -32,8 +32,21 @@ describe("nftPalletStorage", () => {
   })
 
   it("skips a pallet whose storage entry is not in the metadata", () => {
-    const { builder } = parseMetadataRpc(PAH_METADATA_RPC)
-    expect(buildNftPalletStorage(builder, { ...NFT_PALLETS[0], accountEntry: "Nope" })).toBeNull()
+    const parsed = parseMetadataRpc(PAH_METADATA_RPC)
+    expect(buildNftPalletStorage(parsed, { ...NFT_PALLETS[0], accountEntry: "Nope" })).toBeNull()
+  })
+
+  it("rejects when a present storage entry fails to build", () => {
+    const parsed = parseMetadataRpc(PAH_METADATA_RPC)
+    const buildStorage = () => {
+      throw new Error("codec failure")
+    }
+    expect(() =>
+      buildNftPalletStorage(
+        { ...parsed, builder: { ...parsed.builder, buildStorage } },
+        NFT_PALLETS[0]
+      )
+    ).toThrow("codec failure")
   })
 
   it("encodes the owner prefix the node was queried with", () => {
