@@ -260,6 +260,19 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback).toHaveBeenCalledWith(expect.any(StaleRpcError), null)
   })
 
+  it("rejects without a later stale report when the block stream cannot be followed", async () => {
+    const fake = createFakeClient()
+    const followFailure = new Error("cannot follow")
+    fake.client.bestBlocks$.subscribe = () => {
+      throw followFailure
+    }
+    const { callback, unsubscribe } = subscribeStorage(fake, 1_000)
+
+    await expect(unsubscribe).rejects.toBe(followFailure)
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(callback).not.toHaveBeenCalled()
+  })
+
   it("rejects subscriptions other than state_subscribeStorage", async () => {
     const fake = createFakeClient()
     const connector = new ChainConnectorDotPapi(() => fake.client)

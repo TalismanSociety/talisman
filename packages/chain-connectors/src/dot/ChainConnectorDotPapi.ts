@@ -124,15 +124,20 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       }
     }
 
-    subscription = client.bestBlocks$.subscribe({
-      next: ([best]) => {
-        bestBlockHash = best?.hash
-        queryBestBlock()
-      },
-      error: (error) => finish(error as Error),
-      complete: () =>
-        finish(new Error(`polkadot-api client for ${networkId} stopped following blocks`)),
-    })
+    try {
+      subscription = client.bestBlocks$.subscribe({
+        next: ([best]) => {
+          bestBlockHash = best?.hash
+          queryBestBlock()
+        },
+        error: (error) => finish(error as Error),
+        complete: () =>
+          finish(new Error(`polkadot-api client for ${networkId} stopped following blocks`)),
+      })
+    } catch (error) {
+      stop()
+      throw error
+    }
     if (!active) subscription.unsubscribe()
 
     return stop
