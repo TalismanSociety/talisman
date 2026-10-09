@@ -41,7 +41,6 @@ export const fetchStorageKeysPaged = async (
   return keys
 }
 
-/** Reads storage values in chunks of 500 keys per state_queryStorageAt call */
 export const queryStorageAt = async (
   connector: Connector,
   networkId: DotNetworkId,

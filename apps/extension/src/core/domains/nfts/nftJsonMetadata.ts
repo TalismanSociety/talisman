@@ -44,7 +44,6 @@ const cache = new Map<string, CachedJson>()
 const cacheChanged$ = new ReplaySubject<void>(1)
 const inflight = new Map<string, Promise<NftJsonMetadata | null>>()
 
-/** Emits once the persisted cache is loaded, then after every download settles */
 export const nftJsonMetadataChanged$ = cacheChanged$.asObservable()
 
 class MetadataFetchError extends Error {
@@ -95,10 +94,6 @@ const rememberFailure = (uri: string, kind: FailureKind) => {
 
 export const getCachedNftJsonMetadata = (uri: string) => cache.get(uri)?.json ?? null
 
-/**
- * Resolves with the cached metadata when it is current, else downloads it. A higher priority
- * downloads first. Resolves with the cached metadata, if any, when the signal aborts.
- */
 export const fetchNftJsonMetadata = async (
   uri: string,
   signal: AbortSignal,
