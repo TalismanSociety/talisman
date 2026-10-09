@@ -159,26 +159,24 @@ function isValidPolkadotList(data: unknown): data is HostList {
   return Array.isArray(obj.deny) && obj.deny.length > 0 && Array.isArray(obj.allow)
 }
 
-const toHostParts = (host: string) => host.toLowerCase().replace(/\.$/, "").split(".").reverse()
+const normaliseHost = (host: string) => host.toLowerCase().replace(/\.$/, "")
+
+const toDenySet = (deny: string[]) => new Set(deny.map(normaliseHost))
 
 /**
- * Matches a host against a deny list, entry-wise: an entry matches if its (reversed) parts are a
- * prefix of the host's (reversed) parts, i.e. the entry is the host or one of its parent domains.
- * Replicates `checkHost` from `@polkadot/phishing` (minus tldts normalization — hosts passed in
- * are already URL-parsed hostnames).
+ * Matches a host against a deny list: an entry matches if it is the host or one of its parent
+ * domains. Replicates `checkHost` from `@polkadot/phishing` (minus tldts normalization — hosts
+ * passed in are already URL-parsed hostnames).
  */
-const checkHost = (deny: string[], host: string): boolean => {
-  const hostParts = toHostParts(host)
-  return deny.some((entry) => {
-    const parts = toHostParts(entry)
-    return parts.length <= hostParts.length && parts.every((part, i) => hostParts[i] === part)
-  })
+const checkHost = (deny: Set<string>, host: string): boolean => {
+  const labels = normaliseHost(host).split(".")
+  return labels.some((_, i) => deny.has(labels.slice(i).join(".")))
 }
 
 // ─── Module state ───────────────────────────────────────────────────────────
 
 let metamaskDetector = buildMetamaskDetector(initialPhishingList)
-let polkadotList: HostList = { allow: [], deny: [] }
+let polkadotDeny = new Set<string>()
 const talismanAllowHosts = new Set<string>(DEFAULT_ALLOW)
 const talismanAllowUrls = new Set<string>()
 const etags = { polkadot: "", metamask: "" }
@@ -249,7 +247,7 @@ async function refreshPolkadotList(signal?: AbortSignal) {
       throw new Error("Invalid Polkadot phishing list structure")
     }
 
-    polkadotList = result.data
+    polkadotDeny = toDenySet(result.data.deny)
     etags.polkadot = result.etag
     persistBlob(
       polkadotBlobStore,
@@ -303,7 +301,7 @@ async function restorePersistedState(): Promise<{ hasMetamaskCache: boolean }> {
       hasMetamaskCache = true
     }
     if (pdBlob && isValidPolkadotList(pdBlob.data)) {
-      polkadotList = pdBlob.data
+      polkadotDeny = toDenySet(pdBlob.data.deny)
       etags.polkadot = pdBlob.etag
     }
   } catch (err) {
@@ -359,7 +357,7 @@ export async function isPhishingSite(url: string): Promise<boolean> {
   if (talismanAllowHosts.has(host)) return false
 
   // polkadot deny list
-  if (checkHost(polkadotList.deny, host)) {
+  if (checkHost(polkadotDeny, host)) {
     log.warn(`Phishing site listed on Polkadot list: ${host}`)
     return true
   }
@@ -398,7 +396,7 @@ export async function addException(url: string): Promise<boolean> {
   const { val: host, ok } = getHostName(url)
   if (!ok) return false
 
-  const polkadotHostHit = checkHost(polkadotList.deny, host)
+  const polkadotHostHit = checkHost(polkadotDeny, host)
   const { match, result: mmResult } = metamaskDetector.check(url)
 
   if (!polkadotHostHit && mmResult && isPathMatch(match)) {
@@ -425,7 +423,7 @@ export function dispose(): void {
     refreshTimer = null
   }
   metamaskDetector = buildMetamaskDetector(initialPhishingList)
-  polkadotList = { allow: [], deny: [] }
+  polkadotDeny = new Set()
   etags.metamask = ""
   etags.polkadot = ""
   talismanAllowHosts.clear()

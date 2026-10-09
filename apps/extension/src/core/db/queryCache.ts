@@ -1,11 +1,10 @@
 import { log } from "@common/log"
-import * as pako from "pako"
-
+import { deflateJson, inflateJson } from "./compression"
 import { db } from "./db"
 
 export type QueryCacheItem = {
   key: string
-  data: Uint8Array
+  data: Uint8Array<ArrayBuffer>
   purgeAt: number
   updatedAt: number
   dataUpdatedAt: number
@@ -23,7 +22,7 @@ export const queryCacheStore = {
       }
 
       return {
-        data: JSON.parse(pako.inflate(row.data, { toText: true })),
+        data: await inflateJson(row.data),
         dataUpdatedAt: row.dataUpdatedAt,
       }
     } catch (err) {
@@ -37,7 +36,7 @@ export const queryCacheStore = {
       const now = Date.now()
       await db.queryCache.put({
         key,
-        data: pako.deflate(JSON.stringify(data)),
+        data: await deflateJson(data),
         purgeAt,
         updatedAt: now,
         dataUpdatedAt,
