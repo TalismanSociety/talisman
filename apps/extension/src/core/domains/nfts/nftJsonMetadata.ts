@@ -19,16 +19,21 @@ export type NftJsonMetadata = {
 
 type FailureKind = "definitive" | "transient"
 
-type CachedJson = { json: NftJsonMetadata | null; attemptedAt: number; nextAttemptAt: number }
+type CachedJson = {
+  json: NftJsonMetadata | null
+  attemptedAt: number
+  nextAttemptAt: number
+  failures: number
+}
 
 const FETCH_TIMEOUT = 10_000
 const ONE_MINUTE = 60 * 1000
 const ONE_DAY = 24 * 60 * ONE_MINUTE
 const SUCCESS_TTL = 7 * ONE_DAY
-const RETRY_DELAY: Record<FailureKind, number> = {
-  definitive: ONE_DAY,
-  transient: 10 * ONE_MINUTE,
-}
+const TRANSIENT_RETRY_DELAY = 10 * ONE_MINUTE
+
+const getRetryDelay = (kind: FailureKind, failures: number) =>
+  kind === "definitive" ? ONE_DAY : Math.min(ONE_DAY, TRANSIENT_RETRY_DELAY * 2 ** (failures - 1))
 const KEEP_UNREFERENCED_FOR = 30 * ONE_DAY
 const MAX_BODY_BYTES = 256 * 1024
 const MAX_NAME_LENGTH = 200
@@ -61,7 +66,8 @@ const isCachedJson = (entry: unknown): entry is CachedJson =>
   typeof entry === "object" &&
   entry !== null &&
   typeof (entry as CachedJson).attemptedAt === "number" &&
-  typeof (entry as CachedJson).nextAttemptAt === "number"
+  typeof (entry as CachedJson).nextAttemptAt === "number" &&
+  typeof (entry as CachedJson).failures === "number"
 
 const keptEntries = (entries: Iterable<[string, unknown]>): [string, CachedJson][] =>
   [...entries].filter(
@@ -81,14 +87,20 @@ const cacheLoaded = walletReady.then(async () => {
 
 const rememberSuccess = (uri: string, json: NftJsonMetadata) => {
   const now = Date.now()
-  cache.set(uri, { json, attemptedAt: now, nextAttemptAt: now + SUCCESS_TTL })
+  cache.set(uri, { json, attemptedAt: now, nextAttemptAt: now + SUCCESS_TTL, failures: 0 })
   cacheChanged$.next()
 }
 
 const rememberFailure = (uri: string, kind: FailureKind) => {
   const now = Date.now()
-  const json = cache.get(uri)?.json ?? null
-  cache.set(uri, { json, attemptedAt: now, nextAttemptAt: now + RETRY_DELAY[kind] })
+  const previous = cache.get(uri)
+  const failures = (previous?.failures ?? 0) + 1
+  cache.set(uri, {
+    json: previous?.json ?? null,
+    attemptedAt: now,
+    nextAttemptAt: now + getRetryDelay(kind, failures),
+    failures,
+  })
   cacheChanged$.next()
 }
 
