@@ -14,4 +14,6 @@ The `*Stub` variants connect to a single network from its RPC list, without chai
 const chainConnector = new ChainConnectorDotPapi((networkId) => clients[networkId])
 ```
 
-It supports the requests and the `state_subscribeStorage` subscription that balances uses. A storage subscription queries its keys at each new best block and reports the values that changed.
+It supports the requests and the `state_subscribeStorage` subscription that balances uses. A storage subscription queries all its keys at each new best block and reports the values that changed, so each balances subscription costs one `state_queryStorageAt` per block.
+
+Pass a client for every Polkadot SDK network that balances is enabled on, and keep it alive as long as the connector: a subscription stays on the client it started with, and stops updating if that client is destroyed.

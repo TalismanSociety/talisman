@@ -5,13 +5,15 @@ import { StaleRpcError } from "./ChainConnectorDot"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 const RESPONSE_TIMEOUT = 30_000
+const FAILURES_BEFORE_FIRST_RESULT = 3
 
 type HexString = `0x${string}`
 type StorageChanges = { block: HexString; changes: [HexString, HexString | null][] }
 
 /** The parts of a polkadot-api `PolkadotClient` that the connector uses */
 export type PapiClient = {
-  _request: <Reply>(method: string, params: unknown[]) => Promise<Reply>
+  /** `PolkadotClient` types it without `abortSignal`, but it is substrate-client's `request`, which honours it */
+  _request: <Reply>(method: string, params: unknown[], abortSignal?: AbortSignal) => Promise<Reply>
   bestBlocks$: {
     subscribe: (observer: {
       next: (blocks: { hash: string }[]) => void
@@ -25,8 +27,8 @@ export type PapiClient = {
  *
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
  * best block and reporting the values that changed, like the node does. One query runs at a time, for the latest
- * best block. A failed query is retried at the next block, because balances treats a subscription error as final
- * and would stop updating that network.
+ * best block. Once a subscription has reported, a failed query is retried at the next block, because balances
+ * treats a subscription error as final and would stop updating that network.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #getClient: (networkId: DotNetworkId) => PapiClient | undefined
@@ -53,61 +55,79 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
 
     const [keys] = params as [HexString[]]
     const values = new Map<HexString, HexString | null>()
-    let nextBlockHash: string | undefined
+    let bestBlockHash: string | undefined
+    let queriedBlockHash: string | undefined
     let querying = false
     let delivered = false
+    let failures = 0
     let active = true
     const staleTimer = timeout
       ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
       : undefined
 
-    const queryNextBlock = async () => {
-      if (querying || !nextBlockHash) return
-      const blockHash = nextBlockHash
-      nextBlockHash = undefined
+    const stop = () => {
+      active = false
+      clearTimeout(staleTimer)
+      subscription.unsubscribe()
+    }
+
+    const reportChanges = (result: StorageChanges) => {
+      failures = 0
+      const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
+      for (const [key, value] of changes) values.set(key, value)
+      if (!changes.length) return
+
+      delivered = true
+      clearTimeout(staleTimer)
+      callback(null, { block: result.block, changes })
+    }
+
+    const reportFailure = (error: Error) => {
+      if (delivered || ++failures < FAILURES_BEFORE_FIRST_RESULT)
+        return log.warn(
+          `state_queryStorageAt failed on ${networkId}, retrying at the next block`,
+          error
+        )
+
+      stop()
+      callback(error, null)
+    }
+
+    const queryBestBlock = async () => {
+      if (querying || !bestBlockHash || bestBlockHash === queriedBlockHash) return
+      const blockHash = bestBlockHash
+      queriedBlockHash = blockHash
       querying = true
 
-      try {
-        const [result] = await client._request<StorageChanges[]>("state_queryStorageAt", [
-          keys,
-          blockHash,
-        ])
-        if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
-        if (!active) return
+      const outcome = await requestWithTimeout<StorageChanges[]>(client, "state_queryStorageAt", [
+        keys,
+        blockHash,
+      ]).then(
+        ([result]) => result ?? new Error(`Empty state_queryStorageAt response on ${networkId}`),
+        (error: Error) => error
+      )
+      querying = false
+      if (!active) return
 
-        const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
-        for (const [key, value] of changes) values.set(key, value)
-        if (changes.length || !delivered) {
-          delivered = true
-          clearTimeout(staleTimer)
-          callback(null, { block: result.block, changes })
-        }
-      } catch (error) {
-        if (active)
-          log.warn(`state_queryStorageAt failed on ${networkId}, retrying at the next block`, error)
-      } finally {
-        querying = false
-        if (active) queryNextBlock()
-      }
+      queryBestBlock()
+      if (outcome instanceof Error) reportFailure(outcome)
+      else reportChanges(outcome)
     }
 
     const subscription = client.bestBlocks$.subscribe({
       next: ([best]) => {
-        nextBlockHash = best?.hash
-        queryNextBlock()
+        bestBlockHash = best?.hash
+        queryBestBlock()
       },
       error: (error) => {
         if (!active) return
+        active = false
         clearTimeout(staleTimer)
         callback(error as Error, null)
       },
     })
 
-    return () => {
-      active = false
-      clearTimeout(staleTimer)
-      subscription.unsubscribe()
-    }
+    return stop
   }
 
   async reset() {}
@@ -119,16 +139,8 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
   }
 }
 
-const requestWithTimeout = <T>(
-  client: PapiClient,
-  method: string,
-  params: unknown[]
-): Promise<T> => {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Timeout")), RESPONSE_TIMEOUT)
-  })
-  return Promise.race([client._request<T>(method, params), timeout]).finally(() =>
-    clearTimeout(timer)
-  )
+const requestWithTimeout = <T>(client: PapiClient, method: string, params: unknown[]) => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), RESPONSE_TIMEOUT)
+  return client._request<T>(method, params, controller.signal).finally(() => clearTimeout(timer))
 }

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import type { PolkadotClient } from "polkadot-api"
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest"
 
 import { StaleRpcError } from "./ChainConnectorDot"
 import { ChainConnectorDotPapi, type PapiClient } from "./ChainConnectorDotPapi"
@@ -11,18 +12,19 @@ const createFakeClient = () => {
   const requests: { method: string; params: unknown[] }[] = []
 
   const client: PapiClient = {
-    _request: <Reply>(method: string, params: unknown[]) => {
+    _request: <Reply>(method: string, params: unknown[], abortSignal?: AbortSignal) => {
       requests.push({ method, params })
-      if (method === "never_answered") return new Promise<Reply>(() => {})
-      if (method !== "state_queryStorageAt") return Promise.resolve(`${method} result` as Reply)
+      if (method === "system_health") return Promise.resolve("system_health result" as Reply)
+
       const blockHash = params[1] as `0x${string}`
-      return new Promise<Reply>((resolve, reject) =>
+      return new Promise<Reply>((resolve, reject) => {
+        abortSignal?.addEventListener("abort", () => reject(new Error("Aborted")))
         pending.set(blockHash, (changes) =>
           changes instanceof Error
             ? reject(changes)
             : resolve([{ block: blockHash, changes }] as Reply)
         )
-      )
+      })
     },
     bestBlocks$: {
       subscribe: (observer) => {
@@ -37,38 +39,41 @@ const createFakeClient = () => {
   }
   const answer = async (hash: string, changes: Changes | Error) => {
     pending.get(hash)?.(changes)
-    for (let tick = 0; tick < 10; tick++) await Promise.resolve()
+    await vi.advanceTimersByTimeAsync(0)
   }
   const queriedBlocks = () =>
     requests
       .filter(({ method }) => method === "state_queryStorageAt")
       .map(({ params }) => params[1])
 
-  return { client, requests, observers, newBestBlock, answer, queriedBlocks }
+  return { client, observers, newBestBlock, answer, queriedBlocks }
 }
 
-const subscribeStorage = (
-  connector: ChainConnectorDotPapi,
-  keys: string[],
-  timeout?: number | false
-) => {
+const subscribeStorage = (fake: ReturnType<typeof createFakeClient>, timeout?: number | false) => {
   const callback = vi.fn()
-  const unsubscribe = connector.subscribe(
+  const unsubscribe = new ChainConnectorDotPapi(() => fake.client).subscribe(
     "polkadot",
     "state_subscribeStorage",
     "state_storage",
-    [keys],
+    [["0xa", "0xb"]],
     callback,
     timeout
   )
   return { callback, unsubscribe }
 }
 
-afterEach(() => {
-  vi.useRealTimers()
-})
+const failure = new Error("State already discarded")
 
 describe("ChainConnectorDotPapi", () => {
+  vi.useFakeTimers()
+  afterEach(() => {
+    vi.clearAllTimers()
+  })
+
+  it("accepts a polkadot-api client", () => {
+    expectTypeOf<PolkadotClient>().toExtend<PapiClient>()
+  })
+
   it("sends requests through the network's client", async () => {
     const fake = createFakeClient()
     const connector = new ChainConnectorDotPapi((networkId) =>
@@ -83,13 +88,18 @@ describe("ChainConnectorDotPapi", () => {
     )
   })
 
+  it("aborts a request that gets no answer", async () => {
+    const fake = createFakeClient()
+    const sent = new ChainConnectorDotPapi(() => fake.client).send("polkadot", "never_answered", [])
+    const rejection = expect(sent).rejects.toThrow("Aborted")
+
+    await vi.advanceTimersByTimeAsync(30_000)
+    await rejection
+  })
+
   it("reports every key at the first best block, then only the keys that change", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(new ChainConnectorDotPapi(() => fake.client), [
-      "0xa",
-      "0xb",
-    ])
-    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+    const { callback } = subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
     await fake.answer("0x1", [
@@ -107,10 +117,6 @@ describe("ChainConnectorDotPapi", () => {
       ["0xb", null],
     ])
 
-    expect(fake.requests).toContainEqual({
-      method: "state_queryStorageAt",
-      params: [["0xa", "0xb"], "0x1"],
-    })
     expect(callback.mock.calls).toEqual([
       [
         null,
@@ -126,21 +132,21 @@ describe("ChainConnectorDotPapi", () => {
     ])
   })
 
-  it("reports the first block even when no keys are queried", async () => {
+  it("queries each best block once, although finality re-emits it", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(new ChainConnectorDotPapi(() => fake.client), [])
-    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+    subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
-    await fake.answer("0x1", [])
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    fake.newBestBlock("0x1")
 
-    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [] }]])
+    expect(fake.queriedBlocks()).toEqual(["0x1"])
   })
 
   it("runs one query at a time, for the latest best block", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(new ChainConnectorDotPapi(() => fake.client), ["0xa"])
-    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+    const { callback } = subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
     fake.newBestBlock("0x2")
@@ -157,26 +163,42 @@ describe("ChainConnectorDotPapi", () => {
     ])
   })
 
-  it("retries a failed query at the next block instead of ending the subscription", async () => {
+  it("retries at the next block after a query fails or gets no answer", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(new ChainConnectorDotPapi(() => fake.client), ["0xa"])
-    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+    const { callback } = subscribeStorage(fake, false)
 
     fake.newBestBlock("0x1")
-    await fake.answer("0x1", new Error("State already discarded"))
+    await fake.answer("0x1", [["0xa", "0x01"]])
     fake.newBestBlock("0x2")
-    await fake.answer("0x2", [["0xa", "0x02"]])
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    await vi.advanceTimersByTimeAsync(120_000)
+    fake.newBestBlock("0x4")
+    await fake.answer("0x4", [["0xa", "0x04"]])
 
-    expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4"])
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [null, { block: "0x4", changes: [["0xa", "0x04"]] }],
+    ])
+  })
+
+  it("reports the error when the first queries keep failing", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    for (const block of ["0x1", "0x2", "0x3"]) {
+      fake.newBestBlock(block)
+      await fake.answer(block, failure)
+    }
+
+    expect(callback.mock.calls).toEqual([[failure, null]])
+    expect(fake.observers.size).toBe(0)
   })
 
   it("stops following blocks and drops pending answers once unsubscribed", async () => {
     const fake = createFakeClient()
-    const { callback, unsubscribe } = subscribeStorage(
-      new ChainConnectorDotPapi(() => fake.client),
-      ["0xa"]
-    )
-    await vi.waitFor(() => expect(fake.observers.size).toBe(1))
+    const { callback, unsubscribe } = subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
     ;(await unsubscribe)("state_unsubscribeStorage")
@@ -186,50 +208,12 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback).not.toHaveBeenCalled()
   })
 
-  it("reports a stale rpc when no block arrives in time", async () => {
-    vi.useFakeTimers()
+  it("reports a stale rpc when the first answer takes longer than the timeout", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(
-      new ChainConnectorDotPapi(() => fake.client),
-      ["0xa"],
-      1_000
-    )
+    const { callback } = subscribeStorage(fake, 1_000)
     await vi.advanceTimersByTimeAsync(1_000)
 
     expect(callback).toHaveBeenCalledWith(expect.any(StaleRpcError), null)
-  })
-
-  it("keeps a subscription running when answers stop, so it resumes with the client", async () => {
-    vi.useFakeTimers()
-    const fake = createFakeClient()
-    const { callback } = subscribeStorage(
-      new ChainConnectorDotPapi(() => fake.client),
-      ["0xa"],
-      1_000
-    )
-    await vi.advanceTimersByTimeAsync(0)
-
-    fake.newBestBlock("0x1")
-    await fake.answer("0x1", [["0xa", "0x01"]])
-    fake.newBestBlock("0x2")
-    await vi.advanceTimersByTimeAsync(120_000)
-    await fake.answer("0x2", [["0xa", "0x02"]])
-
-    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2"])
-    expect(callback.mock.calls).toEqual([
-      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
-      [null, { block: "0x2", changes: [["0xa", "0x02"]] }],
-    ])
-  })
-
-  it("rejects a request that gets no answer", async () => {
-    vi.useFakeTimers()
-    const fake = createFakeClient()
-    const sent = new ChainConnectorDotPapi(() => fake.client).send("polkadot", "never_answered", [])
-    const rejection = expect(sent).rejects.toThrow("Timeout")
-
-    await vi.advanceTimersByTimeAsync(30_000)
-    await rejection
   })
 
   it("rejects subscriptions other than state_subscribeStorage", async () => {
