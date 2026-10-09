@@ -1,12 +1,7 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Address } from "@core/types/base"
-import { Balances } from "@talismn/balances"
-import {
-  type Network,
-  subNativeTokenId,
-  type Token,
-  type TokenId,
-} from "@talismn/chaindata-provider"
+import { type Balance, Balances } from "@talismn/balances"
+import type { Network, Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, GlobeIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -31,6 +26,7 @@ import { NetworkName } from "../Networks/NetworkName"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { Fiat } from "./Fiat"
 import { NetworkFilterPicker } from "./NetworkFilterPicker"
+import { sortTokenData } from "./sortTokenData"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
@@ -367,71 +363,38 @@ const TokensList: FC<TokensListProps> = ({
     tokenRatesMap,
   ])
 
-  // sort by token balance
-  const sortTokens = useCallback(
-    (tokens: TokenData[]): TokenData[] =>
-      sortBy(sortBy(tokens, "chainName"), "token.symbol").sort((a, b) => {
-        // priority tokens first
-        const isPriorityA = priorityTokens?.(a.token) ?? false
-        const isPriorityB = priorityTokens?.(b.token) ?? false
-        if (isPriorityA && !isPriorityB) return -1
-        if (!isPriorityA && isPriorityB) return 1
-
-        // transferable tokens first
-        const isTransferableA = isTransferableToken(a.token)
-        const isTransferableB = isTransferableToken(b.token)
-        if (isTransferableA && !isTransferableB) return -1
-        if (!isTransferableA && isTransferableB) return 1
-
-        // Pin the initially-selected token to the top — but don't re-sort
-        // when the selection changes, so the list stays visually stable.
-        if (a.id === initialSelectedRef.current) return -1
-        if (b.id === initialSelectedRef.current) return 1
-
-        // sort by fiat balance
-        const aFiat = a.balances.sum.fiat(currency).transferable
-        const bFiat = b.balances.sum.fiat(currency).transferable
-        if (aFiat > bFiat) return -1
-        if (aFiat < bFiat) return 1
-
-        // sort by "has a balance or not" (values don't matter)
-        const aHasBalance = !!a.balances.each.find((bal) => bal.transferable.planck > 0n)
-        const bHasBalance = !!b.balances.each.find((bal) => bal.transferable.planck > 0n)
-        if (aHasBalance && !bHasBalance) return -1
-        if (!aHasBalance && bHasBalance) return 1
-
-        // polkadot and kusama should appear first
-        if (a.token.id === subNativeTokenId("polkadot")) return -1
-        if (b.token.id === subNativeTokenId("polkadot")) return 1
-        if (a.token.id === subNativeTokenId("kusama")) return -1
-        if (b.token.id === subNativeTokenId("kusama")) return 1
-
-        // keep alphabetical sort
-        return 0
-      }),
-    [currency, priorityTokens]
-  )
-
   const tokensWithBalances = useMemo<TokenData[]>(() => {
     // wait until balances are loaded, unless showEmptyBalances is true
     if (!showEmptyBalances && !accountBalances.count) return []
 
-    // the each property spreads the array under the hood, reuse the result to optimize performance for many accounts
-    const accountBalancesEach = accountBalances.each
+    const balancesByTokenId = new Map<TokenId, Balance[]>()
+    for (const balance of accountBalances.each) {
+      const tokenBalances = balancesByTokenId.get(balance.tokenId)
+      if (tokenBalances) tokenBalances.push(balance)
+      else balancesByTokenId.set(balance.tokenId, [balance])
+    }
 
-    const tokensWithPosBalance = accountCompatibleTokens.map((t) => ({
+    const withBalances = accountCompatibleTokens.map((t) => ({
       ...t,
-      balances: new Balances(accountBalancesEach.filter((b) => b.tokenId === t.id)),
+      balances: new Balances(balancesByTokenId.get(t.id) ?? []),
     }))
 
-    if (showEmptyBalances) return sortTokens(tokensWithPosBalance)
-    return sortTokens(tokensWithPosBalance.filter((t) => t.balances.sum.planck.transferable > 0n))
+    const listedTokens = showEmptyBalances
+      ? withBalances
+      : withBalances.filter((t) => t.balances.sum.planck.transferable > 0n)
+
+    return sortTokenData(listedTokens, {
+      currency,
+      isPriority: priorityTokens,
+      pinnedTokenId: initialSelectedRef.current,
+    })
   }, [
     accountBalances.count,
     accountBalances.each,
     showEmptyBalances,
     accountCompatibleTokens,
-    sortTokens,
+    currency,
+    priorityTokens,
   ])
 
   // Derive available networks from the base token list (before network/search filters)
