@@ -55,7 +55,12 @@ vi.mock("../../db/blobs", () => {
 
 vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
 
-import { fetchDotAccountNfts } from "./fetchDotAccountNfts"
+import { buildNftPalletStorages, getItemMetadataKey } from "./nftPalletStorage"
+
+const loadFetcher = async () => {
+  vi.resetModules()
+  return (await import("./fetchDotAccountNfts")).fetchDotAccountNfts
+}
 
 const ACCOUNT: Account = {
   type: "watch-only",
@@ -66,6 +71,7 @@ const ACCOUNT: Account = {
 }
 
 const recordedValues = new Map<string, `0x${string}` | null>(PAH_HOLDER_RPC.storageAt.changes)
+const absentKeys = new Set<string>()
 
 const replayRpc = async (_networkId: string, method: string, params: unknown[]) => {
   if (method === "state_getKeysPaged") {
@@ -82,7 +88,7 @@ const replayRpc = async (_networkId: string, method: string, params: unknown[]) 
         block: PAH_HOLDER_RPC.storageAt.block,
         changes: keys.map((key) => {
           if (!recordedValues.has(key)) throw new Error(`Unrecorded storage key ${key}`)
-          return [key, recordedValues.get(key)]
+          return [key, absentKeys.has(key) ? null : recordedValues.get(key)]
         }),
       },
     ]
@@ -132,6 +138,16 @@ const OWNED = [
 const countCalls = (method: string) =>
   mocks.send.mock.calls.filter(([, calledMethod]) => calledMethod === method).length
 
+const queriedKeys = () =>
+  mocks.send.mock.calls
+    .filter(([, method]) => method === "state_queryStorageAt")
+    .flatMap(([, , [keys]]) => keys as string[])
+
+const CHAOTIC_ITEM_KEY = getItemMetadataKey(
+  buildNftPalletStorages(PAH_METADATA_RPC).find((storage) => storage.pallet === "Nfts")!,
+  { collection: 158, item: 2407162256 }
+)
+
 describe("fetchDotAccountNfts", () => {
   beforeEach(() => {
     mocks.send.mockReset()
@@ -141,9 +157,11 @@ describe("fetchDotAccountNfts", () => {
     vi.stubGlobal("fetch", mocks.fetch)
     mocks.getMetadataDef.mockReset()
     mocks.getMetadataDef.mockResolvedValue({ metadataRpc: "pah" })
+    absentKeys.clear()
   })
 
   it("reads the holder's NFTs from chain, then refreshes with key listings only", async () => {
+    const fetchDotAccountNfts = await loadFetcher()
     const signal = new AbortController().signal
     const first = await fetchDotAccountNfts(ACCOUNT, signal)
 
@@ -185,7 +203,31 @@ describe("fetchDotAccountNfts", () => {
     expect(mocks.fetch).toHaveBeenCalledTimes(fetchesAfterFirstRun)
   })
 
+  it("re-reads metadata that was absent on chain until it appears", async () => {
+    const fetchDotAccountNfts = await loadFetcher()
+    const signal = new AbortController().signal
+    absentKeys.add(CHAOTIC_ITEM_KEY)
+
+    const first = await fetchDotAccountNfts(ACCOUNT, signal)
+    expect(first.nfts.find((nft) => nft.tokenId === "2407162256")?.name).toBe(
+      "Chaotic 158 #2407162256"
+    )
+    expect(countCalls("state_queryStorageAt")).toBe(1)
+
+    absentKeys.clear()
+    const second = await fetchDotAccountNfts(ACCOUNT, signal)
+    expect(second.nfts.find((nft) => nft.tokenId === "2407162256")?.name).toBe(
+      "Chaotic #2407162256"
+    )
+    expect(countCalls("state_queryStorageAt")).toBe(2)
+    expect(queriedKeys().slice(29)).toEqual([CHAOTIC_ITEM_KEY])
+
+    await fetchDotAccountNfts(ACCOUNT, signal)
+    expect(countCalls("state_queryStorageAt")).toBe(2)
+  })
+
   it("rejects the account when listing owned keys fails", async () => {
+    const fetchDotAccountNfts = await loadFetcher()
     mocks.send.mockImplementation(async (networkId: string, method: string, params: unknown[]) => {
       if (method === "state_getKeysPaged") throw new Error("RPC unavailable")
       return replayRpc(networkId, method, params)

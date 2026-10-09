@@ -38,11 +38,9 @@ const NETWORK_IDS: NetworkId[] = [
   "westend-asset-hub-testnet",
 ]
 
-// keyed on chaindata's specVersion so metadata is looked up once per runtime chaindata knows about
-const palletStoragesCache = new Map<string, Promise<NftPalletStorage[]>>()
+const palletStoragesBySpecVersion = new Map<string, Promise<NftPalletStorage[]>>()
 
-// on-chain metadata URI by NFT or collection id, null when the chain holds none
-const metadataUris = new Map<string, string | null>()
+const onChainMetadataUris = new Map<string, string | null>()
 
 export const fetchDotAccountNfts = async (
   account: Account,
@@ -88,12 +86,12 @@ const fetchNetworkNfts = async (
 
 const getNftPalletStorages = (network: DotNetwork) => {
   const cacheKey = `${network.id}:${network.specVersion}`
-  const cached = palletStoragesCache.get(cacheKey)
+  const cached = palletStoragesBySpecVersion.get(cacheKey)
   if (cached) return cached
 
   const storages = loadNftPalletStorages(network.id)
-  palletStoragesCache.set(cacheKey, storages)
-  storages.catch(() => palletStoragesCache.delete(cacheKey))
+  palletStoragesBySpecVersion.set(cacheKey, storages)
+  storages.catch(() => palletStoragesBySpecVersion.delete(cacheKey))
   return storages
 }
 
@@ -170,7 +168,7 @@ const loadMissingMetadataUris = async (
         codec: storage.collectionMetadata,
       })),
     ]
-      .filter((read) => !metadataUris.has(read.id))
+      .filter((read) => !onChainMetadataUris.has(read.id))
       .map((read) => [read.id, read])
   )
   if (!reads.size) return
@@ -182,12 +180,12 @@ const loadMissingMetadataUris = async (
   )
   for (const read of reads.values()) {
     const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
-    metadataUris.set(read.id, uri === null ? null : normaliseMetadataUri(uri))
+    if (uri !== null) onChainMetadataUris.set(read.id, normaliseMetadataUri(uri))
   }
 }
 
 const fetchJsonForId = async (id: string, signal: AbortSignal) => {
-  const uri = metadataUris.get(id)
+  const uri = onChainMetadataUris.get(id)
   return uri ? fetchNftJsonMetadata(uri, signal) : null
 }
 
