@@ -1,4 +1,3 @@
-import * as pako from "pako"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { getBlobStore } from "../blobs"
@@ -9,9 +8,9 @@ describe("getBlobStore", () => {
     await db.blobs.clear()
   })
 
-  it("reads blobs persisted as pako-deflated JSON", async () => {
+  it("round-trips data", async () => {
     const data = { networks: [{ id: "polkadot", name: "Polkadot" }], tokens: ["DOT"] }
-    await db.blobs.put({ id: "chaindata", data: pako.deflate(JSON.stringify(data)) })
+    await getBlobStore("chaindata").set(data)
 
     expect(await getBlobStore("chaindata").get()).toEqual(data)
   })

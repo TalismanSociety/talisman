@@ -1,6 +1,5 @@
 import { log } from "@common/log"
-import * as pako from "pako"
-
+import { deflateJson, inflateJson } from "./compression"
 import { db } from "./db"
 
 export type DbBlobId =
@@ -22,14 +21,13 @@ export type DbBlobId =
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array<ArrayBuffer> }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
-  set: (data: Data) => db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) }),
+  set: async (data: Data) => db.blobs.put({ id, data: await deflateJson(data) }),
   get: async () => {
     try {
       const blob = await db.blobs.get(id)
       if (!blob?.data) return null
 
-      const inflated = new Response(blob.data).body?.pipeThrough(new DecompressionStream("deflate"))
-      return (await new Response(inflated).json()) as Data
+      return (await inflateJson(blob.data)) as Data
     } catch (err) {
       log.error("Error parsing blob data", { id, err })
       return null
