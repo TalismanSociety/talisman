@@ -244,7 +244,7 @@ const TokenRow: FC<TokenRowProps> = ({
       {activationToggle.showToggle && (
         <Toggle
           variant="sm"
-          aria-label={t("Enable token")}
+          aria-label={t("Enable {{symbol}}", { symbol: token.symbol })}
           className="absolute top-1/2 right-12 -translate-y-1/2"
           checked={activationToggle.checked}
           onChange={(e) => activationToggle.onChange(e.target.checked)}
