@@ -21,9 +21,9 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
   }
 
   async setActive(tokenId: TokenId, active: boolean) {
-    const activeTokens = await this.get()
-    if (activeTokens[tokenId] === active) return
-    await this.set({ ...activeTokens, [tokenId]: Boolean(active) })
+    await this.mutate((current) =>
+      current[tokenId] === active ? current : { ...current, [tokenId]: active }
+    )
   }
 
   async resetActive(tokenId: TokenId) {
