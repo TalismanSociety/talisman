@@ -5,7 +5,6 @@ import { StaleRpcError } from "./ChainConnectorDot"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 const RESPONSE_TIMEOUT = 30_000
-const STALE_AFTER = 60_000
 
 type HexString = `0x${string}`
 type StorageChanges = { block: HexString; changes: [HexString, HexString | null][] }
@@ -26,9 +25,8 @@ export type PapiClient = {
  *
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
  * best block and reporting the values that changed, like the node does. One query runs at a time, for the latest
- * best block. A failed query is retried at the next block, because balances treats a subscription error as final.
- * A subscription that gets no answer for a minute reports a `StaleRpcError`, as `ChainConnectorDot` does after a
- * disconnection.
+ * best block. A failed query is retried at the next block, because balances treats a subscription error as final
+ * and would stop updating that network.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #getClient: (networkId: DotNetworkId) => PapiClient | undefined
@@ -59,14 +57,9 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     let querying = false
     let delivered = false
     let active = true
-    let staleTimer: ReturnType<typeof setTimeout> | undefined
-
-    const reportStaleAfter = (ms: number) => {
-      clearTimeout(staleTimer)
-      staleTimer = setTimeout(() => {
-        if (active) callback(new StaleRpcError(networkId), null)
-      }, ms)
-    }
+    const staleTimer = timeout
+      ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
+      : undefined
 
     const queryNextBlock = async () => {
       if (querying || !nextBlockHash) return
@@ -75,19 +68,18 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       querying = true
 
       try {
-        const [result] = await requestWithTimeout<StorageChanges[]>(
-          client,
-          "state_queryStorageAt",
-          [keys, blockHash]
-        )
+        const [result] = await client._request<StorageChanges[]>("state_queryStorageAt", [
+          keys,
+          blockHash,
+        ])
         if (!result) throw new Error(`Empty state_queryStorageAt response on ${networkId}`)
         if (!active) return
-        reportStaleAfter(STALE_AFTER)
 
         const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
         for (const [key, value] of changes) values.set(key, value)
         if (changes.length || !delivered) {
           delivered = true
+          clearTimeout(staleTimer)
           callback(null, { block: result.block, changes })
         }
       } catch (error) {
@@ -98,8 +90,6 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
         if (active) queryNextBlock()
       }
     }
-
-    reportStaleAfter(timeout || STALE_AFTER)
 
     const subscription = client.bestBlocks$.subscribe({
       next: ([best]) => {

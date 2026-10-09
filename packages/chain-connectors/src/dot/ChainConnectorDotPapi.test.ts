@@ -199,23 +199,27 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback).toHaveBeenCalledWith(expect.any(StaleRpcError), null)
   })
 
-  it("reports a stale rpc when answers stop for a minute", async () => {
+  it("keeps a subscription running when answers stop, so it resumes with the client", async () => {
     vi.useFakeTimers()
     const fake = createFakeClient()
     const { callback } = subscribeStorage(
       new ChainConnectorDotPapi(() => fake.client),
       ["0xa"],
-      false
+      1_000
     )
-    await vi.advanceTimersByTimeAsync(30_000)
+    await vi.advanceTimersByTimeAsync(0)
 
     fake.newBestBlock("0x1")
     await fake.answer("0x1", [["0xa", "0x01"]])
-    await vi.advanceTimersByTimeAsync(59_000)
-    expect(callback).toHaveBeenCalledTimes(1)
+    fake.newBestBlock("0x2")
+    await vi.advanceTimersByTimeAsync(120_000)
+    await fake.answer("0x2", [["0xa", "0x02"]])
 
-    await vi.advanceTimersByTimeAsync(1_000)
-    expect(callback).toHaveBeenLastCalledWith(expect.any(StaleRpcError), null)
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2"])
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [null, { block: "0x2", changes: [["0xa", "0x02"]] }],
+    ])
   })
 
   it("rejects a request that gets no answer", async () => {
