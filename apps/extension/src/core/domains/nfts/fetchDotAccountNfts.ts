@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { fetchStorageKeysPaged } from "@talismn/balances"
+import { fetchStorageKeysPaged, queryStorageAt } from "@talismn/chain-connectors"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
@@ -37,8 +37,6 @@ const NETWORK_IDS: NetworkId[] = [
   "paseo-asset-hub",
   "westend-asset-hub-testnet",
 ]
-
-type StorageChange = [key: string, value: `0x${string}` | null]
 
 // keyed on chaindata's specVersion so metadata is looked up once per runtime chaindata knows about
 const palletStoragesCache = new Map<string, Promise<NftPalletStorage[]>>()
@@ -114,9 +112,9 @@ const fetchPalletNfts = async (
   const keys = await fetchStorageKeysPaged(
     chainConnectorDot,
     networkId,
-    getOwnedItemsKeyPrefix(storage, address)
+    getOwnedItemsKeyPrefix(storage, address),
+    { signal }
   )
-  signal.throwIfAborted()
   if (!keys.length) return { nfts: [], collections: [] }
 
   const refs: SubstrateNftRef[] = keys.map((key) => ({
@@ -178,6 +176,7 @@ const loadMissingMetadataUris = async (
   if (!reads.size) return
 
   const values = await queryStorageAt(
+    chainConnectorDot,
     networkId,
     [...reads.values()].map((read) => read.storageKey)
   )
@@ -185,17 +184,6 @@ const loadMissingMetadataUris = async (
     const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
     metadataUris.set(read.id, uri === null ? null : normaliseMetadataUri(uri))
   }
-}
-
-const queryStorageAt = async (networkId: NetworkId, storageKeys: string[]) => {
-  const [result] = await chainConnectorDot.send<{ changes?: StorageChange[] }[]>(
-    networkId,
-    "state_queryStorageAt",
-    [storageKeys]
-  )
-  if (!Array.isArray(result?.changes))
-    throw new Error("Unexpected state_queryStorageAt response shape")
-  return new Map(result.changes)
 }
 
 const fetchJsonForId = async (id: string, signal: AbortSignal) => {

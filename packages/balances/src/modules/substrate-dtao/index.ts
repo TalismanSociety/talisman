@@ -11,7 +11,6 @@ export {
   findDTaoConvictionLock,
   getConvictionLockLabel,
 } from "./convictionLocks"
-export { fetchStorageKeysPaged } from "./fetchStorageKeysPaged"
 export * from "./module"
 export { findDTaoRootStakeHold } from "./rootStakeHold"
 export * from "./types"

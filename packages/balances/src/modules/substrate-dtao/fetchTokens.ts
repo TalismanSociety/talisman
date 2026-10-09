@@ -1,6 +1,6 @@
 import type { bittensor } from "@polkadot-api/descriptors"
 import { Binary } from "@polkadot-api/substrate-bindings"
-import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import { fetchStorageKeysPaged, type IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   type AnyMiniMetadata,
   type DotNetworkId,
@@ -15,7 +15,6 @@ import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
-import { fetchStorageKeysPaged } from "./fetchStorageKeysPaged"
 
 type GetDynamicInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
