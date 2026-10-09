@@ -43,7 +43,6 @@ type TokenRowProps = {
   onClick?: () => void
   balances: Balances
   allowUntransferable?: boolean
-  isActive: boolean
 }
 
 const TokenRowSkeleton = () => (
@@ -75,7 +74,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  isActive: boolean
 }
 
 const TokenRows: FC<{
@@ -127,7 +125,6 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 allowUntransferable={allowUntransferable}
-                isActive={tokenData.isActive}
                 onClick={() => onTokenClick(tokenData.token.id)}
               />
             </div>
@@ -143,7 +140,6 @@ const TokenRow: FC<TokenRowProps> = ({
   selected,
   balances,
   allowUntransferable,
-  isActive,
   onClick,
 }) => {
   const { t } = useTranslation()
@@ -160,7 +156,7 @@ const TokenRow: FC<TokenRowProps> = ({
   const currency = useSelectedCurrency()
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const hasFiatRate = useMemo(() => balances.each.some((b) => b.rates), [balances])
-  const activationToggle = useTokenActivationToggle(token, isActive)
+  const activationToggle = useTokenActivationToggle(token)
 
   return (
     <>
@@ -303,7 +299,6 @@ const TokensList: FC<TokensListProps> = ({
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
   const allTokens = useTokens({ activeOnly: tokenScope === "usable", includeTestnets: true })
-  const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
@@ -342,8 +337,6 @@ const TokensList: FC<TokensListProps> = ({
     [account, tokenScope, compatibleNetworkIds, networksMap]
   )
 
-  const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
-
   const accountCompatibleTokens = useMemo(() => {
     const tokens = allTokens
       .filter(tokenFilter)
@@ -363,12 +356,10 @@ const TokensList: FC<TokensListProps> = ({
           chainNameSearch: network?.name,
           chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
-          isActive: activeTokenIds.has(token.id),
         }
       })
   }, [
     allTokens,
-    activeTokenIds,
     filterAccountCompatibleTokens,
     hideSameNetworkMirrors,
     networksMap,
