@@ -8,20 +8,10 @@ RPC connections to the networks that the Talisman wallet supports, one connector
 
 The `*Stub` variants connect to a single network from its RPC list, without chaindata.
 
-## One socket per chain in a dapp
-
-A dapp that uses `@talismn/balances` next to polkadot-api would open two sockets to each chain. Give both the same provider factory to share one:
+`ChainConnectorDotPapi` runs over a dapp's polkadot-api clients instead of opening sockets of its own. A dapp that uses `@talismn/balances` next to polkadot-api then has one socket per chain:
 
 ```ts
-import { ChainConnectorDot, createSharedWsProvider } from "@talismn/chain-connectors"
-import { createClient } from "polkadot-api"
-import { getWsProvider } from "polkadot-api/ws"
-
-const getSharedWsProvider = createSharedWsProvider(getWsProvider)
-const chainConnector = new ChainConnectorDot(chaindataProvider, { getWsProvider: getSharedWsProvider })
-const client = createClient(getSharedWsProvider(network.rpcs))
+const chainConnector = new ChainConnectorDotPapi((networkId) => clients[networkId])
 ```
 
-Providers share a socket only when their endpoint lists are equal, so pass the network's `rpcs` from chaindata. The socket stays open while any consumer is connected: the connector no longer reconnects when its last subscription ends.
-
-This replaces polkadot-api's `createWsClient`. `switch()` and `getStatus()` are on the provider that the factory returns, and `switch()` reconnects every consumer of the socket. `chainConnector.reset(networkId)` reconnects only when the network's RPCs changed. Otherwise it joins the open socket again.
+It supports the requests and the `state_subscribeStorage` subscription that balances uses. A storage subscription queries its keys at each new best block and reports the values that changed.
