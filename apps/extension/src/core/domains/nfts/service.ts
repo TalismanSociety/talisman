@@ -5,7 +5,7 @@ import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
 } from "@talismn/keyring"
-import { getQuery$, isNotNil, keepAlive } from "@talismn/util"
+import { getQuery$, keepAlive, type QueryResult } from "@talismn/util"
 import { isEqual } from "lodash-es"
 import {
   combineLatest,
@@ -14,39 +14,55 @@ import {
   firstValueFrom,
   map,
   Observable,
+  of,
   shareReplay,
   switchMap,
   tap,
 } from "rxjs"
 
 import { keyringStore } from "../keyring/store"
-import { fetchDotAccountNfts } from "./fetchDotAccountNfts"
+import { getDotAccountNfts$ } from "./fetchDotAccountNfts"
 import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
 import { fetchEvmNftRefresh } from "./fetchEvmNftRefresh"
 import { nftsStore$, updateNftsStore } from "./store"
 import type { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
-const FIVE_MINUTES = 5 * ONE_MINUTE
 
-const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<AccountNfts> => {
-  // some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
-  const results = await Promise.all(
-    [
-      isAccountPlatformEthereum(account) ? fetchEvmAccountNfts(account.address, signal) : null,
-      isAccountPlatformPolkadot(account) ? fetchDotAccountNfts(account, signal) : null,
-    ].filter(isNotNil)
-  )
+const NO_NFTS: QueryResult<AccountNfts> = {
+  status: "loaded",
+  data: { nfts: [], collections: [] },
+  error: undefined,
+}
 
-  return results.reduce(
-    (acc, curr) => {
-      return {
-        nfts: acc.nfts.concat(...curr.nfts),
-        collections: acc.collections.concat(...curr.collections),
-      }
+const getEvmAccountNfts$ = (account: Account) =>
+  getQuery$({
+    namespace: "nfts-evm",
+    args: account,
+    queryFn: (account, signal) => fetchEvmAccountNfts(account.address, signal),
+    refreshInterval: ONE_MINUTE,
+  })
+
+// some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
+const getAccountNfts$ = (account: Account) =>
+  combineLatest([
+    isAccountPlatformEthereum(account) ? getEvmAccountNfts$(account) : of(NO_NFTS),
+    isAccountPlatformPolkadot(account) ? getDotAccountNfts$(account) : of(NO_NFTS),
+  ]).pipe(map(mergeQueryResults))
+
+const mergeQueryResults = (results: QueryResult<AccountNfts>[]): QueryResult<AccountNfts> => {
+  const failed = results.find((result) => result.status === "error")
+  if (failed) return failed
+  if (results.some((result) => result.status === "loading"))
+    return { status: "loading", data: undefined, error: undefined }
+  return {
+    status: "loaded",
+    data: {
+      nfts: results.flatMap((result) => result.data?.nfts ?? []),
+      collections: results.flatMap((result) => result.data?.collections ?? []),
     },
-    { nfts: [], collections: [] }
-  )
+    error: undefined,
+  }
 }
 
 export const nfts$ = new Observable<NftData>((subscriber) => {
@@ -81,12 +97,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     switchMap((accounts) =>
       combineLatest(
         accounts.map((account) =>
-          getQuery$({
-            namespace: "nfts",
-            args: account,
-            queryFn: (account, signal) => fetchAccountNfts(account, signal),
-            refreshInterval: isAccountPlatformPolkadot(account) ? FIVE_MINUTES : ONE_MINUTE,
-          }).pipe(
+          getAccountNfts$(account).pipe(
             map((nftsData) => ({
               address: account.address,
               nftsData,

@@ -1,3 +1,4 @@
+import { firstValueFrom } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const blob = vi.hoisted(() => ({
@@ -238,7 +239,7 @@ describe("fetchNftJsonMetadata", () => {
     expect(persisted[URI].json).toEqual({ name: "Before" })
   })
 
-  it("throws on abort without recording a failure", async () => {
+  it("records no failure on abort, so the next caller downloads again", async () => {
     const { fetchNftJsonMetadata } = await loadModule()
     const controller = new AbortController()
     fetchMock.mockImplementationOnce(async (_url: string, init: RequestInit) => {
@@ -246,12 +247,59 @@ describe("fetchNftJsonMetadata", () => {
       init.signal?.throwIfAborted()
     })
 
-    await expect(fetchNftJsonMetadata(URI, controller.signal)).rejects.toThrow()
+    expect(await fetchNftJsonMetadata(URI, controller.signal)).toBeNull()
 
     fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Item" }))
     expect(await fetchNftJsonMetadata(URI, new AbortController().signal)).toEqual({
       name: "Item",
     })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("downloads higher priority URIs first once a slot frees up", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    const signal = new AbortController().signal
+    const release: (() => void)[] = []
+    fetchMock.mockImplementation(
+      (url: string) =>
+        new Promise((resolve) => release.push(() => resolve(jsonResponse({ name: url }))))
+    )
+
+    const blockers = Array.from({ length: 4 }, (_, i) =>
+      fetchNftJsonMetadata(`https://example.com/blocker/${i}`, signal)
+    )
+    const large = fetchNftJsonMetadata("https://example.com/large.json", signal, -100)
+    const small = fetchNftJsonMetadata("https://example.com/small.json", signal, -1)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetchMock).toHaveBeenCalledTimes(4)
+
+    release.shift()?.()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetchMock.mock.calls[4][0]).toBe("https://example.com/small.json")
+
+    while (release.length) {
+      release.shift()?.()
+      await vi.advanceTimersByTimeAsync(0)
+    }
+    expect(fetchMock.mock.calls[5][0]).toBe("https://example.com/large.json")
+    await Promise.all([...blockers, large, small])
+  })
+
+  it("exposes the cache synchronously and announces its changes", async () => {
+    blob.stored = { [URI]: stored({ name: "Stored" }, Date.now()) }
+    const { fetchNftJsonMetadata, getCachedNftJsonMetadata, nftJsonMetadataChanged$ } =
+      await loadModule()
+    const changes: number[] = []
+    nftJsonMetadataChanged$.subscribe(() => changes.push(changes.length))
+
+    await firstValueFrom(nftJsonMetadataChanged$)
+    expect(getCachedNftJsonMetadata(URI)).toEqual({ name: "Stored" })
+    expect(getCachedNftJsonMetadata("https://example.com/unknown.json")).toBeNull()
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ name: "Two" }))
+    await fetchNftJsonMetadata("https://example.com/2.json", new AbortController().signal)
+    expect(getCachedNftJsonMetadata("https://example.com/2.json")).toEqual({ name: "Two" })
+    expect(changes).toHaveLength(2)
   })
 
   it("serves every URI of a large wallet from cache on the next refresh", async () => {

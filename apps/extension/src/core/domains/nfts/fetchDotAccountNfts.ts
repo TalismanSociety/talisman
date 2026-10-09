@@ -2,8 +2,10 @@ import { log } from "@common/log"
 import { fetchStorageKeysPaged, queryStorageAt } from "@talismn/chain-connectors"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
-import { isNotNil } from "@talismn/util"
-import { uniqBy } from "lodash-es"
+import { getQuery$, isNotNil, type QueryResult } from "@talismn/util"
+import { uniq, uniqBy } from "lodash-es"
+import PQueue from "p-queue"
+import { combineLatest, firstValueFrom, map, type Observable, throttleTime } from "rxjs"
 
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -11,7 +13,11 @@ import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeNetworks"
 import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
-import { fetchNftJsonMetadata } from "./nftJsonMetadata"
+import {
+  fetchNftJsonMetadata,
+  getCachedNftJsonMetadata,
+  nftJsonMetadataChanged$,
+} from "./nftJsonMetadata"
 import {
   buildNftPalletStorages,
   decodeMetadataUri,
@@ -22,9 +28,11 @@ import {
   type NftPalletStorage,
 } from "./nftPalletStorage"
 import { normaliseMetadataUri } from "./normaliseMetadataUri"
+import { nftsStore$ } from "./store"
 import {
   getSubstrateNftCollectionId,
   getSubstrateNftId,
+  type SubstrateNftCollectionRef,
   type SubstrateNftRef,
   toSubstrateAccountNft,
   toSubstrateNftCollection,
@@ -38,41 +46,121 @@ const NETWORK_IDS: NetworkId[] = [
   "westend-asset-hub-testnet",
 ]
 
+const FIVE_MINUTES = 5 * 60 * 1000
+const FILL_IN_THROTTLE = 1_000
+
+type Listed<Ref> = { ref: Ref; uri: string | null }
+
+export type SubstrateNftListing = {
+  owner: string
+  items: Listed<SubstrateNftRef>[]
+  collections: Listed<SubstrateNftCollectionRef>[]
+}
+
 const palletStoragesBySpecVersion = new Map<string, Promise<NftPalletStorage[]>>()
 
 const onChainMetadataUris = new Map<string, string | null>()
 
-export const fetchDotAccountNfts = async (
+const chainReads = new PQueue({ concurrency: 1 })
+
+export const getDotAccountNfts$ = (account: Account): Observable<QueryResult<AccountNfts>> =>
+  combineLatest([
+    getQuery$({
+      namespace: "nfts-dot",
+      args: account,
+      queryFn: async (account, signal) => {
+        const { hiddenNftCollectionIds } = await firstValueFrom(nftsStore$)
+        return listDotAccountNfts(account, signal, hiddenNftCollectionIds)
+      },
+      refreshInterval: FIVE_MINUTES,
+    }),
+    nftJsonMetadataChanged$.pipe(
+      throttleTime(FILL_IN_THROTTLE, undefined, { leading: true, trailing: true })
+    ),
+  ]).pipe(
+    map(([listing]): QueryResult<AccountNfts> => {
+      if (listing.status === "error") return listing
+      if (listing.status === "loading") return { ...listing, data: undefined }
+      return { ...listing, data: toDotAccountNfts(listing.data) }
+    })
+  )
+
+export const listDotAccountNfts = async (
   account: Account,
-  signal: AbortSignal
-): Promise<AccountNfts> => {
+  signal: AbortSignal,
+  hiddenCollectionIds: string[]
+): Promise<SubstrateNftListing> => {
+  const listing = await chainReads.add(() => listOnChain(account, signal), { signal })
+
+  const priority = -listing.items.length
+  for (const uri of urisToDownload(listing, hiddenCollectionIds))
+    fetchNftJsonMetadata(uri, signal, priority)
+
+  return listing
+}
+
+const urisToDownload = (
+  { items, collections }: SubstrateNftListing,
+  hiddenCollectionIds: string[]
+) =>
+  uniq(
+    [...items, ...collections]
+      .filter(({ ref }) => !hiddenCollectionIds.includes(getSubstrateNftCollectionId(ref)))
+      .map(({ uri }) => uri)
+      .filter(isNotNil)
+  )
+
+export const toDotAccountNfts = ({
+  owner,
+  items,
+  collections,
+}: SubstrateNftListing): AccountNfts => {
+  const collectionJsonById = new Map(
+    collections.map(({ ref, uri }) => [getSubstrateNftCollectionId(ref), cachedJson(uri)])
+  )
+  return {
+    nfts: items.map(({ ref, uri }) =>
+      toSubstrateAccountNft(
+        ref,
+        owner,
+        cachedJson(uri),
+        collectionJsonById.get(getSubstrateNftCollectionId(ref)) ?? null
+      )
+    ),
+    collections: collections.map(({ ref, uri }) => toSubstrateNftCollection(ref, cachedJson(uri))),
+  }
+}
+
+const cachedJson = (uri: string | null) => (uri ? getCachedNftJsonMetadata(uri) : null)
+
+const listOnChain = async (account: Account, signal: AbortSignal) => {
   const activeNetworks = await activeNetworksStore.get()
 
-  const results = await Promise.all(
+  const listings = await Promise.all(
     NETWORK_IDS.map(async (networkId) => {
       const network = await chaindataProvider.getNetworkById(networkId, "polkadot")
       return network &&
         isAccountCompatibleWithNetwork(network, account) &&
         isNetworkActive(network, activeNetworks)
-        ? fetchNetworkNfts(network, account.address, signal)
+        ? listNetworkNfts(network, account.address, signal)
         : null
     })
   )
 
-  return mergeAccountNfts(results.filter(isNotNil))
+  return mergeListings(account.address, listings.filter(isNotNil))
 }
 
-const fetchNetworkNfts = async (
+const listNetworkNfts = async (
   network: DotNetwork,
   address: string,
   signal: AbortSignal
-): Promise<AccountNfts> => {
+): Promise<SubstrateNftListing> => {
   try {
     const storages = await getNftPalletStorages(network)
-    const results = await Promise.all(
-      storages.map((storage) => fetchPalletNfts(network.id, storage, address, signal))
+    const listings = await Promise.all(
+      storages.map((storage) => listPalletNfts(network.id, storage, address, signal))
     )
-    return mergeAccountNfts(results)
+    return mergeListings(address, listings)
   } catch (err) {
     signal.throwIfAborted()
     log.error("Failed to fetch Polkadot account NFTs", {
@@ -101,19 +189,19 @@ const loadNftPalletStorages = async (networkId: NetworkId) => {
   return buildNftPalletStorages(metadataRpc)
 }
 
-const fetchPalletNfts = async (
+const listPalletNfts = async (
   networkId: NetworkId,
   storage: NftPalletStorage,
   address: string,
   signal: AbortSignal
-): Promise<AccountNfts> => {
+): Promise<SubstrateNftListing> => {
   const keys = await fetchStorageKeysPaged(
     chainConnectorDot,
     networkId,
     getOwnedItemsKeyPrefix(storage, address),
     { signal }
   )
-  if (!keys.length) return { nfts: [], collections: [] }
+  if (!keys.length) return { owner: address, items: [], collections: [] }
 
   const refs: SubstrateNftRef[] = keys.map((key) => ({
     networkId,
@@ -122,38 +210,26 @@ const fetchPalletNfts = async (
   }))
   const collectionRefs = uniqBy(refs, (ref) => ref.collection)
 
-  await loadMissingMetadataUris(networkId, storage, refs)
-  signal.throwIfAborted()
-
-  const [itemJsons, collectionJsons] = await Promise.all([
-    Promise.all(refs.map((ref) => fetchJsonForId(getSubstrateNftId(ref), signal))),
-    Promise.all(
-      collectionRefs.map((ref) => fetchJsonForId(getSubstrateNftCollectionId(ref), signal))
-    ),
-  ])
-  const collectionJsonById = new Map(
-    collectionRefs.map((ref, index) => [ref.collection, collectionJsons[index]])
-  )
+  await loadMissingMetadataUris(networkId, storage, refs, signal)
 
   return {
-    nfts: refs.map((ref, index) =>
-      toSubstrateAccountNft(
-        ref,
-        address,
-        itemJsons[index],
-        collectionJsonById.get(ref.collection) ?? null
-      )
-    ),
-    collections: collectionRefs.map((ref, index) =>
-      toSubstrateNftCollection(ref, collectionJsons[index])
-    ),
+    owner: address,
+    items: refs.map((ref) => ({
+      ref,
+      uri: onChainMetadataUris.get(getSubstrateNftId(ref)) ?? null,
+    })),
+    collections: collectionRefs.map((ref) => ({
+      ref,
+      uri: onChainMetadataUris.get(getSubstrateNftCollectionId(ref)) ?? null,
+    })),
   }
 }
 
 const loadMissingMetadataUris = async (
   networkId: NetworkId,
   storage: NftPalletStorage,
-  refs: SubstrateNftRef[]
+  refs: SubstrateNftRef[],
+  signal: AbortSignal
 ) => {
   const reads = new Map(
     [
@@ -176,7 +252,8 @@ const loadMissingMetadataUris = async (
   const values = await queryStorageAt(
     chainConnectorDot,
     networkId,
-    [...reads.values()].map((read) => read.storageKey)
+    [...reads.values()].map((read) => read.storageKey),
+    { signal }
   )
   for (const read of reads.values()) {
     const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
@@ -184,12 +261,8 @@ const loadMissingMetadataUris = async (
   }
 }
 
-const fetchJsonForId = async (id: string, signal: AbortSignal) => {
-  const uri = onChainMetadataUris.get(id)
-  return uri ? fetchNftJsonMetadata(uri, signal) : null
-}
-
-const mergeAccountNfts = (results: AccountNfts[]): AccountNfts => ({
-  nfts: results.flatMap((result) => result.nfts),
-  collections: results.flatMap((result) => result.collections),
+const mergeListings = (owner: string, listings: SubstrateNftListing[]): SubstrateNftListing => ({
+  owner,
+  items: listings.flatMap((listing) => listing.items),
+  collections: listings.flatMap((listing) => listing.collections),
 })

@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { getErrorMessage } from "@talismn/util"
 import PQueue from "p-queue"
-import { debounceTime, Subject } from "rxjs"
+import { debounceTime, ReplaySubject, skip } from "rxjs"
 
 import { getBlobStore } from "../../db/blobs"
 import { walletReady } from "../../libs/isWalletReady"
@@ -41,8 +41,11 @@ const queue = new PQueue({ concurrency: 4 })
 const blobStore = getBlobStore<Record<string, CachedJson>>("nft-metadata")
 
 const cache = new Map<string, CachedJson>()
-const cacheChanged$ = new Subject<void>()
+const cacheChanged$ = new ReplaySubject<void>(1)
 const inflight = new Map<string, Promise<NftJsonMetadata | null>>()
+
+/** Emits once the persisted cache is loaded, then after every download settles */
+export const nftJsonMetadataChanged$ = cacheChanged$.asObservable()
 
 class MetadataFetchError extends Error {
   constructor(
@@ -70,8 +73,9 @@ const keptEntries = (entries: Iterable<[string, unknown]>): [string, CachedJson]
 const cacheLoaded = walletReady.then(async () => {
   const stored = await blobStore.get()
   for (const [uri, entry] of keptEntries(Object.entries(stored ?? {}))) cache.set(uri, entry)
+  cacheChanged$.next()
 
-  cacheChanged$.pipe(debounceTime(1_000)).subscribe(() => {
+  cacheChanged$.pipe(skip(1), debounceTime(1_000)).subscribe(() => {
     blobStore.set(Object.fromEntries(keptEntries(cache)))
   })
 })
@@ -89,34 +93,38 @@ const rememberFailure = (uri: string, kind: FailureKind) => {
   cacheChanged$.next()
 }
 
+export const getCachedNftJsonMetadata = (uri: string) => cache.get(uri)?.json ?? null
+
+/**
+ * Resolves with the cached metadata when it is current, else downloads it. A higher priority
+ * downloads first. Resolves with the cached metadata, if any, when the signal aborts.
+ */
 export const fetchNftJsonMetadata = async (
   uri: string,
-  signal: AbortSignal
+  signal: AbortSignal,
+  priority = 0
 ): Promise<NftJsonMetadata | null> => {
   await cacheLoaded
 
   const cached = cache.get(uri)
   if (cached && isCurrent(cached)) return cached.json
 
-  const download = inflight.get(uri) ?? startDownload(uri, signal)
-  const json = await download
-  signal.throwIfAborted()
-  return json
+  return inflight.get(uri) ?? startDownload(uri, signal, priority)
 }
 
-const startDownload = (uri: string, signal: AbortSignal) => {
+const startDownload = (uri: string, signal: AbortSignal, priority: number) => {
   const download = queue
-    .add(() => downloadNftJsonMetadata(uri, signal), { signal })
+    .add(() => downloadNftJsonMetadata(uri, signal), { signal, priority })
     .then(
       (json) => {
         rememberSuccess(uri, json)
         return json
       },
       (err) => {
-        if (signal.aborted) return null
+        if (signal.aborted) return getCachedNftJsonMetadata(uri)
         log.warn("[nfts] failed to fetch NFT metadata", { uri, error: getErrorMessage(err) })
         rememberFailure(uri, err instanceof MetadataFetchError ? err.kind : "transient")
-        return cache.get(uri)?.json ?? null
+        return getCachedNftJsonMetadata(uri)
       }
     )
     .finally(() => inflight.delete(uri))
