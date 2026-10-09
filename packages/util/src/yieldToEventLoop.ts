@@ -23,12 +23,13 @@ type MinimalMessagePort = {
 }
 
 type MinimalScheduler = {
-  postTask: (task: () => void, options: { priority: "background" }) => Promise<void>
+  postTask?: (task: () => void, options: { priority: "background" }) => Promise<void>
 }
 
 export const yieldToEventLoop = (): Promise<void> => {
   const { scheduler } = globalThis as { scheduler?: MinimalScheduler }
-  if (scheduler) return scheduler.postTask(() => {}, { priority: "background" })
+  if (typeof scheduler?.postTask === "function")
+    return scheduler.postTask(() => {}, { priority: "background" })
 
   if (typeof MessageChannel !== "undefined") {
     return new Promise((resolve) => {
