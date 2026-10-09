@@ -252,6 +252,9 @@ const TokenRow: FC<TokenRowProps> = ({
 
 const DEFAULT_FILTER = () => true
 
+// shared by every listed token without a balance; nothing in the UI mutates a Balances
+const EMPTY_BALANCES = new Balances([])
+
 /**
  * "active" (default) shows only active tokens on networks that a wallet account can sign for.
  * "signable" also includes inactive tokens, e.g. so the user can find and enable a token they hold.
@@ -375,14 +378,14 @@ const TokensList: FC<TokensListProps> = ({
       else balancesByTokenId.set(balance.tokenId, [balance])
     }
 
-    const withBalances = accountCompatibleTokens.map((t) => ({
-      ...t,
-      balances: new Balances(balancesByTokenId.get(t.id) ?? []),
-    }))
+    const withBalances = accountCompatibleTokens.map((t) => {
+      const tokenBalances = balancesByTokenId.get(t.id)
+      return { ...t, balances: tokenBalances ? new Balances(tokenBalances) : EMPTY_BALANCES }
+    })
 
     const listedTokens = showEmptyBalances
       ? withBalances
-      : withBalances.filter((t) => t.balances.sum.planck.transferable > 0n)
+      : withBalances.filter((t) => t.balances.count && t.balances.sum.planck.transferable > 0n)
 
     return sortTokenData(listedTokens, {
       currency,

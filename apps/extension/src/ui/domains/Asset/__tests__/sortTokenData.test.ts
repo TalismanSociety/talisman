@@ -104,4 +104,18 @@ describe("sortTokenData", () => {
 
     expect(sortTokenData(tokens, { currency: "usd" }).map((t) => t.id)).toEqual(["c", "a", "b"])
   })
+
+  it("ranks a token without balances the same as one with a zero balance", () => {
+    const tokens = [
+      makeTokenData(makeToken("zero", "ZZ"), [{ tokens: 0, usdPrice: 1 }]),
+      makeTokenData(makeToken("none", "AA")),
+      makeTokenData(makeToken("funded", "YY"), [{ tokens: 1, usdPrice: 0 }]),
+    ]
+
+    expect(sortTokenData(tokens, { currency: "usd" }).map((t) => t.id)).toEqual([
+      "funded",
+      "none",
+      "zero",
+    ])
+  })
 })
