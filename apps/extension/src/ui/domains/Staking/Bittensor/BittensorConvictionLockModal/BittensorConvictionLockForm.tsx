@@ -4,6 +4,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountPicker } from "@ui/domains/AccountProxies/AddProxy/AccountPicker"
+import { TokenAmountField } from "@ui/domains/Asset/TokenAmountField"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AddressPillButton } from "@ui/domains/SendFunds/SendFundsAmountForm/AddressPillButton"
@@ -12,7 +13,6 @@ import { useTranslation } from "react-i18next"
 
 import { BittensorLockTypePicker } from "../components/BittensorLockTypePicker"
 import { ConvictionLockHotkeyPicker } from "../components/ConvictionLockHotkeyPicker"
-import { BittensorConvictionLockAmountField } from "./BittensorConvictionLockAmountField"
 import { BittensorConvictionLockInfoDrawer } from "./BittensorConvictionLockInfoDrawer"
 import {
   BITTENSOR_LOCK_MODAL_CONTAINER_ID,
@@ -106,7 +106,7 @@ export const BittensorConvictionLockForm = () => {
           </div>
         </div>
 
-        <BittensorConvictionLockAmountField
+        <TokenAmountField
           tokenId={baseTokenId}
           decimals={decimals}
           symbol={symbol}

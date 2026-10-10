@@ -13,7 +13,13 @@ export const subscribeBalances: IBalanceModule<
   TokenConfig,
   ModuleConfig,
   MiniMetadataExtra
->["subscribeBalances"] = ({ networkId, tokensWithAddresses, connector, miniMetadata }) => {
+>["subscribeBalances"] = ({
+  networkId,
+  tokensWithAddresses,
+  connector,
+  miniMetadata,
+  hasEvmMirrorWithdraw,
+}) => {
   if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
 
   // could be use as shared observable key if we decide to cache the sub
@@ -24,7 +30,7 @@ export const subscribeBalances: IBalanceModule<
     // (expensive, indivisible) — give it its own macrotask so it doesn't stack with
     // the current tick's other work
     await yieldToEventLoop()
-    return buildBaseQueries(networkId, balanceDefs, miniMetadata)
+    return buildBaseQueries(networkId, balanceDefs, miniMetadata, hasEvmMirrorWithdraw)
   }).pipe(
     switchMap((baseQueries) => getRpcQueryPack$(connector, networkId, baseQueries)),
     switchMap((partialBalances) => {

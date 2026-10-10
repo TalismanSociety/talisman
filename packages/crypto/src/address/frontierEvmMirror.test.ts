@@ -5,6 +5,7 @@ import {
   frontierH160ToAccountId32,
   frontierH160ToSs58Mirror,
   frontierSs58ToPublicKeyHex,
+  frontierSs58ToTruncatedH160,
 } from "./frontierEvmMirror"
 
 // vectors verified on Bittensor mainnet against the addressMapping precompile (0x...080C)
@@ -65,5 +66,19 @@ describe("frontierSs58ToPublicKeyHex", () => {
 
   it("rejects invalid addresses", () => {
     expect(() => frontierSs58ToPublicKeyHex("not-an-address")).toThrow()
+  })
+})
+
+describe("frontierSs58ToTruncatedH160", () => {
+  it("keeps the first 20 bytes of the public key", () => {
+    expect(frontierSs58ToTruncatedH160("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")).toEqual(
+      "0xd43593c715fdd31c61141abd04a99fd6822c8558"
+    )
+  })
+
+  it("ignores the ss58 prefix", () => {
+    expect(frontierSs58ToTruncatedH160("15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5")).toEqual(
+      "0xd43593c715fdd31c61141abd04a99fd6822c8558"
+    )
   })
 })

@@ -1,6 +1,7 @@
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
+import { deriveMiniMetadataId } from "../../types"
 import { acala } from "./__fixtures__/acala"
 import { hydration } from "./__fixtures__/hydration"
 import { getMiniMetadata } from "./getMiniMetadata"
@@ -19,7 +20,11 @@ describe("substrate-tokens getMiniMetadata", () => {
     })
 
     expect(miniMetadata).toEqual({
-      id: fixture.miniMetadata.id,
+      id: deriveMiniMetadataId({
+        source: "substrate-tokens",
+        chainId: networkId,
+        specVersion: fixture.specVersion,
+      }),
       source: "substrate-tokens",
       chainId: networkId,
       specVersion: fixture.specVersion,

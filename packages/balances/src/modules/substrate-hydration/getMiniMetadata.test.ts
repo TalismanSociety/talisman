@@ -2,6 +2,7 @@ import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
 import { describe, expect, it } from "vitest"
 
+import { deriveMiniMetadataId } from "../../types"
 import { hydration } from "./__fixtures__/hydration"
 import { getMiniMetadata } from "./getMiniMetadata"
 
@@ -23,6 +24,12 @@ const withoutItems = (pallets: string[], apis: string[]) => {
 
 // trimmedMetadataRpc = Hydration's full v15 metadata compacted to System.Version + what this module
 // needs, miniMetadata = getMiniMetadata run on the untrimmed metadata at capture time
+const HYDRATION_MINIMETADATA_ID = deriveMiniMetadataId({
+  source: "substrate-hydration",
+  chainId: "hydradx",
+  specVersion: hydration.specVersion,
+})
+
 describe("substrate-hydration getMiniMetadata", () => {
   it("compacts the metadata down to AssetRegistry.Assets, Tokens.Accounts and CurrenciesApi.accounts", () => {
     const miniMetadata = getMiniMetadata({
@@ -32,7 +39,7 @@ describe("substrate-hydration getMiniMetadata", () => {
     })
 
     expect(miniMetadata).toEqual({
-      id: hydration.miniMetadata.id,
+      id: HYDRATION_MINIMETADATA_ID,
       source: "substrate-hydration",
       chainId: "hydradx",
       specVersion: hydration.specVersion,
@@ -56,7 +63,7 @@ describe("substrate-hydration getMiniMetadata", () => {
     })
 
     expect(miniMetadata.data).toBeNull()
-    expect(miniMetadata.id).toBe(hydration.miniMetadata.id)
+    expect(miniMetadata.id).toBe(HYDRATION_MINIMETADATA_ID)
   })
 
   it("throws when the metadata is for another spec version", () => {

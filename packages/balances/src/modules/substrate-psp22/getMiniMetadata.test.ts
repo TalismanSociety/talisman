@@ -1,6 +1,7 @@
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
+import { deriveMiniMetadataId } from "../../types"
 import { alephZero } from "./__fixtures__/alephZero"
 import { getMiniMetadata } from "./getMiniMetadata"
 
@@ -14,7 +15,11 @@ describe("substrate-psp22 getMiniMetadata", () => {
     })
 
     expect(miniMetadata).toEqual({
-      id: alephZero.miniMetadata.id,
+      id: deriveMiniMetadataId({
+        source: "substrate-psp22",
+        chainId: "aleph-zero",
+        specVersion: alephZero.specVersion,
+      }),
       source: "substrate-psp22",
       chainId: "aleph-zero",
       specVersion: alephZero.specVersion,

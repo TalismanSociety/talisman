@@ -1,8 +1,8 @@
 /** @dev temporarily change branch here when testing changes in chaindata */
-const CHAINDATA_BRANCH = "main"
+const CHAINDATA_BRANCH = "feat/chaindata-v15"
 
 // pub subfolder needs to be incremented each time the schema of chaindata changes, or when the content of the minimetadata changes
-export const CHAINDATA_PUB_FOLDER = "pub/v14"
+export const CHAINDATA_PUB_FOLDER = "pub/v15"
 
 export const MINIMETADATA_VERSION = CHAINDATA_PUB_FOLDER.split("/").pop()!
 if (!MINIMETADATA_VERSION) {

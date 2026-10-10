@@ -17,7 +17,7 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 
-type BittensorConvictionLockAmountFieldProps = {
+type TokenAmountFieldProps = {
   tokenId: string | null | undefined
   decimals: number
   symbol: string
@@ -27,12 +27,8 @@ type BittensorConvictionLockAmountFieldProps = {
   errorMessage?: string | null
 }
 
-/**
- * Alpha amount input for the conviction lock wizard, mirroring the dtao staking amount field
- * (centered input, token logo + symbol, Max button, reserved error line). Amount is denominated
- * in the subnet's alpha token; Max is the subnet-wide available-to-lock amount.
- */
-export const BittensorConvictionLockAmountField: FC<BittensorConvictionLockAmountFieldProps> = ({
+/** Centred token amount input with the token logo and symbol, a Max button and a reserved error line */
+export const TokenAmountField: FC<TokenAmountFieldProps> = ({
   tokenId,
   decimals,
   symbol,

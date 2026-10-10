@@ -4,6 +4,7 @@ import { addAccount } from "./definitions/addAccount"
 import { bittensorSettings } from "./definitions/bittensorSettings"
 import { buy } from "./definitions/buy"
 import { earnDeposit, earnManage, earnWithdraw } from "./definitions/earn"
+import { evmWithdraw } from "./definitions/evmWithdraw"
 import { onboarding } from "./definitions/onboarding"
 import { passwordChange } from "./definitions/passwordChange"
 import { passwordMigration } from "./definitions/passwordMigration"
@@ -37,7 +38,8 @@ export const FLOWS = flowRegistry(
   taoTrade,
   earnDeposit,
   earnWithdraw,
-  earnManage
+  earnManage,
+  evmWithdraw
 )
 
 export type Flows = typeof FLOWS

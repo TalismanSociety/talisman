@@ -51,6 +51,12 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   hasCheckMetadataHash: z.boolean().optional(),
   hasExtrinsicSignatureTypePrefix: z.boolean().optional(),
   isUnknownFeeToken: z.boolean().optional(),
+  hasEvmMirrorWithdraw: z
+    .boolean()
+    .optional()
+    .describe(
+      "pallet_evm uses HashedAddressMapping<BlakeTwo256> and a truncated WithdrawOrigin: a substrate account can EVM.withdraw the funds of its mirror account"
+    ),
   topology: DotNetworkTopologySchema,
   balancesConfig: DotNetworkBalancesConfigSchema.optional(),
 })

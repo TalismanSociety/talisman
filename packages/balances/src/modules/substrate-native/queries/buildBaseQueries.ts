@@ -1,4 +1,5 @@
 import { Binary, type Enum } from "@polkadot-api/substrate-bindings"
+import { frontierH160ToSs58Mirror, frontierSs58ToTruncatedH160 } from "@talismn/crypto"
 import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 
@@ -6,6 +7,7 @@ import type { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
 import { type BalanceDef, buildNetworkStorageCoders } from "../../shared"
 import type { MaybeStateKey, RpcQueryPack } from "../../shared/rpcQueryPack"
 import type { MiniMetadataExtra } from "../config"
+import { EVM_MIRROR_LOCK_LABEL, type EvmMirrorWithdrawableMeta } from "../evmMirror"
 import { getLockedType } from "../util/lockTypes"
 
 export type NomPoolMemberInfo = {
@@ -19,7 +21,8 @@ export type BaseBalance = { balance: IBalance; nomPoolMemberInfo: NomPoolMemberI
 export const buildBaseQueries = (
   networkId: string,
   balanceDefs: BalanceDef<"substrate-native">[],
-  miniMetadata: MiniMetadata<MiniMetadataExtra>
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
+  hasEvmMirrorWithdraw = false
 ): Array<RpcQueryPack<BaseBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     account: ["System", "Account"],
@@ -36,6 +39,8 @@ export const buildBaseQueries = (
 
   return balanceDefs
     .map(({ token, address }): RpcQueryPack<BaseBalance> | null => {
+      const evmMirror = hasEvmMirrorWithdraw ? getEvmMirror(address) : null
+
       const getStateKeys = () => {
         try {
           const accountStateKey = networkStorageCoders.account
@@ -62,6 +67,11 @@ export const buildBaseQueries = (
             ? (networkStorageCoders.poolMembers.keys.enc(address) as `0x${string}`)
             : null
 
+          const evmMirrorAccountStateKey =
+            networkStorageCoders.account && evmMirror
+              ? (networkStorageCoders.account.keys.enc(evmMirror.mirror) as `0x${string}`)
+              : null
+
           return [
             accountStateKey,
             locksStateKey,
@@ -69,6 +79,7 @@ export const buildBaseQueries = (
             holdsStateKey,
             stakingLedgerStateKey,
             poolMemberStateKey,
+            evmMirrorAccountStateKey,
           ]
         } catch {
           // most likely invalid address
@@ -98,6 +109,7 @@ export const buildBaseQueries = (
             holdsChange,
             stakingLedgerChange,
             nomPoolMemberChange,
+            evmMirrorAccountChange,
           ] = changes
 
           if (networkStorageCoders.account) {
@@ -152,6 +164,16 @@ export const buildBaseQueries = (
             if (nomPoolMemberValue) nomPoolMemberInfo = nomPoolMemberValue
           }
 
+          if (networkStorageCoders.account && evmMirror && evmMirrorAccountChange) {
+            const evmMirrorValues = decodeEvmMirrorResult(
+              networkStorageCoders.account,
+              evmMirrorAccountChange,
+              evmMirror,
+              networkId
+            )
+            balance.values.push(...evmMirrorValues)
+          }
+
           return { balance, nomPoolMemberInfo }
         },
       }
@@ -203,6 +225,49 @@ const decodeBaseResult = (
   ]
 
   return newValues
+}
+
+const getEvmMirror = (address: string): EvmMirrorWithdrawableMeta | null => {
+  try {
+    const h160 = frontierSs58ToTruncatedH160(address)
+    return { type: "evm-mirror-withdrawable", h160, mirror: frontierH160ToSs58Mirror(h160) }
+  } catch {
+    // not a 32-byte substrate account (eg an ethereum account): it has no mirror to withdraw from
+    return null
+  }
+}
+
+const decodeEvmMirrorResult = (
+  coder: ScaleStorageCoder,
+  value: `0x${string}`,
+  meta: EvmMirrorWithdrawableMeta,
+  networkId: string
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = { data?: { free?: bigint } }
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode EVM mirror balance on chain ${networkId}`
+  )
+
+  const free = decoded?.data?.free ?? 0n
+  if (free <= 0n) return []
+
+  // the mirror's funds are not on the account itself: count them toward the total via an extra,
+  // and show them in the locked column without reducing the account's transferable amount
+  const withdrawable = {
+    source: "substrate-native-evm-mirror",
+    label: EVM_MIRROR_LOCK_LABEL,
+    amount: free.toString(),
+    meta,
+  }
+
+  return [
+    { ...withdrawable, type: "locked", includeInTransferable: true },
+    { ...withdrawable, type: "extra", includeInTotal: true },
+  ]
 }
 
 const decodeLocksResult = (
