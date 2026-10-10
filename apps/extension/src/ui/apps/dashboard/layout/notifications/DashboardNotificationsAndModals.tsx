@@ -13,6 +13,7 @@ import { EarnSystemActionModals } from "@ui/domains/Earn/systems/EarnSystemActio
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
+import { EvmMirrorWithdrawModal } from "@ui/domains/EvmMirror/EvmMirrorWithdrawModal"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
@@ -63,6 +64,7 @@ export const DashboardNotificationsAndModals = () => {
       <BondModal />
       <BittensorBondModal />
       <BittensorConvictionLockModal />
+      <EvmMirrorWithdrawModal />
       <BittensorChangeLockTypeModal />
       <BittensorChangeLockHotkeyModal />
       <BittensorChangeValidatorModal />
