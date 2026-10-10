@@ -13,6 +13,7 @@ export type BalanceLockType =
   | "subtensor-staking"
   | "vesting"
   | "dapp-staking"
+  | "evm-mirror"
   | `other-${string}`
   | "other"
 
@@ -89,6 +90,7 @@ export const getLockTitle = (
   if (lock.label === "nompools-unbonding") return "Pooled Staking"
   if (lock.label === "subtensor-staking") return "Root Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
+  if (lock.label === "evm-mirror") return "EVM Balance"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"
   if (lock.label.startsWith("other")) return "Locked"

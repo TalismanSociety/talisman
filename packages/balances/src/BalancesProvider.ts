@@ -276,7 +276,12 @@ export class BalancesProvider {
                 return this.getSolanaNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
               }
               case "polkadot": {
-                return this.getPolkadotNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
+                return this.getPolkadotNetworkModuleBalances$(
+                  networkId,
+                  tokensWithAddresses,
+                  mod,
+                  isNetworkDot(network) && !!network.hasEvmMirrorWithdraw
+                )
               }
               default: {
                 log.warn("[balances] Unsupported network platform for module", { networkId, mod })
@@ -319,11 +324,12 @@ export class BalancesProvider {
   private getPolkadotNetworkModuleBalances$(
     networkId: DotNetworkId,
     tokensWithAddresses: TokensWithAddresses,
-    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "polkadot" }>
+    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "polkadot" }>,
+    hasEvmMirrorWithdraw: boolean
   ): Observable<BalancesResult> {
     return getSharedObservable(
       `BalancesProvider.getPolkadotNetworkModuleBalances$`,
-      { networkId, mod, tokensWithAddresses },
+      { networkId, mod, tokensWithAddresses, hasEvmMirrorWithdraw },
       () => {
         if (!tokensWithAddresses.length)
           return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
@@ -356,6 +362,7 @@ export class BalancesProvider {
               tokensWithAddresses,
               connector: this.#chainConnectors.substrate!,
               miniMetadata: miniMetadata as AnyMiniMetadata,
+              hasEvmMirrorWithdraw,
             })
           ),
           // keep unchanged balances reference-stable across emissions (module decode

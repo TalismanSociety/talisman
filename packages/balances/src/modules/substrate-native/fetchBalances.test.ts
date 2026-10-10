@@ -4,10 +4,12 @@ import { gunzipSync } from "node:zlib"
 
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { type SubNativeToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { frontierH160ToSs58Mirror, frontierSs58ToTruncatedH160 } from "@talismn/crypto"
 import { parseMetadataRpc } from "@talismn/scale"
 import { u8aToHex } from "@talismn/util"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { Balance } from "../../classes"
 import type { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
 import { polkadotAssetHub as fixture } from "./__fixtures__/polkadotAssetHub"
 import type { MiniMetadataExtra } from "./config"
@@ -87,13 +89,15 @@ const makeConnector = (overrides: Record<string, string | null> = {}) => {
 const fetchNative = (
   addresses: string[],
   connector: IChainConnectorDot,
-  miniMetadata: MiniMetadata<MiniMetadataExtra> = MINI_METADATA
+  miniMetadata: MiniMetadata<MiniMetadataExtra> = MINI_METADATA,
+  hasEvmMirrorWithdraw?: boolean
 ) =>
   fetchBalances({
     networkId: NETWORK_ID,
     tokensWithAddresses: [[TOKEN, addresses]],
     connector,
     miniMetadata,
+    hasEvmMirrorWithdraw,
   })
 
 const baseValues = (account: NativeAccount): AmountWithLabel<string>[] => {
@@ -419,5 +423,88 @@ describe("substrate-native fetchBalances", () => {
     await expect(fetchNative([poolMember.address], connector, corrupt)).rejects.toThrow(
       `No network storage coders found for networkId: ${NETWORK_ID}`
     )
+  })
+
+  describe("EVM mirror withdrawable balance", () => {
+    const accountCodec = parseMetadataRpc(METADATA_RPC).builder.buildStorage("System", "Account")
+    const h160 = frontierSs58ToTruncatedH160(poolMember.address)
+    const mirror = frontierH160ToSs58Mirror(h160)
+    const mirrorKey = accountCodec.keys.enc(mirror)
+    // more than the account's largest lock: counting it against transferable would show
+    const mirrorFree = 123_000_000_000n
+    const mirrorAccount = (free: bigint) =>
+      u8aToHex(
+        accountCodec.value.enc({
+          nonce: 0,
+          consumers: 0,
+          providers: 1,
+          sufficients: 0,
+          data: { free, reserved: 0n, frozen: 0n, flags: 0n },
+        })
+      )
+
+    it("queries the mirror account with the account keys and reports its free balance as withdrawable", async () => {
+      const { connector, send } = makeConnector({ [mirrorKey]: mirrorAccount(mirrorFree) })
+
+      const { success } = await fetchNative([poolMember.address], connector, MINI_METADATA, true)
+
+      expect(send.mock.calls[0]).toEqual([
+        NETWORK_ID,
+        "state_queryStorageAt",
+        [[...keysOf(accountEntries(poolMember)), mirrorKey]],
+      ])
+      const meta = { type: "evm-mirror-withdrawable", h160, mirror }
+      expect(
+        success[0]!.values?.filter(({ source }) => source === "substrate-native-evm-mirror")
+      ).toEqual([
+        {
+          type: "locked",
+          source: "substrate-native-evm-mirror",
+          label: "evm-mirror",
+          amount: mirrorFree.toString(),
+          meta,
+          includeInTransferable: true,
+        },
+        {
+          type: "extra",
+          source: "substrate-native-evm-mirror",
+          label: "evm-mirror",
+          amount: mirrorFree.toString(),
+          meta,
+          includeInTotal: true,
+        },
+      ])
+    })
+
+    it("adds the mirror balance to the total without reducing the transferable amount", async () => {
+      const { connector } = makeConnector({ [mirrorKey]: mirrorAccount(mirrorFree) })
+
+      const [withoutMirror] = (await fetchNative([poolMember.address], connector)).success
+      const [withMirror] = (await fetchNative([poolMember.address], connector, MINI_METADATA, true))
+        .success
+
+      const before = new Balance(withoutMirror!)
+      const after = new Balance(withMirror!)
+      expect(after.total.planck).toBe(before.total.planck + mirrorFree)
+      expect(after.transferable.planck).toBe(before.transferable.planck)
+    })
+
+    it("reports nothing when the mirror account is empty", async () => {
+      const { connector, send } = makeConnector({ [mirrorKey]: mirrorAccount(0n) })
+
+      const { success } = await fetchNative([poolMember.address], connector, MINI_METADATA, true)
+
+      expect(send.mock.calls[0]?.[2]).toEqual([[...keysOf(accountEntries(poolMember)), mirrorKey]])
+      expect(success[0]!.values?.some((value) => value.label === "evm-mirror")).toBe(false)
+    })
+
+    it("does not query the mirror account when the network has no EVM mirror withdraw", async () => {
+      const { connector, send } = makeConnector({ [mirrorKey]: mirrorAccount(mirrorFree) })
+
+      const { success } = await fetchNative([poolMember.address], connector)
+
+      expect(send.mock.calls[0]?.[2]).toEqual([keysOf(accountEntries(poolMember))])
+      expect(success[0]!.values?.some((value) => value.label === "evm-mirror")).toBe(false)
+    })
   })
 })
