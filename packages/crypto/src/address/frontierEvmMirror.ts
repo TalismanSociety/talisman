@@ -22,6 +22,11 @@ export const frontierH160ToAccountId32 = (h160: string): Uint8Array => {
 export const frontierH160ToSs58Mirror = (h160: string, ss58Prefix = 42): string =>
   encodeAddressSs58(frontierH160ToAccountId32(h160), ss58Prefix)
 
+// pallet_evm EnsureAddressTruncated: the H160 a substrate key may `EVM.withdraw` from is the first 20
+// bytes of its public key, and its funds sit on that H160's hashed mirror account
+export const frontierSs58ToTruncatedH160 = (address: string): `0x${string}` =>
+  `0x${frontierSs58ToPublicKeyHex(address).slice(2, 42)}`
+
 export const frontierSs58ToPublicKeyHex = (address: string): `0x${string}` => {
   const [publicKey] = decodeSs58Address(address)
   if (publicKey.length !== 32) throw new Error("Expected a 32-byte public key")
