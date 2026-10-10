@@ -12,6 +12,7 @@ import { planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -34,6 +35,7 @@ import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
 import { getSearchTerms, matchesSearchTerms } from "./tokenSearch"
+import { useTokenActivationToggle } from "./useTokenActivationToggle"
 
 type TokenRowProps = {
   token: Token
@@ -41,7 +43,6 @@ type TokenRowProps = {
   onClick?: () => void
   balances: Balances
   allowUntransferable?: boolean
-  isActive: boolean
 }
 
 const TokenRowSkeleton = () => (
@@ -73,7 +74,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  isActive: boolean
 }
 
 const TokenRows: FC<{
@@ -85,9 +85,12 @@ const TokenRows: FC<{
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
+  const getItemKey = useCallback((index: number) => tokens[index]?.id ?? index, [tokens])
+
   const virtualizer = useVirtualizer({
     count: tokens.length,
     estimateSize: () => 58,
+    getItemKey,
     overscan: 5,
     getScrollElement: () => refContainer.current,
   })
@@ -122,7 +125,6 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 allowUntransferable={allowUntransferable}
-                isActive={tokenData.isActive}
                 onClick={() => onTokenClick(tokenData.token.id)}
               />
             </div>
@@ -138,7 +140,6 @@ const TokenRow: FC<TokenRowProps> = ({
   selected,
   balances,
   allowUntransferable,
-  isActive,
   onClick,
 }) => {
   const { t } = useTranslation()
@@ -155,85 +156,101 @@ const TokenRow: FC<TokenRowProps> = ({
   const currency = useSelectedCurrency()
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const hasFiatRate = useMemo(() => balances.each.some((b) => b.rates), [balances])
+  const activationToggle = useTokenActivationToggle(token)
 
   return (
-    <button
-      disabled={!allowUntransferable && !isTransferable}
-      title={
-        allowUntransferable || isTransferable
-          ? undefined
-          : t("Sending this token is not supported yet")
-      }
-      type="button"
-      data-id={token.id}
-      onClick={onClick}
-      tabIndex={0}
-      className={cn(
-        "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        selected && "bg-grey-800 text-body-secondary"
-      )}
-    >
-      <div className="w-16 shrink-0">
-        <TokenLogo tokenId={token.id} className="text-xl!" />
-      </div>
-      <div className="flex grow flex-col gap-2.5 overflow-hidden">
-        <div
-          className={cn(
-            "flex w-full justify-between gap-6 overflow-hidden font-bold text-sm",
-            selected ? "text-body-secondary" : "text-body"
-          )}
-        >
-          <div className="flex grow items-center gap-2 overflow-hidden">
-            <div data-testid="picker-token-name" className="truncate">
-              {token.symbol}
-            </div>
-            <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
-            {!!token.name && token.name !== token.symbol && (
-              // shrink-9999 makes it so token.name is the primary thing that truncates, instead of the symbol
-              <div className="min-w-0 shrink-9999 truncate font-normal text-body-inactive">
-                {token.name}
-              </div>
-            )}
-            {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
-          </div>
-          {/* balances aren't fetched for inactive tokens, showing 0 could be inaccurate */}
-          <div className={cn(isLoading && "animate-pulse", !isActive && "invisible")}>
-            <Tokens
-              amount={tokensTotal}
-              decimals={token.decimals}
-              symbol={isUniswapV2LpToken ? "" : token.symbol}
-              isBalance
-              noCountUp
-              className="w-full truncate text-nowrap"
-            />
-          </div>
+    <>
+      <button
+        disabled={!allowUntransferable && !isTransferable}
+        title={
+          allowUntransferable || isTransferable
+            ? undefined
+            : t("Sending this token is not supported yet")
+        }
+        type="button"
+        data-id={token.id}
+        onClick={onClick}
+        tabIndex={0}
+        className={cn(
+          "flex h-14.5 w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          selected && "bg-grey-800 text-body-secondary",
+          activationToggle.showToggle && "pr-36"
+        )}
+      >
+        <div className="w-16 shrink-0">
+          <TokenLogo tokenId={token.id} className="text-xl!" />
         </div>
-        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-right font-light text-body-secondary text-xs">
-          <div className="flex grow items-center overflow-hidden">
-            <div className="truncate" data-testid="picker-token-network">
-              <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
-              <NetworkName networkId={token.networkId} />
-              {token.type === "substrate-dtao" && (
-                <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+        <div className="flex grow flex-col gap-2.5 overflow-hidden">
+          <div
+            className={cn(
+              "flex w-full justify-between gap-6 overflow-hidden font-bold text-sm",
+              selected ? "text-body-secondary" : "text-body"
+            )}
+          >
+            <div className="flex grow items-center gap-2 overflow-hidden">
+              <div data-testid="picker-token-name" className="truncate">
+                {token.symbol}
+              </div>
+              <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
+              {!!token.name && token.name !== token.symbol && (
+                // shrink-9999 makes it so token.name is the primary thing that truncates, instead of the symbol
+                <div className="min-w-0 shrink-9999 truncate font-normal text-body-inactive">
+                  {token.name}
+                </div>
+              )}
+              {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
+            </div>
+            <div
+              className={cn(isLoading && "animate-pulse", activationToggle.showToggle && "hidden")}
+            >
+              <Tokens
+                amount={tokensTotal}
+                decimals={token.decimals}
+                symbol={isUniswapV2LpToken ? "" : token.symbol}
+                isBalance
+                noCountUp
+                className="w-full truncate text-nowrap"
+              />
+            </div>
+          </div>
+          <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-right font-light text-body-secondary text-xs">
+            <div className="flex grow items-center overflow-hidden">
+              <div className="truncate" data-testid="picker-token-network">
+                <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
+                <NetworkName networkId={token.networkId} />
+                {token.type === "substrate-dtao" && (
+                  <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+                )}
+              </div>
+            </div>
+            <div
+              className={cn(isLoading && "animate-pulse", activationToggle.showToggle && "hidden")}
+            >
+              {hasFiatRate ? (
+                <Fiat
+                  amount={balances.sum.fiat(currency).transferable}
+                  isBalance
+                  noCountUp
+                  className="text-nowrap"
+                />
+              ) : (
+                "-"
               )}
             </div>
           </div>
-          <div className={cn(isLoading && "animate-pulse", !isActive && "invisible")}>
-            {hasFiatRate ? (
-              <Fiat
-                amount={balances.sum.fiat(currency).transferable}
-                isBalance
-                noCountUp
-                className="text-nowrap"
-              />
-            ) : (
-              "-"
-            )}
-          </div>
         </div>
-      </div>
-    </button>
+      </button>
+      {activationToggle.showToggle && (
+        <Toggle
+          variant="sm"
+          aria-label={t("Enable {{symbol}}", { symbol: token.symbol })}
+          className="absolute top-1/2 right-12 -translate-y-1/2"
+          checked={activationToggle.checked}
+          onChange={(e) => activationToggle.onChange(e.target.checked)}
+        />
+      )}
+    </>
   )
 }
 
@@ -282,7 +299,6 @@ const TokensList: FC<TokensListProps> = ({
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
   const allTokens = useTokens({ activeOnly: tokenScope === "usable", includeTestnets: true })
-  const activeTokens = useTokens({ activeOnly: true, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
@@ -321,8 +337,6 @@ const TokensList: FC<TokensListProps> = ({
     [account, tokenScope, compatibleNetworkIds, networksMap]
   )
 
-  const activeTokenIds = useMemo(() => new Set(activeTokens.map((t) => t.id)), [activeTokens])
-
   const accountCompatibleTokens = useMemo(() => {
     const tokens = allTokens
       .filter(tokenFilter)
@@ -342,12 +356,10 @@ const TokensList: FC<TokensListProps> = ({
           chainNameSearch: network?.name,
           chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
-          isActive: activeTokenIds.has(token.id),
         }
       })
   }, [
     allTokens,
-    activeTokenIds,
     filterAccountCompatibleTokens,
     hideSameNetworkMirrors,
     networksMap,

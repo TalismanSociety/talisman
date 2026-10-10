@@ -42,8 +42,8 @@ const settingValue: PropertyDef<SettingValue> = {
 
 export const properties = {
   source: p.enum(
-    ["onboarding", "settings", "send", "address_book", "dapp"],
-    "Where the user made the choice. contact_added: the screen the contact was saved from. Network and token events: dapp when the user approved a dapp's request to add it, settings when they did it in Settings > Networks & Tokens."
+    ["onboarding", "settings", "send", "address_book", "dapp", "token_picker"],
+    "Where the user made the choice. contact_added: the screen the contact was saved from. Network and token events: dapp when the user approved a dapp's request to add it, settings when they did it in Settings > Networks & Tokens, token_picker when they turned it on or off with the toggle on a token picker row."
   ),
 
   $screen_name: p.routePattern(
