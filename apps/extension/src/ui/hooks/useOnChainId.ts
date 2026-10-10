@@ -21,11 +21,12 @@ export const useOnChainId = (address?: string) => {
   })
 
   useEffect(() => {
-    if (!address || !onChainId) return
+    // undefined means there is no result yet, null means the lookup ran and found nothing
+    if (!address || onChainId === undefined) return
 
     // update cache
-    if (onChainId === undefined) onChainIdsCache.delete(address)
-    else onChainIdsCache.set(address, { onChainId, updated: Date.now() })
+    // a null result replaces a stale one, and saves looking the address up again
+    onChainIdsCache.set(address, { onChainId, updated: Date.now() })
 
     // persist cache to local storage
     persistOnChainIdsCache()

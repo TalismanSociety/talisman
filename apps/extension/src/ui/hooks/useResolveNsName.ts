@@ -48,26 +48,29 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
     },
     enabled: isNsLookup,
     gcTime: Infinity,
-    initialData: (): [string, NsLookupType] | null => {
-      if (!name) return null
+    // undefined means there is no result yet, so that a lookup with no cached result isn't
+    // mistaken for a lookup that ran and found nothing
+    initialData: (): [string, NsLookupType] | undefined => {
+      if (!name) return undefined
 
       const item = nsNamesCache.get(name)
-      if (!item?.result) return null
+      if (!item?.result) return undefined
 
       const address = Array.isArray(item.result) ? (item.result[0] ?? null) : null
       const nsLookupType = Array.isArray(item.result) ? (item.result[1] ?? null) : null
-      if (!address || !nsLookupType) return null
+      if (!address || !nsLookupType) return undefined
 
       return [address, nsLookupType]
     },
   })
 
   useEffect(() => {
-    if (!name || !result) return
+    // undefined means there is no result yet, null means the lookup ran and found nothing
+    if (!name || result === undefined) return
 
     // update cache
-    if (result === undefined) nsNamesCache.delete(name)
-    else nsNamesCache.set(name, { result, updated: Date.now() })
+    // a null result replaces a stale one
+    nsNamesCache.set(name, { result, updated: Date.now() })
 
     // persist cache to local storage
     persistNsNamesCache()
