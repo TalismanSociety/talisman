@@ -20,15 +20,14 @@ import {
 } from "rxjs"
 
 import { keyringStore } from "../keyring/store"
+import { fetchDotAccountNfts } from "./fetchDotAccountNfts"
 import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
 import { fetchEvmNftRefresh } from "./fetchEvmNftRefresh"
 import { nftsStore$, updateNftsStore } from "./store"
-import { fetchDotAccountNfts } from "./subscan"
 import type { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
-
-const UPDATE_INTERVAL = ONE_MINUTE // leverage cache on endpoint
+const FIVE_MINUTES = 5 * ONE_MINUTE
 
 const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<AccountNfts> => {
   // some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
@@ -86,7 +85,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
             namespace: "nfts",
             args: account,
             queryFn: (account, signal) => fetchAccountNfts(account, signal),
-            refreshInterval: UPDATE_INTERVAL,
+            refreshInterval: isAccountPlatformPolkadot(account) ? FIVE_MINUTES : ONE_MINUTE,
           }).pipe(
             map((nftsData) => ({
               address: account.address,
@@ -188,7 +187,7 @@ export const refreshNftMetadata = async (id: string) => {
   const nft = store.nfts.find((nft) => nft.id === id)
   if (!nft) return
 
-  if (nft.id.startsWith("subscan")) throw new Error("Polkadot NFTs cant be refreshed")
+  if (nft.id.startsWith("substrate:")) throw new Error("Polkadot NFTs cant be refreshed")
 
   return fetchEvmNftRefresh(id)
 }
