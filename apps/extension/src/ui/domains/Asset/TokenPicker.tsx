@@ -257,10 +257,11 @@ const TokenRow: FC<TokenRowProps> = ({
 const DEFAULT_FILTER = () => true
 
 /**
- * "usable" (default) shows only active tokens on networks that a wallet account can sign for.
- * "all" also includes inactive tokens and account-incompatible networks, e.g. when the tokens may be sent to an external recipient.
+ * "active" (default) shows only active tokens on networks that a wallet account can sign for.
+ * "signable" also includes inactive tokens, e.g. so the user can find and enable a token they hold.
+ * "all" also includes account-incompatible networks, e.g. when the tokens may be sent to an external recipient.
  */
-export type TokenPickerScope = "usable" | "all"
+export type TokenPickerScope = "active" | "signable" | "all"
 
 type TokensListProps = {
   address?: Address
@@ -286,7 +287,7 @@ const TokensList: FC<TokensListProps> = ({
   search,
   selectedNetworkId,
   allowUntransferable,
-  tokenScope = "usable",
+  tokenScope = "active",
   showEmptyBalances,
   isInitializing,
   hideSameNetworkMirrors,
@@ -298,7 +299,7 @@ const TokensList: FC<TokensListProps> = ({
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
-  const allTokens = useTokens({ activeOnly: tokenScope === "usable", includeTestnets: true })
+  const allTokens = useTokens({ activeOnly: tokenScope === "active", includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
