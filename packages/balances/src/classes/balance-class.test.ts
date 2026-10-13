@@ -8,6 +8,7 @@ import {
   filterMirrorTokens,
   getBalanceId,
   includeInTotalExtraAmount,
+  parseBalanceId,
 } from "."
 
 // ---------------------------------------------------------------------------
@@ -63,6 +64,25 @@ describe("getBalanceId", () => {
 
   it("works with empty strings", () => {
     expect(getBalanceId({ address: "", tokenId: "" })).toBe("::")
+  })
+})
+
+describe("parseBalanceId", () => {
+  it("splits an id back into its address and tokenId", () => {
+    expect(parseBalanceId("0xABC::dot")).toEqual({ address: "0xABC", tokenId: "dot" })
+  })
+
+  it("keeps a tokenId that itself contains ::", () => {
+    expect(parseBalanceId("0xABC::a::b")).toEqual({ address: "0xABC", tokenId: "a::b" })
+  })
+
+  it("round-trips getBalanceId", () => {
+    const balance = { address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", tokenId: "ksm" }
+    expect(parseBalanceId(getBalanceId(balance))).toEqual(balance)
+  })
+
+  it("rejects a string without the separator", () => {
+    expect(() => parseBalanceId("0xABC:dot")).toThrow("Invalid balance id: 0xABC:dot")
   })
 })
 
