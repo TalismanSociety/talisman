@@ -207,7 +207,7 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
   })
 
-  it("reports the error when the first queries keep failing, and stops querying", async () => {
+  it("reports the error after three failures in a row before a first result, and stops querying", async () => {
     const fake = createFakeClient()
     const { callback } = subscribeStorage(fake, false)
 
@@ -222,6 +222,51 @@ describe("ChainConnectorDotPapi", () => {
     expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3"])
     expect(callback.mock.calls).toEqual([[failure, null]])
     expect(fake.observers.size).toBe(0)
+  })
+
+  it("reports the error after three failures in a row that follow a first result", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    await fake.answer("0x3", failure)
+    fake.newBestBlock("0x4")
+    await fake.answer("0x4", failure)
+    fake.newBestBlock("0x5")
+
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4"])
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [failure, null],
+    ])
+    expect(fake.observers.size).toBe(0)
+  })
+
+  it("counts failures again from zero after a query succeeds", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    await fake.answer("0x3", failure)
+    fake.newBestBlock("0x4")
+    await fake.answer("0x4", [["0xa", "0x01"]])
+    fake.newBestBlock("0x5")
+    await fake.answer("0x5", failure)
+    fake.newBestBlock("0x6")
+    await fake.answer("0x6", failure)
+    fake.newBestBlock("0x7")
+
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7"])
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+    expect(fake.observers.size).toBe(1)
   })
 
   it("reports an error when the block stream fails, or ends as a client other than polkadot-api's can", async () => {
