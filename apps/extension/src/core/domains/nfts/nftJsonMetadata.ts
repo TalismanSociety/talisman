@@ -143,6 +143,7 @@ const isTransientStatus = (status: number) => status === 429 || status >= 500
 
 const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
   const response = await fetch(uri, {
+    redirect: "error",
     signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT)]),
   })
   if (!response.ok)

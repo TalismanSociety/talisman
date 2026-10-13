@@ -149,6 +149,16 @@ describe("fetchNftJsonMetadata", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it("refuses metadata served through a redirect", async () => {
+    const { fetchNftJsonMetadata } = await loadModule()
+    fetchMock.mockImplementation(async (_url: string, init?: RequestInit) => {
+      if (init?.redirect === "error") throw new TypeError("Failed to fetch")
+      return jsonResponse({ name: "From http://192.168.1.1/" })
+    })
+
+    expect(await fetchNftJsonMetadata(URI, new AbortController().signal)).toBeNull()
+  })
+
   it("reuses metadata persisted by a previous session", async () => {
     blob.stored = { [URI]: stored({ name: "Stored" }, Date.now()) }
     const { fetchNftJsonMetadata } = await loadModule()
