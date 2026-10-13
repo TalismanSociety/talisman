@@ -270,6 +270,53 @@ describe("ChainConnectorDotPapi", () => {
     expect(fake.observers.size).toBe(1)
   })
 
+  it("errors after 90s with no successful query when no block arrives", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
+    expect(fake.observers.size).toBe(0)
+  })
+
+  it("errors after 90s when no block ever arrives", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+  })
+
+  it("a successful query resets the stall timer", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(60_000)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
+  })
+
   it("reports an error when the block stream fails, or ends as a client other than polkadot-api's can", async () => {
     const fake = createFakeClient()
     const errored = subscribeStorage(fake)
