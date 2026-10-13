@@ -1,9 +1,10 @@
 import type { ChaindataProvider, Network, Token } from "@talismn/chaindata-provider"
-import { NEVER, of, Subject } from "rxjs"
+import { firstValueFrom, NEVER, of, Subject } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
 import { getBalanceId } from "./classes"
+import { createPollingSubscribeBalances } from "./modules/shared/subscribeBalances"
 import { deriveMiniMetadataId, type IBalance } from "./types"
 import type { ChainConnectors } from "./types/chainConnectors"
 import type { FetchBalanceResults } from "./types/IBalanceModule"
@@ -541,6 +542,203 @@ describe("the 30s sweep", () => {
       failedBalanceIds: [],
       confirmedBalanceIds: [confirmed.balanceId],
     })
+    subscription.unsubscribe()
+  })
+})
+
+describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
+  "%s pipeline module failure",
+  (platform) => {
+    afterEach(() => {
+      vi.useRealTimers()
+      fakeModules.subscribeBalances.mockReset()
+    })
+
+    // one Subject per subscribeBalances call: a retry resubscribes the module, and a
+    // Subject that errored would re-error every later subscriber
+    const setup = (scope: Scope, storage?: IBalance[]) => {
+      vi.useFakeTimers({
+        toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
+      })
+      const modules: Subject<FetchBalanceResults>[] = []
+      fakeModules.subscribeBalances.mockImplementation(() => {
+        const module$ = new Subject<FetchBalanceResults>()
+        modules.push(module$)
+        return module$
+      })
+      const provider = new BalancesProvider(
+        makeChaindata(scope),
+        scope.connectors,
+        storage && { balances: storage, miniMetadatas: [] }
+      )
+      return { modules, provider }
+    }
+
+    const storedStatuses = async (provider: BalancesProvider) =>
+      (await firstValueFrom(provider.storage$)).balances.map((b) => b.status)
+
+    it("a module that dies before its first delivery lists every owned id as failed and confirms them after the retry delay", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions).toEqual([
+        seedResult(),
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+
+      await vi.advanceTimersByTimeAsync(9_000)
+      expect(modules).toHaveLength(1)
+      await vi.advanceTimersByTimeAsync(1_000)
+      expect(modules).toHaveLength(2)
+      modules[1].next({ success: [], errors: [] })
+      await settle()
+
+      expect(emissions.slice(2)).toEqual([
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies after a delivery lists its ids as failed, marks stored rows stale and confirms again after the retry delay", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].next({ success: [scope.row], errors: [] })
+      await settle()
+      expect(await storedStatuses(provider)).toEqual(["cache"])
+
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions.slice(1)).toEqual([
+        {
+          status: "live",
+          balances: [scope.row],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+        {
+          status: "live",
+          balances: [{ ...scope.row, status: "stale" }],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+      expect(await storedStatuses(provider)).toEqual(["stale"])
+
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].next({ success: [scope.row], errors: [] })
+      await settle()
+
+      expect(emissions.slice(3)).toEqual([
+        {
+          status: "live",
+          balances: [scope.row],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      expect(await storedStatuses(provider)).toEqual(["cache"])
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies twice in a row reports the failure once and keeps retrying", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].error(new Error("boom again"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[2].next({ success: [], errors: [] })
+      await settle()
+
+      expect(emissions).toEqual([
+        seedResult(),
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      subscription.unsubscribe()
+    })
+  }
+)
+
+describe("the Hydration poller", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    fakeModules.subscribeBalances.mockReset()
+  })
+
+  it("recovers after one failed poll", async () => {
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
+    })
+    const scope = makeScope("polkadot")
+    const fetchBalances = vi
+      .fn()
+      .mockImplementationOnce(
+        () => new Promise((_, reject) => setTimeout(() => reject(new Error("rpc down")), 500))
+      )
+      .mockResolvedValue({ success: [scope.row], errors: [] })
+    fakeModules.subscribeBalances.mockImplementation(
+      createPollingSubscribeBalances("substrate-hydration", fetchBalances)
+    )
+    const provider = new BalancesProvider(makeChaindata(scope), scope.connectors)
+    const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+    await settle()
+    expect(emissions).toEqual([seedResult()])
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    expect(emissions.slice(1)).toEqual([
+      {
+        status: "live",
+        balances: [],
+        failedBalanceIds: [scope.balanceId],
+        confirmedBalanceIds: [],
+      },
+    ])
+
+    await vi.advanceTimersByTimeAsync(10_000)
+    await settle()
+    expect(fetchBalances).toHaveBeenCalledTimes(2)
+    expect(emissions.slice(2)).toEqual([
+      {
+        status: "live",
+        balances: [scope.row],
+        failedBalanceIds: [],
+        confirmedBalanceIds: [scope.balanceId],
+      },
+    ])
     subscription.unsubscribe()
   })
 })
