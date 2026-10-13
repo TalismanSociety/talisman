@@ -35,13 +35,6 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "api",
-      testDir: "./playwright/api-tests",
-      use: {
-        extraHTTPHeaders: { Accept: "application/json" },
-      },
-    },
-    {
       name: "chromium",
       testDir: "./playwright/e2e-tests",
       use: { ...devices["Desktop Chrome"] },

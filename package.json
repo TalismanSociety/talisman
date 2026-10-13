@@ -45,7 +45,6 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "pnpm exec playwright test --project=chromium",
-    "test:api": "pnpm exec playwright test --project=api",
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "test:e2e:debug": "pnpm exec playwright test --project=chromium --debug",
     "test:e2e:trace": "pnpm exec playwright test --project=chromium --trace on && pnpm exec playwright show-report",

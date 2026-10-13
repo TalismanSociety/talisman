@@ -89,7 +89,7 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 - E2E tests load `apps/extension/dist/chrome-mv3`, else `chrome-mv3-dev`, and warn when the other build is newer. Set `E2E_EXTENSION_PATH=<build dir>` to choose the build.
 - E2E tests read `apps/extension/.env`. Add the `E2E_GANDALF_INSTALL_ID` and `E2E_GANDALF_PRIVATE_KEY` lines that `pnpm chore:register-gandalf-e2e` prints, else the tests are slow and flaky. Some tests need internet (MetaMask test dapp).
 - Visual regression snapshots are `*-chromium-linux.png`. Update them with the `Update Visual Regression Snapshots` workflow (`.github/workflows/update-snapshots.yml`), not on macOS. CI runs them, but they cannot fail the build. To skip them locally, add `--grep-invert "Visual Regression"`.
-- `pnpm test:api` checks the Bittensor HTTP APIs. It sends `TDA_API_KEY` and `SN45_API_KEY` when they are set. The `api-health.yml` workflow runs it every day.
+- HTTP API health checks live in a separate repository, [TalismanSociety/api-tests](https://github.com/TalismanSociety/api-tests).
 
 ## Code quality
 
