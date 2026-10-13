@@ -16,9 +16,9 @@ class ActiveNetworksStore extends StorageProvider<ActiveNetworks> {
   }
 
   async setActive(networkId: NetworkId, active: boolean) {
-    const activeNetworks = await this.get()
-    if (activeNetworks[networkId] === active) return
-    await this.set({ ...activeNetworks, [networkId]: Boolean(active) })
+    await this.mutate((current) =>
+      current[networkId] === active ? current : { ...current, [networkId]: active }
+    )
   }
 
   async resetActive(networkId: NetworkId) {

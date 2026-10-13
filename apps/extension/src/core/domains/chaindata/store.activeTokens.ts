@@ -21,9 +21,9 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
   }
 
   async setActive(tokenId: TokenId, active: boolean) {
-    const activeTokens = await this.get()
-    if (activeTokens[tokenId] === active) return
-    await this.set({ ...activeTokens, [tokenId]: Boolean(active) })
+    await this.mutate((current) =>
+      current[tokenId] === active ? current : { ...current, [tokenId]: active }
+    )
   }
 
   async resetActive(tokenId: TokenId) {
@@ -33,13 +33,13 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
 
 export const activeTokensStore = new ActiveTokensStore()
 
-export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
-  if (token.type === "substrate-dtao" && token.hotkey) {
-    const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
-    return Boolean(activeTokens[templateTokenId] ?? token.isDefault ?? false)
-  }
-  return Boolean(activeTokens[token.id] ?? token.isDefault ?? false)
-}
+export const getActiveTokenFlagId = (token: Token): TokenId =>
+  token.type === "substrate-dtao" && token.hotkey
+    ? subDTaoTokenId(token.networkId, token.netuid)
+    : token.id
+
+export const isTokenActive = (token: Token, activeTokens: ActiveTokens) =>
+  Boolean(activeTokens[getActiveTokenFlagId(token)] ?? token.isDefault ?? false)
 
 export const filterActiveTokens = (tokens: TokenList, activeTokens: ActiveTokens) => {
   return Object.fromEntries(
