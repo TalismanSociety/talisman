@@ -72,6 +72,7 @@ const getBalancesByParams$ = (
           balances: [],
           status: "live",
           failedBalanceIds: [],
+          confirmedBalanceIds: [],
         })
 
       const addressesByTokenId = fromPairs(

@@ -62,7 +62,7 @@ import {
   isEqualMiniMetadatas,
   type MiniMetadata,
 } from "./types"
-import type { TokensWithAddresses } from "./types/IBalanceModule"
+import type { FetchBalanceResults, TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
 
@@ -77,6 +77,10 @@ export type BalancesResult = {
   status: BalancesStatus
   balances: IBalance[]
   failedBalanceIds: string[] // balance ids that failed to fetch
+  // requested ids a module emission on this subscription covered: a row in `balances` is
+  // the on-chain value and no row is a confirmed zero. An id missing here is unconfirmed:
+  // loading, seeded from storage, failed, or dropped as incompatible with its network
+  confirmedBalanceIds: string[]
 }
 
 export type BalancesStorage = {
@@ -212,6 +216,7 @@ export class BalancesProvider {
             // of re-sorting the whole set
             balances: await mergeSortedBalanceArrays(balanceArrays, slicer),
             failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
+            confirmedBalanceIds: sortedUnion(results.map((result) => result.confirmedBalanceIds)),
           }
         },
         { label: "balances aggregate" }
@@ -280,7 +285,12 @@ export class BalancesProvider {
               }
               default: {
                 log.warn("[balances] Unsupported network platform for module", { networkId, mod })
-                return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
+                return of<BalancesResult>({
+                  status: "live",
+                  balances: [],
+                  failedBalanceIds: [],
+                  confirmedBalanceIds: [],
+                })
               }
             }
           })
@@ -308,6 +318,7 @@ export class BalancesProvider {
               : "live",
             balances: balances.sort(sortByBalanceId),
             failedBalanceIds: [],
+            confirmedBalanceIds: sortedUnion(results.map((result) => result.confirmedBalanceIds)),
           }
         },
         { label: `network balances ${networkId}` }
@@ -326,7 +337,12 @@ export class BalancesProvider {
       { networkId, mod, tokensWithAddresses },
       () => {
         if (!tokensWithAddresses.length)
-          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
+          return of<BalancesResult>({
+            status: "live",
+            balances: [],
+            failedBalanceIds: [],
+            confirmedBalanceIds: [],
+          })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
@@ -344,6 +360,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         }
@@ -380,8 +397,9 @@ export class BalancesProvider {
               this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
             }
           }),
-          map(
-            (results): BalancesResult => ({
+          map((results): BalancesResult => {
+            const failedBalanceIds = getFailedBalanceIds(results)
+            return {
               status: "live",
               // exclude zero balances, but keep balances that only hold a lock
               // (eg dtao conviction locks, reported on the subnet's base token — including
@@ -402,13 +420,12 @@ export class BalancesProvider {
                   )
                 )
               }),
-              failedBalanceIds: results.errors.map(({ tokenId, address }) =>
-                getBalanceId({ tokenId, address })
-              ),
-            })
-          ),
+              failedBalanceIds,
+              confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
+            }
+          }),
           tap((results) => {
-            this.updateStorage$(balanceIds, results)
+            this.updateStorage$(results)
           }),
           // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
           shareReplay({ refCount: true, bufferSize: 1 }),
@@ -422,6 +439,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         )
@@ -439,7 +457,12 @@ export class BalancesProvider {
       { networkId, mod, tokensWithAddresses },
       () => {
         if (!tokensWithAddresses.length)
-          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
+          return of<BalancesResult>({
+            status: "live",
+            balances: [],
+            failedBalanceIds: [],
+            confirmedBalanceIds: [],
+          })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
@@ -457,6 +480,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         }
@@ -475,18 +499,18 @@ export class BalancesProvider {
             // polkadot pipeline for rationale)
             stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
-            map(
-              (results): BalancesResult => ({
+            map((results): BalancesResult => {
+              const failedBalanceIds = getFailedBalanceIds(results)
+              return {
                 status: "live",
                 // exclude zero balances
                 balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
-                failedBalanceIds: results.errors.map(({ tokenId, address }) =>
-                  getBalanceId({ tokenId, address })
-                ),
-              })
-            ),
+                failedBalanceIds,
+                confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
+              }
+            }),
             tap((results) => {
-              this.updateStorage$(balanceIds, results)
+              this.updateStorage$(results)
             }),
             // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
             shareReplay({ refCount: true, bufferSize: 1 }),
@@ -500,6 +524,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         )
@@ -517,7 +542,12 @@ export class BalancesProvider {
       { networkId, mod, tokensWithAddresses },
       () => {
         if (!tokensWithAddresses.length)
-          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
+          return of<BalancesResult>({
+            status: "live",
+            balances: [],
+            failedBalanceIds: [],
+            confirmedBalanceIds: [],
+          })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
@@ -535,6 +565,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         }
@@ -559,18 +590,18 @@ export class BalancesProvider {
                 this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
               }
             }),
-            map(
-              (results): BalancesResult => ({
+            map((results): BalancesResult => {
+              const failedBalanceIds = getFailedBalanceIds(results)
+              return {
                 status: "live",
                 // exclude zero balances
                 balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
-                failedBalanceIds: results.errors.map(({ tokenId, address }) =>
-                  getBalanceId({ tokenId, address })
-                ),
-              })
-            ),
+                failedBalanceIds,
+                confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
+              }
+            }),
             tap((results) => {
-              this.updateStorage$(balanceIds, results)
+              this.updateStorage$(results)
             }),
             // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
             shareReplay({ refCount: true, bufferSize: 1 }),
@@ -584,6 +615,7 @@ export class BalancesProvider {
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
               failedBalanceIds: [],
+              confirmedBalanceIds: [],
             })
           )
         )
@@ -591,11 +623,10 @@ export class BalancesProvider {
     )
   }
 
-  private updateStorage$(balanceIds: string[], balancesResult: BalancesResult) {
+  private updateStorage$(balancesResult: BalancesResult) {
     if (balancesResult.status !== "live") return
 
     const storage = this.#storageValue
-    const failedIds = new Set(balancesResult.failedBalanceIds)
     const incomingById = new Map(
       balancesResult.balances.map((b) => [getBalanceIdCached(b), b] as const)
     )
@@ -604,11 +635,10 @@ export class BalancesProvider {
     // content-identical emission still confirms these balances as live
     const now = Date.now()
     for (const balanceId of incomingById.keys()) this.#lastLiveAt.set(balanceId, now)
-    for (const balanceId of balanceIds) {
-      if (!incomingById.has(balanceId) && !failedIds.has(balanceId))
-        this.#lastLiveAt.delete(balanceId)
+    for (const balanceId of balancesResult.confirmedBalanceIds) {
+      if (!incomingById.has(balanceId)) this.#lastLiveAt.delete(balanceId)
     }
-    for (const balanceId of failedIds) this.#lastLiveAt.delete(balanceId)
+    for (const balanceId of balancesResult.failedBalanceIds) this.#lastLiveAt.delete(balanceId)
 
     // no-op detection: on quiet blocks nothing changed — skip the merge, the storage$
     // re-projection/sort and the host's downstream persistence entirely.
@@ -626,10 +656,9 @@ export class BalancesProvider {
       }
     }
     if (!changed) {
-      // balances expected in the result set but absent (and not failed) mean they are now
-      // empty and must be removed
-      for (const balanceId of balanceIds) {
-        if (failedIds.has(balanceId) || incomingById.has(balanceId)) continue
+      // a confirmed id without a row is now empty and must be removed
+      for (const balanceId of balancesResult.confirmedBalanceIds) {
+        if (incomingById.has(balanceId)) continue
         if (storage.balances[balanceId]) {
           changed = true
           break
@@ -649,9 +678,9 @@ export class BalancesProvider {
     if (!changed) return
 
     const balances = { ...storage.balances }
-    // delete all balances expected in the result set (except the ones that failed). because if they are not present it means they are empty.
-    for (const balanceId of balanceIds) {
-      if (!failedIds.has(balanceId) && !incomingById.has(balanceId)) delete balances[balanceId]
+    // a confirmed id without a row is empty
+    for (const balanceId of balancesResult.confirmedBalanceIds) {
+      if (!incomingById.has(balanceId)) delete balances[balanceId]
     }
     // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
     for (const [balanceId, balance] of incomingById) {
@@ -853,6 +882,19 @@ const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
   const accountPlatform = getAccountPlatformFromAddress(address)
   return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }
+
+const getFailedBalanceIds = (results: FetchBalanceResults): string[] =>
+  results.errors.map(({ tokenId, address }) => getBalanceId({ tokenId, address }))
+
+// a module emission settles every requested id it did not fail: a row in the result is the
+// on-chain value and no row is a confirmed zero. updateStorage$ deletes from this same set
+const getConfirmedBalanceIds = (requestedIds: string[], failedIds: string[]): string[] => {
+  if (!failedIds.length) return requestedIds
+  const failed = new Set(failedIds)
+  return requestedIds.filter((id) => !failed.has(id))
+}
+
+const sortedUnion = (idArrays: string[][]): string[] => uniq(idArrays.flat()).sort()
 
 // memoized: getBalanceId is called O(n log n) times per sort, on every storage$ emission
 const balanceIdCache = new WeakMap<IBalance, string>()

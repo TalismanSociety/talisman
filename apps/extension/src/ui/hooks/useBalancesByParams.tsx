@@ -13,6 +13,7 @@ const INITIAL_VALUE: BalanceSubscriptionResponse = {
   status: "initialising",
   balances: [],
   failedBalanceIds: [],
+  confirmedBalanceIds: [],
 }
 
 const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }

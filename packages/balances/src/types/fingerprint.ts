@@ -56,6 +56,7 @@ const isEqualStringArrays = (a: string[], b: string[]): boolean =>
 export const isEqualBalancesResult = (a: BalancesResult, b: BalancesResult): boolean =>
   a.status === b.status &&
   isEqualStringArrays(a.failedBalanceIds, b.failedBalanceIds) &&
+  isEqualStringArrays(a.confirmedBalanceIds, b.confirmedBalanceIds) &&
   isEqualBalanceArrays(a.balances, b.balances)
 
 /**
