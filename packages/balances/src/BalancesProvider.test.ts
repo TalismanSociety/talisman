@@ -395,6 +395,30 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
       ])
       subscription.unsubscribe()
     })
+
+    it("the network level keeps failedBalanceIds", async () => {
+      const scope = makeScope(platform)
+      const { module$, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      module$.next({
+        success: [],
+        errors: [{ tokenId: scope.tokenId, address: scope.address, error: new Error("boom") }],
+      })
+      await settle()
+
+      expect(emissions).toEqual([
+        seedResult(),
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+      subscription.unsubscribe()
+    })
   }
 )
 

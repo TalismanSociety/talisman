@@ -317,7 +317,7 @@ export class BalancesProvider {
               ? "initialising"
               : "live",
             balances: balances.sort(sortByBalanceId),
-            failedBalanceIds: [],
+            failedBalanceIds: errorBalanceIds,
             confirmedBalanceIds: sortedUnion(results.map((result) => result.confirmedBalanceIds)),
           }
         },
