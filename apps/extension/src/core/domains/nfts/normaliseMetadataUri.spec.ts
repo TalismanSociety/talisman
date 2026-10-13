@@ -41,8 +41,12 @@ describe("normaliseMetadataUri", () => {
     "https://[::1]/nft/1.json",
     "https://localhost/nft/1.json",
     "https://localhost:3000/nft/1.json",
+    "https://localhost./nft/1.json",
+    "https://wallet.localhost/nft/1.json",
     "https://nas.local/nft/1.json",
+    "https://nas.local./nft/1.json",
     "https://intranet/nft/1.json",
+    "https://intranet./nft/1.json",
   ])("rejects %j", (raw) => {
     expect(normaliseMetadataUri(raw)).toBeNull()
   })
