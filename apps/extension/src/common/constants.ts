@@ -8,7 +8,7 @@ export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
 export const IS_FIREFOX = typeof navigator !== "undefined" && /Firefox/i.test(navigator.userAgent)
 
-export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
+export const IPFS_GATEWAY = "https://homely-silver-tiger.myfilebase.com/ipfs/"
 
 export const BLOCKAID_API_URL = "https://bap.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"

@@ -1,3 +1,4 @@
+import { IPFS_GATEWAY } from "@common/constants"
 import { firstValueFrom } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -169,19 +170,19 @@ describe("fetchNftJsonMetadata", () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  const retriesAfter = async (delay: number, failOnce: () => void) => {
+  const retriesAfter = async (delay: number, failOnce: () => void, uri = URI) => {
     const { fetchNftJsonMetadata } = await loadModule()
     const signal = new AbortController().signal
     failOnce()
     fetchMock.mockResolvedValue(jsonResponse({ name: "Later" }))
 
-    expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
+    expect(await fetchNftJsonMetadata(uri, signal)).toBeNull()
     vi.advanceTimersByTime(delay - 1)
-    expect(await fetchNftJsonMetadata(URI, signal)).toBeNull()
+    expect(await fetchNftJsonMetadata(uri, signal)).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
     vi.advanceTimersByTime(1)
-    expect(await fetchNftJsonMetadata(URI, signal)).toEqual({ name: "Later" })
+    expect(await fetchNftJsonMetadata(uri, signal)).toEqual({ name: "Later" })
     expect(fetchMock).toHaveBeenCalledTimes(2)
   }
 
@@ -213,6 +214,9 @@ describe("fetchNftJsonMetadata", () => {
   ])("retries a transient failure (%s) after ten minutes", (_, failOnce) =>
     retriesAfter(TEN_MINUTES, failOnce)
   )
+
+  it("retries an HTTP 404 from the IPFS gateway after ten minutes, as it may still be looking", () =>
+    retriesAfter(TEN_MINUTES, respondsOnce(notFound()), `${IPFS_GATEWAY}bafkreiabc/1.json`))
 
   it("doubles the transient retry delay on each consecutive failure, up to a day", async () => {
     const { fetchNftJsonMetadata } = await loadModule()

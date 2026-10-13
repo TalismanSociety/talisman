@@ -1,3 +1,4 @@
+import { IPFS_GATEWAY } from "@common/constants"
 import { log } from "@common/log"
 import { getErrorMessage } from "@talismn/util"
 import PQueue from "p-queue"
@@ -139,7 +140,8 @@ const startDownload = (uri: string, signal: AbortSignal, priority: number) => {
   return download
 }
 
-const isTransientStatus = (status: number) => status === 429 || status >= 500
+const isTransientStatus = (uri: string, status: number) =>
+  status === 429 || status >= 500 || (status === 404 && uri.startsWith(IPFS_GATEWAY))
 
 const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
   const response = await fetch(uri, {
@@ -149,7 +151,7 @@ const downloadNftJsonMetadata = async (uri: string, signal: AbortSignal) => {
   if (!response.ok)
     throw new MetadataFetchError(
       `HTTP ${response.status}`,
-      isTransientStatus(response.status) ? "transient" : "definitive"
+      isTransientStatus(uri, response.status) ? "transient" : "definitive"
     )
 
   const json = parseNftJsonMetadata(parseJson(await readBodyText(response)))

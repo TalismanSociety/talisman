@@ -7,7 +7,6 @@ export const getSafeImageUrl = (url: string, width?: number, height?: number) =>
     // some images hardcode a gateway, replace it with ours
     const saferUrl = getSafeDownloadUrl(url)
 
-    // https://docs.pinata.cloud/gateways/image-optimization
     const imgUrl = new URL(saferUrl)
 
     if (saferUrl.startsWith(IPFS_GATEWAY)) {
