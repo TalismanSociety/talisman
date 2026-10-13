@@ -6,6 +6,7 @@ import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnector
 
 const RESPONSE_TIMEOUT = 30_000
 const FAILURES_BEFORE_ERROR = 3
+const STALL_TIMEOUT = FAILURES_BEFORE_ERROR * RESPONSE_TIMEOUT
 
 type HexString = `0x${string}`
 type StorageChanges = { block: HexString; changes: [HexString, HexString | null][] }
@@ -28,8 +29,8 @@ export type PapiClient = {
  *
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
  * best block and reporting the values that changed, like the node does. One query runs at a time, for the latest
- * best block. A failed query is retried at the next block. When three queries in a row fail, the subscription reports
- * the error, and balances marks the subscribed balances failed and retries.
+ * best block. A failed query is retried at the next block. When three queries in a row fail, or no query succeeds for
+ * 90 seconds, the subscription reports the error, and balances marks the subscribed balances failed and retries.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #clientFor: (networkId: DotNetworkId) => PapiClient | undefined
@@ -62,6 +63,7 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     let failures = 0
     let active = true
     let subscription: { unsubscribe: () => void } | undefined
+    let stallTimer: ReturnType<typeof setTimeout> | undefined
     const staleTimer = timeout
       ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
       : undefined
@@ -69,6 +71,7 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     const stop = () => {
       active = false
       clearTimeout(staleTimer)
+      clearTimeout(stallTimer)
       inFlight?.abort()
       subscription?.unsubscribe()
     }
@@ -79,8 +82,15 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       callback(error, null)
     }
 
+    // papi emits no best block once its socket closes, so no query runs and only a timer can notice
+    const restartStallTimer = () => {
+      clearTimeout(stallTimer)
+      stallTimer = setTimeout(() => finish(new StaleRpcError(networkId)), STALL_TIMEOUT)
+    }
+
     const reportChanges = (result: StorageChanges) => {
       failures = 0
+      restartStallTimer()
       const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
       for (const [key, value] of changes) values.set(key, value)
       if (!changes.length) return
@@ -123,6 +133,7 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       }
     }
 
+    restartStallTimer()
     try {
       subscription = client.bestBlocks$.subscribe({
         next: ([best]) => {

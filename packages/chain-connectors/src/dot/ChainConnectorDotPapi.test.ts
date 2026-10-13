@@ -183,7 +183,7 @@ describe("ChainConnectorDotPapi", () => {
     fake.newBestBlock("0x2")
     await fake.answer("0x2", failure)
     fake.newBestBlock("0x3")
-    await vi.advanceTimersByTimeAsync(120_000)
+    await vi.advanceTimersByTimeAsync(30_000)
     fake.newBestBlock("0x4")
     await fake.answer("0x4", [["0xa", "0x04"]])
 
@@ -237,6 +237,7 @@ describe("ChainConnectorDotPapi", () => {
     fake.newBestBlock("0x4")
     await fake.answer("0x4", failure)
     fake.newBestBlock("0x5")
+    await vi.advanceTimersByTimeAsync(90_000)
 
     expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4"])
     expect(callback.mock.calls).toEqual([
@@ -289,8 +290,11 @@ describe("ChainConnectorDotPapi", () => {
     const { callback, unsubscribe } = subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
+    expect(vi.getTimerCount()).toBe(3)
     ;(await unsubscribe)("state_unsubscribeStorage")
     await fake.answer("0x1", [["0xa", "0x01"]])
+    expect(vi.getTimerCount()).toBe(0)
+    await vi.advanceTimersByTimeAsync(90_000)
 
     expect(fake.observers.size).toBe(0)
     expect(fake.requests[0]?.abortSignal?.aborted).toBe(true)
