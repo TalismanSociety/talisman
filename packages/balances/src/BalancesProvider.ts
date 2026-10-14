@@ -77,9 +77,13 @@ export type BalancesResult = {
   status: BalancesStatus
   balances: IBalance[]
   failedBalanceIds: string[] // balance ids that failed to fetch
-  // requested ids a module emission on this subscription covered: a row in `balances` is
-  // the on-chain value and no row is a confirmed zero. An id missing here is unconfirmed:
-  // loading, seeded from storage, failed, or dropped as incompatible with its network
+  // normalized requested ids (ss58 re-encoded to prefix 42, EVM checksummed) a module emission
+  // on this subscription covered, so a consumer normalizes its ids before matching. A row in
+  // `balances` is the on-chain value and no row is a confirmed zero. An id missing here is
+  // unconfirmed: loading, seeded from storage, failed, or dropped as incompatible with its
+  // network. A module that silently drops or null-decodes an id yields a confirmed zero, so the
+  // guarantee is only as strong as each module's promise to return a row or an error per
+  // requested id
   confirmedBalanceIds: string[]
 }
 
