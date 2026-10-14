@@ -214,54 +214,52 @@ const listPalletNfts = async (
   }))
   const collectionRefs = uniqBy(refs, (ref) => ref.collection)
 
-  await loadMissingMetadataUris(networkId, storage, refs, signal)
+  const uris = await readMetadataUris(networkId, storage, refs, collectionRefs, signal)
 
   return {
     owner: address,
-    items: refs.map((ref) => ({
-      ref,
-      uri: onChainMetadataUris.get(getSubstrateNftId(ref)) ?? null,
-    })),
+    items: refs.map((ref) => ({ ref, uri: uris.get(getSubstrateNftId(ref)) ?? null })),
     collections: collectionRefs.map((ref) => ({
       ref,
-      uri: onChainMetadataUris.get(getSubstrateNftCollectionId(ref)) ?? null,
+      uri: uris.get(getSubstrateNftCollectionId(ref)) ?? null,
     })),
   }
 }
 
-const loadMissingMetadataUris = async (
+const readMetadataUris = async (
   networkId: NetworkId,
   storage: NftPalletStorage,
   refs: SubstrateNftRef[],
+  collectionRefs: SubstrateNftCollectionRef[],
   signal: AbortSignal
-) => {
-  const reads = new Map(
-    [
-      ...refs.map((ref) => ({
-        id: getSubstrateNftId(ref),
-        storageKey: getItemMetadataKey(storage, ref),
-        codec: storage.itemMetadata,
-      })),
-      ...refs.map((ref) => ({
-        id: getSubstrateNftCollectionId(ref),
-        storageKey: getCollectionMetadataKey(storage, ref.collection),
-        codec: storage.collectionMetadata,
-      })),
-    ]
-      .filter((read) => !onChainMetadataUris.has(read.id))
-      .map((read) => [read.id, read])
-  )
-  if (!reads.size) return
+): Promise<ReadonlyMap<string, string | null>> => {
+  const reads = [
+    ...refs.map((ref) => ({
+      id: getSubstrateNftId(ref),
+      storageKey: getItemMetadataKey(storage, ref),
+      codec: storage.itemMetadata,
+    })),
+    ...collectionRefs.map((ref) => ({
+      id: getSubstrateNftCollectionId(ref),
+      storageKey: getCollectionMetadataKey(storage, ref.collection),
+      codec: storage.collectionMetadata,
+    })),
+  ]
+  const unread = reads.filter((read) => !onChainMetadataUris.has(read.id))
 
-  const values = await queryStorageAt(
-    sendTo(networkId),
-    [...reads.values()].map((read) => read.storageKey),
-    { signal }
-  )
-  for (const read of reads.values()) {
-    const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
-    if (uri !== null) onChainMetadataUris.set(read.id, normaliseMetadataUri(uri))
+  if (unread.length) {
+    const values = await queryStorageAt(
+      sendTo(networkId),
+      unread.map((read) => read.storageKey),
+      { signal }
+    )
+    for (const read of unread) {
+      const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
+      if (uri !== null) onChainMetadataUris.set(read.id, normaliseMetadataUri(uri))
+    }
   }
+
+  return new Map(reads.map((read) => [read.id, onChainMetadataUris.get(read.id) ?? null]))
 }
 
 const mergeListings = (owner: string, listings: SubstrateNftListing[]): SubstrateNftListing => ({
