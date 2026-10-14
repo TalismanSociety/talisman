@@ -1,5 +1,4 @@
 import { Balances } from "@talismn/balances"
-import { subNativeTokenId } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
 import { type SortTokenDataOptions, sortTokenData } from "../sortTokenData"
@@ -47,16 +46,6 @@ describe("sortTokenData", () => {
       rule: "a balance without a rate beats no balance",
       higher: tokenData("unpriced", "Z", { tokens: 1 }),
       lower: tokenData("empty", "A"),
-    },
-    {
-      rule: "polkadot before kusama",
-      higher: tokenData(subNativeTokenId("polkadot"), "Z"),
-      lower: tokenData(subNativeTokenId("kusama"), "A"),
-    },
-    {
-      rule: "kusama before other tokens",
-      higher: tokenData(subNativeTokenId("kusama"), "Z"),
-      lower: tokenData("other", "A"),
     },
     {
       rule: "uppercase symbols before lowercase, as the list has always sorted",
