@@ -47,6 +47,7 @@ const NETWORK_IDS: NetworkId[] = [
 ]
 
 const FIVE_MINUTES = 5 * 60 * 1000
+const ONE_HOUR = 60 * 60 * 1000
 const FILL_IN_THROTTLE = 1_000
 
 type Listed<Ref> = { ref: Ref; uri: string | null }
@@ -59,7 +60,12 @@ export type SubstrateNftListing = {
 
 const palletStoragesBySpecVersion = new Map<string, Promise<NftPalletStorage[]>>()
 
-const onChainMetadataUris = new Map<string, string | null>()
+type OnChainMetadataUri = { uri: string | null; readAt: number }
+
+const onChainMetadataUris = new Map<string, OnChainMetadataUri>()
+
+const isFresh = (entry: OnChainMetadataUri | undefined) =>
+  !!entry && Date.now() - entry.readAt < ONE_HOUR
 
 const chainReads = new PQueue({ concurrency: 1 })
 
@@ -245,7 +251,7 @@ const readMetadataUris = async (
       codec: storage.collectionMetadata,
     })),
   ]
-  const unread = reads.filter((read) => !onChainMetadataUris.has(read.id))
+  const unread = reads.filter((read) => !isFresh(onChainMetadataUris.get(read.id)))
 
   if (unread.length) {
     const values = await queryStorageAt(
@@ -253,13 +259,15 @@ const readMetadataUris = async (
       unread.map((read) => read.storageKey),
       { signal }
     )
+    const readAt = Date.now()
     for (const read of unread) {
       const uri = decodeMetadataUri(read.codec, values.get(read.storageKey) ?? null)
-      if (uri !== null) onChainMetadataUris.set(read.id, normaliseMetadataUri(uri))
+      if (uri === null) onChainMetadataUris.delete(read.id)
+      else onChainMetadataUris.set(read.id, { uri: normaliseMetadataUri(uri), readAt })
     }
   }
 
-  return new Map(reads.map((read) => [read.id, onChainMetadataUris.get(read.id) ?? null]))
+  return new Map(reads.map((read) => [read.id, onChainMetadataUris.get(read.id)?.uri ?? null]))
 }
 
 const mergeListings = (owner: string, listings: SubstrateNftListing[]): SubstrateNftListing => ({

@@ -241,6 +241,30 @@ describe("fetchDotAccountNfts", () => {
     expect(countCalls("state_queryStorageAt")).toBe(2)
   })
 
+  it("re-reads on-chain metadata uris after an hour", async () => {
+    const { listDotAccountNfts } = await loadFetcher()
+    const signal = new AbortController().signal
+    const uriOf = ({ items }: Awaited<ReturnType<typeof listDotAccountNfts>>) =>
+      items.find(({ ref }) => ref.item === 2407162256)?.uri
+    vi.useFakeTimers({ toFake: ["Date"] })
+
+    try {
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBe(`${CHAOTIC}/158/2407162256`)
+      absentKeys.add(CHAOTIC_ITEM_KEY)
+
+      vi.advanceTimersByTime(59 * 60 * 1000)
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBe(`${CHAOTIC}/158/2407162256`)
+      expect(countCalls("state_queryStorageAt")).toBe(1)
+
+      vi.advanceTimersByTime(60 * 1000)
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBeNull()
+      expect(countCalls("state_queryStorageAt")).toBe(2)
+      expect(queriedKeys().slice(29)).toHaveLength(29)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("rejects the account when listing owned keys fails", async () => {
     const { listDotAccountNfts } = await loadFetcher()
     mocks.send.mockImplementation(async (networkId: string, method: string, params: unknown[]) => {
