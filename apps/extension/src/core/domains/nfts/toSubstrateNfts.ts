@@ -1,8 +1,7 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
-
-import type { NftJsonMetadata } from "./nftJsonMetadata"
 import type { NftPalletName } from "./nftPalletStorage"
 import { normaliseMetadataUri } from "./normaliseMetadataUri"
+import type { NftJsonMetadata } from "./parseNftJsonMetadata"
 import type { AccountNft, NftCollection } from "./types"
 
 export type SubstrateNftCollectionRef = {

@@ -1,7 +1,7 @@
 import { IPFS_GATEWAY } from "@common/constants"
 import { describe, expect, it } from "vitest"
 
-import type { NftJsonMetadata } from "./nftJsonMetadata"
+import type { NftJsonMetadata } from "./parseNftJsonMetadata"
 import {
   type SubstrateNftRef,
   toSubstrateAccountNft,
