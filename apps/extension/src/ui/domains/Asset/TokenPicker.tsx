@@ -1,6 +1,6 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Address } from "@core/types/base"
-import { type Balance, Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import type { Network, Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, GlobeIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
@@ -23,9 +23,9 @@ import { useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { buildTokenPickerList } from "./buildTokenPickerList"
 import { Fiat } from "./Fiat"
 import { NetworkFilterPicker } from "./NetworkFilterPicker"
-import { sortTokenData } from "./sortTokenData"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
 import { TokenTypePill } from "./TokenTypePill"
@@ -251,9 +251,6 @@ const TokenRow: FC<TokenRowProps> = ({
 
 const DEFAULT_FILTER = () => true
 
-// shared by every listed token without a balance; nothing in the UI mutates a Balances
-const EMPTY_BALANCES = new Balances([])
-
 /**
  * "active" (default) shows only active tokens on networks that a wallet account can sign for.
  * "signable" also includes inactive tokens, e.g. so the user can find and enable a token they hold.
@@ -354,47 +351,18 @@ const TokensList: FC<TokensListProps> = ({
           chainNameSearch: network?.name,
         }
       })
-  }, [
-    allTokens,
-    filterAccountCompatibleTokens,
-    hideSameNetworkMirrors,
-    networksMap,
-    tokenFilter,
-  ])
+  }, [allTokens, filterAccountCompatibleTokens, hideSameNetworkMirrors, networksMap, tokenFilter])
 
-  const tokensWithBalances = useMemo<TokenData[]>(() => {
-    // wait until balances are loaded, unless showEmptyBalances is true
-    if (!showEmptyBalances && !accountBalances.count) return []
-
-    const balancesByTokenId = new Map<TokenId, Balance[]>()
-    for (const balance of accountBalances.each) {
-      const tokenBalances = balancesByTokenId.get(balance.tokenId)
-      if (tokenBalances) tokenBalances.push(balance)
-      else balancesByTokenId.set(balance.tokenId, [balance])
-    }
-
-    const withBalances = accountCompatibleTokens.map((t) => {
-      const tokenBalances = balancesByTokenId.get(t.id)
-      return { ...t, balances: tokenBalances ? new Balances(tokenBalances) : EMPTY_BALANCES }
-    })
-
-    const listedTokens = showEmptyBalances
-      ? withBalances
-      : withBalances.filter((t) => t.balances.count && t.balances.sum.planck.transferable > 0n)
-
-    return sortTokenData(listedTokens, {
-      currency,
-      isPriority: priorityTokens,
-      pinnedTokenId: initialSelectedRef.current,
-    })
-  }, [
-    accountBalances.count,
-    accountBalances.each,
-    showEmptyBalances,
-    accountCompatibleTokens,
-    currency,
-    priorityTokens,
-  ])
+  const tokensWithBalances = useMemo<TokenData[]>(
+    () =>
+      buildTokenPickerList(accountCompatibleTokens, accountBalances, {
+        showEmptyBalances,
+        currency,
+        isPriority: priorityTokens,
+        pinnedTokenId: initialSelectedRef.current,
+      }),
+    [accountCompatibleTokens, accountBalances, showEmptyBalances, currency, priorityTokens]
+  )
 
   // Derive available networks from the base token list (before network/search filters)
   const availableNetworks = useMemo(() => {
