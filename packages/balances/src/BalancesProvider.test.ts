@@ -689,6 +689,33 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
       ])
       subscription.unsubscribe()
     })
+
+    it("a scope that joins after the module failed receives the failure, not the last confirmed list", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const first = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].next({ success: [scope.row], errors: [] })
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+
+      const joiner = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      expect(joiner.emissions).toEqual([
+        {
+          status: "live",
+          balances: [{ ...scope.row, status: "stale" }],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+      expect(modules).toHaveLength(1)
+      first.subscription.unsubscribe()
+      joiner.subscription.unsubscribe()
+    })
   }
 )
 
