@@ -4,6 +4,7 @@ import {
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
@@ -12,6 +13,7 @@ import {
   getNetworkGenesisHash,
   type Network,
   type NetworkId,
+  solNativeTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
@@ -30,6 +32,8 @@ const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
 ]
 
 const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
+
+const DEFAULT_PORTFOLIO_TOKENS_SOLANA = [solNativeTokenId("solana-mainnet")]
 
 // normalizeAddress memoizes internally, this wrapper only adds throw-safety
 const safeNormalizeAddress = (address: string): string | null => {
@@ -91,6 +95,10 @@ const shouldDisplayBalance = (
       const isEthereumAccount = !account || isAccountAddressEthereum(account)
       const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
       if (isEthereumAccount && isEthereumToken) return true
+
+      const isSolanaAccount = isAccountPlatformSolana(account)
+      const isSolanaToken = DEFAULT_PORTFOLIO_TOKENS_SOLANA.includes(balance.tokenId)
+      if (isSolanaAccount && isSolanaToken) return true
     }
 
     const genesisHash = getAccountGenesisHash(account)
