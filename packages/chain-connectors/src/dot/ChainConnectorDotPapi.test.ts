@@ -376,6 +376,17 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
   })
 
+  it("reports nothing when the block stream fails after unsubscribe", async () => {
+    const fake = createFakeClient()
+    const { callback, unsubscribe } = subscribeStorage(fake)
+    const [observer] = fake.observers
+
+    ;(await unsubscribe)("state_unsubscribeStorage")
+    observer?.error(new Error("follow failed"))
+
+    expect(callback).not.toHaveBeenCalled()
+  })
+
   it("rejects without a later stale report when the block stream cannot be followed", async () => {
     const fake = createFakeClient()
     const followFailure = new Error("cannot follow")
