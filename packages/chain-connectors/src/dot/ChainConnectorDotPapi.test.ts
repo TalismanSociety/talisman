@@ -376,6 +376,20 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
   })
 
+  it("reports one stale rpc at the caller's timeout when no block arrives", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, 1_000)
+
+    await vi.advanceTimersByTimeAsync(999)
+    expect(callback).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+    expect(fake.observers.size).toBe(0)
+
+    await vi.advanceTimersByTimeAsync(90_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+  })
+
   it("reports nothing when the block stream fails after unsubscribe", async () => {
     const fake = createFakeClient()
     const { callback, unsubscribe } = subscribeStorage(fake)
