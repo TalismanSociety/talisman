@@ -924,7 +924,6 @@ describe("a polkadot network dead at boot", () => {
       [tolerantTokenId]: [scope.address],
     })
 
-    // three spec version attempts, 2s apart, then the module failure
     await vi.advanceTimersByTimeAsync(5_000)
     await settle()
     expect(specCalls).toBe(3)

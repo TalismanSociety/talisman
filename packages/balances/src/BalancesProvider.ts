@@ -897,8 +897,8 @@ const getRequestedBalances = (addressesByTokenId: Record<TokenId, Address[]>): R
 // updateStorage$ mark their stored rows stale and withhold confirmation, then the module
 // resubscribes after the delay. The shared module stream never completes, so a scope keeps
 // its subscription instead of replaying its last value forever. The delay doubles on each
-// failure in a row up to the cap, and real data resets it: the failure emission is a next
-// too, so retry's resetOnSuccess would reset the count on every cycle
+// failure in a row up to the cap, and real data resets it. The failure emission is itself a
+// next, so retry's resetOnSuccess would reset the count on every cycle
 const failAndRetry =
   ({
     networkId,
