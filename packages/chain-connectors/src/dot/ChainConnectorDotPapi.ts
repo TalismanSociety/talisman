@@ -30,7 +30,8 @@ export type PapiClient = {
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
  * best block and reporting the values that changed, like the node does. One query runs at a time, for the latest
  * best block. A failed query is retried at the next block. When three queries in a row fail, or no query succeeds for
- * 90 seconds, the subscription reports the error, and balances marks the subscribed balances failed and retries.
+ * 90 seconds, the subscription reports the error and stops. Balances retries a failed subscription only once
+ * TalismanSociety/talisman#2657 lands. Before that, the error ends the balances module for the network.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #clientFor: (networkId: DotNetworkId) => PapiClient | undefined
