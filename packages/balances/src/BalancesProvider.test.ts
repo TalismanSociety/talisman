@@ -308,6 +308,11 @@ const settle = async () => {
   for (let i = 0; i < 5; i++) await new Promise((resolve) => setImmediate(resolve))
 }
 
+const useFakeTimers = () =>
+  vi.useFakeTimers({
+    toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
+  })
+
 const subscribe = (provider: BalancesProvider, scope: Record<string, string[]>) => {
   const emissions: BalancesResult[] = []
   const subscription = provider.getBalances$(scope).subscribe((r) => emissions.push(r))
@@ -323,9 +328,7 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
     })
 
     const setup = (scope: Scope, storage?: IBalance[]) => {
-      vi.useFakeTimers({
-        toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
-      })
+      useFakeTimers()
       const module$ = new Subject<FetchBalanceResults>()
       fakeModules.subscribeBalances.mockReturnValue(module$)
       const provider = new BalancesProvider(
@@ -432,11 +435,6 @@ describe("getBalances$ over several ids", () => {
     fakeModules.subscribeBalances.mockReset()
   })
 
-  const useFakeTimers = () =>
-    vi.useFakeTimers({
-      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
-    })
-
   it("a mixed emission fails one id and confirms the others, sorted", async () => {
     useFakeTimers()
     const scope = makeScope("polkadot")
@@ -508,9 +506,7 @@ describe("the 30s sweep", () => {
   })
 
   it("leaves confirmedBalanceIds untouched", async () => {
-    vi.useFakeTimers({
-      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
-    })
+    useFakeTimers()
     const confirmed = makeScope("polkadot")
     const dead = makeScope("polkadot")
     const module$ = new Subject<FetchBalanceResults>()
