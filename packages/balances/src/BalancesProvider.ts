@@ -219,7 +219,7 @@ export class BalancesProvider {
             // per-network arrays are already sorted (see getNetworkBalances$): merge instead
             // of re-sorting the whole set
             balances: await mergeSortedBalanceArrays(balanceArrays, slicer),
-            failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
+            failedBalanceIds: sortedUnion(results.map((result) => result.failedBalanceIds)),
             confirmedBalanceIds: sortedUnion(results.map((result) => result.confirmedBalanceIds)),
           }
         },

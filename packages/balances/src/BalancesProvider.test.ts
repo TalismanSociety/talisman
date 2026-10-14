@@ -422,6 +422,85 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
   }
 )
 
+const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+const CHARLIE = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
+const boom = (tokenId: string, address: string) => ({ tokenId, address, error: new Error("boom") })
+
+describe("getBalances$ over several ids", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    fakeModules.subscribeBalances.mockReset()
+  })
+
+  const useFakeTimers = () =>
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
+    })
+
+  it("a mixed emission fails one id and confirms the others, sorted", async () => {
+    useFakeTimers()
+    const scope = makeScope("polkadot")
+    const module$ = new Subject<FetchBalanceResults>()
+    fakeModules.subscribeBalances.mockReturnValue(module$)
+    const provider = new BalancesProvider(makeChaindata(scope), scope.connectors)
+    const id = (address: string) => getBalanceId({ address, tokenId: scope.tokenId })
+    const bobRow = { ...scope.row, address: BOB }
+    const { emissions, subscription } = subscribe(provider, {
+      [scope.tokenId]: [scope.address, CHARLIE, BOB],
+    })
+
+    await settle()
+    module$.next({ success: [bobRow], errors: [boom(scope.tokenId, scope.address)] })
+    await settle()
+
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [bobRow],
+      failedBalanceIds: [id(scope.address)],
+      confirmedBalanceIds: [id(BOB), id(CHARLIE)],
+    })
+    subscription.unsubscribe()
+  })
+
+  it("a two-network scope unions and sorts both id lists, and a network confirms only its own ids", async () => {
+    useFakeTimers()
+    const a = makeScope("polkadot")
+    const b = makeScope("polkadot")
+    const moduleA$ = new Subject<FetchBalanceResults>()
+    const moduleB$ = new Subject<FetchBalanceResults>()
+    fakeModules.subscribeBalances.mockImplementation(({ networkId }: { networkId: string }) =>
+      networkId === a.networkId ? moduleA$ : moduleB$
+    )
+    const provider = new BalancesProvider(makeChaindata(a, b), a.connectors)
+    const idA = (address: string) => getBalanceId({ address, tokenId: a.tokenId })
+    const idB = (address: string) => getBalanceId({ address, tokenId: b.tokenId })
+    const { emissions, subscription } = subscribe(provider, {
+      [b.tokenId]: [b.address, BOB],
+      [a.tokenId]: [a.address, BOB],
+    })
+
+    await settle()
+    moduleB$.next({ success: [b.row], errors: [boom(b.tokenId, BOB)] })
+    await settle()
+    expect(emissions.at(-1)).toEqual({
+      status: "initialising",
+      balances: [b.row],
+      failedBalanceIds: [idB(BOB)],
+      confirmedBalanceIds: [idB(b.address)],
+    })
+
+    moduleA$.next({ success: [a.row], errors: [boom(a.tokenId, BOB)] })
+    await settle()
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [a.row, b.row],
+      failedBalanceIds: [idA(BOB), idB(BOB)],
+      confirmedBalanceIds: [idA(a.address), idB(b.address)],
+    })
+    subscription.unsubscribe()
+  })
+})
+
 describe("the 30s sweep", () => {
   afterEach(() => {
     vi.useRealTimers()
