@@ -212,8 +212,14 @@ describe("BalancesProvider restart seeds", () => {
 type Platform = "polkadot" | "ethereum" | "solana"
 
 const SS58 = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+const CHARLIE = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 const H160 = "0x0000000000000000000000000000000000000001"
+const H160_B = "0x0000000000000000000000000000000000000002"
+const H160_C = "0x0000000000000000000000000000000000000003"
 const SOLANA = "So11111111111111111111111111111111111111112"
+const SOLANA_B = "11111111111111111111111111111111"
+const SOLANA_C = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 const PLATFORMS: Record<
   Platform,
@@ -221,6 +227,7 @@ const PLATFORMS: Record<
     tokenType: string
     network: Partial<Network>
     address: string
+    others: [string, string]
     incompatible: string
     connectors: ChainConnectors
   }
@@ -229,6 +236,7 @@ const PLATFORMS: Record<
     tokenType: "substrate-native",
     network: { platform: "polkadot", account: "*25519" },
     address: SS58,
+    others: [BOB, CHARLIE],
     incompatible: H160,
     connectors: {
       substrate: { send: async () => ({ specVersion: 1 }) },
@@ -238,6 +246,7 @@ const PLATFORMS: Record<
     tokenType: "evm-native",
     network: { platform: "ethereum" },
     address: H160,
+    others: [H160_B, H160_C],
     incompatible: SS58,
     connectors: { evm: {} } as unknown as ChainConnectors,
   },
@@ -245,6 +254,7 @@ const PLATFORMS: Record<
     tokenType: "sol-native",
     network: { platform: "solana" },
     address: SOLANA,
+    others: [SOLANA_B, SOLANA_C],
     incompatible: SS58,
     connectors: { solana: {} } as unknown as ChainConnectors,
   },
@@ -258,6 +268,7 @@ const makeScope = (platform: Platform) => {
     tokenType,
     network: networkPartial,
     address,
+    others,
     incompatible,
     connectors,
   } = PLATFORMS[platform]
@@ -286,6 +297,7 @@ const makeScope = (platform: Platform) => {
     token,
     miniMetadatas,
     address,
+    others,
     incompatible,
     balanceId,
     row,
@@ -432,8 +444,6 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
   }
 )
 
-const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-const CHARLIE = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 const boom = (tokenId: string, address: string) => ({ tokenId, address, error: new Error("boom") })
 
 describe("getBalances$ over several ids", () => {
@@ -627,6 +637,37 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
           confirmedBalanceIds: [scope.balanceId],
         },
       ])
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies with three addresses lists all three ids as failed and confirms all three after the retry", async () => {
+      const scope = makeScope(platform)
+      const addresses = [scope.address, ...scope.others]
+      const balanceIds = addresses
+        .map((address) => getBalanceId({ address, tokenId: scope.tokenId }))
+        .sort()
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: addresses })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions.at(-1)).toEqual({
+        status: "live",
+        balances: [],
+        failedBalanceIds: balanceIds,
+        confirmedBalanceIds: [],
+      })
+
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].next({ success: [], errors: [] })
+      await settle()
+      expect(emissions.at(-1)).toEqual({
+        status: "live",
+        balances: [],
+        failedBalanceIds: [],
+        confirmedBalanceIds: balanceIds,
+      })
       subscription.unsubscribe()
     })
 
