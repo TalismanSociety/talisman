@@ -46,14 +46,14 @@ Error reporting is the Error reporting toggle in Security & Privacy (`$EXT/dashb
 
 - **Worker.** `sw-eval.mjs '(talismanAnalytics.probeException("probe 0xdeadbeef"), 0)'` throws from bundled code, so the worker's own handler reports it. The entry has `ui_context: background`, `mechanism: uncaught`, a `background.js` frame, the type `Error` and the value `unknown` (its category): the message `probe 0xdeadbeef` appears nowhere in the entry. Its `distinct_id` is its own `uuid`, and it has no `$session_id` and no `browser_language`.
 - **Page.** In a dashboard tab, `ab eval 'setTimeout(() => { throw new Error("probe") }); 1'`. The entry has `ui_context: dashboard` and the page's `$screen_name`. `Promise.reject(new Error("probe"))` reads `mechanism: unhandled_rejection`. Dev builds serve page code from the dev server, and a frame outside the extension's own scripts is dropped, so a page exception can have no frames in dev.
-- **Throttle.** The same message a fourth time within 10 minutes reads `filtered` with `issues: ["throttled"]`. Change the message between runs.
+- **Throttle.** The same message a fourth time within 10 minutes reads `filtered` with `issues: ["throttled"]`. The count lives in the service worker's memory: a worker restart resets it. Change the message between runs.
 - **Off.** With Error reporting off, each exception reads `dropped_consent`.
 - **Error boundary.** No page has a crash trigger. Add a temporary `throw` to a component, open its page, and read `Error ID: <id>` on the crash screen: it equals the `$exception` entry's `id` and `wire.uuid`. With Error reporting off, the crash screen shows no Error ID. Remove the `throw` before you commit.
 
 ## Gotchas
 
 - Before consent, usage events read `held`. They move to `released` on opt-in. Exceptions are never held: before the privacy choice they read `dropped_consent`.
-- `issues` on an entry means the background parser rejected the event: the page sent a property the catalogue does not allow.
+- `disposition: "rejected"` means the background parser refused the event: the page sent a property the catalogue does not allow. Its `issues` name the property. `issues` alone does not mean a rejection: a `filtered` exception carries its reason there, such as `["throttled"]`.
 - The log stores wire properties after redaction. A `<hex>`, `<base58>` or `<mnemonic>` in a property means a value leaked into it: fix the call site.
 - The Verify step lays the phrase's words out as choices. Do not open it in a recorded run, and never screenshot a revealed phrase.
 - A transaction flow's `_completed` comes from the worker when the transaction settles, which can be after the page closed. Look for it next to `tx_settled`.
