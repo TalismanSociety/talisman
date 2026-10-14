@@ -1,7 +1,7 @@
 import { log } from "@common/log"
-import { fetchStorageKeysPaged, queryStorageAt } from "@talismn/chain-connectors"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
+import { fetchStorageKeysPaged, type JsonRpcRequestSend, queryStorageAt } from "@talismn/sapi"
 import { getQuery$, isNotNil, type QueryResult } from "@talismn/util"
 import { uniq, uniqBy } from "lodash-es"
 import PQueue from "p-queue"
@@ -62,6 +62,11 @@ const palletStoragesBySpecVersion = new Map<string, Promise<NftPalletStorage[]>>
 const onChainMetadataUris = new Map<string, string | null>()
 
 const chainReads = new PQueue({ concurrency: 1 })
+
+const sendTo =
+  (networkId: NetworkId): JsonRpcRequestSend =>
+  (method, params) =>
+    chainConnectorDot.send(networkId, method, params)
 
 export const getDotAccountNfts$ = (account: Account): Observable<QueryResult<AccountNfts>> =>
   combineLatest([
@@ -196,8 +201,7 @@ const listPalletNfts = async (
   signal: AbortSignal
 ): Promise<SubstrateNftListing> => {
   const keys = await fetchStorageKeysPaged(
-    chainConnectorDot,
-    networkId,
+    sendTo(networkId),
     getOwnedItemsKeyPrefix(storage, address),
     { signal }
   )
@@ -250,8 +254,7 @@ const loadMissingMetadataUris = async (
   if (!reads.size) return
 
   const values = await queryStorageAt(
-    chainConnectorDot,
-    networkId,
+    sendTo(networkId),
     [...reads.values()].map((read) => read.storageKey),
     { signal }
   )

@@ -1,12 +1,8 @@
-import type { DotNetworkId } from "@talismn/chaindata-provider"
-
-type Connector = {
-  send(networkId: DotNetworkId, method: string, params: unknown[]): Promise<unknown>
-}
+import type { JsonRpcRequestSend } from "./types"
 
 export type StorageReadOptions = {
   /** block to read from, so a multi-call read stays on one block */
-  at?: `0x${string}`
+  at?: string
   signal?: AbortSignal
 }
 
@@ -21,8 +17,7 @@ type StorageChangeSet = { block: string; changes: [key: string, value: `0x${stri
  * exceeded"), while the paged variant is universally allowed.
  */
 export const fetchStorageKeysPaged = async (
-  connector: Connector,
-  networkId: DotNetworkId,
+  send: JsonRpcRequestSend,
   keyPrefix: string,
   { at, signal }: StorageReadOptions = {}
 ): Promise<`0x${string}`[]> => {
@@ -34,7 +29,7 @@ export const fetchStorageKeysPaged = async (
     if (startKey || at) params.push(startKey ?? null)
     if (at) params.push(at)
 
-    const page = (await connector.send(networkId, "state_getKeysPaged", params)) as `0x${string}`[]
+    const page = (await send("state_getKeysPaged", params)) as `0x${string}`[]
     keys.push(...page)
     startKey = page.length === KEYS_PAGE_SIZE ? page[page.length - 1] : undefined
   } while (startKey)
@@ -42,8 +37,7 @@ export const fetchStorageKeysPaged = async (
 }
 
 export const queryStorageAt = async (
-  connector: Connector,
-  networkId: DotNetworkId,
+  send: JsonRpcRequestSend,
   storageKeys: string[],
   { at, signal }: StorageReadOptions = {}
 ): Promise<Map<string, `0x${string}` | null>> => {
@@ -51,8 +45,7 @@ export const queryStorageAt = async (
   for (let start = 0; start < storageKeys.length; start += VALUES_CHUNK_SIZE) {
     signal?.throwIfAborted()
     const chunk = storageKeys.slice(start, start + VALUES_CHUNK_SIZE)
-    const [changeSet] = (await connector.send(
-      networkId,
+    const [changeSet] = (await send(
       "state_queryStorageAt",
       at ? [chunk, at] : [chunk]
     )) as StorageChangeSet[]

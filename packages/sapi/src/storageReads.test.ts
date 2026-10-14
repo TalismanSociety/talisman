@@ -6,14 +6,14 @@ const keys = (count: number) => Array.from({ length: count }, (_, index) => hexK
 
 describe("fetchStorageKeysPaged", () => {
   it("walks pages of 1000 keys from the last key of the previous page", async () => {
-    const send = vi.fn(async (_networkId: string, _method: string, params: unknown[]) =>
+    const send = vi.fn(async (_method: string, params: unknown[]) =>
       params[2] ? keys(1200).slice(1000) : keys(1000)
     )
 
-    const result = await fetchStorageKeysPaged({ send }, "polkadot", "0xprefix", { at: "0xblock" })
+    const result = await fetchStorageKeysPaged(send, "0xprefix", { at: "0xblock" })
 
     expect(result).toEqual(keys(1200))
-    expect(send.mock.calls.map(([, method, params]) => [method, params])).toEqual([
+    expect(send.mock.calls.map(([method, params]) => [method, params])).toEqual([
       ["state_getKeysPaged", ["0xprefix", 1000, null, "0xblock"]],
       ["state_getKeysPaged", ["0xprefix", 1000, hexKey(999), "0xblock"]],
     ])
@@ -22,9 +22,9 @@ describe("fetchStorageKeysPaged", () => {
   it("sends only the prefix and page size when there is no block or start key", async () => {
     const send = vi.fn(async () => keys(3))
 
-    await fetchStorageKeysPaged({ send }, "polkadot", "0xprefix")
+    await fetchStorageKeysPaged(send, "0xprefix")
 
-    expect(send).toHaveBeenCalledWith("polkadot", "state_getKeysPaged", ["0xprefix", 1000])
+    expect(send).toHaveBeenCalledWith("state_getKeysPaged", ["0xprefix", 1000])
   })
 
   it("stops between pages once aborted", async () => {
@@ -35,7 +35,7 @@ describe("fetchStorageKeysPaged", () => {
     })
 
     await expect(
-      fetchStorageKeysPaged({ send }, "polkadot", "0xprefix", { signal: controller.signal })
+      fetchStorageKeysPaged(send, "0xprefix", { signal: controller.signal })
     ).rejects.toThrow()
     expect(send).toHaveBeenCalledTimes(1)
   })
@@ -50,13 +50,13 @@ describe("queryStorageAt", () => {
   ]
 
   it("reads values in chunks of 500 keys and maps every key to its value", async () => {
-    const send = vi.fn(async (_networkId: string, _method: string, [storageKeys]: unknown[]) =>
+    const send = vi.fn(async (_method: string, [storageKeys]: unknown[]) =>
       changesFor(storageKeys as string[])
     )
 
-    const values = await queryStorageAt({ send }, "polkadot", keys(1200))
+    const values = await queryStorageAt(send, keys(1200))
 
-    expect(send.mock.calls.map(([, , [chunk]]) => (chunk as string[]).length)).toEqual([
+    expect(send.mock.calls.map(([, [chunk]]) => (chunk as string[]).length)).toEqual([
       500, 500, 200,
     ])
     expect(values.size).toBe(1200)
@@ -68,28 +68,28 @@ describe("queryStorageAt", () => {
   it("reads nothing for an empty key list", async () => {
     const send = vi.fn()
 
-    expect(await queryStorageAt({ send }, "polkadot", [])).toEqual(new Map())
+    expect(await queryStorageAt(send, [])).toEqual(new Map())
     expect(send).not.toHaveBeenCalled()
   })
 
   it("passes the block hash and stops between chunks once aborted", async () => {
     const controller = new AbortController()
-    const send = vi.fn(async (_networkId: string, _method: string, [storageKeys]: unknown[]) => {
+    const send = vi.fn(async (_method: string, [storageKeys]: unknown[]) => {
       controller.abort()
       return changesFor(storageKeys as string[])
     })
 
     await expect(
-      queryStorageAt({ send }, "polkadot", keys(600), { at: "0xblock", signal: controller.signal })
+      queryStorageAt(send, keys(600), { at: "0xblock", signal: controller.signal })
     ).rejects.toThrow()
     expect(send).toHaveBeenCalledTimes(1)
-    expect(send.mock.calls[0][2][1]).toBe("0xblock")
+    expect(send.mock.calls[0][1][1]).toBe("0xblock")
   })
 
   it("rejects a response without a change set", async () => {
     const send = vi.fn(async () => [])
 
-    await expect(queryStorageAt({ send }, "polkadot", keys(1))).rejects.toThrow(
+    await expect(queryStorageAt(send, keys(1))).rejects.toThrow(
       "Unexpected state_queryStorageAt response shape"
     )
   })

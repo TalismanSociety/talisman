@@ -1,6 +1,6 @@
 import type { bittensor } from "@polkadot-api/descriptors"
 import { Binary } from "@polkadot-api/substrate-bindings"
-import { fetchStorageKeysPaged, type IChainConnectorDot } from "@talismn/chain-connectors"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   type AnyMiniMetadata,
   type DotNetworkId,
@@ -8,6 +8,7 @@ import {
   SubDTaoTokenSchema,
   subDTaoTokenId,
 } from "@talismn/chaindata-provider"
+import { fetchStorageKeysPaged } from "@talismn/sapi"
 import { getStorageKeyPrefix } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
@@ -97,8 +98,7 @@ const fetchTransferableTokensMap = async (
   const transferToggleCodec = builder.buildStorage("SubtensorModule", "TransferToggle")
 
   const transferToggleKeys = await fetchStorageKeysPaged(
-    connector,
-    networkId,
+    (method, params) => connector.send(networkId, method, params),
     getStorageKeyPrefix("SubtensorModule", "TransferToggle")
   )
 
