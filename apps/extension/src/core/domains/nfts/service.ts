@@ -5,8 +5,8 @@ import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
 } from "@talismn/keyring"
-import { getQuery$, keepAlive, type QueryResult } from "@talismn/util"
-import { isEqual } from "lodash-es"
+import { getQuery$, isNotNil, keepAlive, type QueryResult } from "@talismn/util"
+import { isEqual, uniq } from "lodash-es"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -14,7 +14,6 @@ import {
   firstValueFrom,
   map,
   Observable,
-  of,
   shareReplay,
   switchMap,
   tap,
@@ -29,12 +28,6 @@ import type { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./
 
 const ONE_MINUTE = 60 * 1000
 
-const NO_NFTS: QueryResult<AccountNfts> = {
-  status: "loaded",
-  data: { nfts: [], collections: [] },
-  error: undefined,
-}
-
 const getEvmAccountNfts$ = (account: Account) =>
   getQuery$({
     namespace: "nfts-evm",
@@ -44,26 +37,11 @@ const getEvmAccountNfts$ = (account: Account) =>
   })
 
 // some accounts may own both substrate and ethereum NFTs (ex: ethereum accounts that also own nfts on mythos)
-const getAccountNfts$ = (account: Account) =>
-  combineLatest([
-    isAccountPlatformEthereum(account) ? getEvmAccountNfts$(account) : of(NO_NFTS),
-    isAccountPlatformPolkadot(account) ? getDotAccountNfts$(account) : of(NO_NFTS),
-  ]).pipe(map(mergeQueryResults))
-
-const mergeQueryResults = (results: QueryResult<AccountNfts>[]): QueryResult<AccountNfts> => {
-  const failed = results.find((result) => result.status === "error")
-  if (failed) return failed
-  if (results.some((result) => result.status === "loading"))
-    return { status: "loading", data: undefined, error: undefined }
-  return {
-    status: "loaded",
-    data: {
-      nfts: results.flatMap((result) => result.data?.nfts ?? []),
-      collections: results.flatMap((result) => result.data?.collections ?? []),
-    },
-    error: undefined,
-  }
-}
+const getAccountNftsBySource$ = (account: Account): Observable<QueryResult<AccountNfts>>[] =>
+  [
+    isAccountPlatformEthereum(account) ? getEvmAccountNfts$(account) : null,
+    isAccountPlatformPolkadot(account) ? getDotAccountNfts$(account) : null,
+  ].filter(isNotNil)
 
 export const nfts$ = new Observable<NftData>((subscriber) => {
   log.log("Opening NFTs subscription")
@@ -94,18 +72,14 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
             (isAccountPlatformEthereum(a2) ? 1 : 0) - (isAccountPlatformEthereum(a1) ? 1 : 0)
         )
     ),
-    switchMap((accounts) =>
-      combineLatest(
-        accounts.map((account) =>
-          getAccountNfts$(account).pipe(
-            map((nftsData) => ({
-              address: account.address,
-              nftsData,
-            }))
-          )
+    switchMap((accounts) => {
+      const accountsQueries = accounts.flatMap((account) =>
+        getAccountNftsBySource$(account).map((nftsData$) =>
+          nftsData$.pipe(map((nftsData) => ({ address: account.address, nftsData })))
         )
       )
-    ),
+      return combineLatest(accountsQueries)
+    }),
     map((accountsQueries) => {
       const status: NftLoadingStatus = accountsQueries.some((aq) => aq.nftsData.status === "error")
         ? "stale"
@@ -113,13 +87,14 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           ? "loaded"
           : "loading"
 
-      const loadedAddresses = accountsQueries
-        .filter((aq) => aq.nftsData.status === "loaded")
-        .map((a) => a.address)
+      const loadedAddresses = uniq(accountsQueries.map((aq) => aq.address)).filter((address) =>
+        accountsQueries.every((aq) => aq.address !== address || aq.nftsData.status === "loaded")
+      )
 
       const loadedAccountsData = accountsQueries.reduce(
         (acc, curr) => {
-          if (curr.nftsData.status !== "loaded") return acc
+          if (curr.nftsData.status !== "loaded" || !loadedAddresses.includes(curr.address))
+            return acc
           acc.nfts.push(...curr.nftsData.data.nfts)
           acc.collections.push(...curr.nftsData.data.collections)
           return acc
