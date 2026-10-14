@@ -1,18 +1,19 @@
-import { filter, firstValueFrom } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { AccountNft, NftCollection } from "./types"
+import type { NftStoreData } from "../store"
+import type { AccountNft, NftCollection } from "../types"
+import { migrateNftsV3 } from "./migrateNftsV3"
 
 const blob = vi.hoisted(() => ({ stored: null as unknown }))
 
-vi.mock("../../db/blobs", () => ({
+vi.mock("../../../db", () => ({
   getBlobStore: () => ({
     get: async () => blob.stored,
-    set: async () => {},
+    set: async (data: unknown) => {
+      blob.stored = data
+    },
   }),
 }))
-
-vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
 
 const collection = (id: string): NftCollection => ({
   id,
@@ -47,13 +48,12 @@ const nft = (id: string, collectionId: string): AccountNft => ({
   updatedAt: null,
 })
 
-const loadStore = async () => {
-  vi.resetModules()
-  const { nftsStore$ } = await import("./store")
-  return firstValueFrom(nftsStore$.pipe(filter((data) => data.nfts.length > 0)))
+const migrate = async () => {
+  await migrateNftsV3.forward.apply({ password: "" })
+  return blob.stored
 }
 
-const MIGRATED = {
+const MIGRATED: NftStoreData = {
   id: "nfts",
   collections: [collection("substrate:polkadot-asset-hub:Nfts:158"), collection("evm:1:0xabc")],
   nfts: [
@@ -64,12 +64,12 @@ const MIGRATED = {
   favoriteNftIds: ["substrate:kusama-asset-hub:Nfts:7:42", "evm:1:0xabc:7"],
 }
 
-describe("nfts store", () => {
+describe("migrateNftsV3", () => {
   beforeEach(() => {
     blob.stored = null
   })
 
-  it("rewrites subscan ids to substrate Nfts ids and drops subscan rows on load", async () => {
+  it("rewrites subscan ids to substrate Nfts ids and drops subscan rows", async () => {
     blob.stored = {
       id: "nfts",
       collections: [
@@ -91,12 +91,28 @@ describe("nfts store", () => {
       favoriteNftIds: ["subscan:kusama-asset-hub:7:42", "evm:1:0xabc:7"],
     }
 
-    expect(await loadStore()).toEqual(MIGRATED)
+    expect(await migrate()).toEqual(MIGRATED)
+  })
+
+  it("rewrites a blob that predates hidden collections and favourites", async () => {
+    blob.stored = { id: "nfts", nfts: [], collections: [] }
+
+    expect(await migrate()).toEqual({
+      id: "nfts",
+      nfts: [],
+      collections: [],
+      hiddenNftCollectionIds: [],
+      favoriteNftIds: [],
+    })
+  })
+
+  it("writes nothing for a wallet without nfts", async () => {
+    expect(await migrate()).toBeNull()
   })
 
   it("leaves migrated data unchanged", async () => {
     blob.stored = MIGRATED
 
-    expect(await loadStore()).toEqual(MIGRATED)
+    expect(await migrate()).toEqual(MIGRATED)
   })
 })

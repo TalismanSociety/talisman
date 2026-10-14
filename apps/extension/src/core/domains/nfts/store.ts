@@ -1,5 +1,5 @@
 import { normalizeAddress } from "@talismn/crypto"
-import { isEqual, keyBy, uniq } from "lodash-es"
+import { isEqual, keyBy } from "lodash-es"
 import { BehaviorSubject, debounceTime, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
@@ -24,26 +24,6 @@ const DEFAULT_DATA: NftStoreData = {
 
 const blobStore = getBlobStore<NftStoreData>("nfts")
 
-const SUBSCAN_ID = /^subscan:([^:]+):(\d+)(?::(\d+))?$/
-
-const isSubscanId = (id: string) => id.startsWith("subscan:")
-
-const toSubstrateNftsId = (id: string) => {
-  const [, networkId, collection, item] = SUBSCAN_ID.exec(id) ?? []
-  return networkId ? `substrate:${networkId}:Nfts:${collection}${item ? `:${item}` : ""}` : id
-}
-
-const replaceSubscanIds = (ids: string[]) =>
-  uniq(ids.map(toSubstrateNftsId)).filter((id) => !isSubscanId(id))
-
-const dropSubscanData = (data: NftStoreData): NftStoreData => ({
-  ...data,
-  collections: data.collections.filter((collection) => !isSubscanId(collection.id)),
-  nfts: data.nfts.filter((nft) => !isSubscanId(nft.id)),
-  hiddenNftCollectionIds: replaceSubscanIds(data.hiddenNftCollectionIds),
-  favoriteNftIds: replaceSubscanIds(data.favoriteNftIds),
-})
-
 // this must not be exported at the package level
 // only backend should have access to it
 const subject = new BehaviorSubject(DEFAULT_DATA)
@@ -51,7 +31,7 @@ const subject = new BehaviorSubject(DEFAULT_DATA)
 walletReady.then(() => {
   // load from db and cleanup
   blobStore.get().then((nfts) => {
-    if (nfts) subject.next(dropSubscanData({ ...DEFAULT_DATA, ...nfts }))
+    if (nfts) subject.next({ ...DEFAULT_DATA, ...nfts })
   })
 
   subject.pipe(skip(1), debounceTime(1_000)).subscribe((nfts) => {
