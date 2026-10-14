@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
 import { getBalanceId } from "./classes"
 import log from "./log"
-import { createPollingSubscribeBalances } from "./modules/shared/subscribeBalances"
+import { subscribeBalances as subscribeSolSpl } from "./modules/sol-spl/subscribeBalances"
 import { deriveMiniMetadataId, type IBalance } from "./types"
 import type { ChainConnectors } from "./types/chainConnectors"
 import type { FetchBalanceResults } from "./types/IBalanceModule"
@@ -820,32 +820,28 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
   }
 )
 
-describe("the Hydration poller", () => {
+// substrate-hydration, substrate-dtao, evm-native, evm-erc20 and sol-native catch their RPC
+// errors and return per-id errors, so their pollers never reach failAndRetry. sol-spl throws
+// from fetchBalances, here on a connector with no client, and the poller errors the stream
+describe("a poller whose fetch throws", () => {
   afterEach(() => {
     vi.useRealTimers()
     fakeModules.subscribeBalances.mockReset()
   })
 
-  it("recovers after one failed poll", async () => {
+  it("the sol-spl poller recovers after a poll throws on a missing client", async () => {
     useFakeTimers()
-    const scope = makeScope("polkadot")
-    const fetchBalances = vi
-      .fn()
-      .mockImplementationOnce(
-        () => new Promise((_, reject) => setTimeout(() => reject(new Error("rpc down")), 500))
-      )
-      .mockResolvedValue({ success: [scope.row], errors: [] })
-    fakeModules.subscribeBalances.mockImplementation(
-      createPollingSubscribeBalances("substrate-hydration", fetchBalances)
-    )
-    const provider = new BalancesProvider(makeChaindata(scope), scope.connectors)
+    const scope = makeScope("solana")
+    const rpc = { getTokenAccountsByOwner: () => ({ send: async () => ({ value: [] }) }) }
+    const getRpc = vi.fn().mockReturnValueOnce(undefined).mockReturnValue(rpc)
+    const connectors = { solana: { getRpc } } as unknown as ChainConnectors
+    fakeModules.subscribeBalances.mockImplementation(subscribeSolSpl)
+    const provider = new BalancesProvider(makeChaindata(scope), connectors)
     const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
 
+    // the first poll throws inside the aggregate's audit window, so the failure replaces the seed
     await settle()
-    expect(emissions).toEqual([seedResult()])
-    await vi.advanceTimersByTimeAsync(500)
-    await settle()
-    expect(emissions.slice(1)).toEqual([
+    expect(emissions).toEqual([
       {
         status: "live",
         balances: [],
@@ -856,11 +852,11 @@ describe("the Hydration poller", () => {
 
     await vi.advanceTimersByTimeAsync(10_000)
     await settle()
-    expect(fetchBalances).toHaveBeenCalledTimes(2)
-    expect(emissions.slice(2)).toEqual([
+    expect(getRpc).toHaveBeenCalledTimes(2)
+    expect(emissions.slice(1)).toEqual([
       {
         status: "live",
-        balances: [scope.row],
+        balances: [],
         failedBalanceIds: [],
         confirmedBalanceIds: [scope.balanceId],
       },
