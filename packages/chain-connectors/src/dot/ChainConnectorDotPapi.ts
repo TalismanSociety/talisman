@@ -5,7 +5,8 @@ import { StaleRpcError } from "./ChainConnectorDot"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 const RESPONSE_TIMEOUT = 30_000
-const FAILURES_BEFORE_FIRST_RESULT = 3
+const FAILURES_BEFORE_ERROR = 3
+const STALL_TIMEOUT = FAILURES_BEFORE_ERROR * RESPONSE_TIMEOUT
 
 type HexString = `0x${string}`
 type StorageChanges = { block: HexString; changes: [HexString, HexString | null][] }
@@ -28,8 +29,9 @@ export type PapiClient = {
  *
  * `state_subscribeStorage` is the only subscription balances uses. It is served by querying the keys at each new
  * best block and reporting the values that changed, like the node does. One query runs at a time, for the latest
- * best block. A failed query is retried at the next block, because balances treats a subscription error as final
- * and would stop updating that network. Only when the first three queries fail does the subscription report the error.
+ * best block. A failed query is retried at the next block. When three queries in a row fail, or no query succeeds for
+ * 90 seconds, the subscription reports the error and stops. Balances retries a failed subscription only once
+ * TalismanSociety/talisman#2657 lands. Before that, the error ends the balances module for the network.
  */
 export class ChainConnectorDotPapi implements IChainConnectorDot {
   #clientFor: (networkId: DotNetworkId) => PapiClient | undefined
@@ -59,17 +61,18 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     let bestBlockHash: string | undefined
     let queriedBlockHash: string | undefined
     let inFlight: AbortController | undefined
-    let delivered = false
     let failures = 0
     let active = true
     let subscription: { unsubscribe: () => void } | undefined
+    let stallTimer: ReturnType<typeof setTimeout> | undefined
     const staleTimer = timeout
-      ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
+      ? setTimeout(() => finish(new StaleRpcError(networkId)), timeout)
       : undefined
 
     const stop = () => {
       active = false
       clearTimeout(staleTimer)
+      clearTimeout(stallTimer)
       inFlight?.abort()
       subscription?.unsubscribe()
     }
@@ -80,18 +83,25 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       callback(error, null)
     }
 
+    // papi emits no best block once its socket closes, so no query runs and only a timer can notice
+    const restartStallTimer = () => {
+      clearTimeout(stallTimer)
+      stallTimer = setTimeout(() => finish(new StaleRpcError(networkId)), STALL_TIMEOUT)
+    }
+
     const reportChanges = (result: StorageChanges) => {
+      failures = 0
+      restartStallTimer()
       const changes = result.changes.filter(([key, value]) => values.get(key) !== value)
       for (const [key, value] of changes) values.set(key, value)
       if (!changes.length) return
 
-      delivered = true
       clearTimeout(staleTimer)
       callback(null, { block: result.block, changes })
     }
 
     const reportFailure = (error: Error) => {
-      if (delivered || ++failures < FAILURES_BEFORE_FIRST_RESULT)
+      if (++failures < FAILURES_BEFORE_ERROR)
         return log.warn(
           `state_queryStorageAt failed on ${networkId}, retrying at the next block`,
           error
@@ -124,6 +134,7 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
       }
     }
 
+    restartStallTimer()
     try {
       subscription = client.bestBlocks$.subscribe({
         next: ([best]) => {

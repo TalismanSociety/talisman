@@ -183,7 +183,7 @@ describe("ChainConnectorDotPapi", () => {
     fake.newBestBlock("0x2")
     await fake.answer("0x2", failure)
     fake.newBestBlock("0x3")
-    await vi.advanceTimersByTimeAsync(120_000)
+    await vi.advanceTimersByTimeAsync(30_000)
     fake.newBestBlock("0x4")
     await fake.answer("0x4", [["0xa", "0x04"]])
 
@@ -207,7 +207,7 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback.mock.calls).toEqual([[null, { block: "0x2", changes: [["0xa", "0x02"]] }]])
   })
 
-  it("reports the error when the first queries keep failing, and stops querying", async () => {
+  it("reports the error after three failures in a row before a first result, and stops querying", async () => {
     const fake = createFakeClient()
     const { callback } = subscribeStorage(fake, false)
 
@@ -222,6 +222,116 @@ describe("ChainConnectorDotPapi", () => {
     expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3"])
     expect(callback.mock.calls).toEqual([[failure, null]])
     expect(fake.observers.size).toBe(0)
+  })
+
+  it("reports the error after three failures in a row that follow a first result", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    await fake.answer("0x3", failure)
+    fake.newBestBlock("0x4")
+    await fake.answer("0x4", failure)
+    fake.newBestBlock("0x5")
+    await vi.advanceTimersByTimeAsync(90_000)
+
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4"])
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [failure, null],
+    ])
+    expect(fake.observers.size).toBe(0)
+  })
+
+  it("counts failures again from zero after a query succeeds", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    fake.newBestBlock("0x3")
+    await fake.answer("0x3", failure)
+    fake.newBestBlock("0x4")
+    await fake.answer("0x4", [["0xa", "0x01"]])
+    fake.newBestBlock("0x5")
+    await fake.answer("0x5", failure)
+    fake.newBestBlock("0x6")
+    await fake.answer("0x6", failure)
+    fake.newBestBlock("0x7")
+
+    expect(fake.queriedBlocks()).toEqual(["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7"])
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+    expect(fake.observers.size).toBe(1)
+  })
+
+  it("errors after 90s with no successful query when no block arrives", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
+    expect(fake.observers.size).toBe(0)
+  })
+
+  it("errors after 90s when no block ever arrives", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+  })
+
+  it("a successful query resets the stall timer", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(60_000)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(89_999)
+    expect(callback.mock.calls).toEqual([[null, { block: "0x1", changes: [["0xa", "0x01"]] }]])
+
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
+  })
+
+  it("a failed query or a new best block leaves the stall timer running", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(10_000)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    await vi.advanceTimersByTimeAsync(80_000)
+
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
   })
 
   it("reports an error when the block stream fails, or ends as a client other than polkadot-api's can", async () => {
@@ -246,18 +356,49 @@ describe("ChainConnectorDotPapi", () => {
     fake.newBestBlock("0x1")
     ;(await unsubscribe)("state_unsubscribeStorage")
     await fake.answer("0x1", [["0xa", "0x01"]])
+    expect(vi.getTimerCount()).toBe(0)
+    await vi.advanceTimersByTimeAsync(90_000)
 
     expect(fake.observers.size).toBe(0)
     expect(fake.requests[0]?.abortSignal?.aborted).toBe(true)
     expect(callback).not.toHaveBeenCalled()
   })
 
-  it("reports a stale rpc when the first answer takes longer than the timeout", async () => {
+  it("reports one stale rpc and stops when the first answer takes longer than the default timeout", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake)
+
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+    expect(fake.observers.size).toBe(0)
+
+    await vi.advanceTimersByTimeAsync(90_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+  })
+
+  it("reports one stale rpc at the caller's timeout when no block arrives", async () => {
     const fake = createFakeClient()
     const { callback } = subscribeStorage(fake, 1_000)
-    await vi.advanceTimersByTimeAsync(1_000)
 
-    expect(callback).toHaveBeenCalledWith(expect.any(StaleRpcError), null)
+    await vi.advanceTimersByTimeAsync(999)
+    expect(callback).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+    expect(fake.observers.size).toBe(0)
+
+    await vi.advanceTimersByTimeAsync(90_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+  })
+
+  it("reports nothing when the block stream fails after unsubscribe", async () => {
+    const fake = createFakeClient()
+    const { callback, unsubscribe } = subscribeStorage(fake)
+    const [observer] = fake.observers
+
+    ;(await unsubscribe)("state_unsubscribeStorage")
+    observer?.error(new Error("follow failed"))
+
+    expect(callback).not.toHaveBeenCalled()
   })
 
   it("rejects without a later stale report when the block stream cannot be followed", async () => {
