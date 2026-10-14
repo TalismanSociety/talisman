@@ -348,12 +348,16 @@ describe("ChainConnectorDotPapi", () => {
     expect(callback).not.toHaveBeenCalled()
   })
 
-  it("reports a stale rpc when the first answer takes longer than the timeout", async () => {
+  it("reports one stale rpc and stops when the first answer takes longer than the default timeout", async () => {
     const fake = createFakeClient()
-    const { callback } = subscribeStorage(fake, 1_000)
-    await vi.advanceTimersByTimeAsync(1_000)
+    const { callback } = subscribeStorage(fake)
 
-    expect(callback).toHaveBeenCalledWith(expect.any(StaleRpcError), null)
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
+    expect(fake.observers.size).toBe(0)
+
+    await vi.advanceTimersByTimeAsync(90_000)
+    expect(callback.mock.calls).toEqual([[new StaleRpcError("polkadot"), null]])
   })
 
   it("rejects without a later stale report when the block stream cannot be followed", async () => {

@@ -66,7 +66,7 @@ export class ChainConnectorDotPapi implements IChainConnectorDot {
     let subscription: { unsubscribe: () => void } | undefined
     let stallTimer: ReturnType<typeof setTimeout> | undefined
     const staleTimer = timeout
-      ? setTimeout(() => callback(new StaleRpcError(networkId), null), timeout)
+      ? setTimeout(() => finish(new StaleRpcError(networkId)), timeout)
       : undefined
 
     const stop = () => {
