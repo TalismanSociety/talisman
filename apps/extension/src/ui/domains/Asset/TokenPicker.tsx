@@ -14,7 +14,6 @@ import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
-import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import { getSameNetworkMirrorTokenIds } from "@ui/util/getSameNetworkMirrorTokenIds"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
@@ -299,7 +298,6 @@ const TokensList: FC<TokensListProps> = ({
   const account = useAccountByAddress(address)
   const accounts = useAccounts()
   const allTokens = useTokens({ activeOnly: tokenScope === "active", includeTestnets: true })
-  const tokenRatesMap = useTokenRatesMap()
   const networksMap = useNetworksMapById()
 
   const isBalancesInitializing = useIsBalanceInitializing()
@@ -354,8 +352,6 @@ const TokensList: FC<TokensListProps> = ({
           id: token.id,
           token,
           chainNameSearch: network?.name,
-          chainLogo: network?.logo,
-          hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
   }, [
@@ -364,7 +360,6 @@ const TokensList: FC<TokensListProps> = ({
     hideSameNetworkMirrors,
     networksMap,
     tokenFilter,
-    tokenRatesMap,
   ])
 
   const tokensWithBalances = useMemo<TokenData[]>(() => {
