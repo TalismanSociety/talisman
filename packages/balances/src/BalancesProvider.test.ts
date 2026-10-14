@@ -557,9 +557,7 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
     // one Subject per subscribeBalances call: a retry resubscribes the module, and a
     // Subject that errored would re-error every later subscriber
     const setup = (scope: Scope, storage?: IBalance[]) => {
-      vi.useFakeTimers({
-        toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
-      })
+      useFakeTimers()
       const modules: Subject<FetchBalanceResults>[] = []
       fakeModules.subscribeBalances.mockImplementation(() => {
         const module$ = new Subject<FetchBalanceResults>()
@@ -726,9 +724,7 @@ describe("the Hydration poller", () => {
   })
 
   it("recovers after one failed poll", async () => {
-    vi.useFakeTimers({
-      toFake: ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "Date"],
-    })
+    useFakeTimers()
     const scope = makeScope("polkadot")
     const fetchBalances = vi
       .fn()
