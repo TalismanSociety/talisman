@@ -73,7 +73,12 @@ const NftRowInner: FC<{
       className="flex h-32 w-full items-center gap-8 rounded-sm bg-grey-900 px-8 text-left hover:bg-grey-800"
     >
       <div className="flex grow items-center gap-6 overflow-hidden">
-        <NftImage className="size-16" src={nft.previewUrl} alt={collection.name ?? ""} />
+        <NftImage
+          className="size-16"
+          src={nft.previewUrl}
+          isPending={nft.isMetadataPending}
+          alt={collection.name ?? ""}
+        />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate font-bold text-base">{nft.name}</div>
           {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
@@ -136,6 +141,7 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
     <NftTile
       isFavorite={isFavorite}
       imageUrl={nft.previewUrl}
+      isImagePending={nft.isMetadataPending}
       onClick={onClick}
       label={nft.name ?? (nft.tokenId ? `#${nft.tokenId}` : "")}
       networkIds={[nft.networkId]}

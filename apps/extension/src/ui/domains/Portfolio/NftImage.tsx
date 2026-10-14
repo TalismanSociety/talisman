@@ -5,18 +5,19 @@ import { useState } from "react"
 
 type NftImageProps = {
   src?: string | null
+  isPending?: boolean
   alt?: string
   className?: string
 }
 
 export const NftImage = (props: NftImageProps) => <NftImageForSrc key={props.src} {...props} />
 
-const NftImageForSrc = ({ src, className, alt }: NftImageProps) => {
+const NftImageForSrc = ({ src, isPending, className, alt }: NftImageProps) => {
   const [imageUrl, setImageUrl] = useState<string>(src ? getSafeImageUrl(src) : imgUnknownNft)
 
   // loading indicator handling: it sometimes takes a while before a IPFS resource fails on 404
   const [isLoading, setIsLoading] = useState<boolean>(!!src)
-  const [hasError, setHasError] = useState<boolean>(false)
+  const isPulsing = src ? isLoading : !!isPending
 
   const handleLoad = () => {
     setIsLoading(false)
@@ -24,7 +25,6 @@ const NftImageForSrc = ({ src, className, alt }: NftImageProps) => {
 
   const handleError = () => {
     setIsLoading(false)
-    setHasError(true)
     setImageUrl(imgUnknownNft)
   }
 
@@ -32,7 +32,7 @@ const NftImageForSrc = ({ src, className, alt }: NftImageProps) => {
     <div
       className={cn("relative size-16 shrink-0 overflow-hidden rounded-sm bg-grey-800", className)}
     >
-      {isLoading && !hasError && (
+      {isPulsing && (
         <img src={imgUnknownNft} className="size-full shrink-0 animate-pulse" alt="Loading" />
       )}
       <img
