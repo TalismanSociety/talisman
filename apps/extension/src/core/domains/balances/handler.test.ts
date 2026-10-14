@@ -67,6 +67,22 @@ describe("BalancesHandler", () => {
     expect(messages).toEqual([portMessage])
   })
 
+  it("posts one message for two results that differ only in confirmedBalanceIds", async () => {
+    fakes.walletBalances.mockReturnValue(
+      of(providerResult, { ...providerResult, confirmedBalanceIds: balanceIds.slice(0, 2) })
+    )
+    const { port, messages } = fakePort()
+
+    await new BalancesHandler({} as ExtensionStore).handle(
+      "1",
+      "pri(balances.subscribe)",
+      null,
+      port
+    )
+
+    expect(messages).toEqual([portMessage])
+  })
+
   it("pri(balances.byparams.subscribe) requests every id and posts the result without its confirmedBalanceIds", async () => {
     fakes.getBalances$.mockReturnValue(of(providerResult))
     const { port, messages } = fakePort()

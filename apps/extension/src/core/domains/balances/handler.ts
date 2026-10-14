@@ -1,7 +1,7 @@
-import type { BalancesResult, IBalance } from "@talismn/balances"
+import { type BalancesResult, type IBalance, isEqualBalancesResult } from "@talismn/balances"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { filter, firstValueFrom, map, type Observable, of } from "rxjs"
+import { distinctUntilChanged, filter, firstValueFrom, map, type Observable, of } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -30,7 +30,7 @@ export class BalancesHandler extends ExtensionHandler {
         return getBalance(request as RequestBalance)
 
       case "pri(balances.subscribe)":
-        return genericSubscription(id, port, walletBalances$, toPortResult)
+        return genericSubscription(id, port, toPort$(walletBalances$))
 
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
@@ -39,8 +39,7 @@ export class BalancesHandler extends ExtensionHandler {
         return genericSubscription(
           id,
           port,
-          getBalancesByParams$(request as RequestBalancesByParamsSubscribe),
-          toPortResult
+          toPort$(getBalancesByParams$(request as RequestBalancesByParamsSubscribe))
         )
 
       default:
@@ -50,11 +49,13 @@ export class BalancesHandler extends ExtensionHandler {
 }
 
 // confirmedBalanceIds is every address times every active token and the UI reads none of
-// it, so it stays on the background side of the port
-const toPortResult = (result: BalancesResult): BalanceSubscriptionResponse => ({
-  ...result,
-  confirmedBalanceIds: [],
-})
+// it, so it stays on the background side of the port. Two results that differ only in that
+// list are one message
+const toPort$ = (results$: Observable<BalancesResult>): Observable<BalanceSubscriptionResponse> =>
+  results$.pipe(
+    map((result) => ({ ...result, confirmedBalanceIds: [] })),
+    distinctUntilChanged(isEqualBalancesResult)
+  )
 
 const getBalance = ({ address, tokenId }: RequestBalance) => {
   return firstValueFrom(
