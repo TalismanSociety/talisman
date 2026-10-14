@@ -557,6 +557,7 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
   (platform) => {
     afterEach(() => {
       vi.useRealTimers()
+      vi.restoreAllMocks()
       fakeModules.subscribeBalances.mockReset()
     })
 
@@ -580,6 +581,18 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
 
     const storedStatuses = async (provider: BalancesProvider) =>
       (await firstValueFrom(provider.storage$)).balances.map((b) => b.status)
+
+    // settle() moves the clock 100ms past the error, so the resubscribe lands exactly
+    // delayMs after the error and not one millisecond earlier
+    const failAndWait = async (modules: Subject<FetchBalanceResults>[], delayMs: number) => {
+      const count = modules.length
+      modules[count - 1].error(new Error("boom"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(delayMs - 101)
+      expect(modules).toHaveLength(count)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(modules).toHaveLength(count + 1)
+    }
 
     it("a module that dies before its first delivery lists every owned id as failed and confirms them after the retry delay", async () => {
       const scope = makeScope(platform)
@@ -672,7 +685,7 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
       await vi.advanceTimersByTimeAsync(10_000)
       modules[1].error(new Error("boom again"))
       await settle()
-      await vi.advanceTimersByTimeAsync(10_000)
+      await vi.advanceTimersByTimeAsync(20_000)
       modules[2].next({ success: [], errors: [] })
       await settle()
 
@@ -690,6 +703,49 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
           failedBalanceIds: [],
           confirmedBalanceIds: [scope.balanceId],
         },
+      ])
+      subscription.unsubscribe()
+    })
+
+    it("retries back off 10s, 20s, 40s and start over at 10s after a delivery", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      await failAndWait(modules, 10_000)
+      await failAndWait(modules, 20_000)
+      await failAndWait(modules, 40_000)
+      modules[3].next({ success: [], errors: [] })
+      await settle()
+      await failAndWait(modules, 10_000)
+      subscription.unsubscribe()
+    })
+
+    it("the delay caps at 5 minutes and the log turns to error after five failures in a row", async () => {
+      const warn = vi.spyOn(log, "warn")
+      const error = vi.spyOn(log, "error")
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      for (const delayMs of [10_000, 20_000, 40_000, 80_000, 160_000, 300_000, 300_000])
+        await failAndWait(modules, delayMs)
+
+      const prefix = `[balances] module ${PLATFORMS[platform].tokenType} on ${scope.networkId} failed`
+      expect(
+        warn.mock.calls.map(([message]) => message).filter((m) => m.startsWith(prefix))
+      ).toEqual([
+        `${prefix} 1 times in a row, retrying in 10000ms`,
+        `${prefix} 2 times in a row, retrying in 20000ms`,
+        `${prefix} 3 times in a row, retrying in 40000ms`,
+        `${prefix} 4 times in a row, retrying in 80000ms`,
+        `${prefix} 5 times in a row, retrying in 160000ms`,
+      ])
+      expect(error.mock.calls.map(([message]) => message)).toEqual([
+        `${prefix} 6 times in a row, retrying in 300000ms`,
+        `${prefix} 7 times in a row, retrying in 300000ms`,
       ])
       subscription.unsubscribe()
     })

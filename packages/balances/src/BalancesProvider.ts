@@ -76,6 +76,8 @@ type BalancesStatus = "initialising" | "live"
 const GENERIC_DRIFT_TOLERANCE_BPS = 10n
 
 const MODULE_RETRY_DELAY_MS = 10_000
+const MODULE_RETRY_MAX_DELAY_MS = 5 * 60_000
+const MODULE_RETRY_ERROR_THRESHOLD = 5
 
 class SpecVersionUnavailableError extends Error {
   constructor(networkId: NetworkId, options: ErrorOptions) {
@@ -894,7 +896,9 @@ const getRequestedBalances = (addressesByTokenId: Record<TokenId, Address[]>): R
 // a module error is not final: one emission fails every requested id, so the result map and
 // updateStorage$ mark their stored rows stale and withhold confirmation, then the module
 // resubscribes after the delay. The shared module stream never completes, so a scope keeps
-// its subscription instead of replaying its last value forever
+// its subscription instead of replaying its last value forever. The delay doubles on each
+// failure in a row up to the cap, and real data resets it: the failure emission is a next
+// too, so retry's resetOnSuccess would reset the count on every cycle
 const failAndRetry =
   ({
     networkId,
@@ -906,24 +910,32 @@ const failAndRetry =
     requestedBalances: RequestedBalance[]
   }) =>
   (source: Observable<FetchBalanceResults>): Observable<FetchBalanceResults> =>
-    source.pipe(
-      catchError((cause: unknown) => {
-        log.warn(
-          `[balances] module ${moduleType} on ${networkId} failed, retrying in ${MODULE_RETRY_DELAY_MS}ms`,
-          cause
-        )
-        const error = cause instanceof Error ? cause : new Error(String(cause))
-        const failure: FetchBalanceResults = {
-          success: [],
-          errors: requestedBalances.map((balance) => ({ ...balance, error })),
-        }
-        return concat(
-          of(failure),
-          throwError(() => cause)
-        )
-      }),
-      retry({ delay: () => timer(MODULE_RETRY_DELAY_MS) })
-    )
+    defer(() => {
+      let failures = 0
+      const retryDelayMs = () =>
+        Math.min(MODULE_RETRY_DELAY_MS * 2 ** (failures - 1), MODULE_RETRY_MAX_DELAY_MS)
+      return source.pipe(
+        tap(() => {
+          failures = 0
+        }),
+        catchError((cause: unknown) => {
+          failures++
+          const message = `[balances] module ${moduleType} on ${networkId} failed ${failures} times in a row, retrying in ${retryDelayMs()}ms`
+          if (failures > MODULE_RETRY_ERROR_THRESHOLD) log.error(message, cause)
+          else log.warn(message, cause)
+          const error = cause instanceof Error ? cause : new Error(String(cause))
+          const failure: FetchBalanceResults = {
+            success: [],
+            errors: requestedBalances.map((balance) => ({ ...balance, error })),
+          }
+          return concat(
+            of(failure),
+            throwError(() => cause)
+          )
+        }),
+        retry({ delay: () => timer(retryDelayMs()) })
+      )
+    })
 
 const getFailedBalanceIds = (results: FetchBalanceResults): string[] =>
   results.errors.map(({ tokenId, address }) => getBalanceId({ tokenId, address }))
