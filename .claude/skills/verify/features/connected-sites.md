@@ -22,7 +22,7 @@ Preconditions:
 
 - **Open the list.** `ab tab new "$EXT/dashboard.html#/settings/connected-sites"`, `ab wait --text "example.org"`. The row is an accordion button whose name ends in `example.org 1 of N`; the origin label the dapp passed may come first, and a Solana connect clears it. Match the row on the host. Click it to reveal `Forget Site`, `Disconnect All` and `Connect All`. Screenshot.
 - **Disconnect all.** Click `Disconnect All` in the expanded row (not the toolbar `Disconnect All Sites`). The count reads "0 of N". On the dapp tab, `ab eval 'window.talismanEth.request({ method: "eth_accounts" })'` returns `[]`.
-- **Forget on Solana.** `ab find role button click --name "Solana" --exact`, expand the row, click `Forget Site`, then `Forget Site` in the dialog. The row leaves this tab. `sitesAuthorized["example.org"]` loses `solAddresses` and keeps `addresses`, `ethAddresses` and `ethPermissions`.
+- **Forget on Solana.** `ab find role button click --name "Solana" --exact`, expand the row, click `Forget Site`, `ab wait --text "You can always reconnect"`, then `Forget Site` in the dialog. The row leaves this tab. `sitesAuthorized["example.org"]` loses `solAddresses` and keeps `addresses`, `ethAddresses` and `ethPermissions`.
 - **Forget on Ethereum, then Substrate.** Same clicks on each tab. After the Ethereum forget, the entry keeps `addresses` and has no `ethAddresses`, `ethPermissions` or `ethChainId`. The Substrate forget then deletes the key.
 - **Prove it.** `sw-eval.mjs 'chrome.storage.local.get("sitesAuthorized")'` has no `example.org` key.
 
@@ -34,3 +34,4 @@ Preconditions:
 - `Connect All` is hidden on the Solana tab.
 - `wallet_revokePermissions` from the dapp leaves an empty entry that only Forget Site removes.
 - `Forget Site` appears twice: on the row and in the dialog. Click the dialog button last.
+- Product bug, seen on 2026-10-14: after an EVM or Solana connect the dialog reads "Confirm to forget ." with no site name. Those connects store an empty `origin`, and the dialog shows `origin ?? id` (`AuthorisedSite.tsx`). Wait on "You can always reconnect" instead. Delete this line once the bug is fixed.

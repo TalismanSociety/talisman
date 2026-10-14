@@ -7,7 +7,8 @@ A user sees the fiat total and token balances of all accounts, or of one account
 - `portfolio-total` shows the total over "All Accounts" and per account in the sidebar.
 - `portfolio-tokens` lists token balances for the selected account, with search and sort.
 - `portfolio-token-detail` opens one token with its per-network and per-account breakdown.
-- `portfolio-nfts` and `portfolio-defi` show the NFTs and DeFi tabs.
+- `portfolio-nfts` shows the NFTs tab.
+- `portfolio-defi`: the DeFi tab only reads "DeFi has moved to Earn", with a `Go to Earn` button. Positions live in Earn.
 
 ## How to get to it (user POV)
 
