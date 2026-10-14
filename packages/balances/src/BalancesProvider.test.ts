@@ -1,20 +1,29 @@
 import type { ChaindataProvider, Network, Token } from "@talismn/chaindata-provider"
-import { NEVER, of, Subject } from "rxjs"
+import { firstValueFrom, NEVER, of, Subject } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
 import { getBalanceId } from "./classes"
+import log from "./log"
+import { subscribeBalances as subscribeSolSpl } from "./modules/sol-spl/subscribeBalances"
 import { deriveMiniMetadataId, type IBalance } from "./types"
 import type { ChainConnectors } from "./types/chainConnectors"
 import type { FetchBalanceResults } from "./types/IBalanceModule"
 
 const fakeModules = vi.hoisted(() => {
   const subscribeBalances = vi.fn()
-  const fake = (platform: string, type: string) => ({ platform, type, subscribeBalances })
+  const subscribeTolerant = vi.fn()
+  const fake = (platform: string, type: string, subscribe = subscribeBalances) => ({
+    platform,
+    type,
+    subscribeBalances: subscribe,
+  })
   return {
     subscribeBalances,
+    subscribeTolerant,
     BALANCE_MODULES: [
       fake("polkadot", "substrate-native"),
+      fake("polkadot", "substrate-hydration", subscribeTolerant),
       fake("ethereum", "evm-native"),
       fake("solana", "sol-native"),
     ],
@@ -203,8 +212,14 @@ describe("BalancesProvider restart seeds", () => {
 type Platform = "polkadot" | "ethereum" | "solana"
 
 const SS58 = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+const CHARLIE = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 const H160 = "0x0000000000000000000000000000000000000001"
+const H160_B = "0x0000000000000000000000000000000000000002"
+const H160_C = "0x0000000000000000000000000000000000000003"
 const SOLANA = "So11111111111111111111111111111111111111112"
+const SOLANA_B = "11111111111111111111111111111111"
+const SOLANA_C = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 const PLATFORMS: Record<
   Platform,
@@ -212,6 +227,7 @@ const PLATFORMS: Record<
     tokenType: string
     network: Partial<Network>
     address: string
+    others: [string, string]
     incompatible: string
     connectors: ChainConnectors
   }
@@ -220,6 +236,7 @@ const PLATFORMS: Record<
     tokenType: "substrate-native",
     network: { platform: "polkadot", account: "*25519" },
     address: SS58,
+    others: [BOB, CHARLIE],
     incompatible: H160,
     connectors: {
       substrate: { send: async () => ({ specVersion: 1 }) },
@@ -229,6 +246,7 @@ const PLATFORMS: Record<
     tokenType: "evm-native",
     network: { platform: "ethereum" },
     address: H160,
+    others: [H160_B, H160_C],
     incompatible: SS58,
     connectors: { evm: {} } as unknown as ChainConnectors,
   },
@@ -236,6 +254,7 @@ const PLATFORMS: Record<
     tokenType: "sol-native",
     network: { platform: "solana" },
     address: SOLANA,
+    others: [SOLANA_B, SOLANA_C],
     incompatible: SS58,
     connectors: { solana: {} } as unknown as ChainConnectors,
   },
@@ -249,6 +268,7 @@ const makeScope = (platform: Platform) => {
     tokenType,
     network: networkPartial,
     address,
+    others,
     incompatible,
     connectors,
   } = PLATFORMS[platform]
@@ -256,20 +276,18 @@ const makeScope = (platform: Platform) => {
   const tokenId = `${networkId}:${tokenType}`
   const network = { id: networkId, ...networkPartial } as Network
   const token = { id: tokenId, type: tokenType, networkId } as Token
-  const miniMetadataId = deriveMiniMetadataId({
-    source: tokenType,
-    chainId: networkId,
-    specVersion: 1,
-  })
-  const miniMetadata = {
-    id: miniMetadataId,
-    source: tokenType,
-    chainId: networkId,
-    specVersion: 1,
-    version: "1",
-    data: null,
-    extra: null,
-  }
+  // the provider reads the defaults only when every polkadot module has one
+  const miniMetadatas = fakeModules.BALANCE_MODULES.filter((m) => m.platform === "polkadot").map(
+    ({ type: source }) => ({
+      id: deriveMiniMetadataId({ source, chainId: networkId, specVersion: 1 }),
+      source,
+      chainId: networkId,
+      specVersion: 1,
+      version: "1",
+      data: null,
+      extra: null,
+    })
+  )
   const balanceId = getBalanceId({ address, tokenId })
   const row = makeBalance({ address, tokenId, networkId, source: tokenType })
   return {
@@ -277,8 +295,9 @@ const makeScope = (platform: Platform) => {
     tokenId,
     network,
     token,
-    miniMetadata,
+    miniMetadatas,
     address,
+    others,
     incompatible,
     balanceId,
     row,
@@ -293,7 +312,7 @@ const makeChaindata = (...scopes: Scope[]) =>
     getTokensMapById$: () => of(Object.fromEntries(scopes.map((s) => [s.tokenId, s.token]))),
     getNetworksMapById$: () => of(Object.fromEntries(scopes.map((s) => [s.networkId, s.network]))),
     miniMetadatasMapById$: of(
-      Object.fromEntries(scopes.map((s) => [s.miniMetadata.id, s.miniMetadata]))
+      Object.fromEntries(scopes.flatMap((s) => s.miniMetadatas.map((m) => [m.id, m])))
     ),
     registerDynamicTokens: vi.fn(),
   }) as unknown as ChaindataProvider
@@ -425,8 +444,6 @@ describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
   }
 )
 
-const BOB = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-const CHARLIE = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 const boom = (tokenId: string, address: string) => ({ tokenId, address, error: new Error("boom") })
 
 describe("getBalances$ over several ids", () => {
@@ -540,6 +557,403 @@ describe("the 30s sweep", () => {
       balances: [confirmed.row, { ...dead.row, status: "stale" }],
       failedBalanceIds: [],
       confirmedBalanceIds: [confirmed.balanceId],
+    })
+    subscription.unsubscribe()
+  })
+})
+
+describe.each(["polkadot", "ethereum", "solana"] as Platform[])(
+  "%s pipeline module failure",
+  (platform) => {
+    afterEach(() => {
+      vi.useRealTimers()
+      vi.restoreAllMocks()
+      fakeModules.subscribeBalances.mockReset()
+    })
+
+    // one Subject per subscribeBalances call: a retry resubscribes the module, and a
+    // Subject that errored would re-error every later subscriber
+    const setup = (scope: Scope, storage?: IBalance[]) => {
+      useFakeTimers()
+      const modules: Subject<FetchBalanceResults>[] = []
+      fakeModules.subscribeBalances.mockImplementation(() => {
+        const module$ = new Subject<FetchBalanceResults>()
+        modules.push(module$)
+        return module$
+      })
+      const provider = new BalancesProvider(
+        makeChaindata(scope),
+        scope.connectors,
+        storage && { balances: storage, miniMetadatas: [] }
+      )
+      return { modules, provider }
+    }
+
+    const storedStatuses = async (provider: BalancesProvider) =>
+      (await firstValueFrom(provider.storage$)).balances.map((b) => b.status)
+
+    // settle() moves the clock 100ms past the error, so the resubscribe lands exactly
+    // delayMs after the error and not one millisecond earlier
+    const failAndWait = async (modules: Subject<FetchBalanceResults>[], delayMs: number) => {
+      const count = modules.length
+      modules[count - 1].error(new Error("boom"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(delayMs - 101)
+      expect(modules).toHaveLength(count)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(modules).toHaveLength(count + 1)
+    }
+
+    it("a module that dies before its first delivery lists every owned id as failed and confirms them after the retry delay", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions).toEqual([
+        seedResult(),
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+
+      await vi.advanceTimersByTimeAsync(9_000)
+      expect(modules).toHaveLength(1)
+      await vi.advanceTimersByTimeAsync(1_000)
+      expect(modules).toHaveLength(2)
+      modules[1].next({ success: [], errors: [] })
+      await settle()
+
+      expect(emissions.slice(2)).toEqual([
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies with three addresses lists all three ids as failed and confirms all three after the retry", async () => {
+      const scope = makeScope(platform)
+      const addresses = [scope.address, ...scope.others]
+      const balanceIds = addresses
+        .map((address) => getBalanceId({ address, tokenId: scope.tokenId }))
+        .sort()
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: addresses })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions.at(-1)).toEqual({
+        status: "live",
+        balances: [],
+        failedBalanceIds: balanceIds,
+        confirmedBalanceIds: [],
+      })
+
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].next({ success: [], errors: [] })
+      await settle()
+      expect(emissions.at(-1)).toEqual({
+        status: "live",
+        balances: [],
+        failedBalanceIds: [],
+        confirmedBalanceIds: balanceIds,
+      })
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies after a delivery lists its ids as failed, marks stored rows stale and confirms again after the retry delay", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].next({ success: [scope.row], errors: [] })
+      await settle()
+      expect(await storedStatuses(provider)).toEqual(["cache"])
+
+      modules[0].error(new Error("boom"))
+      await settle()
+      expect(emissions.slice(1)).toEqual([
+        {
+          status: "live",
+          balances: [scope.row],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+        {
+          status: "live",
+          balances: [{ ...scope.row, status: "stale" }],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+      expect(await storedStatuses(provider)).toEqual(["stale"])
+
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].next({ success: [scope.row], errors: [] })
+      await settle()
+
+      expect(emissions.slice(3)).toEqual([
+        {
+          status: "live",
+          balances: [scope.row],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      expect(await storedStatuses(provider)).toEqual(["cache"])
+      subscription.unsubscribe()
+    })
+
+    it("a module that dies twice in a row reports the failure once and keeps retrying", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(10_000)
+      modules[1].error(new Error("boom again"))
+      await settle()
+      await vi.advanceTimersByTimeAsync(20_000)
+      modules[2].next({ success: [], errors: [] })
+      await settle()
+
+      expect(emissions).toEqual([
+        seedResult(),
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+        {
+          status: "live",
+          balances: [],
+          failedBalanceIds: [],
+          confirmedBalanceIds: [scope.balanceId],
+        },
+      ])
+      subscription.unsubscribe()
+    })
+
+    it("retries back off 10s, 20s, 40s and start over at 10s after a delivery", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      await failAndWait(modules, 10_000)
+      await failAndWait(modules, 20_000)
+      await failAndWait(modules, 40_000)
+      modules[3].next({ success: [], errors: [] })
+      await settle()
+      await failAndWait(modules, 10_000)
+      subscription.unsubscribe()
+    })
+
+    it("the delay caps at 5 minutes and the log turns to error after five failures in a row", async () => {
+      const warn = vi.spyOn(log, "warn")
+      const error = vi.spyOn(log, "error")
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const { subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      for (const delayMs of [10_000, 20_000, 40_000, 80_000, 160_000, 300_000, 300_000])
+        await failAndWait(modules, delayMs)
+
+      const prefix = `[balances] module ${PLATFORMS[platform].tokenType} on ${scope.networkId} failed`
+      expect(
+        warn.mock.calls.map(([message]) => message).filter((m) => m.startsWith(prefix))
+      ).toEqual([
+        `${prefix} 1 times in a row, retrying in 10000ms`,
+        `${prefix} 2 times in a row, retrying in 20000ms`,
+        `${prefix} 3 times in a row, retrying in 40000ms`,
+        `${prefix} 4 times in a row, retrying in 80000ms`,
+        `${prefix} 5 times in a row, retrying in 160000ms`,
+      ])
+      expect(error.mock.calls.map(([message]) => message)).toEqual([
+        `${prefix} 6 times in a row, retrying in 300000ms`,
+        `${prefix} 7 times in a row, retrying in 300000ms`,
+      ])
+      subscription.unsubscribe()
+    })
+
+    it("a scope that joins after the module failed receives the failure, not the last confirmed list", async () => {
+      const scope = makeScope(platform)
+      const { modules, provider } = setup(scope)
+      const first = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+      await settle()
+      modules[0].next({ success: [scope.row], errors: [] })
+      await settle()
+      modules[0].error(new Error("boom"))
+      await settle()
+
+      const joiner = subscribe(provider, { [scope.tokenId]: [scope.address] })
+      await settle()
+
+      expect(joiner.emissions).toEqual([
+        {
+          status: "live",
+          balances: [{ ...scope.row, status: "stale" }],
+          failedBalanceIds: [scope.balanceId],
+          confirmedBalanceIds: [],
+        },
+      ])
+      expect(modules).toHaveLength(1)
+      first.subscription.unsubscribe()
+      joiner.subscription.unsubscribe()
+    })
+  }
+)
+
+// substrate-hydration, substrate-dtao, evm-native, evm-erc20 and sol-native catch their RPC
+// errors and return per-id errors, so their pollers never reach failAndRetry. sol-spl throws
+// from fetchBalances, here on a connector with no client, and the poller errors the stream
+describe("a poller whose fetch throws", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    fakeModules.subscribeBalances.mockReset()
+  })
+
+  it("the sol-spl poller recovers after a poll throws on a missing client", async () => {
+    useFakeTimers()
+    const scope = makeScope("solana")
+    const rpc = { getTokenAccountsByOwner: () => ({ send: async () => ({ value: [] }) }) }
+    const getRpc = vi.fn().mockReturnValueOnce(undefined).mockReturnValue(rpc)
+    const connectors = { solana: { getRpc } } as unknown as ChainConnectors
+    fakeModules.subscribeBalances.mockImplementation(subscribeSolSpl)
+    const provider = new BalancesProvider(makeChaindata(scope), connectors)
+    const { emissions, subscription } = subscribe(provider, { [scope.tokenId]: [scope.address] })
+
+    // the first poll throws inside the aggregate's audit window, so the failure replaces the seed
+    await settle()
+    expect(emissions).toEqual([
+      {
+        status: "live",
+        balances: [],
+        failedBalanceIds: [scope.balanceId],
+        confirmedBalanceIds: [],
+      },
+    ])
+
+    await vi.advanceTimersByTimeAsync(10_000)
+    await settle()
+    expect(getRpc).toHaveBeenCalledTimes(2)
+    expect(emissions.slice(1)).toEqual([
+      {
+        status: "live",
+        balances: [],
+        failedBalanceIds: [],
+        confirmedBalanceIds: [scope.balanceId],
+      },
+    ])
+    subscription.unsubscribe()
+  })
+})
+
+describe("a polkadot network dead at boot", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+    fakeModules.subscribeBalances.mockReset()
+    fakeModules.subscribeTolerant.mockReset()
+  })
+
+  // the native module throws on a missing mini metadata, as buildNetworkStorageCoders does;
+  // the hydration module tolerates it and keeps its subscription, so it holds the shared
+  // mini metadata stream across the native retry
+  it("the native module recovers once the RPC answers while a tolerant co-module holds the mini metadata stream", async () => {
+    useFakeTimers()
+    const warn = vi.spyOn(log, "warn")
+    const scope = makeScope("polkadot")
+    const tolerantTokenId = `${scope.networkId}:substrate-hydration:0`
+    const tolerantToken = {
+      id: tolerantTokenId,
+      type: "substrate-hydration",
+      networkId: scope.networkId,
+    } as Token
+    const tolerantBalanceId = getBalanceId({ address: scope.address, tokenId: tolerantTokenId })
+    let rpcUp = false
+    let specCalls = 0
+    const connectors = {
+      substrate: {
+        send: async () => {
+          specCalls++
+          if (!rpcUp) throw new Error("socket closed")
+          return { specVersion: 1 }
+        },
+      },
+    } as unknown as ChainConnectors
+    const chaindata = {
+      ...makeChaindata(scope),
+      getTokensMapById$: () =>
+        of({ [scope.tokenId]: scope.token, [tolerantTokenId]: tolerantToken }),
+    } as unknown as ChaindataProvider
+
+    const natives: Subject<FetchBalanceResults>[] = []
+    fakeModules.subscribeBalances.mockImplementation(({ miniMetadata }) => {
+      if (!miniMetadata) throw new TypeError("Cannot read properties of undefined (reading 'data')")
+      const module$ = new Subject<FetchBalanceResults>()
+      natives.push(module$)
+      return module$
+    })
+    const tolerants: Subject<FetchBalanceResults>[] = []
+    fakeModules.subscribeTolerant.mockImplementation(() => {
+      const module$ = new Subject<FetchBalanceResults>()
+      tolerants.push(module$)
+      return module$
+    })
+
+    const provider = new BalancesProvider(chaindata, connectors)
+    const { emissions, subscription } = subscribe(provider, {
+      [scope.tokenId]: [scope.address],
+      [tolerantTokenId]: [scope.address],
+    })
+
+    await vi.advanceTimersByTimeAsync(5_000)
+    await settle()
+    expect(specCalls).toBe(3)
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [],
+      failedBalanceIds: [scope.balanceId, tolerantBalanceId].sort(),
+      confirmedBalanceIds: [],
+    })
+    expect(warn.mock.calls.map(([, cause]) => cause)).toContainEqual(
+      expect.objectContaining({
+        name: "SpecVersionUnavailableError",
+        message: `spec version unavailable for ${scope.networkId}`,
+      })
+    )
+
+    rpcUp = true
+    await vi.advanceTimersByTimeAsync(10_000)
+    await settle()
+    expect(specCalls).toBe(4)
+    expect(natives).toHaveLength(1)
+    natives[0].next({ success: [scope.row], errors: [] })
+    tolerants.at(-1)!.next({ success: [], errors: [] })
+    await settle()
+
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [scope.row],
+      failedBalanceIds: [],
+      confirmedBalanceIds: [scope.balanceId, tolerantBalanceId].sort(),
     })
     subscription.unsubscribe()
   })

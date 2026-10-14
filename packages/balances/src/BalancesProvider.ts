@@ -26,9 +26,9 @@ import {
   auditTime,
   catchError,
   combineLatest,
+  concat,
   defer,
   distinctUntilChanged,
-  EMPTY,
   filter,
   firstValueFrom,
   from,
@@ -36,10 +36,12 @@ import {
   type Observable,
   of,
   ReplaySubject,
+  retry,
   shareReplay,
   startWith,
   switchMap,
   tap,
+  throwError,
   timer,
 } from "rxjs"
 import { withRetry } from "viem"
@@ -72,6 +74,17 @@ type BalancesStatus = "initialising" | "live"
  * Kept tight — a real incoming transfer above 0.1% of the position emits immediately.
  */
 const GENERIC_DRIFT_TOLERANCE_BPS = 10n
+
+const MODULE_RETRY_DELAY_MS = 10_000
+const MODULE_RETRY_MAX_DELAY_MS = 5 * 60_000
+const MODULE_RETRY_ERROR_THRESHOLD = 5
+
+class SpecVersionUnavailableError extends Error {
+  constructor(networkId: NetworkId, options: ErrorOptions) {
+    super(`spec version unavailable for ${networkId}`, options)
+    this.name = "SpecVersionUnavailableError"
+  }
+}
 
 export type BalancesResult = {
   status: BalancesStatus
@@ -352,10 +365,8 @@ export class BalancesProvider {
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
         )
 
-        // all balance ids expected in result set
-        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
-          addresses.map((address) => getBalanceId({ tokenId, address }))
-        )
+        const requestedBalances = getRequestedBalances(moduleAddressesByTokenId)
+        const balanceIds = requestedBalances.map((balance) => getBalanceId(balance))
 
         if (!this.#chainConnectors.substrate) {
           log.warn("[balances] no substrate connector or miniMetadata for module", mod.type)
@@ -390,7 +401,7 @@ export class BalancesProvider {
               ? undefined
               : classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)
           ),
-          catchError(() => EMPTY), // don't emit, let provider mark balances stale
+          failAndRetry({ networkId, moduleType: mod.type, requestedBalances }),
           tap((results) => {
             // marks which module's poll/subscription just produced results, so JS-thread
             // stall reports can attribute blocked windows to the right pipeline
@@ -472,10 +483,8 @@ export class BalancesProvider {
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
         )
 
-        // all balance ids expected in result set
-        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
-          addresses.map((address) => getBalanceId({ tokenId, address }))
-        )
+        const requestedBalances = getRequestedBalances(moduleAddressesByTokenId)
+        const balanceIds = requestedBalances.map((balance) => getBalanceId(balance))
 
         if (!this.#chainConnectors.evm) {
           log.warn("[balances] no ethereum connector for module", mod.type)
@@ -489,37 +498,34 @@ export class BalancesProvider {
           )
         }
 
-        const moduleBalances$ = mod
-          .subscribeBalances({
-            networkId,
-            tokensWithAddresses,
-            connector: this.#chainConnectors.evm,
-          })
-          .pipe(
-            tap((results) =>
-              reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
-            ),
-            // keep unchanged balances reference-stable across poll emissions (see the
-            // polkadot pipeline for rationale)
-            stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
-            catchError(() => EMPTY), // don't emit, let provider mark balances stale
-            map((results): BalancesResult => {
-              const failedBalanceIds = getFailedBalanceIds(results)
-              return {
-                status: "live",
-                // exclude zero balances
-                balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
-                failedBalanceIds,
-                confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
-              }
-            }),
-            tap((results) => {
-              this.updateStorage$(results)
-            }),
-            // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
-            shareReplay({ refCount: true, bufferSize: 1 }),
-            keepAlive(0)
-          )
+        const connector = this.#chainConnectors.evm
+        const moduleBalances$ = defer(() =>
+          mod.subscribeBalances({ networkId, tokensWithAddresses, connector })
+        ).pipe(
+          tap((results) =>
+            reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
+          ),
+          // keep unchanged balances reference-stable across poll emissions (see the
+          // polkadot pipeline for rationale)
+          stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
+          failAndRetry({ networkId, moduleType: mod.type, requestedBalances }),
+          map((results): BalancesResult => {
+            const failedBalanceIds = getFailedBalanceIds(results)
+            return {
+              status: "live",
+              // exclude zero balances
+              balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
+              failedBalanceIds,
+              confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
+            }
+          }),
+          tap((results) => {
+            this.updateStorage$(results)
+          }),
+          // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
+          shareReplay({ refCount: true, bufferSize: 1 }),
+          keepAlive(0)
+        )
 
         // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
         return defer(() =>
@@ -557,10 +563,8 @@ export class BalancesProvider {
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses])
         )
 
-        // all balance ids expected in result set
-        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
-          addresses.map((address) => getBalanceId({ tokenId, address }))
-        )
+        const requestedBalances = getRequestedBalances(moduleAddressesByTokenId)
+        const balanceIds = requestedBalances.map((balance) => getBalanceId(balance))
 
         if (!this.#chainConnectors.solana) {
           log.warn("[balances] no solana connector for module", mod.type)
@@ -574,43 +578,40 @@ export class BalancesProvider {
           )
         }
 
-        const moduleBalances$ = mod
-          .subscribeBalances({
-            networkId,
-            tokensWithAddresses,
-            connector: this.#chainConnectors.solana,
-          })
-          .pipe(
-            tap((results) =>
-              reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
-            ),
-            // keep unchanged balances reference-stable across poll emissions (see the
-            // polkadot pipeline for rationale)
-            stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
-            catchError(() => EMPTY), // don't emit, let provider mark balances stale
-            tap((results) => {
-              if (results.dynamicTokens?.length) {
-                // register missing tokens in the chaindata provider
-                this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
-              }
-            }),
-            map((results): BalancesResult => {
-              const failedBalanceIds = getFailedBalanceIds(results)
-              return {
-                status: "live",
-                // exclude zero balances
-                balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
-                failedBalanceIds,
-                confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
-              }
-            }),
-            tap((results) => {
-              this.updateStorage$(results)
-            }),
-            // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
-            shareReplay({ refCount: true, bufferSize: 1 }),
-            keepAlive(0)
-          )
+        const connector = this.#chainConnectors.solana
+        const moduleBalances$ = defer(() =>
+          mod.subscribeBalances({ networkId, tokensWithAddresses, connector })
+        ).pipe(
+          tap((results) =>
+            reportJsActivity(`module ${mod.type} ${networkId} (${results.success.length})`)
+          ),
+          // keep unchanged balances reference-stable across poll emissions (see the
+          // polkadot pipeline for rationale)
+          stabilizeModuleResults(classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)),
+          failAndRetry({ networkId, moduleType: mod.type, requestedBalances }),
+          tap((results) => {
+            if (results.dynamicTokens?.length) {
+              // register missing tokens in the chaindata provider
+              this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
+            }
+          }),
+          map((results): BalancesResult => {
+            const failedBalanceIds = getFailedBalanceIds(results)
+            return {
+              status: "live",
+              // exclude zero balances
+              balances: results.success.filter((b) => getRawTotalPlanck(b) > 0n),
+              failedBalanceIds,
+              confirmedBalanceIds: getConfirmedBalanceIds(balanceIds, failedBalanceIds),
+            }
+          }),
+          tap((results) => {
+            this.updateStorage$(results)
+          }),
+          // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
+          shareReplay({ refCount: true, bufferSize: 1 }),
+          keepAlive(0)
+        )
 
         // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
         return defer(() =>
@@ -708,9 +709,7 @@ export class BalancesProvider {
         switchMap((network) =>
           isNetworkDot(network)
             ? this.getNetworkSpecVersion$(networkId).pipe(
-                switchMap((specVersion) =>
-                  specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion)
-                )
+                switchMap((specVersion) => this.getMiniMetadatas$(networkId, specVersion))
               )
             : of([])
         ),
@@ -719,7 +718,10 @@ export class BalancesProvider {
     })
   }
 
-  private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {
+  // the error resets the shared mini metadata stream, so every module of the network fails
+  // through failAndRetry and its retry refetches the spec version. An empty list instead
+  // would be replayed to each retry for as long as any module of the network held the stream
+  private getNetworkSpecVersion$(networkId: NetworkId): Observable<number> {
     return from(
       withRetry(() => getSpecVersion(this.#chainConnectors.substrate!, networkId), {
         delay: 2_000,
@@ -729,10 +731,7 @@ export class BalancesProvider {
         },
       })
     ).pipe(
-      catchError(() => {
-        log.warn("Failed to fetch spec version for network", networkId)
-        return of(null as number | null)
-      })
+      catchError((cause) => throwError(() => new SpecVersionUnavailableError(networkId, { cause })))
     )
   }
 
@@ -886,6 +885,57 @@ const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
   const accountPlatform = getAccountPlatformFromAddress(address)
   return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }
+
+type RequestedBalance = { tokenId: TokenId; address: Address }
+
+const getRequestedBalances = (addressesByTokenId: Record<TokenId, Address[]>): RequestedBalance[] =>
+  toPairs(addressesByTokenId).flatMap(([tokenId, addresses]) =>
+    addresses.map((address) => ({ tokenId, address }))
+  )
+
+// a module error is not final: one emission fails every requested id, so the result map and
+// updateStorage$ mark their stored rows stale and withhold confirmation, then the module
+// resubscribes after the delay. The shared module stream never completes, so a scope keeps
+// its subscription instead of replaying its last value forever. The delay doubles on each
+// failure in a row up to the cap, and real data resets it. The failure emission is itself a
+// next, so retry's resetOnSuccess would reset the count on every cycle
+const failAndRetry =
+  ({
+    networkId,
+    moduleType,
+    requestedBalances,
+  }: {
+    networkId: NetworkId
+    moduleType: string
+    requestedBalances: RequestedBalance[]
+  }) =>
+  (source: Observable<FetchBalanceResults>): Observable<FetchBalanceResults> =>
+    defer(() => {
+      let failures = 0
+      const retryDelayMs = () =>
+        Math.min(MODULE_RETRY_DELAY_MS * 2 ** (failures - 1), MODULE_RETRY_MAX_DELAY_MS)
+      return source.pipe(
+        tap(() => {
+          failures = 0
+        }),
+        catchError((cause: unknown) => {
+          failures++
+          const message = `[balances] module ${moduleType} on ${networkId} failed ${failures} times in a row, retrying in ${retryDelayMs()}ms`
+          if (failures > MODULE_RETRY_ERROR_THRESHOLD) log.error(message, cause)
+          else log.warn(message, cause)
+          const error = cause instanceof Error ? cause : new Error(String(cause))
+          const failure: FetchBalanceResults = {
+            success: [],
+            errors: requestedBalances.map((balance) => ({ ...balance, error })),
+          }
+          return concat(
+            of(failure),
+            throwError(() => cause)
+          )
+        }),
+        retry({ delay: () => timer(retryDelayMs()) })
+      )
+    })
 
 const getFailedBalanceIds = (results: FetchBalanceResults): string[] =>
   results.errors.map(({ tokenId, address }) => getBalanceId({ tokenId, address }))
