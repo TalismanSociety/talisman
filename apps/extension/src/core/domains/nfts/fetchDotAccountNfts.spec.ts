@@ -194,7 +194,7 @@ describe("fetchDotAccountNfts", () => {
     expect(mocks.send).toHaveBeenCalledTimes(3)
     expect(mocks.getMetadataDef).toHaveBeenCalledTimes(1)
 
-    const nfts = toDotAccountNfts(first, fixtureJson)
+    const nfts = toDotAccountNfts(first, (uri) => ({ json: fixtureJson(uri), isPending: false }))
     expect(nftName(nfts, "4235681442")).toBe("Duo #4235681442")
     expect(nfts.nfts.map((nft) => nft.id).sort()).toEqual(
       OWNED.map(([c, i]) => `substrate:polkadot-asset-hub:Nfts:${c}:${i}`).sort()
@@ -292,6 +292,11 @@ describe("fetchDotAccountNfts", () => {
     expect(latest.data.nfts.some((nft) => nft.collectionId.endsWith(":158"))).toBe(true)
     expect(fetchedUrls()).not.toContain(`${CHAOTIC}/158/2407162256`)
     expect(fetchedUrls()).not.toContain(CHAOTIC_COLLECTION_URL)
+    expect(
+      [...latest.data.nfts, ...latest.data.collections]
+        .filter(({ id }) => id.startsWith("substrate:polkadot-asset-hub:Nfts:158"))
+        .map(({ isMetadataPending }) => isMetadataPending)
+    ).toEqual([false, false])
 
     mocks.store$?.next({ hiddenNftCollectionIds: [] })
 
@@ -389,6 +394,45 @@ describe("fetchDotAccountNfts", () => {
     expect(mocks.send.mock.calls.length).toBe(rpcCalls)
     expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS)
     expect(emissions.filter((emission) => emission.status === "loading")).toHaveLength(1)
+    subscription.unsubscribe()
+  })
+
+  it("flags metadata as pending until its download succeeds or fails", async () => {
+    absentKeys.add(CHAOTIC_ITEM_KEY)
+    const { getDotAccountNfts$ } = await loadFetcher()
+    const releases: (() => void)[] = []
+    mocks.fetch.mockImplementation(
+      (url: string) => new Promise((resolve) => releases.push(() => resolve(respond(url))))
+    )
+    const emissions: QueryResult<AccountNfts>[] = []
+    const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
+    const latest = () => {
+      const result = emissions.at(-1)
+      if (result?.status !== "loaded") throw new Error("expected a loaded result")
+      return result.data
+    }
+    const pendingOf = (tokenId: string) =>
+      latest().nfts.find((nft) => nft.tokenId === tokenId)?.isMetadataPending
+
+    await vi.waitFor(() => expect(emissions.at(-1)?.status).toBe("loaded"))
+    expect(pendingOf("2407162256")).toBe(false)
+    expect(pendingOf("313")).toBe(true)
+    expect(pendingOf("4235681442")).toBe(true)
+    expect(latest().collections.find((c) => c.id.endsWith(":158"))?.isMetadataPending).toBe(true)
+
+    await vi.waitFor(() => expect(releases.length).toBeGreaterThan(0))
+    while (releases.length) {
+      releases.shift()?.()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+    await vi.waitFor(
+      () =>
+        expect(
+          [...latest().nfts, ...latest().collections].filter((nft) => nft.isMetadataPending)
+        ).toEqual([]),
+      { timeout: 5_000 }
+    )
+    expect(fetchedUrls()).toContain(NETWORK_ERROR_URL)
     subscription.unsubscribe()
   })
 })

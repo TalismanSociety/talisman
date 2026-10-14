@@ -95,6 +95,8 @@ const rememberFailure = (uri: string, kind: FailureKind) => {
 
 export const getCachedNftJsonMetadata = (uri: string) => cache.get(uri)?.json ?? null
 
+export const isNftJsonMetadataSettled = (uri: string) => cache.has(uri)
+
 export const fetchNftJsonMetadata = async (
   uri: string,
   signal: AbortSignal,

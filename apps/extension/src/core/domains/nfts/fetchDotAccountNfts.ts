@@ -28,6 +28,7 @@ import { getMetadataRpcFromDef } from "../metadata/helpers"
 import {
   fetchNftJsonMetadata,
   getCachedNftJsonMetadata,
+  isNftJsonMetadataSettled,
   nftJsonMetadataChanged$,
 } from "./nftJsonMetadata"
 import {
@@ -116,14 +117,22 @@ export const getDotAccountNfts$ = (account: Account): Observable<QueryResult<Acc
 
     const nfts$ = combineLatest([
       listing$,
+      hiddenCollectionIds$,
       nftJsonMetadataChanged$.pipe(
         throttleTime(FILL_IN_THROTTLE, undefined, { leading: true, trailing: true })
       ),
     ]).pipe(
-      map(([listing]): QueryResult<AccountNfts> => {
+      map(([listing, hiddenCollectionIds]): QueryResult<AccountNfts> => {
         if (listing.status === "error") return listing
         if (listing.status === "loading") return { ...listing, data: undefined }
-        return { ...listing, data: toDotAccountNfts(listing.data, getCachedNftJsonMetadata) }
+        const requested = new Set(urisToDownload(listing.data, hiddenCollectionIds))
+        return {
+          ...listing,
+          data: toDotAccountNfts(listing.data, (uri) => ({
+            json: getCachedNftJsonMetadata(uri),
+            isPending: requested.has(uri) && !isNftJsonMetadataSettled(uri),
+          })),
+        }
       })
     )
 
@@ -154,24 +163,35 @@ const urisToDownload = (
       .filter(isNotNil)
   )
 
+type NftMetadata = { json: NftJsonMetadata | null; isPending: boolean }
+
+const NO_METADATA: NftMetadata = { json: null, isPending: false }
+
 export const toDotAccountNfts = (
   { owner, items, collections }: SubstrateNftListing,
-  getJson: (uri: string) => NftJsonMetadata | null
+  getMetadata: (uri: string) => NftMetadata
 ): AccountNfts => {
-  const jsonOf = (uri: string | null) => (uri ? getJson(uri) : null)
+  const metadataOf = (uri: string | null) => (uri ? getMetadata(uri) : NO_METADATA)
   const collectionJsonById = new Map(
-    collections.map(({ ref, uri }) => [getSubstrateNftCollectionId(ref), jsonOf(uri)])
+    collections.map(({ ref, uri }) => [getSubstrateNftCollectionId(ref), metadataOf(uri).json])
   )
   return {
-    nfts: items.map(({ ref, uri }) =>
-      toSubstrateAccountNft(
-        ref,
-        owner,
-        jsonOf(uri),
-        collectionJsonById.get(getSubstrateNftCollectionId(ref)) ?? null
-      )
-    ),
-    collections: collections.map(({ ref, uri }) => toSubstrateNftCollection(ref, jsonOf(uri))),
+    nfts: items.map(({ ref, uri }) => {
+      const { json, isPending } = metadataOf(uri)
+      return {
+        ...toSubstrateAccountNft(
+          ref,
+          owner,
+          json,
+          collectionJsonById.get(getSubstrateNftCollectionId(ref)) ?? null
+        ),
+        isMetadataPending: isPending,
+      }
+    }),
+    collections: collections.map(({ ref, uri }) => {
+      const { json, isPending } = metadataOf(uri)
+      return { ...toSubstrateNftCollection(ref, json), isMetadataPending: isPending }
+    }),
   }
 }
 
