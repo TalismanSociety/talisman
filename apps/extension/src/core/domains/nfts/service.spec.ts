@@ -122,4 +122,13 @@ describe("nfts$", () => {
     )
     subscription.unsubscribe()
   })
+
+  it("reports a wallet without nft accounts as loaded", async () => {
+    const { nfts$ } = await loadService()
+
+    const data = await firstValueFrom(nfts$)
+
+    expect(data.status).toBe("loaded")
+    expect(data.nfts).toEqual([])
+  })
 })

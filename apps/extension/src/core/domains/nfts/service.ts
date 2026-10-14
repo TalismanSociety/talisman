@@ -14,6 +14,7 @@ import {
   firstValueFrom,
   map,
   Observable,
+  of,
   shareReplay,
   switchMap,
   tap,
@@ -78,7 +79,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           nftsData$.pipe(map((nftsData) => ({ address: account.address, nftsData })))
         )
       )
-      return combineLatest(accountsQueries)
+      return accountsQueries.length ? combineLatest(accountsQueries) : of([])
     }),
     map((accountsQueries) => {
       const status: NftLoadingStatus = accountsQueries.some((aq) => aq.nftsData.status === "error")
