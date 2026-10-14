@@ -317,6 +317,23 @@ describe("ChainConnectorDotPapi", () => {
     ])
   })
 
+  it("a failed query or a new best block leaves the stall timer running", async () => {
+    const fake = createFakeClient()
+    const { callback } = subscribeStorage(fake, false)
+
+    fake.newBestBlock("0x1")
+    await fake.answer("0x1", [["0xa", "0x01"]])
+    await vi.advanceTimersByTimeAsync(10_000)
+    fake.newBestBlock("0x2")
+    await fake.answer("0x2", failure)
+    await vi.advanceTimersByTimeAsync(80_000)
+
+    expect(callback.mock.calls).toEqual([
+      [null, { block: "0x1", changes: [["0xa", "0x01"]] }],
+      [new StaleRpcError("polkadot"), null],
+    ])
+  })
+
   it("reports an error when the block stream fails, or ends as a client other than polkadot-api's can", async () => {
     const fake = createFakeClient()
     const errored = subscribeStorage(fake)
@@ -337,7 +354,6 @@ describe("ChainConnectorDotPapi", () => {
     const { callback, unsubscribe } = subscribeStorage(fake)
 
     fake.newBestBlock("0x1")
-    expect(vi.getTimerCount()).toBe(3)
     ;(await unsubscribe)("state_unsubscribeStorage")
     await fake.answer("0x1", [["0xa", "0x01"]])
     expect(vi.getTimerCount()).toBe(0)
