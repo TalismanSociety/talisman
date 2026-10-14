@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { BalancesProvider, type BalancesResult, getSweepStaleVariant } from "./BalancesProvider"
 import { getBalanceId } from "./classes"
+import log from "./log"
 import { createPollingSubscribeBalances } from "./modules/shared/subscribeBalances"
 import { deriveMiniMetadataId, type IBalance } from "./types"
 import type { ChainConnectors } from "./types/chainConnectors"
@@ -11,11 +12,18 @@ import type { FetchBalanceResults } from "./types/IBalanceModule"
 
 const fakeModules = vi.hoisted(() => {
   const subscribeBalances = vi.fn()
-  const fake = (platform: string, type: string) => ({ platform, type, subscribeBalances })
+  const subscribeTolerant = vi.fn()
+  const fake = (platform: string, type: string, subscribe = subscribeBalances) => ({
+    platform,
+    type,
+    subscribeBalances: subscribe,
+  })
   return {
     subscribeBalances,
+    subscribeTolerant,
     BALANCE_MODULES: [
       fake("polkadot", "substrate-native"),
+      fake("polkadot", "substrate-hydration", subscribeTolerant),
       fake("ethereum", "evm-native"),
       fake("solana", "sol-native"),
     ],
@@ -257,20 +265,18 @@ const makeScope = (platform: Platform) => {
   const tokenId = `${networkId}:${tokenType}`
   const network = { id: networkId, ...networkPartial } as Network
   const token = { id: tokenId, type: tokenType, networkId } as Token
-  const miniMetadataId = deriveMiniMetadataId({
-    source: tokenType,
-    chainId: networkId,
-    specVersion: 1,
-  })
-  const miniMetadata = {
-    id: miniMetadataId,
-    source: tokenType,
-    chainId: networkId,
-    specVersion: 1,
-    version: "1",
-    data: null,
-    extra: null,
-  }
+  // the provider reads the defaults only when every polkadot module has one
+  const miniMetadatas = fakeModules.BALANCE_MODULES.filter((m) => m.platform === "polkadot").map(
+    ({ type: source }) => ({
+      id: deriveMiniMetadataId({ source, chainId: networkId, specVersion: 1 }),
+      source,
+      chainId: networkId,
+      specVersion: 1,
+      version: "1",
+      data: null,
+      extra: null,
+    })
+  )
   const balanceId = getBalanceId({ address, tokenId })
   const row = makeBalance({ address, tokenId, networkId, source: tokenType })
   return {
@@ -278,7 +284,7 @@ const makeScope = (platform: Platform) => {
     tokenId,
     network,
     token,
-    miniMetadata,
+    miniMetadatas,
     address,
     incompatible,
     balanceId,
@@ -294,7 +300,7 @@ const makeChaindata = (...scopes: Scope[]) =>
     getTokensMapById$: () => of(Object.fromEntries(scopes.map((s) => [s.tokenId, s.token]))),
     getNetworksMapById$: () => of(Object.fromEntries(scopes.map((s) => [s.networkId, s.network]))),
     miniMetadatasMapById$: of(
-      Object.fromEntries(scopes.map((s) => [s.miniMetadata.id, s.miniMetadata]))
+      Object.fromEntries(scopes.flatMap((s) => s.miniMetadatas.map((m) => [m.id, m])))
     ),
     registerDynamicTokens: vi.fn(),
   }) as unknown as ChaindataProvider
@@ -762,6 +768,101 @@ describe("the Hydration poller", () => {
         confirmedBalanceIds: [scope.balanceId],
       },
     ])
+    subscription.unsubscribe()
+  })
+})
+
+describe("a polkadot network dead at boot", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+    fakeModules.subscribeBalances.mockReset()
+    fakeModules.subscribeTolerant.mockReset()
+  })
+
+  // the native module throws on a missing mini metadata, as buildNetworkStorageCoders does;
+  // the hydration module tolerates it and keeps its subscription, so it holds the shared
+  // mini metadata stream across the native retry
+  it("the native module recovers once the RPC answers while a tolerant co-module holds the mini metadata stream", async () => {
+    useFakeTimers()
+    const warn = vi.spyOn(log, "warn")
+    const scope = makeScope("polkadot")
+    const tolerantTokenId = `${scope.networkId}:substrate-hydration:0`
+    const tolerantToken = {
+      id: tolerantTokenId,
+      type: "substrate-hydration",
+      networkId: scope.networkId,
+    } as Token
+    const tolerantBalanceId = getBalanceId({ address: scope.address, tokenId: tolerantTokenId })
+    let rpcUp = false
+    let specCalls = 0
+    const connectors = {
+      substrate: {
+        send: async () => {
+          specCalls++
+          if (!rpcUp) throw new Error("socket closed")
+          return { specVersion: 1 }
+        },
+      },
+    } as unknown as ChainConnectors
+    const chaindata = {
+      ...makeChaindata(scope),
+      getTokensMapById$: () =>
+        of({ [scope.tokenId]: scope.token, [tolerantTokenId]: tolerantToken }),
+    } as unknown as ChaindataProvider
+
+    const natives: Subject<FetchBalanceResults>[] = []
+    fakeModules.subscribeBalances.mockImplementation(({ miniMetadata }) => {
+      if (!miniMetadata) throw new TypeError("Cannot read properties of undefined (reading 'data')")
+      const module$ = new Subject<FetchBalanceResults>()
+      natives.push(module$)
+      return module$
+    })
+    const tolerants: Subject<FetchBalanceResults>[] = []
+    fakeModules.subscribeTolerant.mockImplementation(() => {
+      const module$ = new Subject<FetchBalanceResults>()
+      tolerants.push(module$)
+      return module$
+    })
+
+    const provider = new BalancesProvider(chaindata, connectors)
+    const { emissions, subscription } = subscribe(provider, {
+      [scope.tokenId]: [scope.address],
+      [tolerantTokenId]: [scope.address],
+    })
+
+    // three spec version attempts, 2s apart, then the module failure
+    await vi.advanceTimersByTimeAsync(5_000)
+    await settle()
+    expect(specCalls).toBe(3)
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [],
+      failedBalanceIds: [scope.balanceId, tolerantBalanceId].sort(),
+      confirmedBalanceIds: [],
+    })
+    expect(warn.mock.calls.map(([, cause]) => cause)).toContainEqual(
+      expect.objectContaining({
+        name: "SpecVersionUnavailableError",
+        message: `spec version unavailable for ${scope.networkId}`,
+      })
+    )
+
+    rpcUp = true
+    await vi.advanceTimersByTimeAsync(10_000)
+    await settle()
+    expect(specCalls).toBe(4)
+    expect(natives).toHaveLength(1)
+    natives[0].next({ success: [scope.row], errors: [] })
+    tolerants.at(-1)!.next({ success: [], errors: [] })
+    await settle()
+
+    expect(emissions.at(-1)).toEqual({
+      status: "live",
+      balances: [scope.row],
+      failedBalanceIds: [],
+      confirmedBalanceIds: [scope.balanceId, tolerantBalanceId].sort(),
+    })
     subscription.unsubscribe()
   })
 })

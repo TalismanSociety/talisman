@@ -77,6 +77,13 @@ const GENERIC_DRIFT_TOLERANCE_BPS = 10n
 
 const MODULE_RETRY_DELAY_MS = 10_000
 
+class SpecVersionUnavailableError extends Error {
+  constructor(networkId: NetworkId, options: ErrorOptions) {
+    super(`spec version unavailable for ${networkId}`, options)
+    this.name = "SpecVersionUnavailableError"
+  }
+}
+
 export type BalancesResult = {
   status: BalancesStatus
   balances: IBalance[]
@@ -700,9 +707,7 @@ export class BalancesProvider {
         switchMap((network) =>
           isNetworkDot(network)
             ? this.getNetworkSpecVersion$(networkId).pipe(
-                switchMap((specVersion) =>
-                  specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion)
-                )
+                switchMap((specVersion) => this.getMiniMetadatas$(networkId, specVersion))
               )
             : of([])
         ),
@@ -711,7 +716,10 @@ export class BalancesProvider {
     })
   }
 
-  private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {
+  // the error resets the shared mini metadata stream, so every module of the network fails
+  // through failAndRetry and its retry refetches the spec version. An empty list instead
+  // would be replayed to each retry for as long as any module of the network held the stream
+  private getNetworkSpecVersion$(networkId: NetworkId): Observable<number> {
     return from(
       withRetry(() => getSpecVersion(this.#chainConnectors.substrate!, networkId), {
         delay: 2_000,
@@ -721,10 +729,7 @@ export class BalancesProvider {
         },
       })
     ).pipe(
-      catchError(() => {
-        log.warn("Failed to fetch spec version for network", networkId)
-        return of(null as number | null)
-      })
+      catchError((cause) => throwError(() => new SpecVersionUnavailableError(networkId, { cause })))
     )
   }
 
