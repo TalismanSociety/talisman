@@ -3,9 +3,21 @@ import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
 import { fetchStorageKeysPaged, type JsonRpcRequestSend, queryStorageAt } from "@talismn/sapi"
 import { getQuery$, isNotNil, type QueryResult } from "@talismn/util"
-import { uniq, uniqBy } from "lodash-es"
+import { isEqual, uniq, uniqBy } from "lodash-es"
 import PQueue from "p-queue"
-import { combineLatest, firstValueFrom, map, type Observable, throttleTime } from "rxjs"
+import {
+  combineLatest,
+  defer,
+  distinctUntilChanged,
+  finalize,
+  ignoreElements,
+  map,
+  merge,
+  type Observable,
+  tap,
+  throttleTime,
+  timer,
+} from "rxjs"
 
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -28,6 +40,7 @@ import {
   type NftPalletStorage,
 } from "./nftPalletStorage"
 import { normaliseMetadataUri } from "./normaliseMetadataUri"
+import type { NftJsonMetadata } from "./parseNftJsonMetadata"
 import { nftsStore$ } from "./store"
 import {
   getSubstrateNftCollectionId,
@@ -74,40 +87,60 @@ const sendTo =
   (method, params) =>
     chainConnectorDot.send(networkId, method, params)
 
+const hiddenCollectionIds$ = nftsStore$.pipe(
+  map(({ hiddenNftCollectionIds }) => hiddenNftCollectionIds),
+  distinctUntilChanged(isEqual)
+)
+
 export const getDotAccountNfts$ = (account: Account): Observable<QueryResult<AccountNfts>> =>
-  combineLatest([
-    getQuery$({
+  defer(() => {
+    const downloads = new AbortController()
+    const listing$ = getQuery$({
       namespace: "nfts-dot",
       args: account,
-      queryFn: async (account, signal) => {
-        const { hiddenNftCollectionIds } = await firstValueFrom(nftsStore$)
-        return listDotAccountNfts(account, signal, hiddenNftCollectionIds)
-      },
+      queryFn: listDotAccountNfts,
       refreshInterval: FIVE_MINUTES,
-    }),
-    nftJsonMetadataChanged$.pipe(
-      throttleTime(FILL_IN_THROTTLE, undefined, { leading: true, trailing: true })
-    ),
-  ]).pipe(
-    map(([listing]): QueryResult<AccountNfts> => {
-      if (listing.status === "error") return listing
-      if (listing.status === "loading") return { ...listing, data: undefined }
-      return { ...listing, data: toDotAccountNfts(listing.data) }
     })
-  )
 
-export const listDotAccountNfts = async (
-  account: Account,
-  signal: AbortSignal,
-  hiddenCollectionIds: string[]
-): Promise<SubstrateNftListing> => {
-  const listing = await chainReads.add(() => listOnChain(account, signal), { signal })
+    const requestDownloads$ = combineLatest([
+      listing$,
+      hiddenCollectionIds$,
+      timer(0, FIVE_MINUTES),
+    ]).pipe(
+      tap(([listing, hiddenCollectionIds]) => {
+        if (listing.status === "loaded")
+          requestDownloads(listing.data, hiddenCollectionIds, downloads.signal)
+      }),
+      ignoreElements()
+    )
 
+    const nfts$ = combineLatest([
+      listing$,
+      nftJsonMetadataChanged$.pipe(
+        throttleTime(FILL_IN_THROTTLE, undefined, { leading: true, trailing: true })
+      ),
+    ]).pipe(
+      map(([listing]): QueryResult<AccountNfts> => {
+        if (listing.status === "error") return listing
+        if (listing.status === "loading") return { ...listing, data: undefined }
+        return { ...listing, data: toDotAccountNfts(listing.data, getCachedNftJsonMetadata) }
+      })
+    )
+
+    return merge(nfts$, requestDownloads$).pipe(finalize(() => downloads.abort()))
+  })
+
+export const listDotAccountNfts = (account: Account, signal: AbortSignal) =>
+  chainReads.add(() => listOnChain(account, signal), { signal })
+
+const requestDownloads = (
+  listing: SubstrateNftListing,
+  hiddenCollectionIds: string[],
+  signal: AbortSignal
+) => {
   const priority = -listing.items.length
   for (const uri of urisToDownload(listing, hiddenCollectionIds))
     fetchNftJsonMetadata(uri, signal, priority)
-
-  return listing
 }
 
 const urisToDownload = (
@@ -121,28 +154,26 @@ const urisToDownload = (
       .filter(isNotNil)
   )
 
-export const toDotAccountNfts = ({
-  owner,
-  items,
-  collections,
-}: SubstrateNftListing): AccountNfts => {
+export const toDotAccountNfts = (
+  { owner, items, collections }: SubstrateNftListing,
+  getJson: (uri: string) => NftJsonMetadata | null
+): AccountNfts => {
+  const jsonOf = (uri: string | null) => (uri ? getJson(uri) : null)
   const collectionJsonById = new Map(
-    collections.map(({ ref, uri }) => [getSubstrateNftCollectionId(ref), cachedJson(uri)])
+    collections.map(({ ref, uri }) => [getSubstrateNftCollectionId(ref), jsonOf(uri)])
   )
   return {
     nfts: items.map(({ ref, uri }) =>
       toSubstrateAccountNft(
         ref,
         owner,
-        cachedJson(uri),
+        jsonOf(uri),
         collectionJsonById.get(getSubstrateNftCollectionId(ref)) ?? null
       )
     ),
-    collections: collections.map(({ ref, uri }) => toSubstrateNftCollection(ref, cachedJson(uri))),
+    collections: collections.map(({ ref, uri }) => toSubstrateNftCollection(ref, jsonOf(uri))),
   }
 }
-
-const cachedJson = (uri: string | null) => (uri ? getCachedNftJsonMetadata(uri) : null)
 
 const listOnChain = async (account: Account, signal: AbortSignal) => {
   const activeNetworks = await activeNetworksStore.get()

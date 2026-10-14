@@ -5,6 +5,7 @@ import { BehaviorSubject } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { PAH_HOLDER, PAH_HOLDER_RPC, PAH_METADATA_RPC } from "./__fixtures__/pahHolder"
+import type { NftJsonMetadata } from "./parseNftJsonMetadata"
 import type { AccountNfts } from "./types"
 
 const mocks = vi.hoisted(() => ({
@@ -12,6 +13,8 @@ const mocks = vi.hoisted(() => ({
   getMetadataDef: vi.fn(),
   fetch: vi.fn(),
   store: { hiddenNftCollectionIds: [] as string[] },
+  store$: undefined as BehaviorSubject<{ hiddenNftCollectionIds: string[] }> | undefined,
+  blob: null as unknown,
 }))
 
 vi.mock("../../rpcs/chain-connector-dot", () => ({ chainConnectorDot: { send: mocks.send } }))
@@ -45,21 +48,21 @@ vi.mock("../chaindata/store.activeNetworks", () => ({
   isNetworkActive: () => true,
 }))
 
-vi.mock("../../db/blobs", () => {
-  let stored: unknown = null
-  return {
-    getBlobStore: () => ({
-      get: async () => stored,
-      set: async (data: unknown) => {
-        stored = data
-      },
-    }),
-  }
-})
+vi.mock("../../db/blobs", () => ({
+  getBlobStore: () => ({
+    get: async () => mocks.blob,
+    set: async (data: unknown) => {
+      mocks.blob = data
+    },
+  }),
+}))
 
 vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
 
-vi.mock("./store", () => ({ nftsStore$: new BehaviorSubject(mocks.store) }))
+vi.mock("./store", () => {
+  mocks.store$ = new BehaviorSubject(mocks.store)
+  return { nftsStore$: mocks.store$ }
+})
 
 import { buildNftPalletStorages, getItemMetadataKey } from "./nftPalletStorage"
 
@@ -116,6 +119,8 @@ const JSON_BY_URL: Record<string, unknown> = {
 }
 const NETWORK_ERROR_URL = `${CHAOTIC}/256/4235681442`
 
+const fixtureJson = (uri: string) => (JSON_BY_URL[uri] as NftJsonMetadata | undefined) ?? null
+
 const respond = async (url: string) => {
   if (url === NETWORK_ERROR_URL) throw new TypeError("Failed to fetch")
   return url in JSON_BY_URL
@@ -170,13 +175,14 @@ describe("fetchDotAccountNfts", () => {
     mocks.getMetadataDef.mockReset()
     mocks.getMetadataDef.mockResolvedValue({ metadataRpc: "pah" })
     mocks.store.hiddenNftCollectionIds = []
+    mocks.blob = null
     absentKeys.clear()
   })
 
   it("lists the holder's NFTs from chain, then refreshes with key listings only", async () => {
     const { listDotAccountNfts, toDotAccountNfts } = await loadFetcher()
     const signal = new AbortController().signal
-    const first = await listDotAccountNfts(ACCOUNT, signal, [])
+    const first = await listDotAccountNfts(ACCOUNT, signal)
 
     expect(first.items.map(({ ref }) => `${ref.collection}:${ref.item}`).sort()).toEqual(
       OWNED.map(([c, i]) => `${c}:${i}`).sort()
@@ -188,11 +194,8 @@ describe("fetchDotAccountNfts", () => {
     expect(mocks.send).toHaveBeenCalledTimes(3)
     expect(mocks.getMetadataDef).toHaveBeenCalledTimes(1)
 
-    await vi.waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS))
-    await vi.waitFor(() =>
-      expect(nftName(toDotAccountNfts(first), "4235681442")).toBe("Duo #4235681442")
-    )
-    const nfts = toDotAccountNfts(first)
+    const nfts = toDotAccountNfts(first, fixtureJson)
+    expect(nftName(nfts, "4235681442")).toBe("Duo #4235681442")
     expect(nfts.nfts.map((nft) => nft.id).sort()).toEqual(
       OWNED.map(([c, i]) => `substrate:polkadot-asset-hub:Nfts:${c}:${i}`).sort()
     )
@@ -210,14 +213,14 @@ describe("fetchDotAccountNfts", () => {
       "substrate:polkadot-asset-hub:Nfts:158"
     )
 
-    const second = await listDotAccountNfts(ACCOUNT, signal, [])
+    const second = await listDotAccountNfts(ACCOUNT, signal)
 
     expect(second).toEqual(first)
     expect(countCalls("state_getKeysPaged")).toBe(4)
     expect(countCalls("state_queryStorageAt")).toBe(1)
     expect(mocks.send).toHaveBeenCalledTimes(5)
     expect(mocks.getMetadataDef).toHaveBeenCalledTimes(1)
-    expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS)
+    expect(mocks.fetch).not.toHaveBeenCalled()
   })
 
   it("re-reads metadata that was absent on chain until it appears", async () => {
@@ -227,17 +230,17 @@ describe("fetchDotAccountNfts", () => {
       items.find(({ ref }) => ref.item === 2407162256)?.uri
     absentKeys.add(CHAOTIC_ITEM_KEY)
 
-    const first = await listDotAccountNfts(ACCOUNT, signal, [])
+    const first = await listDotAccountNfts(ACCOUNT, signal)
     expect(uriOf(first)).toBeNull()
     expect(countCalls("state_queryStorageAt")).toBe(1)
 
     absentKeys.clear()
-    const second = await listDotAccountNfts(ACCOUNT, signal, [])
+    const second = await listDotAccountNfts(ACCOUNT, signal)
     expect(uriOf(second)).toBe(`${CHAOTIC}/158/2407162256`)
     expect(countCalls("state_queryStorageAt")).toBe(2)
     expect(queriedKeys().slice(29)).toEqual([CHAOTIC_ITEM_KEY])
 
-    await listDotAccountNfts(ACCOUNT, signal, [])
+    await listDotAccountNfts(ACCOUNT, signal)
     expect(countCalls("state_queryStorageAt")).toBe(2)
   })
 
@@ -249,15 +252,15 @@ describe("fetchDotAccountNfts", () => {
     vi.useFakeTimers({ toFake: ["Date"] })
 
     try {
-      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBe(`${CHAOTIC}/158/2407162256`)
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal))).toBe(`${CHAOTIC}/158/2407162256`)
       absentKeys.add(CHAOTIC_ITEM_KEY)
 
       vi.advanceTimersByTime(59 * 60 * 1000)
-      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBe(`${CHAOTIC}/158/2407162256`)
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal))).toBe(`${CHAOTIC}/158/2407162256`)
       expect(countCalls("state_queryStorageAt")).toBe(1)
 
       vi.advanceTimersByTime(60 * 1000)
-      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal, []))).toBeNull()
+      expect(uriOf(await listDotAccountNfts(ACCOUNT, signal))).toBeNull()
       expect(countCalls("state_queryStorageAt")).toBe(2)
       expect(queriedKeys().slice(29)).toHaveLength(29)
     } finally {
@@ -272,21 +275,53 @@ describe("fetchDotAccountNfts", () => {
       return replayRpc(networkId, method, params)
     })
 
-    await expect(listDotAccountNfts(ACCOUNT, new AbortController().signal, [])).rejects.toThrow(
+    await expect(listDotAccountNfts(ACCOUNT, new AbortController().signal)).rejects.toThrow(
       "RPC unavailable"
     )
   })
 
-  it("lists NFTs of hidden collections without downloading their metadata", async () => {
-    const { listDotAccountNfts } = await loadFetcher()
-    const listing = await listDotAccountNfts(ACCOUNT, new AbortController().signal, [
-      "substrate:polkadot-asset-hub:Nfts:158",
-    ])
+  it("lists NFTs of hidden collections without downloading their metadata until unhidden", async () => {
+    mocks.store.hiddenNftCollectionIds = ["substrate:polkadot-asset-hub:Nfts:158"]
+    const { getDotAccountNfts$ } = await loadFetcher()
+    const emissions: QueryResult<AccountNfts>[] = []
+    const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
 
-    expect(listing.items.some(({ ref }) => ref.collection === 158)).toBe(true)
     await vi.waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS - 2))
+    const latest = emissions.at(-1)
+    if (latest?.status !== "loaded") throw new Error("expected a loaded result")
+    expect(latest.data.nfts.some((nft) => nft.collectionId.endsWith(":158"))).toBe(true)
     expect(fetchedUrls()).not.toContain(`${CHAOTIC}/158/2407162256`)
     expect(fetchedUrls()).not.toContain(CHAOTIC_COLLECTION_URL)
+
+    mocks.store$?.next({ hiddenNftCollectionIds: [] })
+
+    await vi.waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS))
+    expect(fetchedUrls()).toContain(`${CHAOTIC}/158/2407162256`)
+    expect(fetchedUrls()).toContain(CHAOTIC_COLLECTION_URL)
+    subscription.unsubscribe()
+  })
+
+  it("retries a failed download on the first refresh after its retry delay", async () => {
+    vi.useFakeTimers({
+      toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
+    })
+    try {
+      const { getDotAccountNfts$ } = await loadFetcher()
+      const attempts = () => fetchedUrls().filter((url) => url === NETWORK_ERROR_URL).length
+      const subscription = getDotAccountNfts$(ACCOUNT).subscribe()
+
+      await vi.advanceTimersByTimeAsync(1_000)
+      expect(attempts()).toBe(1)
+
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000)
+      expect(attempts()).toBe(1)
+
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000)
+      expect(attempts()).toBe(2)
+      subscription.unsubscribe()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("reads the chain for one account at a time", async () => {
@@ -304,8 +339,8 @@ describe("fetchDotAccountNfts", () => {
       address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
     }
 
-    const first = listDotAccountNfts(ACCOUNT, signal, [])
-    const second = listDotAccountNfts(other, signal, [])
+    const first = listDotAccountNfts(ACCOUNT, signal)
+    const second = listDotAccountNfts(other, signal)
     await vi.waitFor(() => expect(mocks.send).toHaveBeenCalledTimes(2))
     expect(mocks.send.mock.calls.map(([, , [prefix]]) => prefix)).toEqual([
       PAH_HOLDER_RPC.nftsOwnedKeys.prefix,
@@ -352,6 +387,7 @@ describe("fetchDotAccountNfts", () => {
     )
 
     expect(mocks.send.mock.calls.length).toBe(rpcCalls)
+    expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS)
     expect(emissions.filter((emission) => emission.status === "loading")).toHaveLength(1)
     subscription.unsubscribe()
   })
