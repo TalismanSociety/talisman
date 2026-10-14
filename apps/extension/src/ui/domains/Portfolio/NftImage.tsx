@@ -3,15 +3,15 @@ import { cn } from "@ui/util/cn"
 import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
 import { useState } from "react"
 
-export const NftImage = ({
-  src,
-  className,
-  alt,
-}: {
+type NftImageProps = {
   src?: string | null
   alt?: string
   className?: string
-}) => {
+}
+
+export const NftImage = (props: NftImageProps) => <NftImageForSrc key={props.src} {...props} />
+
+const NftImageForSrc = ({ src, className, alt }: NftImageProps) => {
   const [imageUrl, setImageUrl] = useState<string>(src ? getSafeImageUrl(src) : imgUnknownNft)
 
   // loading indicator handling: it sometimes takes a while before a IPFS resource fails on 404
