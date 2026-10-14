@@ -25,8 +25,7 @@ import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
 const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
-  subNativeTokenId("polkadot"),
-  subNativeTokenId("kusama"),
+  subNativeTokenId("polkadot-asset-hub"),
   subNativeTokenId("bittensor"),
 ]
 
