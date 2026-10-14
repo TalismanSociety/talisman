@@ -17,7 +17,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { getPortfolioNftCollectionPreview } from "./helpers"
 
 const NoNftFound = () => {
   const { t } = useTranslation()
@@ -70,9 +70,10 @@ const NftCollectionRowInner: FC<{
     [collection.id, data.nfts]
   )
 
-  const imageUrl = useMemo(() => {
-    return getPortfolioNftCollectionPreviewUrl(collection, nfts)
-  }, [collection, nfts])
+  const preview = useMemo(
+    () => getPortfolioNftCollectionPreview(collection, nfts),
+    [collection, nfts]
+  )
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
@@ -107,7 +108,12 @@ const NftCollectionRowInner: FC<{
       className="grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm bg-grey-900 px-8 text-left hover:bg-grey-800"
     >
       <div className="flex items-center gap-6 overflow-hidden">
-        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
+        <NftImage
+          className="size-16"
+          src={preview.url}
+          isPending={preview.isPending}
+          alt={collection.name ?? ""}
+        />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="flex w-full gap-2 overflow-hidden text-base">
             <div className="truncate font-bold">{collection.name}</div>
@@ -213,9 +219,10 @@ const NftCollectionTileInner: FC<{
   // favorites are the first ones in the list, can check just the first one
   const isFavorite = useIsFavoriteNft(nfts[0].id)
 
-  const imageUrl = useMemo(() => {
-    return getPortfolioNftCollectionPreviewUrl(collection, nfts)
-  }, [collection, nfts])
+  const preview = useMemo(
+    () => getPortfolioNftCollectionPreview(collection, nfts),
+    [collection, nfts]
+  )
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
@@ -229,7 +236,8 @@ const NftCollectionTileInner: FC<{
     <NftTile
       count={nfts.length}
       isFavorite={isFavorite}
-      imageUrl={imageUrl}
+      imageUrl={preview.url}
+      isImagePending={preview.isPending}
       label={collection.name ?? ""}
       networkIds={networkIds}
       onClick={handleClick}

@@ -1,7 +1,5 @@
-import { getSendRequestResult } from "./getSendRequestResult"
+import { queryStorageAt } from "../storageReads"
 import type { Chain } from "./types"
-
-type StorageChangeSet = { block: string; changes: [key: string, value: string | null][] }
 
 export const getStorageValues = async <T>(
   chain: Chain,
@@ -10,17 +8,10 @@ export const getStorageValues = async <T>(
   keysList: unknown[][],
   at?: string
 ): Promise<(T | null)[]> => {
-  if (!keysList.length) return []
-
   const storageCodec = chain.builder.buildStorage(pallet, entry)
   const stateKeys = keysList.map((keys) => storageCodec.keys.enc(...keys))
 
-  const [changeSet] = await getSendRequestResult<StorageChangeSet[]>(
-    chain,
-    "state_queryStorageAt",
-    [stateKeys, at]
-  )
-  const hexValueByKey = new Map(changeSet?.changes)
+  const hexValueByKey = await queryStorageAt(chain.connector.send, stateKeys, { at })
 
   return stateKeys.map((stateKey) => {
     const hexValue = hexValueByKey.get(stateKey)

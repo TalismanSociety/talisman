@@ -8,13 +8,14 @@ import { NftImage } from "./NftImage"
 
 export const NftTile: FC<{
   imageUrl: string | null
+  isImagePending?: boolean
   count?: number | null
   label: string
   networkIds: string[]
   isFavorite?: boolean
   className?: string
   onClick: () => void
-}> = ({ imageUrl, count, label, networkIds, isFavorite, className, onClick }) => {
+}> = ({ imageUrl, isImagePending, count, label, networkIds, isFavorite, className, onClick }) => {
   return (
     <button
       type="button"
@@ -28,6 +29,7 @@ export const NftTile: FC<{
         <NftImage
           className="aspect-square size-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           src={imageUrl}
+          isPending={isImagePending}
           alt={label ?? ""}
         />
         {isFavorite && (
