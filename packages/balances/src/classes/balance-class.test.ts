@@ -84,6 +84,10 @@ describe("parseBalanceId", () => {
   it("rejects a string without the separator", () => {
     expect(() => parseBalanceId("0xABC:dot")).toThrow("Invalid balance id: 0xABC:dot")
   })
+
+  it.each(["::", "a::", "::b"])("rejects %j, which has an empty part", (balanceId) => {
+    expect(() => parseBalanceId(balanceId)).toThrow(`Invalid balance id: ${balanceId}`)
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -50,8 +50,10 @@ export const getBalanceId = (balance: Pick<IBalance, "address" | "tokenId">) => 
 
 export const parseBalanceId = (balanceId: string): Pick<IBalance, "address" | "tokenId"> => {
   const separator = balanceId.indexOf("::")
-  if (separator === -1) throw new Error(`Invalid balance id: ${balanceId}`)
-  return { address: balanceId.slice(0, separator), tokenId: balanceId.slice(separator + 2) }
+  const address = balanceId.slice(0, separator)
+  const tokenId = balanceId.slice(separator + 2)
+  if (separator === -1 || !address || !tokenId) throw new Error(`Invalid balance id: ${balanceId}`)
+  return { address, tokenId }
 }
 
 /**
