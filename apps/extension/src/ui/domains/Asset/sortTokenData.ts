@@ -1,15 +1,13 @@
 import type { Balances } from "@talismn/balances"
 import { subNativeTokenId, type Token, type TokenId } from "@talismn/chaindata-provider"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 type SortableTokenData = {
-  id: TokenId
   token: Token
   balances: Balances
 }
 
-type SortTokenDataOptions = {
+export type SortTokenDataOptions = {
   currency: TokenRateCurrency
   isPriority?: (token: Token) => boolean
   pinnedTokenId?: TokenId
@@ -17,7 +15,6 @@ type SortTokenDataOptions = {
 
 type TokenSortKey = {
   isPriority: boolean
-  isTransferable: boolean
   isPinned: boolean
   fiat: number
   hasBalance: boolean
@@ -35,30 +32,31 @@ const getNativeRank = (tokenId: TokenId) => {
 }
 
 const getSortKey = (
-  { id, token, balances }: SortableTokenData,
+  { token, balances }: SortableTokenData,
   { currency, isPriority, pinnedTokenId }: SortTokenDataOptions
 ): TokenSortKey => ({
   isPriority: isPriority?.(token) ?? false,
-  isTransferable: isTransferableToken(token),
-  isPinned: id === pinnedTokenId,
+  isPinned: token.id === pinnedTokenId,
   fiat: balances.count ? balances.sum.fiat(currency).transferable : 0,
   hasBalance: balances.each.some((balance) => balance.transferable.planck > 0n),
   nativeRank: getNativeRank(token.id),
   symbol: token.symbol,
 })
 
+const compareByCodeUnit = (a: string, b: string) => {
+  if (a > b) return 1
+  if (a < b) return -1
+  return 0
+}
+
 const compareSortKeys = (a: TokenSortKey, b: TokenSortKey) => {
   if (a.isPriority !== b.isPriority) return a.isPriority ? -1 : 1
-  if (a.isTransferable !== b.isTransferable) return a.isTransferable ? -1 : 1
   if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
   if (a.fiat > b.fiat) return -1
   if (a.fiat < b.fiat) return 1
   if (a.hasBalance !== b.hasBalance) return a.hasBalance ? -1 : 1
   if (a.nativeRank !== b.nativeRank) return a.nativeRank - b.nativeRank
-  // code-unit order, not locale order: the list has always sorted symbols this way
-  if (a.symbol > b.symbol) return 1
-  if (a.symbol < b.symbol) return -1
-  return 0
+  return compareByCodeUnit(a.symbol, b.symbol)
 }
 
 export const sortTokenData = <T extends SortableTokenData>(
