@@ -135,7 +135,7 @@ jobs:
         run: pnpm chore:update-translations
       - name: Setup Java for the SimpleLocalize CLI
         if: env.SAME_REPO == 'true'
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: "21"
@@ -482,7 +482,7 @@ jobs:
       contents: write
       pull-requests: write
     outputs:
-      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
+      hasChangesets: ${{ steps.changesets.outputs.has-changesets }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -496,14 +496,10 @@ jobs:
           papi: "false"
       - name: Create pull request
         id: changesets
-        # pushes through the ~/.netrc the action writes, so this job holds no id-token
-        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
-          commit: "chore: bump package versions"
-          title: "chore: bump package versions"
-          createGithubReleases: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump package versions"
+          pr-title: "chore: bump package versions"
 
   # When the version bump PR is merged, there are no changesets left, and this job publishes the new versions to npm
   publish_packages:
