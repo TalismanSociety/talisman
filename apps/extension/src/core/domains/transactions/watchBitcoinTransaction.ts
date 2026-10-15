@@ -2,11 +2,11 @@ import { log } from "@common/log"
 import type { BtcApi } from "@talismn/bitcoin"
 import { type BtcNetworkId, getBlockExplorerUrls } from "@talismn/chaindata-provider"
 
-import { sentry } from "../../config/sentry"
 import { db } from "../../db"
 import { createNotification } from "../../notifications"
 import { chainConnectorBtc } from "../../rpcs/chain-connector-btc"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { reportError } from "../analytics/errorReporting"
 import { updateTransactionStatus } from "./store.transactions"
 import type { WalletTransactionInfo, WatchTransactionOptions } from "./types"
 import { watchSwapStatus } from "./watchSwapStatus"
@@ -44,7 +44,7 @@ export const watchBitcoinTransaction = async (
     watchUntilConfirmed(api, txid, network.name, notifications ? txUrl : undefined, txInfo)
   } catch (err) {
     log.error("Failed to watch Bitcoin transaction (outer)", { err, networkId, txid })
-    sentry.captureException(err, { tags: { networkId } })
+    reportError(err, { networkId })
   }
 }
 

@@ -88,6 +88,7 @@ export const BtcFeeSelect: FC<BtcFeeSelectProps> = ({
         </span>
       </PillButton>
       <Drawer
+        analyticsId="btc_fee_select"
         containerId={drawerContainerId}
         isOpen={isOpen && !disabled}
         anchor="bottom"

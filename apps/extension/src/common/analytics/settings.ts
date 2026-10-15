@@ -22,6 +22,8 @@ export const SETTING_KEYS = [
   "polkadotVaultSignWithProof",
   "ledgerTransportType",
   "swapSlippage",
+  "btcFreshReceiveAddress",
+  "btcDisplaySats",
   "hideGetStarted",
   "hideBraveWarning",
   "hideEarnDisclaimer",
@@ -76,6 +78,8 @@ const SETTINGS: { readonly [K in keyof SettingsStoreData]-?: SettingRule | NotAS
   ledgerTransportType: enumOf("ledgerTransportType"),
   dtaoSlippage: "own event",
   swapSlippage: { key: "swapSlippage", type: "number" },
+  btcFreshReceiveAddress: bool("btcFreshReceiveAddress"),
+  btcDisplaySats: bool("btcDisplaySats"),
   disableBalanceFetching: "dev only",
 }
 

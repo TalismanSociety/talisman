@@ -1,7 +1,3 @@
-import type { AccountPlatform } from "@talismn/crypto"
-
-import type { ChainPlatform } from "./transactions"
-
 export const ACCOUNT_METHODS = [
   "new",
   "recovery_phrase",
@@ -55,6 +51,3 @@ export const accountMoveOf = (from: string | undefined, to: string | undefined):
   if (!to) return "out_of_folder"
   return "between_folders"
 }
-
-export const chainPlatformOf = (platform: AccountPlatform): ChainPlatform | null =>
-  platform === "bitcoin" ? null : platform

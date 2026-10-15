@@ -1,7 +1,7 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { AccountType } from "@talismn/keyring"
 
-export const CHAIN_PLATFORMS = ["ethereum", "polkadot", "solana"] as const
+export const CHAIN_PLATFORMS = ["ethereum", "polkadot", "solana", "bitcoin"] as const
 export type ChainPlatform = (typeof CHAIN_PLATFORMS)[number]
 
 export const SIGNERS = ["local", "ledger", "vault", "signet", "watched"] as const
@@ -9,12 +9,15 @@ export type Signer = (typeof SIGNERS)[number]
 
 const SIGNER_OF_ACCOUNT_TYPE: Record<AccountType, Signer | null> = {
   "keypair": "local",
+  "hd-bitcoin": "local",
   "ledger-polkadot": "ledger",
   "ledger-ethereum": "ledger",
   "ledger-solana": "ledger",
+  "ledger-bitcoin": "ledger",
   "polkadot-vault": "vault",
   "signet": "signet",
   "watch-only": "watched",
+  "watch-only-bitcoin": "watched",
   "contact": null,
 }
 

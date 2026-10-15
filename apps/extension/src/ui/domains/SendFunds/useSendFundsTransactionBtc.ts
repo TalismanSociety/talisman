@@ -47,8 +47,8 @@ export const useSendFundsTransactionBtc = ({
   to,
   value = "0",
   sendMax,
+  isLocked,
 }: SendFundsTransactionProps) => {
-  const [isLocked, setIsLocked] = useState(false)
   const [priority, setPriority] = useState<BtcFeePriority>("medium")
   const [customRate, setCustomRate] = useState<number | null>(null)
   // coin control: null = automatic selection over all spendable utxos
@@ -231,7 +231,5 @@ export const useSendFundsTransactionBtc = ({
     utxos: allUtxos,
     selectedUtxoKeys,
     setSelectedUtxoKeys,
-
-    setIsLocked,
   }
 }

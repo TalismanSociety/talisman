@@ -77,11 +77,12 @@ const XpubRow: FC<{ entry: XpubEntry }> = ({ entry }) => {
         },
         { toastId }
       )
-    } catch {
+    } catch (cause) {
       notify(
         {
           type: "error",
           title: t("Copy failed"),
+          cause,
           subtitle: shortenAddress(entry.value, 6, 6),
         },
         { toastId }
@@ -120,8 +121,8 @@ export const AccountCopyXpubModal = () => {
   const entries = useXpubEntries(account)
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Copy xpub")} onClose={close}>
+    <Modal analyticsId="account_copy_xpub" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <ModalDialog title={t("Copy xpub")} onCloseClick={close}>
         <div className="flex flex-col gap-8 text-body-secondary text-sm">
           <div className="flex items-center gap-6 rounded-sm bg-grey-800 p-6">
             <AlertCircleIcon className="shrink-0 text-alert-warn text-lg" />

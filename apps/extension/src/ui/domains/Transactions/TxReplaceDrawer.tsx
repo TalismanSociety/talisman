@@ -311,12 +311,6 @@ const BtcDrawerContent: FC<{
   onClose?: (newTxId?: string) => void
 }> = ({ tx, type, fullHeight, containerId, onClose }) => {
   const { t } = useTranslation()
-  const analyticsProps = useMemo(
-    () => ({ networkId: tx.networkId, networkType: "bitcoin" }),
-    [tx.networkId]
-  )
-  useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
-
   const network = useNetworkById(tx.networkId, "bitcoin")
   const [priority, setPriority] = useState<BtcFeePriority>("fast")
   const [customRate, setCustomRate] = useState<number | null>(null)
@@ -349,15 +343,18 @@ const BtcDrawerContent: FC<{
     refetchOnWindowFocus: false,
   })
 
+  const markOverlayCompleted = useMarkOverlayCompleted()
   const handleSubmit = useCallback(
     (newTxId: string) => {
-      api.analyticsCapture({
-        eventName: `transaction ${type}`,
-        options: { networkId: tx.networkId, networkType: "bitcoin" },
+      track("tx_replace_requested", {
+        replace_type: type === "speed-up" ? "speed_up" : "cancel",
+        platform: "bitcoin",
+        network_id: networkIdForAnalytics(network),
       })
+      markOverlayCompleted()
       onClose?.(newTxId)
     },
-    [onClose, tx.networkId, type]
+    [markOverlayCompleted, network, onClose, type]
   )
 
   const { canReplace, Icon, iconClassName, title, description, approveText } = useMemo(() => {

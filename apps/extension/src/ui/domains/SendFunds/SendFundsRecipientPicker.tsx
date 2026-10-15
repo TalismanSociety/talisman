@@ -55,9 +55,12 @@ const RECIPIENT_GROUP_BY_ACCOUNT_TYPE: Record<AccountType, RecipientGroup> = {
   "ledger-ethereum": "own_account",
   "ledger-polkadot": "own_account",
   "ledger-solana": "own_account",
+  "ledger-bitcoin": "own_account",
+  "hd-bitcoin": "own_account",
   "polkadot-vault": "own_account",
   signet: "signet_vault",
   "watch-only": "watched_account",
+  "watch-only-bitcoin": "watched_account",
   contact: "contact",
 }
 

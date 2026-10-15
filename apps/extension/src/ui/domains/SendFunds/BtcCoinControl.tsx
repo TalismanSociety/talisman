@@ -122,7 +122,13 @@ export const BtcCoinControl: FC<BtcCoinControlProps> = ({
           ? t("{{count}} of {{total}} coins", { count: selectedCount, total: paymentUtxos.length })
           : t("Auto")}
       </PillButton>
-      <Drawer containerId={drawerContainerId} isOpen={isOpen} anchor="bottom" onDismiss={close}>
+      <Drawer
+        analyticsId="btc_coin_control"
+        containerId={drawerContainerId}
+        isOpen={isOpen}
+        anchor="bottom"
+        onDismiss={close}
+      >
         <div className="flex max-h-[60rem] flex-col gap-8 rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm">
           <h3 className="mb-0 text-center font-bold text-base text-body">{t("Coin Control")}</h3>
           <div>

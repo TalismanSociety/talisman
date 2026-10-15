@@ -1,8 +1,10 @@
 import { log } from "@common/log"
 import { isAccountOwned, isAccountPlatformBitcoin } from "@core/domains/keyring/exports"
+import { getErrorMessage } from "@talismn/util"
 import { useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
+import { useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useState } from "react"
@@ -19,8 +21,11 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
   label,
   className,
   onSubmit,
+  onError,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   const account = useAccountByAddress(tx.address)
   const queryClient = useQueryClient()
 
@@ -52,11 +57,17 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
       await submit(tx.payload)
     } catch (cause) {
       log.error("Failed to submit tx", { cause, tx })
-      notify({ title: `Failed to submit`, type: "error", subtitle: (cause as Error)?.message })
+      notify({
+        title: `Failed to submit`,
+        type: "error",
+        subtitle: getErrorMessage(cause, t("Unknown error")),
+        cause,
+      })
+      onError?.(cause)
     } finally {
       setIsSubmitting(false)
     }
-  }, [submit, tx])
+  }, [submit, onError, tx, t])
 
   const handleLedgerSigned = useCallback(
     async (signedPsbtBase64: string) => {
@@ -65,10 +76,16 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
         await submit(signedPsbtBase64)
       } catch (cause) {
         log.error("Failed to submit ledger tx", { cause, tx })
-        notify({ title: `Failed to submit`, type: "error", subtitle: (cause as Error)?.message })
+        notify({
+          title: `Failed to submit`,
+          type: "error",
+          subtitle: getErrorMessage(cause, t("Unknown error")),
+          cause,
+        })
+        onError?.(cause)
       }
     },
-    [submit, tx]
+    [submit, onError, tx, t]
   )
 
   if (!isAccountPlatformBitcoin(account) || !isAccountOwned(account))
@@ -84,6 +101,7 @@ export const TxSubmitButtonBtc: FC<TxSubmitButtonProps<"bitcoin">> = ({
           containerId={containerId}
           className={className}
           onSigned={handleLedgerSigned}
+          onSentToDevice={reportPayloadLock}
         />
       )
     default:

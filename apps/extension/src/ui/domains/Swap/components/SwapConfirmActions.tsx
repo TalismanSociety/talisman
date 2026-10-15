@@ -355,6 +355,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     value: btcDeposit?.depositAmountSats,
     sendMax: false,
     allowReap: false,
+    isLocked: false,
   })
 
   const txInfo = useSwapTxInfo({

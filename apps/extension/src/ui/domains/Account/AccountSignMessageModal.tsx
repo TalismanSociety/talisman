@@ -1,5 +1,6 @@
 import type { Account } from "@core/domains/keyring/exports"
 import { CopyIcon } from "@talismn/icons"
+import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
@@ -24,8 +25,8 @@ const CopyButton: FC<{ value: string; label: string }> = ({ value, label }) => {
     try {
       await navigator.clipboard.writeText(value)
       notify({ type: "success", title: t("{{label}} copied", { label }) })
-    } catch {
-      notify({ type: "error", title: t("Copy failed") })
+    } catch (cause) {
+      notify({ type: "error", title: t("Copy failed"), cause })
     }
   }, [value, label, t])
 
@@ -75,7 +76,8 @@ export const AccountSignMessageModal = () => {
         notify({
           type: "error",
           title: t("Failed to sign"),
-          subtitle: (err as Error)?.message,
+          subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
     } finally {
       if (signRequestRef.current === requestId) setIsSigning(false)
@@ -83,8 +85,13 @@ export const AccountSignMessageModal = () => {
   }, [account, message, t])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={handleClose}>
-      <ModalDialog title={t("Sign message")} onClose={handleClose}>
+    <Modal
+      analyticsId="account_sign_message"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={handleClose}
+    >
+      <ModalDialog title={t("Sign message")} onCloseClick={handleClose}>
         <div className="flex flex-col gap-8 text-body-secondary text-sm">
           <p>
             {t(

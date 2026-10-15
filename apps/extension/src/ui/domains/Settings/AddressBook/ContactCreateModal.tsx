@@ -1,4 +1,3 @@
-import { chainPlatformOf } from "@common/analytics/accounts"
 import { classifyError } from "@common/analytics/errorCategory"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
@@ -179,14 +178,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             genesisHash,
           },
         ])
-        const platform = chainPlatformOf(getAccountPlatformFromAddress(address))
-        if (platform)
-          track("contact_added", {
-            source: "address_book",
-            platform,
-            has_network: !!genesisHash,
-            name_service: isNsLookup,
-          })
+        track("contact_added", {
+          source: "address_book",
+          platform: getAccountPlatformFromAddress(address),
+          has_network: !!genesisHash,
+          name_service: isNsLookup,
+        })
         notify({
           type: "success",
           title: t("New contact added"),
