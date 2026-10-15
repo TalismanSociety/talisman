@@ -15,9 +15,9 @@ runs:
     # action-setup bootstraps pnpm from the `packageManager` field in package.json, and pnpm
     # self-manages its own version against that same field
     - name: Setup pnpm
-      uses: pnpm/action-setup@v6
+      uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
     - name: Setup Node.js environment
-      uses: actions/setup-node@v7
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version-file: .nvmrc
         cache: pnpm
@@ -28,7 +28,7 @@ runs:
     # `package.json` is tracked in git.
     - name: Restore papi descriptors
       if: inputs.papi == 'true'
-      uses: actions/cache@v6
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: |
           .papi/descriptors/dist
