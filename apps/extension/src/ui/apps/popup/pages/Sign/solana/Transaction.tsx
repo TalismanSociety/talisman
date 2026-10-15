@@ -1,3 +1,4 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
@@ -47,6 +48,7 @@ import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
+import { rejectSolanaRequest } from "./rejectSolanaRequest"
 
 export const SolSignTransactionRequest: FC<{
   request: SolSigningRequest
@@ -82,7 +84,7 @@ export const SolSignTransactionRequest: FC<{
 
   const [state, setState] = useState<{
     processing: boolean
-    error: string | undefined
+    error: ShownError | undefined
   }>({
     processing: false,
     error: undefined,
@@ -94,12 +96,11 @@ export const SolSignTransactionRequest: FC<{
       await enableTokens(riskAnalysis.tokenIds)
       await api.solSignApprove({ id, type: "transaction", networkId: network?.id }) // will close the window automatically if successful
     } catch (error) {
-      setState({
-        processing: false,
-        error: getErrorMessage(error, "Failed to approve sign request"),
-      })
+      setState({ processing: false, error: approvalError(error) })
     }
   }, [id, network?.id, riskAnalysis.tokenIds, enableTokens])
+
+  const handleReject = useCallback(() => rejectSolanaRequest(id), [id])
 
   const handleSigned = useCallback(
     async (output: SolSignOutput) => {
@@ -116,18 +117,16 @@ export const SolSignTransactionRequest: FC<{
           transaction: serializeTransaction(output.transaction),
         })
       } catch (error) {
-        setState({
-          processing: false,
-          error: getErrorMessage(error, "Failed to approve sign request"),
-        })
+        setState({ processing: false, error: approvalError(error) })
       }
     },
     [id, network?.id, riskAnalysis.tokenIds, enableTokens]
   )
 
-  const displayError = useMemo(() => {
-    return state.error ?? validity?.reason ?? null
-  }, [state.error, validity?.reason])
+  const displayError = useMemo(
+    () => state.error ?? (validity?.message ? validity : null),
+    [state.error, validity]
+  )
 
   const signPayload = useMemo<SolSignPayload>(
     () => ({
@@ -138,7 +137,7 @@ export const SolSignTransactionRequest: FC<{
   )
 
   return (
-    <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={() => window.close()}>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={handleReject}>
       <PopupLayout>
         <PopupHeader right={<SignNetworkLogo network={network} />}>
           <AppPill url={request.url} />
@@ -156,8 +155,8 @@ export const SolSignTransactionRequest: FC<{
         </PopupContent>
         <PopupFooter className="flex flex-col gap-8">
           {!!displayError && (
-            <SignAlertMessage className="mb-6" type="error">
-              {displayError}
+            <SignAlertMessage className="mb-6" type="error" errorCategory={displayError.category}>
+              {displayError.message}
             </SignAlertMessage>
           )}
           <div className="flex flex-col gap-2">
@@ -170,7 +169,7 @@ export const SolSignTransactionRequest: FC<{
             <RiskAnalysisRow />
           </div>
           <div className="grid w-full grid-cols-2 gap-12">
-            <Button onClick={() => window.close()}>{t("Cancel")}</Button>
+            <Button onClick={handleReject}>{t("Cancel")}</Button>
             {isAccountOfType(account, "ledger-solana") ? (
               <SignLedgerSolana
                 disabled={!validity?.isValid}
@@ -265,6 +264,16 @@ const FeeEstimateRow: FC<{
   )
 }
 
+type ShownError = { message: string; category: ErrorCategory }
+
+const approvalError = (error: unknown): ShownError => ({
+  message: getErrorMessage(error, "Failed to approve sign request"),
+  category: classifyError(error),
+})
+
+const invalid = (message: string, category: ErrorCategory) =>
+  ({ isValid: false, message, category }) as const
+
 const useTransactionValidity = ({
   transaction,
   networkId,
@@ -277,15 +286,15 @@ const useTransactionValidity = ({
   return useQuery({
     queryKey: ["useSolSignTransactionValidity", getMessageBase64(transaction), networkId],
     queryFn: async () => {
-      if (!networkId) return { isValid: false, reason: t("Unknown network") }
+      if (!networkId) return invalid(t("Unknown network"), "unsupported")
 
       const rpc = getFrontEndSolanaRpc(networkId)
-      if (!rpc) return { isValid: false, reason: t("No connection available") }
+      if (!rpc) return invalid(t("No connection available"), "rpc")
 
       try {
         const { recentBlockhash } = parseTransactionInfo(transaction)
 
-        if (!recentBlockhash) return { isValid: false, reason: t("No blockhash found") }
+        if (!recentBlockhash) return invalid(t("No blockhash found"), "unsupported")
 
         // Check if the blockhash is still valid
         const isValid = await rpc
@@ -294,12 +303,11 @@ const useTransactionValidity = ({
           })
           .send()
 
-        return {
-          isValid: isValid.value,
-          reason: isValid.value ? null : t("Transaction has expired"),
-        }
+        return isValid.value
+          ? { isValid: true, message: null, category: null }
+          : invalid(t("Transaction has expired"), "payload_expired")
       } catch {
-        return { isValid: false, reason: t("Failed to validate transaction") }
+        return invalid(t("Failed to validate transaction"), "rpc")
       }
     },
     refetchInterval: 5_000, // Check every 5 seconds

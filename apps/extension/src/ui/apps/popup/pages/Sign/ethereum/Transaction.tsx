@@ -51,6 +51,8 @@ export const EthSignTransactionRequest = () => {
     setPriority,
     error,
     errorDetails,
+    errorCategory,
+    txErrorCategory,
     network,
     isLoading,
     transaction,
@@ -67,12 +69,13 @@ export const EthSignTransactionRequest = () => {
   } = useEthSignTransactionRequest()
   const { balance } = useEvmBalance(account?.address as EvmAddress, network?.id)
 
-  const { processing, errorMessage } = useMemo(() => {
+  const { processing, errorMessage, shownErrorCategory } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
       errorMessage: status === "ERROR" ? message : (error ?? ""),
+      shownErrorCategory: status === "ERROR" ? errorCategory : (txErrorCategory ?? "unknown"),
     }
-  }, [status, message, error])
+  }, [status, message, error, errorCategory, txErrorCategory])
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
@@ -109,7 +112,7 @@ export const EthSignTransactionRequest = () => {
                 reconciliation of an inline child silently detaches portaled alerts */}
             <div id="sign-alerts-inject" className="flex flex-col gap-4 empty:hidden"></div>
             {errorMessage && (
-              <SignAlertMessage type="error">
+              <SignAlertMessage type="error" errorCategory={shownErrorCategory}>
                 <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
               </SignAlertMessage>
             )}

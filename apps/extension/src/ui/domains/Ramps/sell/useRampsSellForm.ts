@@ -6,6 +6,7 @@ import { useRampsSellTokens } from "./useRampsSellTokens"
 
 export const useRampsSellForm = (defaults: RampsFormSharedData) =>
   useRampsForm(defaults, {
+    direction: "sell",
     useCurrencies: useRampsSellCurrencies,
     useTokens: useRampsSellTokens,
     useQuotes: useRampsSellQuotes,

@@ -2,6 +2,7 @@ import { HelpCircleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useAppState } from "@ui/state/app"
 import { type FC, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -37,8 +38,13 @@ export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDra
   }
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
-      <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+    <Drawer
+      analyticsId="bittensor_conviction_lock_info"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+    >
+      <DrawerContent className="flex flex-col items-center gap-8">
         <div className="flex size-24 items-center justify-center rounded-full bg-primary/10">
           <HelpCircleIcon className="inline-block size-12 text-primary" />
         </div>
@@ -72,7 +78,7 @@ export const BittensorConvictionLockInfoDrawer: FC<BittensorConvictionLockWhyDra
             {t("Continue")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

@@ -59,6 +59,7 @@ beforeEach(async () => {
   })
   settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
   token$ = new BehaviorSubject({ status: "success", data: "test-token" })
+  await chrome.storage.session.clear()
   vi.spyOn(chrome.storage.local, "set")
   mocks.blobs.clear()
   mocks.blobs.set("phishing-metamask", {
@@ -138,11 +139,27 @@ it("honours malicious verdicts, expiry and proceed anyway", async () => {
   mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
   await scan()
   expect(await isFlagged("https://dapp.example/other")).toBe(true)
-  expect(protector.addException("https://dapp.example/other")).toBe(true)
+  expect(await protector.addException("https://dapp.example/other")).toBe(true)
   expect(await isFlagged("https://dapp.example/other")).toBe(false)
   protector.dispose()
   vi.setSystemTime(Date.now() + 60_000)
   expect(await isFlagged("https://dapp.example")).toBe(false)
+})
+
+it("keeps proceed anyway across a service worker restart", async () => {
+  mocks.fetch.mockImplementation(async () => response({ isMalicious: true }))
+  await scan()
+  expect(await isFlagged("https://dapp.example")).toBe(true)
+  expect(await protector.addException("https://dapp.example/")).toBe(true)
+
+  await restart()
+  redirect.mockClear()
+  mocks.fetch.mockClear()
+
+  expect(await isFlagged("https://dapp.example")).toBe(false)
+  await scan()
+  expect(mocks.fetch).not.toHaveBeenCalled()
+  expect(redirect).not.toHaveBeenCalled()
 })
 
 it.each(["cached", "pending", "absent"])(
@@ -166,7 +183,7 @@ it.each(["cached", "pending", "absent"])(
     if (verdictState === "cached") expect(scans.isBlockaidMalicious("shared.example")).toBe(true)
     redirect.mockClear()
 
-    expect(protector.addException(exceptedUrl)).toBe(true)
+    expect(await protector.addException(exceptedUrl)).toBe(true)
     resolveScan?.(response({ isMalicious: true }))
     await flush()
     expect(await isFlagged(exceptedUrl)).toBe(false)
@@ -246,7 +263,7 @@ it.each([
   "invalid",
 ])("filters %s without a fetch", async (url) => {
   await protector.isPhishingSite("https://initial.example")
-  protector.addException("https://excepted.example")
+  await protector.addException("https://excepted.example")
   await scan(url)
   expect(mocks.fetch).not.toHaveBeenCalled()
 })
@@ -318,7 +335,7 @@ it("does not redirect when the setting or a host exception changes during a scan
   expect(redirect).not.toHaveBeenCalled()
   settings$.next({ autoDappScan: true })
   await scan("https://other.example")
-  protector.addException("https://other.example")
+  await protector.addException("https://other.example")
   resolve(response({ isMalicious: true }))
   await flush()
   expect(redirect).not.toHaveBeenCalled()

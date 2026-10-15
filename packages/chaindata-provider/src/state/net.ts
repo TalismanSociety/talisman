@@ -1,10 +1,8 @@
-import { githubChaindataDistUrl } from "../constants"
+import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import { enrichWithBuiltinBitcoin } from "./builtinBitcoin"
-import { type ChunkedParseResult, parseChaindataFileChunked } from "./chunkedValidation"
-import { markChaindataValidated } from "./validatedCache"
-
-const CHAINDATA_CONSOLIDATED_URL = `${githubChaindataDistUrl}/chaindata.min.json`
+import type { ChunkedParseResult } from "./chunkedValidation"
+import { validateChaindata } from "./validatedCache"
 
 // exported for tests
 export const getFallbackUrl = (url: string) => {
@@ -25,15 +23,16 @@ export const getFallbackUrl = (url: string) => {
   return null
 }
 
-type FetchJsonFromGitHubOptions<T> = {
+type FetchJsonOptions<T> = {
   /** chunked validator (e.g. parseChaindataFileChunked) — runs in time slices, yielding the thread between them */
   validate?: (data: unknown, signal?: AbortSignal) => Promise<ChunkedParseResult<T>>
   signal?: AbortSignal
+  fallbackUrl?: string | null
 }
 
-const fetchJsonFromGithubUrl = async <T>(
+const fetchJson = async <T>(
   url: string,
-  { signal, validate }: FetchJsonFromGitHubOptions<T> = {}
+  { signal, validate, fallbackUrl }: FetchJsonOptions<T> = {}
 ): Promise<T> => {
   const req = await fetch(url, { signal })
 
@@ -41,8 +40,7 @@ const fetchJsonFromGithubUrl = async <T>(
   // if (Date.now()) throw new Error("OMG SHE GOT A KNIFE!")
 
   if (!req.ok) {
-    const fallbackUrl = getFallbackUrl(url)
-    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { validate, signal })
+    if (fallbackUrl) return fetchJson(fallbackUrl, { validate, signal })
     throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
   }
 
@@ -65,10 +63,15 @@ const fetchJsonFromGithubUrl = async <T>(
 }
 
 // export because of generate-init-data script
-export const fetchChaindata = (signal?: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, {
-    validate: (data, signal) => parseChaindataFileChunked(data, { signal }),
+export const fetchChaindata = (url = DEFAULT_CHAINDATA_URL, signal?: AbortSignal) =>
+  fetchJson(url, {
+    validate: async (data, signal) => {
+      const result = await validateChaindata(data, { signal })
+      return result.success && url === DEFAULT_CHAINDATA_URL
+        ? { ...result, data: enrichWithBuiltinBitcoin(result.data) }
+        : result
+    },
     signal,
-    // mark the enriched object (the one that flows through the pipeline) so
-    // storageValidated$ doesn't re-validate it on every emission
-  }).then((data) => markChaindataValidated(enrichWithBuiltinBitcoin(data)))
+    // jsdelivr caches for up to 12 hours, which would serve stale data for a custom file updated more often
+    fallbackUrl: url === DEFAULT_CHAINDATA_URL ? getFallbackUrl(url) : null,
+  })

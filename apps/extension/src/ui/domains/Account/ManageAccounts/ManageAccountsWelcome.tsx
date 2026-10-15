@@ -2,6 +2,7 @@ import { XIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -37,11 +38,17 @@ export const ManageAccountsWelcome = () => {
   }, [hasFolders, hideWelcome, open, setHideWelcome])
 
   return IS_POPUP ? (
-    <Drawer anchor={"bottom"} containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Drawer
+      analyticsId="manage_accounts_welcome"
+      anchor={"bottom"}
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
       <Content onClose={handleClose} onDismiss={close} />
     </Drawer>
   ) : (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="manage_accounts_welcome" isOpen={isOpen} onDismiss={close}>
       <Content onClose={handleClose} onDismiss={close} />
     </Modal>
   )
@@ -59,7 +66,7 @@ const Content: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="flex w-full max-w-185 flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
+    <DrawerContent className="flex max-w-185 flex-col gap-8">
       <div className="flex w-full justify-between py-4">
         <div className="font-bold text-body text-md">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>
@@ -83,6 +90,6 @@ const Content: FC<{
       <Button primary fullWidth onClick={handleCloseClick}>
         {t("Get Started")}
       </Button>
-    </div>
+    </DrawerContent>
   )
 }

@@ -1,10 +1,5 @@
 import { describe, expect, test } from "vitest"
-import {
-  calculateBollingerBands,
-  calculateRSI,
-  calculateSMA,
-  getSentimentColor,
-} from "../indicators"
+import { calculateBollingerBands, calculateRSI, calculateSMA } from "../indicators"
 
 // ─── calculateSMA ────────────────────────────────────────────────────────────
 
@@ -190,22 +185,5 @@ describe("calculateRSI", () => {
 
   test("handles single element", () => {
     expect(calculateRSI([50], 14)).toEqual([null])
-  })
-})
-
-// ─── getSentimentColor ───────────────────────────────────────────────────────
-
-describe("getSentimentColor", () => {
-  test("returns correct color for each sentiment", () => {
-    expect(getSentimentColor("very_bullish")).toBe("#16a34a")
-    expect(getSentimentColor("bullish")).toBe("#22c55e")
-    expect(getSentimentColor("neutral")).toBe("#a1a1aa")
-    expect(getSentimentColor("bearish")).toBe("#f87171")
-    expect(getSentimentColor("very_bearish")).toBe("#dc2626")
-  })
-
-  test("returns grey for unknown sentiment", () => {
-    expect(getSentimentColor("unknown")).toBe("#a1a1aa")
-    expect(getSentimentColor("")).toBe("#a1a1aa")
   })
 })

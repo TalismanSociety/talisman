@@ -83,6 +83,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           type: "error",
           title: t("Copy failed"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          errorCategory: "clipboard",
         },
         { toastId }
       )
@@ -166,8 +167,13 @@ export const AccountExportPrivateKeyModal = () => {
   const { isOpen, close } = useAccountExportPrivateKeyModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export private key")} onClose={close} className="w-125.75">
+    <Modal
+      analyticsId="account_export_private_key"
+      containerId="main"
+      isOpen={isOpen}
+      onDismiss={close}
+    >
+      <ModalDialog title={t("Export private key")} onCloseClick={close} className="h-auto w-125.75">
         <div className="h-60.5">
           <PasswordUnlock
             className="h-full"

@@ -179,8 +179,12 @@ export const AccountExportModal = () => {
   const { t } = useTranslation()
   const { isOpen, close } = useAccountExportModal()
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Export account JSON")} className="w-125.75" onClose={close}>
+    <Modal analyticsId="account_export" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <ModalDialog
+        title={t("Export account JSON")}
+        className="h-auto w-125.75"
+        onCloseClick={close}
+      >
         <PasswordUnlock
           title={
             <div className="mb-8 text-body-secondary">

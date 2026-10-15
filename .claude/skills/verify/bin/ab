@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# agent-browser attached to the browser that serves this checkout, with one session per browser.
+set -euo pipefail
+port=$(node "$(dirname "$0")/cdp-port.mjs")
+session=talisman
+[[ $port == 9223 ]] || session=talisman-$port
+exec agent-browser --session "$session" --cdp "$port" "$@"

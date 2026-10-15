@@ -1,7 +1,7 @@
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -17,9 +17,10 @@ export const TokenRiskModal: FC<{
   const { t } = useTranslation()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal analyticsId="token_risk" containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
       <PopupSizeModalContainer id="token-risk-modal">
-        <WizardModalDialog
+        <ModalDialog
+          variant="wizard"
           className="size-full border-none"
           contentClassName="flex flex-col overflow-hidden"
           title={t("Token risk scan")}
@@ -31,7 +32,7 @@ export const TokenRiskModal: FC<{
           <Button className="mt-8 w-full shrink-0" onClick={onDismiss}>
             {t("Close")}
           </Button>
-        </WizardModalDialog>
+        </ModalDialog>
       </PopupSizeModalContainer>
     </Modal>
   )

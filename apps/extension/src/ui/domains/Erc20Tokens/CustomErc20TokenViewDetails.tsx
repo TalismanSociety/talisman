@@ -1,6 +1,7 @@
 import type { EthNetwork, EvmErc20Token } from "@talismn/chaindata-provider"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { PillButton } from "@ui/components/PillButton"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useTranslation } from "react-i18next"
@@ -23,8 +24,14 @@ export const CustomErc20TokenViewDetails = ({
   return (
     <>
       <PillButton onClick={open}>{t("View Details")}</PillButton>
-      <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
-        <div className="flex max-h-full flex-col rounded-t-xl bg-grey-800 p-12 text-body-secondary text-sm">
+      <Drawer
+        analyticsId="custom_erc20_token_view_details"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+        anchor="bottom"
+      >
+        <DrawerContent className="flex max-h-full flex-col text-body-secondary text-sm">
           <h3 className="text-sm">{t("Token Details")}</h3>
           <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">
             <ViewDetailsField label={t("Network")}>{network.name}</ViewDetailsField>
@@ -39,7 +46,7 @@ export const CustomErc20TokenViewDetails = ({
           <Button className="mt-12" onClick={close}>
             {t("Close")}
           </Button>
-        </div>
+        </DrawerContent>
       </Drawer>
     </>
   )

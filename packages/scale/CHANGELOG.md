@@ -1,5 +1,12 @@
 # @talismn/scale
 
+## 2.0.2
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+- 5c2938e: remove placeholder tests and commented-out code
+
 ## 2.0.1
 
 ### Patch Changes

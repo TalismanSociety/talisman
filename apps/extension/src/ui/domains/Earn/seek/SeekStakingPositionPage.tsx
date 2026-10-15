@@ -1,6 +1,7 @@
 import { isAccountOwned } from "@core/domains/keyring/exports"
 import type { Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, MoreHorizontalIcon, ZapPlusIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import {
   ContextMenu,
@@ -24,10 +25,9 @@ import { useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
-import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
-
 import { EarnTypeBadge } from "../components/EarnTypeBadge"
 import { formatAprPercent } from "../shared/formatAprPercent"
 import {
@@ -41,6 +41,9 @@ import { useSeekStakingModal } from "./useSeekStakingModal"
 
 export const SeekStakingPositionPage: FC<{ address: string }> = ({ address }) => {
   const { t } = useTranslation()
+  useEffect(() => {
+    track("earn_position_opened", { system: "seek", yield_id: null })
+  }, [])
   const config = useSeekStakingConfig()
   const token = useToken(config.tokenId)
   const tokenRatesMap = useTokenRatesMap()
@@ -198,7 +201,7 @@ const AddStakeButton: FC<{ address: string; disabled: boolean }> = ({ address, d
       <TooltipTrigger asChild>
         <button
           type="button"
-          onClick={() => open({ action: "stake", address })}
+          onClick={() => open({ entry: "earn", action: "stake", address })}
           disabled={disabled}
           className={cn(
             "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[1.25rem] text-primary hover:bg-primary/20",
@@ -328,20 +331,26 @@ const useSeekPositionActions = (
   const canCancelUnstake = isOwned && hasPending
   const canClaimRewards = isOwned && !!position?.earned
 
-  const onStake = useCallback(() => open({ action: "stake", address }), [address, open])
+  const onStake = useCallback(
+    () => open({ entry: "earn", action: "stake", address }),
+    [address, open]
+  )
   const onUnstake = useCallback(
-    () => open({ action: "requestWithdrawal", address }),
+    () => open({ entry: "earn", action: "requestWithdrawal", address }),
     [address, open]
   )
   const onCompleteUnstake = useCallback(
-    () => open({ action: "completeWithdrawal", address }),
+    () => open({ entry: "earn", action: "completeWithdrawal", address }),
     [address, open]
   )
   const onCancelUnstake = useCallback(
-    () => open({ action: "cancelWithdrawal", address }),
+    () => open({ entry: "earn", action: "cancelWithdrawal", address }),
     [address, open]
   )
-  const onClaimRewards = useCallback(() => open({ action: "getReward", address }), [address, open])
+  const onClaimRewards = useCallback(
+    () => open({ entry: "earn", action: "getReward", address }),
+    [address, open]
+  )
 
   return {
     canStake,

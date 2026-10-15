@@ -1,17 +1,10 @@
-// types only — `@sentry/browser` is biome-restricted (global API ban); @sentry/core re-exports them
-import type { ErrorEvent, EventHint } from "@sentry/core"
 import { Dexie, type DexieError } from "dexie"
-import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { StorageProvider } from "../../libs/Store"
 
 export interface ErrorsStoreData {
   databaseUnavailable: boolean
   databaseQuotaExceeded: boolean
-  StartupLog: number[]
-  DexieAbortLog: number[]
-  DexieDatabaseClosedLog: number[]
-  DexieQuotaExceededLog: number[]
 }
 
 class ErrorsStore extends StorageProvider<ErrorsStoreData> {}
@@ -19,10 +12,6 @@ class ErrorsStore extends StorageProvider<ErrorsStoreData> {}
 const ERRORS_STORE_INITIAL_DATA: ErrorsStoreData = {
   databaseUnavailable: false,
   databaseQuotaExceeded: false,
-  StartupLog: [],
-  DexieAbortLog: [],
-  DexieDatabaseClosedLog: [],
-  DexieQuotaExceededLog: [],
 }
 
 export const errorsStore = new ErrorsStore("errors", ERRORS_STORE_INITIAL_DATA)
@@ -45,40 +34,6 @@ export const triggerIndexedDbUnavailablePopup = (rootError: any) => {
     case "QuotaExceeded":
       return errorsStore.mutate((store) => {
         store.databaseQuotaExceeded = true
-        return store
-      })
-  }
-  return
-}
-
-// cache latest value of errorsStore so that we don't need to check localStorage for every error sent to sentry
-const errorsStoreData = new ReplaySubject<ErrorsStoreData>(1)
-errorsStore.observable.subscribe((data) => errorsStoreData.next(data))
-
-export const trackIndexedDbErrorExtras = async (event: ErrorEvent, hint: EventHint) => {
-  const rootError = hint.originalException
-  const [errorType] = findDexieErrors(rootError)
-
-  switch (errorType) {
-    case "Abort":
-      event.extra ||= {}
-      event.extra.errorsStoreData = await firstValueFrom(errorsStoreData)
-      return errorsStore.mutate((store) => {
-        store.DexieAbortLog.push(Date.now())
-        return store
-      })
-    case "DatabaseClosed":
-      event.extra ||= {}
-      event.extra.errorsStoreData = await firstValueFrom(errorsStoreData)
-      return errorsStore.mutate((store) => {
-        store.DexieDatabaseClosedLog.push(Date.now())
-        return store
-      })
-    case "QuotaExceeded":
-      event.extra ||= {}
-      event.extra.errorsStoreData = await firstValueFrom(errorsStoreData)
-      return errorsStore.mutate((store) => {
-        store.DexieQuotaExceededLog.push(Date.now())
         return store
       })
   }

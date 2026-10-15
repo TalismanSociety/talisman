@@ -1,6 +1,7 @@
 import { XIcon } from "@talismn/icons"
 import { IconButton } from "@ui/components/IconButton"
 import { OptionSwitch } from "@ui/components/OptionSwitch"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,13 +29,20 @@ const DEFAULT_FORM_VALUE: FormDefaults = {
 
 export const RampsFormRouter = () => {
   const selectedCurrency = useSelectedCurrency()
-  const { close } = useRampsModal()
+  const { close, isOpen, args } = useRampsModal()
 
   const [defaults, setDefaults] = useState(() => {
     if (DEFAULT_FORM_VALUE.currencyCode) return DEFAULT_FORM_VALUE
     // if user's current currency exists in ramps currencies, set it as default
     const currency = getRampsCurrency(selectedCurrency.toUpperCase())
     return currency ? { ...DEFAULT_FORM_VALUE, currencyCode: currency.code } : DEFAULT_FORM_VALUE
+  })
+
+  useFlow(flows.buy, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "dashboard",
+    started: { tab: defaults.mode },
+    step: defaults.mode,
   })
 
   // preload tokens so they can be preselected, better UX when switching tab

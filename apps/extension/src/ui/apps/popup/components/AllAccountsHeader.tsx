@@ -4,6 +4,7 @@ import { TalismanOrbRectangle } from "@talismn/orb"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { IconButton } from "@ui/components/IconButton"
+import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
@@ -12,7 +13,11 @@ import { useNavigate } from "react-router-dom"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
   const navigate = useNavigate()
-  const handleClick = useCallback(() => navigate("/portfolio/tokens"), [navigate])
+  const reportAccountSwitched = useReportAccountSwitched()
+  const handleClick = useCallback(() => {
+    navigate("/portfolio/tokens")
+    reportAccountSwitched("all")
+  }, [navigate, reportAccountSwitched])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
   const disabled = useMemo(() => !accounts.length, [accounts.length])

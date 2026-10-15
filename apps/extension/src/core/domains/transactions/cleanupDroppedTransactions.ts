@@ -6,7 +6,7 @@ import { db } from "../../db"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
-import { updateTransactionStatus } from "./store.transactions"
+import { markTransactionDropped, updateTransactionStatus } from "./store.transactions"
 import type { WalletTransactionDot, WalletTransactionEth, WalletTransactionSol } from "./types"
 
 /**
@@ -84,7 +84,7 @@ export const cleanupDroppedEvmTransactions = async (
       await provider.getTransaction({ hash: tx.hash })
     } catch (err) {
       if (err instanceof Error && err.name === "TransactionNotFoundError") {
-        await updateTransactionStatus(tx.id, "error")
+        await markTransactionDropped(tx.id)
         cleaned = true
       }
     }
@@ -109,7 +109,7 @@ const cleanupEvmTransactions = async (txs: WalletTransactionEth[]): Promise<void
           await provider.getTransaction({ hash: tx.hash })
         } catch (err) {
           if (err instanceof Error && err.name === "TransactionNotFoundError") {
-            await updateTransactionStatus(tx.id, "error")
+            await markTransactionDropped(tx.id)
           }
         }
       }
@@ -138,7 +138,7 @@ const cleanupSubstrateTransactions = async (txs: WalletTransactionDot[]): Promis
         // A nonce the chain hasn't consumed proves the extrinsic never executed. A consumed one
         // proves nothing — this extrinsic or another one may have taken it — so leave the
         // transaction "unknown" instead of reporting a transfer that succeeded as failed.
-        if (nextNonce <= tx.nonce) await updateTransactionStatus(tx.id, "error")
+        if (nextNonce <= tx.nonce) await markTransactionDropped(tx.id)
       }
     } catch {
       // Chain unavailable — skip
@@ -164,7 +164,7 @@ const cleanupSolanaTransactions = async (txs: WalletTransactionSol[]): Promise<v
 
         if (!status) {
           // Signature unknown to cluster → dropped
-          await updateTransactionStatus(tx.id, "error")
+          await markTransactionDropped(tx.id)
         } else if (status.err) {
           await updateTransactionStatus(tx.id, "error")
         } else if (

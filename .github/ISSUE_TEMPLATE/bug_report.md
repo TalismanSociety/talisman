@@ -20,7 +20,7 @@ Steps to reproduce the behaviour:
 A clear and concise description of what you expected to happen.
 
 **Links**
-If applicable, add links to Sentry issues, Upvotey bug reports, or Discord messages.
+If applicable, add links to error tracking issues, Upvotey bug reports, or Discord messages.
 
 **Screenshots**
 If applicable, add screenshots/recordings to help explain your problem.

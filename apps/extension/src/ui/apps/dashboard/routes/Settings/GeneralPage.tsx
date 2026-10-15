@@ -18,7 +18,6 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { getErrorMessage, isNotNil } from "@talismn/util"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { CtaButton } from "@ui/components/CtaButton"
@@ -36,13 +35,6 @@ import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "General",
-}
-
 export const GeneralPage = () => (
   <DashboardLayout sidebar="settings">
     <Content />
@@ -57,7 +49,7 @@ const Content = () => {
   const [btcDisplaySats, setBtcDisplaySats] = useSetting("btcDisplaySats")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
-  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
+  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload()
   const [developerMode, setDeveloperMode] = useSetting("developerMode")
 
   return (
@@ -230,7 +222,11 @@ const LedgerTransportTypeSelect = () => {
       <Button primary small onClick={checkConnectivity}>
         {t("Check")}
       </Button>
-      <Modal isOpen={!!checkStatus} onDismiss={() => setCheckStatus(undefined)}>
+      <Modal
+        analyticsId="ledger_transport_check"
+        isOpen={!!checkStatus}
+        onDismiss={() => setCheckStatus(undefined)}
+      >
         <LedgerTransportCheckModalDialog
           status={checkStatus}
           transport={ledgerTransportType}
@@ -259,7 +255,7 @@ const LedgerTransportCheckModalDialog: FC<{
   if (!s) return null
 
   return (
-    <ModalDialog title={t("Ledger connectivity check")} onClose={onClose}>
+    <ModalDialog className="h-auto" title={t("Ledger connectivity check")} onCloseClick={onClose}>
       <div className="flex w-full items-center gap-6">
         <div
           className={cn(

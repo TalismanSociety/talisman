@@ -34,7 +34,7 @@ export const BittensorChangeLockHotkeyModal: FC = () => {
   const { isOpen, args, close } = useBittensorChangeLockHotkeyModal()
 
   return (
-    <Modal isOpen={isOpen && !!args} onDismiss={close}>
+    <Modal analyticsId="bittensor_change_lock_hotkey" isOpen={isOpen && !!args} onDismiss={close}>
       <PopupSizeModalContainer id={BITTENSOR_CHANGE_LOCK_HOTKEY_MODAL_CONTAINER_ID}>
         {!!args && (
           <BittensorChangeLockHotkeyWizardProvider

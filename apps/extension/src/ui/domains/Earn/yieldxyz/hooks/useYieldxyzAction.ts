@@ -54,16 +54,11 @@ export const useYieldxyzAction = ({ type, address, yieldId, args }: UseYieldxyzA
 
       setState({ isLoading: false, error: null, action: fetchedAction })
     } catch (err) {
-      log.error("Failed to fetch Yieldxyz enter action", err)
-      notify({
-        type: "error",
-        title: "Error",
-        subtitle: getErrorMessage(err, t("Unknown error")),
-      })
+      log.error(`Failed to fetch Yieldxyz ${type} action`, err)
       setState({ isLoading: false, error: err as Error, action: null })
       throw err
     }
-  }, [type, address, yieldId, args, t])
+  }, [type, address, yieldId, args])
 
   const refreshAction = useCallback(async () => {
     setState((prev) => {
@@ -110,8 +105,9 @@ export const useYieldxyzAction = ({ type, address, yieldId, args }: UseYieldxyzA
         log.error("Failed to submit Yieldxyz transaction", err)
         notify({
           type: "error",
-          title: "Error",
+          title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
         setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
         throw err

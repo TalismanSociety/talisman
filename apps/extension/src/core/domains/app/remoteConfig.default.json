@@ -49,7 +49,8 @@
     "ASSET_HUB_MIGRATION_BANNER": false,
     "BITTENSOR_MEV_SHIELD": true,
     "QUICK_UNLOCK": true,
-    "SWAPS_FOREVERMONEY_TAO_BRIDGE": true,
+    "SWAPS_FOREVERMONEY_TAO_BRIDGE": false,
+    "SWAPS_FOREVERMONEY_TAO_BRIDGE_V2": true,
     "BLOCKAID_DAPP_SCAN_V2": true,
     "BLOCKAID_TOKEN_SCAN": true
   },
@@ -272,6 +273,14 @@
     },
     "lifi": {
       "solanaChainId": 1151111081099710
+    },
+    "forevermoney": {
+      "feeRecipients": {
+        "964": "0xfFA6145Cbe03042981b41dCD73e647fE577f62db",
+        "4663": "0x29A696d209306352977D0144859AC1133A3fea40",
+        "8453": "0x29A696d209306352977D0144859AC1133A3fea40"
+      },
+      "feeBps": 25
     }
   },
   "nominationPools": {
@@ -414,7 +423,7 @@
       "29": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "30": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "31": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "32": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "32": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "33": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "34": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "35": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -426,7 +435,7 @@
       "41": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "42": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "43": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "44": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "44": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "45": "5FtBncJvGhxjBs4aFn2pid6aur9tBUuo9QR7sHe5DkoRizzo",
       "46": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "47": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -459,11 +468,10 @@
       "75": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "76": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "77": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "78": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "78": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "79": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "80": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "81": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "82": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "83": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "84": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "85": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -472,7 +480,7 @@
       "89": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "90": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "91": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "92": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "92": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "93": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "94": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "95": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -483,11 +491,12 @@
       "100": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "101": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "102": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "103": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
+      "103": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "104": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "105": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
+      "105": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "106": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "107": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "108": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "109": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "110": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "111": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
@@ -496,19 +505,18 @@
       "114": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "115": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "116": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "117": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
+      "117": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
       "118": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "119": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "120": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "121": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "122": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "123": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
+      "123": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "124": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "125": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
-      "126": "5Ggasr6fQqKZXuovBTT44GvhuoFpxBsXGPY3AUtFr9mWxGTV",
+      "126": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "127": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1",
       "128": "5DXdHixxtCvoa6GHKs2Jgrdzc61882Ftx1zN2sYFQuwgL1S1"
     }
-  },
-  "postHogUrl": "https://us.i.posthog.com/batch/"
+  }
 }

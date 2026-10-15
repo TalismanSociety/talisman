@@ -55,16 +55,11 @@ export const useYieldxyzPendingAction = ({
 
       setState({ isLoading: false, error: null, action: fetchedAction })
     } catch (err) {
-      log.error("Failed to fetch Yieldxyz enter action", err)
-      notify({
-        type: "error",
-        title: "Error",
-        subtitle: getErrorMessage(err, t("Unknown error")),
-      })
+      log.error("Failed to fetch Yieldxyz pending action", err)
       setState({ isLoading: false, error: err as Error, action: null })
       throw err
     }
-  }, [address, yieldId, pendingAction, t])
+  }, [address, yieldId, pendingAction])
 
   const refreshAction = useCallback(async () => {
     setState((prev) => {
@@ -111,8 +106,9 @@ export const useYieldxyzPendingAction = ({
         log.error("Failed to submit Yieldxyz transaction", err)
         notify({
           type: "error",
-          title: "Error",
+          title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
         setState((prev) => ({ ...prev, isLoading: false, error: err as Error }))
         throw err

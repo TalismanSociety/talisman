@@ -1,16 +1,17 @@
+import { signerOf } from "@common/analytics/transactions"
 import type { Address } from "@core/types/base"
 import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useToken } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
-
 import { useBittensorSettingsPayload } from "../../hooks/useBittensorSettingsPayload"
 import { BITTENSOR_NETWORK_ID } from "../constants"
+import { useBittensorSettingsModal } from "./useBittensorSettingsModal"
 
 export type BittensorSettingsStep = "settings" | "follow-up"
 
@@ -21,7 +22,6 @@ type WizardState = {
   hash: Hex | null
   /** target accept-locked-alpha state (spec 421); null until seeded from chain */
   selectedAcceptLockedAlpha: boolean | null
-  onSubmittedCallback: (() => void) | null
 }
 
 export type BittensorSettingsOpenOptions = {
@@ -37,30 +37,23 @@ const DEFAULT_STATE: WizardState = {
   address: null,
   hash: null,
   selectedAcceptLockedAlpha: null,
-  onSubmittedCallback: null,
-}
-
-const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
-
-export const useResetBittensorSettingsWizard = () => {
-  const reset = useCallback((init: BittensorSettingsOpenOptions) => {
-    wizardOpenState$.next({
-      ...DEFAULT_STATE,
-      networkId: init.networkId,
-      address: init.address,
-      step: init.step ?? "settings",
-      onSubmittedCallback: init.onSubmitted ?? null,
-    })
-  }, [])
-
-  return reset
 }
 
 const useBittensorSettingsWizardProvider = () => {
-  const [
-    { networkId, address, step, hash, selectedAcceptLockedAlpha, onSubmittedCallback },
-    setWizardState,
-  ] = useState(() => wizardOpenState$.getValue())
+  const { args, isOpen } = useBittensorSettingsModal()
+  const onSubmittedCallback = args?.onSubmitted
+
+  const [{ networkId, address, step, hash, selectedAcceptLockedAlpha }, setWizardState] =
+    useState<WizardState>(() =>
+      args
+        ? {
+            ...DEFAULT_STATE,
+            networkId: args.networkId,
+            address: args.address,
+            step: args.step ?? "settings",
+          }
+        : DEFAULT_STATE
+    )
 
   const nativeTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
   const account = useAccountByAddress(address)
@@ -144,14 +137,26 @@ const useBittensorSettingsWizardProvider = () => {
   const onSubmitted = useCallback(
     (txHash?: Hex) => {
       if (txHash) {
+        const signer = account && signerOf(account.type)
+        if (signer)
+          flows.bittensor_settings.submitted({
+            enabled: !!selectedAcceptLockedAlpha,
+            signer,
+            transactionId: txHash,
+          })
         setWizardState((prev) => ({ ...prev, step: "follow-up", hash: txHash }))
       }
       if (onSubmittedCallback) {
         onSubmittedCallback()
       }
     },
-    [onSubmittedCallback]
+    [account, selectedAcceptLockedAlpha, onSubmittedCallback]
   )
+
+  useFlow(flows.bittensor_settings, {
+    active: isOpen && !!args,
+    step: step === "settings" ? "form" : null,
+  })
 
   return {
     networkId,

@@ -3,12 +3,13 @@ import { AlertCircleIcon, TrashIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountCanWriteProxies, useAccountProxySetsForAddress } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -27,7 +28,7 @@ type RemoveTarget = { networkId: string; entry: AccountProxyEntry }
 export const ManageProxyModal: FC = () => {
   const { isOpen, args, close } = useManageProxyModal()
   return (
-    <Modal isOpen={isOpen && !!args?.address} onDismiss={close}>
+    <Modal analyticsId="manage_proxy" isOpen={isOpen && !!args?.address} onDismiss={close}>
       <PopupSizeModalContainer id="manage-proxy-modal">
         {!!args?.address && <ManageProxyContent address={args.address} onClose={close} />}
       </PopupSizeModalContainer>
@@ -61,9 +62,12 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   const hasProxiesWithCount = sets.some((s) => s.proxyCount > 0)
   const isLoadingDetails = sets.some((s) => s.proxyCount > 0 && s.proxies.length === 0)
 
+  useFlow(flows.account_proxy_remove, { active: !!removeTarget, step: "confirm" })
+
   const handleSubmitted = useCallback(
     (hash: Hex) => {
       if (!removeTarget) return
+      flows.account_proxy_remove.submitted({ transactionId: hash })
       setSubmittedHash(hash)
       setSubmittedNetworkId(removeTarget.networkId)
     },
@@ -99,7 +103,7 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
   }
 
   return (
-    <WizardModalDialog title={t("Manage Proxies")} onCloseClick={onClose}>
+    <ModalDialog variant="wizard" title={t("Manage Proxies")} onCloseClick={onClose}>
       <div className="flex grow flex-col gap-8">
         <div className="flex items-center justify-between gap-4">
           <AccountDisplay address={address} className="overflow-hidden text-base" />
@@ -139,7 +143,7 @@ const ManageProxyContent: FC<{ address: string; onClose: () => void }> = ({ addr
           )}
         </div>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -212,7 +216,8 @@ const RemoveProxyConfirm: FC<{
   const { payload, isAffordabilityCheckUnavailable, insufficientBalance } = preview
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Remove Proxy")}
       contentClassName="flex flex-col"
       onBackClick={onCancel}
@@ -245,10 +250,11 @@ const RemoveProxyConfirm: FC<{
           payload={payload?.payload}
           txMetadata={payload?.txMetadata}
           onSubmitted={onSubmitted}
+          onError={flows.account_proxy_remove.failed}
           disabled={isAffordabilityCheckUnavailable || insufficientBalance}
           checkPassword
         />
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

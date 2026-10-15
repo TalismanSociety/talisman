@@ -1,6 +1,7 @@
 import { AlertTriangleIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useTranslation } from "react-i18next"
 
 export const ConvictionLockSendWarningDrawer = ({
@@ -15,8 +16,14 @@ export const ConvictionLockSendWarningDrawer = ({
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="flex flex-col items-center rounded-t-xl bg-black-tertiary p-12 text-center">
+    <Drawer
+      analyticsId="conviction_lock_send_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
+      <DrawerContent className="flex flex-col items-center text-center">
         <div className="flex size-24 items-center justify-center rounded-full bg-alert-warn/10">
           <AlertTriangleIcon className="inline-block size-12 text-alert-warn" />
         </div>
@@ -39,7 +46,7 @@ export const ConvictionLockSendWarningDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

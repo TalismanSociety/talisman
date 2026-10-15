@@ -12,7 +12,6 @@ nodeOptions: "--max-old-space-size=4096"
 savePrefix: ""
 
 allowBuilds:
-  '@sentry/cli': false
   '@swc/core': false
   bigint-buffer: false
   bufferutil: false

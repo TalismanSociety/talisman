@@ -1,6 +1,7 @@
 import type { Balances } from "@talismn/balances"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { usePortfolioGlobalData } from "@ui/state/portfolio"
+import { useReportSearch } from "@ui/hooks/analytics/search"
+import { usePortfolioGlobalData, usePortfolioSearch } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, useEffect, useMemo, useState } from "react"
@@ -101,6 +102,7 @@ export const DashboardAssetsTable = () => {
   const { isInitialising } = usePortfolioGlobalData()
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
   const location = useLocation()
+  useReportSearch("portfolio_tokens", usePortfolioSearch(), symbolBalances.length)
 
   return (
     <div key={location.key} className="min-w-112.5 text-left text-base text-body-secondary">

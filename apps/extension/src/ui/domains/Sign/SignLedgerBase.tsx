@@ -1,4 +1,6 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { Button, type ButtonProps } from "@ui/components/Button"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { cn } from "@ui/util/cn"
 import type { FC } from "react"
@@ -29,6 +31,11 @@ export const SignLedgerBase: FC<{
   onCancel,
 }) => {
   const { t } = useTranslation()
+  useErrorShown({
+    shown: error?.message,
+    surface: "alert",
+    category: error ? classifyError(error) : "unknown",
+  })
 
   return (
     <div className={cn("grid w-full gap-8", onCancel ? "grid-cols-2" : "grid-cols-1")}>

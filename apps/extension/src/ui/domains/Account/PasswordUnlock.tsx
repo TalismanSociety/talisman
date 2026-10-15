@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
@@ -6,6 +7,7 @@ import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { provideContext } from "@ui/util/provideContext"
@@ -78,6 +80,7 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
         await checkPassword(password)
       } catch (err) {
         setError("password", {
+          type: classifyError(err),
           message: getErrorMessage(err, t("Unknown error")),
         })
       }
@@ -103,7 +106,10 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
       <form onSubmit={handleSubmit(submit)} className="flex h-full flex-col">
         <div className="flex grow flex-col justify-center">
           <div className="mb-6 text-md">{title || t("Enter your password")}</div>
-          <FormFieldContainer error={errors.password?.message}>
+          <FormFieldContainer
+            error={errors.password?.message}
+            errorCategory={errorCategoryOfField(errors.password)}
+          >
             <FormFieldInputText
               before={<KeyIcon className="opacity-50" />}
               {...register("password")}

@@ -67,6 +67,7 @@ export const useProxyTxPreview = ({
       type: "error",
       title: t("Failed to build transaction"),
       subtitle: payloadError.message,
+      cause: payloadError,
     })
   }, [payloadError, t])
 

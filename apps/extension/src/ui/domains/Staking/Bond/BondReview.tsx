@@ -1,6 +1,6 @@
+import { flows } from "@ui/hooks/analytics/flows"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../Transactions/SapiSendButton"
@@ -80,6 +80,7 @@ export const BondReview = () => {
         loading={!payload}
         payload={payload ?? undefined}
         onSubmitted={onSubmitted}
+        onError={flows.staking.failed}
         txMetadata={txMetadata}
         disabled={isDisabled}
       />

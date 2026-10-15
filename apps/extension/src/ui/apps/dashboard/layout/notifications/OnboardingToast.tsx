@@ -10,6 +10,9 @@ const CACHE = {
   notified: false,
 }
 
+const isOnboardedInUrl = () =>
+  new URLSearchParams(window.location.hash.split("?")[1]).has("onboarded")
+
 export const OnboardingToast = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
@@ -43,7 +46,8 @@ export const OnboardingToast = () => {
   useEffect(() => {
     if (!CACHE.notified && searchParams.get("onboarded") !== null && !IS_FIREFOX) {
       CACHE.notified = true
-      setSearchParams({})
+      // during a route transition the rendered location is stale: navigating from it would undo the transition
+      if (isOnboardedInUrl()) setSearchParams({})
 
       notifyCustom(OnboardNotification, {
         autoClose: false,

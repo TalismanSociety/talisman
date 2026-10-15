@@ -15,8 +15,6 @@ vi.mock("@ui/apps/dashboard/layout", () => ({
   DashboardLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-vi.mock("@ui/hooks/useAnalyticsPageView", () => ({ useAnalyticsPageView: () => {} }))
-
 vi.mock("react-router-dom", () => ({ useNavigate: () => vi.fn() }))
 
 vi.mock("@ui/state/chaindata", () => ({

@@ -1,6 +1,6 @@
 import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -54,8 +54,14 @@ export const BittensorNetworkPicker: FC<BittensorNetworkPickerProps> = ({
   const { t } = useTranslation()
 
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
-      <WizardModalDialog
+    <Modal
+      analyticsId="bittensor_network_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
+      <ModalDialog
+        variant="wizard"
         title={t("Select Network")}
         onBackClick={onDismiss}
         contentClassName="flex flex-col gap-8"
@@ -71,7 +77,7 @@ export const BittensorNetworkPicker: FC<BittensorNetworkPickerProps> = ({
             }}
           />
         ))}
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

@@ -42,7 +42,6 @@ const TOKENS = {
 const mockGandalfFetch = vi.fn()
 const mockAcknowledgeToken = vi.fn()
 const mockAcknowledgedTokenVerdicts = new Map<string, string>()
-const mockGenericEvent = vi.fn()
 const mockUseFeatureFlag = vi.fn()
 const mockUseSettingValue = vi.fn()
 const mockSafeTokens = new Set<string>()
@@ -59,10 +58,6 @@ vi.mock("@talismn/icons", async (importOriginal) => ({
 
 vi.mock("@ui/util/gandalfFetch", () => ({
   gandalfFetch: (...args: unknown[]) => mockGandalfFetch(...args),
-}))
-
-vi.mock("@ui/hooks/useAnalytics", () => ({
-  useAnalytics: () => ({ genericEvent: mockGenericEvent }),
 }))
 
 vi.mock("@ui/state/remoteConfig", () => ({
@@ -102,14 +97,8 @@ vi.mock("@ui/components/Drawer", () => ({
     isOpen ? <div role="dialog">{children}</div> : null,
 }))
 
-vi.mock("@ui/components/WizardModalDialog", () => ({
-  WizardModalDialog: ({
-    children,
-    onBackClick,
-  }: {
-    children: ReactNode
-    onBackClick: () => void
-  }) => (
+vi.mock("@ui/components/ModalDialog", () => ({
+  ModalDialog: ({ children, onBackClick }: { children: ReactNode; onBackClick: () => void }) => (
     <div>
       <button type="button" onClick={onBackClick}>
         Dismiss picker
@@ -313,7 +302,6 @@ describe("SelectTokenButton token risk scan", () => {
 
     expect(await screen.findByText("Malicious")).toBeTruthy()
     expect(mockGandalfFetch).toHaveBeenCalledTimes(2)
-    expect(mockGenericEvent).toHaveBeenCalledTimes(1)
   })
 
   it("lets the user accept a token whose scan is still pending after one retry", async () => {

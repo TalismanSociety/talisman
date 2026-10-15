@@ -1,7 +1,9 @@
+import { networkIdForAnalytics } from "@common/analytics/funds"
 import { TOKEN_APPROVALS_URL } from "@common/constants"
 import { log } from "@common/log"
 import type { EvmAddress } from "@core/domains/ethereum/types"
 import { getErrorMessage } from "@talismn/util"
+import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
 import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -50,16 +52,18 @@ export const EthSignBodyErc20Approve: FC = () => {
     async (limit: bigint) => {
       try {
         await updateCallArg("amount", limit)
+        track("allowance_edited", { network_id: networkIdForAnalytics(network) })
       } catch (err) {
         log.error("Failed to override allowance", { err })
         notify({
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },
-    [updateCallArg, t]
+    [network, updateCallArg, t]
   )
 
   if (!spender || !account || !network || !erc20Token) return <SignViewBodyShimmer />

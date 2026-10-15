@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { cn } from "@ui/util/cn"
 import { type FC, useId } from "react"
 import { useTranslation } from "react-i18next"
@@ -154,8 +154,14 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
   ]
 
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
-      <WizardModalDialog
+    <Modal
+      analyticsId="bittensor_lock_type_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
+      <ModalDialog
+        variant="wizard"
         title={t("Lock Type")}
         onBackClick={onDismiss}
         contentClassName="overflow-hidden flex flex-col gap-6"
@@ -176,7 +182,7 @@ export const BittensorLockTypePicker: FC<BittensorLockTypePickerProps> = ({
             />
           ))}
         </ScrollContainer>
-      </WizardModalDialog>
+      </ModalDialog>
     </Modal>
   )
 }

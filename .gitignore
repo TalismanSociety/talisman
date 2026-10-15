@@ -59,5 +59,7 @@ review
 # for ai temp scripts
 .tmp
 
-# do not track .claude folder as it would double the context bloat when using copilot
-.claude
+# local Claude Code state
+.claude/settings.local.json
+.claude/worktrees/
+.claude/*.lock

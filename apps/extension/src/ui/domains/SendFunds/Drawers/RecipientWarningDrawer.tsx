@@ -2,6 +2,7 @@ import { InfoIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { Trans, useTranslation } from "react-i18next"
@@ -25,8 +26,14 @@ export const RecipientWarningDrawer = ({
   const chain = useNetworkByGenesisHash(genesisHash)
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="rounded-t-xl bg-black-tertiary p-12 text-center">
+    <Drawer
+      analyticsId="recipient_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
+      <DrawerContent className="text-center">
         <div>
           <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
@@ -50,7 +57,7 @@ export const RecipientWarningDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

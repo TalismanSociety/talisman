@@ -141,7 +141,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error("Failed to approve sign request")
+        baseRequest.fail(err, "Failed to approve sign request")
       }
     },
     [baseRequest, modifiedPayload]
@@ -156,7 +156,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve qr", { err })
-        baseRequest.setStatus.error("Failed to approve sign request")
+        baseRequest.fail(err, "Failed to approve sign request")
       }
     },
     [baseRequest, modifiedPayload]
@@ -170,7 +170,7 @@ const usePolkadotSigningRequestProvider = ({
       baseRequest.setStatus.success("Approved")
     } catch (err) {
       log.error("failed to approve signet", { err })
-      baseRequest.setStatus.error("Failed to approve sign request")
+      baseRequest.fail(err, "Failed to approve sign request")
     }
   }, [baseRequest])
 
@@ -182,7 +182,7 @@ const usePolkadotSigningRequestProvider = ({
       baseRequest.setStatus.success("Approved")
     } catch (err) {
       log.error("failed to approve", { err })
-      baseRequest.setStatus.error("Failed to approve sign request")
+      baseRequest.fail(err, "Failed to approve sign request")
     }
   }, [baseRequest, modifiedPayload])
 

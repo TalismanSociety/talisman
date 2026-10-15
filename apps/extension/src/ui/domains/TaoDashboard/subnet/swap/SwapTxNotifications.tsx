@@ -30,14 +30,13 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
     if (!transaction) return
 
     const type = getNotificationType(transaction)
+    const toastContent = { title: capitalize(transaction.status), subtitle: label }
 
     void notifyUpdate(
       hash,
-      {
-        type,
-        title: capitalize(transaction.status),
-        subtitle: label,
-      },
+      type === "error"
+        ? { ...toastContent, type, errorCategory: "dispatch_failed" }
+        : { ...toastContent, type },
       {
         toastId: hash,
         onClick: () => {

@@ -36,7 +36,10 @@ const config: KnipConfig = {
   },
 
   workspaces: {
-    ".": {},
+    ".": {
+      // CLI helpers of the verify agent skill
+      entry: [".claude/skills/verify/bin/*.mjs"],
+    },
 
     // Browser extension app (WXT — no native Knip plugin, needs manual entry config)
     "apps/extension": {
@@ -47,6 +50,8 @@ const config: KnipConfig = {
         "entrypoints/support/index.html",
         "i18next.config.ts",
         "scripts/i18nextTransDefaults.ts",
+        // Guard 1 of analytics: a record that `satisfies` checks against every message type
+        "src/core/domains/analytics/messageCoverage.ts",
       ],
       project: ["src/**/*.{ts,tsx,css}", "entrypoints/**/*.{ts,tsx}"],
       ignore: ["**/*.spec.ts", "**/__tests__/**"],

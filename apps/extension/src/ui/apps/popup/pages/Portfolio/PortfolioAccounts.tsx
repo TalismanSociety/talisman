@@ -10,7 +10,7 @@ import {
   isAccountPortfolio,
 } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
-import { isEthereumAddress, isSs58Address, normalizeAddress } from "@talismn/crypto"
+import { isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -20,7 +20,6 @@ import {
   SettingsIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { IconButton } from "@ui/components/IconButton"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -36,7 +35,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state/balances"
 import { cn } from "@ui/util/cn"
@@ -56,13 +55,6 @@ const setPortfolioAccountsSearch = (search: string) => {
 }
 
 const [usePortfolioAccountsSearch] = bind(portfolioAccountsSearch$)
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Portfolio Home",
-}
 
 type FolderAccountOption = {
   type: "folder"
@@ -90,10 +82,12 @@ type AccountOption = FolderAccountOption | AccountAccountOption
 
 const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     navigate(`/portfolio?folder=${option.id}`)
-  }, [navigate, option])
+    reportAccountSwitched("folder")
+  }, [navigate, option, reportAccountSwitched])
 
   return (
     <button
@@ -122,15 +116,12 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
 
 const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
   const navigate = useNavigate()
-  const { genericEvent } = useAnalytics()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
-    genericEvent("select account(s)", {
-      type: option.address ? (isEthereumAddress(option.address) ? "ethereum" : "substrate") : "all",
-      from: "popup",
-    })
     navigate(`/portfolio/tokens?account=${option.address}`)
-  }, [genericEvent, navigate, option])
+    reportAccountSwitched("account", option.accountType)
+  }, [navigate, option, reportAccountSwitched])
 
   return (
     <div
@@ -192,21 +183,11 @@ const AccountsToolbar = () => {
   const search = usePortfolioAccountsSearch()
 
   const handleAddAccountClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add account button",
-    })
     api.dashboardOpen("/accounts/add")
     window.close()
   }, [])
 
   const handleManageAccountsClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Manage Accounts button",
-    })
     navigate("/manage-accounts")
   }, [navigate])
 
@@ -359,7 +340,6 @@ export const PortfolioAccounts = () => {
   const { accounts, catalog, balanceTotals } = usePortfolioAccounts()
   const { selectedFolder: folder, treeName } = usePortfolioNavigation()
   const search = usePortfolioAccountsSearch()
-  const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 
   const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
@@ -468,10 +448,6 @@ export const PortfolioAccounts = () => {
         : undefined,
     [balanceTotals, folder]
   )
-
-  useEffect(() => {
-    popupOpenEvent("portfolio accounts")
-  }, [popupOpenEvent])
 
   const [fetchBalances, setFetchBalances] = useState(false)
   useEffect(() => {

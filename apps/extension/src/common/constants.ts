@@ -8,7 +8,7 @@ export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
 export const IS_FIREFOX = typeof navigator !== "undefined" && /Firefox/i.test(navigator.userAgent)
 
-export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
+export const IPFS_GATEWAY = "https://ipfs.talisman.xyz/ipfs/"
 
 export const BLOCKAID_API_URL = "https://bap.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
@@ -21,7 +21,6 @@ export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
 export const REMOTE_CONFIG_API_URL = "https://wrc.talisman.xyz"
 export const COINS_API_URL = "https://coins.talisman.xyz"
 
-export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
 // Wallet-specific invite link

@@ -1,15 +1,15 @@
 import { AlertCircleIcon } from "@talismn/icons"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   BITTENSOR_CHANGE_LOCK_TYPE_MODAL_CONTAINER_ID,
   useBittensorChangeLockTypeWizard,
@@ -61,7 +61,8 @@ export const BittensorChangeLockTypeConfirm = () => {
   if (!address || !existingLock || currentIsPerpetual === null) return null
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       title={t("Conviction Lock Type")}
       contentClassName="size-full flex flex-col overflow-hidden"
       onBackClick={() => setStep("form")}
@@ -121,9 +122,10 @@ export const BittensorChangeLockTypeConfirm = () => {
         payload={payload}
         txMetadata={txMetadata}
         onSubmitted={onSubmitted}
+        onError={flows.staking.failed}
         disabled={!payload}
         className="shrink-0"
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

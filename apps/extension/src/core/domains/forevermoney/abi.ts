@@ -9,17 +9,51 @@ const EXIT_PARAMS = {
   type: "tuple",
 } as const
 
+const INTEGRATOR_FEE = {
+  components: [
+    { name: "recipient", type: "address" },
+    { name: "bps", type: "uint16" },
+  ],
+  name: "integrator",
+  type: "tuple",
+} as const
+
+const BRIDGE_TO_FINNEY_INPUTS = [
+  { name: "token", type: "address" },
+  { name: "amount", type: "uint256" },
+  EXIT_PARAMS,
+  { name: "gasLimit", type: "uint256" },
+] as const
+
 export const abiForevermoneySpokeGateway = [
   {
-    inputs: [{ name: "token", type: "address" }, { name: "amount", type: "uint256" }, EXIT_PARAMS],
+    inputs: BRIDGE_TO_FINNEY_INPUTS,
     name: "quoteBridgeToFinney",
     outputs: [{ name: "fee", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ name: "token", type: "address" }, { name: "amount", type: "uint256" }, EXIT_PARAMS],
+    inputs: BRIDGE_TO_FINNEY_INPUTS,
     name: "bridgeToFinney",
+    outputs: [{ name: "messageId", type: "bytes32" }],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [...BRIDGE_TO_FINNEY_INPUTS, INTEGRATOR_FEE],
+    name: "quoteBridgeToFinneyWithFee",
+    outputs: [
+      { name: "fee", type: "uint256" },
+      { name: "cut", type: "uint256" },
+      { name: "amountCrossing", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [...BRIDGE_TO_FINNEY_INPUTS, INTEGRATOR_FEE],
+    name: "bridgeToFinneyWithFee",
     outputs: [{ name: "messageId", type: "bytes32" }],
     stateMutability: "payable",
     type: "function",
@@ -38,6 +72,15 @@ export const abiForevermoneySpokeGateway = [
   },
 ] as const
 
+const BRIDGE_OUT_INPUTS = [
+  { name: "destSelector", type: "uint64" },
+  { name: "token", type: "address" },
+  { name: "recipient", type: "address" },
+  { name: "taoAmount", type: "uint256" },
+  { name: "stakedAlphaRao", type: "uint256" },
+  { name: "minTokenOut", type: "uint256" },
+] as const
+
 export const abiForevermoneyAlphaGateway = [
   {
     inputs: [
@@ -52,15 +95,35 @@ export const abiForevermoneyAlphaGateway = [
     type: "function",
   },
   {
+    inputs: BRIDGE_OUT_INPUTS,
+    name: "bridgeOut",
+    outputs: [{ name: "messageId", type: "bytes32" }],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
     inputs: [
       { name: "destSelector", type: "uint64" },
       { name: "token", type: "address" },
       { name: "recipient", type: "address" },
+      { name: "mintedAmount", type: "uint256" },
       { name: "taoAmount", type: "uint256" },
       { name: "stakedAlphaRao", type: "uint256" },
-      { name: "minTokenOut", type: "uint256" },
+      INTEGRATOR_FEE,
     ],
-    name: "bridgeOut",
+    name: "quoteBridgeOutWithFee",
+    outputs: [
+      { name: "fee", type: "uint256" },
+      { name: "nativeTopUp", type: "uint256" },
+      { name: "alphaTopUp", type: "uint256" },
+      { name: "amountCrossing", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [...BRIDGE_OUT_INPUTS, INTEGRATOR_FEE],
+    name: "bridgeOutWithFee",
     outputs: [{ name: "messageId", type: "bytes32" }],
     stateMutability: "payable",
     type: "function",
@@ -94,6 +157,17 @@ export const abiForevermoneyAlphaGateway = [
       { indexed: false, name: "wsn", type: "uint256" },
     ],
     name: "Claimable",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "sourceChainSelector", type: "uint64" },
+      { indexed: true, name: "token", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" },
+      { indexed: false, name: "reason", type: "uint8" },
+    ],
+    name: "NotDelivered",
     type: "event",
   },
 ] as const
@@ -151,6 +225,37 @@ export const abiCcipOffRamp = [
     ],
     name: "ExecutionStateChanged",
     type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "sourceChainSelector", type: "uint64" },
+      { indexed: true, name: "sequenceNumber", type: "uint64" },
+      { indexed: true, name: "messageId", type: "bytes32" },
+      { indexed: false, name: "state", type: "uint8" },
+      { indexed: false, name: "returnData", type: "bytes" },
+    ],
+    name: "ExecutionStateChanged",
+    type: "event",
+  },
+] as const
+
+export const abiCcipRouter = [
+  {
+    inputs: [],
+    name: "getOffRamps",
+    outputs: [
+      {
+        components: [
+          { name: "sourceChainSelector", type: "uint64" },
+          { name: "offRamp", type: "address" },
+        ],
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
 ] as const
 

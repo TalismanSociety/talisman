@@ -3,20 +3,19 @@ import { log } from "@common/log"
 import { assert, getErrorMessage, sleep } from "@talismn/util"
 import { BehaviorSubject, map } from "rxjs"
 import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
+import { analyticsEngine } from "../analytics/engine"
 import { keyringStore } from "../keyring/store"
 import { addException } from "./protector"
 import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./quickUnlockCrypto"
 import type { PasswordStoreData } from "./store.password"
 import { isCompleteEnrollment } from "./store.quickUnlock"
 import type {
-  AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
   ChangePasswordStatusUpdateType,
   LoggedinType,
@@ -64,9 +63,8 @@ export default class AppHandler extends ExtensionHandler {
     } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
 
-    await this.stores.password.setPassword(transformedPw)
+    await this.stores.password.setPassword(transformedPw, "onboarding")
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
-    talismanAnalytics.capture("password created")
 
     return true
   }
@@ -83,12 +81,13 @@ export default class AppHandler extends ExtensionHandler {
         authenticateLegacyMethod(transformedPassword)
 
         // we can now set up the auth secret
-        await this.stores.password.setPassword(transformedPassword)
+        await this.stores.password.setPassword(transformedPassword, {
+          method: "password",
+          legacyPassword: true,
+        })
         await this.stores.password.setupAuthSecret(transformedPassword)
-        talismanAnalytics.capture("authenticate", { method: "legacy" })
       } else {
         await this.stores.password.authenticate(pass)
-        talismanAnalytics.capture("authenticate", { method: "new" })
       }
       // start the autolock timer
       this.stores.settings
@@ -97,7 +96,7 @@ export default class AppHandler extends ExtensionHandler {
 
       return true
     } catch {
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
       return false
     }
   }
@@ -107,7 +106,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async lock(): Promise<LoggedinType> {
-    await this.stores.password.clearPassword()
+    await this.stores.password.clearPassword("manual")
     return this.authStatus()
   }
 
@@ -193,6 +192,9 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async resetWallet() {
+    await analyticsEngine
+      .endSession()
+      .catch((cause) => log.error("[analytics] failed to end the session on reset", { cause }))
     this.stores.app.set({ onboarded: "FALSE" })
 
     await this.stores.password.reset()
@@ -216,12 +218,13 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openSendFunds({
+    entry,
     from,
     tokenId,
     tokenSymbol,
     to,
   }: SendFundsOpenRequest): Promise<boolean> {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams({ entry })
     if (from) params.append("from", from)
     if (tokenId) params.append("tokenId", tokenId)
     // tokenId takes precedence over tokenSymbol
@@ -271,7 +274,6 @@ export default class AppHandler extends ExtensionHandler {
       encryptedPassword,
       iv,
     })
-    talismanAnalytics.capture("quick unlock enrolled")
     return true
   }
 
@@ -282,7 +284,6 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     await this.stores.quickUnlock.unenroll()
-    talismanAnalytics.capture("quick unlock unenrolled")
     return true
   }
 
@@ -333,7 +334,7 @@ export default class AppHandler extends ExtensionHandler {
       // check before starting the session, so that only a proven mismatch reaches the unenroll below
       await this.stores.password.checkHashedPassword(password)
     } catch (cause) {
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
 
       // the auth secret was read above, so the recovered password simply doesn't match it anymore
       // and this enrollment can never unlock the wallet again
@@ -344,16 +345,17 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     try {
-      await this.stores.password.setPassword(password)
+      await this.stores.password.setPassword(password, {
+        method: "quick_unlock",
+        legacyPassword: false,
+      })
     } catch (cause) {
       // the password is proven good, so this is the session write failing - the enrollment is still
       // valid and the next attempt can succeed, keep it
-      await this.stores.password.clearPassword()
+      await this.stores.password.clearPassword("error")
       log.error("Quick unlock could not start the session", { cause })
       return "failed"
     }
-
-    talismanAnalytics.capture("authenticate", { method: "quickUnlock" })
 
     this.stores.settings
       .get()
@@ -413,12 +415,6 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.sendFunds.open)":
         return this.openSendFunds(request as RequestTypes["pri(app.sendFunds.open)"])
-
-      case "pri(app.analyticsCapture)": {
-        const { eventName, options } = request as AnalyticsCaptureRequest
-        talismanAnalytics.capture(eventName, options)
-        return true
-      }
 
       case "pri(app.phishing.addException)": {
         return addException((request as RequestTypes["pri(app.phishing.addException)"]).url)

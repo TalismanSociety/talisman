@@ -7,7 +7,7 @@ import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { StakeUnstakeButtons } from "@ui/domains/Staking/StakeUnstakeButtons"
 import { useUnbondButton } from "@ui/domains/Staking/Unbond/useUnbondButton"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { reportTokenDetailsOpened } from "@ui/hooks/analytics/portfolio"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useNetworkById } from "@ui/state/chaindata"
@@ -28,7 +28,6 @@ export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> 
 }) => {
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
-  const { genericEvent } = useAnalytics()
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -38,14 +37,14 @@ export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> 
   const handleClick = useCallback(() => {
     if (!token) return
     navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}`)
-    genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
-  }, [genericEvent, navigate, token])
+    reportTokenDetailsOpened(token, network, networkIds.length)
+  }, [navigate, token, network, networkIds.length])
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = getUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const { canBond } = useBondButton({ balances })
-  const { canUnbond } = useUnbondButton({ balances })
+  const { canBond } = useBondButton({ entry: "portfolio", balances })
+  const { canUnbond } = useUnbondButton({ entry: "portfolio", balances })
   const showStakeButtons = canBond || canUnbond
   const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 

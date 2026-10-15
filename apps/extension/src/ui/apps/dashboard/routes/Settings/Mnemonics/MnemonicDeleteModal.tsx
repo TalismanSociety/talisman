@@ -69,6 +69,7 @@ export const MnemonicDeleteModal = () => {
         type: "error",
         title: t("Failed to delete"),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
     }
   }, [close, mnemonic, t])
@@ -78,15 +79,16 @@ export const MnemonicDeleteModal = () => {
   }, [inputCheck, t])
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="mnemonic_delete" containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog
+        className="h-auto"
         title={
           <div className="flex items-center gap-4">
             <AlertTriangleIcon className="inline text-brand-orange text-lg" />
             <span>{t("Delete Recovery Phrase")}</span>
           </div>
         }
-        onClose={close}
+        onCloseClick={close}
       >
         <p className="text-body-secondary">
           <Trans

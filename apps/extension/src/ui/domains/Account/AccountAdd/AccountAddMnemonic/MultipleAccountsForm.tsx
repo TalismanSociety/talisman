@@ -5,6 +5,7 @@ import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { startCase } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -28,6 +29,7 @@ export const AccountAddMnemonicAccountsForm = () => {
 
   const onSubmit = useCallback(async () => {
     setIsSubmitting(true)
+    flows.add_account.submitted()
     const notificationId = notify(
       {
         type: "processing",
@@ -45,12 +47,15 @@ export const AccountAddMnemonicAccountsForm = () => {
         subtitle: null,
       })
 
+      flows.add_account.completed()
       setAddress(addresses[0])
     } catch (err) {
+      flows.add_account.failed(err)
       notifyUpdate(notificationId, {
         type: "error",
         title: t("Failed to import", { count: accountsToImport.length }),
         subtitle: getErrorMessage(err, t("Unknown error")),
+        cause: err,
       })
       setIsSubmitting(false)
     }

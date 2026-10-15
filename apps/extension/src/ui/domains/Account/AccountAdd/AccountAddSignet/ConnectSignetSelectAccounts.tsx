@@ -7,6 +7,7 @@ import { Checkbox } from "@ui/components/Checkbox"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { Spacer } from "@ui/components/Spacer"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -47,6 +48,7 @@ export const ConnectSignetSelectAccounts = () => {
 
   const handleImport = useCallback(async () => {
     setImporting(true)
+    flows.add_account.submitted()
     const selectedVaults = vaults.filter(({ address }) => selectedAccounts[address])
     const notificationId = notify(
       {
@@ -73,13 +75,16 @@ export const ConnectSignetSelectAccounts = () => {
         subtitle: null,
       })
 
+      flows.add_account.completed()
       onSuccess(address)
     } catch (e) {
+      flows.add_account.failed(e)
       log.error(e)
       notifyUpdate(notificationId, {
         type: "error",
         title: "Failed to import accounts",
         subtitle: getErrorMessage(e, t("Unknown error")),
+        cause: e,
       })
     } finally {
       setImporting(false)

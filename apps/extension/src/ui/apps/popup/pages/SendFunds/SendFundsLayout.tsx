@@ -1,6 +1,4 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -8,27 +6,14 @@ type SendFundsLayoutProps = {
   title?: ReactNode
   withBackLink?: boolean
   children?: ReactNode
-  analytics: AnalyticsPage
 }
 
-export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
-  title,
-  children,
-  withBackLink,
-  analytics,
-}) => {
+export const SendFundsLayout: FC<SendFundsLayoutProps> = ({ title, children, withBackLink }) => {
   const navigate = useNavigate()
 
-  useAnalyticsPageView(analytics)
-
   const handleBackClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...analytics,
-      name: "Goto",
-      action: "Back",
-    })
     navigate(-1)
-  }, [analytics, navigate])
+  }, [navigate])
 
   const showBackButton = withBackLink && window.history.length > 1
 

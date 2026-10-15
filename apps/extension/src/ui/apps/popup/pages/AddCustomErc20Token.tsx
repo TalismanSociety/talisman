@@ -1,3 +1,4 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@common/constants"
 import type { WatchAssetRequestIdOnly, WatchAssetWarning } from "@core/domains/ethereum/types"
 import { getErrorMessage } from "@talismn/util"
@@ -9,6 +10,8 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
+import { reportRequestTokenRisk } from "@ui/hooks/analytics/requestWindow"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
@@ -50,7 +53,7 @@ const useWatchAssetWarningMessage = () => {
 export const AddCustomErc20Token = () => {
   const { t } = useTranslation()
   useBalancesHydrate() // preload
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<{ message: string; category: ErrorCategory }>()
   const { id } = useParams() as WatchAssetRequestIdOnly
   const request = useRequest(id)
 
@@ -60,9 +63,17 @@ export const AddCustomErc20Token = () => {
 
   const network = useNetworkById(request?.token?.networkId, "ethereum")
   const getWarningMessage = useWatchAssetWarningMessage()
-  const { scan, isPending: isScanPending } = useTokenRiskScan(request?.token, "dapp-add-token")
+  const { scan, isPending: isScanPending } = useTokenRiskScan(request?.token)
   const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
   const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
+  useEffect(() => {
+    if (scan) reportRequestTokenRisk(scan.verdict)
+  }, [scan])
+  useErrorShown({
+    shown: error?.message,
+    surface: "alert",
+    category: error?.category ?? "unknown",
+  })
 
   const approve = useCallback(async () => {
     setError(undefined)
@@ -70,7 +81,7 @@ export const AddCustomErc20Token = () => {
       await api.ethWatchAssetRequestApprove(id)
       window.close()
     } catch (err) {
-      setError(getErrorMessage(err, t("Unknown error")))
+      setError({ message: getErrorMessage(err, t("Unknown error")), category: classifyError(err) })
     }
   }, [id, t])
 
@@ -134,7 +145,7 @@ export const AddCustomErc20Token = () => {
           />
           <div className="grow"></div>
           {!!request.warnings?.length && (
-            <SignAlertMessage type="error" className="mt-8">
+            <SignAlertMessage type="error" errorCategory={null} className="mt-8">
               {request.warnings.map((warning, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 <div key={i}>
@@ -147,7 +158,7 @@ export const AddCustomErc20Token = () => {
         </div>
       </PopupContent>
       <PopupFooter>
-        {error && <div className="text-alert-error">{error}</div>}
+        {error && <div className="text-alert-error">{error.message}</div>}
         <div className="grid w-full grid-cols-2 gap-8">
           <Button onClick={cancel}>{t("Reject")}</Button>
           <Button primary processing={isScanPending} disabled={isRiskBlocking} onClick={approve}>

@@ -6,21 +6,15 @@ import {
   useContext,
   useState,
 } from "react"
-import type { useSubnetTweets, WhaleTransaction } from "../../../hooks/useSn45Api"
+import type { WhaleTransaction } from "../../../hooks/useSn45Api"
 
-// Re-derive the Tweet type from the hook return type (matches TabSocialFeeds.tsx:126-127)
-type TweetsData = ReturnType<typeof useSubnetTweets>["data"]
-export type Tweet = NonNullable<TweetsData>[number]
-
-export type HoveredItem =
-  | { type: "tweet"; timestamp: number; tweet: Tweet }
-  | {
-      type: "whale"
-      timestamp: number
-      tx: WhaleTransaction
-      taoUsdPrice?: number
-      taoDecimals: number
-    }
+export type HoveredItem = {
+  type: "whale"
+  timestamp: number
+  tx: WhaleTransaction
+  taoUsdPrice?: number
+  taoDecimals: number
+}
 
 type SetHoveredItem = (item: HoveredItem | null) => void
 

@@ -4,6 +4,8 @@
 // register the anylogger adapter so that logs from @talismn/* packages are
 // visible in the console (console calls are dropped from prod builds)
 import "@common/enableAnyloggerLogsInDevelopment"
+// the analytics parser runs zod in the worker, and the extension CSP forbids eval
+import "@common/zodConfig"
 
 import { defineBackground } from "wxt/utils/define-background"
 

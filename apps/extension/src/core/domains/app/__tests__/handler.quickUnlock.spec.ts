@@ -59,7 +59,7 @@ describe("App handler quick unlock", () => {
   beforeEach(async () => {
     await extensionStores.password.set(initialStoreData.password ?? {})
     await extensionStores.quickUnlock.unenroll()
-    await extensionStores.password.clearPassword()
+    await extensionStores.password.clearPassword("manual")
     await messageSender("pri(app.authenticate)", { pass: password })
   })
 

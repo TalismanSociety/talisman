@@ -1,5 +1,4 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
 import {
   ManageAccountsLists,
@@ -14,19 +13,11 @@ import { useNavigate } from "react-router-dom"
 
 import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Manage Accounts",
-}
-
 const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const goToPortfolio = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio (back)" })
     return navigate("/portfolio")
   }, [navigate])
 
@@ -45,7 +36,7 @@ export const ManageAccountsPage = () => (
     <Header />
     <PopupContent className="px-8">
       <ManageAccountsProvider>
-        <ManageAccountsToolbar analytics={ANALYTICS_PAGE} />
+        <ManageAccountsToolbar />
         <ManageAccountsLists className="py-8" />
       </ManageAccountsProvider>
     </PopupContent>

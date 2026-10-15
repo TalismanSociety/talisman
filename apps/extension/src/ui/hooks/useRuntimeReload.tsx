@@ -1,17 +1,10 @@
 import { db as talismanDb } from "@core/db"
 import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useState } from "react"
 
-export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
+export const useRuntimeReload = () => {
   const [hasRuntimeReloadFn] = useState(() => typeof chrome?.runtime?.reload === "function")
   const runtimeReload = useCallback(async () => {
-    sendAnalyticsEvent({
-      ...analyticsPage,
-      name: "Interact",
-      action: "Reload Talisman button",
-    })
-
     // these do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([
       assetDiscoveryStore.reset(), // cancels current/pending scans
@@ -24,7 +17,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
     ])
 
     chrome.runtime.reload()
-  }, [analyticsPage])
+  }, [])
 
   return [hasRuntimeReloadFn, runtimeReload] as const
 }

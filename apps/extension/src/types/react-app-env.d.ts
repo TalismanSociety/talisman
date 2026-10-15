@@ -7,10 +7,10 @@ declare namespace NodeJS {
   interface ProcessEnv {
     readonly NODE_ENV: "development" | "production" | "test"
     readonly PUBLIC_URL: string
-    readonly POSTHOG_AUTH_TOKEN?: string
-    readonly SENTRY_DSN?: string
-    readonly SENTRY_AUTH_TOKEN?: string
     readonly BUILD?: "production" | "canary" | "ci" | "qa" | "dev"
+    readonly BUILD_TYPE?: "production" | "canary" | "dev"
+    readonly BROWSER?: "chrome" | "firefox"
+    readonly GIT_SHA?: string
 
     // dev utilities
     readonly PASSWORD?: string

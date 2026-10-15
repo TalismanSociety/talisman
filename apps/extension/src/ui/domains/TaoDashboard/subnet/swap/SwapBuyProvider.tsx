@@ -1,3 +1,4 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { bind } from "@react-rxjs/core"
@@ -13,6 +14,7 @@ import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
@@ -147,15 +149,6 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
-  const {
-    isMevShieldDisabled,
-    isMevShieldFeatureDisabled,
-    withMevShield,
-    setIsMevProtectionEnabled,
-    txMode,
-    onSubmit,
-  } = useSwapSubmit({ netuid, account, direction: "buy", resetValueIn })
-
   // when netuid changes (e.g. subnet picker), reset hotkey to the best default for the new subnet
   const prevNetuidRef = useRef(netuid)
   useEffect(() => {
@@ -216,6 +209,24 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     remarkType: "swap",
   })
 
+  const {
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    withMevShield,
+    setIsMevProtectionEnabled,
+    txMode,
+    onSubmit,
+    confirm,
+  } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "buy",
+    resetValueIn,
+    valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: valueIn,
+  })
+
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
       return undefined
@@ -258,7 +269,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     if (typeof combinedFeeEstimate === "bigint") setLastKnownFee(combinedFeeEstimate)
   }, [combinedFeeEstimate])
 
-  const { isValid, inputErrorMessage } = useBittensorStakeInputError({
+  const { isValid, inputErrorMessage, inputErrorCategory } = useBittensorStakeInputError({
     networkId,
     taoAmountIn: valueIn,
     taoBalance: isBalancesLoading ? null : (balanceTokenIn?.transferable.planck ?? 0n),
@@ -269,6 +280,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const canSubmit = !!payload && isValid && !inputErrorMessage
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputErrorCategory ?? "input_invalid",
+    field: "amount",
+  })
 
   return {
     netuid,
@@ -315,6 +332,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     txInfo,
     txMode,
     onSubmit,
+    confirm,
 
     // reset,
     onAccountChange,

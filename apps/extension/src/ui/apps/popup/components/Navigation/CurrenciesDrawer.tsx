@@ -116,7 +116,7 @@ export const CurrenciesDrawer = () => {
   const { isOpen } = useCurrenciesDrawerOpenClose()
 
   return (
-    <Drawer anchor="right" isOpen={isOpen} containerId="main">
+    <Drawer analyticsId="currencies" anchor="right" isOpen={isOpen} containerId="main">
       <CurrenciesDrawerContent />
     </Drawer>
   )

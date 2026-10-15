@@ -10,6 +10,7 @@ export const ExplorerNetworkPickerModal: FC = () => {
 
   return (
     <Modal
+      analyticsId="explorer_network_picker"
       isOpen={isOpen}
       onDismiss={close}
       className={cn(

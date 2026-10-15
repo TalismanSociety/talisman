@@ -1,3 +1,4 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { ExternalLinkIcon } from "@talismn/icons"
 import type { HexString } from "@talismn/util"
 import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
@@ -23,7 +24,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
 
   if (hasMetadataUpdateFailed && updateUrl)
     return (
-      <ErrorAlert>
+      <ErrorAlert errorCategory="rpc">
         <Trans>
           Failed to update metadata. Please update metadata manually from the{" "}
           <a
@@ -42,7 +43,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
 
   if (hasMetadataUpdateFailed)
     return (
-      <ErrorAlert>
+      <ErrorAlert errorCategory="rpc">
         {t(
           "Failed to update metadata. Please update metadata manually or your transaction may fail."
         )}
@@ -51,7 +52,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
 
   if (requiresUpdate && !isKnownChain)
     return (
-      <ErrorAlert>
+      <ErrorAlert errorCategory="unsupported">
         <Trans t={t}>
           Network metadata missing.
           <br />
@@ -72,7 +73,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
 
   if (requiresUpdate)
     return (
-      <ErrorAlert>
+      <ErrorAlert errorCategory="unsupported">
         {t(
           "This network requires a manual metadata update. Please update or your transaction may fail."
         )}
@@ -88,8 +89,14 @@ const LoadingAlert = ({ children }: { children: ReactNode }) => (
   </SignAlertMessage>
 )
 
-const ErrorAlert = ({ children }: { children: ReactNode }) => (
-  <SignAlertMessage className="my-6!" type="error" iconSize="base">
+const ErrorAlert = ({
+  children,
+  errorCategory,
+}: {
+  children: ReactNode
+  errorCategory: ErrorCategory
+}) => (
+  <SignAlertMessage className="my-6!" type="error" iconSize="base" errorCategory={errorCategory}>
     {children}
   </SignAlertMessage>
 )

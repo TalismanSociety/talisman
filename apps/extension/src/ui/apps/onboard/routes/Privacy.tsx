@@ -1,7 +1,5 @@
 import { PRIVACY_POLICY_URL } from "@common/constants"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Button } from "@ui/components/Button"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import imgAnalyticsFlower from "@ui/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@ui/theme/images/onboard_analytics_switch.png"
 import { useCallback } from "react"
@@ -11,43 +9,21 @@ import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Onboarding",
-  featureVersion: 5,
-  page: "Onboarding - Step 3 - Manage your privacy",
-}
-
 export const PrivacyPage = () => {
   const { t } = useTranslation()
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { updateData, setOnboarded } = useOnboard()
 
   const handleClick = useCallback(
     (allowTracking: boolean) => () => {
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: "Goto",
-        action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
-      })
       updateData({ allowTracking })
       setOnboarded()
     },
     [updateData, setOnboarded]
   )
 
-  const handleLearnMoreClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "GotoExternal",
-      action: "Learn more about privacy",
-      site: "Talisman Docs",
-    })
-  }, [])
-
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-137.5 min-w-150">
+    <OnboardLayout withBack className="min-h-137.5 min-w-150">
       <img src={imgAnalyticsSwitch} className="fixed top-80 left-80" alt="" />
       <img src={imgAnalyticsFlower} className="fixed right-10 bottom-32" alt="" />
       <OnboardDialog title={t("Manage your privacy")}>
@@ -63,13 +39,7 @@ export const PrivacyPage = () => {
             </p>
             <p>
               Read our{" "}
-              <a
-                onClick={handleLearnMoreClick}
-                className="text-body"
-                href={PRIVACY_POLICY_URL}
-                target="_blank"
-                rel="noopener"
-              >
+              <a className="text-body" href={PRIVACY_POLICY_URL} target="_blank" rel="noopener">
                 Privacy Policy
               </a>{" "}
               to learn more about what we track and how we use this data.

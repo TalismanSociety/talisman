@@ -7,6 +7,9 @@ import { encodeFunctionData, erc20Abi } from "viem"
 import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
 import type { SwapModuleEntry } from "../swaps.api"
 
+// an RPC node behind the approval block still reports the previous allowance
+const ALLOWANCE_RECHECK_MS = 3_000
+
 /**
  * Manages ERC20 approval state for the selected swap module.
  * Returns approval data (if approval is needed), loading state, and the prepared approval tx.
@@ -108,6 +111,8 @@ export const useSwapErc20Approval = (params: {
       return { ...approvalInfo, existingAllowance: allowance }
     },
     enabled: !!approvalInfo,
+    refetchInterval: (query) =>
+      params.approvalCounter > 0 && query.state.data ? ALLOWANCE_RECHECK_MS : false,
   })
 
   // When there's a non-zero but insufficient allowance, some tokens (e.g. USDT) require

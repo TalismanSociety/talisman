@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import type { Account, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
 import { isAccountLedgerPolkadotGeneric } from "@core/domains/keyring/exports"
@@ -311,6 +312,7 @@ const useLedgerAccountAddress = (
       log.error("Failed to load page", { err })
       setConnectionStatus({
         status: "error",
+        errorCategory: classifyError(error),
         message: error.message,
         onRetryClick: loadAccountInfo,
       })

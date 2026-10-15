@@ -5,11 +5,11 @@ import type { Chain } from "./types"
 
 export const hasEvent = (chain: Chain, pallet: string, event: string): boolean => {
   try {
-    const palletDef = chain.metadata.pallets.find((p) => p.name === pallet)
-    if (typeof palletDef?.events !== "number") return false
+    const eventsType = chain.metadata.pallets.find((p) => p.name === pallet)?.events?.type
+    if (typeof eventsType !== "number") return false
 
     const lookup = getLookupFn(chain.metadata)
-    const palletEvents = lookup(palletDef.events)
+    const palletEvents = lookup(eventsType)
 
     return palletEvents.type === "enum" && event in palletEvents.innerDocs
   } catch (err) {

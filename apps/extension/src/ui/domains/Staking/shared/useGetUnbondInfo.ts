@@ -52,6 +52,5 @@ export const useGetUnbondInfo = ({ sapi, chainId, address }: GetUnbondInfo) => {
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    unbondType: "nomPools",
   }
 }

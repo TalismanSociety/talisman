@@ -1,6 +1,7 @@
 import type { AppStoreData } from "@core/domains/app/store.app"
 import { appStore } from "@core/domains/app/store.app"
 import { bind } from "@react-rxjs/core"
+import { reportAppFlagWrite } from "@ui/hooks/analytics/settings"
 import { type SetStateAction, useCallback } from "react"
 import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 
@@ -20,11 +21,10 @@ export const useAppState = <K extends keyof AppStoreData, V = AppStoreData[K]>(k
 
   const setState = useCallback(
     async (value: SetStateAction<V>) => {
-      if (typeof value === "function") {
-        const setter = value as (prev: V) => V
-        value = setter((await firstValueFrom(getAppStateValue$(key))) as V)
-      }
-      await appStore.set({ [key]: value })
+      const previous = (await firstValueFrom(getAppStateValue$(key))) as V
+      const next = typeof value === "function" ? (value as (prev: V) => V)(previous) : value
+      await appStore.set({ [key]: next })
+      reportAppFlagWrite(key, previous as AppStoreData[K], next as AppStoreData[K])
     },
     [key]
   )

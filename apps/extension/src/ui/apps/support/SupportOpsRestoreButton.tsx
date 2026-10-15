@@ -17,7 +17,7 @@ export const SupportOpsRestoreButton = () => {
         description="Import your Talisman data from a backup file"
         onClick={open}
       />
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="support_restore" isOpen={isOpen} onDismiss={close}>
         <RestoreModalDialog onClose={close} />
       </Modal>
     </>
@@ -54,7 +54,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [state.backup])
 
   return (
-    <ModalDialog title="Restore" className="w-125" onClose={onClose}>
+    <ModalDialog title="Restore" className="h-auto w-125" onCloseClick={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will replace all existing Talisman data with the data from your backup file.

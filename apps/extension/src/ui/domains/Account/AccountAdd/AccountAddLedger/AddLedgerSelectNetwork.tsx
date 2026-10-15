@@ -22,6 +22,7 @@ import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import * as yup from "yup"
+import { useAddAccountStep } from "../flow"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerBitcoin } from "./Shared/ConnectLedgerBitcoin"
@@ -198,6 +199,7 @@ export const AddLedgerSelectNetwork = () => {
     platform === "ethereum" ||
     platform === "bitcoin" ||
     (platform === "polkadot" && substrateAppType)
+  useAddAccountStep(showConnect ? "connect_device" : null)
 
   return (
     <form className="flex flex-col" onSubmit={handleSubmit(submit)}>

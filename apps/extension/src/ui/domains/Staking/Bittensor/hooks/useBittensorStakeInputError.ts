@@ -1,5 +1,6 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { useToken } from "@ui/state/chaindata"
 import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,7 +35,7 @@ export const useBittensorStakeInputError = ({
   const effectiveFeeEstimate =
     typeof feeEstimate === "bigint" ? feeEstimate : lastFeeEstimateRef.current
 
-  const inputErrorMessage = useMemo(() => {
+  const inputError = useMemo<InlineError | null>(() => {
     if (!taoToken) return null
     const existentialDeposit = BigInt(taoToken.existentialDeposit)
 
@@ -49,7 +50,8 @@ export const useBittensorStakeInputError = ({
     )
       return null
 
-    if (!taoBalance || taoAmountIn > taoBalance) return t("Insufficient balance")
+    if (!taoBalance || taoAmountIn > taoBalance)
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
 
     if (
       taoBalance &&
@@ -57,24 +59,33 @@ export const useBittensorStakeInputError = ({
       taoAmountIn &&
       taoAmountIn + effectiveFeeEstimate > taoBalance
     )
-      return t("Insufficient balance to cover fee")
+      return { message: t("Insufficient balance to cover fee"), category: "insufficient_fee" }
 
     if (existentialDeposit + taoAmountIn + effectiveFeeEstimate > taoBalance)
-      return t("Insufficient balance to cover fee and keep account alive")
+      return {
+        message: t("Insufficient balance to cover fee and keep account alive"),
+        category: "insufficient_fee",
+      }
 
     // if not staking yet, need minTaoBondForInput or more
     if (!dtaoBalance && taoAmountIn < minTaoBondForInput)
-      return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoBondForInput, taoToken.decimals).tokens,
-        symbol: taoToken.symbol,
-      })
+      return {
+        message: t("Minimum bond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minTaoBondForInput, taoToken.decimals).tokens,
+          symbol: taoToken.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     // no staking operation can be less than minTaoStakeForInput
     if (taoAmountIn < minTaoStakeForInput)
-      return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoStakeForInput, taoToken.decimals).tokens,
-        symbol: taoToken.symbol,
-      })
+      return {
+        message: t("Minimum bond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minTaoStakeForInput, taoToken.decimals).tokens,
+          symbol: taoToken.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     return null
   }, [
@@ -87,6 +98,8 @@ export const useBittensorStakeInputError = ({
     taoBalance,
     taoToken,
   ])
+
+  const inputErrorMessage = inputError?.message ?? null
 
   const isValid = useMemo(() => {
     if (
@@ -110,5 +123,5 @@ export const useBittensorStakeInputError = ({
     inputErrorMessage,
   ])
 
-  return { isValid, inputErrorMessage }
+  return { isValid, inputErrorMessage, inputErrorCategory: inputError?.category }
 }

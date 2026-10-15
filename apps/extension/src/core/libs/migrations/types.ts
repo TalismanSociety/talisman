@@ -1,6 +1,6 @@
 import { log } from "@common/log"
 
-import { sentry } from "../../config/sentry"
+import { reportError } from "../../domains/analytics/errorReporting"
 
 /**
  * MigrationContext
@@ -27,7 +27,7 @@ export class MigrationFunction {
 
   async onError(error: Error) {
     await this._onError(error)
-    sentry.captureException(error)
+    reportError(error)
     this.error = error
     this.status = "error"
   }

@@ -4,11 +4,11 @@ import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
+import { useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
@@ -20,8 +20,11 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   label,
   className,
   onSubmit,
+  onError,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   // fee payer == first signer, equivalent to both legacy/versioned branches of the old code
   const address = useMemo(() => parseTransactionInfo(tx.payload).feePayer, [tx.payload])
   const account = useAccountByAddress(address)
@@ -44,10 +47,12 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           title: `Failed to submit`,
           type: "error",
           subtitle: getErrorMessage(cause, t("Unknown error")),
+          cause,
         })
+        onError?.(cause)
       }
     },
-    [onSubmit, tx, t]
+    [onSubmit, onError, tx, t]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,11 +72,13 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         title: `Failed to submit`,
         type: "error",
         subtitle: getErrorMessage(cause, t("Unknown error")),
+        cause,
       })
+      onError?.(cause)
     } finally {
       setIsSubmitting(false)
     }
-  }, [onSubmit, tx, t])
+  }, [onSubmit, onError, tx, t])
 
   const payload = useMemo<SolSignPayload>(() => {
     return { type: "transaction", transaction: tx.payload }
@@ -89,6 +96,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           className={className}
           containerId={containerId}
           onSigned={handleLedgerSignature}
+          onSentToDevice={reportPayloadLock}
         />
       )
     default:

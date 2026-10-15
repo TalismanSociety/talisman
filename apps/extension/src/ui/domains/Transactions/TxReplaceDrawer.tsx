@@ -1,3 +1,4 @@
+import { networkIdForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountOfType } from "@core/domains/keyring/exports"
@@ -12,13 +13,14 @@ import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/ic
 import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { notify } from "@ui/components/Notifications"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { useOpenCloseWithData } from "@ui/hooks/useOpenCloseWithData"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
@@ -35,13 +37,6 @@ import { type BtcFeePriority, PRIORITY_TO_ESTIMATE } from "../SendFunds/useSendF
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import { TxSubmitButtonBtc } from "../Sign/TxSubmitButton/TxSubmitButtonBtc"
 import type { TxReplaceType } from "./types"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Transactions",
-  featureVersion: 1,
-  page: "Replace Transaction",
-}
 
 type TxReplaceDrawerProps = {
   tx?: WalletTransaction
@@ -106,15 +101,6 @@ const EvmDrawerContent: FC<{
   onClose?: (newTxHash?: string) => void
 }> = ({ tx, type, fullHeight, containerId, onClose }) => {
   const { t } = useTranslation()
-  const analyticsProps = useMemo(
-    () => ({
-      evmNetworkId: tx.networkId,
-      networkType: "ethereum",
-    }),
-    [tx.networkId]
-  )
-  useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
-
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
   const [isLocked, setIsLocked] = useState(false)
   const {
@@ -132,6 +118,16 @@ const EvmDrawerContent: FC<{
   const account = useAccountByAddress(tx.account)
 
   const [isProcessing, setIsProcessing] = useState(false)
+  const markOverlayCompleted = useMarkOverlayCompleted()
+  const reportReplaced = useCallback(
+    () =>
+      track("tx_replace_requested", {
+        replace_type: type === "speed-up" ? "speed_up" : "cancel",
+        platform: "ethereum",
+        network_id: networkIdForAnalytics(evmNetwork),
+      }),
+    [evmNetwork, type]
+  )
 
   const handleSend = useCallback(async () => {
     if (!transaction) return
@@ -139,13 +135,8 @@ const EvmDrawerContent: FC<{
     try {
       const serialized = serializeTransactionRequest(transaction)
       const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
-      api.analyticsCapture({
-        eventName: `transaction ${type}`,
-        options: {
-          chainId: Number(tx.networkId),
-          networkType: "ethereum",
-        },
-      })
+      reportReplaced()
+      markOverlayCompleted()
       onClose?.(newHash)
     } catch (err) {
       log.error("handleSend", { err })
@@ -155,10 +146,11 @@ const EvmDrawerContent: FC<{
         subtitle: getErrorMessage(err).includes("nonce too low")
           ? t("Transaction already confirmed")
           : t(`Failed to {{type}}`, { type }),
+        cause: err,
       })
     }
     setIsProcessing(false)
-  }, [onClose, transaction, tx, type, t])
+  }, [markOverlayCompleted, onClose, reportReplaced, transaction, tx, type, t])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -167,13 +159,8 @@ const EvmDrawerContent: FC<{
       try {
         const serialized = serializeTransactionRequest(transaction)
         const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
-        api.analyticsCapture({
-          eventName: `transaction ${type}`,
-          options: {
-            chainId: Number(tx.networkId),
-            networkType: "ethereum",
-          },
-        })
+        reportReplaced()
+        markOverlayCompleted()
         onClose?.(newHash)
       } catch (err) {
         log.error("handleSend", { err })
@@ -184,11 +171,12 @@ const EvmDrawerContent: FC<{
             getErrorMessage(err) === "nonce too low"
               ? t("Transaction already confirmed")
               : t(`Failed to {{type}}`, { type }),
+          cause: err,
         })
       }
       setIsProcessing(false)
     },
-    [onClose, t, transaction, tx, type]
+    [markOverlayCompleted, onClose, reportReplaced, t, transaction, tx, type]
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -496,7 +484,13 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
   // can't use a drawer in dashbaord, render a modal instead
   if (!IS_POPUP) {
     return (
-      <Modal isOpen={isOpenReady} anchor="center" containerId={containerId} onDismiss={onClose}>
+      <Modal
+        analyticsId="tx_replace"
+        isOpen={isOpenReady}
+        anchor="center"
+        containerId={containerId}
+        onDismiss={onClose}
+      >
         <div
           id="tx-main"
           className="flex h-150 max-h-dvh w-100 max-w-dvw flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
@@ -526,28 +520,30 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, containerI
 
   return (
     <Drawer
+      analyticsId="tx_replace"
       isOpen={isOpenReady}
       anchor="bottom"
       containerId={containerId ?? "main"}
       onDismiss={onClose}
-      className="flex w-full flex-col items-center rounded-t-xl bg-grey-800 p-12"
     >
-      {data?.type && data?.tx?.platform === "ethereum" ? (
-        <EvmDrawerContent
-          containerId={containerId}
-          tx={data.tx}
-          type={data.type}
-          onClose={onClose}
-        />
-      ) : null}
-      {data?.type && data?.tx?.platform === "bitcoin" ? (
-        <BtcDrawerContent
-          containerId={containerId}
-          tx={data.tx}
-          type={data.type}
-          onClose={onClose}
-        />
-      ) : null}
+      <DrawerContent className="flex flex-col items-center">
+        {data?.type && data?.tx?.platform === "ethereum" ? (
+          <EvmDrawerContent
+            containerId={containerId}
+            tx={data.tx}
+            type={data.type}
+            onClose={onClose}
+          />
+        ) : null}
+        {data?.type && data?.tx?.platform === "bitcoin" ? (
+          <BtcDrawerContent
+            containerId={containerId}
+            tx={data.tx}
+            type={data.type}
+            onClose={onClose}
+          />
+        ) : null}
+      </DrawerContent>
     </Drawer>
   )
 }

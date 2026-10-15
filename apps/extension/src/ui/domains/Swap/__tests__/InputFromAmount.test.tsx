@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const setFromAmount = vi.fn()
 const useSwapMock = vi.fn()
+const useTokenMock = vi.fn()
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (value: string) => value }),
@@ -14,7 +15,7 @@ vi.mock("../SwapProvider", () => ({
 }))
 
 vi.mock("@ui/state/chaindata", () => ({
-  useToken: vi.fn(() => ({ decimals: 18, symbol: "ETH" })),
+  useToken: () => useTokenMock(),
 }))
 
 vi.mock("@ui/state/settings", () => ({
@@ -31,6 +32,7 @@ describe("InputFromAmount", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setFromAmount.mockReset()
+    useTokenMock.mockReturnValue({ decimals: 18, symbol: "ETH" })
     useSwapMock.mockReturnValue({
       fromBalance: null,
       fromTokenId: "1:native:eth",
@@ -193,5 +195,20 @@ describe("InputFromAmount", () => {
     expect((screen.getByLabelText("Amount to swap") as HTMLInputElement).value).toBe("1.5")
     // fromAmount must never be called with null during the remount cycle
     expect(setFromAmount).not.toHaveBeenCalledWith(null)
+  })
+
+  it("converts small fiat amounts of a token with few decimals at full precision", async () => {
+    useTokenMock.mockReturnValue({ decimals: 8, symbol: "WBTC" })
+    render(<InputFromAmount />)
+    fireEvent.click(screen.getByRole("button"))
+    setFromAmount.mockClear()
+
+    fireEvent.change(screen.getByLabelText("Amount to swap"), { target: { value: "0.5" } })
+
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync()
+    })
+
+    expect(setFromAmount).toHaveBeenCalledWith(25_000n)
   })
 })

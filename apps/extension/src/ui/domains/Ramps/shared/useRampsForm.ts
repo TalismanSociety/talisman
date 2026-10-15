@@ -1,3 +1,4 @@
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Token } from "@talismn/chaindata-provider"
@@ -6,6 +7,7 @@ import { getErrorMessage, isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { notify } from "@ui/components/Notifications"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
 import { useAccounts } from "@ui/state/accounts"
 import { getNetworkById$, getToken$, useNetworkById, useToken } from "@ui/state/chaindata"
@@ -15,7 +17,7 @@ import { useDebounce } from "react-use"
 import { firstValueFrom } from "rxjs"
 import { z } from "zod/v4"
 
-import type { RampsFormSharedData, RampsProvider, RampsQuoteError } from "./types"
+import type { RampsFormSharedData, RampsMode, RampsProvider, RampsQuoteError } from "./types"
 
 const schema = z.object({
   currencyCode: z.string().nonempty(),
@@ -41,6 +43,7 @@ type RampsQuoteQuery<TQuote> = {
 type RampsQuoteOptions = { currencyCode: string; tokenId: string; amount: number }
 
 export type RampsFormConfig<TCurrencies, TToken extends Token, TQuote> = {
+  direction: RampsMode
   useCurrencies: () => { currencies: TCurrencies }
   useTokens: (currencyCode: string | undefined) => { tokens: TToken[] }
   useQuotes: (options: RampsQuoteOptions | null) => RampsQuoteQuery<TQuote>[]
@@ -54,6 +57,7 @@ export const useRampsForm = <
 >(
   defaults: RampsFormSharedData,
   {
+    direction,
     useCurrencies,
     useTokens,
     useQuotes,
@@ -73,14 +77,23 @@ export const useRampsForm = <
 
         await beforeRedirect?.(formData)
 
-        await redirectToProvider(formData, quote)
+        const { token, network } = await redirectToProvider(formData, quote)
+        flows.buy.completed({
+          provider: formData.provider,
+          fiat_currency: formData.currencyCode,
+          token_symbol: tokenSymbolForAnalytics(token),
+          network_id: networkIdForAnalytics(network),
+          direction,
+        })
       } catch (err) {
         log.error("Failed to submit", err)
         notify({
           type: "error",
           title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
+        flows.buy.failed(err)
       }
     },
     validators: {
@@ -169,13 +182,12 @@ const redirectToProvider = async (formData: RampsFormData, quote: RampsQuoteSucc
   let address = formData.account
 
   const token = await firstValueFrom(getToken$(formData.tokenId))
-  if (token?.networkId) {
-    const chain = await firstValueFrom(getNetworkById$(token.networkId))
-    if (chain?.platform === "polkadot" && chain.account === "*25519")
-      address = encodeAddressSs58(address, chain.prefix)
-  }
+  const network = token?.networkId ? await firstValueFrom(getNetworkById$(token.networkId)) : null
+  if (network?.platform === "polkadot" && network.account === "*25519")
+    address = encodeAddressSs58(address, network.prefix)
 
   const url = await quote.getRedirectUrl(address)
 
   window.open(url, "_blank", "noopener noreferrer")
+  return { token, network }
 }

@@ -56,7 +56,7 @@ export const EthSignBodyDefault: FC<EthSignBodyDefaultProps> = ({ unexpectedNati
         unexpectedNativeValue || undecodedSelector ? (
           <>
             {unexpectedNativeValue && (
-              <SignAlertMessage type="error">
+              <SignAlertMessage type="error" errorCategory={null}>
                 {t(
                   "This transaction transfers {{symbol}} to a contract method that does not normally accept it. Check the amount above before approving.",
                   { symbol: nativeToken.symbol }

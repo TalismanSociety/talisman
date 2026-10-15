@@ -1,8 +1,10 @@
+import { Routes } from "@ui/components/Routes"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import type { FC } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
+import { DashboardBittensorStakingPositionPage } from "./DashboardBittensorStakingPositionPage"
 import { DashboardEarnDefiPositionPage } from "./DashboardEarnDefiPositionPage"
 import {
   DashboardEarnDiscoverRoute,
@@ -27,6 +29,10 @@ export const DashboardEarnRoutes: FC = () => {
             element={<DashboardYieldxyzYieldPositionsPage />}
           />
           <Route path="positions/seek/:address" element={<DashboardSeekStakingPositionPage />} />
+          <Route
+            path="positions/bittensor/:tokenId/:address"
+            element={<DashboardBittensorStakingPositionPage />}
+          />
           <Route path="positions/defi/:positionId" element={<DashboardEarnDefiPositionPage />} />
         </Routes>
       </DashboardLayout>

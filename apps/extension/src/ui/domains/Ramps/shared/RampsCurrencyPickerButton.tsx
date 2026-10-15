@@ -43,6 +43,7 @@ export const RampsCurrencyPickerButton: FC<{
         {currency ? <CurrencyContent currency={currency} /> : <EmptyContent />}
       </button>
       <Drawer
+        analyticsId="ramps_currency_picker"
         anchor="right"
         isOpen={isOpen}
         containerId="ramp-container"

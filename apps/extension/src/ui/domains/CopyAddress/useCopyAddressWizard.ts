@@ -1,3 +1,4 @@
+import { addressFormatOf, copiedNetworkId } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
@@ -21,8 +22,10 @@ import {
   normalizeAddress,
 } from "@talismn/crypto"
 import { api } from "@ui/api"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import {
+  getNetworkById$,
   useNetworkByGenesisHash,
   useNetworkById,
   useNetworksMapById,
@@ -34,6 +37,7 @@ import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { firstValueFrom } from "rxjs"
 
 import type { CopyAddressWizardInputs } from "./types"
 import { useCopyAddressModal } from "./useCopyAddressModal"
@@ -129,12 +133,17 @@ const getQrLogo = async (
 }
 
 const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
-  const { open, close } = useCopyAddressModal()
+  const { open, close, isOpen } = useCopyAddressModal()
 
   const [state, setState] = useState<CopyAddressWizardState>(() => ({
     ...inputs,
     route: getNextRoute(inputs),
   }))
+  useFlow(flows.receive, {
+    active: isOpen && !!inputs.entry,
+    entry: inputs.entry ?? "dashboard",
+    step: state.route,
+  })
 
   const ethereum = useToken(evmNativeTokenId("1"))
 
@@ -258,6 +267,7 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
 
     const onQrClick = () => {
       open({
+        entry: "copy_toast",
         address: state.address,
         networkId: state.networkId,
         legacyFormat: state.legacyFormat,
@@ -265,8 +275,13 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
       })
     }
 
-    if (await copyAddress(formattedAddress, onQrClick)) close()
-  }, [close, formattedAddress, open, state])
+    if (!(await copyAddress(formattedAddress, onQrClick))) return
+    flows.receive.completed({
+      network_id: copiedNetworkId(network),
+      address_format: addressFormatOf(formattedAddress, state.legacyFormat),
+    })
+    close()
+  }, [close, formattedAddress, network, open, state])
 
   // shortcut called before the last screen of the wizard
   const copySpecific = useCallback(
@@ -296,10 +311,16 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
             : address
 
       const onQrClick = () => {
-        open({ address, networkId: chainId, qr: true, legacyFormat })
+        open({ entry: "copy_toast", address, networkId: chainId, qr: true, legacyFormat })
       }
 
-      if (await copyAddress(formattedAddress, onQrClick)) close()
+      if (!(await copyAddress(formattedAddress, onQrClick))) return
+      const network = chain ?? (chainId ? await firstValueFrom(getNetworkById$(chainId)) : null)
+      flows.receive.completed({
+        network_id: copiedNetworkId(network),
+        address_format: addressFormatOf(formattedAddress, legacyFormat),
+      })
+      close()
     },
     [btcFreshReceiveAddress, close, networksMap, open]
   )

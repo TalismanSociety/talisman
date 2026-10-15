@@ -18,7 +18,14 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
 
   if (!id) return null
   return (
-    <Drawer className="w-full" containerId="main" anchor="right" isOpen={open} onDismiss={onClose}>
+    <Drawer
+      analyticsId="connected_accounts"
+      className="w-full"
+      containerId="main"
+      anchor="right"
+      isOpen={open}
+      onDismiss={onClose}
+    >
       <div className="flex h-full flex-col bg-black">
         <header className="px-12 py-10 text-center">
           <AppPill url={url} />

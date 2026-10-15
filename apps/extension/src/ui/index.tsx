@@ -1,7 +1,9 @@
 import "@ui/styles/styles.css"
 
+import { triggerIndexedDbUnavailablePopup } from "@core/domains/app/store.errors"
 import { Subscribe } from "@react-rxjs/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { installErrorHandlers } from "@ui/api/errorReporting"
 import { ErrorBoundaryDatabaseMigration } from "@ui/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@ui/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
@@ -12,7 +14,6 @@ import { type ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
-import { initSentryFrontend } from "../sentry"
 import { type FontFamily, preloadFonts } from "./util/preloadFonts"
 
 const FONT_FAMILIES_DEFAULT: FontFamily[] = ["Surt", "SurtExpanded", "Inter"]
@@ -32,7 +33,8 @@ const KeepWalletUnlocked = ({ mode }: { mode?: KeepWalletUnlockedMode }) => {
 
 const queryClient = new QueryClient()
 
-initSentryFrontend()
+installErrorHandlers()
+window.addEventListener("error", (event) => triggerIndexedDbUnavailablePopup(event.error))
 const container = document.getElementById("root")
 
 export type RenderTalismanOptions = {

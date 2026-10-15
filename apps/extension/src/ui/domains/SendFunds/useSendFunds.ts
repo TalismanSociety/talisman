@@ -1,3 +1,7 @@
+import { toAmountBucket } from "@common/analytics/buckets"
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
+import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
+import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import {
@@ -24,7 +28,7 @@ import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dT
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
-import { useGetBittensorMinJoinBond } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorMinJoinBond"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -42,13 +46,13 @@ import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
 import { useSendFundsTransactionSol } from "./useSendFundsTransactionSol"
 
-const useSendFundsTransaction = () => {
+const useSendFundsTransaction = (isLocked: boolean) => {
   const { from, to, tokenId, amount, allowReap, sendMax } = useSendFundsWizard()
   const token = useToken(tokenId)
 
   const inputs = useMemo<SendFundsTransactionProps>(() => {
-    return { tokenId, from, to, value: amount, sendMax, allowReap }
-  }, [allowReap, amount, from, sendMax, to, tokenId])
+    return { tokenId, from, to, value: amount, sendMax, allowReap, isLocked }
+  }, [allowReap, amount, from, sendMax, to, tokenId, isLocked])
 
   const txEth = useSendFundsTransactionEth(inputs)
   const txDot = useSendFundsTransactionDot(inputs)
@@ -123,7 +127,8 @@ export type ToWarning = "AZERO_ID" | undefined
 
 const useSendFundsProvider = () => {
   const { t } = useTranslation()
-  const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
+  const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress, recipientSource } =
+    useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
@@ -146,7 +151,7 @@ const useSendFundsProvider = () => {
   const dtaoAvailable = useDTaoSubnetAvailable(from, tokenId)
 
   // dtao transfers are transfer_stake staking operations: the chain enforces a minimum
-  // TAO-equivalent amount, and sweeps sender positions left below the nominator minimum
+  // TAO-equivalent amount
   const isDTao = token?.type === "substrate-dtao"
   const dtaoNetworkId = isDTao ? (token.networkId as DotNetworkId) : null
   const dtaoNetuid = isDTao ? token.netuid : null
@@ -155,7 +160,6 @@ const useSendFundsProvider = () => {
     netuid: dtaoNetuid,
   })
   const dtaoMinTaoTransfer = useGetBittensorDefaultMinStake({ networkId: dtaoNetworkId })
-  const { data: dtaoMinTaoKeep } = useGetBittensorMinJoinBond({ networkId: dtaoNetworkId })
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // a transfer_stake off the pair would revert with RootStakeLocked
@@ -163,7 +167,7 @@ const useSendFundsProvider = () => {
 
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
-  const transaction = useSendFundsTransaction()
+  const transaction = useSendFundsTransaction(isLocked)
 
   const transfer = useMemo(() => {
     if (!token) return null
@@ -306,18 +310,25 @@ const useSendFundsProvider = () => {
 
   const isSendingEnough = useIsSendingEnough(recipientBalance, token, transfer)
 
-  const { isValid, error, errorDetails } = useMemo(() => {
+  const { isValid, error, errorDetails, errorCategory } = useMemo((): {
+    isValid: boolean
+    error: string | undefined
+    errorDetails?: string
+    errorCategory?: ErrorCategory
+  } => {
     try {
       if (fromAccount?.type === "watch-only")
         return {
           isValid: false,
           error: t("Cannot send from a watched account"),
+          errorCategory: "unsupported",
         }
 
       if (token && !isTransferableToken(token))
         return {
           isValid: false,
           error: t("{{symbol}} transfers are not supported at this time", { symbol: token.symbol }),
+          errorCategory: "unsupported",
         }
 
       if (transaction?.error) {
@@ -325,12 +336,17 @@ const useSendFundsProvider = () => {
           isValid: false,
           error:
             typeof transaction.error === "string" ? transaction.error : transaction.error.message,
+          errorCategory: classifyError(transaction.error),
         }
       }
 
       // some EVM networks will break on estimate fee if balance is insufficient, this simple check will prevent unfriendly error message
       if (token && transfer && (balance?.transferable.planck ?? 0n) < transfer.planck)
-        return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
+        return {
+          isValid: false,
+          error: t("Insufficient {{symbol}}", { symbol: token.symbol }),
+          errorCategory: "insufficient_balance",
+        }
 
       // (spec 421) a transfer that dips into conviction-locked stake reverts with
       // AccountRejectsLockedAlpha unless the recipient opted in. Block proactively — subtensor has
@@ -365,21 +381,6 @@ const useSendFundsProvider = () => {
             }),
           }
         }
-
-        // leaving 0 < remainder < nominator minimum would get the position force-swept by the
-        // chain (clear_small_nominations): require a full send or a sufficient remainder
-        const remaining = (balance?.free.planck ?? 0n) - transfer.planck
-        if (typeof dtaoMinTaoKeep === "bigint" && remaining > 0n) {
-          const minAlphaKeep = taoToAlphaCeil(dtaoMinTaoKeep, dtaoAlphaPrice)
-          if (remaining < minAlphaKeep)
-            return {
-              isValid: false,
-              error: t("Send everything or keep at least {{amount}} {{symbol}}", {
-                amount: formatDecimals(new BalanceFormatter(minAlphaKeep, token.decimals).tokens),
-                symbol: token.symbol,
-              }),
-            }
-        }
       }
 
       if (
@@ -388,7 +389,11 @@ const useSendFundsProvider = () => {
         transaction?.estimatedFee &&
         (feeTokenBalance?.transferable.planck ?? 0n) < BigInt(transaction.estimatedFee)
       )
-        return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: feeToken.symbol }) }
+        return {
+          isValid: false,
+          error: t("Insufficient {{symbol}}", { symbol: feeToken.symbol }),
+          errorCategory: "insufficient_fee",
+        }
 
       if (
         !transaction ||
@@ -417,6 +422,7 @@ const useSendFundsProvider = () => {
         return {
           isValid: false,
           error: t("Insufficient {{symbol}} to pay for fees", { symbol: feeToken.symbol }),
+          errorCategory: "insufficient_fee",
         }
 
       for (const cost of maxCostBreakdown)
@@ -424,6 +430,7 @@ const useSendFundsProvider = () => {
           return {
             isValid: false,
             error: t("Insufficient {{symbol}}", { symbol: cost.token.symbol }),
+            errorCategory: "insufficient_balance",
           }
 
       if (!isSendingEnough && token && isTokenNeedExistentialDeposit(token)) {
@@ -445,6 +452,7 @@ const useSendFundsProvider = () => {
         return {
           isValid: false,
           error: t("Transaction would fail: ") + transaction.dryRun.errorMessage,
+          errorCategory: "simulation",
         }
 
       if (transaction.error)
@@ -457,7 +465,7 @@ const useSendFundsProvider = () => {
       return { isValid: true, error: undefined }
     } catch (err) {
       log.error("checkIsValid", { err })
-      return { isValid: true, error: t("Failed to validate") }
+      return { isValid: true, error: t("Failed to validate"), errorCategory: "unknown" }
     }
   }, [
     fromAccount?.type,
@@ -466,10 +474,8 @@ const useSendFundsProvider = () => {
     transaction,
     transfer,
     balance?.transferable.planck,
-    balance?.free.planck,
     dtaoAlphaPrice,
     dtaoMinTaoTransfer,
-    dtaoMinTaoKeep,
     dtaoLockedTransferBlocked,
     dtaoRootStakeHoldGate,
     feeToken,
@@ -495,11 +501,45 @@ const useSendFundsProvider = () => {
     } else set("amount", transaction.maxAmount)
   }, [transaction?.maxAmount, set, token])
 
+  const reported = useMemo(() => {
+    const signer = fromAccount && signerOf(fromAccount.type)
+    if (!network || !signer) return null
+    return { platform: network.platform, network_id: networkIdForAnalytics(network), signer }
+  }, [fromAccount, network])
+
   const onSubmitted = useCallback(
     (args: { networkId: string; txId: string }) => {
+      if (reported)
+        flows.send.submitted({
+          ...reported,
+          token_symbol: tokenSymbolForAnalytics(token),
+          ...(transaction?.platform === "ethereum" &&
+            transaction.priority && { fee_priority: transaction.priority }),
+          usd_bucket: toAmountBucket((sendMax ? maxAmount : transfer)?.fiat("usd")),
+          fee_usd_bucket: toAmountBucket(estimatedFee?.fiat("usd")),
+          recipient_source: recipientSource,
+          transactionId: args.txId,
+        })
       gotoProgress(args)
     },
-    [gotoProgress]
+    [
+      estimatedFee,
+      gotoProgress,
+      maxAmount,
+      recipientSource,
+      reported,
+      sendMax,
+      transaction,
+      transfer,
+      token,
+    ]
+  )
+
+  const onSubmitFailed = useCallback(
+    (cause: unknown) => {
+      if (reported) flows.send.failed(cause, { ...reported, phase: "pre_broadcast" })
+    },
+    [reported]
   )
 
   const txInfo = useMemo<WalletTransactionInfo | null>(() => {
@@ -550,12 +590,14 @@ const useSendFundsProvider = () => {
     isLoading,
     error,
     errorDetails,
+    errorCategory,
     isLocked,
     setIsLocked,
     isValid,
     tokensToBeReaped,
     isEstimatingMaxAmount,
     onSubmitted,
+    onSubmitFailed,
   }
 }
 

@@ -45,14 +45,14 @@ export const buildQueries = (
           balance?: bigint
           is_frozen?: boolean // most likely not used
           reason?: { type?: "Sufficient" }
-          status?: { type?: "Liquid" } | { type?: "Frozen" }
+          status?: { type?: "Liquid" | "Frozen" | "Blocked" }
           extra?: undefined
         }
 
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           changes[0],
-          `Failed to decode substrate-assets balance on chain ${networkId}`
+          `Failed to decode substrate-foreignassets balance on chain ${networkId}`
         ) ?? {
           balance: 0n,
           is_frozen: false,
@@ -61,7 +61,9 @@ export const buildQueries = (
           extra: undefined,
         }
 
-        const isFrozen = decoded.is_frozen ?? decoded?.status?.type === "Frozen"
+        const isFrozen =
+          decoded.is_frozen ??
+          (decoded?.status?.type === "Frozen" || decoded?.status?.type === "Blocked")
         const amount = (decoded?.balance ?? 0n).toString()
 
         // due to the following balance calculations, which are made in the `Balance` type:
@@ -83,7 +85,7 @@ export const buildQueries = (
         ]
 
         const balance: IBalance = {
-          source: "substrate-assets",
+          source: "substrate-foreignassets",
           status: "live",
           address,
           networkId,

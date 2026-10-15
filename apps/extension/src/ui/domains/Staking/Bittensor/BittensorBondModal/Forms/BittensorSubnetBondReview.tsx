@@ -8,6 +8,7 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/Bittensor/hooks/dTao/
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -370,6 +371,7 @@ export const BittensorSubnetBondReview = () => {
             label={stakeDirection === "bond" ? t("Stake") : t("Unstake")}
             payload={payload}
             onSubmitted={onSubmitted}
+            onError={flows.staking.failed}
             txMetadata={txMetadata}
             txInfo={txInfo}
             disabled={isDisabled}

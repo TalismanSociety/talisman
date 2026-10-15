@@ -61,6 +61,7 @@ export const RampsAccountPickerButton: FC<{
         <AccountButtonContent account={account} genesisHash={chain?.genesisHash} />
       </button>
       <Drawer
+        analyticsId="ramps_account_picker"
         containerId="ramp-container"
         isOpen={isOpen}
         anchor="right"

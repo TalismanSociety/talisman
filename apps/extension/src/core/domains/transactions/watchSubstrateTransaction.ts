@@ -10,10 +10,10 @@ import { parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
-import { sentry } from "../../config/sentry"
 import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
+import { reportError } from "../analytics/errorReporting"
 import { settingsStore } from "../app/store.settings"
 import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
@@ -33,6 +33,8 @@ type ExtrinsicResult = {
   blockNumber: number
   extIndex: number
 }
+
+type SubscriptionKey = "finalizedHeads" | "allHeads"
 
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
@@ -146,8 +148,6 @@ const getExtrinsincResult = async (
     }
   } catch (error) {
     // errors commonly arise here due to misconfigured metadata
-    // this is difficult to debug and may not be solvable at our end, so we are no longer logging them to Sentry
-    // eg https://sentry.io/share/issue/6762fac9d55e4df9be29a25f108f075e/
     log.error(error)
   }
 
@@ -169,28 +169,48 @@ const watchExtrinsicStatus = async (
     allHeads: true,
   }
 
-  const unsubscribe = async (
-    key: "finalizedHeads" | "allHeads",
-    unsubscribeHandler: () => void
-  ) => {
+  const unsubscribeMethods: Record<SubscriptionKey, string> = {
+    finalizedHeads: "chain_unsubscribeFinalizedHeads",
+    allHeads: "chain_unsubscribeAllHeads",
+  }
+  // either handler can stop the other subscription, possibly before that one is established
+  const unsubscribeHandlers: Partial<Record<SubscriptionKey, (method: string) => void>> = {}
+
+  const unsubscribe = (key: SubscriptionKey) => {
     if (!subscriptions[key]) return
     subscriptions[key] = false
-    unsubscribeHandler()
+    unsubscribeHandlers[key]?.(unsubscribeMethods[key])
+  }
+
+  const subscribe = async (
+    key: SubscriptionKey,
+    subscribeMethod: string,
+    responseMethod: string,
+    callback: Parameters<typeof chainConnectorDot.subscribe>[4]
+  ) => {
+    const unsubscribeHandler = await chainConnectorDot.subscribe(
+      chainId,
+      subscribeMethod,
+      responseMethod,
+      [],
+      callback
+    )
+    unsubscribeHandlers[key] = unsubscribeHandler
+    if (!subscriptions[key]) unsubscribeHandler(unsubscribeMethods[key])
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizedHeads = await chainConnectorDot.subscribe(
-    chainId,
+  await subscribe(
+    "finalizedHeads",
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
-    [],
     async (error, data) => {
       if (error) {
         const err = new Error("Failed to watch extrinsic status (chain_subscribeFinalizedHeads)", {
           cause: error,
         })
         log.error(err)
-        sentry.captureException(err, { extra: { chainId } })
+        reportError(err, { networkId: chainId })
         return
       }
 
@@ -209,72 +229,71 @@ const watchExtrinsicStatus = async (
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex, true)
 
-        await unsubscribe("finalizedHeads", () =>
-          unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-        )
+        unsubscribe("allHeads")
+        unsubscribe("finalizedHeads")
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
-        sentry.captureException(error, { extra: { chainId } })
+        reportError(error, { networkId: chainId })
       }
     }
   )
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
   // => need to wait for block to be finalized before considering it a success
-  const unsubscribeAllHeads = await chainConnectorDot.subscribe(
-    chainId,
-    "chain_subscribeAllHeads",
-    "chain_allHead",
-    [],
-    async (error, data) => {
-      if (error) {
-        const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", {
-          cause: error,
-        })
-        log.error(err)
-        sentry.captureException(err, { extra: { chainId } })
-        return
-      }
-
-      try {
-        const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
-        if (!headerInfo) return
-        const { val: extResult, err } = await getExtrinsincResult(
-          decodeSystemEvents,
-          headerInfo.hash,
-          chainId,
-          extrinsicHash
-        )
-
-        if (err) return // err is true if extrinsic is not found in this block
-
-        const { result, blockNumber, extIndex } = extResult
-
-        if (result === "success") foundInBlockHash = headerInfo.hash
-        cb(result, blockNumber, extIndex, false)
-
-        await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
-
-        // if error, no need to wait for a confirmation
-        if (result === "error") {
-          await unsubscribe("finalizedHeads", () =>
-            unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-          )
-          if (timeout !== null) clearTimeout(timeout)
-        }
-      } catch (error) {
-        sentry.captureException(error, { extra: { chainId } })
-      }
+  await subscribe("allHeads", "chain_subscribeAllHeads", "chain_allHead", async (error, data) => {
+    if (error) {
+      const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", {
+        cause: error,
+      })
+      log.error(err)
+      reportError(err, { networkId: chainId })
+      return
     }
-  )
+
+    try {
+      const headerInfo = await getHeaderInfo(chainId, data as JsonHeader)
+      if (!headerInfo) return
+      const { val: extResult, err } = await getExtrinsincResult(
+        decodeSystemEvents,
+        headerInfo.hash,
+        chainId,
+        extrinsicHash
+      )
+
+      if (err) return // err is true if extrinsic is not found in this block
+      // finality may have been reported while this head was being processed
+      if (!subscriptions.allHeads) return
+
+      const { result, blockNumber, extIndex } = extResult
+
+      if (result === "success") foundInBlockHash = headerInfo.hash
+      cb(result, blockNumber, extIndex, false)
+
+      unsubscribe("allHeads")
+
+      // if error, no need to wait for a confirmation
+      if (result === "error") {
+        unsubscribe("finalizedHeads")
+        if (timeout !== null) clearTimeout(timeout)
+      }
+    } catch (error) {
+      reportError(error, { networkId: chainId })
+    }
+  }).catch((cause) => {
+    // finalised heads alone still settle the transaction, and the timeout still ends the watch
+    subscriptions.allHeads = false
+    const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", { cause })
+    log.error(err)
+    reportError(err, { networkId: chainId })
+  })
+
+  if (!subscriptions.finalizedHeads && !subscriptions.allHeads) return
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   timeout = setTimeout(async () => {
-    await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_unsubscribeAllHeads"))
+    unsubscribe("allHeads")
     if (subscriptions.finalizedHeads) {
-      await unsubscribe("finalizedHeads", () =>
-        unsubscribeFinalizedHeads("chain_unsubscribeFinalizedHeads")
-      )
+      unsubscribe("finalizedHeads")
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
         const { val: extResult, err } = await getExtrinsincResult(
@@ -346,7 +365,7 @@ export const watchSubstrateTransaction = async (
   } catch (cause) {
     const error = new Error("Failed to watch extrinsic", { cause })
     log.warn(error)
-    sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+    reportError(error, { networkId: chain.id })
     return
   }
 }

@@ -1,6 +1,12 @@
+import { attachErrorCategory } from "@common/analytics/errorCategory"
 import { addTrailingSlash } from "@talismn/util"
+import {
+  type SignetVault,
+  signetVaultSchema,
+} from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
+import { z } from "zod/v4"
 
-import type { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
+const signetVaultsSchema = z.array(signetVaultSchema)
 
 export const signet = {
   /**
@@ -41,14 +47,24 @@ export const signet = {
 
         if (event.origin !== signetOrigin) return
 
-        if (event.data.type === "signet(connect.cancel)") {
+        if (event.data?.type === "signet(connect.cancel)") {
           close()
           return reject("Canceled")
         }
 
-        if (event.data.type === "signet(connect.continue)") {
+        if (event.data?.type === "signet(connect.continue)") {
           close()
-          return resolve(event.data.vaults as SignetVault[])
+          const vaults = signetVaultsSchema.safeParse(event.data.vaults)
+          if (!vaults.success)
+            return reject(
+              attachErrorCategory(
+                new Error("Signet sent vaults in a format this wallet does not recognise", {
+                  cause: vaults.error,
+                }),
+                "unsupported"
+              )
+            )
+          return resolve(vaults.data)
         }
       }
       window.addEventListener("message", handleNewMessage)
@@ -74,7 +90,7 @@ export const signet = {
         checkTabClosedInterval && clearInterval(checkTabClosedInterval)
         window.removeEventListener("message", handleNewMessage)
 
-        reject("Signet tab closed")
+        reject(attachErrorCategory(new Error("Signet tab closed"), "user_rejected"))
       }, 500)
     })
   },

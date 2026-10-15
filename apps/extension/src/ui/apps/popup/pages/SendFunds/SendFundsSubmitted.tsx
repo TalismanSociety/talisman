@@ -1,23 +1,12 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { TxProgress } from "@ui/domains/Transactions/TxProgress"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { useSendFundsWizard } from "./context"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Send Funds",
-  featureVersion: 2,
-  page: "Pending Transfer Page",
-}
-
 export const SendFundsSubmitted = () => {
   const [searchParams] = useSearchParams()
   const { gotoProgress } = useSendFundsWizard()
-
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   const [txId, networkId] = useMemo(
     () => [

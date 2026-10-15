@@ -1,19 +1,12 @@
 import { LoaderIcon } from "@talismn/icons"
-import { useSocialFeedsMounted } from "@ui/domains/TaoDashboard/shared/useSocialFeedsMounted"
 import type { IChartApi, ISeriesApi, SeriesType, UTCTimestamp } from "lightweight-charts"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useSubnetTweets } from "../../../hooks/useSn45Api"
 import { ChartOverlay } from "../chart-overlay/ChartOverlay"
 import { createChartOptions } from "../chartOptions"
 import { useRealtimeStakeEventsContext } from "../realtime/RealtimeStakeEventsProvider"
 import { CHART_COLORS, CHART_LAYOUT, INDICATOR_CONFIG } from "./chartConfig"
-import {
-  calculateBollingerBands,
-  calculateRSI,
-  calculateSMA,
-  getSentimentColor,
-} from "./indicators"
+import { calculateBollingerBands, calculateRSI, calculateSMA } from "./indicators"
 import { PriceChartToolbar } from "./PriceChartToolbar"
 import type { IndicatorConfig, OhlcvBar, OhlcvResolution } from "./types"
 import { DEFAULT_INDICATORS } from "./types"
@@ -26,7 +19,6 @@ import { useSubnetStats } from "./useSubnetStats"
 type ChartApi = IChartApi
 type SeriesApi = ISeriesApi<SeriesType>
 type PriceLine = ReturnType<SeriesApi["createPriceLine"]>
-type MarkersPlugin = { detach: () => void }
 
 // ────────────────────────────────────────────────────────────────────────────
 // Utility functions
@@ -85,7 +77,6 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
     realtimeEvents,
     onIndexerBlockHeight: reportFloor,
   })
-  const { data: tweets } = useSubnetTweets(netuid, "1m") // TODO implement cursor and pull as needed
   const {
     data: { tokenPrice },
   } = useSubnetStats(netuid)
@@ -136,7 +127,6 @@ export const PriceChartGraph: FC<PriceChartGraphProps> = ({ netuid }) => {
           bars={bars}
           hasMore={hasMore}
           loadMore={loadMore}
-          tweets={tweets}
           tokenPrice={tokenPrice}
           indicators={indicators}
         />
@@ -171,7 +161,6 @@ interface PriceChartGraphContentProps {
   bars: OhlcvBar[]
   hasMore: boolean
   loadMore: () => void
-  tweets: ReturnType<typeof useSubnetTweets>["data"]
   tokenPrice: number | null
   indicators: IndicatorConfig
 }
@@ -180,11 +169,9 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   bars,
   hasMore,
   loadMore,
-  tweets,
   tokenPrice,
   indicators,
 }) => {
-  const showTweetMarkers = useSocialFeedsMounted()
   // ── Chart refs (cleaned up on unmount) ────────────────────────────────
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<ChartApi | null>(null)
@@ -193,7 +180,6 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
   const rsiSeriesRef = useRef<SeriesApi | null>(null)
   const overlaySeriesRef = useRef<SeriesApi[]>([])
   const priceLineRef = useRef<PriceLine | null>(null)
-  const markersRef = useRef<MarkersPlugin | null>(null)
   const volumeLegendRef = useRef<HTMLDivElement | null>(null)
   const initialFitDoneRef = useRef(false)
   const lcRef = useRef<typeof import("lightweight-charts") | null>(null)
@@ -329,10 +315,6 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       volumeSeriesRef.current = null
       overlaySeriesRef.current = []
       rsiSeriesRef.current = null
-      if (markersRef.current) {
-        markersRef.current.detach()
-        markersRef.current = null
-      }
       volumeLegendRef.current = null
       initialFitDoneRef.current = false
       lcRef.current = null
@@ -402,7 +384,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
     const volumeSeries = volumeSeriesRef.current
     if (!lc || !chart || !candlestickSeries || !volumeSeries || !chartData) return
 
-    const { LineSeries, AreaSeries, createSeriesMarkers } = lc
+    const { LineSeries, AreaSeries } = lc
     const { candleData, volumeData, times } = chartData
 
     // ── Remove previous overlay series (indicators, price lines, etc.) ──
@@ -598,40 +580,6 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
     }
 
-    // ── Tweet markers ───────────────────────────────────────────────────
-    if (markersRef.current) {
-      markersRef.current.detach()
-      markersRef.current = null
-    }
-
-    if (showTweetMarkers && tweets && tweets.length > 0 && candleData.length > 0) {
-      const minTime = candleData[0].time
-      const maxTime = candleData[candleData.length - 1].time
-
-      const markers = tweets
-        .filter((tweet) => {
-          if (!tweet.createdAt) return false
-          const tweetTime = Math.floor(new Date(tweet.createdAt).getTime() / 1000)
-          return tweetTime >= (minTime as number) && tweetTime <= (maxTime as number)
-        })
-        .map((tweet) => {
-          const tweetTime = Math.floor(new Date(tweet.createdAt).getTime() / 1000) as UTCTimestamp
-          const isBullish = tweet.sentiment === "bullish" || tweet.sentiment === "very_bullish"
-          return {
-            time: tweetTime,
-            position: isBullish ? ("aboveBar" as const) : ("belowBar" as const),
-            color: getSentimentColor(tweet.sentiment),
-            shape: "circle" as const,
-            text: tweet.impactPotential === "high" ? "!" : "",
-          }
-        })
-        .sort((a, b) => (a.time as number) - (b.time as number))
-
-      if (markers.length > 0) {
-        markersRef.current = createSeriesMarkers(candlestickSeries, markers)
-      }
-    }
-
     // ── Initial visible range ────────────────────────────────────────────
     if (!initialFitDoneRef.current && candleData.length > 0) {
       const total = candleData.length
@@ -641,7 +589,7 @@ const PriceChartGraphContent: FC<PriceChartGraphContentProps> = ({
       })
       initialFitDoneRef.current = true
     }
-  }, [chartReady, chartData, tweets, showTweetMarkers, tokenPrice, indicators])
+  }, [chartReady, chartData, tokenPrice, indicators])
 
   return (
     <div className="relative size-full">

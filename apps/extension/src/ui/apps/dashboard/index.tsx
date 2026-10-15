@@ -2,16 +2,17 @@ import { DEBUG, PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { api } from "@ui/api"
 import { FullScreenLocked } from "@ui/components/FullScreenLocked"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
+import { Routes } from "@ui/components/Routes"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { BITTENSOR_NETWORK_IDS } from "@ui/state/bittensor"
-import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
+import { type FC, lazy, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Navigate, Route, Routes, useMatch } from "react-router-dom"
+import { Navigate, Route, useMatch } from "react-router-dom"
 
-import { AccountAddMenu } from "./routes/AccountAdd"
+import { AccountAddLayout, AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
@@ -47,6 +48,9 @@ import { EditTokenPage } from "./routes/Tokens/EditTokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
 
+const DevEventLogPage =
+  process.env.BUILD === "dev" ? lazy(() => import("./routes/Settings/DevEventLogPage")) : null
+
 const DashboardInner = () => {
   return (
     <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
@@ -62,7 +66,7 @@ const DashboardInner = () => {
           />
         ))}
         <Route path="accounts">
-          <Route path="add">
+          <Route path="add" element={<AccountAddLayout />}>
             <Route index element={<AccountAddMenu />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
@@ -133,6 +137,7 @@ const DashboardInner = () => {
           </Route>
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          {DevEventLogPage && <Route path="dev-event-log" element={<DevEventLogPage />} />}
           {/* Old routes redirects */}
           <Route
             path="qr-metadata"
@@ -207,7 +212,7 @@ const Dashboard = () => (
     <LoginChecker>
       <DashboardInner />
     </LoginChecker>
-    <DatabaseErrorAlert container="fullscreen" />
+    <DatabaseErrorAlert />
   </PreventPhishing>
 )
 

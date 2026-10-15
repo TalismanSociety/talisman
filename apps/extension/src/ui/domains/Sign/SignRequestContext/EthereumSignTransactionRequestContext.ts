@@ -9,21 +9,19 @@ import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAnySigningRequest } from "./useAnySigningRequest"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
   useBalancesHydrate() // preload
-  const { genericEvent } = useAnalytics()
   const { t } = useTranslation()
   const signingRequest = useRequest(id)
   const network = useNetworkById(signingRequest?.ethChainId, "ethereum")
@@ -46,6 +44,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     isLoading,
     error,
     errorDetails,
+    errorCategory: txErrorCategory,
     networkUsage,
     gasSettingsByPriority,
     setCustomSettings,
@@ -68,19 +67,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   })
 
   const reject = useCallback(() => {
-    genericEvent("sign request cancel click", {
-      networkType: "evm",
-      type: "transaction",
-      network: network?.id,
-      riskAnalysisAction: riskAnalysis.validationResult,
-      origin,
-    })
-
     return baseRequest.reject()
-  }, [baseRequest, origin, genericEvent, network?.id, riskAnalysis])
-
-  // flag to prevent capturing multiple submit attempts
-  const refIsApproveCaptured = useRef(false)
+  }, [baseRequest])
 
   const approve = useCallback(async () => {
     if (
@@ -89,24 +77,13 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     )
       return riskAnalysis.review.drawer.open()
 
-    if (!refIsApproveCaptured.current) {
-      refIsApproveCaptured.current = true
-      genericEvent("sign request approve click", {
-        networkType: "evm",
-        type: "transaction",
-        network: network?.id,
-        riskAnalysisAction: riskAnalysis.validationResult,
-        origin,
-      })
-    }
-
     if (!baseRequest) throw new Error("Missing base request")
     if (!transaction) throw new Error("Missing transaction")
     const serialized = serializeTransactionRequest(transaction)
 
     await enableTokens(riskAnalysis.tokenIds)
     return baseRequest?.approve(serialized)
-  }, [riskAnalysis, baseRequest, transaction, enableTokens, genericEvent, network?.id, origin])
+  }, [riskAnalysis, baseRequest, transaction, enableTokens])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -118,17 +95,6 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
       if (!baseRequest || !transaction || !baseRequest.id) return
 
-      if (!refIsApproveCaptured.current) {
-        refIsApproveCaptured.current = true
-        genericEvent("sign request approve click", {
-          networkType: "evm",
-          type: "transaction",
-          network: network?.id,
-          riskAnalysisAction: riskAnalysis.validationResult,
-          origin,
-        })
-      }
-
       baseRequest.setStatus.processing("Approving request")
       try {
         const serialized = serializeTransactionRequest(transaction)
@@ -138,11 +104,11 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error(getErrorMessage(err, t("Unknown error")))
+        baseRequest.fail(err, getErrorMessage(err, t("Unknown error")))
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent, t]
+    [baseRequest, riskAnalysis, transaction, enableTokens, t]
   )
 
   return {
@@ -153,6 +119,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     isLoading,
     error,
     errorDetails,
+    txErrorCategory,
     network,
     networkUsage,
     decodedTx,

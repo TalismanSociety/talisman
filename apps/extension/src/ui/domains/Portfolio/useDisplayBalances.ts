@@ -5,6 +5,7 @@ import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountPlatformBitcoin,
+  isAccountPlatformSolana,
 } from "@core/domains/keyring/exports"
 import { bind } from "@react-rxjs/core"
 import { type Balance, Balances } from "@talismn/balances"
@@ -14,6 +15,7 @@ import {
   getNetworkGenesisHash,
   type Network,
   type NetworkId,
+  solNativeTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
@@ -27,14 +29,15 @@ import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
 const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
-  subNativeTokenId("polkadot"),
-  subNativeTokenId("kusama"),
+  subNativeTokenId("polkadot-asset-hub"),
   subNativeTokenId("bittensor"),
 ]
 
 const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
 const DEFAULT_PORTFOLIO_TOKENS_BITCOIN = [btcNativeTokenId("bitcoin")]
+
+const DEFAULT_PORTFOLIO_TOKENS_SOLANA = [solNativeTokenId("solana-mainnet")]
 
 // normalizeAddress memoizes internally, this wrapper only adds throw-safety
 const safeNormalizeAddress = (address: string): string | null => {
@@ -100,6 +103,10 @@ const shouldDisplayBalance = (
       const isBitcoinAccount = isAccountPlatformBitcoin(account)
       const isBitcoinToken = DEFAULT_PORTFOLIO_TOKENS_BITCOIN.includes(balance.tokenId)
       if (isBitcoinAccount && isBitcoinToken) return true
+
+      const isSolanaAccount = isAccountPlatformSolana(account)
+      const isSolanaToken = DEFAULT_PORTFOLIO_TOKENS_SOLANA.includes(balance.tokenId)
+      if (isSolanaAccount && isSolanaToken) return true
     }
 
     const genesisHash = getAccountGenesisHash(account)

@@ -45,6 +45,7 @@ export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: s
 
     return balance && token
       ? {
+          entry: "token_details",
           networkId: token.networkId,
           stakeDirection: "bond",
           address: compatibleAccounts.length === 1 ? compatibleAccounts[0].address : undefined,

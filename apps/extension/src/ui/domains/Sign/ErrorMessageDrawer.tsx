@@ -5,6 +5,7 @@ import { XCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { type FC, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -25,12 +26,13 @@ export const ErrorMessageDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="error_message"
       anchor="bottom"
       isOpen={!!content && message === content}
       containerId={containerId}
       onDismiss={onDismiss}
     >
-      <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-grey-800 p-12">
+      <DrawerContent className="flex flex-col items-center gap-4">
         <XCircleIcon className={"text-[1.875rem] text-alert-error"} />
         <p className="mt-4 text-body-secondary">
           {name === "GenericAppRequired" ? <LedgerGenericRequired /> : wrapStrong(content)}
@@ -60,7 +62,7 @@ export const ErrorMessageDrawer: FC<{
         <Button className="mt-8 w-full" primary onClick={onDismiss}>
           {t("Close")}
         </Button>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

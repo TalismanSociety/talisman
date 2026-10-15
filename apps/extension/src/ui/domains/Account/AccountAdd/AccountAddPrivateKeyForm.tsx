@@ -20,6 +20,7 @@ import { notify, notifyUpdate } from "@ui/components/Notifications"
 import { Spacer } from "@ui/components/Spacer"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useAccounts } from "@ui/state/accounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -110,6 +111,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
       privateKey: "",
     } as z.infer<typeof FormSchema>,
     onSubmit: async ({ value }) => {
+      flows.add_account.submitted()
       const notificationId = notify(
         {
           type: "processing",
@@ -130,6 +132,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           },
         ])
 
+        flows.add_account.completed()
         onSuccess(address)
         notifyUpdate(notificationId, {
           type: "success",
@@ -137,10 +140,12 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           subtitle: value.name,
         })
       } catch (err) {
+        flows.add_account.failed(err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error importing account"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },
@@ -191,7 +196,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         <form.Field
           name="name"
           children={(field) => (
-            <FormFieldContainer error={field.state.meta.errors[0]}>
+            <FormFieldContainer field="name" error={field.state.meta.errors[0]}>
               <FormFieldInputText
                 value={field.state.value}
                 placeholder={t("Choose a name")}
@@ -227,7 +232,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         <form.Field
           name="privateKey"
           children={(field) => (
-            <FormFieldContainer error={field.state.meta.errors[0]}>
+            <FormFieldContainer field="privateKey" error={field.state.meta.errors[0]}>
               <FormFieldInputText
                 value={field.state.value}
                 placeholder={t("Enter your private key")}

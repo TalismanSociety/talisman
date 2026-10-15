@@ -42,7 +42,7 @@ vi.mock("./watchSwapStatus", () => ({
   watchSwapStatus: (...args: unknown[]) => mockWatchSwapStatus(...args),
 }))
 
-vi.mock("../../config/sentry", () => ({ sentry: { captureException: vi.fn() } }))
+vi.mock("../analytics/errorReporting", () => ({ reportError: vi.fn() }))
 
 import { db } from "../../db"
 import type { WalletTransactionInfo } from "./types"

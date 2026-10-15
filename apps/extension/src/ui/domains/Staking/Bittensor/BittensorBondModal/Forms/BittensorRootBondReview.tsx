@@ -3,9 +3,9 @@ import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -176,6 +176,7 @@ export const BittensorRootBondReview = () => {
           label={stakeDirection === "bond" ? t("Stake") : t("Unstake")}
           payload={payload}
           onSubmitted={onSubmitted}
+          onError={flows.staking.failed}
           txMetadata={txMetadata}
           txInfo={txInfo}
           disabled={isDisabled}

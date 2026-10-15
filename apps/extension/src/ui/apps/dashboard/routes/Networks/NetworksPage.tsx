@@ -1,6 +1,5 @@
 import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { HeaderBlock } from "@ui/components/HeaderBlock"
@@ -9,7 +8,6 @@ import { SearchInput } from "@ui/components/SearchInput"
 import { Spacer } from "@ui/components/Spacer"
 import { TogglePill } from "@ui/components/TogglePill"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { balancesHydrate$ } from "@ui/state/balances"
 import { activeNetworksState$ } from "@ui/state/chaindata"
 import { type FC, useCallback, useEffect, useState } from "react"
@@ -17,7 +15,6 @@ import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { combineLatest } from "rxjs"
 
-import { ANALYTICS_PAGE } from "./analytics"
 import { NetworksList } from "./NetworksList"
 import { type PlatformOption, usePlatformOptions } from "./usePlatformOptions"
 
@@ -28,14 +25,7 @@ export const NetworksPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  useAnalyticsPageView(ANALYTICS_PAGE)
-
   const handleAddNetworkClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add network button",
-    })
     navigate("./add", { state: { platform: location.state?.platform } })
   }, [location.state?.platform, navigate])
 

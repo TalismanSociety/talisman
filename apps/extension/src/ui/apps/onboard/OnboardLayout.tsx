@@ -1,4 +1,3 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { BackButton } from "@ui/components/BackButton"
 import { FadeIn } from "@ui/components/FadeIn"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
@@ -9,21 +8,12 @@ type LayoutProps = {
   withBack?: boolean
   className?: string
   children?: ReactNode
-  analytics?: AnalyticsPage
 }
 
-export const OnboardLayout: FC<LayoutProps> = ({
-  analytics,
-  withBack = false,
-  children,
-  className,
-}) => (
+export const OnboardLayout: FC<LayoutProps> = ({ withBack = false, children, className }) => (
   <div className={cn("flex h-full w-full items-center justify-center pt-12 sm:pt-auto", className)}>
     {!!withBack && (
-      <BackButton
-        className="absolute top-4 left-4 z-20 bg-grey-850/50 transition-colors ease-in hover:bg-grey-800/70 sm:top-32 sm:left-32"
-        analytics={analytics}
-      />
+      <BackButton className="absolute top-4 left-4 z-20 bg-grey-850/50 transition-colors ease-in hover:bg-grey-800/70 sm:top-32 sm:left-32" />
     )}
     {/* Wrap in suspense to prevent bg full reset when reaching create account page (loads different translations domain) */}
     <Suspense fallback={<SuspenseTracker name="OnboardLayout.Content" />}>

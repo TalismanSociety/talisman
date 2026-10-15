@@ -16,6 +16,7 @@ import { useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAddAccountStep } from "../flow"
 
 import {
   createPairFromJson,
@@ -100,6 +101,7 @@ const useJsonAccountImportProvider = () => {
 
   // warning : array of mutable objects
   const [pairs, setPairs] = useState<JsonImportPair[]>()
+  useAddAccountStep(pairs ? "select_accounts" : null)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {

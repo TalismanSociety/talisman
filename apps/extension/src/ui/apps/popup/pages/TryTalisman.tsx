@@ -1,5 +1,4 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
 import { TryTalismanContent } from "@ui/domains/Portfolio/GetStarted/TryTalisman/TryTalismanContent"
 import { useCallback } from "react"
@@ -8,19 +7,11 @@ import { useNavigate } from "react-router-dom"
 
 import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Try Talisman",
-}
-
 const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const goToPortfolio = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio (back)" })
     return navigate("/portfolio")
   }, [navigate])
 
@@ -47,7 +38,7 @@ export const TryTalismanPage = () => (
   <PopupLayout>
     <Header />
     <PopupContent className="px-8">
-      <TryTalismanContent analytics={ANALYTICS_PAGE} />
+      <TryTalismanContent />
     </PopupContent>
   </PopupLayout>
 )

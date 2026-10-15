@@ -3,8 +3,9 @@ import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -16,7 +17,6 @@ import {
   tokenRiskScanQueryOptions,
 } from "@ui/domains/TokenRisk/tokenRiskScan"
 import { useIsTokenRiskScanEnabled, useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
@@ -77,7 +77,12 @@ const TokenPickerModal: FC<{
   onDismiss: () => void
 }> = ({ isOpen, ...contentProps }) => {
   return (
-    <Modal containerId="swap-modal" isOpen={isOpen} onDismiss={contentProps.onDismiss}>
+    <Modal
+      analyticsId="token_picker"
+      containerId="swap-modal"
+      isOpen={isOpen}
+      onDismiss={contentProps.onDismiss}
+    >
       <TokenPickerModalContent isOpen={isOpen} {...contentProps} />
     </Modal>
   )
@@ -172,7 +177,8 @@ const TokenPickerModalContent: FC<{
   )
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0! relative"
       title={t("Select a token")}
@@ -199,7 +205,7 @@ const TokenPickerModalContent: FC<{
         onBack={() => setWarningTokenId(null)}
         onAccept={acceptToken}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -276,7 +282,6 @@ const useCachedTokenRiskVerdict = () => {
 
 const useRetriedTokenRiskScan = (tokenId: string | null, token: Token | null | undefined) => {
   const queryClient = useQueryClient()
-  const { genericEvent } = useAnalytics()
   const { ref, scan, isPending } = useTokenRiskScan(token)
   const [retry, setRetry] = useState<{ tokenId: string; isDone: boolean } | null>(null)
 
@@ -293,13 +298,6 @@ const useRetriedTokenRiskScan = (tokenId: string | null, token: Token | null | u
   }, [queryClient, tokenId, ref, scan?.isScanPending, retry?.tokenId])
 
   const isRetrying = !!scan?.isScanPending && !(retry?.tokenId === tokenId && retry.isDone)
-  const verdict = isRetrying ? undefined : scan?.verdict
-  const chainId = ref?.chainId
-
-  useEffect(() => {
-    if (tokenId && chainId && verdict)
-      genericEvent("token risk scan", { surface: "swap-select", verdict, chainId })
-  }, [genericEvent, tokenId, chainId, verdict])
 
   return { scan: isRetrying ? undefined : scan, isScanning: isPending || isRetrying }
 }
@@ -369,6 +367,7 @@ const SelectTokenWarningDrawer: FC<{
 
   return (
     <Drawer
+      analyticsId="select_token_warning"
       anchor="bottom"
       isOpen={!!tokenId}
       onDismiss={onBack}
@@ -378,7 +377,7 @@ const SelectTokenWarningDrawer: FC<{
       // className="z-20"
     >
       {safeTokenId && token && (
-        <div className="flex flex-col items-center gap-12 rounded-t-xl bg-grey-800 p-12">
+        <DrawerContent className="flex flex-col items-center gap-12">
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-4">
               <AlertTriangleIcon className="text-alert-warn text-md" />
@@ -408,7 +407,7 @@ const SelectTokenWarningDrawer: FC<{
               {needsAcknowledgement ? t("Proceed") : t("I Understand")}
             </Button>
           </div>
-        </div>
+        </DrawerContent>
       )}
     </Drawer>
   )

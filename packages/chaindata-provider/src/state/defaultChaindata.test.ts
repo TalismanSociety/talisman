@@ -1,4 +1,4 @@
-import { firstValueFrom, ReplaySubject, Subject } from "rxjs"
+import { firstValueFrom, of, ReplaySubject, Subject, throwError } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -13,17 +13,23 @@ import {
   makeSubNativeToken,
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
+import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import type { ChaindataStorage } from "../provider/ChaindataProvider"
-import type { Chaindata } from "./schema"
+import { chaindataEqualWithYield } from "./chunkedValidation"
+import type { Chaindata, ChaindataFile } from "./schema"
+import { validateChaindata } from "./validatedCache"
 
 // ─── Mocks ─────────────────────────────────────────────────────────
 
-let mockGithubChaindata$: Subject<Chaindata>
+let mockRemoteChaindata$: Subject<Chaindata>
 
-vi.mock("./githubChaindata", () => ({
-  get githubChaindata$() {
-    return mockGithubChaindata$
+const requestedUrls: string[] = []
+
+vi.mock("./remoteChaindata", () => ({
+  getRemoteChaindata$: (url: string) => {
+    requestedUrls.push(url)
+    return mockRemoteChaindata$
   },
 }))
 
@@ -95,7 +101,8 @@ describe("getDefaultChaindata$", () => {
   let storage$: ReplaySubject<ChaindataStorage>
 
   beforeEach(() => {
-    mockGithubChaindata$ = new Subject<Chaindata>()
+    mockRemoteChaindata$ = new Subject<Chaindata>()
+    requestedUrls.length = 0
     storage$ = new ReplaySubject<ChaindataStorage>(1)
     mockInitChaindata.current = makeChaindata()
   })
@@ -186,7 +193,7 @@ describe("getDefaultChaindata$", () => {
       expect(first[0]).toEqual(EMPTY_DATA)
 
       // GitHub emits valid → triggers storage$.next(valid) → recovers
-      mockGithubChaindata$.next(valid)
+      mockRemoteChaindata$.next(valid)
 
       const all = await waitForCount(2)
       expect(all[1]).toEqual(valid)
@@ -235,7 +242,7 @@ describe("getDefaultChaindata$", () => {
       expect(initial[0]).toEqual(EMPTY_DATA)
 
       // GitHub errors → fallback pushes initChaindata to storage$
-      mockGithubChaindata$.error(new Error("fetch failed"))
+      mockRemoteChaindata$.error(new Error("fetch failed"))
 
       const all = await waitForCount(2)
       expect(all[1].networks.length).toBeGreaterThan(0)
@@ -255,7 +262,7 @@ describe("getDefaultChaindata$", () => {
       vi.mocked(log.info).mockClear()
 
       // Error from github → should NOT provision since storage is non-empty
-      mockGithubChaindata$.error(new Error("fetch failed"))
+      mockRemoteChaindata$.error(new Error("fetch failed"))
 
       await vi.waitFor(() =>
         expect(log.info).toHaveBeenCalledWith(
@@ -269,11 +276,36 @@ describe("getDefaultChaindata$", () => {
       // Still only 1 emission
       expect(values).toHaveLength(1)
     })
+
+    it("provided source error + storage empty → does NOT provision", async () => {
+      const result$ = getDefaultChaindata$(
+        storage$,
+        throwError(() => new Error("provided source failed"))
+      )
+      const { values, waitForCount } = trackEmissions(result$)
+
+      storage$.next({ networks: [], tokens: [], miniMetadatas: [] })
+      await waitForCount(1)
+      const nextSpy = vi.spyOn(storage$, "next")
+
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      expect(nextSpy).not.toHaveBeenCalled()
+      expect(values).toEqual([EMPTY_DATA])
+    })
   })
 
   // ── GitHub sync ─────────────────────────────────────────────────
 
   describe("github sync", () => {
+    it("syncs from the default chaindata url unless a source is provided", () => {
+      getDefaultChaindata$(storage$, of(makeChaindata())).subscribe().unsubscribe()
+      expect(requestedUrls).toEqual([])
+
+      getDefaultChaindata$(storage$).subscribe().unsubscribe()
+      expect(requestedUrls).toEqual([DEFAULT_CHAINDATA_URL])
+    })
+
     it("github emits data different from storage → storage updated → new validated data emitted", async () => {
       const result$ = getDefaultChaindata$(storage$)
       const { waitForCount } = trackEmissions(result$)
@@ -291,7 +323,7 @@ describe("getDefaultChaindata$", () => {
           makeMiniMetadata({ id: "another-meta", chainId: "polkadot" }),
         ],
       })
-      mockGithubChaindata$.next(updated)
+      mockRemoteChaindata$.next(updated)
 
       const all = await waitForCount(2)
       expect(all[1]).toEqual(updated)
@@ -309,12 +341,54 @@ describe("getDefaultChaindata$", () => {
       vi.mocked(log.debug).mockClear()
 
       // GitHub serves a schema-validated copy of the same data, like fetchChaindata does
-      mockGithubChaindata$.next(structuredClone(validated))
+      mockRemoteChaindata$.next(structuredClone(validated))
 
       await vi.waitFor(() =>
         expect(log.debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed"))
       )
       expect(nextSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  // ── Provided source sync ──────────────────────────────────────
+
+  describe("provided source sync", () => {
+    const withManyTokens = (lastSymbol: string) =>
+      makeChaindata({
+        tokens: [
+          ...makeChaindata().tokens,
+          ...Array.from({ length: 20_000 }, (_, i) =>
+            makeEvmNativeToken({ id: `1-evm-native-${i}`, symbol: i < 19_999 ? "ETH" : lastSymbol })
+          ),
+        ],
+      })
+
+    it("writes only the latest provided chaindata when it arrives during an older compare", async () => {
+      const provided$ = new Subject<ChaindataFile>()
+      const result$ = getDefaultChaindata$(storage$, provided$)
+      const { waitForCount } = trackEmissions(result$)
+
+      const stored = withManyTokens("ETH")
+      storage$.next(stored)
+      await waitForCount(1)
+
+      const slowToCompare = await validateChaindata(withManyTokens("ETH2"))
+      if (!slowToCompare.success) throw slowToCompare.error
+      const latest = makeChaindata()
+      const nextSpy = vi.spyOn(storage$, "next")
+
+      provided$.next(slowToCompare.data)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      provided$.next(latest)
+
+      const values = await waitForCount(2)
+      await chaindataEqualWithYield(stored, slowToCompare.data)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      const tokenCounts = (data: ChaindataStorage) => data.tokens.length
+      expect(values[1]).toEqual(latest)
+      expect(nextSpy.mock.calls.map(([data]) => tokenCounts(data))).toEqual([latest.tokens.length])
+      expect(tokenCounts(await firstValueFrom(storage$))).toBe(latest.tokens.length)
     })
   })
 

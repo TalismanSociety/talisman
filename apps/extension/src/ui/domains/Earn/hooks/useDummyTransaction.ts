@@ -21,6 +21,7 @@ export const useDummyTransaction = ({ address, tokenId }: UseDummyTransactionPro
       value: "0",
       sendMax: false,
       allowReap: false,
+      isLocked: false,
     }
   }, [address, tokenId])
 

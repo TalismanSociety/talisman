@@ -5,6 +5,7 @@ import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { notify } from "@ui/components/Notifications"
@@ -74,6 +75,7 @@ const PasswordCheckDrawerContent: FC<
           notify({
             type: "error",
             title: t("Incorrect password"),
+            errorCategory: "wrong_password",
           })
         }
       } catch (err) {
@@ -82,6 +84,7 @@ const PasswordCheckDrawerContent: FC<
           type: "error",
           title: t("Password check failed"),
           subtitle: getErrorMessage(err, t("Unknown error")).slice(0, 200),
+          cause: err,
         })
       }
     },
@@ -89,7 +92,7 @@ const PasswordCheckDrawerContent: FC<
   )
 
   return (
-    <div className="flex w-full flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
+    <DrawerContent className="flex flex-col gap-8">
       <div className="text-md">{t("Enter your password to confirm")}</div>
       <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-8">
         <FormFieldContainer error={errors.password?.message}>
@@ -112,7 +115,7 @@ const PasswordCheckDrawerContent: FC<
           </Button>
         </div>
       </form>
-    </div>
+    </DrawerContent>
   )
 }
 
@@ -140,7 +143,13 @@ export const PasswordCheckDrawer: FC<PasswordCheckDrawerProps> = ({
   }, [onDismiss])
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={handleDismiss}>
+    <Drawer
+      analyticsId="password_check"
+      anchor="bottom"
+      isOpen={isOpen}
+      containerId={containerId}
+      onDismiss={handleDismiss}
+    >
       <PasswordCheckDrawerContent
         onVerified={onVerified}
         onDismiss={handleDismiss}

@@ -1,26 +1,28 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { Enum } from "@polkadot-api/substrate-bindings"
-import { bind } from "@react-rxjs/core"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
-import { type SetStateAction, useCallback, useMemo } from "react"
+import { provideContext } from "@ui/util/provideContext"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
-
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useActiveStakingEra } from "../hooks/nomPools/useActiveStakingEra"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
+import { stakingSubmittedReport } from "../shared/stakingAnalytics"
 import { useGetFeeEstimate } from "../shared/useGetFeeEstimate"
+import { useNomPoolWithdrawModal } from "./useNomPoolWithdrawModal"
 
 type WizardStep = "review" | "follow-up"
 
@@ -31,35 +33,16 @@ type WizardState = {
   hash: Hex | null
 }
 
-const DEFAULT_STATE: WizardState = {
-  step: "review",
-  address: null,
-  tokenId: null,
-  hash: null,
-}
-
-const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
-
-const setWizardState = (state: SetStateAction<WizardState>) => {
-  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
-  else wizardState$.next(state)
-}
-
-const [useWizardState] = bind(wizardState$)
-
-export const useResetNomPoolWithdrawWizard = () => {
-  return useCallback(
-    (init: Pick<WizardState, "address" | "tokenId">) =>
-      setWizardState({ ...DEFAULT_STATE, ...init }),
-    []
-  )
-}
-
-export const useNomPoolWithdrawWizard = () => {
+const useNomPoolWithdrawWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
+  const { args, isOpen } = useNomPoolWithdrawModal()
 
-  const { address, step, hash, tokenId } = useWizardState()
+  const [{ address, step, hash, tokenId }, setWizardState] = useState<WizardState>(() => ({
+    step: "review",
+    address: args?.address ?? null,
+    tokenId: args?.tokenId ?? null,
+    hash: null,
+  }))
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -69,14 +52,6 @@ export const useNomPoolWithdrawWizard = () => {
 
   const { data: pool } = useNomPoolByMember(token?.networkId, account?.address)
   const { data: sapi } = useScaleApi(token?.networkId)
-
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent("NomPool Withdraw", { tokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
-    },
-    [genericEvent, tokenId]
-  )
 
   const { data: activeEra } = useActiveStakingEra(token?.networkId)
 
@@ -105,6 +80,31 @@ export const useNomPoolWithdrawWizard = () => {
         : null,
     [plancksToWithdraw, token?.decimals, tokenRates]
   )
+
+  const network = useNetworkById(token?.networkId)
+
+  const onSubmitted = useCallback(
+    (hash: Hex) => {
+      if (!hash) return
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: tokenSymbolForAnalytics(token),
+        usd: amountToWithdraw?.fiat("usd"),
+      })
+      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+    },
+    [account, network, token, amountToWithdraw]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "withdraw" },
+    attributes: { staking_type: "nomination_pool", direction: "withdraw" },
+    step: step === "review" ? "review" : null,
+  })
 
   const {
     data: payloadAndMetadata,
@@ -138,11 +138,12 @@ export const useNomPoolWithdrawWizard = () => {
 
   const existentialDeposit = useExistentialDeposit(token?.id)
 
-  const errorMessage = useMemo(() => {
-    if (amountToWithdraw?.planck === 0n) return t("There is no balance to withdraw")
+  const error = useMemo<InlineError | null>(() => {
+    if (amountToWithdraw?.planck === 0n)
+      return { message: t("There is no balance to withdraw"), category: "input_invalid" }
 
     if (balance && feeEstimate && feeEstimate > balance.transferable.planck)
-      return t("Insufficient balance to cover fee")
+      return { message: t("Insufficient balance to cover fee"), category: "insufficient_fee" }
 
     if (
       balance &&
@@ -150,10 +151,15 @@ export const useNomPoolWithdrawWizard = () => {
       existentialDeposit?.planck &&
       existentialDeposit.planck + feeEstimate > balance.transferable.planck
     )
-      return t("Insufficient balance to cover fee and keep account alive")
+      return {
+        message: t("Insufficient balance to cover fee and keep account alive"),
+        category: "insufficient_fee",
+      }
 
     return null
   }, [amountToWithdraw?.planck, t, balance, feeEstimate, existentialDeposit?.planck])
+
+  const errorMessage = error?.message ?? null
 
   return {
     token,
@@ -176,7 +182,12 @@ export const useNomPoolWithdrawWizard = () => {
     errorFeeEstimate,
 
     errorMessage,
+    errorCategory: error?.category,
 
     onSubmitted,
   }
 }
+
+export const [NomPoolWithdrawWizardProvider, useNomPoolWithdrawWizard] = provideContext(
+  useNomPoolWithdrawWizardProvider
+)

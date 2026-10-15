@@ -7,7 +7,6 @@ import type { HexString } from "@talismn/util"
 import { assert } from "@talismn/util"
 import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
@@ -15,7 +14,6 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
-import { getHostName } from "../app/helpers"
 import { activeNetworksStore } from "../chaindata/store.activeNetworks"
 import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
@@ -32,7 +30,7 @@ export class EthHandler extends ExtensionHandler {
         const queued = requestStore.getRequest(id)
         assert(queued, "Unable to find request")
 
-        const { method, resolve, ethChainId } = queued
+        const { resolve, ethChainId } = queued
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
         assert(client, `Unable to find client for chain ${ethChainId}`)
@@ -48,16 +46,6 @@ export class EthHandler extends ExtensionHandler {
 
         resolve(hash)
 
-        const { val: host, ok } = getHostName(queued.url)
-
-        talismanAnalytics.captureDelayed("sign transaction approve", {
-          method,
-          hostName: ok ? host : null,
-          dapp: queued.url,
-          chain: Number(ethChainId),
-          networkType: "ethereum",
-          hardwareType: "ledger", // atm ledger is the only type of hardware account that we support for evm
-        })
         return true
       } catch (err) {
         DEBUG && log.error("signAndSendApproveHardware", { err })
@@ -71,7 +59,7 @@ export class EthHandler extends ExtensionHandler {
   }) => {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
-    const { resolve, reject, ethChainId, account, url } = queued
+    const { resolve, reject, ethChainId, account } = queued
 
     assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
@@ -103,15 +91,6 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(result.val)
 
-      const { val: host, ok } = getHostName(url)
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        type: "evm sign and send",
-        hostName: ok ? host : null,
-        dapp: url,
-        chain: Number(ethChainId),
-        networkType: "ethereum",
-      })
-
       return true
     } else {
       if (nonceReserved) releaseReservedNonce(account.address, ethChainId, tx.nonce as number)
@@ -141,12 +120,6 @@ export class EthHandler extends ExtensionHandler {
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         notifications: true,
         txInfo,
-      })
-
-      talismanAnalytics.captureDelayed("send transaction", {
-        type: "evm send signed",
-        chain: Number(evmNetworkId),
-        networkType: "ethereum",
       })
 
       return hash as HexString
@@ -191,12 +164,6 @@ export class EthHandler extends ExtensionHandler {
         txInfo,
       })
 
-      talismanAnalytics.captureDelayed("send transaction", {
-        type: "evm sign and send",
-        chain: Number(evmNetworkId),
-        networkType: "ethereum",
-      })
-
       return result.val // hash
     } else {
       if (nonceReserved) releaseReservedNonce(unsigned.from, evmNetworkId, tx.nonce as number)
@@ -216,20 +183,9 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { method, resolve, url } = queued
+    const { resolve } = queued
 
     resolve(signedPayload)
-
-    const { ok, val: host } = getHostName(url)
-    talismanAnalytics.captureDelayed("sign approve", {
-      method,
-      isHardware: true,
-      hostName: ok ? host : null,
-      dapp: url,
-      chain: Number(queued.ethChainId),
-      networkType: "ethereum",
-      hardwareType: "ledger",
-    })
 
     return true
   }
@@ -239,7 +195,7 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { method, request, reject, resolve, url } = queued
+    const { method, request, reject, resolve } = queued
 
     const { val, ok } = await withSecretKey(queued.account.address, async (secretKey) => {
       const pw = await this.stores.password.getPassword()
@@ -274,17 +230,6 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(signature)
 
-      const { ok, val: host } = getHostName(url)
-
-      talismanAnalytics.captureDelayed("sign approve", {
-        method,
-        isHardware: true,
-        hostName: ok ? host : null,
-        dapp: queued.url,
-        chain: Number(queued.ethChainId),
-        networkType: "ethereum",
-      })
-
       return true
     })
 
@@ -307,12 +252,6 @@ export class EthHandler extends ExtensionHandler {
     const { reject } = queued
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1193_USER_REJECTED))
-
-    talismanAnalytics.captureDelayed("sign reject", {
-      method: queued.method,
-      dapp: queued.url,
-      chain: Number(queued.ethChainId),
-    })
 
     return true
   }
@@ -339,11 +278,6 @@ export class EthHandler extends ExtensionHandler {
     const known = await chaindataProvider.getNetworkById(network.id, "ethereum")
     if (!known) {
       await customChaindataStore.upsertNetwork(network, nativeToken)
-
-      talismanAnalytics.captureDelayed("add network evm", {
-        network: network.name,
-        isCustom: true,
-      })
     }
 
     await activeTokensStore.setActive(network.nativeTokenId, true)
@@ -383,13 +317,6 @@ export class EthHandler extends ExtensionHandler {
       if (!knownToken) await customChaindataStore.upsertToken(token)
 
       await activeTokensStore.setActive(token.id, true)
-
-      talismanAnalytics.captureDelayed("add asset evm", {
-        contractAddress: token.contractAddress,
-        symbol: token.symbol,
-        network: token.networkId,
-        isCustom: !knownToken,
-      })
 
       resolve(true)
 

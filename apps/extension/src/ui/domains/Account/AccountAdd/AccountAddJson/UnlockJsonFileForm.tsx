@@ -6,6 +6,7 @@ import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FadeIn } from "@ui/components/FadeIn"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
+import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
 import { type FC, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -51,7 +52,11 @@ export const UnlockJsonFileForm: FC = () => {
         await unlockFile(fields.password)
       } catch (err) {
         log.error("failed to unlock", { err })
-        setError("password", { message: t("Incorrect password") }, { shouldFocus: true })
+        setError(
+          "password",
+          { type: "wrong_password", message: t("Incorrect password") },
+          { shouldFocus: true }
+        )
       }
     },
     [clearErrors, setError, t, unlockFile]
@@ -77,7 +82,10 @@ export const UnlockJsonFileForm: FC = () => {
         <div className="mb-8 text-body-secondary">
           {t("Enter the password that was used to encrypt this JSON file.")}
         </div>
-        <FormFieldContainer error={errors.password?.message}>
+        <FormFieldContainer
+          error={errors.password?.message}
+          errorCategory={errorCategoryOfField(errors.password)}
+        >
           <FormFieldInputText
             before={<KeyIcon className="opacity-50" />}
             {...register("password")}

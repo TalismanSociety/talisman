@@ -1,7 +1,6 @@
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
@@ -33,9 +32,7 @@ const POPULAR_ACCOUNTS: Array<{ name?: string; address: string; description?: st
   { name: "Gavin Wood", address: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH" },
 ]
 
-export const TryTalismanContent: FC<{
-  analytics: AnalyticsPage
-}> = ({ analytics }) => {
+export const TryTalismanContent: FC = () => {
   const { close } = useTryTalismanModal()
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -75,12 +72,6 @@ export const TryTalismanContent: FC<{
 
       setPending(true)
 
-      sendAnalyticsEvent({
-        ...analytics,
-        name: "Interact",
-        action: "Add watched account (custom)",
-      })
-
       try {
         // throws if address is invalid
         normalizeAddress(address)
@@ -102,7 +93,7 @@ export const TryTalismanContent: FC<{
         setError(t("Please enter a valid account address"))
       }
     },
-    [analytics, address, isNsLookup, searchAddress, navigate, close, t]
+    [address, isNsLookup, searchAddress, navigate, close, t]
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -110,9 +101,8 @@ export const TryTalismanContent: FC<{
 
   const allAccounts = useAccounts()
   const goToPortfolio = useCallback(() => {
-    sendAnalyticsEvent({ ...analytics, name: "Goto", action: "Portfolio (added accounts)" })
     return IS_POPUP ? navigate("/portfolio") : close()
-  }, [analytics, close, navigate])
+  }, [close, navigate])
 
   return (
     <div className="flex flex-col gap-12 pb-12 text-body-secondary text-sm">
@@ -175,7 +165,6 @@ export const TryTalismanContent: FC<{
             name={account.name}
             address={account.address}
             description={account.description}
-            analytics={analytics}
           />
         ))}
       </div>
@@ -200,23 +189,15 @@ const FollowAccountButton = ({
   name,
   address,
   description,
-  analytics,
 }: {
   name?: string
   address: string
   description?: string
-  analytics: AnalyticsPage
 }) => {
   const { t } = useTranslation()
   const allAccounts = useAccounts()
 
   const onClick = useCallback(async () => {
-    sendAnalyticsEvent({
-      ...analytics,
-      name: "Interact",
-      action: `Add watched account (${name ?? description ?? address})`,
-    })
-
     await api.accountAddExternal([
       {
         type: "watch-only",
@@ -225,7 +206,7 @@ const FollowAccountButton = ({
         isPortfolio: true,
       },
     ])
-  }, [address, analytics, description, name])
+  }, [address, name])
 
   const isAdded = useMemo(
     () => allAccounts.some((a) => isAddressEqual(a.address, address)),

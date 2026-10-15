@@ -12,7 +12,7 @@ export const MnemonicCreateModal = () => {
   const { stage, cancel, isOpen } = useMnemonicCreateModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={cancel}>
+    <Modal analyticsId="mnemonic_create" containerId="main" isOpen={isOpen} onDismiss={cancel}>
       {stage === Stages.Acknowledgement && <Acknowledgement />}
       {stage === Stages.Create && <MnemonicCreateForm />}
       {stage === Stages.Verify && <Verify />}

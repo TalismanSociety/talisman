@@ -37,7 +37,7 @@ export const getFeeEstimate = async (chain: Chain, payload: SignerPayloadJSON) =
       chain,
       "TransactionPaymentApi",
       "query_info",
-      [bytes, bytes.length]
+      [bytes, signedTx.length]
     )
     // Do not throw if partialFee is 0n. This is a valid response, eg: Bittensor remove_stake fee estimation is 0n.
     if (!result?.partial_fee && result.partial_fee !== 0n) {

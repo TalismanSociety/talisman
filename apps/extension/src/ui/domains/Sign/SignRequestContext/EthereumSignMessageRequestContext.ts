@@ -5,12 +5,11 @@ import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAnySigningRequest } from "./useAnySigningRequest"
@@ -18,7 +17,6 @@ import { useAnySigningRequest } from "./useAnySigningRequest"
 const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
   const request = useRequest(id)
   const network = useNetworkById(request?.ethChainId, "ethereum")
-  const { genericEvent } = useAnalytics()
   const { t } = useTranslation()
 
   // wraps status and errors management
@@ -39,19 +37,8 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   })
 
   const reject = useCallback(() => {
-    genericEvent("sign request cancel click", {
-      networkType: "evm",
-      type: "message",
-      network: network?.id,
-      riskAnalysisAction: riskAnalysis?.validationResult,
-      origin,
-    })
-
     return baseRequest.reject()
-  }, [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult])
-
-  // flag to prevent capturing multiple submit attempts
-  const refIsApproveCaptured = useRef(false)
+  }, [baseRequest])
 
   const approve = useCallback(() => {
     if (
@@ -59,19 +46,8 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       !riskAnalysis.review.isRiskAcknowledged
     )
       return riskAnalysis.review.drawer.open()
-
-    if (!refIsApproveCaptured.current) {
-      refIsApproveCaptured.current = true
-      genericEvent("sign request approve click", {
-        networkType: "evm",
-        type: "message",
-        network: network?.id,
-        riskAnalysisAction: riskAnalysis?.validationResult,
-        origin,
-      })
-    }
     return baseRequest.approve()
-  }, [baseRequest, genericEvent, network?.id, origin, riskAnalysis])
+  }, [baseRequest, riskAnalysis])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -83,27 +59,16 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 
       if (!baseRequest?.id) return
 
-      if (!refIsApproveCaptured.current) {
-        refIsApproveCaptured.current = true
-        genericEvent("sign request approve click", {
-          networkType: "evm",
-          type: "message",
-          network: network?.id,
-          riskAnalysisAction: riskAnalysis?.validationResult,
-          origin,
-        })
-      }
-
       baseRequest.setStatus.processing("Approving request")
       try {
         await api.ethApproveSignHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
-        baseRequest.setStatus.error(getErrorMessage(err, t("Unknown error")))
+        baseRequest.fail(err, getErrorMessage(err, t("Unknown error")))
       }
     },
-    [baseRequest, riskAnalysis, genericEvent, network?.id, origin, t]
+    [baseRequest, riskAnalysis, t]
   )
 
   // EIP-4361 : the sign-in domain must match the domain of the requesting site

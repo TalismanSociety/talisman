@@ -6,10 +6,12 @@ import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance } from "@ui/state/balances"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
+import { fiatToPlancks } from "@ui/util/fiatToPlancks"
 import {
   type ChangeEventHandler,
   type FC,
@@ -22,9 +24,7 @@ import {
   useRef,
   useState,
 } from "react"
-
 import { useTranslation } from "react-i18next"
-
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import { TokenLogo } from "../../Asset/TokenLogo"
@@ -201,22 +201,10 @@ const FiatInput = () => {
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && tokenRates?.[currency]?.price && e.target.value) {
-        try {
-          const fiat = parseFloat(e.target.value)
-          const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(token.decimals / 3))
-          const plancks = tokensToPlanck(tokens, token.decimals)
-          refSkipSync.current = true
-          setValue(e.target.value)
-          return setPlancks(BigInt(plancks))
-        } catch {
-          // invalid input, ignore
-        }
-      }
-
+      const price = tokenRates?.[currency]?.price
       refSkipSync.current = true
       setValue(e.target.value)
-      return setPlancks(null)
+      setPlancks(token && price ? fiatToPlancks(e.target.value, price, token.decimals) : null)
     },
 
     [currency, setPlancks, token, tokenRates]
@@ -265,9 +253,16 @@ const AmountEdit = () => {
     displayMode,
     toggleDisplayMode,
     inputErrorMessage,
+    inputErrorCategory,
     maxPlancks,
     setPlancks,
   } = useBondWizard()
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputErrorCategory ?? "input_invalid",
+    field: "amount",
+  })
 
   const onSetMaxClick = useCallback(() => {
     if (!maxPlancks) return

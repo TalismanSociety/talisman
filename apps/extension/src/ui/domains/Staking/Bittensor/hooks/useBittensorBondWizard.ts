@@ -1,3 +1,5 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
+import type { StakingEntry } from "@common/analytics/staking"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
 import {
@@ -13,34 +15,39 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { track } from "@ui/api/track"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
+import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
 import type { Hex } from "viem"
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
+import { stakingSubmittedReport, stakingTransactionId } from "../../shared/stakingAnalytics"
 import { ROOT_NETUID } from "../utils/constants"
 import { effectiveLockedAmount, getDTaoSubnetUnstakeInfo } from "../utils/dtaoSubnetUnstakeInfo"
 import { getBittensorFullExitUnstake } from "../utils/fullExitUnstake"
 import { getDefaultValidatorHotkey } from "../utils/getDefaultValidatorHotkey"
+import { getSweepableRemainder, getSweepableRemainderError } from "../utils/nominationRemainder"
 import { getBittensorUnbondClaimOption } from "../utils/unbondClaimOption"
+import { useBittensorBondModal } from "./useBittensorBondModal"
 import { useBittensorRootClaimGate } from "./useBittensorRootClaimGate"
 import {
   type BittensorStakingPosition,
   useBittensorStakingPositions,
 } from "./useBittensorStakingPositions"
+import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 export type WizardStep =
@@ -69,12 +76,22 @@ type WizardState = {
 }
 
 export type BittensorStakingWizardOpenOptions = {
+  entry: StakingEntry
   stakeDirection: StakeDirection
   networkId: DotNetworkId
   netuid?: number
   address?: Address
   hotkey?: string
 }
+
+const FLOW_STEPS = {
+  "select-subnet": "subnet",
+  "select-position": "position",
+  "select-delegate": "validator",
+  "form": "form",
+  "review": "review",
+  "follow-up": null,
+} as const satisfies Record<WizardStep, FlowStep<typeof flows.staking> | null>
 
 const DEFAULT_STATE: WizardState = {
   step: "form",
@@ -90,18 +107,17 @@ const DEFAULT_STATE: WizardState = {
   withClaim: true,
 }
 
-const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
-
-export const useResetBittensorBondWizard = () => {
-  const reset = useCallback((init: BittensorStakingWizardOpenOptions) => {
-    const stakeType =
-      typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
-    const step =
-      init.stakeDirection === "bond" && typeof init.netuid !== "number" ? "select-subnet" : "form"
-    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType, step }))
-  }, [])
-
-  return reset
+const getInitialWizardState = (init: BittensorStakingWizardOpenOptions): WizardState => {
+  const stakeType = typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
+  const step =
+    init.stakeDirection === "bond"
+      ? typeof init.netuid === "number"
+        ? "form"
+        : "select-subnet"
+      : init.hotkey
+        ? "form"
+        : "select-position"
+  return Object.assign({}, DEFAULT_STATE, init, { stakeType, step })
 }
 
 const useBalance = (
@@ -132,9 +148,9 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
 
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const allBalances = useBalances("owned")
   const remoteConfig = useRemoteConfig()
+  const { args, isOpen } = useBittensorBondModal()
 
   const [
     {
@@ -152,7 +168,7 @@ const useBittensorBondWizardProvider = () => {
     },
     setWizardState,
   ] = useState(() => {
-    const defValue = wizardOpenState$.getValue()
+    const defValue = args ? getInitialWizardState(args) : DEFAULT_STATE
 
     // Synchronously adjust the default set to have the best hotkey for the user
     if (
@@ -309,6 +325,7 @@ const useBittensorBondWizardProvider = () => {
     errorFeeEstimate,
     isLoadingFeeEstimate,
     currentHotkey,
+    minTaoBond,
     minTaoBondForInput,
     minAlphaBond,
     minTaoStakeForInput,
@@ -363,7 +380,7 @@ const useBittensorBondWizardProvider = () => {
     []
   )
 
-  const isHotkeyAutoSelected = useRef(!wizardOpenState$.getValue().hotkey)
+  const isHotkeyAutoSelected = useRef(!args?.hotkey)
 
   const setHotkey = useCallback((hotkey: string) => {
     isHotkeyAutoSelected.current = false
@@ -474,13 +491,66 @@ const useBittensorBondWizardProvider = () => {
     })
   }, [])
 
-  const onSubmitted = useCallback(
-    (hash: Hex) => {
-      genericEvent("Bittensor Bond", { tokenId: nativeTokenId })
-      if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+  const toggleMevProtection = useCallback(
+    (enabled: boolean) => {
+      track("staking_mev_shield_toggled", {
+        enabled,
+        direction: stakeDirection === "bond" ? "stake" : "unstake",
+      })
+      setIsMevProtectionEnabled(enabled)
     },
-    [genericEvent, nativeTokenId]
+    [stakeDirection]
   )
+
+  const network = useNetworkById(networkId)
+  const [slippageTolerance, , isDefaultSlippage] = useBittensorSubnetSlippage(netuid)
+
+  const onSubmitted = useCallback(
+    (hash: Hex, innerHash?: Hex) => {
+      if (!hash) return
+      const report = stakingSubmittedReport({
+        account,
+        network,
+        symbol: tokenSymbolForAnalytics(isSubnetUnbond ? dtaoToken : nativeToken),
+        usd: amountTao?.fiat("usd"),
+        slippage:
+          stakeType === "subnet"
+            ? { percent: slippageTolerance, isDefault: isDefaultSlippage }
+            : null,
+      })
+      if (report)
+        flows.staking.submitted({
+          ...report,
+          mev_shield: withMevShield,
+          transactionId: stakingTransactionId(hash, innerHash),
+        })
+      setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
+    },
+    [
+      account,
+      network,
+      isSubnetUnbond,
+      amountTao,
+      stakeType,
+      slippageTolerance,
+      isDefaultSlippage,
+      withMevShield,
+      nativeToken,
+      dtaoToken,
+    ]
+  )
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "portfolio",
+    started: { mode: args?.stakeDirection === "unbond" ? "unstake" : "stake" },
+    attributes: {
+      staking_type: "bittensor",
+      direction: stakeDirection === "bond" ? "stake" : "unstake",
+      ...(typeof netuid === "number" && { netuid }),
+    },
+    step: FLOW_STEPS[step],
+  })
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked
@@ -510,11 +580,11 @@ const useBittensorBondWizardProvider = () => {
     return totalStakedPlancks + (amountIn || 0n)
   }, [amountOut, amountIn, stakeDirection, stakeType, totalStakedPlancks])
 
-  const stakeInputErrorMessage = useMemo(() => {
+  const stakeInputError = useMemo<InlineError | null>(() => {
     if (!amountTao || typeof minTaoBondForInput !== "bigint") return null
 
     if (amountTao.planck && amountTao.planck > (nativeBalance?.transferable?.planck ?? 0n))
-      return t("Insufficient balance")
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
 
     if (
       nativeBalance &&
@@ -522,7 +592,7 @@ const useBittensorBondWizardProvider = () => {
       amountTao.planck &&
       amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
-      return t("Insufficient balance to cover fee")
+      return { message: t("Insufficient balance to cover fee"), category: "insufficient_fee" }
 
     if (
       nativeBalance &&
@@ -531,21 +601,30 @@ const useBittensorBondWizardProvider = () => {
       amountTao.planck &&
       existentialDeposit.planck + amountTao.planck + feeEstimate > nativeBalance.transferable.planck
     )
-      return t("Insufficient balance to cover fee and keep account alive")
+      return {
+        message: t("Insufficient balance to cover fee and keep account alive"),
+        category: "insufficient_fee",
+      }
 
     // if not staking yet, need minTaoBondForInput or more
     if (!dtaoBalance?.free.planck && amountTao.planck < minTaoBondForInput)
-      return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoBondForInput, nativeToken?.decimals).tokens,
-        symbol: nativeToken?.symbol,
-      })
+      return {
+        message: t("Minimum bond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minTaoBondForInput, nativeToken?.decimals).tokens,
+          symbol: nativeToken?.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     // no staking operation can be less than minTaoStakeForInput
     if (typeof minTaoStakeForInput === "bigint" && amountTao.planck < minTaoStakeForInput)
-      return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoStakeForInput, nativeToken?.decimals).tokens,
-        symbol: nativeToken?.symbol,
-      })
+      return {
+        message: t("Minimum bond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minTaoStakeForInput, nativeToken?.decimals).tokens,
+          symbol: nativeToken?.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     return null
   }, [
@@ -561,92 +640,117 @@ const useBittensorBondWizardProvider = () => {
     minTaoStakeForInput,
   ])
 
-  // Bittensor's runtime can pay remove_stake fees from staked Alpha when free TAO is insufficient,
-  // but this requires the Alpha fee mechanism to be active on-chain (detected via TransactionFeePaidWithAlpha event).
-  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
-  const supportsAlphaFees = useMemo(
-    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
-    [sapi]
-  )
-
   // Accounts with zero free TAO have no native balance record at all (the balance pool
   // drops zero balances), so a missing record can't distinguish "zero TAO" from "not
   // loaded yet": read the balance fresh from chain, falling back to the pool record
   // while the query loads
-  const { data: freshTransferableTao } = useGetBittensorTransferableBalance({
-    networkId,
-    address: stakeDirection === "unbond" ? address : null,
-  })
+  const { data: freshTransferableTao, isError: isErrorTransferableTao } =
+    useGetBittensorTransferableBalance({
+      networkId,
+      address: stakeDirection === "unbond" ? address : null,
+    })
   const knownTransferableTao = freshTransferableTao ?? nativeBalance?.transferable.planck ?? null
 
-  const unstakeInputErrorMessage = useMemo(() => {
-    if (rootStakeHoldGate.message) return rootStakeHoldGate.message
-
-    // When Alpha fees aren't supported, the user needs enough free TAO to cover fees.
-    // Root staking has no alpha-fee mechanism at all, so root unbonds always need free TAO.
+  const sweepableRemainderError = useMemo(() => {
     if (
-      (netuid === ROOT_NETUID || !supportsAlphaFees) &&
+      stakeDirection !== "unbond" ||
+      typeof minAlphaBond !== "bigint" ||
+      typeof minTaoBond !== "bigint" ||
+      !nativeToken ||
+      !dtaoToken
+    )
+      return null
+    const remainder = getSweepableRemainder({
+      stake: totalStakedPlancks,
+      amount: amountIn ?? 0n,
+      maxAmount: availableToUnstakePlancks,
+      minKeep: minAlphaBond,
+      minAmount: minAlphaUnstake ?? 0n,
+    })
+    return (
+      remainder &&
+      getSweepableRemainderError(t, remainder, {
+        minTao: minTaoBond,
+        tao: nativeToken,
+        alpha: dtaoToken,
+      })
+    )
+  }, [
+    stakeDirection,
+    minAlphaBond,
+    minTaoBond,
+    nativeToken,
+    dtaoToken,
+    totalStakedPlancks,
+    amountIn,
+    availableToUnstakePlancks,
+    minAlphaUnstake,
+    t,
+  ])
+
+  const unstakeInputError = useMemo<InlineError | null>(() => {
+    if (rootStakeHoldGate.message)
+      return { message: rootStakeHoldGate.message, category: "input_invalid" }
+
+    if (knownTransferableTao === null && isErrorTransferableTao)
+      return { message: t("Failed to load TAO balance"), category: "rpc" }
+
+    // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
+    // the wallet sends, so the fee always comes from free TAO
+    if (
       amountIn &&
       existentialDeposit?.planck &&
       feeEstimate &&
       typeof knownTransferableTao === "bigint" &&
       existentialDeposit.planck + feeEstimate > knownTransferableTao
     ) {
-      return t(
-        "Insufficient free TAO to pay network fees. Fees are paid from your wallet balance, not your stake."
-      )
+      return {
+        message: t(
+          "Insufficient free TAO to pay network fees. Fees are paid from your wallet balance, not your stake."
+        ),
+        category: "insufficient_fee",
+      }
     }
 
     if ((amountIn || 0n) > totalStakedPlancks) {
-      return t("Insufficient balance")
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
     }
     if ((amountIn || 0n) > availableToUnstakePlancks) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      return effectiveLocked > 0n
-        ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
+      if (effectiveLocked > 0n)
+        return {
+          message: t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
             amount: new BalanceFormatter(effectiveLocked, dtaoToken?.decimals).tokens,
             symbol: dtaoToken?.symbol,
-          })
-        : t("Insufficient balance")
+          }),
+          category: "input_invalid",
+        }
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
     }
-    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
-    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
-    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
-    // but a partial unstake landing in that range would unexpectedly close the position: block it.
-    if (
-      typeof minAlphaBond === "bigint" &&
-      (amountIn || 0n) < availableToUnstakePlancks &&
-      newStakeTotal > 0n &&
-      newStakeTotal < minAlphaBond &&
-      (amountIn || 0n) > 0n
-    ) {
-      return t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaBond, dtaoToken?.decimals).tokens,
-        symbol: dtaoToken?.symbol,
-      })
-    }
+    if (sweepableRemainderError) return sweepableRemainderError
 
     // no staking operation can be less than minTaoStake
     if (amountAlpha?.planck && minAlphaUnstake && amountAlpha.planck < minAlphaUnstake)
-      return t("Minimum unbond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaUnstake, dtaoToken?.decimals).tokens,
-        symbol: dtaoToken?.symbol,
-      })
+      return {
+        message: t("Minimum unbond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minAlphaUnstake, dtaoToken?.decimals).tokens,
+          symbol: dtaoToken?.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     return null
   }, [
     rootStakeHoldGate.message,
-    supportsAlphaFees,
-    netuid,
     amountIn,
     existentialDeposit?.planck,
     feeEstimate,
     knownTransferableTao,
+    isErrorTransferableTao,
     totalStakedPlancks,
     availableToUnstakePlancks,
     effectiveLocked,
-    newStakeTotal,
-    minAlphaBond,
+    sweepableRemainderError,
     amountAlpha?.planck,
     minAlphaUnstake,
     t,
@@ -654,10 +758,8 @@ const useBittensorBondWizardProvider = () => {
     dtaoToken?.symbol,
   ])
 
-  const inputErrorMessage = useMemo(
-    () => (stakeDirection === "bond" ? stakeInputErrorMessage : unstakeInputErrorMessage),
-    [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage]
-  )
+  const inputError = stakeDirection === "bond" ? stakeInputError : unstakeInputError
+  const inputErrorMessage = inputError?.message ?? null
 
   // positions are used only when unstaking
   const positions = useBittensorStakingPositions(networkId)
@@ -698,6 +800,11 @@ const useBittensorBondWizardProvider = () => {
     feeToken,
     maxPlancks,
     inputErrorMessage,
+    inputErrorCategory: inputError?.category,
+    inputErrorFillAmount:
+      sweepableRemainderError && inputError === sweepableRemainderError
+        ? sweepableRemainderError.fillAmount
+        : null,
     stakeDirection,
     dtaoBalance,
     availableToUnstakePlancks,
@@ -712,7 +819,13 @@ const useBittensorBondWizardProvider = () => {
     dustThreshold: claimGate.dustThreshold,
     isBelowDustThreshold: claimGate.isBelowDustThreshold,
     claimHoldDurationMs: claimGate.holdDurationMs,
-    payload: !inputErrorMessage && isFormValid && !rootStakeHoldGate.isBlocked ? payload : null,
+    payload:
+      !inputErrorMessage &&
+      isFormValid &&
+      !rootStakeHoldGate.isBlocked &&
+      (stakeDirection === "bond" || typeof knownTransferableTao === "bigint")
+        ? payload
+        : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
@@ -728,7 +841,7 @@ const useBittensorBondWizardProvider = () => {
     withMevShield,
     isMevShieldDisabled,
     isMevShieldFeatureDisabled: !isMevShieldFeatureEnabled,
-    setIsMevProtectionEnabled,
+    setIsMevProtectionEnabled: toggleMevProtection,
     setAddress,
     setNetuid,
     setHotkey,

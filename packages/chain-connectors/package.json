@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chain-connectors",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "RPC connectors for Polkadot SDK, EVM and Solana networks",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
+    "polkadot-api": "2.2.0",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

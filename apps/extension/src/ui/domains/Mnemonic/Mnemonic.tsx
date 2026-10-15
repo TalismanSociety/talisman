@@ -40,6 +40,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
       notify({
         title: t("Failed to copy"),
         type: "error",
+        errorCategory: "clipboard",
       })
     }
   }, [mnemonic, t])

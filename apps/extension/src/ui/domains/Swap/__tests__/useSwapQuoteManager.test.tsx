@@ -11,8 +11,21 @@ import type {
 
 const getQuoteMock = vi.fn()
 
+const track = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track }))
+
 vi.mock("@ui/state/tokenRates", () => ({
-  useTokenRatesMap: () => ({}),
+  useTokenRatesMap: () => ({ "from-token": { usd: { price: 25 } } }),
+}))
+
+vi.mock("@ui/state/chaindata", () => ({
+  useToken: (tokenId?: string) =>
+    tokenId === "from-token"
+      ? { id: tokenId, symbol: "DOT", __isKnown: true, decimals: 0, networkId: "polkadot" }
+      : tokenId === "to-token"
+        ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
+        : null,
+  useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
 }))
 
 vi.mock("../swaps.api", () => {
@@ -63,6 +76,15 @@ const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
 ])
 
 const toSupportMap = new Map<string, Set<SupportedSwapProtocol>>([["to-token", new Set(["lifi"])]])
+
+const pair = {
+  from_network_id: "polkadot",
+  to_network_id: "ethereum",
+  from_symbol: "DOT",
+  to_symbol: "USDC",
+  from_token_id: "from-token",
+  to_token_id: "to-token",
+}
 
 describe("useSwapQuoteManager", () => {
   let queryClient: QueryClient
@@ -132,5 +154,57 @@ describe("useSwapQuoteManager", () => {
 
     await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(200n))
     expect(result.current.isQuoteDataCurrent).toBe(true)
+  })
+
+  it("reports quotes once per amount and token pair, not on a refresh", async () => {
+    track.mockClear()
+    getQuoteMock.mockResolvedValueOnce([makeQuote(100n)])
+    getQuoteMock.mockResolvedValueOnce([makeQuote(101n)])
+    getQuoteMock.mockRejectedValueOnce(new Error("Quote failed"))
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let params = {
+      fromTokenId: "from-token",
+      toTokenId: "to-token",
+      fromSupportMap,
+      toSupportMap,
+      fromAmount: 1n,
+      fromAddress: "0x111",
+      toAddress: "0x222",
+      selectedProtocol: null,
+      selectedSubProtocol: undefined,
+      quoteSorting: "bestRate" as const,
+    }
+    const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })
+
+    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(1))
+    await queryClient.refetchQueries({ queryKey: ["swap-quote"] })
+    await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(101n))
+
+    expect(track.mock.calls).toEqual([
+      [
+        "swap_quote_received",
+        {
+          quote_count: 1,
+          protocols: ["lifi"],
+          latency_ms: expect.any(Number),
+          ...pair,
+          usd_bucket: "10-100",
+        },
+      ],
+    ])
+
+    params = { ...params, fromAmount: 2n }
+    rerender()
+
+    await waitFor(() => expect(track).toHaveBeenCalledTimes(2))
+    expect(track).toHaveBeenLastCalledWith("swap_quote_failed", {
+      protocol: "lifi",
+      error_category: "unknown",
+      ...pair,
+      usd_bucket: "10-100",
+    })
   })
 })

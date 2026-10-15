@@ -16,7 +16,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { cn } from "@ui/util/cn"
 import { shortenAddress } from "@ui/util/shortenAddress"
@@ -92,19 +92,15 @@ const Accounts = () => {
       watchedTree.map(treeItemToOption("watched")).filter(filterEmptyFolders),
     ]
   }, [currentFolder, treeName, catalog, accounts, t, balanceTotals])
-
-  const { genericEvent } = useAnalytics()
   const navigate = useNavigate()
 
   const handleManageAccountsClick = useCallback(() => {
-    genericEvent("goto manage accounts", { from: "sidebar" })
     navigate("/settings/accounts")
-  }, [genericEvent, navigate])
+  }, [navigate])
 
   const handleAddAccountClick = useCallback(() => {
-    genericEvent("goto add account", { from: "sidebar" })
     navigate("/accounts/add")
-  }, [genericEvent, navigate])
+  }, [navigate])
 
   return (
     <div className="flex w-full flex-col gap-8 p-8" data-testid="sidebar-account-list">
@@ -187,12 +183,14 @@ const TreeAccounts: FC<{
 
 const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   const [searchParams, updateSearchParams] = useSearchParams()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     searchParams.delete("folder")
     searchParams.set("account", option.address)
     updateSearchParams(searchParams, { replace: true })
-  }, [option.address, searchParams, updateSearchParams])
+    reportAccountSwitched("account", option.accountType)
+  }, [option.address, option.accountType, searchParams, updateSearchParams, reportAccountSwitched])
 
   const isSelected = useMemo(() => {
     return searchParams.get("account") === option.address
@@ -244,12 +242,14 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
 
 const FolderOption = ({ option }: { option: FolderAccountOption }) => {
   const [searchParams, updateSearchParams] = useSearchParams()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     searchParams.delete("account")
     searchParams.set("folder", option.id)
     updateSearchParams(searchParams, { replace: true })
-  }, [option.id, searchParams, updateSearchParams])
+    reportAccountSwitched("folder")
+  }, [option.id, searchParams, updateSearchParams, reportAccountSwitched])
 
   const isSelected = useMemo(() => {
     return searchParams.get("folder") === option.id
@@ -272,12 +272,14 @@ const AllAccountsOption = () => {
   const { portfolioTotal } = usePortfolioAccounts()
 
   const [searchParams, updateSearchParams] = useSearchParams()
+  const reportAccountSwitched = useReportAccountSwitched()
 
   const handleClick = useCallback(() => {
     searchParams.delete("account")
     searchParams.delete("folder")
     updateSearchParams(searchParams, { replace: true })
-  }, [searchParams, updateSearchParams])
+    reportAccountSwitched("all")
+  }, [searchParams, updateSearchParams, reportAccountSwitched])
 
   const isSelected = useMemo(() => {
     return !searchParams.get("account") && !searchParams.get("folder")

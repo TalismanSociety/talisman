@@ -1,3 +1,4 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 
 // these values double as contract function names: SeekStakingModal encodes the transaction with
@@ -11,6 +12,7 @@ export type SeekStakingAction =
   | "cancelWithdrawal"
 
 export type SeekStakingModalArgs = {
+  entry: StakingEntry
   action: SeekStakingAction
   address?: string
 }

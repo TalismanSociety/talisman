@@ -2,8 +2,9 @@ import { BRAVE_BALANCES_URL } from "@common/constants"
 import { appStore } from "@core/domains/app/store.app"
 import { Button } from "@ui/components/Button"
 import { Toggle } from "@ui/components/Toggle"
+import { useAppState } from "@ui/state/app"
 import imgBraveFlag from "@ui/theme/images/brave_flag.gif"
-import { type FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 type BraveWarningModalProps = {
@@ -13,20 +14,12 @@ type BraveWarningModalProps = {
 
 export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
   const { t } = useTranslation()
-  const [hideBraveWarning, setHideBraveWarning] = useState<boolean>()
-  const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean>()
+  const [hideBraveWarning, setHideBraveWarning] = useAppState("hideBraveWarning")
+  const [hasBraveWarningBeenShown] = useAppState("hasBraveWarningBeenShown")
 
   useEffect(() => {
     if (!hasBraveWarningBeenShown) appStore.set({ hasBraveWarningBeenShown: true })
   }, [hasBraveWarningBeenShown])
-
-  useEffect(() => {
-    const sub = appStore.observable.subscribe((settings) => {
-      setHideBraveWarning(settings.hideBraveWarning)
-      setHasBraveWarningBeenShown(settings.hasBraveWarningBeenShown)
-    })
-    return () => sub.unsubscribe()
-  }, [])
 
   const handleReadMoreClick = useCallback(() => {
     window.open(BRAVE_BALANCES_URL, "_blank")
@@ -60,7 +53,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
         <div>{t("Don't prompt me again")}</div>
         <Toggle
           checked={hideBraveWarning}
-          onChange={(e) => appStore.set({ hideBraveWarning: e.target.checked })}
+          onChange={(e) => setHideBraveWarning(e.target.checked)}
         />
       </div>
     </div>

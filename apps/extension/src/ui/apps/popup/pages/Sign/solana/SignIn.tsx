@@ -8,6 +8,7 @@ import { api } from "@ui/api"
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { notify } from "@ui/components/Notifications"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
@@ -22,6 +23,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
+import { rejectSolanaRequest } from "./rejectSolanaRequest"
 
 export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
@@ -73,6 +75,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
           type: "error",
           title: t("Failed to connect"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },
@@ -80,8 +83,8 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   )
 
   const handleReject = useCallback(() => {
-    window.close()
-  }, [])
+    if (signInRequest) rejectSolanaRequest(signInRequest.id)
+  }, [signInRequest])
 
   if (!signInRequest) return null
 
@@ -117,7 +120,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
             {!accounts.length && (
               <NoAccountWarning
                 type={"polkadot"}
-                onIgnoreClick={() => window.close()}
+                onIgnoreClick={handleReject}
                 onAddAccountClick={async () => {
                   await api.dashboardOpen("/accounts/add")
                   window.close()
@@ -173,8 +176,8 @@ const NoAccountWarning = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <Drawer isOpen anchor="bottom" containerId="main">
-      <div className="flex flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
+    <Drawer analyticsId="no_account_warning" isOpen anchor="bottom" containerId="main">
+      <DrawerContent className="flex flex-col gap-8">
         <div className="w-full text-center">
           <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
@@ -192,7 +195,7 @@ const NoAccountWarning = ({
             {t("Yes")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

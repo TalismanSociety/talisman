@@ -36,6 +36,7 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
 
     return balance && token && hasFreeBalance
       ? {
+          entry: "token_details",
           networkId: token.networkId,
           address: balance.address,
           netuid: token.netuid,

@@ -1,6 +1,5 @@
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -20,10 +19,7 @@ import { useNavigate } from "react-router-dom"
 import { ExportAllAccountsModal, useExportAllAccountsModal } from "../ExportAllAccountsModal"
 import { useManageAccounts } from "./ManageAccountsProvider"
 
-export const ManageAccountsToolbar: FC<{
-  analytics: AnalyticsPage
-  className?: string
-}> = ({ className }) => {
+export const ManageAccountsToolbar: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { search, onSearchChange } = useManageAccounts()
 

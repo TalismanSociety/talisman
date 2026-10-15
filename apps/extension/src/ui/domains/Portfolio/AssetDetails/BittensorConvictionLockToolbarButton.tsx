@@ -40,6 +40,7 @@ export const BittensorConvictionLockToolbarButton: FC<{
 
     return balance && token
       ? {
+          entry: "token_details",
           networkId: token.networkId,
           netuid: token.netuid,
           address: balance.address,

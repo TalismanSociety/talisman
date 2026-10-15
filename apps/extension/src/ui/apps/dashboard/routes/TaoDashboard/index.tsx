@@ -1,8 +1,9 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
+import { Routes } from "@ui/components/Routes"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { TaoDashboardNetworkProvider } from "@ui/domains/TaoDashboard/shared/TaoDashboardNetworkProvider"
 import type { FC } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout"
 import { TaoDashboardSubnetPage } from "./TaoDashboardSubnetPage"

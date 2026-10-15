@@ -8,12 +8,15 @@ import { toHex } from "@talismn/scale"
 import { Button, type ButtonProps } from "@ui/components/Button"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
+import { type PayloadLockListener, useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
-import { type FC, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
@@ -32,6 +35,7 @@ const notifyPayloadExpired = (t: (key: string) => string) => {
     type: "error",
     title: t("Transaction expired"),
     subtitle: t("Please try again."),
+    errorCategory: "payload_expired",
   })
 }
 
@@ -42,7 +46,10 @@ type LockedInputs = {
   txMode?: ScaleApiSubmitMode | undefined
 }
 
-const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInputs) => {
+const useLockedInputs = (
+  { payload, shortMetadata, txInfo, txMode }: LockedInputs,
+  onPayloadLockChange?: PayloadLockListener
+) => {
   const memoizedInputs = useMemo(
     () => ({
       payload,
@@ -53,12 +60,18 @@ const useLockedInputs = ({ payload, shortMetadata, txInfo, txMode }: LockedInput
     [payload, shortMetadata, txInfo, txMode]
   )
 
-  const [isLocked, setIsLocked] = useState(false)
-  const [lockedInputs, setLockedInputs] = useState<LockedInputs>(() => memoizedInputs)
+  const [isLocked, setIsLockedState] = useState(false)
+  const lockedInputs = useLockedValue<LockedInputs>(memoizedInputs, isLocked)
 
-  useEffect(() => {
-    if (!isLocked) setLockedInputs(memoizedInputs)
-  }, [isLocked, memoizedInputs])
+  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
+
+  const setIsLocked = useCallback(
+    (locked: boolean) => {
+      setIsLockedState(locked)
+      reportPayloadLock(locked)
+    },
+    [reportPayloadLock]
+  )
 
   return { setIsLocked, lockedInputs }
 }
@@ -74,8 +87,10 @@ type SapiSendButtonProps = {
   className?: string
   color?: ButtonProps["color"]
   onSubmitted: (hash: Hex, innerHash?: Hex) => void
+  onError?: (cause: unknown) => void
   mode?: ScaleApiSubmitMode
   checkPassword?: boolean
+  onPayloadLockChange?: PayloadLockListener
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -86,18 +101,23 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   disabled,
   className,
   onSubmitted,
+  onError,
   mode,
   color,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
-  const { lockedInputs, setIsLocked } = useLockedInputs({
-    payload,
-    shortMetadata,
-    txInfo,
-    txMode: mode,
-  })
+  const { lockedInputs, setIsLocked } = useLockedInputs(
+    {
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode: mode,
+    },
+    onPayloadLockChange
+  )
 
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
 
@@ -119,10 +139,12 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
           title: t("Failed to submit"),
           // biome-ignore lint/suspicious/noExplicitAny: legacy
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+          cause: err,
         })
+        onError?.(err)
       }
     },
-    [onSubmitted, sapi, lockedInputs, t]
+    [onSubmitted, onError, sapi, lockedInputs, t]
   )
 
   return (
@@ -146,18 +168,23 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   disabled,
   className,
   onSubmitted,
+  onError,
   mode,
   color,
+  onPayloadLockChange,
 }) => {
   const { t } = useTranslation()
   const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
-  const { lockedInputs, setIsLocked } = useLockedInputs({
-    payload,
-    shortMetadata,
-    txInfo,
-    txMode: mode,
-  })
+  const { lockedInputs, setIsLocked } = useLockedInputs(
+    {
+      payload,
+      shortMetadata,
+      txInfo,
+      txMode: mode,
+    },
+    onPayloadLockChange
+  )
 
   const account = useAccountByAddress(lockedInputs.payload?.address)
   const { data: sapi } = useScaleApi(lockedInputs.payload?.genesisHash)
@@ -181,16 +208,19 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
           title: t("Failed to submit"),
           // biome-ignore lint/suspicious/noExplicitAny: legacy
           subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+          cause: err,
         })
+        onError?.(err)
       }
     },
-    [lockedInputs, onSubmitted, sapi, t]
+    [lockedInputs, onSubmitted, onError, sapi, t]
   )
 
   if (!account) return null
 
   return (
     <QrSubstrate
+      requestedBy="wallet"
       containerId={containerId ?? "main"}
       disabled={disabled}
       buttonClassName={className}
@@ -212,6 +242,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   className,
   containerId,
   onSubmitted,
+  onError,
   mode,
   color,
   checkPassword,
@@ -244,9 +275,14 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         notifyPayloadExpired(t)
         return
       }
-      const { hash } = await sapi.submit(submitPayload, undefined, submitTxInfo, submitMode)
+      const { hash, innerHash } = await sapi.submit(
+        submitPayload,
+        undefined,
+        submitTxInfo,
+        submitMode
+      )
       setIsSubmitting(false)
-      onSubmitted(hash)
+      onSubmitted(hash, innerHash)
     } catch (err) {
       setIsSubmitting(false)
       log.error("Failed to submit", { submitPayload, err })
@@ -255,9 +291,11 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
         title: t("Failed to submit"),
         // biome-ignore lint/suspicious/noExplicitAny: legacy
         subtitle: (err as any)?.message?.slice(0, 200) ?? t("Unknown error"),
+        cause: err,
       })
+      onError?.(err)
     }
-  }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, t])
+  }, [checkPassword, lockedInputs, payload, txInfo, mode, sapi, onSubmitted, onError, t])
 
   const handleClick = useCallback(() => {
     if (checkPassword) {
@@ -306,14 +344,32 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   )
 }
 
-export const SapiSendButton: FC<SapiSendButtonProps> = ({ payload, disabled, ...rest }) => {
+export const SapiSendButton: FC<SapiSendButtonProps> = ({
+  payload,
+  disabled,
+  onSubmitted,
+  ...rest
+}) => {
   const { t } = useTranslation()
+  const markOverlayCompleted = useMarkOverlayCompleted()
+  const handleSubmitted = useCallback(
+    (...submitted: Parameters<typeof onSubmitted>) => {
+      markOverlayCompleted()
+      onSubmitted(...submitted)
+    },
+    [markOverlayCompleted, onSubmitted]
+  )
 
   // while a payload is rebuilt or withheld, keep the signing flow mounted with the last one:
   // unmounting it drops a Ledger, Vault or password step that is in progress
   const [lastPayload, setLastPayload] = useState(payload)
   if (payload && payload !== lastPayload) setLastPayload(payload)
-  const props = { ...rest, payload: payload ?? lastPayload, disabled: disabled || !payload }
+  const props = {
+    ...rest,
+    onSubmitted: handleSubmitted,
+    payload: payload ?? lastPayload,
+    disabled: disabled || !payload,
+  }
 
   const account = useAccountByAddress(props.payload?.address)
 

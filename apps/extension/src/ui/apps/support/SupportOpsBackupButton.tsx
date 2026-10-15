@@ -19,7 +19,7 @@ export const SupportOpsBackup = () => {
         onClick={open}
       />
 
-      <Modal isOpen={isOpen} onDismiss={close}>
+      <Modal analyticsId="support_backup" isOpen={isOpen} onDismiss={close}>
         <BackupModalDialog onClose={close} />
       </Modal>
     </>
@@ -33,7 +33,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [onClose])
 
   return (
-    <ModalDialog title="Backup" className="w-100" onClose={onClose}>
+    <ModalDialog title="Backup" className="h-auto" onCloseClick={onClose}>
       <div className="flex flex-col gap-10">
         <p className="text-body-secondary leading-paragraph">
           This will save all your Talisman data into a file, which you can use to restore your

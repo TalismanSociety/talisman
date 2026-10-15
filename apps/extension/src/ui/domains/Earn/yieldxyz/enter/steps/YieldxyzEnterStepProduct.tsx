@@ -1,4 +1,4 @@
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { useToken } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -41,7 +41,8 @@ export const YieldxyzEnterStepProduct: FC = () => {
   if (!pickerTokenId) throw new Error("PickerTokenId is not defined")
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Select Yield Opportunity")}
       contentClassName="p-0"
@@ -56,6 +57,6 @@ export const YieldxyzEnterStepProduct: FC = () => {
         }
         disabledReason={disabledReason}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

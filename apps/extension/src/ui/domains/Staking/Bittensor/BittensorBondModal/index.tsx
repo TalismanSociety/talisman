@@ -10,10 +10,10 @@ import { BittensorBondWizardProvider } from "../hooks/useBittensorBondWizard"
 import { BittensorBondModalRouter } from "./Forms"
 
 export const BittensorBondModal = () => {
-  const { isOpen, close } = useBittensorBondModal()
+  const { isOpen, args, openKey, close } = useBittensorBondModal()
 
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+    <Modal analyticsId="bittensor_bond" containerId="main" isOpen={isOpen} onDismiss={close}>
       <div
         id={STAKING_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals & drawers
         className={cn(
@@ -21,11 +21,13 @@ export const BittensorBondModal = () => {
           !IS_POPUP && "rounded border border-grey-850"
         )}
       >
-        <BittensorBondWizardProvider>
-          <Suspense fallback={<SuspenseTracker name="BittensorBondModal" />}>
-            <BittensorBondModalRouter />
-          </Suspense>
-        </BittensorBondWizardProvider>
+        {args && (
+          <BittensorBondWizardProvider key={openKey}>
+            <Suspense fallback={<SuspenseTracker name="BittensorBondModal" />}>
+              <BittensorBondModalRouter />
+            </Suspense>
+          </BittensorBondWizardProvider>
+        )}
       </div>
     </Modal>
   )

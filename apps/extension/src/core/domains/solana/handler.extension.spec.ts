@@ -162,4 +162,15 @@ describe("SolanaExtensionHandler", () => {
     expect(sendTransaction).not.toHaveBeenCalled()
     expect(resolve).not.toHaveBeenCalled()
   })
+
+  test("cancels a request with the error closing its window gives the dapp", async () => {
+    const reject = vi.fn()
+    requestStoreMock.getRequest.mockReturnValue({ reject })
+
+    await expect(
+      handler.handle("id", "pri(solana.sign.cancel)", { id: "sol-sign.1" } as never)
+    ).resolves.toBe(true)
+
+    expect(reject).toHaveBeenCalledWith(new Error("Cancelled"))
+  })
 })

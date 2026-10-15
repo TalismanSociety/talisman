@@ -4,6 +4,7 @@ import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { useToken } from "@ui/state/chaindata"
 import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -60,8 +61,14 @@ export const ForfeitWarningDrawer = ({
   const { tokensToBeReaped } = useSendFunds()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="rounded-t-xl bg-black-tertiary p-12 text-center">
+    <Drawer
+      analyticsId="forfeit_warning"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId="main"
+    >
+      <DrawerContent className="text-center">
         <div>
           <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
@@ -87,7 +94,7 @@ export const ForfeitWarningDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }

@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { isTruthy } from "@talismn/util"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -25,7 +25,7 @@ export const useAssetDetails = (balances: Balances) => {
           tokenId,
           new Balances(balances.find({ tokenId }), hydrate),
         ])
-        .sort(([aTokenId, aBalances], [bTokenId, bBalances]) => {
+        .sort(([, aBalances], [, bBalances]) => {
           const aTotal = aBalances.sum.fiat(currency).total
           const bTotal = bBalances.sum.fiat(currency).total
 
@@ -38,12 +38,6 @@ export const useAssetDetails = (balances: Balances) => {
           const bHasBalance = !!bBalances.each.find((b) => b.transferable.planck > 0n)
           if (aHasBalance && !bHasBalance) return -1
           if (!aHasBalance && bHasBalance) return 1
-
-          // polkadot and kusama should appear first
-          if (aTokenId.toLowerCase() === subNativeTokenId("polkadot")) return -1
-          if (bTokenId.toLowerCase() === subNativeTokenId("polkadot")) return 1
-          if (aTokenId.toLowerCase() === subNativeTokenId("kusama")) return -1
-          if (bTokenId.toLowerCase() === subNativeTokenId("kusama")) return 1
 
           // keep alphabetical sort
           return 0

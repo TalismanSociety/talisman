@@ -1,9 +1,8 @@
 import { log } from "@common/log"
 import type { KeypairCurve } from "@talismn/crypto"
 import { Err, Ok, type Result } from "ts-results"
-
-import { sentry } from "../../config/sentry"
 import { getDerivationPathForCurve } from "../accounts/helpers"
+import { reportError } from "../analytics/errorReporting"
 import { passwordStore } from "../app/store.password"
 import { keyringStore } from "./store"
 
@@ -51,7 +50,7 @@ export const getNextDerivationPathForMnemonicId = async (
     return Err("Reached maximum number of derived accounts")
   } catch (error) {
     log.error("Unable to get next derivation path", error)
-    sentry.captureException(error)
+    reportError(error)
     return Err("Unable to get next derivation path")
   }
 }

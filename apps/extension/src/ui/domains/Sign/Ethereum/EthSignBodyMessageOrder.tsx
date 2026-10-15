@@ -101,7 +101,7 @@ export const EthSignBodyMessageOrder: FC<{
           </span>
         </div>
       </div>
-      <SignAlertMessage type={proceeds.length ? "warning" : "error"}>
+      <SignAlertMessage type={proceeds.length ? "warning" : "error"} errorCategory={null}>
         {proceeds.length
           ? t(
               "This signature lets anyone take the assets you send, in exchange for what you receive, with no further approval from you."

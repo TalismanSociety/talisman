@@ -8,8 +8,10 @@ import { isEqual, keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
   firstValueFrom,
+  isObservable,
   map,
   type Observable,
+  of,
   type ReplaySubject,
   shareReplay,
 } from "rxjs"
@@ -35,7 +37,7 @@ import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
-import type { Chaindata, CustomChaindata } from "../state/schema"
+import type { Chaindata, ChaindataFile, CustomChaindata } from "../state/schema"
 import type { IChaindataProvider } from "./ChaindataProviderInterface"
 
 /**
@@ -61,6 +63,18 @@ export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
   dynamicTokens$?: ReplaySubject<Token[]>
+  /**
+   * Replaces the default chaindata downloaded from the TalismanSociety/chaindata repository.
+   *
+   * The provider subscribes to `chaindata$` only while the provider itself has subscribers.
+   * Pass a replaying observable (a `BehaviorSubject`, or `shareReplay(1)` without `refCount`),
+   * otherwise values emitted while nothing is subscribed are lost. A failed observable is
+   * resubscribed with backoff, so only a cold observable can recover.
+   *
+   * `persistedStorage` seeds the data whichever source is used: clear it when you switch
+   * sources. Only the provider without `chaindata$` falls back to the bundled chaindata.
+   */
+  chaindata$?: Observable<ChaindataFile> | ChaindataFile
 }
 
 export class ChaindataProvider implements IChaindataProvider {
@@ -73,6 +87,7 @@ export class ChaindataProvider implements IChaindataProvider {
     persistedStorage,
     customChaindata$,
     dynamicTokens$,
+    chaindata$,
   }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
@@ -81,7 +96,9 @@ export class ChaindataProvider implements IChaindataProvider {
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
     this.#storage$ = replaySubjectFrom(mergedStorage)
-    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
+    const providedChaindata$ =
+      chaindata$ && (isObservable(chaindata$) ? chaindata$ : of(chaindata$))
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$, providedChaindata$)
 
     this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
 

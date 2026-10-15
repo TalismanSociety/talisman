@@ -108,6 +108,9 @@ const usePositions = () => {
       detailUrl: `/earn/positions/seek/${encodeURIComponent(position.address)}`,
       tokenIds: [config.tokenId],
       searchTerms: ["SEEK", "SEEK Staking", "staking"],
+      subtitle: null,
+      lock: null,
+      rowAction: null,
     }))
   }, [
     apr,
@@ -139,7 +142,10 @@ const usePositions = () => {
 
 const useActionOpener = () => {
   const modal = useSeekStakingModal()
-  return useCallback<EarnActionOpener>(() => modal.open({ action: "stake" }), [modal])
+  return useCallback<EarnActionOpener>(
+    () => modal.open({ entry: "earn", action: "stake" }),
+    [modal]
+  )
 }
 
 export const seekSystem: EarnSystem = {

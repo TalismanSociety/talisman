@@ -1,18 +1,22 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { cn } from "@ui/util/cn"
 import { formatDuration, intervalToDuration } from "date-fns"
-import { useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
@@ -24,23 +28,39 @@ import { EarnDisclaimerDrawer } from "./EarnDisclaimerDrawer"
 export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
-  const { address, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
+  const { address, amountIn, goTo, canCreateAction, createAction, product, canGoBack, goBack } =
     useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountIn: bigint | null
+    message: string
+    category: ErrorCategory
+  } | null>(null)
   const [hideDisclaimer] = useAppState("hideEarnDisclaimer")
   const [hasAckDisclaimer, setHasAckDisclaimer] = useState(hideDisclaimer || false)
   const disclaimerDrawer = useOpenClose()
 
+  if (createActionError && (createActionError.amountIn !== amountIn || !canCreateAction))
+    setCreateActionError(null)
+
   const proceedToReview = useCallback(async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      flows.earn_deposit.failed(err)
+      setCreateActionError({
+        amountIn,
+        message: getErrorMessage(err, t("Unknown error")),
+        category: classifyError(err),
+      })
     } finally {
       setProcessing(false)
     }
-  }, [createAction, goTo])
+  }, [amountIn, createAction, goTo, t])
 
   const handleSubmit = async () => {
     if (!hasAckDisclaimer) {
@@ -53,7 +73,8 @@ export const YieldxyzEnterStepAmount = () => {
   if (!product) return null
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={"Enter Position"}
       onCloseClick={close}
@@ -70,7 +91,7 @@ export const YieldxyzEnterStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <DepositAmountEdit />
+          <DepositAmountEdit createActionError={createActionError} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -138,7 +159,7 @@ export const YieldxyzEnterStepAmount = () => {
         }}
         onCancel={disclaimerDrawer.close}
       />
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -199,9 +220,17 @@ const NetworkDisplay = () => {
   )
 }
 
-const DepositAmountEdit = () => {
-  const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
-    useYieldxyzEnterWizard()
+const DepositAmountEdit: FC<{ createActionError?: InlineError | null }> = ({
+  createActionError,
+}) => {
+  const {
+    tokenIn,
+    amountIn,
+    validationError,
+    validationErrorCategory,
+    onAmountInChanged,
+    setMaxAmountIn,
+  } = useYieldxyzEnterWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
@@ -211,7 +240,8 @@ const DepositAmountEdit = () => {
       value={amountIn}
       onValueChanged={onAmountInChanged}
       onMaxClick={setMaxAmountIn}
-      error={validationError}
+      error={validationError ?? createActionError?.message}
+      errorCategory={validationError ? validationErrorCategory : createActionError?.category}
     />
   )
 }

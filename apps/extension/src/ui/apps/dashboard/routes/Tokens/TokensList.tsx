@@ -1,3 +1,4 @@
+import { tokenToggledOf } from "@common/analytics/networks"
 import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import {
   isTokenCustom,
@@ -9,6 +10,7 @@ import {
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { track } from "@ui/api/track"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -199,6 +201,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
               e.stopPropagation()
               e.preventDefault()
               activeTokensStore.setActive(token.id, e.target.checked)
+              track("token_toggled", tokenToggledOf(token, network, e.target.checked, "settings"))
             }}
           />
           <ContextMenu placement="bottom-end">

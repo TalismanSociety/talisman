@@ -32,6 +32,9 @@ export const getTreeItemsMap = (items: UiTreeItem[]) => {
   )
 }
 
+export const folderIdOf = (items: UiTreeItem[], itemId: string): string | undefined =>
+  items.find((item) => item.type === "folder" && item.tree.some((child) => child.id === itemId))?.id
+
 export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTreePosition) => {
   try {
     const newItems = structuredClone(items)

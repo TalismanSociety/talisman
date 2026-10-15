@@ -25,7 +25,7 @@ export const withSecretKey = async <T>(
       secretKey = await keyringStore.getAccountSecretKey(address, password)
       curve = account.curve
     } catch (error) {
-      await passwordStore.clearPassword()
+      await passwordStore.clearPassword("error")
       throw error
     }
     return Ok(await cb(secretKey, curve))

@@ -1,7 +1,7 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { useOpenCloseStatus } from "@ui/hooks/useOpenCloseStatus"
 import { type FC, type ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,7 +28,12 @@ export const SearchablePickerDialog: FC<SearchablePickerDialogProps> = ({
   children,
 }) => {
   return (
-    <Modal containerId={containerId} isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      analyticsId="searchable_picker"
+      containerId={containerId}
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <SearchablePickerContent
         title={title}
         searchPlaceholder={searchPlaceholder}
@@ -56,7 +61,8 @@ const SearchablePickerContent: FC<{
   }, [status])
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="border-none"
       contentClassName="p-0!"
       title={title}
@@ -74,6 +80,6 @@ const SearchablePickerContent: FC<{
           {children(search)}
         </ScrollContainer>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }

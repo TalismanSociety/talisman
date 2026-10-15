@@ -25,6 +25,7 @@ export const ChaindataFileSchema = z
   })
 
 export type Chaindata = z.infer<typeof ChaindataFileSchema>
+export type ChaindataFile = z.input<typeof ChaindataFileSchema>
 
 export const CustomChaindataSchema = z
   .strictObject({

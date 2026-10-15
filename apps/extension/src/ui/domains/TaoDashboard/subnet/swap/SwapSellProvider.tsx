@@ -1,16 +1,24 @@
+import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
+import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
 import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
 } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import {
+  getSweepableRemainder,
+  getSweepableRemainderError,
+} from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useExistentialDeposit } from "@ui/hooks/useExistentialDeposit"
 import { useBalances } from "@ui/state/balances"
 import { provideContext } from "@ui/util/provideContext"
 import { merge } from "lodash-es"
@@ -95,6 +103,13 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return balances.get(getBalanceId({ address, tokenId: tokenIdOut })) ?? null
   }, [balances, address, tokenIdOut])
 
+  // the balance pool drops zero balances, so an account without free TAO has no record:
+  // read it fresh, falling back to the pool record while the query loads
+  const { data: freshTransferableTao, isError: isErrorTransferableTao } =
+    useGetBittensorTransferableBalance({ networkId, address })
+  const knownTransferableTao = freshTransferableTao ?? balanceTokenOut?.transferable.planck ?? null
+  const existentialDeposit = useExistentialDeposit(tokenIdOut)
+
   // conviction locks constrain the coldkey's TOTAL alpha on the subnet:
   // this position's sellable amount is min(position stake, subnet-wide available)
   const allBalances = useBalances("owned")
@@ -138,15 +153,6 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: null }))
   }, [])
 
-  const {
-    isMevShieldDisabled,
-    isMevShieldFeatureDisabled,
-    withMevShield,
-    setIsMevProtectionEnabled,
-    txMode,
-    onSubmit,
-  } = useSwapSubmit({ netuid, account, direction: "sell", resetValueIn })
-
   const { data: sapi } = useScaleApi(networkId)
 
   const {
@@ -158,6 +164,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     isLoading,
     isError,
     slippage,
+    minTaoBond,
     minAlphaBond,
     minAlphaUnstake,
     swapPrice,
@@ -170,6 +177,24 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     address,
     networkId,
     remarkType: "swap",
+  })
+
+  const {
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled,
+    withMevShield,
+    setIsMevProtectionEnabled,
+    txMode,
+    onSubmit,
+    confirm,
+  } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "sell",
+    resetValueIn,
+    valueIn: state.valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: typeof valueOut === "bigint" ? valueOut : null,
   })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
@@ -210,75 +235,103 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     return feeEstimate + mevShieldFeeEstimate
   }, [feeEstimate, mevShieldFeeEstimate, withMevShield])
 
-  // Bittensor's runtime can pay unstake fees from staked Alpha when free TAO is insufficient,
-  // but only when the Alpha fee mechanism is active on-chain.
-  // This check is in preparation of https://github.com/opentensor/subtensor/pull/2353 and can be removed after release
-  const supportsAlphaFees = useMemo(
-    () => !!sapi?.hasEvent("SubtensorModule", "TransactionFeePaidWithAlpha"),
-    [sapi]
-  )
+  const sweepableRemainderError = useMemo(() => {
+    if (!balanceTokenIn || !tokenIn || !tokenOut) return null
+    if (typeof minAlphaBond !== "bigint" || typeof minTaoBond !== "bigint") return null
+    const remainder = getSweepableRemainder({
+      stake: balanceTokenIn.free.planck,
+      amount: state.valueIn ?? 0n,
+      maxAmount: maxValueIn,
+      minKeep: minAlphaBond,
+      minAmount: minAlphaUnstake ?? 0n,
+    })
+    return (
+      remainder &&
+      getSweepableRemainderError(t, remainder, {
+        minTao: minTaoBond,
+        tao: tokenOut,
+        alpha: tokenIn,
+      })
+    )
+  }, [
+    balanceTokenIn,
+    tokenIn,
+    tokenOut,
+    minAlphaBond,
+    minTaoBond,
+    state.valueIn,
+    maxValueIn,
+    minAlphaUnstake,
+    t,
+  ])
 
-  const inputErrorMessage = useMemo(() => {
+  const inputError = useMemo<InlineError | null>(() => {
     if (!tokenIn || typeof state.valueIn !== "bigint" || !balanceTokenIn) return null
 
     if (state.valueIn > maxValueIn) {
       // the conviction locked stake cannot be unstaked (chain would throw StakeUnavailable)
-      return effectiveLocked > 0n && state.valueIn <= balanceTokenIn.free.planck
-        ? t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
+      if (effectiveLocked > 0n && state.valueIn <= balanceTokenIn.free.planck)
+        return {
+          message: t("Exceeds unlocked stake: {{amount}} {{symbol}} is locked", {
             amount: new BalanceFormatter(effectiveLocked, tokenIn.decimals).tokens,
             symbol: tokenIn.symbol,
-          })
-        : t("Insufficient balance")
+          }),
+          category: "input_invalid",
+        }
+      return { message: t("Insufficient balance"), category: "insufficient_balance" }
     }
 
+    if (knownTransferableTao === null && isErrorTransferableTao)
+      return { message: t("Failed to load TAO balance"), category: "rpc" }
+
+    // the chain only pays fees from staked alpha for direct calls, never inside the batch_all
+    // the wallet sends, so the fee always comes from free TAO
     if (
-      !supportsAlphaFees &&
       typeof combinedFeeEstimate === "bigint" &&
-      balanceTokenOut &&
-      combinedFeeEstimate > balanceTokenOut.transferable.planck
+      typeof knownTransferableTao === "bigint" &&
+      existentialDeposit &&
+      existentialDeposit.planck + combinedFeeEstimate > knownTransferableTao
     )
-      return t("Insufficient TAO to cover fee")
+      return { message: t("Insufficient TAO to cover fee"), category: "insufficient_fee" }
+
+    if (sweepableRemainderError) return sweepableRemainderError
 
     if (typeof minAlphaUnstake === "bigint" && state.valueIn < minAlphaUnstake)
-      return t("Minimum unbond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
-        symbol: tokenIn.symbol,
-      })
-
-    // Leaving a stake below the chain's minimum (NominatorMinRequiredStake) triggers an automatic
-    // unstake of the remainder (clear_small_nomination), which also releases any conviction lock.
-    // This is fine at max (the remainder is the locked amount, which the chain sweeps to fully exit),
-    // but a partial sell landing in that range would unexpectedly close the position: block it.
-    const remaining = balanceTokenIn.free.planck - state.valueIn
-    if (
-      typeof minAlphaBond === "bigint" &&
-      state.valueIn < maxValueIn &&
-      remaining > 0n &&
-      remaining < minAlphaBond
-    )
-      return t("Unstake everything or keep at least {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minAlphaBond, tokenIn.decimals).tokens,
-        symbol: tokenIn.symbol,
-      })
+      return {
+        message: t("Minimum unbond is {{amount}} {{symbol}}", {
+          amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
+          symbol: tokenIn.symbol,
+        }),
+        category: "input_invalid",
+      }
 
     return null
   }, [
-    supportsAlphaFees,
     balanceTokenIn,
-    balanceTokenOut,
+    knownTransferableTao,
+    isErrorTransferableTao,
+    existentialDeposit,
     combinedFeeEstimate,
     maxValueIn,
     effectiveLocked,
-    minAlphaBond,
+    sweepableRemainderError,
     minAlphaUnstake,
     state.valueIn,
     t,
     tokenIn,
   ])
 
+  const inputErrorMessage = inputError?.message ?? null
+  useErrorShown({
+    shown: inputErrorMessage,
+    surface: "field",
+    category: inputError?.category ?? "input_invalid",
+    field: "amount",
+  })
+
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
-  const canSubmit = !!payload && isValid
+  const canSubmit = !!payload && isValid && typeof knownTransferableTao === "bigint"
 
   return {
     netuid,
@@ -318,12 +371,17 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     errorFeeEstimate: errorFeeEstimate || (withMevShield ? errorMevShieldFee : null),
 
     inputErrorMessage,
+    inputErrorFillAmount:
+      sweepableRemainderError && inputError === sweepableRemainderError
+        ? sweepableRemainderError.fillAmount
+        : null,
     canSubmit,
     payload,
     txMetadata,
     txInfo,
     txMode,
     onSubmit,
+    confirm,
 
     onValueChange,
   }

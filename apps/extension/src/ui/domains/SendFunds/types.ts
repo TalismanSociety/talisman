@@ -5,4 +5,5 @@ export type SendFundsTransactionProps = {
   value: string | undefined
   sendMax: boolean
   allowReap: boolean
+  isLocked: boolean
 }

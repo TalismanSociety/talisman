@@ -1,5 +1,7 @@
+import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { useFieldErrorShown } from "@ui/hooks/analytics/errorShown"
 import { cn } from "@ui/util/cn"
-import type { FC, ReactNode } from "react"
+import { type FC, type ReactNode, useRef } from "react"
 
 type FormFieldContainerProps = {
   className?: string
@@ -7,6 +9,8 @@ type FormFieldContainerProps = {
   children: ReactNode
   error?: string | null
   noErrorRow?: boolean
+  field?: string
+  errorCategory?: ErrorCategory
 }
 
 export const FormFieldContainer: FC<FormFieldContainerProps> = ({
@@ -15,9 +19,14 @@ export const FormFieldContainer: FC<FormFieldContainerProps> = ({
   children,
   error,
   noErrorRow,
+  field,
+  errorCategory = "input_invalid",
 }) => {
+  const root = useRef<HTMLDivElement>(null)
+  useFieldErrorShown(noErrorRow ? null : error, root, { field, category: errorCategory })
+
   return (
-    <div className={cn("text-left text-base leading-base", className)}>
+    <div ref={root} className={cn("text-left text-base leading-base", className)}>
       <div className="text-body-secondary">{label}</div>
       <div className="mt-4">{children}</div>
       {!noErrorRow && (

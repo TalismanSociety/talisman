@@ -1,3 +1,4 @@
+import { settingsStore } from "@core/domains/app/store.settings"
 import { ChevronDownIcon, FilterIcon, GlobeIcon, ToolbarSortIcon, XIcon } from "@talismn/icons"
 import {
   ContextMenu,
@@ -155,13 +156,15 @@ const EarnDiscoverFilterButton: FC<{ className?: string }> = ({ className }) => 
   // Auto-clear stale filter selections (only once data is loaded)
   useEffect(() => {
     if (!allOpportunities) return
-    if (typeFilter && !availableTypes.has(typeFilter)) setTypeFilter(null)
-  }, [typeFilter, availableTypes, setTypeFilter, allOpportunities])
+    if (typeFilter && !availableTypes.has(typeFilter))
+      settingsStore.set({ earnDiscoverTypeFilter: null })
+  }, [typeFilter, availableTypes, allOpportunities])
 
   useEffect(() => {
     if (!allOpportunities) return
-    if (providerFilter && !availableProviderIds.has(providerFilter)) setProviderFilter(null)
-  }, [providerFilter, availableProviderIds, setProviderFilter, allOpportunities])
+    if (providerFilter && !availableProviderIds.has(providerFilter))
+      settingsStore.set({ earnDiscoverProviderFilter: null })
+  }, [providerFilter, availableProviderIds, allOpportunities])
 
   const hasActiveFilter = !!typeFilter || !!providerFilter
 

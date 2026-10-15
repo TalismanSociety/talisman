@@ -1,9 +1,9 @@
+import { track } from "@ui/api/track"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
 import { useCombinedSubnetData } from "@ui/domains/Staking/Bittensor/hooks/dTao/useCombinedSubnetData"
 import { cn } from "@ui/util/cn"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import {
@@ -14,6 +14,7 @@ import {
 } from "../../components/SubnetList"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "../../utils/constants"
 
 export const BittensorSubnetSelect = () => {
   const { t } = useTranslation()
@@ -34,6 +35,7 @@ export const BittensorSubnetSelect = () => {
 
   const handleSubmit = useCallback(
     (netuid: number) => {
+      track("staking_subnet_selected", { netuid, is_root: netuid === ROOT_NETUID })
       setNetuid(netuid)
       setStep("form")
     },

@@ -1,6 +1,6 @@
 import { Modal } from "@ui/components/Modal"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import type { FC } from "react"
@@ -31,7 +31,7 @@ export const SwapBuyConfirmModal: FC<{ isOpen: boolean; onClose: () => void }> =
   isOpen,
   onClose,
 }) => (
-  <Modal isOpen={isOpen}>
+  <Modal analyticsId="swap_buy_confirm" isOpen={isOpen}>
     <ModalContent onClose={onClose} />
   </Modal>
 )
@@ -40,7 +40,8 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <PopupSizeModalContainer id={CONTAINER_ID}>
-      <WizardModalDialog
+      <ModalDialog
+        variant="wizard"
         title={t("Confirm Buy")}
         className="size-full border-none"
         onCloseClick={onClose}
@@ -95,7 +96,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
           <SendButton onClose={onClose} />
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </PopupSizeModalContainer>
   )
 }
@@ -210,12 +211,13 @@ const FeeEstimateValue = () => {
 }
 
 const TalismanFeeLabel = () => {
-  const { netuid } = useSwapBuy()
+  const { netuid, confirm } = useSwapBuy()
   return (
     <SwapConfirmTalismanFeeLabel
       netuid={netuid}
       containerId={CONTAINER_ID}
       direction="taoToAlpha"
+      onCloseModal={confirm.close}
     />
   )
 }

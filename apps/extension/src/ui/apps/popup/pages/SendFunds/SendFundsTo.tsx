@@ -1,20 +1,12 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsRecipientPicker } from "@ui/domains/SendFunds/SendFundsRecipientPicker"
 import { useTranslation } from "react-i18next"
 
 import { SendFundsLayout } from "./SendFundsLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Send Funds",
-  featureVersion: 2,
-  page: "To Account Picker",
-}
-
 export const SendFundsTo = () => {
   const { t } = useTranslation()
   return (
-    <SendFundsLayout withBackLink title={t("Send to")} analytics={ANALYTICS_PAGE}>
+    <SendFundsLayout withBackLink title={t("Send to")}>
       <SendFundsRecipientPicker />
     </SendFundsLayout>
   )

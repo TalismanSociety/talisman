@@ -1,5 +1,33 @@
 # @talismn/chaindata-provider
 
+## 2.2.0
+
+### Minor Changes
+
+- 73ef02d: add a chaindata$ option to ChaindataProvider to replace the default chaindata with your own object or observable, export getRemoteChaindata$, DEFAULT_CHAINDATA_URL and the ChaindataFile type, and retry the chaindata download after a failure
+
+### Patch Changes
+
+- d583bf8: generate init data
+
+## 2.1.0
+
+### Minor Changes
+
+- 24d5545: add getBlockExplorerUrl (first block explorer url of a network, or null) and isAccountPlatformCompatibleWithNetwork; @talismn/balances uses it instead of its own copy
+
+### Patch Changes
+
+- 9ff568c: use isAbortError from @talismn/util
+- d779652: generate init data
+- a9ebed5: add package descriptions and update READMEs
+- Updated dependencies [9ff568c]
+- Updated dependencies [a9ebed5]
+- Updated dependencies [5c2938e]
+- Updated dependencies [bf998fe]
+- Updated dependencies [f029165]
+  - @talismn/util@2.1.0
+
 ## 2.0.4
 
 ### Patch Changes

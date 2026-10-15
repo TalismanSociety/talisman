@@ -1,7 +1,10 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
+import { useOverlayAnalytics } from "@ui/hooks/analytics/useOverlayAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -17,7 +20,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
   const { t } = useTranslation()
 
   return (
-    <div className="flex max-h-150 w-full flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
+    <DrawerContent className="flex max-h-150 flex-col gap-12">
       <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-12 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">{t("Risk Assessment")}</div>
@@ -32,7 +35,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAna
           {t("Close")}
         </Button>
       </div>
-    </div>
+    </DrawerContent>
   )
 }
 
@@ -48,7 +51,7 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 
   return (
-    <div className="flex w-full animate-fade-in flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
+    <DrawerContent className="flex animate-fade-in flex-col gap-12">
       <div className="scrollable scrollable-700 grow overflow-y-auto pr-4 text-xs leading-10">
         <div className="flex w-full flex-col gap-8 text-body-secondary leading-paragraph">
           <div className="text-center font-bold text-body text-md">
@@ -74,7 +77,7 @@ const RiskAnalysisPromptAutoRiskScan: FC = () => {
           {t("Yes")}
         </Button>
       </div>
-    </div>
+    </DrawerContent>
   )
 }
 
@@ -85,10 +88,16 @@ const RiskAnalysisCriticalPane: FC<{
   const { t } = useTranslation()
 
   const { isOpen, open, close } = useOpenClose()
+  useOverlayAnalytics({ id: "risk_analysis_critical", isOpen })
 
   useEffect(() => {
     if (riskAnalysis?.validationResult === "Malicious") open()
   }, [open, riskAnalysis?.validationResult])
+
+  const proceed = useCallback(() => {
+    if (riskAnalysis) track("risk_warning_bypassed", { platform: riskAnalysis.platform })
+    close()
+  }, [close, riskAnalysis])
 
   if (riskAnalysis?.disableCriticalPane) return null
 
@@ -119,7 +128,7 @@ const RiskAnalysisCriticalPane: FC<{
         </div>
         <button
           type="button"
-          onClick={close}
+          onClick={proceed}
           className="flex items-center text-base text-brand-orange/80 hover:text-brand-orange"
         >
           <span>{t("Proceed anyway")}</span>
@@ -143,6 +152,7 @@ export const RiskAnalysisDrawers: FC<{
   return (
     <>
       <Drawer
+        analyticsId="risk_analysis_review"
         anchor="bottom"
         containerId={containerId}
         isOpen={riskAnalysis.review.drawer.isOpen}
@@ -152,6 +162,7 @@ export const RiskAnalysisDrawers: FC<{
       </Drawer>
       <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} onReject={onReject} />
       <Drawer
+        analyticsId="risk_analysis_auto_scan_prompt"
         anchor="bottom"
         containerId={containerId}
         isOpen={riskAnalysis.shouldPromptAutoRiskScan}

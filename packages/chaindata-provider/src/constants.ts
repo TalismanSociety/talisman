@@ -21,6 +21,7 @@ const githubChaindataBranch = CHAINDATA_BRANCH
 const githubChaindataDistDir = CHAINDATA_PUB_FOLDER
 
 export const githubChaindataBaseUrl = `${githubCdn}/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
-export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
+const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
+export const DEFAULT_CHAINDATA_URL = `${githubChaindataDistUrl}/chaindata.min.json`
 
 export const githubChaindataTokensAssetsDir = "assets/tokens"

@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@common/EthProviderRpcError"
 import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import {
@@ -614,7 +615,7 @@ export const useEthTransaction = (
   )
 
   const { t } = useTranslation()
-  const { error, errorDetails } = useMemo(() => {
+  const { error, errorDetails, errorCategory } = useMemo(() => {
     const anyError = (errorEip1559Support ??
       nonceError ??
       blockFeeDataError ??
@@ -627,9 +628,10 @@ export const useEthTransaction = (
       return {
         error: userFriendlyError ?? t("Failed to prepare transaction"),
         errorDetails: anyError.message,
+        errorCategory: classifyError(anyError),
       }
 
-    return { error: undefined, errorDetails: undefined }
+    return { error: undefined, errorDetails: undefined, errorCategory: undefined }
   }, [errorEip1559Support, nonceError, blockFeeDataError, l1FeeError, isValidError, t])
 
   const isLoading = useMemo(
@@ -648,6 +650,7 @@ export const useEthTransaction = (
     isValid,
     error,
     errorDetails,
+    errorCategory,
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,

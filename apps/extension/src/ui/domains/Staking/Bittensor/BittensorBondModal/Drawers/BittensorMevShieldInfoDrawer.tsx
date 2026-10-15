@@ -10,7 +10,13 @@ export const MevShieldInfoDrawer: FC<{
 }> = ({ isOpen, onDismiss, containerId }) => {
   const { t } = useTranslation()
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={onDismiss} containerId={containerId}>
+    <Drawer
+      analyticsId="mev_shield_info"
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+      containerId={containerId}
+    >
       <div className="flex w-full flex-col gap-8 overflow-hidden rounded-t bg-black-tertiary p-8 pt-12">
         <div className="text-center font-bold text-md">{t("MEV Shield")}</div>
         <p className="text-sm">

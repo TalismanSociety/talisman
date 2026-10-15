@@ -1,10 +1,13 @@
+import { tokenToggledOf } from "@common/analytics/networks"
 import { activeTokensStore, isTokenActive } from "@core/domains/chaindata/store.activeTokens"
 import type { Token } from "@talismn/chaindata-provider"
-import { useActiveTokensState } from "@ui/state/chaindata"
+import { track } from "@ui/api/track"
+import { useActiveTokensState, useNetworkById } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
 
 export const useActivableToken = (token: Token | undefined) => {
   const activeTokens = useActiveTokensState()
+  const network = useNetworkById(token?.networkId)
 
   const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])
 
@@ -12,8 +15,10 @@ export const useActivableToken = (token: Token | undefined) => {
     async (active: boolean) => {
       if (!token) throw new Error("Token not found")
       await activeTokensStore.setActive(token.id, active)
+      if (active !== isActive)
+        track("token_toggled", tokenToggledOf(token, network, active, "settings"))
     },
-    [token]
+    [token, network, isActive]
   )
 
   const toggleActive = useCallback(async () => {
@@ -26,7 +31,10 @@ export const useActivableToken = (token: Token | undefined) => {
   const resetToTalismanDefault = useCallback(() => {
     if (!token) throw new Error("Token not found")
     activeTokensStore.resetActive(token.id)
-  }, [token])
+    const active = isTokenActive(token, {})
+    if (active !== isActive)
+      track("token_toggled", tokenToggledOf(token, network, active, "settings"))
+  }, [token, network, isActive])
 
   return {
     token,

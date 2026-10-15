@@ -1,6 +1,6 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon } from "@talismn/icons"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -34,7 +34,8 @@ export const SwapConfirm = () => {
     return null
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={t("Confirm")}
       onBackClick={() => setSwapView("form")}
@@ -54,7 +55,7 @@ export const SwapConfirm = () => {
           <AddressRow label={t("Recipient")} address={toAddress} networkId={toToken.networkId} />
         </div>
       </SwapConfirmActions>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 

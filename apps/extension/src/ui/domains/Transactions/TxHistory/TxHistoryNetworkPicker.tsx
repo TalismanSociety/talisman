@@ -35,6 +35,7 @@ export const TxHistoryNetworkPicker: FC<{
 
   return (
     <Modal
+      analyticsId="tx_history_network_picker"
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}

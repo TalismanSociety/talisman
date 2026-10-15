@@ -1,8 +1,10 @@
+import { type RecipientSource, SEND_ENTRIES, type SendEntry } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useTokensMap } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 type SendFundsWizardParams = {
@@ -19,10 +21,19 @@ const BOOL_PROPS = ["allowReap", "sendMax"]
 
 export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
+const entryOf = (value: string | null): SendEntry =>
+  SEND_ENTRIES.find((entry) => entry === value) ?? "unknown"
+
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const allTokensMap = useTokensMap()
+
+  const [entry] = useState(() => entryOf(searchParams.get("entry")))
+  useFlow(flows.send, { entry })
+  const [recipientSource, setRecipientSource] = useState<RecipientSource>(() =>
+    searchParams.has("to") ? "prefilled" : "unknown"
+  )
 
   const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({
@@ -138,6 +149,8 @@ const useSendFundsWizardProvider = () => {
     goto,
     gotoReview,
     gotoProgress,
+    recipientSource,
+    setRecipientSource,
   }
 }
 

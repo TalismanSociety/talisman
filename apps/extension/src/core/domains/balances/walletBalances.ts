@@ -1,11 +1,19 @@
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
-import type { Address, BtcAccountsMeta } from "@talismn/balances"
+import type { Address, BalancesResult, BtcAccountsMeta } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { type Account, isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash-es"
-import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap } from "rxjs"
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  switchMap,
+  tap,
+} from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
@@ -88,6 +96,8 @@ const walletAddressesByTokenId$ = combineLatest({
   }>(isEqual)
 )
 
+export const liveWalletBalances$ = new BehaviorSubject<BalancesResult | null>(null)
+
 export const walletBalances$ = settingsStore.observable.pipe(
   map((settings) => DEBUG && settings.disableBalanceFetching),
   distinctUntilChanged(),
@@ -122,6 +132,10 @@ export const walletBalances$ = settingsStore.observable.pipe(
         },
       })
     )
+  }),
+  tap({
+    next: (result) => liveWalletBalances$.next(result.status === "live" ? result : null),
+    unsubscribe: () => liveWalletBalances$.next(null),
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000)

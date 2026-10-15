@@ -1,6 +1,5 @@
 import { detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import {
@@ -22,8 +21,6 @@ import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDele
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import type { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances } from "@ui/state/balances"
@@ -40,13 +37,6 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Address book contact list",
-}
 
 const SquareButton = forwardRef<
   HTMLButtonElement,
@@ -71,9 +61,9 @@ type ContactItemProps = ExistingContactComponentProps & {
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "address_book",
     undefined,
     undefined,
     undefined,
@@ -87,16 +77,15 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleViewOnExplorer = useCallback(() => {
     viewOnExplorer()
-    genericEvent("open view on explorer", { from: "address book" })
-  }, [genericEvent, viewOnExplorer])
+  }, [viewOnExplorer])
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
+      entry: "address_book",
       networkId: contactChain?.id,
       address: contact.address,
     })
-    genericEvent("open copy address", { from: "address book" })
-  }, [contact.address, contactChain?.id, genericEvent, openCopyAddressModal])
+  }, [contact.address, contactChain?.id, openCopyAddressModal])
 
   const isMultiAddress = useMemo(() => {
     try {
@@ -205,8 +194,6 @@ const Content = () => {
     () => contacts.concat().sort((a, b) => a.name.localeCompare(b.name)),
     [contacts]
   )
-
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <>

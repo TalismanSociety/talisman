@@ -1,9 +1,9 @@
+import type { StakingEntry } from "@common/analytics/staking"
 import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { useSeekStakingModal } from "@ui/domains/Earn/seek/useSeekStakingModal"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state/accounts"
 import { useBalances } from "@ui/state/balances"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
@@ -16,8 +16,13 @@ import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStat
 import { useGetSeekStaked } from "../Seek/hooks/useGetSeekStaked"
 import { useUnbondModal } from "./useUnbondModal"
 
-export const useUnbondButton = ({ balances }: { balances: Balances | null | undefined }) => {
-  const { genericEvent } = useAnalytics()
+export const useUnbondButton = ({
+  entry,
+  balances,
+}: {
+  entry: StakingEntry
+  balances: Balances | null | undefined
+}) => {
   const ownedAccounts = useAccounts("owned")
 
   const remoteConfig = useRemoteConfig()
@@ -79,19 +84,15 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
       if (!bestUnbondableBalance) return
       e.stopPropagation()
 
-      genericEvent("open inline unstaking modal", {
-        tokenId: bestUnbondableBalance.tokenId,
-        from: "portfolio",
-      })
-
       switch (bestUnbondableBalance.type) {
         case "bittensor": {
           const { address, networkId, hotkey, netuid } = bestUnbondableBalance
           // if multiple positions for this netuid, specify only the netuid to force the position picker to display
           const args: BittensorStakingWizardOpenOptions =
             unbondableBalances.length > 1
-              ? { stakeDirection: "unbond", networkId, netuid }
+              ? { entry, stakeDirection: "unbond", networkId, netuid }
               : {
+                  entry,
                   stakeDirection: "unbond",
                   address,
                   networkId,
@@ -103,6 +104,7 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
         }
         case "seek": {
           openSeekStakingModal({
+            entry,
             action: "requestWithdrawal",
             address: bestUnbondableBalance.address,
           })
@@ -110,14 +112,14 @@ export const useUnbondButton = ({ balances }: { balances: Balances | null | unde
         }
         case "nominationPool": {
           const { address, tokenId, poolId } = bestUnbondableBalance
-          openUnbondModal({ address, tokenId, poolId })
+          openUnbondModal({ entry, address, tokenId, poolId })
           break
         }
       }
     },
     [
+      entry,
       bestUnbondableBalance,
-      genericEvent,
       openBittensorModal,
       openUnbondModal,
       openSeekStakingModal,

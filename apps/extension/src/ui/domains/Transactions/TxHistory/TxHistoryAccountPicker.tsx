@@ -32,6 +32,7 @@ export const TxHistoryAccountPicker: FC<{
 
   return (
     <Modal
+      analyticsId="tx_history_account_picker"
       containerId="main"
       isOpen={isOpen}
       onDismiss={onDismiss}

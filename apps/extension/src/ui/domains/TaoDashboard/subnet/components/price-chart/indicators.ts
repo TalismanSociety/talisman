@@ -86,20 +86,3 @@ export function calculateRSI(data: number[], period: number): (number | null)[] 
 
   return result
 }
-
-export function getSentimentColor(sentiment: string): string {
-  switch (sentiment) {
-    case "very_bullish":
-      return "#16a34a"
-    case "bullish":
-      return "#22c55e"
-    case "neutral":
-      return "#a1a1aa"
-    case "bearish":
-      return "#f87171"
-    case "very_bearish":
-      return "#dc2626"
-    default:
-      return "#a1a1aa"
-  }
-}

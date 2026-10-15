@@ -9,13 +9,16 @@ import {
 import type { BondOption as BondOptionType } from "@ui/domains/Staking/Bittensor/hooks/types"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { trackValidatorSelected } from "@ui/domains/Staking/Bittensor/utils/trackValidatorSelected"
 import {
   sortValidatorOptions,
   type ValidatorSortValue,
 } from "@ui/domains/Staking/Bittensor/utils/validatorSorting"
+import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import {
   type FC,
+  useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
@@ -65,6 +68,22 @@ export const BittensorValidatorPicker: FC<{
   }, [sortedValidators, search])
 
   const taoTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
+
+  const remoteConfig = useRemoteConfig()
+  const handleSelect = useCallback(
+    (selected: string) => {
+      trackValidatorSelected({
+        hotkey: selected,
+        validators: displayedValidators,
+        netuid,
+        defaultHotkey: remoteConfig.bittensor.defaultValidatorsBySubnet[netuid],
+        sort: sortMethod,
+        searched: !!search,
+      })
+      onSelect(selected)
+    },
+    [displayedValidators, netuid, onSelect, remoteConfig, search, sortMethod]
+  )
 
   const [, startTransition] = useTransition()
 
@@ -129,7 +148,7 @@ export const BittensorValidatorPicker: FC<{
               isLoading={isLoading}
               showBasketHoldings={isRoot}
               containerId={containerId}
-              onSelect={onSelect}
+              onSelect={handleSelect}
               onClose={onClose}
             />
           )}

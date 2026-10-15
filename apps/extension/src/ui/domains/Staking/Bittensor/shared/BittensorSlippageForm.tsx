@@ -1,5 +1,7 @@
+import { toSlippagePercent } from "@common/analytics/schema"
 import { log } from "@common/log"
 import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { PillButton } from "@ui/components/PillButton"
@@ -7,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   SUBNET_SLIPPAGE_SCHEMA,
   useBittensorSubnetSlippage,
@@ -22,15 +23,20 @@ export const BittensorSlippageForm: FC<{
   netuid: number | null
   onClose: () => void
   autoFocus?: boolean
-  inputContainerClassName?: string
-}> = ({ netuid, onClose, autoFocus, inputContainerClassName }) => {
+}> = ({ netuid, onClose, autoFocus }) => {
   const [slippage, setSlippage] = useBittensorSubnetSlippage(netuid)
   const [slippageEdit, setSlippageEdit] = useState<string>(String(slippage))
   const { t } = useTranslation()
 
   const handleSubmit = useCallback(() => {
     try {
-      setSlippage(Number(slippageEdit))
+      const slippagePercent = Number(slippageEdit)
+      setSlippage(slippagePercent)
+      track("staking_slippage_changed", {
+        slippage_percent: toSlippagePercent(slippagePercent),
+        preset: false,
+        is_default: slippagePercent === DEFAULT_USER_MAX_SLIPPAGE,
+      })
       onClose()
     } catch (err) {
       log.error("Invalid slippage input:", err)
@@ -39,6 +45,11 @@ export const BittensorSlippageForm: FC<{
 
   const handleReset = useCallback(() => {
     setSlippage(DEFAULT_USER_MAX_SLIPPAGE)
+    track("staking_slippage_changed", {
+      slippage_percent: DEFAULT_USER_MAX_SLIPPAGE,
+      preset: true,
+      is_default: true,
+    })
     setSlippageEdit(String(DEFAULT_USER_MAX_SLIPPAGE))
   }, [setSlippage])
 
@@ -83,7 +94,7 @@ export const BittensorSlippageForm: FC<{
       <FormFieldInputText
         ref={refInput}
         small
-        containerProps={{ className: cn("px-6 text-right", inputContainerClassName) }}
+        containerProps={{ className: "px-6 text-right" }}
         after={
           <div className="flex items-center gap-4">
             <div>%</div>

@@ -19,8 +19,6 @@ import { lineAt, listSourceFiles, REPO_ROOT } from "./listSourceFiles"
 const UI_DIR = join(REPO_ROOT, "apps/extension/src/ui")
 
 const ALLOWED: Record<string, string> = {
-  "apps/extension/src/ui/domains/SendFunds/useSendFundsTransactionDot.ts":
-    "own 60 s rebuild interval, migration pending",
   "apps/extension/src/ui/domains/TaoDashboard/subnet/swap/useMevShieldFeeEstimate.ts":
     "payload is only used for a fee estimate, never signed",
 }

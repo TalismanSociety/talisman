@@ -73,6 +73,7 @@ export const BondAccountPicker = ({
 
   return (
     <Modal
+      analyticsId="bond_account_picker"
       containerId={containerId}
       isOpen={isOpen}
       onDismiss={onBackClick}

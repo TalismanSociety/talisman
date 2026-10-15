@@ -9,6 +9,7 @@ import type {
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -177,7 +178,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   )
 
   return (
-    <div className="flex flex-col gap-12 rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm">
+    <DrawerContent className="flex flex-col gap-12 text-body-secondary text-sm">
       <h3 className="mb-0 text-center font-bold text-base text-body">{t("Fee Options")}</h3>
       <div>
         <Trans t={t}>
@@ -255,6 +256,6 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </DrawerContent>
   )
 }

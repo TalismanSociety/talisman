@@ -7,9 +7,11 @@ import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { useSubstrateDryRun } from "./hooks/useSubstrateDryRun"
 import { useTip } from "./hooks/useTip"
 
@@ -23,8 +25,8 @@ export const useSendFundsTransactionDot = ({
   value,
   sendMax,
   allowReap,
+  isLocked,
 }: SendFundsTransactionProps) => {
-  const [isLocked, setIsLocked] = useState(false)
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId, "polkadot")
   const balance = useBalance(from as string, tokenId as string)
@@ -44,13 +46,11 @@ export const useSendFundsTransactionDot = ({
     value,
     method: sendMax ? "all" : allowReap ? "allow-death" : "keep-alive",
     tip: qTip.data ?? "0",
-    isLocked,
   })
 
   const qEstimateFee = useEstimateFee({
     sapi: qSapi?.data,
     payload: qPayload.data?.payload,
-    isLocked,
   })
 
   const qDryRun = useSubstrateDryRun(qPayload.data?.payload)
@@ -60,7 +60,7 @@ export const useSendFundsTransactionDot = ({
     if (qDryRun.error) log.error("Dry run error", qDryRun.error)
   }, [qDryRun.data, qDryRun.error])
 
-  const maxAmount = useMemo(() => {
+  const liveMaxAmount = useMemo(() => {
     if (!balance || !isTokenDot(token) || qTip.isLoading) return null
 
     const tipPlanck = tipToken?.id === token.id ? BigInt(qTip.data ?? "0") : 0n
@@ -78,10 +78,13 @@ export const useSendFundsTransactionDot = ({
     }
   }, [balance, qEstimateFee.data, qTip, tipToken?.id, token])
 
-  const estimatedFee = useMemo(
+  const maxAmount = useLockedValue(liveMaxAmount, isLocked)
+
+  const liveEstimatedFee = useMemo(
     () => (qEstimateFee.data ? qEstimateFee.data.partialFee.toString() : null),
     [qEstimateFee.data]
   )
+  const estimatedFee = useLockedValue(liveEstimatedFee, isLocked)
 
   const [isLoading, isRefetching, error] = useMemo(() => {
     const queries = [qSapi, qTip, qPayload, qEstimateFee, qDryRun]
@@ -115,8 +118,6 @@ export const useSendFundsTransactionDot = ({
     isLoadingMetadata: qSapi.isLoading,
     isLoadingFee: qEstimateFee.isLoading,
     isLoadingDryRun: qDryRun.isLoading,
-
-    setIsLocked,
   }
 }
 
@@ -129,7 +130,6 @@ const usePayload = ({
   value = "0", // default to "0" to force fee estimation
   method,
   tip,
-  isLocked,
 }: {
   sapi: ScaleApi | null | undefined
   token: Token | null | undefined
@@ -139,9 +139,9 @@ const usePayload = ({
   value: string | undefined
   method: BalanceTransferType
   tip: string | undefined
-  isLocked: boolean
 }) => {
-  return useQuery({
+  return useSignerPayloadQuery({
+    sapi,
     queryKey: ["callData", token?.id, network?.id, from, to, value, sapi?.id, method, tip],
     queryFn: async () => {
       if (!token?.networkId || network?.platform !== "polkadot" || !from || !to || !sapi || !method)
@@ -170,22 +170,15 @@ const usePayload = ({
         tip: tip?.length ? BigInt(tip) : 0n,
       })
     },
-    // the payload embeds a mortality era: rebuild it periodically or the transaction
-    // becomes invalid once the era window (~6 min) elapses
-    refetchInterval: 60_000,
-    staleTime: 0,
-    enabled: !isLocked,
   })
 }
 
 const useEstimateFee = ({
   sapi,
   payload,
-  isLocked,
 }: {
   sapi: ScaleApi | null | undefined
   payload: SignerPayloadJSON | undefined
-  isLocked: boolean
 }) => {
   return useQuery({
     queryKey: ["estimateFee", sapi?.id, payload],
@@ -197,6 +190,5 @@ const useEstimateFee = ({
       return { partialFee: fee.toString(), unsigned: payload }
     },
     refetchInterval: false,
-    enabled: !isLocked,
   })
 }

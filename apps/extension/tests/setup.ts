@@ -101,6 +101,7 @@ const localStorage = createStorageArea()
 
 const storage = {
   local: localStorage,
+  session: createStorageArea(),
   onChanged: {
     addListener: vi.fn(
       (

@@ -12,7 +12,7 @@ async function generateRemoteConfigInitData() {
 
   if (!response.ok) throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
 
-  const config = await response.json()
+  const { postHogUrl: _keepOutOfFirefoxBuild, ...config } = await response.json()
 
   console.log(`Writing default config to ${OUTPUT_PATH}`)
   writeFileSync(OUTPUT_PATH, JSON.stringify(config, null, 2))

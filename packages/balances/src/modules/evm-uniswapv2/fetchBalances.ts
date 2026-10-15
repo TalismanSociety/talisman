@@ -2,7 +2,6 @@ import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { keyBy, uniq } from "lodash-es"
 import { getContract, type PublicClient } from "viem"
-import BigNumber from "../../configureBigNumber"
 
 import type { ExtraAmount } from "../../types"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
@@ -121,7 +120,8 @@ const fetchPoolBalances = async (
         amount,
       })
 
-      const ratio = BigNumber(String(balance)).div(totalSupply === 0n ? "1" : String(totalSupply))
+      const holding = (reserve: bigint) =>
+        totalSupply === 0n ? 0n : (balance * reserve) / totalSupply
 
       acc.success.push({
         address,
@@ -134,8 +134,8 @@ const fetchPoolBalances = async (
           extraWithLabel("totalSupply", String(totalSupply)),
           extraWithLabel("reserve0", String(reserve0)),
           extraWithLabel("reserve1", String(reserve1)),
-          extraWithLabel("holding0", ratio.times(String(reserve0)).toString(10)),
-          extraWithLabel("holding1", ratio.times(String(reserve1)).toString(10)),
+          extraWithLabel("holding0", String(holding(reserve0))),
+          extraWithLabel("holding1", String(holding(reserve1))),
         ],
       })
 

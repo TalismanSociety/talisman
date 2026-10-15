@@ -9,10 +9,9 @@ import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
-import { type FC, Suspense, useCallback, useEffect, useMemo } from "react"
+import { type FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
 
@@ -39,16 +38,6 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   )
 }
 
-const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
-  const { popupOpenEvent } = useAnalytics()
-
-  useEffect(() => {
-    popupOpenEvent(name)
-  }, [name, popupOpenEvent])
-
-  return null
-}
-
 const MainContent: FC = () => {
   const { networks } = usePortfolioGlobalData()
   const { selectedAccount: account } = usePortfolioNavigation()
@@ -72,20 +61,8 @@ const MainContent: FC = () => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  if (matchTokens)
-    return (
-      <>
-        <PopupAssetsTable />
-        <PopupAnalyticsEvent name="portfolio assets" />
-      </>
-    )
-  if (matchNfts)
-    return (
-      <>
-        <PopupNfts />
-        <PopupAnalyticsEvent name="portfolio NFTs" />
-      </>
-    )
+  if (matchTokens) return <PopupAssetsTable />
+  if (matchNfts) return <PopupNfts />
 
   return null
 }

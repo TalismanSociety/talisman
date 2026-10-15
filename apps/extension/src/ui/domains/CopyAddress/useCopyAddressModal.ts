@@ -1,12 +1,29 @@
+import { addressFormatOf, copiedNetworkId, type ReceiveEntry } from "@common/analytics/funds"
+import type { Network } from "@talismn/chaindata-provider"
 import { detectAddressEncoding, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
+import { track } from "@ui/api/track"
 import { createGlobalOpenClose } from "@ui/hooks/createGlobalOpenClose"
 import { useNetworksMapById } from "@ui/state/chaindata"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback } from "react"
 
-import type { CopyAddressWizardInputs } from "./types"
+import type { CopyAddressOpenInputs } from "./types"
 
-const [useCopyAddressOpenClose] = createGlobalOpenClose<CopyAddressWizardInputs>()
+const [useCopyAddressOpenClose] = createGlobalOpenClose<CopyAddressOpenInputs>()
+
+const copyShortcut = async (
+  entry: ReceiveEntry,
+  address: string,
+  network: Network | null | undefined,
+  onQrClick: (() => void) | undefined
+) => {
+  if (await copyAddress(address, onQrClick))
+    track("address_copied", {
+      entry,
+      network_id: copiedNetworkId(network),
+      address_format: addressFormatOf(address),
+    })
+}
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen, args } = useCopyAddressOpenClose()
@@ -14,10 +31,11 @@ export const useCopyAddressModal = () => {
   const inputs = args ?? {}
 
   const open = useCallback(
-    (opts: CopyAddressWizardInputs = {}) => {
+    (opts: CopyAddressOpenInputs) => {
       // skip wizard if we have all information we need, unless qr is explicitely requested
-      if (opts?.address && !opts.qr) {
-        const onQrClick = opts && opts.qr !== false ? () => open({ ...opts, qr: true }) : undefined
+      if (opts.address && !opts.qr) {
+        const onQrClick =
+          opts.qr !== false ? () => open({ ...opts, entry: "copy_toast", qr: true }) : undefined
 
         if (!opts.address) return
 
@@ -29,14 +47,19 @@ export const useCopyAddressModal = () => {
           case "ss58": {
             // `chainId === null` is valid and means we want to display the substrate (generic) format
             if (opts.networkId === null || chain) {
-              copyAddress(encodeAnyAddress(opts.address, { ss58Format: chain?.prefix }), onQrClick)
+              copyShortcut(
+                opts.entry,
+                encodeAnyAddress(opts.address, { ss58Format: chain?.prefix }),
+                chain,
+                onQrClick
+              )
               return
             }
             break
           }
           case "ethereum":
           case "base58solana": {
-            copyAddress(normalizeAddress(opts.address), onQrClick)
+            copyShortcut(opts.entry, normalizeAddress(opts.address), null, onQrClick)
             return
           }
         }

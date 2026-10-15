@@ -1,8 +1,9 @@
+import type { RecipientSource } from "@common/analytics/funds"
 import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { isAccountOwned } from "@core/domains/keyring/exports"
+import type { Account, AccountType } from "@core/domains/keyring/exports"
 import { parseBip21Uri } from "@talismn/bitcoin"
 import {
   getNetworkGenesisHash,
@@ -19,10 +20,18 @@ import {
   isBitcoinAddress,
   isSs58Address,
 } from "@talismn/crypto"
-import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
+import {
+  EyeIcon,
+  LoaderIcon,
+  SignetIcon,
+  TalismanHandIcon,
+  UserIcon,
+  XOctagonIcon,
+} from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
@@ -35,6 +44,22 @@ import { Trans, useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"
+
+type RecipientGroup = Extract<
+  RecipientSource,
+  "own_account" | "signet_vault" | "watched_account" | "contact"
+>
+
+const RECIPIENT_GROUP_BY_ACCOUNT_TYPE: Record<AccountType, RecipientGroup> = {
+  keypair: "own_account",
+  "ledger-ethereum": "own_account",
+  "ledger-polkadot": "own_account",
+  "ledger-solana": "own_account",
+  "polkadot-vault": "own_account",
+  signet: "signet_vault",
+  "watch-only": "watched_account",
+  contact: "contact",
+}
 
 const AddressFormatError = ({ chain }: { chain?: Network }) => {
   const { t } = useTranslation()
@@ -78,8 +103,14 @@ const UnknownAddressDrawer = ({
   }, [close, onProceed, address])
 
   return (
-    <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
-      <div className="flex max-w-105 flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
+    <Drawer
+      analyticsId="unknown_address"
+      containerId="main"
+      isOpen={isOpen}
+      anchor="bottom"
+      onDismiss={close}
+    >
+      <DrawerContent className="flex max-w-105 flex-col items-center gap-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="px-10 font-bold text-white">
             {t("Sending to the wrong network will result in a loss of funds")}
@@ -103,14 +134,14 @@ const UnknownAddressDrawer = ({
             {t("Proceed")}
           </Button>
         </div>
-      </div>
+      </DrawerContent>
     </Drawer>
   )
 }
 
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation()
-  const { from, to, set, tokenId } = useSendFundsWizard()
+  const { from, to, set, tokenId, setRecipientSource } = useSendFundsWizard()
   const { setRecipientWarning } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
@@ -142,13 +173,17 @@ export const SendFundsRecipientPicker = () => {
     )
   }, [compatibleRecipients, search])
 
-  // group results by category
-  const [ownedAccounts, watchedAccounts, contacts] = useMemo(() => {
-    return [
-      matchingAccounts.filter(isAccountOwned),
-      matchingAccounts.filter((a) => a.type === "watch-only"),
-      matchingAccounts.filter((a) => a.type === "contact"),
-    ]
+  const groups = useMemo(() => {
+    const groups: Record<RecipientGroup, Account[]> = {
+      own_account: [],
+      signet_vault: [],
+      watched_account: [],
+      contact: [],
+    }
+    for (const account of matchingAccounts) {
+      groups[RECIPIENT_GROUP_BY_ACCOUNT_TYPE[account.type]].push(account)
+    }
+    return groups
   }, [matchingAccounts])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
@@ -208,9 +243,19 @@ export const SendFundsRecipientPicker = () => {
     [set, setRecipientWarning]
   )
 
+  const selectFrom = useCallback(
+    (source: RecipientSource) => (address: string) => {
+      setRecipientSource(source)
+      handleSelect(address)
+    },
+    [handleSelect, setRecipientSource]
+  )
+  const newAddressSource = newAddress?.name ? "name_service" : "typed"
+
   const [unknownAddress, setUnknownAddress] = useState<string>()
   const handleSelectUnknownAddress = useCallback(
     (address: string) => {
+      setRecipientSource(newAddressSource)
       switch (getAccountPlatformFromAddress(address)) {
         case "polkadot": {
           setUnknownAddress(address)
@@ -223,12 +268,14 @@ export const SendFundsRecipientPicker = () => {
         }
       }
     },
-    [handleSelect, open]
+    [handleSelect, newAddressSource, open, setRecipientSource]
   )
 
   const handleSubmitSearch = useCallback(() => {
-    if (newAddress && !newAddress.ss58FormatError) set("to", newAddress.address, true)
-  }, [newAddress, set])
+    if (!newAddress || newAddress.ss58FormatError) return
+    setRecipientSource(newAddressSource)
+    set("to", newAddress.address, true)
+  }, [newAddress, newAddressSource, set, setRecipientSource])
 
   // bitcoin payment URIs (BIP21) fill in both the recipient and, if present, the amount
   const lastBip21Ref = useRef<string | null>(null)
@@ -296,10 +343,10 @@ export const SendFundsRecipientPicker = () => {
             )}
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={contacts}
+              accounts={groups.contact}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("contact")}
               header={
                 <>
                   <UserIcon className="mr-2 inline align-text-top" />
@@ -309,10 +356,10 @@ export const SendFundsRecipientPicker = () => {
             />
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={ownedAccounts}
+              accounts={groups.own_account}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("own_account")}
               header={
                 <>
                   <TalismanHandIcon className="mr-2 inline-block align-text-top" />
@@ -324,10 +371,25 @@ export const SendFundsRecipientPicker = () => {
             />
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={watchedAccounts}
+              accounts={groups.signet_vault}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
-              onSelect={handleSelect}
+              onSelect={selectFrom("signet_vault")}
+              header={
+                <>
+                  <SignetIcon className="mr-2 inline-block align-text-top" />
+                  {t("Signet Vaults")}
+                </>
+              }
+              showBalances
+              tokenId={tokenId}
+            />
+            <SendFundsAccountsList
+              allowZeroBalance
+              accounts={groups.watched_account}
+              genesisHash={getNetworkGenesisHash(network)}
+              selected={to}
+              onSelect={selectFrom("watched_account")}
               header={
                 <>
                   <EyeIcon className="mr-2 inline-block align-text-top" />

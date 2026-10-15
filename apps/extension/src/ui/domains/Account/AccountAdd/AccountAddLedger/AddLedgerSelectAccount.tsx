@@ -9,6 +9,7 @@ import {
   LedgerEthereumAccountPicker,
   LedgerSolanaAccountPicker,
 } from "@ui/domains/Account/LedgerAccountPicker"
+import { flows } from "@ui/hooks/analytics/flows"
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { toPairs } from "lodash-es"
@@ -133,6 +134,7 @@ export const AddLedgerSelectAccount = () => {
 
   const submit = useCallback(
     async ({ accounts }: FormData) => {
+      flows.add_account.submitted()
       const notificationId = notify(
         {
           type: "processing",
@@ -152,12 +154,15 @@ export const AddLedgerSelectAccount = () => {
           title: t("Account connected", { count: accounts.length }),
           subtitle: null,
         })
+        flows.add_account.completed()
         onSuccess(addresses[0])
       } catch (err) {
+        flows.add_account.failed(err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Connecting account", { count: accounts.length }),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

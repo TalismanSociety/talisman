@@ -101,8 +101,13 @@ test("Transfer Assets", async ({
       await expect(result).toBeVisible({ timeout: 30000 })
       await result.first().click()
       await popup.getByPlaceholder("Enter Address").fill(data.sendTo)
-      await popup.keyboard.press("Enter")
-      await popup.getByPlaceholder("0").fill(data.amount)
+      // the picker reads the search through a deferred value: Enter is a no-op until it catches up
+      const amountInput = popup.getByPlaceholder("0")
+      await expect(async () => {
+        await popup.keyboard.press("Enter")
+        await expect(amountInput).toBeVisible({ timeout: 2000 })
+      }).toPass({ timeout: 15000 })
+      await amountInput.fill(data.amount)
       await expect(popup.getByTestId("component-review-button")).toBeEnabled({ timeout: 10000 })
       await popup.getByTestId("component-review-button").click()
 

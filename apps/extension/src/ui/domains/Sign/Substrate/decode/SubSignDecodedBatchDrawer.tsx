@@ -29,6 +29,7 @@ export const SubSignDecodedBatchDrawer: FC<{ sapi: ScaleApi; payload: SignerPayl
 
   return (
     <Drawer
+      analyticsId="sub_sign_decoded_batch"
       anchor="right"
       isOpen={isOpen && !!currentCall}
       containerId="main"

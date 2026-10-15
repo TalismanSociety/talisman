@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 1.1.1
+
+### Patch Changes
+
+- a9ebed5: add package descriptions and update READMEs
+
 ## 1.1.0
 
 ### Minor Changes

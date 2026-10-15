@@ -118,8 +118,8 @@ export const AuthorisedSite: FC<{
           ))}
         </div>
       </Accordion>
-      <Modal isOpen={showForget} onDismiss={hideForget}>
-        <ModalDialog title={t("Forget Site")} onClose={hideForget}>
+      <Modal analyticsId="authorised_site_forget" isOpen={showForget} onDismiss={hideForget}>
+        <ModalDialog className="h-auto" title={t("Forget Site")} onCloseClick={hideForget}>
           <ConfirmForgetDialog
             siteLabel={origin ?? id}
             onConfirm={confirmForget}

@@ -5,6 +5,7 @@ import { Checkbox } from "@ui/components/Checkbox"
 import { notify } from "@ui/components/Notifications"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useMnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useMnemonic } from "@ui/state/mnemonics"
 import { type ChangeEventHandler, type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,19 +22,28 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
 
   const handleConfirmToggle: ChangeEventHandler<HTMLInputElement> = useCallback(
     async (e) => {
+      const confirmed = e.target.checked
       try {
         if (!mnemonicInfo) return
-        await api.mnemonicConfirm(mnemonicInfo.id, e.target.checked)
+        await api.mnemonicConfirm(mnemonicInfo.id, confirmed)
+        if (confirmed) flows.recovery_phrase_backup.submitted()
       } catch (err) {
+        flows.recovery_phrase_backup.failed(err)
         notify({
           type: "error",
           title: t("Failed to change status"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },
     [mnemonicInfo, t]
   )
+
+  const handleSkip = useCallback(() => {
+    if (mnemonicInfo?.confirmed) flows.recovery_phrase_backup.completed({ verified: false })
+    close()
+  }, [mnemonicInfo?.confirmed, close])
 
   const handleMnemonicReveal = useCallback(() => {
     setCanConfirm(true)
@@ -66,7 +76,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
       </div>
       <button
         className="flex cursor-pointer gap-5 self-center font-bold text-grey-300 hover:text-body"
-        onClick={close}
+        onClick={handleSkip}
         type="button"
       >
         {t("Skip Verification")}

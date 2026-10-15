@@ -10,6 +10,7 @@ import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
 import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
+import { getStorageValues } from "./helpers/getStorageValues"
 import { hasConstant } from "./helpers/hasConstant"
 import { hasEvent } from "./helpers/hasEvent"
 import { isApiAvailable } from "./helpers/isApiAvailable"
@@ -70,6 +71,9 @@ export const getScaleApi = (
     getStorage: <T>(pallet: string, entry: string, keys: unknown[], at?: string) =>
       getStorageValue<T>(chain, pallet, entry, keys, at),
 
+    getStorageValues: <T>(pallet: string, entry: string, keysList: unknown[][], at?: string) =>
+      getStorageValues<T>(chain, pallet, entry, keysList, at),
+
     getDecodedCall: (pallet: string, method: string, args: unknown) =>
       getDecodedCall(pallet, method, args),
 
@@ -89,8 +93,8 @@ export const getScaleApi = (
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload),
 
-    getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[]) =>
-      getRuntimeCallResult<T>(chain, apiName, method, args),
+    getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[], at?: string) =>
+      getRuntimeCallResult<T>(chain, apiName, method, args, at),
 
     submit: (
       payload: SignerPayloadJSON,

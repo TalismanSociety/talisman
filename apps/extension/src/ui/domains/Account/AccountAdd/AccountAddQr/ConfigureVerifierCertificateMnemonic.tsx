@@ -9,7 +9,7 @@ import { HeaderBlock } from "@ui/components/HeaderBlock"
 import { useMnemonics } from "@ui/state/mnemonics"
 import { type ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-
+import { useAddAccountStep } from "../flow"
 import { useAccountAddQr } from "./context"
 import { MnemonicForm } from "./MnemonicForm"
 
@@ -24,7 +24,8 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
   const { t } = useTranslation()
   const { dispatch, state, submit } = useAccountAddQr()
   const mnemonics = useMnemonics()
-  const { generateMnemonic } = useMnemonicCreateModal()
+  const { generateMnemonic, isOpen: isCreatingPhrase } = useMnemonicCreateModal()
+  useAddAccountStep(isCreatingPhrase ? "new_phrase" : null)
 
   // TODO user should choose which one to pick
   const existingMnemonicId = useMemo(() => {

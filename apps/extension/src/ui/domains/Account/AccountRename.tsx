@@ -96,6 +96,7 @@ export const AccountRename: FC<{
   return (
     <form onSubmit={handleSubmit(submit)}>
       <FormFieldContainer
+        field="name"
         label={t("Choose a new name for this account")}
         error={errors.name?.message}
       >

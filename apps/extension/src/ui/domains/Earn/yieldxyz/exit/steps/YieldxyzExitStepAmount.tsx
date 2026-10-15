@@ -1,6 +1,8 @@
+import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import type { TimePeriodDto } from "@core/domains/earn/exports"
+import { getErrorMessage } from "@talismn/util"
 import { Button } from "@ui/components/Button"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -8,12 +10,13 @@ import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
+import { flows } from "@ui/hooks/analytics/flows"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { isEqual } from "lodash-es"
-import { useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
@@ -23,15 +26,32 @@ import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
 export const YieldxyzExitStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzExitModal()
-  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzExitWizard()
+  const { position, amountOut, goTo, canCreateAction, createAction, network } =
+    useYieldxyzExitWizard()
 
   const [processing, setProcessing] = useState(false)
+  const [createActionError, setCreateActionError] = useState<{
+    amountOut: bigint | null
+    message: string
+    category: ErrorCategory
+  } | null>(null)
+
+  if (createActionError && (createActionError.amountOut !== amountOut || !canCreateAction))
+    setCreateActionError(null)
 
   const handleSubmit = async () => {
     setProcessing(true)
+    setCreateActionError(null)
     try {
       await createAction()
       goTo("confirm")
+    } catch (err) {
+      flows.earn_withdraw.failed(err)
+      setCreateActionError({
+        amountOut,
+        message: getErrorMessage(err, t("Unknown error")),
+        category: classifyError(err),
+      })
     } finally {
       setProcessing(false)
     }
@@ -40,7 +60,8 @@ export const YieldxyzExitStepAmount = () => {
   if (!position?.product) return null
 
   return (
-    <WizardModalDialog
+    <ModalDialog
+      variant="wizard"
       className="size-full border-none"
       title={"Exit Position"}
       onCloseClick={close}
@@ -56,7 +77,7 @@ export const YieldxyzExitStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <ExitAmountEdit />
+          <ExitAmountEdit createActionError={createActionError} />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -117,7 +138,7 @@ export const YieldxyzExitStepAmount = () => {
           {t("Review")}
         </Button>
       </div>
-    </WizardModalDialog>
+    </ModalDialog>
   )
 }
 
@@ -178,9 +199,15 @@ const NetworkDisplay = () => {
   )
 }
 
-const ExitAmountEdit = () => {
-  const { position, amountOut, validationError, onAmountOutChanged, setMaxAmountOut } =
-    useYieldxyzExitWizard()
+const ExitAmountEdit: FC<{ createActionError?: InlineError | null }> = ({ createActionError }) => {
+  const {
+    position,
+    amountOut,
+    validationError,
+    validationErrorCategory,
+    onAmountOutChanged,
+    setMaxAmountOut,
+  } = useYieldxyzExitWizard()
 
   const priceUsd = useMemo(() => {
     try {
@@ -205,7 +232,8 @@ const ExitAmountEdit = () => {
       value={amountOut}
       onValueChanged={onAmountOutChanged}
       onMaxClick={setMaxAmountOut}
-      error={validationError}
+      error={validationError ?? createActionError?.message}
+      errorCategory={validationError ? validationErrorCategory : createActionError?.category}
     />
   )
 }

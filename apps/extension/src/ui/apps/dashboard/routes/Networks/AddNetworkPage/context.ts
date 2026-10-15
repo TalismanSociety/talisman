@@ -210,6 +210,7 @@ const useNetworkCreateFormProvider = () => {
           type: "error",
           title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },

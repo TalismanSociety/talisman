@@ -1,26 +1,15 @@
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import {
   TxHistoryList,
   TxHistoryProvider,
   TxHistoryToolbar,
 } from "@ui/domains/Transactions/TxHistory"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PopupContent, PopupLayout } from "../Layout/PopupLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Transactions",
-  featureVersion: 1,
-  page: "Recent history drawer",
-}
-
 export const TxHistoryPage = () => {
-  useAnalyticsPageView(ANALYTICS_PAGE)
-
   return (
     <PopupLayout>
       <TxHistoryProvider>

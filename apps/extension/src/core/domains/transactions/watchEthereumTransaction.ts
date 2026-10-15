@@ -2,11 +2,10 @@ import { log } from "@common/log"
 import { getBlockExplorerUrl, type NetworkId } from "@talismn/chaindata-provider"
 import { assert, sleep, throwAfter } from "@talismn/util"
 import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
-
-import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { reportError } from "../analytics/errorReporting"
 import { settingsStore } from "../app/store.settings"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { addEvmTransaction, updateTransactionStatus } from "./store.transactions"
@@ -123,6 +122,6 @@ export const watchEthereumTransaction = async (
       else log.error("Failed to watch transaction", { err })
     }
   } catch (err) {
-    sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })
+    reportError(err, { networkId: evmNetworkId })
   }
 }

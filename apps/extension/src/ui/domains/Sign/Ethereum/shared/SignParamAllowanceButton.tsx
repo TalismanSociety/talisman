@@ -9,6 +9,7 @@ import { formatDecimals, getErrorMessage, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
+import { DrawerContent } from "@ui/components/DrawerContent"
 import { FormFieldContainer } from "@ui/components/FormFieldContainer"
 import {
   type FormFieldInputContainerProps,
@@ -19,7 +20,6 @@ import { PillButton } from "@ui/components/PillButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
@@ -33,7 +33,7 @@ import { useErc20Token } from "../hooks/useErc20Token"
 import { ERC20_UNLIMITED_ALLOWANCE, isUnlimitedAllowance } from "./allowance"
 
 const INPUT_PROPS: FormFieldInputContainerProps = {
-  className: "bg-grey-700 px-6",
+  className: "px-6",
 }
 
 type Erc20TokenInfo = {
@@ -86,7 +86,6 @@ const EditAllowanceForm: FC<{
   onSubmit: (limit: bigint) => void | Promise<void>
 }> = ({ account, token, spender, allowance, onSubmit, onCancel }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
 
   const schema = useMemo(
     () =>
@@ -120,7 +119,6 @@ const EditAllowanceForm: FC<{
   const submit = useCallback(
     async ({ limit }: FormData) => {
       try {
-        genericEvent("set custom allowance")
         const newLimit = limit ? parseUnits(limit, token.decimals) : ERC20_UNLIMITED_ALLOWANCE
         await onSubmit(newLimit)
       } catch (err) {
@@ -129,10 +127,11 @@ const EditAllowanceForm: FC<{
           title: "Error",
           subtitle: getErrorMessage(err, t("Unknown error")),
           type: "error",
+          cause: err,
         })
       }
     },
-    [genericEvent, onSubmit, token.decimals, t]
+    [onSubmit, token.decimals, t]
   )
 
   // don't bubble up submit event to the parent approval form
@@ -156,48 +155,44 @@ const EditAllowanceForm: FC<{
   }, [max, setValue])
 
   return (
-    <form onSubmit={submitWithoutBubbleUp} className="rounded-t-xl bg-grey-800 p-12">
-      <div className="text-center font-bold">{t("Edit spending limit")}</div>
-      <p className="my-12 text-body-secondary text-sm">
-        <Trans
-          components={{
-            Highlight: <span className="text-body"></span>,
-          }}
-          defaults="Set the max amount <Highlight>{{address}}</Highlight> can spend of your <Highlight>{{symbol}}</Highlight>."
-          values={{ address: shortenAddress(spender), symbol: token.symbol }}
-        />
-      </p>
-      <FormFieldContainer
-        label={<span className="text-sm">{t("Max spending limit")}</span>}
-        error={errors.limit?.message}
-      >
-        <FormFieldInputText
-          after={
-            <div className="flex items-center gap-4">
-              <span className="text-body-disabled">{token.symbol}</span>
-              <PillButton disabled={!max} onClick={handleMaxClick} className="hover:bg-grey-750">
-                {t("Max")}
-              </PillButton>
-            </div>
-          }
-          placeholder={t("Unlimited")}
-          containerProps={INPUT_PROPS}
-          {...register("limit")}
-        />
-      </FormFieldContainer>
-      <div className="mt-4 grid grid-cols-2 gap-12">
-        <Button onClick={onCancel}>{t("Cancel")}</Button>
-        <Button
-          type="submit"
-          className="disabled:bg-grey-750"
-          primary
-          disabled={!isValid || !isDirty}
-          processing={isSubmitting}
+    <DrawerContent>
+      <form onSubmit={submitWithoutBubbleUp}>
+        <div className="text-center font-bold">{t("Edit spending limit")}</div>
+        <p className="my-12 text-body-secondary text-sm">
+          <Trans
+            components={{
+              Highlight: <span className="text-body"></span>,
+            }}
+            defaults="Set the max amount <Highlight>{{address}}</Highlight> can spend of your <Highlight>{{symbol}}</Highlight>."
+            values={{ address: shortenAddress(spender), symbol: token.symbol }}
+          />
+        </p>
+        <FormFieldContainer
+          label={<span className="text-sm">{t("Max spending limit")}</span>}
+          error={errors.limit?.message}
         >
-          {t("Set Limit")}
-        </Button>
-      </div>
-    </form>
+          <FormFieldInputText
+            after={
+              <div className="flex items-center gap-4">
+                <span className="text-body-disabled">{token.symbol}</span>
+                <PillButton disabled={!max} onClick={handleMaxClick}>
+                  {t("Max")}
+                </PillButton>
+              </div>
+            }
+            placeholder={t("Unlimited")}
+            containerProps={INPUT_PROPS}
+            {...register("limit")}
+          />
+        </FormFieldContainer>
+        <div className="mt-4 grid grid-cols-2 gap-12">
+          <Button onClick={onCancel}>{t("Cancel")}</Button>
+          <Button type="submit" primary disabled={!isValid || !isDirty} processing={isSubmitting}>
+            {t("Set Limit")}
+          </Button>
+        </div>
+      </form>
+    </DrawerContent>
   )
 }
 
@@ -260,7 +255,13 @@ export const SignParamAllowanceButton: FC<{
           </TooltipContent>
         )}
       </Tooltip>
-      <Drawer anchor="bottom" containerId="main" isOpen={isOpen} onDismiss={close}>
+      <Drawer
+        analyticsId="edit_allowance"
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <EditAllowanceForm
           account={account}
           token={token}

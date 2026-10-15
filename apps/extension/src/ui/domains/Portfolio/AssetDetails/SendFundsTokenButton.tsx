@@ -20,6 +20,7 @@ export const SendFundsTokenButton = ({
   const token = useToken(tokenId)
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    "token_details",
     selectedAccount,
     token?.id
   )

@@ -1,7 +1,7 @@
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@talismn/util"
 import { compare, genSalt, hash } from "bcryptjs"
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, Subject } from "rxjs"
 import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"
@@ -40,8 +40,17 @@ const initialData = {
 
 const ALARM_NAME = "talisman-autolock-alarm"
 
+export type LockReason = "manual" | "auto_lock" | "error"
+export type UnlockMethod = { method: "password" | "quick_unlock"; legacyPassword: boolean }
+export type SessionStart = UnlockMethod | "onboarding" | "password_change"
+
+export type LockFact =
+  | { type: "unlocked"; how: UnlockMethod }
+  | { type: "locked"; reason: LockReason }
+
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
   isLoggedIn = new BehaviorSubject<LoggedInType>(UNKNOWN)
+  readonly lockFacts$ = new Subject<LockFact>()
 
   constructor(prefix: string, data: Partial<PasswordStoreData> = initialData) {
     super(prefix, data)
@@ -52,7 +61,7 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
       if (alarm.name !== ALARM_NAME) return
       if (this.isLoggedIn.value !== TRUE) return
 
-      await this.clearPassword()
+      await this.clearPassword("auto_lock")
       createNotification("autolocked", "", "autolocked")
     })
   }
@@ -144,7 +153,7 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     if (this.isLoggedIn.value === TRUE) return
 
     const pw = await this.transformPassword(password)
-    await this.authenticateHashed(pw)
+    await this.authenticateHashed(pw, { method: "password", legacyPassword: false })
   }
 
   /**
@@ -166,21 +175,29 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
    * Authenticates using an already transformed (hashed) password, as recovered by quick unlock.
    * Throws if it doesn't match the stored auth secret.
    */
-  async authenticateHashed(hashedPw: string) {
+  async authenticateHashed(hashedPw: string, how: UnlockMethod) {
     if (this.isLoggedIn.value === TRUE) return
 
     await this.checkHashedPassword(hashedPw)
 
-    await this.setPassword(hashedPw)
+    await this.setPassword(hashedPw, how)
   }
 
-  async setPassword(password: string | undefined) {
+  async setPassword(password: string, start: SessionStart) {
+    const wasLoggedIn = await this.#writeSession(password)
+    if (!wasLoggedIn && typeof start === "object")
+      this.lockFacts$.next({ type: "unlocked", how: start })
+  }
+
+  async #writeSession(password: string | undefined) {
     // the session mutation must complete before the login status changes, or the transformed
     // password would still be retrievable while the wallet reports itself as locked
     if (typeof password === "string") await sessionStorage.set({ password })
     else await sessionStorage.remove("password")
 
+    const wasLoggedIn = this.isLoggedIn.value === TRUE
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
+    return wasLoggedIn
   }
 
   public async getHashedPassword(plaintextPw: string) {
@@ -195,12 +212,12 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
   public async setPlaintextPassword(plaintextPw: string) {
     const pw = await this.transformPassword(plaintextPw)
-    await this.setPassword(pw)
+    await this.setPassword(pw, "password_change")
   }
 
-  public async clearPassword() {
-    // clear password
-    await this.setPassword(undefined)
+  public async clearPassword(reason: LockReason) {
+    const wasLoggedIn = await this.#writeSession(undefined)
+    if (wasLoggedIn) this.lockFacts$.next({ type: "locked", reason })
 
     // clear autolock timer
     await this.resetAutolockTimer()

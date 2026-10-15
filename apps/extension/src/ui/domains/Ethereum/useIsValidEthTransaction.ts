@@ -1,3 +1,4 @@
+import { attachErrorCategory, type ErrorCategory } from "@common/analytics/errorCategory"
 import { getMaxTransactionCost, serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import type { EthPriorityOptionName } from "@core/domains/signing/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
@@ -7,6 +8,9 @@ import { useTranslation } from "react-i18next"
 import type { PublicClient, TransactionRequest } from "viem"
 
 import { useEthBalance } from "./useEthBalance"
+
+const invalid = (message: string, category: ErrorCategory) =>
+  attachErrorCategory(new Error(message), category)
 
 export const useIsValidEthTransaction = (
   publicClient: PublicClient | undefined,
@@ -34,19 +38,23 @@ export const useIsValidEthTransaction = (
       if (!publicClient || !tx || !account || balance === undefined) return null
 
       if (account.type === "watch-only")
-        throw new Error(t("Cannot sign transactions with a watched account"))
+        throw invalid(t("Cannot sign transactions with a watched account"), "unsupported")
 
       // balance checks
       const value = tx.value ?? 0n
       const maxTransactionCost = getMaxTransactionCost(tx)
       const nativeSymbol = publicClient.chain?.nativeCurrency?.symbol ?? "native token"
       if (typeof balance !== "bigint")
-        throw new Error(t("Failed to load {{symbol}} balance", { symbol: nativeSymbol }))
+        throw invalid(t("Failed to load {{symbol}} balance", { symbol: nativeSymbol }), "rpc")
       if (value > balance)
-        throw new Error(t("Insufficient {{symbol}} balance", { symbol: nativeSymbol }))
+        throw invalid(
+          t("Insufficient {{symbol}} balance", { symbol: nativeSymbol }),
+          "insufficient_balance"
+        )
       if (maxTransactionCost > balance)
-        throw new Error(
-          t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol })
+        throw invalid(
+          t("Insufficient {{symbol}} balance to pay for fee", { symbol: nativeSymbol }),
+          "insufficient_gas"
         )
 
       // dry runs the transaction, if it fails we can't know for sure what the issue really is

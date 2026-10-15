@@ -2,7 +2,9 @@ import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
 import { assert } from "@talismn/util"
 
-import { sentry } from "./config/sentry"
+import { analyticsEngine } from "./domains/analytics/engine"
+import { installErrorHandlers, reportError } from "./domains/analytics/errorReporting"
+import { startAnalyticsMechanisms } from "./domains/analytics/mechanisms"
 import { passwordStore } from "./domains/app/store.password"
 import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
@@ -17,21 +19,9 @@ import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 import { trackUiPort } from "./libs/uiOpenState"
 
-sentry.init("background")
-
-// the manual client excludes Sentry's GlobalHandlers integration (it relies on global state),
-// so capture uncaught errors and unhandled rejections with our own listeners.
-// mechanism hints mirror GlobalHandlers so these are reported as unhandled crashes
-self.addEventListener("error", (event) => {
-  sentry.captureException(event.error ?? event.message, {
-    mechanism: { handled: false, type: "onerror" },
-  })
-})
-self.addEventListener("unhandledrejection", (event) => {
-  sentry.captureException(event.reason, {
-    mechanism: { handled: false, type: "onunhandledrejection" },
-  })
-})
+installErrorHandlers()
+analyticsEngine.start()
+startAnalyticsMechanisms()
 
 chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 
@@ -72,7 +62,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
     const password = await passwordStore.getPassword()
     if (!password) {
-      sentry.captureMessage("Unable to run migrations, no password present")
+      reportError(new Error("Unable to run migrations, no password present"))
       return
     }
     // instantiate the migrations runner with migrations to run

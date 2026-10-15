@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { log } from "@common/log"
 import type { Account, LedgerPolkadotCurve } from "@core/domains/keyring/exports"
 import { isAddressEqual } from "@talismn/crypto"
@@ -174,6 +175,7 @@ const useLedgerSubstrateGenericAccounts = (
         log.error("Failed to load page", { err })
         setConnectionStatus({
           status: "error",
+          errorCategory: classifyError(error),
           message: error.message,
           onRetryClick: () => loadPage(pageIndex),
         })

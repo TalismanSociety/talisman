@@ -1,6 +1,5 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { IconButton } from "@ui/components/IconButton"
 import { LearnMoreContent } from "@ui/domains/Portfolio/GetStarted/LearnMore/LearnMoreContent"
 import { useCallback } from "react"
@@ -9,31 +8,16 @@ import { useNavigate } from "react-router-dom"
 
 import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Popup",
-  feature: "Portfolio",
-  featureVersion: 2,
-  page: "Learn More",
-}
-
-const newGoToFn = (analyticsAction: string, dashboardPath: string) => () => {
-  sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: analyticsAction })
-  return api.dashboardOpen(dashboardPath)
-}
-const goToSettingsAccounts = newGoToFn("Manage accounts", "/settings/accounts")
-const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/general/currency")
-const goToAddHardwareAccounts = newGoToFn(
-  "Add hardware accounts",
-  "/accounts/add?methodType=connect"
-)
-const goToSettingsMnemonics = newGoToFn("Manage mnemonics", "/settings/mnemonics")
+const goToSettingsAccounts = () => api.dashboardOpen("/settings/accounts")
+const goToSettingsCurrency = () => api.dashboardOpen("/settings/general/currency")
+const goToAddHardwareAccounts = () => api.dashboardOpen("/accounts/add?methodType=connect")
+const goToSettingsMnemonics = () => api.dashboardOpen("/settings/mnemonics")
 
 const Header = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const goToPortfolio = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio" })
     return navigate("/portfolio")
   }, [navigate])
 

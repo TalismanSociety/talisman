@@ -4,6 +4,7 @@ import { IconButton } from "@ui/components/IconButton"
 import { Modal } from "@ui/components/Modal"
 import { ScrollContainer, useScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
+import { useReportSearch } from "@ui/hooks/analytics/search"
 import type { NetworkOption } from "@ui/state/portfolio"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
@@ -123,6 +124,11 @@ const NetworkOptionsModalContent: FC<{
     const lowerSearch = search.toLowerCase()
     return allOptions.filter((network) => network.name.toLowerCase().includes(lowerSearch))
   }, [allOptions, search])
+  useReportSearch(
+    "portfolio_network_filter",
+    search,
+    filteredNetworks.filter((network) => network.id !== "ALL_NETWORKS").length
+  )
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -159,6 +165,7 @@ export const NetworkOptionsModal: FC<{
 }> = ({ isOpen, options, selected, containerId, onChange, onClose }) => {
   return (
     <Modal
+      analyticsId="network_options"
       isOpen={isOpen}
       onDismiss={onClose}
       className={cn(

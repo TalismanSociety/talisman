@@ -170,11 +170,11 @@ const Content = () => {
                   Send anonymised error reports to Talisman (via{" "}
                   <a
                     className="text-grey-200 hover:text-body"
-                    href="https://www.sentry.io"
+                    href="https://posthog.com"
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    Sentry
+                    PostHog
                   </a>
                   )
                 </Trans>

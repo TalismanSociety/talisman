@@ -1,7 +1,7 @@
 import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
+import { ModalDialog } from "@ui/components/ModalDialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { WizardModalDialog } from "@ui/components/WizardModalDialog"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import {
@@ -21,10 +21,10 @@ import {
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
+import { flows } from "@ui/hooks/analytics/flows"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import {
   NetworkDisplay,
   SEEK_STAKING_MODAL_CONTAINER_ID,
@@ -81,7 +81,8 @@ export const SeekStakeConfirm: FC<{
 
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={SEEK_STAKING_MODAL_CONTAINER_ID}>
-      <WizardModalDialog
+      <ModalDialog
+        variant="wizard"
         className="size-full border-none"
         title={t("Enter Position")}
         onBackClick={onBackClick}
@@ -149,10 +150,12 @@ export const SeekStakeConfirm: FC<{
             className="w-full"
             disabled={!!ethTx.error || !ethTx.transaction}
             isProcessing={isProcessing || isPreparing}
+            isFinalStep={!isApproval}
             onSubmit={onSubmit}
+            onError={flows.staking.failed}
           />
         </div>
-      </WizardModalDialog>
+      </ModalDialog>
     </RiskAnalysisProvider>
   )
 }

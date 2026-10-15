@@ -1,15 +1,27 @@
+import {
+  attachErrorCategory,
+  classifyError,
+  type ErrorCategory,
+} from "@common/analytics/errorCategory"
+import type { UNLOCK_METHODS } from "@common/analytics/properties"
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { track } from "@ui/api/track"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
 import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import {
+  errorCategoryOfField,
+  reportErrorShown,
+  useErrorShown,
+} from "@ui/hooks/analytics/errorShown"
+import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
@@ -30,6 +42,13 @@ import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 import { ResetWallet } from "./ResetWallet"
+
+const reportUnlockFailed = (method: (typeof UNLOCK_METHODS)[number], category: ErrorCategory) =>
+  track("app_unlock_failed", {
+    method,
+    reason: category === "wrong_password" || category === "user_rejected" ? "rejected" : "error",
+    error_category: category,
+  })
 
 const HideBalancesToggle = () => {
   const { t } = useTranslation()
@@ -140,10 +159,18 @@ const QuickUnlockButton = ({
       abortRef.current?.abort()
       const abort = new AbortController()
       abortRef.current = abort
+      const fail = (message: string, category: ErrorCategory) => {
+        reportUnlockFailed("quick_unlock", category)
+        reportErrorShown({ surface: "alert", category })
+        onError(message)
+      }
       try {
         const credentialInfo = await api.quickUnlockGetCredentialInfo()
         if (!credentialInfo)
-          return onError(t("Quick unlock was reset, please enable it again from settings."))
+          return fail(
+            t("Quick unlock was reset, please enable it again from settings."),
+            "unsupported"
+          )
 
         const prfOutput = await getQuickUnlockPrfOutput(
           credentialInfo.credentialId,
@@ -157,12 +184,16 @@ const QuickUnlockButton = ({
         // background has confirmed the enrollment is gone for good
         if (result === "unenrolled") {
           await signalCredentialRemoved(credentialInfo.credentialId)
-          return onError(t("Quick unlock was reset, please enable it again from settings."))
+          return fail(
+            t("Quick unlock was reset, please enable it again from settings."),
+            "unsupported"
+          )
         }
 
         if (result === "failed")
-          return onError(
-            t("Quick unlock didn't complete. Use your password, or turn it off in settings.")
+          return fail(
+            t("Quick unlock didn't complete. Use your password, or turn it off in settings."),
+            "unknown"
           )
 
         const qs = new URLSearchParams(window.location.search)
@@ -183,7 +214,7 @@ const QuickUnlockButton = ({
 
         // log the error category only, it must never carry credential or password data
         log.error("Quick unlock failed", { name })
-        onError(message)
+        fail(message, classifyError(err))
       } finally {
         setProcessing(false)
       }
@@ -243,13 +274,8 @@ const Login = ({
   autoTriggerQuickUnlock: boolean
 }) => {
   const { t } = useTranslation()
-  const { popupOpenEvent } = useAnalytics()
   const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
   const [quickUnlockError, setQuickUnlockError] = useState<string>()
-
-  useEffect(() => {
-    popupOpenEvent("auth")
-  }, [popupOpenEvent])
 
   const {
     watch,
@@ -281,9 +307,11 @@ const Login = ({
         if (result) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeAfterLogin") === "true") window.close()
-        } else throw new Error(t("Talisman access denied"))
+        } else throw attachErrorCategory(new Error(t("Talisman access denied")), "wrong_password")
       } catch (err) {
-        setError("password", { message: getErrorMessage(err, t("Unknown error")) })
+        const category = classifyError(err)
+        reportUnlockFailed("password", category)
+        setError("password", { type: category, message: getErrorMessage(err, t("Unknown error")) })
         setFocus("password", { shouldSelect: true })
       }
     },
@@ -301,6 +329,13 @@ const Login = ({
   }, [setValue])
 
   useDevModeAutologin({ watch, setValue, handleSubmit, submit })
+
+  useErrorShown({
+    shown: errors.password?.message,
+    surface: "field",
+    category: errorCategoryOfField(errors.password) ?? "input_invalid",
+    field: "password",
+  })
 
   return (
     <PopupLayout>
@@ -376,6 +411,7 @@ export const LoginViewManager = ({
   autoTriggerQuickUnlock: boolean
 }) => {
   const [showResetWallet, setShowResetWallet] = useState(false)
+  useVirtualScreen("/login")
 
   if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
   return (

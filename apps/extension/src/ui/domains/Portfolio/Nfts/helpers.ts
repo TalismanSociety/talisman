@@ -1,13 +1,18 @@
 import type { Nft, NftCollection } from "@core/domains/nfts/exports"
 import { isNotNil } from "@talismn/util"
 
-export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, nfts: Nft[]) => {
+export const getPortfolioNftCollectionPreview = (collection: NftCollection, nfts: Nft[]) => {
   const collectionNfts = nfts.filter((nft) => nft.collectionId === collection.id)
+  const [firstNft] = collectionNfts
 
   // if user has only 1 NFT in that collection, use it as the image
-  if (collectionNfts.length === 1) return collectionNfts[0].previewUrl
+  if (collectionNfts.length === 1)
+    return { url: firstNft.previewUrl, isPending: !!firstNft.isMetadataPending }
 
-  return collection.iconUrl ?? collection.bannerUrl ?? collectionNfts[0].previewUrl
+  return {
+    url: collection.iconUrl ?? collection.bannerUrl ?? firstNft.previewUrl,
+    isPending: !!collection.isMetadataPending || !!firstNft.isMetadataPending,
+  }
 }
 
 export const getNftQuantity = (nft: Nft, owner?: string) => {

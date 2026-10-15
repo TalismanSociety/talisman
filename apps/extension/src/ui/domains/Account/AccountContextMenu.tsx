@@ -22,7 +22,6 @@ import { useManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/useM
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountCanWriteProxies, useAccountProxiesCount } from "@ui/state/accountProxies"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useNetworkByGenesisHash, useNetworks } from "@ui/state/chaindata"
@@ -36,12 +35,10 @@ import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 const ViewOnExplorerMenuItem: FC<{ account: Account }> = ({ account }) => {
   const { t } = useTranslation()
   const { open, canOpen } = useViewOnExplorer(account.address, getAccountGenesisHash(account))
-  const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
     open()
-    genericEvent("open view on explorer", { from: "account menu" })
-  }, [genericEvent, open])
+  }, [open])
 
   if (!canOpen) return null
 
@@ -49,7 +46,6 @@ const ViewOnExplorerMenuItem: FC<{ account: Account }> = ({ account }) => {
 }
 
 type Props = {
-  analyticsFrom: string
   address?: string
   placement?: PopoverOptions["placement"]
   trigger?: React.ReactNode
@@ -63,7 +59,7 @@ type Props = {
  * If the `address` prop is null, this component will ignore `selectedAccount`
  */
 export const AccountContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
-  { analyticsFrom, address, placement, trigger, hideManageAccounts, disabled },
+  { address, placement, trigger, hideManageAccounts, disabled },
   ref
 ) {
   const { t } = useTranslation()
@@ -83,7 +79,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     undefined
 
   const navigate = useNavigate()
-  const { genericEvent } = useAnalytics()
 
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
@@ -94,9 +89,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const canCopyAddress = !!account
   const copyAddress = useCallback(() => {
     if (!account) return
-    genericEvent("open copy address", { from: analyticsFrom })
-    openCopyAddressModal({ address: account.address, networkId: chain?.id })
-  }, [account, analyticsFrom, chain?.id, genericEvent, openCopyAddressModal])
+    openCopyAddressModal({ entry: "account_menu", address: account.address, networkId: chain?.id })
+  }, [account, chain?.id, openCopyAddressModal])
 
   // bitcoin power users need the xpub for watch-only imports and portfolio
   // trackers — this is the only place in the UI where it is exposed
@@ -104,9 +98,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const canCopyXpub = !!account && isBitcoinXpub(account.address)
   const copyXpub = useCallback(() => {
     if (!account) return
-    genericEvent("open copy xpub", { from: analyticsFrom })
     openCopyXpubModal(account)
-  }, [account, analyticsFrom, genericEvent, openCopyXpubModal])
+  }, [account, openCopyXpubModal])
 
   // BIP322 message signing — hot bitcoin accounts only (ledger needs a device flow)
   const { open: openSignMessageModal } = useAccountSignMessageModal()
@@ -116,9 +109,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
       (isAccountPlatformBitcoin(account) && account.type === "keypair"))
   const signMessage = useCallback(() => {
     if (!account) return
-    genericEvent("open btc sign message", { from: analyticsFrom })
     openSignMessageModal(account)
-  }, [account, analyticsFrom, genericEvent, openSignMessageModal])
+  }, [account, openSignMessageModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account

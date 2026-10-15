@@ -9,11 +9,15 @@ export const TxSubmitButtonDot: FC<TxSubmitButtonProps<"polkadot">> = ({
   label,
   className,
   onSubmit,
+  onError,
+  onPayloadLockChange,
 }) => (
   <SapiSendButton
     containerId={containerId}
     label={label}
     onSubmitted={onSubmit}
+    onError={onError}
+    onPayloadLockChange={onPayloadLockChange}
     payload={tx.payload}
     txInfo={tx.txInfo}
     txMetadata={tx.txMetadata}

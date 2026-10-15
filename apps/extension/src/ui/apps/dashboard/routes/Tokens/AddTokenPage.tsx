@@ -18,7 +18,6 @@ import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { getErrorMessage, sleep } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
 import { api } from "@ui/api"
-import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { Button } from "@ui/components/Button"
 import { Checkbox } from "@ui/components/Checkbox"
@@ -31,7 +30,6 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { TokenSecurityPanels } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import { useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state/chaindata"
 import { range } from "lodash-es"
 import { useCallback, useMemo, useState } from "react"
@@ -40,16 +38,8 @@ import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
 import { z } from "zod/v4"
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Settings",
-  featureVersion: 1,
-  page: "Settings - Add Token",
-}
-
 export const AddTokenPage = () => {
   const { t } = useTranslation()
-  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <DashboardLayout sidebar="settings">
@@ -123,6 +113,7 @@ const AddCustomTokenForm = () => {
           type: "error",
           title: t("Error"),
           subtitle: getErrorMessage(err, t("Unknown error")),
+          cause: err,
         })
       }
     },
@@ -144,7 +135,7 @@ const AddCustomTokenForm = () => {
 
   const token = useStore(form.store, (s) => s.values.token as Token | undefined)
   const symbol = useStore(form.store, (s) => s.values.symbol)
-  const { scan, isPending: isScanPending } = useTokenRiskScan(token, "add-token")
+  const { scan, isPending: isScanPending } = useTokenRiskScan(token)
   const [acknowledgedTokenId, setAcknowledgedTokenId] = useState<string | null>(null)
   const isRiskAcknowledged = !!token && acknowledgedTokenId === token.id
   const isRiskBlocking = scan?.verdict === "Malicious" && !isRiskAcknowledged
@@ -168,7 +159,11 @@ const AddCustomTokenForm = () => {
       <form.Field
         name="networkId"
         children={(field) => (
-          <FormFieldContainer label={t("Network")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer
+            field="networkId"
+            label={t("Network")}
+            error={field.state.meta.errors[0]}
+          >
             <NetworkCombo
               networks={networkOptions}
               value={field.state.value ?? ""}
@@ -194,7 +189,11 @@ const AddCustomTokenForm = () => {
       <form.Field
         name="contractAddress"
         children={(field) => (
-          <FormFieldContainer label={t("Contract Address")} error={field.state.meta.errors[0]}>
+          <FormFieldContainer
+            field="contractAddress"
+            label={t("Contract Address")}
+            error={field.state.meta.errors[0]}
+          >
             <FormFieldInputText
               type="text"
               value={field.state.value ?? ""}
