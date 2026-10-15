@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      BASE_REF: ${{ github.base_ref || 'dev' }}
 
     steps:
       - name: Checkout repo
@@ -34,15 +36,11 @@ jobs:
       - name: Fetch base branch for comparison
         if: github.event_name == 'pull_request'
         run: git fetch origin "$BASE_REF" --depth=1
-        env:
-          BASE_REF: ${{ github.base_ref }}
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: License check (direct deps)
         run: pnpm check:licenses
       - name: Biome check
-        env:
-          BASE_REF: ${{ github.base_ref || 'dev' }}
         run: |
           # Get changed files using two-dot diff (works with shallow clones)
           mapfile -t CHANGED_FILES < <(
@@ -109,6 +107,7 @@ jobs:
     permissions:
       contents: read
     env:
+      BASE_REF: ${{ github.base_ref }}
       E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
       # fork PRs have no secrets (SimpleLocalize, e2e mnemonic, Gandalf creds), and without the
       # Gandalf creds the registration PoW starves the background SW => e2e cannot pass on forks
@@ -123,8 +122,6 @@ jobs:
       - name: Fetch base branch for comparison
         if: github.event_name == 'pull_request'
         run: git fetch origin "$BASE_REF" --depth=1
-        env:
-          BASE_REF: ${{ github.base_ref }}
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: Extract short SHA + package version
@@ -261,8 +258,6 @@ jobs:
         if: github.event_name == 'pull_request' && env.SAME_REPO == 'true'
         run: |
           git checkout "origin/$BASE_REF" -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
-        env:
-          BASE_REF: ${{ github.base_ref }}
       - name: Run visual regression tests
         if: env.SAME_REPO == 'true'
         continue-on-error: true
@@ -288,11 +283,17 @@ jobs:
     needs: ensure_pr_has_changeset
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    # same-repo PRs only: fork PRs can't mint the npm OIDC token (no id-token permission)
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    # same-repo PRs only: fork PRs can't mint the npm OIDC token (no id-token permission),
+    # and Dependabot PRs must not run unreviewed action bumps with npm publish rights
+    if: >-
+      github.event_name == 'pull_request'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.user.login != 'dependabot[bot]'
     permissions:
       id-token: write
       contents: read
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -310,18 +311,12 @@ jobs:
           else
             echo "No unreleased changesets, nothing to snapshot"
           fi
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
       - name: Build packages for npm publish
         run: pnpm build:packages
       - name: Publish snapshot packages
         run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag "pr$PR_NUMBER"
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
       - name: Report published snapshot versions
         if: always()
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           TAG="pr$PR_NUMBER"
           echo "### 📦 Snapshot packages" >> $GITHUB_STEP_SUMMARY
@@ -352,6 +347,10 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    env:
+      # use the head sha rather than the branch name: fork PR branches don't exist on origin
+      HEAD_REF: ${{ github.event.pull_request.head.sha }}
+      BASE_REF: remotes/origin/${{ github.event.pull_request.base.ref }}
 
     steps:
       - name: Checkout repo
@@ -366,35 +365,16 @@ jobs:
         with:
           # this job only shells out to the changesets cli, it never imports any workspace code
           papi: "false"
-      - name: Compile list of changed files
-        id: changed-files
-        # this will find the files which have been changed in this PR
-        env:
-          # use the head sha rather than the branch name: fork PR branches don't exist on origin
-          HEAD_REF: ${{ github.event.pull_request.head.sha }}
-          BASE_REF: remotes/origin/${{ github.event.pull_request.base.ref }}
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
-          git diff --name-only "$HEAD_REF" "$(git merge-base "$HEAD_REF" "$BASE_REF")" >> $GITHUB_OUTPUT
-          echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Compile list of changed packages
         id: changed-packages
-        # this will turn the list of files changed by this PR into a list of packages changed by this PR
-        env:
-          CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
+        # the names of the packages whose files this PR changes, one per line, as quoted json strings
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          FILES_IN_PACKAGES="$(echo "$CHANGED_FILES" | { grep ^packages || true; })"
-          if [[ $FILES_IN_PACKAGES != '' ]]; then
-            UNIQ_PACKAGE_DIRS="$(echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq)"
-            UNIQ_PACKAGE_JSONS="$(find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print || true)"
-            UNIQ_PACKAGE_NAMES="$(echo $UNIQ_PACKAGE_JSONS | xargs jq .name | sort | uniq | { grep -v null || true; })"
-          else
-            UNIQ_PACKAGE_NAMES=""
-          fi
           echo "CHANGED_PACKAGES<<$EOF" >> "$GITHUB_OUTPUT"
-          echo $UNIQ_PACKAGE_NAMES >> $GITHUB_OUTPUT
+          git diff --name-only "$HEAD_REF" "$(git merge-base "$HEAD_REF" "$BASE_REF")" -- packages/ \
+            | cut -d/ -f1-2 | sort -u \
+            | while read -r dir; do if [ -f "$dir/package.json" ]; then jq '.name' "$dir/package.json"; fi; done \
+            | { grep -v null || true; } | sort -u >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Compile list of packages with changesets
         id: changesets
@@ -402,8 +382,6 @@ jobs:
         # need to use temporary file `changeset-status.json` until one of these are fixed:
         # https://github.com/changesets/changesets/issues/1020
         # https://github.com/changesets/changesets/issues/1021
-        env:
-          BASE_REF: remotes/origin/${{ github.event.pull_request.base.ref }}
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
@@ -426,7 +404,6 @@ jobs:
         run: echo IS_MISSING_CHANGESETS=$([[ "$WITHOUT_CHANGESETS" == '' ]] && echo no || echo yes) >> $GITHUB_OUTPUT
       - name: Debug action variables
         env:
-          CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
           CHANGED_PACKAGES: ${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}
           CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
           WITHOUT_CHANGESETS: ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
@@ -435,8 +412,6 @@ jobs:
           echo '**Debug output for `ensure_pr_has_changeset` action**' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "--CHANGED_FILES--" >> $GITHUB_STEP_SUMMARY
-          echo "$CHANGED_FILES" >> $GITHUB_STEP_SUMMARY
           echo "--CHANGED_PACKAGES--" >> $GITHUB_STEP_SUMMARY
           echo "$CHANGED_PACKAGES" >> $GITHUB_STEP_SUMMARY
           echo "--CHANGESETS--" >> $GITHUB_STEP_SUMMARY
@@ -498,16 +473,16 @@ jobs:
         run: exit 1
 
   # When a PR is merged into dev, this job will create a PR to version bump the packages which have changesets
-  # When the PR is merged, this job will publish the new package versions to npm
   release_changesets:
-    name: "Create a PR to bump package versions on dev, and publish the new versions to npm when the PR is merged"
+    name: "Create a PR to bump package versions on dev"
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
     permissions:
-      id-token: write
       contents: write
       pull-requests: write
+    outputs:
+      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -516,20 +491,38 @@ jobs:
           fetch-depth: 2 # also get the previous commit
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
+        with:
+          # this job only shells out to the changesets cli, it never imports any workspace code
+          papi: "false"
       - name: Create pull request
         id: changesets
+        # pushes through the ~/.netrc the action writes, so this job holds no id-token
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           commit: "chore: bump package versions"
           title: "chore: bump package versions"
           createGithubReleases: false
-          commitMode: github-api
         env:
-          # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # When the version bump PR is merged, there are no changesets left, and this job publishes the new versions to npm
+  publish_packages:
+    name: "Publish the new package versions to npm"
+    needs: release_changesets
+    if: needs.release_changesets.outputs.hasChangesets == 'false'
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup workspace
+        uses: $/.github/actions/setup-workspace
       - name: Build packages for npm publish
-        if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build:packages
       - name: Publish packages
-        if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm --filter './packages/*' publish --no-git-checks --access public
