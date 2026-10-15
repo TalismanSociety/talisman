@@ -2,31 +2,32 @@ name: Update Visual Regression Snapshots
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to update snapshots on"
-        required: true
-        default: "dev"
 
 concurrency:
-  group: update-snapshots-${{ github.event.inputs.branch }}
+  group: update-snapshots-${{ github.ref }}
   cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   update-snapshots:
     name: "Update Playwright snapshots"
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    # the snapshot PR targets the dispatch ref, which must be a branch
+    if: github.ref_type == 'branch'
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.inputs.branch }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
+        uses: $/.github/actions/setup-workspace
 
       - name: Build extension
         run: pnpm build:extension
@@ -35,7 +36,7 @@ jobs:
           E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
 
       - name: Cache playwright browsers
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -70,12 +71,14 @@ jobs:
             echo "No snapshot changes to commit"
           else
             git commit -m "test: update visual regression snapshots"
+            gh auth setup-git
             git push origin "$SNAPSHOT_BRANCH"
             gh pr create \
-              --base "${{ github.event.inputs.branch }}" \
+              --base "$BASE_BRANCH" \
               --head "$SNAPSHOT_BRANCH" \
               --title "test: update visual regression snapshots" \
               --body "Automated update of Playwright visual regression snapshots."
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ github.ref_name }}

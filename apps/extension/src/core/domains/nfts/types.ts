@@ -24,6 +24,7 @@ export type AccountNft = {
   amount: number
   description: string | null
   updatedAt: number | null
+  isMetadataPending?: boolean
 }
 
 export type NftCollection = {
@@ -35,6 +36,7 @@ export type NftCollection = {
   itemsCount: number | null
   ownersCount: number | null
   marketplaceUrls: string[] | null
+  isMetadataPending?: boolean
 }
 
 export type AccountNfts = { nfts: AccountNft[]; collections: NftCollection[] }

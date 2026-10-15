@@ -118,7 +118,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
         </ContextMenuItem>
-        {!nft.id.startsWith("subscan:") && (
+        {!nft.id.startsWith("substrate:") && (
           <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
             {t("Refresh Metadata")}
           </ContextMenuItem>
@@ -422,7 +422,13 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
 const NftDisplay: FC<{ nft: Nft }> = ({ nft }) => {
   if (nft.videoUrl) return <NftVideo nft={nft} className="size-full" />
   if (nft.audioUrl) return <NftAudio nft={nft} className={"size-full object-cover"} />
-  return <NftImage src={nft.imageUrl ?? nft.previewUrl} className="size-full object-contain" />
+  return (
+    <NftImage
+      src={nft.imageUrl ?? nft.previewUrl}
+      isPending={nft.isMetadataPending}
+      className="size-full object-contain"
+    />
+  )
 }
 
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({

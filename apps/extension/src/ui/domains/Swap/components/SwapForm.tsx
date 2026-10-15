@@ -115,6 +115,7 @@ export const SwapForm = () => {
                 selectedTokenId={fromTokenId}
                 allowedTokenIds={fromAssetIds}
                 priorityMode="sell"
+                tokenScope="signable"
               />
             }
             tokenAmount={<InputFromAmount />}

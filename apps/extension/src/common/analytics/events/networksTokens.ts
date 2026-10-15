@@ -3,7 +3,7 @@ import { z } from "zod/v4"
 import { properties } from "../properties"
 import { defineEventGroup } from "../schema"
 
-const source = { narrow: z.enum(["dapp", "settings"]) }
+const source = { narrow: z.enum(["dapp", "settings", "token_picker"]) }
 
 export const networkTokenEvents = defineEventGroup(properties, {
   custom_network_saved: {

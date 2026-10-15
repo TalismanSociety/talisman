@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import type { DotNetwork, NetworkId } from "@talismn/chaindata-provider"
 import { checksumEthereumAddress, encodeAddressSs58 } from "@talismn/crypto"
+import { queryStorageAt } from "@talismn/sapi"
 import { Binary, parseMetadataRpc, toHex } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 
@@ -14,34 +15,25 @@ import type { AccountProxyEntry, AccountProxySet } from "./types"
 
 const RPC_TIMEOUT_MS = 15_000
 
-type QueryStorageChange = [key: `0x${string}`, value: `0x${string}` | null]
-type QueryStorageResultItem = { block: `0x${string}`; changes: QueryStorageChange[] }
-
 /**
  * Query storage via the shared chain connector (already open for balances on active networks).
  * Wraps with a timeout and abort-signal check.
  */
-const queryStorageAt = async (
+const queryStorageValues = async (
   networkId: string,
   storageKeys: `0x${string}`[],
   signal: AbortSignal
-): Promise<QueryStorageResultItem> => {
-  if (signal.aborted) throw new Error("Aborted")
-
-  const result = await Promise.race([
-    chainConnectorDot.send<QueryStorageResultItem[]>(networkId, "state_queryStorageAt", [
+) => {
+  const values = await Promise.race([
+    queryStorageAt(
+      (method, params) => chainConnectorDot.send(networkId, method, params),
       storageKeys,
-    ]),
+      { signal }
+    ),
     throwAfter(RPC_TIMEOUT_MS, "Timeout"),
   ])
-
-  if (signal.aborted) throw new Error("Aborted")
-
-  const item = Array.isArray(result) ? result[0] : result
-  if (!item || !Array.isArray(item.changes)) {
-    throw new Error("Unexpected state_queryStorageAt response shape")
-  }
-  return item
+  signal.throwIfAborted()
+  return values
 }
 
 /** A decoded raw `Proxy.Proxies(...)` storage value. */
@@ -161,8 +153,7 @@ export const pollNetworkProxiesLightweight = async (
       return { ok: true, networkId: network.id, results: [], palletConfirmed: false }
     }
 
-    const result = await queryStorageAt(network.id, storageKeys, signal)
-    const valuesByKey = new Map(result.changes)
+    const valuesByKey = await queryStorageValues(network.id, storageKeys, signal)
 
     let palletConfirmed = false
     const results: Array<{ address: string; proxyCount: number }> = []
@@ -247,8 +238,7 @@ export const loadNetworkProxyDetails = async (
       return { ok: true, networkId: network.id, sets: [] }
     }
 
-    const result = await queryStorageAt(network.id, storageKeys, signal)
-    const valuesByKey = new Map(result.changes)
+    const valuesByKey = await queryStorageValues(network.id, storageKeys, signal)
 
     const sets: AccountProxySet[] = []
     let decodeFailures = 0
