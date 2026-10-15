@@ -46,7 +46,7 @@ jobs:
         run: |
           # Get changed files using two-dot diff (works with shallow clones)
           mapfile -t CHANGED_FILES < <(
-            git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.mts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
+            git diff --name-only --diff-filter=ACMR "origin/$BASE_REF" HEAD -- '*.ts' '*.mts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
           )
 
           if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
@@ -64,6 +64,24 @@ jobs:
           # All packages and apps use customConditions: ["@talismn/source"] to resolve
           # @talismn/* packages directly from source. This means no package build is needed.
           pnpm typecheck
+
+  zizmor:
+    name: "Audit GitHub workflows"
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with:
+          version: 1.30.1
+          advanced-security: false
+          annotations: true
 
   # Unit tests, in parallel with the checks and the build
   test:
@@ -358,7 +376,7 @@ jobs:
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
-          git diff --name-only $HEAD_REF $(git merge-base $HEAD_REF $BASE_REF) >> $GITHUB_OUTPUT
+          git diff --name-only "$HEAD_REF" "$(git merge-base "$HEAD_REF" "$BASE_REF")" >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Compile list of changed packages
         id: changed-packages
@@ -389,7 +407,7 @@ jobs:
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
-          pnpm changeset status --since $BASE_REF --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
+          pnpm changeset status --since "$BASE_REF" --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Check if any changed packages don't have changesets
         id: without-changesets
