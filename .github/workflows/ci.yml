@@ -14,28 +14,36 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions: {}
+
 jobs:
   # Static analysis: cheap, so it runs on its own and reports without waiting on the slow jobs
   checks:
     name: "Lint, knip and typecheck"
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 2
       - name: Fetch base branch for comparison
         if: github.event_name == 'pull_request'
-        run: git fetch origin ${{ github.base_ref }} --depth=1
+        run: git fetch origin "$BASE_REF" --depth=1
+        env:
+          BASE_REF: ${{ github.base_ref }}
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: License check (direct deps)
         run: pnpm check:licenses
       - name: Biome check
+        env:
+          BASE_REF: ${{ github.base_ref || 'dev' }}
         run: |
-          BASE_REF="${{ github.base_ref || 'dev' }}"
           # Get changed files using two-dot diff (works with shallow clones)
           mapfile -t CHANGED_FILES < <(
             git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.mts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
@@ -62,10 +70,14 @@ jobs:
     name: "Unit tests"
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: Test
@@ -76,6 +88,8 @@ jobs:
     name: "Build and e2e test the wallet"
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
       # fork PRs have no secrets (SimpleLocalize, e2e mnemonic, Gandalf creds), and without the
@@ -86,10 +100,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 2
       - name: Fetch base branch for comparison
         if: github.event_name == 'pull_request'
-        run: git fetch origin ${{ github.base_ref }} --depth=1
+        run: git fetch origin "$BASE_REF" --depth=1
+        env:
+          BASE_REF: ${{ github.base_ref }}
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: Extract short SHA + package version
@@ -225,7 +242,9 @@ jobs:
       - name: Checkout visual regression snapshots from base branch
         if: github.event_name == 'pull_request' && env.SAME_REPO == 'true'
         run: |
-          git checkout origin/${{ github.base_ref }} -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
+          git checkout "origin/$BASE_REF" -- playwright/e2e-tests/visual-regression.spec.ts-snapshots/ || true
+        env:
+          BASE_REF: ${{ github.base_ref }}
       - name: Run visual regression tests
         if: env.SAME_REPO == 'true'
         continue-on-error: true
@@ -260,6 +279,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 2 # also get the previous commit
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
@@ -268,18 +288,24 @@ jobs:
         # already-published versions, so an empty snapshot is a no-op rather than a failure
         run: |
           if [ -n "$(find .changeset -maxdepth 1 -name '*.md' -not -name README.md)" ]; then
-            pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
+            pnpm changeset version --snapshot "pr$PR_NUMBER"
           else
             echo "No unreleased changesets, nothing to snapshot"
           fi
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
       - name: Build packages for npm publish
         run: pnpm build:packages
       - name: Publish snapshot packages
-        run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag pr${{ github.event.pull_request.number }}
+        run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag "pr$PR_NUMBER"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
       - name: Report published snapshot versions
         if: always()
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          TAG="pr${{ github.event.pull_request.number }}"
+          TAG="pr$PR_NUMBER"
           echo "### 📦 Snapshot packages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Install with \`@${TAG}\` dist-tag:" >> $GITHUB_STEP_SUMMARY
@@ -313,6 +339,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # fetch all branches on the repo
           # (we need this in order to compare the changes between this PR and the default branch)
           fetch-depth: 0
@@ -324,20 +351,23 @@ jobs:
       - name: Compile list of changed files
         id: changed-files
         # this will find the files which have been changed in this PR
+        env:
+          # use the head sha rather than the branch name: fork PR branches don't exist on origin
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: remotes/origin/${{ github.event.pull_request.base.ref }}
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          # use the head sha rather than the branch name: fork PR branches don't exist on origin
-          HEAD_REF="${{ github.event.pull_request.head.sha }}"
-          BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
           echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
           git diff --name-only $HEAD_REF $(git merge-base $HEAD_REF $BASE_REF) >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Compile list of changed packages
         id: changed-packages
         # this will turn the list of files changed by this PR into a list of packages changed by this PR
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          FILES_IN_PACKAGES="$(echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | { grep ^packages || true; })"
+          FILES_IN_PACKAGES="$(echo "$CHANGED_FILES" | { grep ^packages || true; })"
           if [[ $FILES_IN_PACKAGES != '' ]]; then
             UNIQ_PACKAGE_DIRS="$(echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq)"
             UNIQ_PACKAGE_JSONS="$(find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print || true)"
@@ -354,37 +384,49 @@ jobs:
         # need to use temporary file `changeset-status.json` until one of these are fixed:
         # https://github.com/changesets/changesets/issues/1020
         # https://github.com/changesets/changesets/issues/1021
+        env:
+          BASE_REF: remotes/origin/${{ github.event.pull_request.base.ref }}
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
           echo "CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
           pnpm changeset status --since $BASE_REF --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Check if any changed packages don't have changesets
         id: without-changesets
+        env:
+          CHANGED_PACKAGES: ${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}
+          CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "WITHOUT_CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
-          comm -23 <(echo '${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}') <(echo '${{ steps.changesets.outputs.CHANGESETS }}') >> $GITHUB_OUTPUT
+          comm -23 <(echo "$CHANGED_PACKAGES") <(echo "$CHANGESETS") >> $GITHUB_OUTPUT
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Set IS_MISSING_CHANGESETS var
         id: is-missing-changesets
-        run: echo IS_MISSING_CHANGESETS=$([[ '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' == '' ]] && echo no || echo yes) >> $GITHUB_OUTPUT
+        env:
+          WITHOUT_CHANGESETS: ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
+        run: echo IS_MISSING_CHANGESETS=$([[ "$WITHOUT_CHANGESETS" == '' ]] && echo no || echo yes) >> $GITHUB_OUTPUT
       - name: Debug action variables
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.CHANGED_FILES }}
+          CHANGED_PACKAGES: ${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}
+          CHANGESETS: ${{ steps.changesets.outputs.CHANGESETS }}
+          WITHOUT_CHANGESETS: ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
+          IS_MISSING_CHANGESETS: ${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}
         run: |
           echo '**Debug output for `ensure_pr_has_changeset` action**' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "--CHANGED_FILES--" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGED_FILES" >> $GITHUB_STEP_SUMMARY
           echo "--CHANGED_PACKAGES--" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}' >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGED_PACKAGES" >> $GITHUB_STEP_SUMMARY
           echo "--CHANGESETS--" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.changesets.outputs.CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGESETS" >> $GITHUB_STEP_SUMMARY
           echo "--WITHOUT_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo "$WITHOUT_CHANGESETS" >> $GITHUB_STEP_SUMMARY
           echo "--IS_MISSING_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo "$IS_MISSING_CHANGESETS" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Report the changeset status on the PR
         # An existing comment is always updated; a new one is only created when changesets are
@@ -452,6 +494,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 2 # also get the previous commit
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
@@ -462,6 +505,7 @@ jobs:
           commit: "chore: bump package versions"
           title: "chore: bump package versions"
           createGithubReleases: false
+          commitMode: github-api
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
