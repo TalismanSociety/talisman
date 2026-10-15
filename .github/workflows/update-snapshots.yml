@@ -2,14 +2,9 @@ name: Update Visual Regression Snapshots
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to update snapshots on"
-        required: true
-        default: "dev"
 
 concurrency:
-  group: update-snapshots-${{ github.event.inputs.branch }}
+  group: update-snapshots-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: {}
@@ -27,7 +22,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.inputs.branch }}
           persist-credentials: false
 
       - name: Setup workspace
@@ -85,4 +79,4 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_BRANCH: ${{ github.event.inputs.branch }}
+          BASE_BRANCH: ${{ github.ref_name }}
