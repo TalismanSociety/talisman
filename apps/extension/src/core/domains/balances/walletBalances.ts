@@ -63,6 +63,7 @@ export const walletBalances$ = settingsStore.observable.pipe(
           status: "live" as const,
           balances: storage.balances,
           failedBalanceIds: [],
+          confirmedBalanceIds: [],
         }))
       )
     }

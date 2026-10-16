@@ -30,6 +30,7 @@ const makeResult = (partial: Partial<BalancesResult> = {}): BalancesResult => ({
   status: "live",
   balances: [makeBalance()],
   failedBalanceIds: [],
+  confirmedBalanceIds: [],
   ...partial,
 })
 
@@ -88,6 +89,18 @@ describe("isEqualBalancesResult", () => {
         makeResult({ balances: [makeBalance({ address: "0x02" })] })
       )
     ).toBe(false)
+  })
+
+  it("results that differ only in confirmedBalanceIds are unequal", () => {
+    expect(isEqualBalancesResult(makeResult(), makeResult({ confirmedBalanceIds: ["x"] }))).toBe(
+      false
+    )
+    expect(
+      isEqualBalancesResult(
+        makeResult({ confirmedBalanceIds: ["x"] }),
+        makeResult({ confirmedBalanceIds: ["x"] })
+      )
+    ).toBe(true)
   })
 })
 

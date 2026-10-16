@@ -10,7 +10,12 @@ const T0 = Date.UTC(2026, 9, 2, 12)
 const VERSION = "3.10.1"
 const HOUR_MS = 60 * 60_000
 
-const LIVE: BalancesResult = { status: "live", balances: [], failedBalanceIds: [] }
+const LIVE: BalancesResult = {
+  status: "live",
+  balances: [],
+  failedBalanceIds: [],
+  confirmedBalanceIds: [],
+}
 
 describe("tvlDue", () => {
   const due = (lastAt: number | null, lastVersion: string | null) =>

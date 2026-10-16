@@ -105,6 +105,7 @@ const mockedApiMethods = {
       status: "initialising",
       balances: [],
       failedBalanceIds: [],
+      confirmedBalanceIds: [],
     })
 
     return () => {}
