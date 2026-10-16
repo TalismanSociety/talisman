@@ -257,8 +257,7 @@ const decodeEvmMirrorResult = (
   const free = decoded?.data?.free ?? 0n
   if (free <= 0n) return []
 
-  // the mirror's funds are not on the account itself: count them toward the total via an extra,
-  // and show them in the locked column without reducing the account's transferable amount
+  // off-account funds: the extra counts them in total, the lock lists them without touching transferable
   const withdrawable = {
     source: "substrate-native-evm-mirror",
     label: EVM_MIRROR_LOCK_LABEL,

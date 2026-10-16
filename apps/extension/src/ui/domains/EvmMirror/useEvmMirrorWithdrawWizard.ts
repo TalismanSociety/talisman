@@ -68,7 +68,6 @@ const useEvmMirrorWithdrawWizardProvider = () => {
     [form]
   )
 
-  // checked against live balances, which change between keystrokes: not a form validator
   const amountError = useMemo<InlineError | null>(() => {
     if (step === "submitted" || typeof plancks !== "bigint" || plancks <= 0n) return null
     if (plancks > withdrawablePlancks)

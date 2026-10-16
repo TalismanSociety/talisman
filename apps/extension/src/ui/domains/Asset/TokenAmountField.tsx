@@ -27,7 +27,6 @@ type TokenAmountFieldProps = {
   errorMessage?: string | null
 }
 
-/** Centred token amount input with the token logo and symbol, a Max button and a reserved error line */
 export const TokenAmountField: FC<TokenAmountFieldProps> = ({
   tokenId,
   decimals,

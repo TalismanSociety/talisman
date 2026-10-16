@@ -113,7 +113,6 @@ export interface IBalanceModule<
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
-          /** the network's `hasFrontierMirrorWithdraw` chaindata flag */
           hasFrontierMirrorWithdraw?: boolean
           /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
           signal?: AbortSignal
@@ -134,7 +133,6 @@ export interface IBalanceModule<
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
-          /** the network's `hasFrontierMirrorWithdraw` chaindata flag */
           hasFrontierMirrorWithdraw?: boolean
         }
       : {

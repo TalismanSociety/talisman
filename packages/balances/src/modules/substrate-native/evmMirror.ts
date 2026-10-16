@@ -2,10 +2,8 @@ import type { BalanceLockType } from "./util/lockTypes"
 
 export const EVM_MIRROR_LOCK_LABEL = "evm-mirror" satisfies BalanceLockType
 
-/** Funds on the EVM mirror of a substrate account, which that account can `EVM.withdraw` */
 export type EvmMirrorWithdrawableMeta = {
   type: "evm-mirror-withdrawable"
-  /** truncated H160 of the substrate account: the `address` argument of `EVM.withdraw` */
   h160: `0x${string}`
 }
 
