@@ -1,11 +1,11 @@
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { flows } from "@ui/hooks/analytics/flows"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -61,7 +61,9 @@ export const EvmMirrorWithdrawConfirm = () => {
               tokensClassName="text-body"
             />
           </SummaryRow>
-          <SummaryRow label={t("From EVM address")}>{shortenAddress(h160, 6, 4)}</SummaryRow>
+          <SummaryRow label={t("From EVM account")}>
+            <AddressDisplay address={h160} networkId={null} className="text-sm" />
+          </SummaryRow>
           <SummaryRow label={t("To")}>
             <StakingAccountDisplay
               address={address}

@@ -2,6 +2,7 @@ import { Button } from "@ui/components/Button"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenAmountField } from "@ui/domains/Asset/TokenAmountField"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { StakingAccountDisplay } from "@ui/domains/Staking/shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
 import { useTranslation } from "react-i18next"
@@ -14,6 +15,7 @@ export const EvmMirrorWithdrawForm = () => {
     form,
     address,
     token,
+    h160,
     withdrawablePlancks,
     plancks,
     setPlancks,
@@ -45,6 +47,10 @@ export const EvmMirrorWithdrawForm = () => {
           <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("Account")}</div>
             <StakingAccountDisplay address={address} chainId={token.networkId} />
+          </div>
+          <div className="flex h-16 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("EVM account")}</div>
+            <AddressDisplay address={h160} networkId={null} />
           </div>
         </div>
 
