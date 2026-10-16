@@ -45,12 +45,12 @@ export const EvmMirrorWithdrawForm = () => {
       >
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-body-secondary leading-[140%]">
           <div className="flex h-16 items-center justify-between gap-8">
-            <div className="whitespace-nowrap">{t("Account")}</div>
-            <StakingAccountDisplay address={address} chainId={token.networkId} />
-          </div>
-          <div className="flex h-16 items-center justify-between gap-8">
             <div className="whitespace-nowrap">{t("EVM account")}</div>
             <AddressDisplay address={h160} networkId={null} />
+          </div>
+          <div className="flex h-16 items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Withdraw to")}</div>
+            <StakingAccountDisplay address={address} chainId={token.networkId} />
           </div>
         </div>
 
