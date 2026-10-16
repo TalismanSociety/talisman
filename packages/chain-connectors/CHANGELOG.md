@@ -1,5 +1,19 @@
 # @talismn/chain-connectors
 
+## 1.1.0
+
+### Minor Changes
+
+- 2c14284: add ChainConnectorDotPapi, which runs balances over a dapp's polkadot-api clients
+
+### Patch Changes
+
+- Updated dependencies [6b69acf]
+- Updated dependencies [6b69acf]
+- Updated dependencies [c45cff8]
+  - @talismn/chaindata-provider@2.3.0
+  - @talismn/util@2.1.1
+
 ## 1.0.6
 
 ### Patch Changes
