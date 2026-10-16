@@ -29,6 +29,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   UnbondWizardProvider: { flow: "staking" },
   BittensorClaimWizardProvider: { flow: "staking" },
   YieldxyzManageWizardProvider: { flow: "earn_manage" },
+  EvmMirrorWithdrawWizardProvider: { flow: "evm_withdraw" },
   MigratePasswordProvider: { flow: "password_migration" },
   JsonAccountImportProvider: {
     flow: "add_account",

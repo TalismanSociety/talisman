@@ -104,6 +104,11 @@ describe("filterBaseLocks", () => {
     expect(result).toEqual([makeLock("staking")])
   })
 
+  it("keeps base locks next to a lock that is not deducted from transferable", () => {
+    const locks = [makeLock("misc"), { ...makeLock("evm-mirror"), includeInTransferable: true }]
+    expect(filterBaseLocks(locks)).toEqual(locks)
+  })
+
   it("returns all locks when only non-base locks exist", () => {
     const locks = [makeLock("staking"), makeLock("vesting")]
     expect(filterBaseLocks(locks)).toEqual(locks)

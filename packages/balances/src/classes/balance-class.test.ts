@@ -509,6 +509,36 @@ describe("Balance — transferable (legacy calculation)", () => {
 // 10. Balance class — unavailable
 // ---------------------------------------------------------------------------
 describe("Balance — unavailable", () => {
+  it.each([
+    { next: "a lock", onAccount: { type: "locked", label: "lock", amount: "800" }, locked: 800n },
+    {
+      next: "a reserve",
+      onAccount: { type: "reserved", label: "reserved", amount: "50" },
+      locked: 0n,
+    },
+  ] as const)(
+    "counts off-account funds next to $next, so transferable + unavailable = total",
+    ({ onAccount, locked }) => {
+      const offAccount = { label: "evm-mirror", amount: "100" }
+      const b = new Balance(
+        makeBalanceJson({
+          address: "0x01",
+          tokenId: "tok",
+          value: undefined,
+          values: [
+            { type: "free", label: "free", amount: "1000" },
+            onAccount,
+            { ...offAccount, type: "locked", includeInTransferable: true },
+            { ...offAccount, type: "extra", includeInTotal: true },
+          ],
+        })
+      )
+      expect(b.locked.planck).toBe(locked)
+      expect(b.unavailable.planck).toBe(BigInt(onAccount.amount) + 100n)
+      expect(b.transferable.planck + b.unavailable.planck).toBe(b.total.planck)
+    }
+  )
+
   it("new calculation: max(locked, reserved)", () => {
     const b = new Balance(
       makeBalanceJson({

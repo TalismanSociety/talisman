@@ -13,6 +13,7 @@ export type BalanceLockType =
   | "subtensor-staking"
   | "vesting"
   | "dapp-staking"
+  | "evm-mirror"
   | `other-${string}`
   | "other"
 
@@ -69,7 +70,7 @@ const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock
 export const filterBaseLocks = (
   locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
 ) => {
-  const hasNonBaseLocks = locks.some(isNonBaseLock)
+  const hasNonBaseLocks = locks.some((lock) => isNonBaseLock(lock) && !lock.includeInTransferable)
   if (!hasNonBaseLocks) return locks
 
   return locks.filter(isNonBaseLock)
@@ -89,6 +90,7 @@ export const getLockTitle = (
   if (lock.label === "nompools-unbonding") return "Pooled Staking"
   if (lock.label === "subtensor-staking") return "Root Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
+  if (lock.label === "evm-mirror") return "EVM Balance"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"
   if (lock.label.startsWith("other")) return "Locked"
