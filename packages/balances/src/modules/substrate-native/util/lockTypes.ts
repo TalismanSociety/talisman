@@ -70,7 +70,7 @@ const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock
 export const filterBaseLocks = (
   locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
 ) => {
-  const hasNonBaseLocks = locks.some(isNonBaseLock)
+  const hasNonBaseLocks = locks.some((lock) => isNonBaseLock(lock) && !lock.includeInTransferable)
   if (!hasNonBaseLocks) return locks
 
   return locks.filter(isNonBaseLock)

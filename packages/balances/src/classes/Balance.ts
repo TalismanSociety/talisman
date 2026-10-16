@@ -285,9 +285,7 @@ export class Balance {
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     if (this.#cachedLocked === undefined)
-      this.#cachedLocked = this.#format(
-        this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
-      )
+      this.#cachedLocked = this.#format(excludeFromTransferableAmount(this.locks))
     return this.#cachedLocked
   }
 
@@ -390,7 +388,9 @@ export class Balance {
       ? 0n
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
 
-    return this.#format(baseUnavailable + nomPoolStakedPlancks)
+    const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
+
+    return this.#format(baseUnavailable + nomPoolStakedPlancks + includeInTotalExtraAmount(extra))
   }
 
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */

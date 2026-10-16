@@ -476,7 +476,7 @@ describe("substrate-native fetchBalances", () => {
       ])
     })
 
-    it("adds the mirror balance to the total without reducing the transferable amount", async () => {
+    it("adds the mirror balance to the total and to unavailable without reducing transferable", async () => {
       const { connector } = makeConnector({ [mirrorKey]: mirrorAccount(mirrorFree) })
 
       const [withoutMirror] = (await fetchNative([poolMember.address], connector)).success
@@ -487,6 +487,8 @@ describe("substrate-native fetchBalances", () => {
       const after = new Balance(withMirror!)
       expect(after.total.planck).toBe(before.total.planck + mirrorFree)
       expect(after.transferable.planck).toBe(before.transferable.planck)
+      expect(after.locked.planck).toBe(before.locked.planck)
+      expect(after.unavailable.planck).toBe(before.unavailable.planck + mirrorFree)
     })
 
     it("reports nothing when the mirror account is empty", async () => {
