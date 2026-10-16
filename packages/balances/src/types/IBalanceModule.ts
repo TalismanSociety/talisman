@@ -1,10 +1,13 @@
 import type { Instruction } from "@solana/kit"
+import type { BitcoinTreeSpec } from "@talismn/bitcoin"
 import type {
+  IChainConnectorBtc,
   IChainConnectorDot,
   IChainConnectorEth,
   IChainConnectorSol,
 } from "@talismn/chain-connectors"
 import type {
+  BtcNetworkId,
   DotNetworkId,
   EthNetworkId,
   SolNetworkId,
@@ -25,7 +28,26 @@ export type PlatformConnector<P extends TokenPlatform<TokenType>> = P extends "e
     ? IChainConnectorDot
     : P extends "solana"
       ? IChainConnectorSol
-      : never
+      : P extends "bitcoin"
+        ? IChainConnectorBtc
+        : never
+
+/**
+ * HD bitcoin account metadata, keyed by account identity (the payments xpub).
+ * The ordinals tree xpub cannot be derived from the identity xpub (separate hardened
+ * paths), so the wallet supplies both trees explicitly.
+ */
+export type BtcAccountsMeta = Record<
+  Address,
+  {
+    trees: BitcoinTreeSpec[]
+    /**
+     * Last fresh-address index handed out, keyed by `${tree}:${chain}` — incremental
+     * refreshes must probe rotated-but-unused addresses, not just the frontier.
+     */
+    issued?: Record<string, number>
+  }
+>
 
 type DotTransferCallData = {
   address: string
@@ -49,7 +71,9 @@ type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
     ? DotTransferCallData
     : P extends "solana"
       ? SolTransferCallData
-      : never
+      : // bitcoin transfers cannot be expressed as call data: PSBT construction needs the
+        // utxo set, a fee rate and a change address — the send flow uses @talismn/bitcoin directly
+        never
 
 export type TokensWithAddresses = Array<[Token, Address[]]>
 
@@ -117,13 +141,20 @@ export interface IBalanceModule<
           /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
           signal?: AbortSignal
         }
-      : {
-          networkId: EthNetworkId
-          tokensWithAddresses: TokensWithAddresses
-          connector: PlatformConnector<TokenPlatform<Type>>
-          /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
-          signal?: AbortSignal
-        }
+      : TokenPlatform<Type> extends "bitcoin"
+        ? {
+            networkId: BtcNetworkId
+            tokensWithAddresses: TokensWithAddresses
+            connector: PlatformConnector<TokenPlatform<Type>>
+            meta?: BtcAccountsMeta
+          }
+        : {
+            networkId: EthNetworkId
+            tokensWithAddresses: TokensWithAddresses
+            connector: PlatformConnector<TokenPlatform<Type>>
+            /** abort in-flight (time-sliced) decoding, e.g. when a poll loop unsubscribes */
+            signal?: AbortSignal
+          }
   ) => Promise<FetchBalanceResults>
 
   subscribeBalances: (
@@ -135,11 +166,18 @@ export interface IBalanceModule<
           miniMetadata: MiniMetadata<MiniMetadataExtra>
           hasFrontierMirrorWithdraw?: boolean
         }
-      : {
-          networkId: EthNetworkId
-          tokensWithAddresses: TokensWithAddresses
-          connector: PlatformConnector<TokenPlatform<Type>>
-        }
+      : TokenPlatform<Type> extends "bitcoin"
+        ? {
+            networkId: BtcNetworkId
+            tokensWithAddresses: TokensWithAddresses
+            connector: PlatformConnector<TokenPlatform<Type>>
+            meta?: BtcAccountsMeta
+          }
+        : {
+            networkId: EthNetworkId
+            tokensWithAddresses: TokensWithAddresses
+            connector: PlatformConnector<TokenPlatform<Type>>
+          }
   ) => Observable<FetchBalanceResults>
 
   getTransferCallData: (
@@ -169,6 +207,6 @@ export interface IBalanceModule<
               token: Token
               connector: PlatformConnector<TokenPlatform<Type>>
             }
-          : never
+          : never // bitcoin: see CallDataOf comment
   ) => CallDataOf<TokenPlatform<Type>> | Promise<CallDataOf<TokenPlatform<Type>>> // because of psp22
 }

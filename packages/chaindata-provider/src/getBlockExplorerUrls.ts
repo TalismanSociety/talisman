@@ -113,6 +113,11 @@ const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
   return parts.length > 2 ? parts.slice(-2).join(".") : hostname
 }
 
+// loose SLIP-132 extended public key detection (xpub/ypub/zpub/tpub/upub/vpub),
+// good enough for URL routing without pulling in a base58 decoder
+const isBitcoinXpubLike = (address: string) =>
+  /^[xyztuv]pub[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(address)
+
 const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | null => {
   switch (query.type) {
     case "transaction":
@@ -139,6 +144,9 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return `/tx/${query.id}`
       }
     case "address":
+      // xpubs are wallet identities, not on-chain addresses: explorers can't
+      // resolve them, and they must never leak into a third-party URL anyway
+      if (isBitcoinXpubLike(query.address)) return null
       switch (host) {
         case "avail.so":
         case "polkadot.js":
@@ -155,6 +163,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return `/address/${query.address}`
       }
     case "account": {
+      if (isBitcoinXpubLike(query.address)) return null
       switch (host) {
         case "avail.so":
         case "polkadot.js":

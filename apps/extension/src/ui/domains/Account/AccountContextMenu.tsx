@@ -1,6 +1,7 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { Account } from "@core/domains/keyring/exports"
-import { getAccountGenesisHash } from "@core/domains/keyring/exports"
+import { getAccountGenesisHash, isAccountPlatformBitcoin } from "@core/domains/keyring/exports"
+import { isBitcoinXpub } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import {
   ContextMenu,
@@ -10,10 +11,12 @@ import {
 } from "@ui/components/ContextMenu"
 import type { PopoverOptions } from "@ui/components/Popover"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { useAccountCopyXpubModal } from "@ui/domains/Account/AccountCopyXpubModal"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { useAccountSignMessageModal } from "@ui/domains/Account/AccountSignMessageModal"
 import { useAddProxyModal } from "@ui/domains/AccountProxies/AddProxy/useAddProxyModal"
 import { useManageProxyModal } from "@ui/domains/AccountProxies/ManageProxy/useManageProxyModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -88,6 +91,26 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     if (!account) return
     openCopyAddressModal({ entry: "account_menu", address: account.address, networkId: chain?.id })
   }, [account, chain?.id, openCopyAddressModal])
+
+  // bitcoin power users need the xpub for watch-only imports and portfolio
+  // trackers — this is the only place in the UI where it is exposed
+  const { open: openCopyXpubModal } = useAccountCopyXpubModal()
+  const canCopyXpub = !!account && isBitcoinXpub(account.address)
+  const copyXpub = useCallback(() => {
+    if (!account) return
+    openCopyXpubModal(account)
+  }, [account, openCopyXpubModal])
+
+  // BIP322 message signing — hot bitcoin accounts only (ledger needs a device flow)
+  const { open: openSignMessageModal } = useAccountSignMessageModal()
+  const canSignMessage =
+    !!account &&
+    (account.type === "hd-bitcoin" ||
+      (isAccountPlatformBitcoin(account) && account.type === "keypair"))
+  const signMessage = useCallback(() => {
+    if (!account) return
+    openSignMessageModal(account)
+  }, [account, openSignMessageModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account
@@ -165,6 +188,12 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               )}
               {canCopyAddress && (
                 <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
+              )}
+              {canCopyXpub && (
+                <ContextMenuItem onClick={copyXpub}>{t("Copy xpub")}</ContextMenuItem>
+              )}
+              {canSignMessage && (
+                <ContextMenuItem onClick={signMessage}>{t("Sign message")}</ContextMenuItem>
               )}
               <ViewOnExplorerMenuItem account={account} />
               {canRename && (

@@ -2,6 +2,7 @@ import { base58, hex } from "@scure/base"
 
 import { entropyToSeed, getDevSeed, mnemonicToEntropy } from "../mnemonic"
 import type { AccountPlatform, KeypairCurve } from "../types"
+import { deriveBitcoin, getPublicKeyBitcoin, parseWif } from "./deriveBitcoin"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
 import { deriveEthereum, getPublicKeyEthereum } from "./deriveEthereum"
@@ -17,8 +18,7 @@ export const deriveKeypair = (seed: Uint8Array, derivationPath: string, curve: K
     case "ecdsa":
       return deriveEcdsa(seed, derivationPath)
     case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
-      throw new Error("deriveKeypair is not implemented for Bitcoin")
+      return deriveBitcoin(seed, derivationPath)
     case "ethereum":
       return deriveEthereum(seed, derivationPath)
     case "solana":
@@ -37,8 +37,7 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
     case "ed25519":
       return getPublicKeyEd25519(secretKey)
     case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
-      throw new Error("getPublicKeyFromSecret is not implemented for Bitcoin")
+      return getPublicKeyBitcoin(secretKey)
     case "solana":
       return getPublicKeySolana(secretKey)
   }
@@ -84,6 +83,8 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => 
 
       throw new Error("Invalid Solana secret key length")
     }
+    case "bitcoin":
+      return parseWif(secretKey)
 
     default:
       throw new Error("Not implemented")
@@ -92,6 +93,9 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => 
 
 // @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
 export const isValidDerivationPath = async (derivationPath: string, curve: KeypairCurve) => {
+  // HD bitcoin accounts take a plain account index, not a derivation path
+  if (curve === "bitcoin-ecdsa") return /^\d+$/.test(derivationPath)
+
   try {
     deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true

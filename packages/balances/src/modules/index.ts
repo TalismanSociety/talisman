@@ -1,3 +1,4 @@
+import { BtcNativeBalanceModule } from "./btc-native"
 import { EvmErc20BalanceModule } from "./evm-erc20"
 import { EvmNativeBalanceModule } from "./evm-native"
 import { EvmUniswapV2BalanceModule } from "./evm-uniswapv2"
@@ -26,6 +27,7 @@ export const BALANCE_MODULES = [
   SolNativeBalanceModule,
   SolSplBalanceModule,
   SolToken2022BalanceModule,
+  BtcNativeBalanceModule,
 ]
 
 /** @deprecated unused */
@@ -33,6 +35,7 @@ export type AnyBalanceModule = (typeof BALANCE_MODULES)[number]
 
 export * from "../types/IBalanceModule"
 export * from "./abis"
+export * from "./btc-native"
 export * from "./evm-erc20"
 export * from "./evm-native"
 export * from "./evm-uniswapv2"

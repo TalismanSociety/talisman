@@ -109,7 +109,7 @@ describe("ChaindataProvider default chaindata", () => {
       networks.some(({ id }) => id === "424242")
     )
 
-    expect(ids(networks)).toEqual(ids(chaindataB.networks))
+    expect(ids(networks)).toEqual([...ids(chaindataB.networks), "bitcoin", "bitcoin-signet"])
   })
 })
 

@@ -3,6 +3,7 @@ import {
   decodeSs58Address,
   detectAddressEncoding,
   encodeAddressSs58,
+  normalizeXpub,
 } from "./encoding"
 
 const CACHE = new Map<string, string>()
@@ -26,6 +27,8 @@ const normalizeAnyAddress = (address: string) => {
     case "base58check":
     case "base58solana":
       return address
+    case "bip32-xpub":
+      return normalizeXpub(address)
     case "ss58": {
       const [pk] = decodeSs58Address(address)
       return encodeAddressSs58(pk, 42)

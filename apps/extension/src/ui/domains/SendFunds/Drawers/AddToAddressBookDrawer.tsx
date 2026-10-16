@@ -1,4 +1,3 @@
-import { chainPlatformOf } from "@common/analytics/accounts"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   detectAddressEncoding,
@@ -77,14 +76,12 @@ const AddToAddressBookDrawerForm: FC<{
             genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
           },
         ])
-        const platform = chainPlatformOf(getAccountPlatformFromAddress(address))
-        if (platform)
-          track("contact_added", {
-            source: "send",
-            platform,
-            has_network: !!(limitToNetwork && tokenGenesisHash),
-            name_service: recipientSource === "name_service",
-          })
+        track("contact_added", {
+          source: "send",
+          platform: getAccountPlatformFromAddress(address),
+          has_network: !!(limitToNetwork && tokenGenesisHash),
+          name_service: recipientSource === "name_service",
+        })
         onClose?.()
       } catch (err) {
         setError("name", err as Error)

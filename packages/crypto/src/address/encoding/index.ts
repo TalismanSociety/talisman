@@ -1,5 +1,7 @@
 export * from "./addressEncodingFromCurve"
 export * from "./bitcoin"
+export * from "./bitcoinScripts"
+export * from "./bitcoinXpub"
 export * from "./detectAddressEncoding"
 export * from "./ethereum"
 export * from "./solana"

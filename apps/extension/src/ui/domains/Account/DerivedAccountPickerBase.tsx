@@ -47,6 +47,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   address,
   genesisHash,
   balances,
+  balanceContent,
   connected,
   selected,
   onClick,
@@ -88,7 +89,11 @@ const AccountButton: FC<AccountButtonProps> = ({
       </div>
       <div className="flex items-center justify-end gap-2">
         {withBalances &&
-          (isInitializing ? (
+          // a caller-supplied balance node (e.g. bitcoin sats preview, fetched outside
+          // the balances subscription) takes precedence over the fiat total
+          (balanceContent !== undefined ? (
+            balanceContent
+          ) : isInitializing ? (
             <div className="h-9 w-17 animate-pulse rounded-xs bg-grey-750"></div>
           ) : (
             <Tooltip placement="bottom-end">
@@ -118,6 +123,8 @@ export type DerivedAccountBase = {
   address: string
   genesisHash?: HexString
   balances?: Balances
+  /** custom balance node rendered in place of the fiat total (e.g. bitcoin sats preview) */
+  balanceContent?: ReactNode
   connected?: boolean
   selected?: boolean
   isBalanceLoading?: boolean

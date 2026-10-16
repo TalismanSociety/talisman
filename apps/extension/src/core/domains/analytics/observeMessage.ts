@@ -33,6 +33,7 @@ export type TxSubmissionMessage =
   | "pri(substrate.rpc.submit.withBittensorMevShield)"
   | "pri(solana.rpc.submit)"
   | "pri(solana.sign.approve)"
+  | "pri(bitcoin.tx.submit)"
   | "pri(signing.approveSign)"
   | "pri(signing.approveSign.hardware)"
   | "pri(signing.approveSign.qr)"
@@ -155,6 +156,17 @@ const TX_SUBMISSION_POLICY = {
         signOnly: !queued.request.send,
       }
     },
+    succeeded: always,
+  },
+  "pri(bitcoin.tx.submit)": {
+    read: ({ networkId, address, txInfo }) => ({
+      platform: "bitcoin",
+      network: { networkId },
+      address,
+      txType: txTypeOf(txInfo),
+      submittedBy: "wallet",
+      signOnly: false,
+    }),
     succeeded: always,
   },
   "pri(signing.approveSign)": { read: ({ id }) => storedSubstrateSign(id), succeeded: isTrue },

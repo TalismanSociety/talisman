@@ -16,11 +16,13 @@ export type LedgerAccountDefEthereum = Extract<
   { type: "ledger-ethereum" }
 >
 export type LedgerAccountDefSolana = Extract<AddAccountExternalOptions, { type: "ledger-solana" }>
+export type LedgerAccountDefBitcoin = Extract<AddAccountExternalOptions, { type: "ledger-bitcoin" }>
 
 export type LedgerAccountDef =
   | LedgerAccountDefSubstrate
   | LedgerAccountDefEthereum
   | LedgerAccountDefSolana
+  | LedgerAccountDefBitcoin
 
 export enum AddSubstrateLedgerAppType {
   Legacy = "Legacy",

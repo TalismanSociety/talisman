@@ -51,10 +51,8 @@ const getSeedDerivationType = (curve: KeypairCurve): SeedDerivationType => {
       return "substrate"
     case "ethereum":
     case "solana":
-      return "classic"
     case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
-      throw new Error("seed derivation is not implemented for Bitcoin")
+      return "classic"
   }
 }
 

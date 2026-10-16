@@ -10,7 +10,6 @@ export const getAccountPlatformFromCurve = (curve: KeypairCurve): AccountPlatfor
     case "ethereum":
       return "ethereum"
     case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
       return "bitcoin"
     case "solana":
       return "solana"
@@ -26,6 +25,7 @@ export const getAccountPlatformFromEncoding = (encoding: AddressEncoding): Accou
     case "bech32m":
     case "bech32":
     case "base58check":
+    case "bip32-xpub":
       return "bitcoin"
     case "base58solana":
       return "solana"

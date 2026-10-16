@@ -16,10 +16,12 @@ import {
 import {
   encodeAddressSs58,
   isAddressEqual,
+  isBitcoinXpub,
   isEthereumAddress,
   isSs58Address,
   normalizeAddress,
 } from "@talismn/crypto"
+import { api } from "@ui/api"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import {
@@ -29,6 +31,7 @@ import {
   useNetworksMapById,
   useToken,
 } from "@ui/state/chaindata"
+import { useSetting } from "@ui/state/settings"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
@@ -79,6 +82,10 @@ const getFormattedAddress = (
   if (!address) return null
 
   try {
+    // bitcoin account identities are xpubs and must never be copied as a payable
+    // address: the wizard swaps in a derived receive address asynchronously
+    if (isBitcoinXpub(address)) return null
+
     if (network?.platform === "polkadot") {
       const prefix =
         legacyFormat && typeof network.oldPrefix === "number" ? network.oldPrefix : network.prefix
@@ -142,9 +149,53 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
 
   const network = useNetworkById(state.networkId)
 
+  // bitcoin receive addresses are derived from the account xpub by the background
+  const isBitcoinAccount = !!state.address && isBitcoinXpub(state.address)
+  const [btcFreshReceiveAddress] = useSetting("btcFreshReceiveAddress")
+  const [btcAddresses, setBtcAddresses] = useState<{
+    payments: string
+    ordinals: string
+  } | null>(null)
+  useEffect(() => {
+    setBtcAddresses(null)
+    if (!isBitcoinAccount || !state.address) return
+
+    const networkId = network?.platform === "bitcoin" ? network.id : "bitcoin"
+    let cancelled = false
+    Promise.all([
+      api.btcGetUnusedAddress({
+        networkId,
+        address: state.address,
+        tree: "payments",
+        chain: 0,
+        fresh: !!btcFreshReceiveAddress,
+      }),
+      api
+        .btcGetUnusedAddress({
+          networkId,
+          address: state.address,
+          tree: "ordinals",
+          chain: 0,
+        })
+        .catch(() => null), // single-tree accounts (watched xpubs) have no ordinals tree
+    ])
+      .then(([payments, ordinals]) => {
+        if (!cancelled)
+          setBtcAddresses({ payments: payments.address, ordinals: ordinals?.address ?? "" })
+      })
+      .catch((err) => log.error("Failed to fetch bitcoin receive address", { err }))
+
+    return () => {
+      cancelled = true
+    }
+  }, [isBitcoinAccount, state.address, network, btcFreshReceiveAddress])
+
   const formattedAddress = useMemo(
-    () => getFormattedAddress(state.address, network, state.legacyFormat),
-    [network, state]
+    () =>
+      isBitcoinAccount
+        ? (btcAddresses?.payments ?? null)
+        : getFormattedAddress(state.address, network, state.legacyFormat),
+    [isBitcoinAccount, btcAddresses, network, state]
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
@@ -236,10 +287,29 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
   const copySpecific = useCallback(
     async (address: string, chainId?: string | null, legacyFormat?: boolean) => {
       const chain = chainId ? networksMap[chainId] : null
-      const formattedAddress =
-        chain?.platform === "polkadot" && chain.account === "*25519"
-          ? encodeAddressSs58(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
-          : address
+
+      let formattedAddress: string
+      if (isBitcoinXpub(address)) {
+        // never copy the xpub: resolve it to an unused receive address
+        try {
+          const { address: btcAddress } = await api.btcGetUnusedAddress({
+            networkId: chain?.platform === "bitcoin" ? chain.id : "bitcoin",
+            address,
+            tree: "payments",
+            chain: 0,
+            fresh: !!btcFreshReceiveAddress,
+          })
+          formattedAddress = btcAddress
+        } catch (err) {
+          log.error("Failed to fetch bitcoin receive address", { err })
+          return
+        }
+      } else
+        formattedAddress =
+          chain?.platform === "polkadot" && chain.account === "*25519"
+            ? encodeAddressSs58(address, (legacyFormat && chain.oldPrefix) || chain.prefix)
+            : address
+
       const onQrClick = () => {
         open({ entry: "copy_toast", address, networkId: chainId, qr: true, legacyFormat })
       }
@@ -252,7 +322,7 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
       })
       close()
     },
-    [close, networksMap, open]
+    [btcFreshReceiveAddress, close, networksMap, open]
   )
 
   const ctx = {
@@ -268,6 +338,9 @@ const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInp
     copy,
     copySpecific,
     isLogoLoaded,
+    isBitcoinAccount,
+    btcOrdinalsAddress: btcAddresses?.ordinals || null,
+    btcFreshReceiveAddress: !!btcFreshReceiveAddress,
   }
 
   return ctx

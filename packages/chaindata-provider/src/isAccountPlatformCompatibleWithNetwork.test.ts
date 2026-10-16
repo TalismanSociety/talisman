@@ -6,7 +6,7 @@ import { isAccountPlatformCompatibleWithNetwork } from "./isAccountPlatformCompa
 const network = (fields: Record<string, unknown>) => fields as unknown as Network
 
 describe("isAccountPlatformCompatibleWithNetwork", () => {
-  it("matches ethereum and solana networks by platform", () => {
+  it("matches ethereum, solana and bitcoin networks by platform", () => {
     expect(
       isAccountPlatformCompatibleWithNetwork(network({ platform: "ethereum" }), "ethereum")
     ).toBe(true)
@@ -19,6 +19,12 @@ describe("isAccountPlatformCompatibleWithNetwork", () => {
     expect(isAccountPlatformCompatibleWithNetwork(network({ platform: "solana" }), "bitcoin")).toBe(
       false
     )
+    expect(
+      isAccountPlatformCompatibleWithNetwork(network({ platform: "bitcoin" }), "bitcoin")
+    ).toBe(true)
+    expect(
+      isAccountPlatformCompatibleWithNetwork(network({ platform: "bitcoin" }), "ethereum")
+    ).toBe(false)
   })
 
   it("matches polkadot networks by account type", () => {

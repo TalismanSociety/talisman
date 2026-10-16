@@ -1,12 +1,12 @@
 import type {
   WalletTransaction,
+  WalletTransactionBtc,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
 } from "@core/domains/transactions/types"
 import { getBlockExplorerUrl } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import type { HexString } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { PillButton } from "@ui/components/PillButton"
 import {
@@ -24,8 +24,9 @@ import type { TxReplaceType } from "./types"
 /** "transfer" words the send funds flow */
 export type TxProgressWording = "transaction" | "transfer"
 
+// txId is an evm tx hash or a bitcoin txid, hence the loose type
 export type ReplacementCallbackArgs = {
-  txId: `0x${string}`
+  txId: string
   networkId: string
   replaceType: TxReplaceType
 }
@@ -51,7 +52,7 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
-    (newHash?: HexString) => {
+    (newHash?: string) => {
       setReplaceType(undefined)
       if (newHash && replaceType && tx) {
         onReplacementComplete?.({ txId: newHash, networkId: tx.networkId, replaceType })
@@ -64,8 +65,9 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
 
   const isInvisible = useMemo(() => {
     if (!tx) return true
-    if (!evmNetwork || evmNetwork.preserveGasEstimate) return true
-    if (tx.status !== "pending" || tx.platform !== "ethereum") return true
+    if (tx.platform === "ethereum" && (!evmNetwork || evmNetwork.preserveGasEstimate)) return true
+    if (tx.status !== "pending" || (tx.platform !== "ethereum" && tx.platform !== "bitcoin"))
+      return true
     return false
   }, [tx, evmNetwork])
 
@@ -321,6 +323,19 @@ const TxProgressSol: FC<TxProgressOptions & { tx: WalletTransactionSol }> = ({
   return <TxProgressBase {...options} tx={tx} href={href} />
 }
 
+const TxProgressBtc: FC<TxProgressOptions & { tx: WalletTransactionBtc }> = ({
+  tx,
+  ...options
+}) => {
+  const network = useNetworkById(tx.networkId, "bitcoin")
+  const href = useMemo(
+    () => getBlockExplorerUrl(network, { type: "transaction", id: tx.hash }),
+    [network, tx.hash]
+  )
+
+  return <TxProgressBase {...options} tx={tx} blockNumber={tx.blockNumber} href={href} />
+}
+
 type TxProgressProps = TxProgressOptions & {
   hash: string // hash or signature (for solana)
   networkIdOrHash: string
@@ -343,6 +358,8 @@ export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, ...opti
       return <TxProgressDot {...options} tx={tx} />
     case "solana":
       return <TxProgressSol {...options} tx={tx} />
+    case "bitcoin":
+      return <TxProgressBtc {...options} tx={tx} />
     default:
       return null
   }

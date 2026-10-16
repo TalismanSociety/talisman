@@ -1,7 +1,12 @@
 import { getAccountGenesisHash } from "@core/domains/keyring/exports"
 import type { Address as TAddress } from "@talismn/balances"
+import { encodeBip21Uri } from "@talismn/bitcoin"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
-import { getAccountPlatformFromAddress, isAddressEqual } from "@talismn/crypto"
+import {
+  getAccountPlatformFromAddress,
+  isAddressEqual,
+  isBitcoinOnChainAddress,
+} from "@talismn/crypto"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { FadeIn } from "@ui/components/FadeIn"
@@ -168,6 +173,7 @@ const CopyButton = () => {
 
 export const CopyAddressCopyForm = () => {
   const {
+    address,
     networkId,
     formattedAddress,
     logo,
@@ -176,6 +182,9 @@ export const CopyAddressCopyForm = () => {
     legacyFormat,
     goToAddressPage,
     goToNetworkPage,
+    isBitcoinAccount,
+    btcOrdinalsAddress,
+    btcFreshReceiveAddress,
   } = useCopyAddressWizard()
 
   const platform = useMemo(() => {
@@ -187,6 +196,14 @@ export const CopyAddressCopyForm = () => {
     const { oldPrefix, prefix } = network
     return typeof oldPrefix === "number" && oldPrefix !== prefix
   }, [network])
+
+  // bitcoin QR codes carry a BIP21 payment URI — what other wallets' scanners expect
+  const qrData = useMemo(() => {
+    if (!formattedAddress) return undefined
+    return platform === "bitcoin" && isBitcoinOnChainAddress(formattedAddress)
+      ? encodeBip21Uri({ address: formattedAddress })
+      : formattedAddress
+  }, [formattedAddress, platform])
 
   const { t } = useTranslation()
 
@@ -200,7 +217,7 @@ export const CopyAddressCopyForm = () => {
             <div>{t("Account")}</div>
             <div>
               <AddressPillButton
-                address={formattedAddress}
+                address={address ?? formattedAddress}
                 genesisHash={getNetworkGenesisHash(network)}
                 onClick={goToAddressPage}
               />
@@ -231,7 +248,7 @@ export const CopyAddressCopyForm = () => {
           <div className="h-52.5 w-52.5 rounded-lg bg-[#ffffff] p-8">
             {isLogoLoaded && (
               <FadeIn>
-                <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
+                <TextQrCode data={qrData} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
               </FadeIn>
             )}
           </div>
@@ -314,6 +331,62 @@ export const CopyAddressCopyForm = () => {
                   <TooltipContent>{formattedAddress}</TooltipContent>
                 </Tooltip>
               </div>
+            </div>
+          )}
+          {isBitcoinAccount && (
+            <div className="flex flex-col items-center gap-1 text-center text-body-secondary leading-paragraph">
+              <div>
+                <Trans
+                  t={t}
+                  defaults="Your Bitcoin <Tooltip /> address"
+                  components={{
+                    Tooltip: (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="inline align-middle text-xs hover:text-body" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {btcFreshReceiveAddress
+                            ? t(
+                                "A fresh address is issued for each receive. Previous addresses remain valid forever."
+                              )
+                            : t(
+                                "Use this address for receiving bitcoin. It changes after receiving a payment; previous addresses remain valid forever."
+                              )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ),
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <NetworkLogo className="text-lg" networkId={network?.id ?? "bitcoin"} />
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{formattedAddress}</TooltipContent>
+                </Tooltip>
+              </div>
+              {!!btcOrdinalsAddress && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="mt-2 flex items-center gap-2 text-body-disabled text-xs hover:text-body"
+                      onClick={() => window.navigator.clipboard.writeText(btcOrdinalsAddress)}
+                    >
+                      <CopyIcon className="inline" />
+                      <span>
+                        {t("Ordinals address")}: {shortenAddress(btcOrdinalsAddress, 5, 5)}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("Taproot address for collectibles and inscriptions only")}
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           )}
           {platform === "solana" && (

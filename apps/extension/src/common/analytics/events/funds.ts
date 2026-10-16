@@ -43,7 +43,7 @@ export const fundsEvents = defineEventGroup(properties, {
   },
   tx_replace_requested: {
     description:
-      "The user sent a speed-up or a cancel for a pending Ethereum transaction. Mobile sends it when its replace screen opens: here modal_opened covers the open.",
+      "The user sent a speed-up or a cancel for a pending Ethereum or Bitcoin transaction. Mobile sends it when its replace screen opens: here modal_opened covers the open.",
     props: { replace_type: "required", platform: "required", network_id: "required" },
   },
   fee_priority_changed: {

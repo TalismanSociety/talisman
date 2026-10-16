@@ -1,4 +1,4 @@
-import { type AccountOrigin, chainPlatformOf, isCreatedOrigin } from "@common/analytics/accounts"
+import { type AccountOrigin, isCreatedOrigin } from "@common/analytics/accounts"
 import { type ChainPlatform, signerOf } from "@common/analytics/transactions"
 import { getAccountPlatformFromAddress } from "@talismn/crypto"
 import type { Account, AccountType } from "@talismn/keyring"
@@ -38,18 +38,21 @@ const reportAccountsAdded = (added: readonly AddedAccount[], hadAccount: boolean
     track("onboarding_completed", { origin: first.origin, wallet_type: first.walletType })
 }
 
-const EXTERNAL_ORIGINS: Record<Exclude<AccountType, "keypair" | "contact">, AccountOrigin> = {
+const EXTERNAL_ORIGINS: Record<
+  Exclude<AccountType, "keypair" | "hd-bitcoin" | "contact">,
+  AccountOrigin
+> = {
   "watch-only": "watch",
+  "watch-only-bitcoin": "watch",
   "ledger-polkadot": "ledger",
   "ledger-ethereum": "ledger",
   "ledger-solana": "ledger",
+  "ledger-bitcoin": "ledger",
   "polkadot-vault": "vault",
   "signet": "signet",
 }
 
 const isAccount = (account: Account) => account.type !== "contact"
-
-const walletTypeOf = (address: string) => chainPlatformOf(getAccountPlatformFromAddress(address))
 
 const observeAdd = (originOf: (index: number, account: Account) => AccountOrigin | null) => {
   const before = keyringStore.getAccounts()
@@ -58,8 +61,7 @@ const observeAdd = (originOf: (index: number, account: Account) => AccountOrigin
     const added = addresses.flatMap((address, index) => {
       const account = accountsAfter.find((candidate) => candidate.address === address)
       const origin = account && originOf(index, account)
-      const walletType = walletTypeOf(address)
-      return origin && walletType ? [{ origin, walletType }] : []
+      return origin ? [{ origin, walletType: getAccountPlatformFromAddress(address) }] : []
     })
     reportAccountsAdded(added, accountsBefore.some(isAccount))
   }
@@ -113,7 +115,7 @@ const ACCOUNT_MESSAGES: { [M in AccountMessage]: Observe<M> } = {
   "pri(accounts.create.json)": () => observeAdd(() => "json"),
   "pri(accounts.add.external)": () =>
     observeAdd((_, account) =>
-      account.type === "keypair" || account.type === "contact"
+      account.type === "keypair" || account.type === "hd-bitcoin" || account.type === "contact"
         ? null
         : EXTERNAL_ORIGINS[account.type]
     ),

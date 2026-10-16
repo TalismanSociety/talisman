@@ -13,6 +13,7 @@ export const TxHistoryDetailsIdentifier: FC<{
     switch (tx.platform) {
       case "ethereum":
       case "polkadot":
+      case "bitcoin":
         return tx.hash
       case "solana":
         return tx.signature

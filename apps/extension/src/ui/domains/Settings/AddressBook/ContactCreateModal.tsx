@@ -1,10 +1,10 @@
-import { chainPlatformOf } from "@common/analytics/accounts"
 import { classifyError } from "@common/analytics/errorCategory"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
+  isBitcoinOnChainAddress,
   isSs58Address,
 } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
@@ -61,6 +61,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               case "polkadot":
               case "ethereum":
               case "solana":
+                break
+              case "bitcoin":
+                // xpubs identify accounts, not spendable destinations
+                if (!isBitcoinOnChainAddress(value))
+                  return ctx.createError({ message: t("Unsupported address type") })
                 break
               default:
                 return ctx.createError({ message: t("Unsupported address type") })
@@ -173,14 +178,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             genesisHash,
           },
         ])
-        const platform = chainPlatformOf(getAccountPlatformFromAddress(address))
-        if (platform)
-          track("contact_added", {
-            source: "address_book",
-            platform,
-            has_network: !!genesisHash,
-            name_service: isNsLookup,
-          })
+        track("contact_added", {
+          source: "address_book",
+          platform: getAccountPlatformFromAddress(address),
+          has_network: !!genesisHash,
+          name_service: isNsLookup,
+        })
         notify({
           type: "success",
           title: t("New contact added"),

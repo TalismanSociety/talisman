@@ -4,9 +4,10 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import type { Account, AccountType } from "@core/domains/keyring/exports"
+import { parseBip21Uri } from "@talismn/bitcoin"
 import {
-  type DotNetwork,
   getNetworkGenesisHash,
+  isNetworkBtc,
   isNetworkDot,
   isNetworkEth,
   type Network,
@@ -16,6 +17,7 @@ import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
+  isBitcoinAddress,
   isSs58Address,
 } from "@talismn/crypto"
 import {
@@ -30,13 +32,14 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
+import { notify } from "@ui/components/Notifications"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInput } from "@ui/components/SearchInput"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -52,13 +55,16 @@ const RECIPIENT_GROUP_BY_ACCOUNT_TYPE: Record<AccountType, RecipientGroup> = {
   "ledger-ethereum": "own_account",
   "ledger-polkadot": "own_account",
   "ledger-solana": "own_account",
+  "ledger-bitcoin": "own_account",
+  "hd-bitcoin": "own_account",
   "polkadot-vault": "own_account",
   signet: "signet_vault",
   "watch-only": "watched_account",
+  "watch-only-bitcoin": "watched_account",
   contact: "contact",
 }
 
-const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
+const AddressFormatError = ({ chain }: { chain?: Network }) => {
   const { t } = useTranslation()
   return (
     <div className="flex h-min-h-full w-full flex-col items-center gap-4 px-12 py-7 align-center">
@@ -221,6 +227,17 @@ export const SendFundsRecipientPicker = () => {
     return null
   }, [isNsLookup, matchingAccounts.length, network, nsLookup, search])
 
+  // bitcoin addresses embed their network: surface a mismatch (e.g. signet address
+  // on mainnet) as an error instead of silently showing no result
+  const isBtcAddressNetworkMismatch = useMemo(
+    () =>
+      isNetworkBtc(network) &&
+      !!search &&
+      isBitcoinAddress(search) &&
+      !isAddressCompatibleWithNetwork(network, search),
+    [network, search]
+  )
+
   const handleSelect = useCallback(
     (address: string) => {
       set("to", address, true)
@@ -263,6 +280,38 @@ export const SendFundsRecipientPicker = () => {
     set("to", newAddress.address, true)
   }, [newAddress, newAddressSource, set, setRecipientSource])
 
+  // bitcoin payment URIs (BIP21) fill in both the recipient and, if present, the amount
+  const lastBip21Ref = useRef<string | null>(null)
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (isNetworkBtc(network)) {
+        const bip21 = parseBip21Uri(value)
+        if (bip21) {
+          // the uncontrolled input re-emits the raw uri on re-renders — process once
+          if (lastBip21Ref.current !== value) {
+            lastBip21Ref.current = value
+            // never apply an amount from a uri whose address doesn't belong on this
+            // network — the address error must not leave a stale amount behind
+            if (
+              bip21.amountSats !== undefined &&
+              isAddressCompatibleWithNetwork(network, bip21.address)
+            ) {
+              set("amount", String(bip21.amountSats))
+              notify(
+                { type: "success", title: t("Amount set from payment link") },
+                { toastId: "bip21-amount" }
+              )
+            }
+          }
+          setSearch(bip21.address)
+          return
+        }
+      }
+      setSearch(value)
+    },
+    [network, set, t]
+  )
+
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
@@ -271,7 +320,7 @@ export const SendFundsRecipientPicker = () => {
           <SearchInput
             onSubmit={handleSubmitSearch}
             autoFocus
-            onChange={setSearch}
+            onChange={handleSearchChange}
             placeholder={t("Enter address")}
             after={
               isNsLookup && isNsFetching ? (
@@ -282,7 +331,7 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
-        {isNetworkDot(network) && newAddress?.ss58FormatError ? (
+        {(isNetworkDot(network) && newAddress?.ss58FormatError) || isBtcAddressNetworkMismatch ? (
           <AddressFormatError chain={network ?? undefined} />
         ) : (
           <>

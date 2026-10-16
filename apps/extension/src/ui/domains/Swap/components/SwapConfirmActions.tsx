@@ -20,6 +20,7 @@ import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useSendFundsTransactionBtc } from "@ui/domains/SendFunds/useSendFundsTransactionBtc"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import {
@@ -278,11 +279,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           null
       }
 
-      const context: SwapTransactionContext = sapi
-        ? { platform: "polkadot", sapi, allowReap }
-        : solanaRpc
-          ? { platform: "solana", rpc: solanaRpc }
-          : { platform: "ethereum" }
+      const context: SwapTransactionContext =
+        fromToken?.platform === "bitcoin"
+          ? { platform: "bitcoin" }
+          : sapi
+            ? { platform: "polkadot", sapi, allowReap }
+            : solanaRpc
+              ? { platform: "solana", rpc: solanaRpc }
+              : { platform: "ethereum" }
 
       const transaction = await swapModule.getTransaction({
         fromTokenId,
@@ -341,6 +345,19 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       !needsApproval && transaction?.platform === "solana" ? transaction.transaction : undefined,
   })
 
+  // bitcoin source: the module resolves the deposit target, and the actual PSBT is
+  // built + fee-estimated here by reusing the bitcoin send flow over the sender's utxos
+  const btcDeposit = transaction?.platform === "bitcoin" ? transaction : null
+  const btcTx = useSendFundsTransactionBtc({
+    tokenId: fromTokenId ?? undefined,
+    from: fromAddress ?? undefined,
+    to: btcDeposit?.depositAddress,
+    value: btcDeposit?.depositAmountSats,
+    sendMax: false,
+    allowReap: false,
+    isLocked: false,
+  })
+
   const txInfo = useSwapTxInfo({
     exchange: exchange ?? undefined,
     fromTokenId,
@@ -379,10 +396,21 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           payload: transaction.transaction,
           txInfo,
         }
+      case "bitcoin":
+        if (!btcTx?.psbtBase64 || !btcTx.estimatedFee || !fromAddress) return null
+        return {
+          platform: "bitcoin",
+          networkId: transaction.networkId,
+          address: fromAddress,
+          payload: btcTx.psbtBase64,
+          maxFeeSats: btcTx.estimatedFee,
+          tree: btcTx.usesOrdinalsUtxos ? "ordinals" : "payments",
+          txInfo,
+        }
       default:
         return null
     }
-  }, [fromToken?.networkId, swapEthTx.transaction, transaction, txInfo])
+  }, [fromAddress, fromToken?.networkId, swapEthTx.transaction, transaction, txInfo, btcTx])
 
   const onSwapSubmitted = useSwapPostSubmit({
     fromNetworkId: fromToken?.networkId,
@@ -470,12 +498,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         const quoteNativeBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
         return (networkPath > quoteNativeBuffer ? networkPath : quoteNativeBuffer).toString()
       }
+      case "bitcoin":
+        // the network fee is baked into the PSBT (inputs − outputs)
+        return btcTx?.estimatedFee ?? null
       default:
         return null
     }
   }, [
     activeTransaction,
     approvalEthTx.txDetails,
+    btcTx?.estimatedFee,
     fromToken,
     needsApproval,
     selectedQuote?.maxNativeTokenGasBuffer,
@@ -493,12 +525,15 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         return substrateFee.isLoading || isExchangeLoading
       case "solana":
         return solanaFee.isLoading || isExchangeLoading
+      case "bitcoin":
+        return (btcTx?.isLoading ?? false) || isExchangeLoading
       default:
         return isExchangeLoading
     }
   }, [
     activeTransaction,
     approvalEthTx.isLoading,
+    btcTx?.isLoading,
     isExchangeLoading,
     needsApproval,
     solanaFee.isLoading,
@@ -519,6 +554,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         return Boolean(substrateFee.error || exchangeError)
       case "solana":
         return Boolean(solanaFee.error || exchangeError)
+      case "bitcoin":
+        return Boolean(btcTx?.error || exchangeError)
       default:
         return Boolean(exchangeError)
     }
@@ -526,6 +563,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     activeTransaction,
     approvalEthTx.error,
     approvalEthTx.txDetails,
+    btcTx?.error,
     exchangeError,
     needsApproval,
     solanaFee.error,
@@ -578,6 +616,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     if (swapEthTx.error) return classifyFeeEstimationError(new Error(swapEthTx.error))
     if (substrateFee.error) return classifyFeeEstimationError(substrateFee.error)
     if (solanaFee.error) return classifyFeeEstimationError(solanaFee.error)
+    // bitcoin PSBT build failures (e.g. insufficient utxos to cover amount + fee)
+    if (btcTx?.error) return classifyFeeEstimationError(btcTx.error)
 
     return null
   }, [
@@ -590,6 +630,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.error,
     substrateFee.error,
     solanaFee.error,
+    btcTx?.error,
   ])
 
   const errorMessage = useMemo<string | null>(() => {

@@ -118,6 +118,9 @@ vi.mock("./useSendFundsTransactionSol", () => ({
   useSendFundsTransactionSol: () =>
     mocks.state.transaction?.platform === "solana" ? mocks.state.transaction : null,
 }))
+vi.mock("./useSendFundsTransactionBtc", () => ({
+  useSendFundsTransactionBtc: () => null,
+}))
 vi.mock("./useDTaoSubnetAvailable", () => ({
   useDTaoSubnetAvailable: () => mocks.state.dtao.available,
 }))

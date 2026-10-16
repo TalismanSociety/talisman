@@ -3,6 +3,7 @@ import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { TxSubmitButtonBtc } from "./TxSubmitButtonBtc"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
 import { TxSubmitButtonFallback } from "./TxSubmitButtonFallback"
@@ -92,6 +93,16 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
           onSubmit={handleSubmit}
           onError={onError}
           onPayloadLockChange={onPayloadLockChange}
+          className={className}
+        />
+      )
+    case "bitcoin":
+      return (
+        <TxSubmitButtonBtc
+          containerId={containerId}
+          label={label}
+          tx={tx}
+          onSubmit={onSubmit}
           className={className}
         />
       )

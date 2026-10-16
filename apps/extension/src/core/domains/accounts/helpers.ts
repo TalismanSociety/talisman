@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+import { type BitcoinNetworkName, isBitcoinAddressValidForNetwork } from "@talismn/bitcoin"
 import {
   type DotNetwork,
   isAccountPlatformCompatibleWithNetwork,
@@ -8,6 +9,7 @@ import {
   type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
+  isBitcoinXpub,
   type KeypairCurve,
 } from "@talismn/crypto"
 import {
@@ -16,6 +18,7 @@ import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
+  isAccountPlatformBitcoin,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
@@ -26,7 +29,12 @@ import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getAccountKeypairType"
 import type { AccountsCatalogStore } from "./store.catalog"
 
-export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]
+export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = [
+  "ethereum",
+  "polkadot",
+  "solana",
+  "bitcoin",
+]
 
 const sortAccountsByCreationDate = (acc1: Account, acc2: Account) => {
   const acc1Created = acc1.createdAt
@@ -133,6 +141,8 @@ export const getDefaultCurveForAccountPlatform = (platform: AccountPlatform): Ke
       return "sr25519"
     case "solana":
       return "solana"
+    case "bitcoin":
+      return "bitcoin-ecdsa"
     default:
       throw new Error("Unsupported account platform")
   }
@@ -150,6 +160,11 @@ export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex?: nu
 
     case "solana":
       return getSolDerivationPath(accountIndex ?? 0)
+
+    case "bitcoin-ecdsa":
+      // HD bitcoin accounts derive from the account index only — the keyring expands it
+      // to the dual BIP84/BIP86 trees (see Keyring.addAccountBitcoin)
+      return String(accountIndex ?? 0)
 
     default:
       throw Error("Not implemented")
@@ -192,6 +207,18 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
       return isAccountCompatibleWithDotNetwork(network, account)
     case "solana":
       return isAccountPlatformSolana(account)
+    case "bitcoin":
+      // xpub-identity accounts derive addresses for any network; static-address accounts
+      // (WIF imports, watched addresses) and contacts embed their network in the address
+      if (isAccountPlatformBitcoin(account))
+        return (
+          isBitcoinXpub(account.address) ||
+          isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName)
+        )
+      return (
+        account.type === "contact" &&
+        isBitcoinAddressValidForNetwork(account.address, network.id as BitcoinNetworkName)
+      )
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")
@@ -207,5 +234,9 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
  */
 export const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
   const accountPlatform = getAccountPlatformFromAddress(address)
-  return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
+  if (!isAccountPlatformCompatibleWithNetwork(network, accountPlatform)) return false
+  // bitcoin addresses embed their network: reject e.g. a signet address on mainnet (also rejects xpubs)
+  if (network.platform === "bitcoin")
+    return isBitcoinAddressValidForNetwork(address, network.id as BitcoinNetworkName)
+  return true
 }

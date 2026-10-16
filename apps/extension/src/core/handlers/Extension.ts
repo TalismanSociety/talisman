@@ -9,6 +9,7 @@ import { AnalyticsHandler } from "../domains/analytics/handler"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { BalancesHandler } from "../domains/balances"
+import { BitcoinExtensionHandler } from "../domains/bitcoin/handler.extension"
 import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
 import { DefiHandler } from "../domains/defi/handler"
@@ -29,6 +30,7 @@ import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { cleanupAllDroppedTransactions } from "../domains/transactions/cleanupDroppedTransactions"
 import { updateTransactionsRestart } from "../domains/transactions/store.transactions"
+import { resumePendingBitcoinTransactions } from "../domains/transactions/watchBitcoinTransaction"
 import { resumeSwapWatchers } from "../domains/transactions/watchSwapStatus"
 import { ExtensionHandler } from "../libs/Handler"
 import type { MessageTypes, RequestType, ResponseType } from "../types"
@@ -63,6 +65,7 @@ export default class Extension extends ExtensionHandler {
       tokenRates: new TokenRatesHandler(stores),
       substrate: new SubHandler(stores),
       solana: new SolanaExtensionHandler(stores),
+      bitcoin: new BitcoinExtensionHandler(stores),
       nfts: new NftsHandler(stores),
       bittensor: new BittensorHandler(stores),
       gandalf: new GandalfHandler(stores),
@@ -161,6 +164,10 @@ export default class Extension extends ExtensionHandler {
 
     // resume background swap status watchers for in-progress swaps
     resumeSwapWatchers()
+
+    // re-attach watchers to in-flight bitcoin transactions (not covered by the
+    // eth/dot/sol verification in cleanupAllDroppedTransactions)
+    resumePendingBitcoinTransactions()
 
     // periodically purge expired query cache entries
     queryCacheStore.purgeExpired()

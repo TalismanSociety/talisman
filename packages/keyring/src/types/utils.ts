@@ -27,6 +27,8 @@ export const isAccountInTypes = <Types extends AccountType[]>(
 
 const ACCOUNT_TYPES_OWNED = [
   "keypair",
+  "hd-bitcoin",
+  "ledger-bitcoin",
   "ledger-ethereum",
   "ledger-polkadot",
   "ledger-solana",
@@ -36,6 +38,8 @@ const ACCOUNT_TYPES_OWNED = [
 const ACCOUNT_TYPES_EXTERNAL = [
   "contact",
   "watch-only",
+  "watch-only-bitcoin",
+  "ledger-bitcoin",
   "ledger-ethereum",
   "ledger-polkadot",
   "ledger-solana",
@@ -78,7 +82,14 @@ const ACCOUNT_TYPES_ADDRESS_SS58 = [
 
 const ACCOUNT_TYPES_PLATFORM_SOLANA = ["contact", "watch-only", "keypair", "ledger-solana"] as const
 
-const ACCOUNT_TYPES_BITCOIN = ["contact", "watch-only"] as const
+const ACCOUNT_TYPES_BITCOIN = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "hd-bitcoin",
+  "ledger-bitcoin",
+  "watch-only-bitcoin",
+] as const
 
 export const isAccountExternal = (
   account: Account | null | undefined
@@ -93,7 +104,11 @@ export const isAccountOwned = (
 }
 
 export const isAccountPortfolio = (account: Account | null | undefined): account is Account => {
-  return isAccountOwned(account) || (isAccountOfType(account, "watch-only") && account.isPortfolio)
+  return (
+    isAccountOwned(account) ||
+    (isAccountOfType(account, "watch-only") && account.isPortfolio) ||
+    (isAccountOfType(account, "watch-only-bitcoin") && account.isPortfolio)
+  )
 }
 
 export const isAccountNotContact = (acc: Account) => acc.type !== "contact"
@@ -182,6 +197,33 @@ export const isAccountBitcoin = (
   account: Account | null | undefined
 ): account is AccountBitcoin => {
   return !!account && isBitcoinAddress(account.address)
+}
+
+const ACCOUNT_TYPES_PLATFORM_BITCOIN = [
+  "hd-bitcoin",
+  "ledger-bitcoin",
+  "watch-only-bitcoin",
+  "keypair",
+] as const
+
+type AccountPlatformBitcoin = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_BITCOIN)[number] }
+>
+
+/** accounts that can hold/display bitcoin balances (excludes contacts) */
+export const isAccountPlatformBitcoin = (
+  account: Account | null | undefined
+): account is AccountPlatformBitcoin => {
+  if (!account) return false
+  if (isAccountInTypes(account, ["hd-bitcoin", "ledger-bitcoin", "watch-only-bitcoin"])) return true
+  return isAccountOfType(account, "keypair") && account.curve === "bitcoin-ecdsa"
+}
+
+export const isAccountBitcoinHd = (
+  account: Account | null | undefined
+): account is AccountOfType<"hd-bitcoin" | "ledger-bitcoin"> => {
+  return isAccountInTypes(account, ["hd-bitcoin", "ledger-bitcoin"])
 }
 
 export const getAccountGenesisHash = (account: Account | null | undefined) => {

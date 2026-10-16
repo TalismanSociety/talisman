@@ -1,5 +1,6 @@
 import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
+import { enrichWithBuiltinBitcoin } from "./builtinBitcoin"
 import type { ChunkedParseResult } from "./chunkedValidation"
 import { validateChaindata } from "./validatedCache"
 
@@ -64,7 +65,12 @@ const fetchJson = async <T>(
 // export because of generate-init-data script
 export const fetchChaindata = (url = DEFAULT_CHAINDATA_URL, signal?: AbortSignal) =>
   fetchJson(url, {
-    validate: (data, signal) => validateChaindata(data, { signal }),
+    validate: async (data, signal) => {
+      const result = await validateChaindata(data, { signal })
+      return result.success && url === DEFAULT_CHAINDATA_URL
+        ? { ...result, data: enrichWithBuiltinBitcoin(result.data) }
+        : result
+    },
     signal,
     // jsdelivr caches for up to 12 hours, which would serve stale data for a custom file updated more often
     fallbackUrl: url === DEFAULT_CHAINDATA_URL ? getFallbackUrl(url) : null,
