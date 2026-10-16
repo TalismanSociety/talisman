@@ -69,7 +69,9 @@ export const buildBaseQueries = (
 
           const evmMirrorAccountStateKey =
             networkStorageCoders.account && evmMirror
-              ? (networkStorageCoders.account.keys.enc(evmMirror.mirror) as `0x${string}`)
+              ? (networkStorageCoders.account.keys.enc(
+                  frontierH160ToSs58Mirror(evmMirror.h160)
+                ) as `0x${string}`)
               : null
 
           return [
@@ -230,7 +232,7 @@ const decodeBaseResult = (
 const getEvmMirror = (address: string): EvmMirrorWithdrawableMeta | null => {
   try {
     const h160 = frontierSs58ToTruncatedH160(address)
-    return { type: "evm-mirror-withdrawable", h160, mirror: frontierH160ToSs58Mirror(h160) }
+    return { type: "evm-mirror-withdrawable", h160 }
   } catch {
     // not a 32-byte substrate account (eg an ethereum account): it has no mirror to withdraw from
     return null

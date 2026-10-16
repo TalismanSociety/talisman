@@ -453,7 +453,7 @@ describe("substrate-native fetchBalances", () => {
         "state_queryStorageAt",
         [[...keysOf(accountEntries(poolMember)), mirrorKey]],
       ])
-      const meta = { type: "evm-mirror-withdrawable", h160, mirror }
+      const meta = { type: "evm-mirror-withdrawable", h160 }
       expect(
         success[0]!.values?.filter(({ source }) => source === "substrate-native-evm-mirror")
       ).toEqual([

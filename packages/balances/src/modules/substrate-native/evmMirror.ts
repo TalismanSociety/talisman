@@ -7,8 +7,6 @@ export type EvmMirrorWithdrawableMeta = {
   type: "evm-mirror-withdrawable"
   /** truncated H160 of the substrate account: the `address` argument of `EVM.withdraw` */
   h160: `0x${string}`
-  /** ss58 (generic prefix) of the mirror account that holds the funds */
-  mirror: string
 }
 
 // structural subset of the formatted locks exposed by Balance#locks,
