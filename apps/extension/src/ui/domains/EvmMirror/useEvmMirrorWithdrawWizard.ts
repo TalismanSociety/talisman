@@ -197,7 +197,6 @@ const useEvmMirrorWithdrawWizardProvider = () => {
     h160,
     withdrawablePlancks,
     plancks,
-    validPlancks,
     setPlancks,
     errorMessage: amountError?.message ?? feeError?.message ?? payloadErrorMessage,
     canSubmit,

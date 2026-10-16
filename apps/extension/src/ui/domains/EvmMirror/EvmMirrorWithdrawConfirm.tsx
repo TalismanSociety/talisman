@@ -27,7 +27,7 @@ export const EvmMirrorWithdrawConfirm = () => {
     address,
     token,
     h160,
-    validPlancks,
+    plancks,
     errorMessage,
     payload,
     txMetadata,
@@ -39,7 +39,7 @@ export const EvmMirrorWithdrawConfirm = () => {
     onSubmitted,
   } = useEvmMirrorWithdrawWizard()
 
-  if (!address || !token || !h160 || !validPlancks) return null
+  if (!address || !token) return null
 
   return (
     <ModalDialog
@@ -55,15 +55,17 @@ export const EvmMirrorWithdrawConfirm = () => {
         <div className="flex flex-col gap-4 rounded bg-grey-900 px-8 py-6 text-sm">
           <SummaryRow label={t("Amount")}>
             <TokensAndFiat
-              planck={validPlancks}
+              planck={plancks ?? 0n}
               tokenId={token.id}
               noCountUp
               tokensClassName="text-body"
             />
           </SummaryRow>
-          <SummaryRow label={t("From EVM account")}>
-            <AddressDisplay address={h160} networkId={null} className="text-sm" />
-          </SummaryRow>
+          {h160 && (
+            <SummaryRow label={t("From EVM account")}>
+              <AddressDisplay address={h160} networkId={null} className="text-sm" />
+            </SummaryRow>
+          )}
           <SummaryRow label={t("To")}>
             <StakingAccountDisplay
               address={address}
