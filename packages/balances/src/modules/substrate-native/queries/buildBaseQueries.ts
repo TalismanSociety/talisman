@@ -22,7 +22,7 @@ export const buildBaseQueries = (
   networkId: string,
   balanceDefs: BalanceDef<"substrate-native">[],
   miniMetadata: MiniMetadata<MiniMetadataExtra>,
-  hasEvmMirrorWithdraw = false
+  hasFrontierMirrorWithdraw = false
 ): Array<RpcQueryPack<BaseBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     account: ["System", "Account"],
@@ -39,7 +39,7 @@ export const buildBaseQueries = (
 
   return balanceDefs
     .map(({ token, address }): RpcQueryPack<BaseBalance> | null => {
-      const evmMirror = hasEvmMirrorWithdraw ? getEvmMirror(address) : null
+      const evmMirror = hasFrontierMirrorWithdraw ? getEvmMirror(address) : null
 
       const getStateKeys = () => {
         try {

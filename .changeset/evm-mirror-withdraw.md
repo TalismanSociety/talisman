@@ -4,4 +4,4 @@
 "@talismn/balances": minor
 ---
 
-Report the EVM mirror balance of substrate accounts as withdrawable on networks with `hasEvmMirrorWithdraw`
+Report the EVM mirror balance of substrate accounts as withdrawable on networks with `hasFrontierMirrorWithdraw`

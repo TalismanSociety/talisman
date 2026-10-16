@@ -143,7 +143,7 @@ const getDevnetChaindata = async (send: RpcSend) => {
     hasCheckMetadataHash: !!metadata.extrinsic.signedExtensions[0]?.some(
       ({ identifier }) => identifier === "CheckMetadataHash"
     ),
-    hasEvmMirrorWithdraw: true,
+    hasFrontierMirrorWithdraw: true,
     topology: { type: "standalone" },
   })
 

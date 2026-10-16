@@ -16,7 +16,7 @@ export const fetchBalances: IBalanceModule<
   tokensWithAddresses,
   connector,
   miniMetadata,
-  hasEvmMirrorWithdraw,
+  hasFrontierMirrorWithdraw,
 }) => {
   if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
@@ -58,7 +58,12 @@ export const fetchBalances: IBalanceModule<
     }
   }
 
-  const baseQueries = buildBaseQueries(networkId, balanceDefs, miniMetadata, hasEvmMirrorWithdraw)
+  const baseQueries = buildBaseQueries(
+    networkId,
+    balanceDefs,
+    miniMetadata,
+    hasFrontierMirrorWithdraw
+  )
   const partialBalances = await fetchRpcQueryPack(connector, networkId, baseQueries)
 
   // now for each balance that includes nomPoolStaking, we need to fetch the metadata for the pool

@@ -18,7 +18,7 @@ export const subscribeBalances: IBalanceModule<
   tokensWithAddresses,
   connector,
   miniMetadata,
-  hasEvmMirrorWithdraw,
+  hasFrontierMirrorWithdraw,
 }) => {
   if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
 
@@ -30,7 +30,7 @@ export const subscribeBalances: IBalanceModule<
     // (expensive, indivisible) — give it its own macrotask so it doesn't stack with
     // the current tick's other work
     await yieldToEventLoop()
-    return buildBaseQueries(networkId, balanceDefs, miniMetadata, hasEvmMirrorWithdraw)
+    return buildBaseQueries(networkId, balanceDefs, miniMetadata, hasFrontierMirrorWithdraw)
   }).pipe(
     switchMap((baseQueries) => getRpcQueryPack$(connector, networkId, baseQueries)),
     switchMap((partialBalances) => {

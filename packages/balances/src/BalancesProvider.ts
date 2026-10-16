@@ -280,7 +280,7 @@ export class BalancesProvider {
                   networkId,
                   tokensWithAddresses,
                   mod,
-                  isNetworkDot(network) && !!network.hasEvmMirrorWithdraw
+                  isNetworkDot(network) && !!network.hasFrontierMirrorWithdraw
                 )
               }
               default: {
@@ -325,11 +325,11 @@ export class BalancesProvider {
     networkId: DotNetworkId,
     tokensWithAddresses: TokensWithAddresses,
     mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "polkadot" }>,
-    hasEvmMirrorWithdraw: boolean
+    hasFrontierMirrorWithdraw: boolean
   ): Observable<BalancesResult> {
     return getSharedObservable(
       `BalancesProvider.getPolkadotNetworkModuleBalances$`,
-      { networkId, mod, tokensWithAddresses, hasEvmMirrorWithdraw },
+      { networkId, mod, tokensWithAddresses, hasFrontierMirrorWithdraw },
       () => {
         if (!tokensWithAddresses.length)
           return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
@@ -362,7 +362,7 @@ export class BalancesProvider {
               tokensWithAddresses,
               connector: this.#chainConnectors.substrate!,
               miniMetadata: miniMetadata as AnyMiniMetadata,
-              hasEvmMirrorWithdraw,
+              hasFrontierMirrorWithdraw,
             })
           ),
           // keep unchanged balances reference-stable across emissions (module decode

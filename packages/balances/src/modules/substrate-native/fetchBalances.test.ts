@@ -90,14 +90,14 @@ const fetchNative = (
   addresses: string[],
   connector: IChainConnectorDot,
   miniMetadata: MiniMetadata<MiniMetadataExtra> = MINI_METADATA,
-  hasEvmMirrorWithdraw?: boolean
+  hasFrontierMirrorWithdraw?: boolean
 ) =>
   fetchBalances({
     networkId: NETWORK_ID,
     tokensWithAddresses: [[TOKEN, addresses]],
     connector,
     miniMetadata,
-    hasEvmMirrorWithdraw,
+    hasFrontierMirrorWithdraw,
   })
 
 const baseValues = (account: NativeAccount): AmountWithLabel<string>[] => {

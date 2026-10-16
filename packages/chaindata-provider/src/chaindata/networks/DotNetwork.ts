@@ -51,7 +51,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   hasCheckMetadataHash: z.boolean().optional(),
   hasExtrinsicSignatureTypePrefix: z.boolean().optional(),
   isUnknownFeeToken: z.boolean().optional(),
-  hasEvmMirrorWithdraw: z
+  hasFrontierMirrorWithdraw: z
     .boolean()
     .optional()
     .describe(
