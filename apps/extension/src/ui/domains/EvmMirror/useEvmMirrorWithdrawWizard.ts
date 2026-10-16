@@ -90,9 +90,8 @@ const useEvmMirrorWithdrawWizardProvider = () => {
 
   const { data: sapi } = useScaleApi(token?.networkId)
 
-  // the fee does not depend on the amount: build with the full balance until a valid amount is set,
-  // so the fee shows before the user types
-  const payloadPlancks = validPlancks ?? (withdrawablePlancks > 0n ? withdrawablePlancks : null)
+  const feeProbePlancks = withdrawablePlancks > 0n ? withdrawablePlancks : null
+  const payloadPlancks = step === "amount" ? feeProbePlancks : validPlancks
 
   const { data: payloadAndMetadata, error: errorPayload } = useSignerPayloadQuery({
     sapi,
