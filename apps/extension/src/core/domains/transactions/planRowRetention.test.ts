@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { db } from "../../db"
 import {
   dismissTransaction,
+  markPlanTransactionDropped,
   markTransactionDropped,
   updateTransactionsRestart,
 } from "./store.transactions"
@@ -110,6 +111,19 @@ describe("rows of a live swap plan", () => {
 
     expect((await db.transactionsV2.get("tx-0"))?.status).toBe("unknown")
     expect((await db.transactionsV2.get("tx-1"))?.status).toBe("error")
+  })
+
+  it("settle alone when the plan proves its leg dropped: the nonce stays unused", async () => {
+    await db.transactionsV2.bulkPut([
+      row(4, { status: "pending" }),
+      row(5, { planId: LIVE_PLAN, status: "pending" }),
+      { ...row(5, { status: "pending" }), id: "tx-5-retry" },
+    ])
+
+    await markPlanTransactionDropped("tx-5")
+
+    const statuses = await db.transactionsV2.bulkGet(["tx-4", "tx-5", "tx-5-retry"])
+    expect(statuses.map((tx) => tx?.status)).toEqual(["pending", "error", "pending"])
   })
 
   it("are never called replaced by a sibling: the plan settles its own row", async () => {

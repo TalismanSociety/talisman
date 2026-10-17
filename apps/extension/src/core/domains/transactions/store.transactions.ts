@@ -191,7 +191,13 @@ const applyTransactionStatus = async (
     blockNumber,
     confirmed,
     reason,
-  }: { blockNumber?: bigint | number; confirmed?: boolean; reason: TxStatusReason }
+    nonceUsed = status === "success" || status === "error",
+  }: {
+    blockNumber?: bigint | number
+    confirmed?: boolean
+    reason: TxStatusReason
+    nonceUsed?: boolean
+  }
 ) => {
   const facts: PendingFact[] = []
   try {
@@ -211,7 +217,7 @@ const applyTransactionStatus = async (
       await db.transactionsV2.put(tx)
       facts.push({ row: tx, from: existing.status, to: status, reason })
 
-      if (status === "success" || status === "error") {
+      if (nonceUsed) {
         const livePlanIds = await getLivePlanIds()
 
         // mark pending transactions with the same nonce as replaced
@@ -269,6 +275,10 @@ export const markTransactionDropped = async (id: string) => {
   if (await isLivePlanRow(id)) return false
   return applyTransactionStatus(id, "error", { reason: "dropped" })
 }
+
+/** The swap plan proved its leg never executed: the plan's observation settles its own row */
+export const markPlanTransactionDropped = (id: string) =>
+  applyTransactionStatus(id, "error", { reason: "dropped", nonceUsed: false })
 
 export const getTransactionStatus = async (hash: string) => {
   const tx = await db.transactionsV2.get(hash)

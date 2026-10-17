@@ -8,6 +8,7 @@ import type BigNumber from "bignumber.js"
 import type { Hex, TransactionRequest } from "viem"
 
 import type { SwapEnv } from "./env"
+import type { PersistedQuoteLeg, PlanSummary, SwapPlanId } from "./plans/types"
 
 export type SupportedSwapProtocol =
   | "simpleswap"
@@ -189,6 +190,21 @@ export type LegBound = {
   floor: string
   /** in wei, the value plus gas × maxFeePerGas */
   maxSpend: string
+}
+
+export type SwapPlanProposeRequest = {
+  id: SwapPlanId
+  legs: NonEmpty<PersistedQuoteLeg>
+  summary: PlanSummary
+  /** the nonce of the leg 0 payload the page built: admission holds the signed leg to it */
+  leg0Nonce: number
+}
+
+export interface SwapsMessages {
+  /** one proposal per id, rejected while another plan holds its intermediate. The background computes the bounds */
+  "pri(swaps.plan.propose)": [SwapPlanProposeRequest, boolean]
+  /** proposed to aborted, a paused or building plan to stopped. False once the current leg is sent */
+  "pri(swaps.plan.cancel)": [{ id: SwapPlanId }, boolean]
 }
 
 export type ApprovalInfo = {

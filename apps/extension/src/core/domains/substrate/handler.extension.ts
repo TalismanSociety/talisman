@@ -15,6 +15,7 @@ import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction, signSubstratePayload } from "../signing/signSubstratePayload"
 import { admitSubstrateLeg } from "../swaps/plans/admit"
+import { swapPlanExecutor } from "../swaps/plans/executor"
 import { dismissTransaction } from "../transactions/store.transactions"
 import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
 
@@ -54,6 +55,8 @@ export class SubHandler extends ExtensionHandler {
     } catch (err) {
       if (hash) dismissTransaction(hash)
       throw err
+    } finally {
+      if (txInfo?.plan) swapPlanExecutor.driveQuietly(txInfo.plan.id)
     }
 
     return { hash }

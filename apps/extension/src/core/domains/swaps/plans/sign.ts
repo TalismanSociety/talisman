@@ -4,7 +4,6 @@ import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { getNextNonce, releaseReservedNonce } from "@core/domains/ethereum/nonceManager"
 import { withSecretKey } from "@core/domains/keyring/withSecretKey"
 import { watchEthereumTransaction } from "@core/domains/transactions/watchEthereumTransaction"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getErrorMessage } from "@talismn/util"
@@ -20,6 +19,7 @@ import { privateKeyToAccount } from "viem/accounts"
 
 import type { BuiltLeg } from "../types"
 import { admitEvmLeg } from "./admit"
+import { broadcastRaw } from "./broadcast"
 import { isAdmissible } from "./machine"
 import { getPlan } from "./store"
 import type { SwapPlanRef } from "./types"
@@ -31,14 +31,6 @@ export type SignOutcome =
   /** the leg stopped waiting for a transaction while this one was being built */
   | { type: "stale" }
   | { type: "failed"; error: unknown }
-
-/** a node that already holds the bytes, or saw them land, is not an error */
-const BROADCAST_NOISE = ["already known", "already imported", "nonce too low"]
-
-const isBroadcastNoise = (err: unknown) => {
-  const message = getErrorMessage(err).toLowerCase()
-  return BROADCAST_NOISE.some((noise) => message.includes(noise))
-}
 
 const isUnlocked = async () =>
   (await firstValueFrom(passwordStore.isLoggedIn.pipe(filter((value) => value !== "UNKNOWN")))) ===
@@ -147,12 +139,9 @@ export const signAndBroadcast = async (ref: SwapPlanRef, built: BuiltLeg): Promi
   release()
 
   try {
-    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
-    if (!client) throw new Error(`No client for network ${networkId}`)
-    await client.sendRawTransaction({ serializedTransaction: raw })
+    await broadcastRaw(networkId, raw)
   } catch (err) {
-    if (!isBroadcastNoise(err))
-      log.warn("Swap plan leg broadcast failed, observation decides", { err, hash })
+    log.warn("Swap plan leg broadcast failed, observation decides", { err, hash })
   }
 
   watchEthereumTransaction(networkId, hash, unsigned, { notifications: true, txInfo })

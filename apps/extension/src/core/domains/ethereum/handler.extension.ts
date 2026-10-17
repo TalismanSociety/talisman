@@ -19,6 +19,7 @@ import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { admitEvmLeg } from "../swaps/plans/admit"
+import { swapPlanExecutor } from "../swaps/plans/executor"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
@@ -115,8 +116,10 @@ export class EthHandler extends ExtensionHandler {
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
     assert(client, `Missing client for chain ${evmNetworkId}`)
 
-    if (txInfo?.plan)
+    if (txInfo?.plan) {
       await admitEvmLeg(txInfo.plan, { raw: signed, networkId: evmNetworkId, unsigned, txInfo })
+      swapPlanExecutor.driveQuietly(txInfo.plan.id)
+    }
 
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })

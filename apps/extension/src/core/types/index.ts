@@ -20,6 +20,7 @@ import type { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
 import type { SolanaExtensionMessages } from "../domains/solana"
 import type { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import type { SubstrateMessages } from "../domains/substrate/types"
+import type { SwapsMessages } from "../domains/swaps/types"
 import type { TalismanMessages } from "../domains/talisman/types"
 import type { TokenRatesMessages } from "../domains/tokenRates/types"
 import type { NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
@@ -76,6 +77,7 @@ type AllMessages = PolkadotRequestSignatures &
   GandalfMessages &
   SendFundsMessages &
   QueryCacheMessages &
+  SwapsMessages &
   UnsubscribeMessages
 
 interface PingMessages {

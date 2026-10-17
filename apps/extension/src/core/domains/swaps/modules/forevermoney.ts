@@ -20,6 +20,7 @@ import {
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
 import type { SwapEnv } from "@core/domains/swaps/env"
+import { SwapProviderUnavailableError } from "@core/domains/swaps/errors"
 import { getEvmNetwork, quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type {
   ApprovalInfo,
@@ -334,7 +335,7 @@ const assertWithinRateLimit = async (
     args: [isOutbound ? route.spoke.selector : FOREVERMONEY_BITTENSOR_SELECTOR],
   })
   if (bucket.isEnabled && amountWei > bucket.tokens)
-    throw new Error(
+    throw new SwapProviderUnavailableError(
       `Bridge rate limit reached, at most ${planckToTokens(bucket.tokens.toString(), EVM_DECIMALS)} TAO can be bridged right now`
     )
 }
@@ -359,10 +360,11 @@ const assertVaultOpen = async (env: SwapEnv, route: ForevermoneyRoute) => {
       args: [route.spoke.selector],
     }),
   ])
-  if (isPaused) throw new Error("ForeverMoney bridge is paused")
+  if (isPaused) throw new SwapProviderUnavailableError("ForeverMoney bridge is paused")
   if (!isAddressEqual(migrationTarget, zeroAddress))
-    throw new Error("ForeverMoney vault is migrating")
-  if (!laneAllowed) throw new Error(`ForeverMoney lane to ${route.spoke.name} is closed`)
+    throw new SwapProviderUnavailableError("ForeverMoney vault is migrating")
+  if (!laneAllowed)
+    throw new SwapProviderUnavailableError(`ForeverMoney lane to ${route.spoke.name} is closed`)
 }
 
 const assertMinimum = (route: ForevermoneyRoute, { amountWei, partnerFee }: BridgeAmounts) => {
