@@ -1,8 +1,7 @@
 import type { SwapTokenTab } from "@common/analytics/funds"
+import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { Token } from "@talismn/chaindata-provider"
 import type { TFunction } from "i18next"
-
-import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 
 // ─── Token tab definitions ──────────────────────────────────────────
 

@@ -1,6 +1,5 @@
+import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { describe, expect, it } from "vitest"
-
-import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,

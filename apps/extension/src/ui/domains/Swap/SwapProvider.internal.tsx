@@ -1,3 +1,4 @@
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
 import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
@@ -9,7 +10,7 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
-import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import type { SwapView } from "./swap-modules/common.swap-module"
 import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 

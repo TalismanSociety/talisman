@@ -8,6 +8,17 @@ import {
   type BittensorEvmPair,
 } from "@core/domains/bittensor/constants"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
+import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type {
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "@core/domains/swaps/types"
 import { abiBittensorBalanceTransfer } from "@core/util/abi"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { evmNativeTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -25,18 +36,7 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, zeroHash } from "viem"
 import bittensorLogo from "./bittensor-logo.svg?url"
-import {
-  type BaseQuote,
-  type BuildLegParams,
-  type BuiltLeg,
-  type QuoteFee,
-  type QuoteParams,
-  quoteFromLegs,
-  type SupportedSwapProtocol,
-  type SwapModule,
-  type SwapModuleTransaction,
-  type SwapTransactionContext,
-} from "./common.swap-module"
+import type { SwapModule } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getEvmNetwork } from "./evm-network"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"

@@ -1,12 +1,9 @@
+import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { BuildLegParams, BuiltLeg } from "@core/domains/swaps/types"
 import BigNumber from "bignumber.js"
 import { describe, expect, it, vi } from "vitest"
 import { buildSwapTransaction } from "../buildSwapTransaction"
-import {
-  type BuildLegParams,
-  type BuiltLeg,
-  quoteFromLegs,
-  type SwapModule,
-} from "../swap-modules/common.swap-module"
+import type { SwapModule } from "../swap-modules/common.swap-module"
 
 const SOL = "solana-mainnet:sol-native"
 const USDC = "solana-mainnet:sol-spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"

@@ -90,7 +90,7 @@ const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
-const { quoteFromLegs } = await import("../common.swap-module")
+const { quoteFromLegs } = await import("@core/domains/swaps/helpers")
 const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---

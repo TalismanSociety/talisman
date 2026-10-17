@@ -1,7 +1,6 @@
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
-
-import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 
 export type QuoteSorting = "decentalised" | "cheapest" | "fastest" | "bestRate"
 

@@ -1,3 +1,5 @@
+import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type { QuoteFee } from "@core/domains/swaps/types"
 import { InfoIcon } from "@talismn/icons"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -9,7 +11,6 @@ import { useTokenRatesMap } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
 import type { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
-import { type QuoteFee, TALISMAN_FEE_NAME } from "../swap-modules/common.swap-module"
 
 const getAdditionalFees = (fees: QuoteFee[]) => fees.filter((fee) => fee.additional)
 

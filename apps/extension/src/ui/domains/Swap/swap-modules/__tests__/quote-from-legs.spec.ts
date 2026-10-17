@@ -1,6 +1,7 @@
+import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { QuoteLeg } from "@core/domains/swaps/types"
 import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
-import { type QuoteLeg, quoteFromLegs } from "../common.swap-module"
 
 const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
 const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"

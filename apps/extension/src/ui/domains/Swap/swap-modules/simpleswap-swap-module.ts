@@ -5,6 +5,14 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type {
+  BaseQuote,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+} from "@core/domains/swaps/types"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
@@ -14,20 +22,13 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
-  type BaseQuote,
-  type BuildLegParams,
-  type BuiltLeg,
   type ExchangeParams,
   getTokenIdForSwappableAsset,
   platformFromTokenId,
-  type QuoteFee,
-  type QuoteParams,
-  quoteFromLegs,
-  type SupportedSwapProtocol,
+  type SwapBuildLegParams,
   type SwapExchange,
   type SwapModule,
   type SwappableAssetBaseType,
-  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import {
   buildDepositTransaction,
@@ -566,7 +567,12 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
   }
 }
 
-const buildLeg = async ({ leg, input, context, exchange }: BuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async ({
+  leg,
+  input,
+  context,
+  exchange,
+}: SwapBuildLegParams): Promise<BuiltLeg> => {
   const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 

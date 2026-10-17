@@ -1,5 +1,17 @@
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type {
+  ApprovalInfo,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "@core/domains/swaps/types"
 import * as lifiSdk from "@lifi/sdk"
 import type {
   EvmErc20Token,
@@ -28,21 +40,7 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
 import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
-import {
-  type ApprovalInfo,
-  type BaseQuote,
-  type BuildLegParams,
-  type BuiltLeg,
-  getTokenIdForSwappableAsset,
-  type QuoteFee,
-  type QuoteParams,
-  quoteFromLegs,
-  type SupportedSwapProtocol,
-  type SwapModule,
-  type SwapModuleTransaction,
-  type SwapTransactionContext,
-  TALISMAN_FEE_NAME,
-} from "./common.swap-module"
+import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"

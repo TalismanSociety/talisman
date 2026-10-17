@@ -1,6 +1,11 @@
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type {
+  QuoteFee,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "@core/domains/swaps/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import type { Instruction } from "@solana/kit"
 import { createNoopSigner, address as solAddress } from "@solana/kit"
@@ -21,7 +26,6 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
-import type { QuoteFee, SwapModuleTransaction, SwapTransactionContext } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
 

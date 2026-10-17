@@ -19,6 +19,16 @@ import {
   type ForevermoneyRoute,
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type {
+  ApprovalInfo,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+} from "@core/domains/swaps/types"
 import { evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import {
   frontierH160ToSs58Mirror,
@@ -30,18 +40,7 @@ import { planckToTokens } from "@talismn/util"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
-import {
-  type ApprovalInfo,
-  type BaseQuote,
-  type BuildLegParams,
-  type BuiltLeg,
-  type QuoteFee,
-  type QuoteParams,
-  quoteFromLegs,
-  type SupportedSwapProtocol,
-  type SwapModule,
-  TALISMAN_FEE_NAME,
-} from "./common.swap-module"
+import type { SwapModule } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getEvmNetwork, getEvmPublicClient } from "./evm-network"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"

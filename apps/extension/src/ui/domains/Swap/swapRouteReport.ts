@@ -1,4 +1,4 @@
-import type { BaseQuote } from "./swap-modules/common.swap-module"
+import type { BaseQuote } from "@core/domains/swaps/types"
 
 type Route = Pick<BaseQuote, "protocol" | "subProtocol">
 
