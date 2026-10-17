@@ -2,7 +2,7 @@
 
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { BACKGROUND_SWAP_MODULES } from "@core/domains/swaps/exports"
+import { BACKGROUND_SWAP_MODULES, withEntryHops } from "@core/domains/swaps/exports"
 import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
@@ -12,6 +12,7 @@ import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
+import { getIntermediateCandidates } from "./swap-services/intermediateCandidates"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
 import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
@@ -35,11 +36,20 @@ export type SwapModuleEntry = (typeof swapModules)[number]
 
 export const useSwapModules = (): SwapModuleEntry[] => {
   const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE_V2")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
 
-  return useMemo(
-    () => swapModules.filter((m) => m.protocol !== "forevermoney" || isForevermoneyEnabled),
-    [isForevermoneyEnabled]
-  )
+  return useMemo(() => {
+    const enabled = swapModules.filter(
+      (m) => m.protocol !== "forevermoney" || isForevermoneyEnabled
+    )
+    return enabled.map((m) =>
+      withEntryHops(m, {
+        enabled: (flag) => flag === "SWAPS_MULTI_HOP" && isMultiHopEnabled,
+        resolve: (protocol) => enabled.find((entry) => entry.protocol === protocol),
+        candidates: getIntermediateCandidates,
+      })
+    )
+  }, [isForevermoneyEnabled, isMultiHopEnabled])
 }
 
 // ─── Asset-fetching helpers ─────────────────────────────────────────

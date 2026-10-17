@@ -11,7 +11,9 @@ import {
   FOREVERMONEY_ALPHA_TOKEN,
   FOREVERMONEY_ALPHA_VAULT,
   FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID,
+  FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
   FOREVERMONEY_BITTENSOR_SELECTOR,
+  FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
   FOREVERMONEY_BITTENSOR_TOKEN_POOL,
   FOREVERMONEY_ROUTES,
   FOREVERMONEY_SPOKE_TOKEN_POOL,
@@ -786,5 +788,14 @@ export const forevermoneySwapModule: BackgroundSwapModule = {
   legDeadlineMs: LEG_DEADLINE_MS,
   boundLeg,
   observeLeg,
+  entryHops: [
+    {
+      from: FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
+      hub: FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
+      via: "bittensor-evm",
+      intermediate: "owned-evm",
+      flag: "SWAPS_MULTI_HOP",
+    },
+  ],
   getApprovalInfo,
 }

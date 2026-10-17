@@ -1,4 +1,5 @@
 export { InsufficientGasBalanceError, prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+export { withEntryHops } from "./hops"
 export {
   assertDepositAmountWithinInput,
   assertNativeValueWithinInput,

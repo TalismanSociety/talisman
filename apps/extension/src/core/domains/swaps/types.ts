@@ -1,3 +1,4 @@
+import type { FeatureFlag } from "@core/domains/app/types"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
@@ -220,6 +221,21 @@ export type ApprovalParams = Omit<QuoteParams, "input"> & {
   quoteData: BaseQuote | BaseQuote[] | null
 }
 
+/**
+ * A route this module can finish once another module moved the funds to its source token first.
+ * ForeverMoney declares Finney TAO → 964 TAO via bittensor-evm, so a Finney TAO → Base TAO quote
+ * becomes a two-leg plan held by an owned EVM account in between.
+ */
+export type EntryHop = {
+  from: TokenId
+  /** this module's source token, the via module must route from → hub */
+  hub: TokenId
+  via: SupportedSwapProtocol
+  /** who holds the funds between the legs */
+  intermediate: "owned-evm"
+  flag: FeatureFlag
+}
+
 /** A swap module that runs in the UI and in the background: everything it reads from the realm goes through `env` */
 export type BackgroundSwapModule = {
   protocol: SupportedSwapProtocol
@@ -241,6 +257,8 @@ export type BackgroundSwapModule = {
   boundLeg: (params: BoundLegParams, env: SwapEnv) => Promise<LegBound | null>
   /** what the chain says about a sent leg, from chain evidence only */
   observeLeg: (params: ObserveLegParams, env: SwapEnv) => Promise<LegObservation>
+
+  entryHops?: EntryHop[]
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
