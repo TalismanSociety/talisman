@@ -85,7 +85,9 @@ export const useSwapAssets = (fromTokenId: string | null) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
   const swapModules = useSwapModules()
-  const protocolsKey = swapModules.map((m) => m.protocol).join(",")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
+  // the entry hops add sources and targets to their module: a cached registry without them hides the routes
+  const protocolsKey = `${swapModules.map((m) => m.protocol).join(",")}${isMultiHopEnabled ? "+hops" : ""}`
 
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets-v3", tokensCount, protocolsKey],
