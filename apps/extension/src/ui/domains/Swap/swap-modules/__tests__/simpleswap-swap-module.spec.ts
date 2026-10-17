@@ -109,23 +109,31 @@ beforeEach(() => {
   mockFetch.mockImplementation(async (url: string) => ({ json: async () => respond(url) }))
 })
 
+const quoteEthToDot = async (toAddress = TO_ADDRESS) => {
+  const signal = new AbortController().signal
+  await simpleswapSwapModule.getFromAssets(signal)
+  const quote = await simpleswapSwapModule.getQuote(
+    {
+      fromTokenId: ETH.id,
+      toTokenId: DOT.id,
+      fromAmount: ONE_ETH,
+      fromAddress: FROM_ADDRESS,
+      toAddress,
+      input: "exact",
+    },
+    signal
+  )
+  if (!quote || Array.isArray(quote)) throw new Error("expected a single quote")
+  mockFetch.mockClear()
+  return quote
+}
+
+const createExchangeRequests = () =>
+  mockFetch.mock.calls.filter(([url]) => new URL(url).pathname === "/create_exchange")
+
 describe("simpleswapSwapModule confirm screen", () => {
   it("creates one exchange and deposits its expected amount", async () => {
-    const signal = new AbortController().signal
-    await simpleswapSwapModule.getFromAssets(signal)
-    const quote = await simpleswapSwapModule.getQuote(
-      {
-        fromTokenId: ETH.id,
-        toTokenId: DOT.id,
-        fromAmount: ONE_ETH,
-        fromAddress: FROM_ADDRESS,
-        toAddress: TO_ADDRESS,
-        input: "exact",
-      },
-      signal
-    )
-    if (!quote || Array.isArray(quote)) throw new Error("expected a single quote")
-    mockFetch.mockClear()
+    const quote = await quoteEthToDot()
 
     expect(
       await confirmSwap({
@@ -162,8 +170,24 @@ describe("simpleswapSwapModule confirm screen", () => {
         to: TO_ADDRESS,
       },
     })
-    expect(
-      mockFetch.mock.calls.filter(([url]) => new URL(url).pathname === "/create_exchange")
-    ).toHaveLength(1)
+    expect(createExchangeRequests()).toHaveLength(1)
+  })
+
+  it("creates no exchange for a quote built for another recipient", async () => {
+    const quote = await quoteEthToDot("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+
+    await expect(
+      confirmSwap({
+        module: simpleswapSwapModule,
+        quote,
+        fromTokenId: ETH.id,
+        toTokenId: DOT.id,
+        fromAddress: FROM_ADDRESS,
+        toAddress: TO_ADDRESS,
+        fromAmount: ONE_ETH,
+        context: { platform: "ethereum" },
+      })
+    ).rejects.toThrow("Please select the quote again")
+    expect(createExchangeRequests()).toHaveLength(0)
   })
 })

@@ -56,7 +56,6 @@ vi.mock("../evm-gas-check", () => ({
 vi.mock("../forevermoney-logo.svg?url", () => ({ default: "forevermoney-logo.svg" }))
 
 const { forevermoneySwapModule } = await import("../forevermoney-swap-module")
-type ForevermoneyExchange = import("../forevermoney-swap-module").ForevermoneyExchange
 const { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } = await import(
   "@core/domains/forevermoney/abi"
 )
@@ -170,14 +169,41 @@ const quote = (
 
 const single = <T>(q: T | T[] | null) => (Array.isArray(q) ? q[0] : q)
 
-const exchange = (fromTokenId: string, toTokenId: string, fromAmount: bigint, toAddress: string) =>
-  forevermoneySwapModule.createExchange({
-    fromTokenId,
-    toTokenId,
-    fromAmount,
-    fromAddress: EVM_ADDRESS,
-    toAddress,
+const quotedLeg = async (
+  fromTokenId: string,
+  toTokenId: string,
+  fromAmount: bigint,
+  toAddress: string
+) => {
+  const q = single(await quote(fromTokenId, toTokenId, fromAmount, toAddress))
+  if (!q) throw new Error("expected a quote")
+  return q.legs[0]
+}
+
+const buildLeg = async (
+  fromTokenId: string,
+  toTokenId: string,
+  fromAmount: bigint,
+  toAddress: string
+) =>
+  forevermoneySwapModule.buildLeg({
+    leg: await quotedLeg(fromTokenId, toTokenId, fromAmount, toAddress),
+    input: fromAmount,
+    context: { platform: "ethereum" },
+    exchange: null,
+    slippage: 0,
   })
+
+const buildTx = async (
+  fromTokenId: string,
+  toTokenId: string,
+  fromAmount: bigint,
+  toAddress: string
+) => {
+  const { transaction } = await buildLeg(fromTokenId, toTokenId, fromAmount, toAddress)
+  if (transaction.platform !== "ethereum") throw new Error("expected an ethereum tx")
+  return transaction.transaction
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -340,78 +366,57 @@ describe("forevermoneySwapModule getQuote", () => {
   })
 })
 
-describe("forevermoneySwapModule createExchange", () => {
-  it("re-quotes and records the destination start block", async () => {
-    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_TAO_WEI + 5n, SUB_ADDRESS)
+describe("forevermoneySwapModule buildLeg", () => {
+  it("re-reads the fee and records the destination start block", async () => {
+    const { fees, expectedOutput, txInfo } = await buildLeg(
+      BASE_WTAO,
+      SUB_TAO,
+      ONE_TAO_WEI + 5n,
+      SUB_ADDRESS
+    )
 
-    expect(ex).toEqual({
-      protocol: "forevermoney",
-      fees: [
-        {
-          name: "Chainlink CCIP Fee",
-          tokenId: "8453:evm-native",
-          amount: BigNumber("0.00102"),
-          additional: true,
-        },
-      ],
-      outputAmountBN: ONE_TAO_WEI / 10n ** 9n,
-      data: {
-        direction: "spoke-to-substrate",
-        fromTokenId: BASE_WTAO,
-        toTokenId: SUB_TAO,
-        toAddress: SUB_ADDRESS,
-        amountWei: ONE_TAO_WEI.toString(),
-        partnerFeeWei: "0",
-        feeWei: CCIP_FEE.toString(),
-        destinationStartBlock: "7000000",
+    expect(fees).toEqual([
+      {
+        name: "Chainlink CCIP Fee",
+        tokenId: "8453:evm-native",
+        amount: BigNumber("0.00102"),
+        additional: true,
       },
-    })
+    ])
+    expect(expectedOutput).toBe(ONE_TAO_WEI / 10n ** 9n)
+    expect(txInfo).toMatchObject({ destinationStartBlock: "7000000" })
   })
 
   it("reads the spoke block for an outbound bridge", async () => {
-    const ex = await exchange(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS)
+    const { txInfo } = await buildLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS)
 
-    expect(ex?.data).toMatchObject({ direction: "evm-to-spoke", destinationStartBlock: "50000000" })
+    expect(txInfo).toMatchObject({ destinationStartBlock: "50000000" })
   })
 
   it("rejects a recipient of the wrong type", async () => {
-    await expect(exchange(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, EVM_ADDRESS)).rejects.toThrow(
+    const build = async (fromTokenId: string, toTokenId: string, quotedTo: string, to: string) =>
+      forevermoneySwapModule.buildLeg({
+        leg: { ...(await quotedLeg(fromTokenId, toTokenId, ONE_TAO_WEI, quotedTo)), recipient: to },
+        input: ONE_TAO_WEI,
+        context: { platform: "ethereum" },
+        exchange: null,
+        slippage: 0,
+      })
+
+    await expect(build(BASE_WTAO, SUB_TAO, SUB_ADDRESS, EVM_ADDRESS)).rejects.toThrow(
       "Invalid recipient"
     )
-    await expect(exchange(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, SUB_ADDRESS)).rejects.toThrow(
+    await expect(build(EVM_TAO, BASE_WTAO, EVM_ADDRESS, SUB_ADDRESS)).rejects.toThrow(
       "Invalid recipient"
     )
   })
-})
-
-describe("forevermoneySwapModule getTransaction", () => {
-  const buildTx = async (
-    fromTokenId: string,
-    toTokenId: string,
-    fromAmount: bigint,
-    toAddress: string,
-    overrides: Record<string, unknown> = {}
-  ) => {
-    const ex = await exchange(fromTokenId, toTokenId, fromAmount, toAddress)
-    return forevermoneySwapModule.getTransaction({
-      fromTokenId,
-      fromAddress: EVM_ADDRESS,
-      fromAmount,
-      exchange: { ...ex?.data, ...overrides },
-      context: { platform: "ethereum" },
-      toAddress,
-    })
-  }
 
   it("bridges spoke wTAO to a substrate address through bridgeToFinney", async () => {
     const tx = await buildTx(BASE_WTAO, SUB_TAO, ONE_TAO_WEI + 7n, SUB_ADDRESS)
-    if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
 
-    expect(tx.transaction.to).toBe(BASE_GATEWAY)
-    expect(tx.transaction.value).toBe(FEE_WITH_BUFFER)
-    expect(
-      decodeFunctionData({ abi: abiForevermoneySpokeGateway, data: tx.transaction.data! })
-    ).toEqual({
+    expect(tx.to).toBe(BASE_GATEWAY)
+    expect(tx.value).toBe(FEE_WITH_BUFFER)
+    expect(decodeFunctionData({ abi: abiForevermoneySpokeGateway, data: tx.data! })).toEqual({
       functionName: "bridgeToFinney",
       args: [
         "0xf3081494B87e8D5fb7960f066E931D1D0e6E3d67",
@@ -429,12 +434,8 @@ describe("forevermoneySwapModule getTransaction", () => {
 
   it("targets the mirror of an EVM recipient for a spoke to EVM bridge", async () => {
     const tx = await buildTx(BASE_WTAO, EVM_TAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS)
-    if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
 
-    const { args } = decodeFunctionData({
-      abi: abiForevermoneySpokeGateway,
-      data: tx.transaction.data!,
-    })
+    const { args } = decodeFunctionData({ abi: abiForevermoneySpokeGateway, data: tx.data! })
     expect((args[2] as { ss58: string }).ss58).toBe(
       frontierSs58ToPublicKeyHex(frontierH160ToSs58Mirror(OTHER_EVM_ADDRESS, 42))
     )
@@ -442,13 +443,10 @@ describe("forevermoneySwapModule getTransaction", () => {
 
   it("bridges Bittensor EVM TAO to a spoke through bridgeOut with the fee on top", async () => {
     const tx = await buildTx(EVM_TAO, BASE_WTAO, ONE_TAO_WEI + 9n, OTHER_EVM_ADDRESS)
-    if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
 
-    expect(tx.transaction.to).toBe(OUTBOUND_ALPHA_GATEWAY)
-    expect(tx.transaction.value).toBe(ONE_TAO_WEI + FEE_WITH_BUFFER)
-    expect(
-      decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data: tx.transaction.data! })
-    ).toEqual({
+    expect(tx.to).toBe(OUTBOUND_ALPHA_GATEWAY)
+    expect(tx.value).toBe(ONE_TAO_WEI + FEE_WITH_BUFFER)
+    expect(decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data: tx.data! })).toEqual({
       functionName: "bridgeOut",
       args: [
         BASE_SELECTOR,
@@ -461,33 +459,29 @@ describe("forevermoneySwapModule getTransaction", () => {
     })
   })
 
-  it("rejects an exchange built for another recipient or amount", async () => {
-    await expect(
-      buildTx(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS, { toAddress: EVM_ADDRESS })
-    ).rejects.toThrow("select the quote again")
-    await expect(
-      buildTx(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS, {
-        amountWei: (2n * ONE_TAO_WEI).toString(),
-      })
-    ).rejects.toThrow("select the quote again")
-  })
+  it("rejects an absurd fresh fee", async () => {
+    const leg = await quotedLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS)
+    state.fee = ONE_TAO_WEI
 
-  it("rejects a tampered fee", async () => {
     await expect(
-      buildTx(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, EVM_ADDRESS, { feeWei: ONE_TAO_WEI.toString() })
+      forevermoneySwapModule.buildLeg({
+        leg,
+        input: ONE_TAO_WEI,
+        context: { platform: "ethereum" },
+        exchange: null,
+        slippage: 0,
+      })
     ).rejects.toThrow("unexpectedly high")
   })
 
   it("requires an EVM signing context", async () => {
-    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS)
     await expect(
-      forevermoneySwapModule.getTransaction({
-        fromTokenId: BASE_WTAO,
-        fromAddress: EVM_ADDRESS,
-        fromAmount: ONE_TAO_WEI,
-        exchange: ex?.data,
+      forevermoneySwapModule.buildLeg({
+        leg: await quotedLeg(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS),
+        input: ONE_TAO_WEI,
         context: { platform: "polkadot", sapi: {} as never },
-        toAddress: SUB_ADDRESS,
+        exchange: null,
+        slippage: 0,
       })
     ).rejects.toThrow("Missing EVM context")
   })
@@ -536,25 +530,6 @@ describe("forevermoneySwapModule partner fee", () => {
       feeRecipients: Object.fromEntries(networkIds.map((id) => [id, PARTNER])),
       feeBps: 100,
     })
-
-  const buildTx = async (
-    fromTokenId: string,
-    toTokenId: string,
-    fromAmount: bigint,
-    to: string
-  ) => {
-    const ex = await exchange(fromTokenId, toTokenId, fromAmount, to)
-    const tx = await forevermoneySwapModule.getTransaction({
-      fromTokenId,
-      fromAddress: EVM_ADDRESS,
-      fromAmount,
-      exchange: ex?.data,
-      context: { platform: "ethereum" },
-      toAddress: to,
-    })
-    if (tx?.platform !== "ethereum") throw new Error("expected an ethereum tx")
-    return tx.transaction
-  }
 
   it("carves the fee out of an inbound input and bridges through bridgeToFinneyWithFee", async () => {
     enableFee(["8453"])
@@ -631,10 +606,14 @@ describe("forevermoneySwapModule partner fee", () => {
         [BASE_WTAO, EVM_TAO, EVM_ADDRESS],
         [EVM_TAO, BASE_WTAO, EVM_ADDRESS],
       ]) {
-        const ex = await exchange(fromTokenId!, toTokenId!, fromAmount, to!)
-        const data = ex?.data as ForevermoneyExchange
-        const amountWei = BigInt(data.amountWei)
-        const partnerFeeWei = BigInt(data.partnerFeeWei)
+        const { fees, expectedOutput: amountWei } = await buildLeg(
+          fromTokenId!,
+          toTokenId!,
+          fromAmount,
+          to!
+        )
+        const partnerFee = fees.find((fee) => fee.name === "Talisman Fee")
+        const partnerFeeWei = BigInt(partnerFee?.amount.times(10 ** 18).toFixed() ?? "0")
         expect(partnerFeeWei).toBeGreaterThan(0n)
         expect(amountWei % WEI_PER_RAO).toBe(0n)
         expect(amountWei + partnerFeeWei).toBeLessThanOrEqual(fromAmount)
@@ -650,31 +629,20 @@ describe("forevermoneySwapModule partner fee", () => {
     )
   })
 
-  it("reports a lower exchange output when the fee was enabled after the quote", async () => {
-    const q = single(await quote(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS))
+  it("rejects the leg when the fee was enabled after the quote", async () => {
+    const leg = await quotedLeg(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
 
     enableFee(["8453"])
-    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
 
-    expect(ex?.outputAmountBN).toBe(ONE_TAO_WEI / WEI_PER_RAO)
-    expect(ex?.outputAmountBN).toBeLessThan(q!.outputAmountBN)
-  })
-
-  it("rejects a transaction when the fee settings changed after the exchange", async () => {
-    enableFee(["8453"])
-    const ex = await exchange(BASE_WTAO, SUB_TAO, ONE_PERCENT_ABOVE, SUB_ADDRESS)
-
-    forevermoneyConfig.feeBps = 50
     await expect(
-      forevermoneySwapModule.getTransaction({
-        fromTokenId: BASE_WTAO,
-        fromAddress: EVM_ADDRESS,
-        fromAmount: ONE_PERCENT_ABOVE,
-        exchange: ex?.data,
+      forevermoneySwapModule.buildLeg({
+        leg,
+        input: ONE_PERCENT_ABOVE,
         context: { platform: "ethereum" },
-        toAddress: SUB_ADDRESS,
+        exchange: null,
+        slippage: 0,
       })
-    ).rejects.toThrow("select the quote again")
+    ).rejects.toThrow("Please select the quote again")
   })
 
   it("rejects a gateway fee quote that disagrees with the fee settings", async () => {

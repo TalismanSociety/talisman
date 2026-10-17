@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import {
   evmErc20TokenId,
@@ -133,17 +134,6 @@ export type SwapTransactionContext =
   | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
   | { platform: "solana"; rpc: SolRpc }
 
-export type GetTransactionParams = {
-  fromTokenId: TokenId
-  fromAddress: string
-  /** amount entered by the user, and the only amount shown on the confirmation screen */
-  fromAmount: bigint
-  exchange: unknown // specific exchange type varies per module
-  context: SwapTransactionContext
-  /** recipient selected by the user, lets modules reject a quote built for another recipient */
-  toAddress?: string
-}
-
 export type SwapModuleTransaction =
   | {
       platform: "ethereum"
@@ -158,6 +148,25 @@ export type SwapModuleTransaction =
       platform: "solana"
       transaction: SolTransaction
     }
+
+export type BuildLegParams = {
+  leg: QuoteLeg
+  /** what the leg's signer spends, the amount the user entered for the first leg */
+  input: bigint
+  context: SwapTransactionContext
+  /** the exchange createExchange opened for this leg */
+  exchange: SwapExchange | null
+  /** decimal, 0.005 is 0.5% */
+  slippage: number
+}
+
+export type BuiltLeg = {
+  transaction: SwapModuleTransaction
+  /** fees read when the leg was built, the confirm screen shows them instead of the quote's */
+  fees: QuoteFee[]
+  expectedOutput: bigint
+  txInfo: WalletTransactionInfo
+}
 
 export type ApprovalInfo = {
   contractAddress: string
@@ -178,8 +187,9 @@ export type SwapModule = {
 
   getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
 
-  createExchange: (params: ExchangeParams) => Promise<SwapExchange | null>
-  getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
+  /** opens an order with the provider, once per confirm screen: the order is what the leg pays into */
+  createExchange?: (params: ExchangeParams) => Promise<SwapExchange>
+  buildLeg: (params: BuildLegParams) => Promise<BuiltLeg>
 
   getApprovalInfo?: (
     params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }

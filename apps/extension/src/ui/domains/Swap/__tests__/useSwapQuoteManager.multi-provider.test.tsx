@@ -36,8 +36,9 @@ vi.mock("../swaps.api", () => {
       getToAssets: async () => [],
       getQuote: (params: Parameters<SwapModule["getQuote"]>[0], signal: AbortSignal) =>
         lifiGetQuoteMock(params, signal),
-      createExchange: async () => null,
-      getTransaction: async () => null,
+      buildLeg: async () => {
+        throw new Error("not built in quote tests")
+      },
     } satisfies SwapModule,
     {
       protocol: "simpleswap",
@@ -46,8 +47,9 @@ vi.mock("../swaps.api", () => {
       getToAssets: async () => [],
       getQuote: (params: Parameters<SwapModule["getQuote"]>[0], signal: AbortSignal) =>
         simpleswapGetQuoteMock(params, signal),
-      createExchange: async () => null,
-      getTransaction: async () => null,
+      buildLeg: async () => {
+        throw new Error("not built in quote tests")
+      },
     } satisfies SwapModule,
   ]
   return { swapModules, useSwapModules: () => swapModules }

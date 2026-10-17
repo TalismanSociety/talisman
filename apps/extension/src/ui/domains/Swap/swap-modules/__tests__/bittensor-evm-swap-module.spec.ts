@@ -250,14 +250,22 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
     await expect(quoteSubToEvm(ED)).resolves.toBeTruthy()
   })
 
-  it("carries the recipient in the quote data", async () => {
+  it("quotes one leg from the sender to the recipient", async () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
 
-    expect(quote?.legs[0].data).toMatchObject({
-      direction: "sub-to-evm",
-      toAddress: EVM_ADDRESS,
-      edHeldRao: ED,
-    })
+    expect(quote?.legs).toEqual([
+      {
+        protocol: "bittensor-evm",
+        fromTokenId: SUB_TOKEN.id,
+        toTokenId: EVM_TOKEN.id,
+        signer: SUB_ADDRESS,
+        recipient: EVM_ADDRESS,
+        inputAmount: ONE_TAO_RAO,
+        outputAmount: (ONE_TAO_RAO - ED) * WEI_PER_RAO,
+        fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
+        timeInSec: 12,
+      },
+    ])
   })
 })
 
@@ -305,23 +313,23 @@ describe("bittensorEvmSwapModule getQuote evm -> substrate", () => {
   })
 })
 
-describe("bittensorEvmSwapModule getTransaction substrate -> evm", () => {
-  const getSubTransaction = async (allowReap?: boolean, toAddress = EVM_ADDRESS) => {
-    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
-    return bittensorEvmSwapModule.getTransaction({
-      fromTokenId: SUB_TOKEN.id,
-      fromAddress: SUB_ADDRESS,
-      fromAmount: ONE_TAO_RAO,
-      exchange: quote,
+describe("bittensorEvmSwapModule buildLeg substrate -> evm", () => {
+  const buildSubLeg = async (allowReap?: boolean, recipient: string | null = EVM_ADDRESS) => {
+    const quote = single(await quoteSubToEvm(ONE_TAO_RAO, recipient))
+    if (!quote) throw new Error("expected a quote")
+    return bittensorEvmSwapModule.buildLeg({
+      leg: quote.legs[0],
+      input: ONE_TAO_RAO,
       context: { platform: "polkadot", sapi: fakeSapi as never, allowReap },
-      toAddress,
+      exchange: null,
+      slippage: 0,
     })
   }
 
   it("builds a keep-alive transfer to the mirror account", async () => {
-    const tx = await getSubTransaction()
+    const { transaction } = await buildSubLeg()
 
-    expect(tx?.platform).toBe("polkadot")
+    expect(transaction.platform).toBe("polkadot")
     expect(fakeSapi.getExtrinsicPayload).toHaveBeenCalledWith(
       "Balances",
       "transfer_keep_alive",
@@ -334,7 +342,7 @@ describe("bittensorEvmSwapModule getTransaction substrate -> evm", () => {
   })
 
   it("allows reaping the sender when the context asks for it", async () => {
-    await getSubTransaction(true)
+    await buildSubLeg(true)
 
     expect(fakeSapi.getExtrinsicPayload).toHaveBeenCalledWith(
       "Balances",
@@ -344,92 +352,83 @@ describe("bittensorEvmSwapModule getTransaction substrate -> evm", () => {
     )
   })
 
-  it("rejects a quote built for another recipient", async () => {
-    await expect(getSubTransaction(false, OTHER_EVM_ADDRESS)).rejects.toThrow(
-      "Please select the quote again"
-    )
-  })
-
   it("rejects a quote without a recipient", async () => {
-    const quote = single(await quoteSubToEvm(ONE_TAO_RAO, null))
-
-    await expect(
-      bittensorEvmSwapModule.getTransaction({
-        fromTokenId: SUB_TOKEN.id,
-        fromAddress: SUB_ADDRESS,
-        fromAmount: ONE_TAO_RAO,
-        exchange: quote,
-        context: { platform: "polkadot", sapi: fakeSapi as never },
-      })
-    ).rejects.toThrow("Please select the quote again")
+    await expect(buildSubLeg(false, null)).rejects.toThrow("Please select the quote again")
   })
 
   it("rejects a mismatched context", async () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
+    if (!quote) throw new Error("expected a quote")
 
     await expect(
-      bittensorEvmSwapModule.getTransaction({
-        fromTokenId: SUB_TOKEN.id,
-        fromAddress: SUB_ADDRESS,
-        fromAmount: ONE_TAO_RAO,
-        exchange: quote,
+      bittensorEvmSwapModule.buildLeg({
+        leg: quote.legs[0],
+        input: ONE_TAO_RAO,
         context: { platform: "ethereum" },
+        exchange: null,
+        slippage: 0,
       })
     ).rejects.toThrow("Missing substrate context")
   })
 })
 
-describe("bittensorEvmSwapModule getTransaction evm -> substrate", () => {
-  const getEvmTransaction = async (fromAmount: bigint) => {
+describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
+  const buildEvmLeg = async (fromAmount: bigint) => {
     const quote = single(await quoteEvmToSub(fromAmount))
-    return bittensorEvmSwapModule.getTransaction({
-      fromTokenId: EVM_TOKEN.id,
-      fromAddress: EVM_ADDRESS,
-      fromAmount,
-      exchange: quote,
+    if (!quote) throw new Error("expected a quote")
+    const { transaction } = await bittensorEvmSwapModule.buildLeg({
+      leg: quote.legs[0],
+      input: fromAmount,
       context: { platform: "ethereum" },
-      toAddress: SUB_ADDRESS,
+      exchange: null,
+      slippage: 0,
     })
+    if (transaction.platform !== "ethereum") throw new Error("unexpected platform")
+    return transaction.transaction
   }
 
   it("calls the precompile with the recipient public key and the value in wei", async () => {
-    const tx = await getEvmTransaction(ONE_TAO_WEI)
+    const transaction = await buildEvmLeg(ONE_TAO_WEI)
 
-    expect(tx?.platform).toBe("ethereum")
-    if (tx?.platform !== "ethereum") throw new Error("unexpected platform")
-    expect(tx.transaction.to).toBe(BITTENSOR_BALANCE_TRANSFER_PRECOMPILE)
-    expect(tx.transaction.value).toBe(ONE_TAO_WEI)
-    expect(tx.transaction.data).toBe(
+    expect(transaction.to).toBe(BITTENSOR_BALANCE_TRANSFER_PRECOMPILE)
+    expect(transaction.value).toBe(ONE_TAO_WEI)
+    expect(transaction.data).toBe(
       encodeFunctionData({
         abi: abiBittensorBalanceTransfer,
         functionName: "transfer",
         args: [SUB_PUBKEY],
       })
     )
-    expect(tx.transaction.data?.startsWith("0xcd6f4eb1")).toBe(true)
+    expect(transaction.data?.startsWith("0xcd6f4eb1")).toBe(true)
   })
 
   it("strips sub-rao dust from the value", async () => {
-    const tx = await getEvmTransaction(ONE_TAO_WEI + 999n)
+    const transaction = await buildEvmLeg(ONE_TAO_WEI + 999n)
 
-    if (tx?.platform !== "ethereum") throw new Error("unexpected platform")
-    expect(tx.transaction.value).toBe(ONE_TAO_WEI)
-  })
-
-  it("rejects a missing quote", async () => {
-    await expect(
-      bittensorEvmSwapModule.getTransaction({
-        fromTokenId: EVM_TOKEN.id,
-        fromAddress: EVM_ADDRESS,
-        fromAmount: ONE_TAO_WEI,
-        exchange: undefined,
-        context: { platform: "ethereum" },
-      })
-    ).rejects.toThrow("Please select the quote again")
+    expect(transaction.value).toBe(ONE_TAO_WEI)
   })
 })
 
 describe("bittensorEvmSwapModule confirm screen", () => {
+  it("rejects a quote built for another recipient", async () => {
+    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
+    if (!quote) throw new Error("expected a quote")
+
+    await expect(
+      confirmSwap({
+        module: bittensorEvmSwapModule,
+        quote,
+        fromTokenId: SUB_TOKEN.id,
+        toTokenId: EVM_TOKEN.id,
+        fromAddress: SUB_ADDRESS,
+        toAddress: OTHER_EVM_ADDRESS,
+        fromAmount: ONE_TAO_RAO,
+        context: { platform: "polkadot", sapi: fakeSapi as never },
+      })
+    ).rejects.toThrow("Please select the quote again")
+    expect(fakeSapi.getExtrinsicPayload).not.toHaveBeenCalled()
+  })
+
   it("sends the whole input to the recipient's mirror", async () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
     if (!quote) throw new Error("expected a quote")

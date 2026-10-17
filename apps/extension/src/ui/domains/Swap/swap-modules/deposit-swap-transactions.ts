@@ -298,34 +298,33 @@ export async function buildDepositTransaction(params: {
   fromAddress: string
   deposit: DepositInfo
   context: SwapTransactionContext
-}): Promise<SwapModuleTransaction | null> {
+}): Promise<SwapModuleTransaction> {
   const { fromAsset, context } = params
 
   switch (fromAsset.platform) {
     case "ethereum": {
       const transaction = await buildEvmDepositTransaction(params)
-      return transaction ? { platform: "ethereum", transaction } : null
+      if (!transaction) throw new Error("Failed to build deposit transaction")
+      return { platform: "ethereum", transaction }
     }
     case "polkadot": {
-      if (context.platform !== "polkadot") return null
+      if (context.platform !== "polkadot") throw new Error("Missing substrate context")
       const payload = await buildSubstrateDepositPayload({
         ...params,
         sapi: context.sapi,
         allowReap: context.allowReap,
       })
-      return payload
-        ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
-        : null
+      if (!payload) throw new Error("Failed to build deposit transaction")
+      return { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
     }
     case "solana": {
-      if (context.platform !== "solana") return null
+      if (context.platform !== "solana") throw new Error("Missing solana context")
       const transaction = await buildSolanaDepositTransaction({
         ...params,
         rpc: context.rpc,
       })
-      return transaction ? { platform: "solana", transaction } : null
+      if (!transaction) throw new Error("Failed to build deposit transaction")
+      return { platform: "solana", transaction }
     }
-    default:
-      return null
   }
 }

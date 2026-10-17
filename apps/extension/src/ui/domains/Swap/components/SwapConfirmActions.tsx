@@ -48,8 +48,9 @@ import { useTokenRates } from "@ui/state/tokenRates"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useConfirmReadiness, useSwapPostSubmit, useSwapTxInfo } from "../hooks/useSwapConfirmation"
-import { SWAP_SLIPPAGE_DEFAULT, useSwapSlippage } from "../hooks/useSwapSlippage"
+import { buildSwapTransaction } from "../buildSwapTransaction"
+import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
+import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
 import {
   classifyFeeEstimationError,
@@ -58,7 +59,6 @@ import {
   type SwapConfirmError,
 } from "../swap-errors"
 import type {
-  BaseQuote,
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
@@ -225,63 +225,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       confirmEntryCounter.current,
     ],
     queryFn: async ({ signal }) => {
-      if (!swapModule || !fromTokenId || !toTokenId || !fromAddress || !toAddress || !fromAmount)
-        throw new Error("Missing params")
-
-      const exchange = await swapModule.createExchange({
-        fromTokenId,
-        toTokenId,
-        fromAmount,
-        fromAddress,
-        toAddress,
-      })
-
-      if (signal.aborted) throw new Error("Aborted")
-
-      // the confirm screen shows the selected quote's output, the exchange must not deliver less
       if (
-        exchange?.outputAmountBN !== undefined &&
-        selectedQuote &&
-        exchange.outputAmountBN < selectedQuote.outputAmountBN
+        !swapModule ||
+        !selectedQuote ||
+        !fromTokenId ||
+        !toTokenId ||
+        !fromAddress ||
+        !toAddress ||
+        !fromAmount
       )
-        throw new Error("Please select the quote again")
-
-      // For modules that don't create an exchange (e.g. LI.FI returns null) but support
-      // slippage, fetch a fresh quote so the route reflects the user's current slippage.
-      // The main quote manager intentionally omits slippage from its cache key so that
-      // editing slippage on the confirm screen doesn't destabilise quote selection.
-      let freshQuote: BaseQuote | null = null
-      if (!exchange && supportsSlippage) {
-        const freshQuotes = await swapModule.getQuote(
-          {
-            fromTokenId,
-            toTokenId,
-            fromAmount,
-            fromAddress,
-            toAddress,
-            selectedSubProtocol: subProtocol,
-            input: "exact",
-          },
-          signal
-        )
-        if (signal.aborted) throw new Error("Aborted")
-
-        const quotesArray = freshQuotes
-          ? Array.isArray(freshQuotes)
-            ? freshQuotes
-            : [freshQuotes]
-          : []
-
-        // Prefer the route matching the user's selected protocol/subProtocol
-        freshQuote =
-          quotesArray.find(
-            (q) =>
-              q.protocol === selectedQuote?.protocol &&
-              (!q.subProtocol || q.subProtocol === selectedQuote?.subProtocol)
-          ) ??
-          quotesArray[0] ??
-          null
-      }
+        throw new Error("Missing params")
 
       const context: SwapTransactionContext = sapi
         ? { platform: "polkadot", sapi, allowReap }
@@ -289,20 +242,18 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           ? { platform: "solana", rpc: solanaRpc }
           : { platform: "ethereum" }
 
-      const transaction = await swapModule.getTransaction({
+      return buildSwapTransaction({
+        module: swapModule,
+        quote: selectedQuote,
         fromTokenId,
+        toTokenId,
         fromAddress,
-        fromAmount,
-        exchange: exchange?.data ?? freshQuote ?? selectedQuote,
-        context,
         toAddress,
+        fromAmount,
+        context,
+        slippage: toSlippageDecimal(slippagePercent),
+        signal,
       })
-
-      if (signal.aborted) throw new Error("Aborted")
-
-      const fees = exchange?.fees ?? freshQuote?.fees ?? selectedQuote?.fees ?? []
-
-      return { exchange, transaction, fees, route: freshQuote ?? selectedQuote }
     },
     enabled:
       !!swapModule &&
@@ -320,8 +271,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     retry: false,
   })
 
-  const exchange = exchangeAndTransactionQuery.data?.exchange
   const transaction = exchangeAndTransactionQuery.data?.transaction ?? null
+  const txInfo = exchangeAndTransactionQuery.data?.txInfo
   const exchangeError = exchangeAndTransactionQuery.error
   // Use !data && !error (instead of TanStack's .isLoading) so we stay "loading" during the brief
   // gap between approval completing and the exchange query starting to fetch, preventing button flicker.
@@ -344,17 +295,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     networkId: fromToken?.platform === "solana" ? fromToken.networkId : null,
     transaction:
       !needsApproval && transaction?.platform === "solana" ? transaction.transaction : undefined,
-  })
-
-  const txInfo = useSwapTxInfo({
-    exchange: exchange ?? undefined,
-    fromTokenId,
-    toTokenId,
-    fromAmount,
-    toAmount,
-    toAddress,
-    protocol: swapModule?.protocol,
-    subProtocol,
   })
 
   const swapTx = useMemo<TxSubmitButtonTransaction | null>(() => {
@@ -611,7 +551,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const toNetwork = useNetworkById(toToken?.networkId)
   const fromTokenRates = useTokenRates(fromTokenId ?? undefined)
   const feeTokenRates = useTokenRates(activeFeeTokenId ?? undefined)
-  const submittedRoute = exchangeAndTransactionQuery.data?.route ?? selectedQuote
   const swapReport = useMemo(() => {
     const signer = fromAccount && signerOf(fromAccount.type)
     if (!protocol || !fromToken || !toToken || !signer) return null
@@ -636,7 +575,12 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       slippage_percent: supportsSlippage ? toSlippagePercent(slippagePercent) : null,
       slippage_is_default: supportsSlippage ? slippagePercent === SWAP_SLIPPAGE_DEFAULT : null,
       quote_count: sortedQuotes.length,
-      ...getSwapRouteReport({ sortedQuotes, selectedQuote, submittedRoute, isQuotePicked }),
+      ...getSwapRouteReport({
+        sortedQuotes,
+        selectedQuote,
+        submittedRoute: selectedQuote,
+        isQuotePicked,
+      }),
       used_max: fromAmount === fromBalance?.transferable.planck,
       reversed,
     }
@@ -656,7 +600,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     selectedQuote,
     slippagePercent,
     sortedQuotes,
-    submittedRoute,
     supportsSlippage,
     toNetwork,
     toToken,

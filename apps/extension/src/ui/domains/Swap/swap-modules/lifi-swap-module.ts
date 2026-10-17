@@ -31,7 +31,8 @@ import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import {
   type ApprovalInfo,
   type BaseQuote,
-  type GetTransactionParams,
+  type BuildLegParams,
+  type BuiltLeg,
   getTokenIdForSwappableAsset,
   type QuoteFee,
   type QuoteParams,
@@ -39,6 +40,7 @@ import {
   type SupportedSwapProtocol,
   type SwapModule,
   type SwapModuleTransaction,
+  type SwapTransactionContext,
   TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
@@ -319,12 +321,13 @@ const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Pr
 
 const getRoutes = async (
   params: QuoteParams,
-  signal: AbortSignal
+  slippage: number,
+  signal?: AbortSignal
 ): Promise<lifiSdk.RoutesResponse | null> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
     if (!fromTokenId || !toTokenId || !fromAmount) return null
-    if (signal.aborted) return null
+    if (signal?.aborted) return null
 
     // For tokens not in LI.FI's default list, construct the asset
     // from chaindata so the contract address is passed directly to the SDK.
@@ -369,8 +372,7 @@ const getRoutes = async (
       : (toAsset.contractAddress ?? zeroAddress)
 
     const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
-    const slippage = await getSwapSlippageDecimal()
-    if (signal.aborted) return null
+    if (signal?.aborted) return null
     const response = await lifiSdk.getRoutes(
       lifiClient,
       {
@@ -391,7 +393,7 @@ const getRoutes = async (
 
     return response
   } catch (cause) {
-    if (signal.aborted || isAbortError(cause)) return null
+    if (signal?.aborted || isAbortError(cause)) return null
 
     log.warn("Failed to fetch lifi routes", cause)
     return {
@@ -522,17 +524,21 @@ const getRouteQuote = async (
   )
 }
 
-const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> => {
+const quoteRoutes = async (
+  params: QuoteParams,
+  slippage: number,
+  signal?: AbortSignal
+): Promise<BaseQuote[] | null> => {
   const { fromTokenId, toTokenId } = params
-  if (!fromTokenId || !toTokenId || signal.aborted) return null
+  if (!fromTokenId || !toTokenId || signal?.aborted) return null
 
-  const routes = await getRoutes(params, signal)
-  if (!routes || signal.aborted) return null
+  const routes = await getRoutes(params, slippage, signal)
+  if (!routes || signal?.aborted) return null
 
   const quotes = await Promise.allSettled(
     routes.routes.map((route) => getRouteQuote(route, { ...params, fromTokenId, toTokenId }))
   )
-  if (signal.aborted) return null
+  if (signal?.aborted) return null
 
   // Filter out nulls and failed promises
   const validQuotes = quotes
@@ -541,6 +547,9 @@ const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQ
     .filter((q): q is BaseQuote => q !== null)
   return validQuotes.length > 0 ? validQuotes : null
 }
+
+const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> =>
+  quoteRoutes(params, await getSwapSlippageDecimal(), signal)
 
 // if approval is required, returns the contract to approve for, the amount, and token contract
 const getApprovalInfo = (
@@ -573,110 +582,148 @@ const getApprovalInfo = (
   }
 }
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  try {
-    const { fromTokenId, fromAddress, fromAmount, exchange: quoteData, context } = params
-    const route = (quoteData as BaseQuote | undefined)?.legs[0].data as lifiSdk.Route | undefined
-    if (!route) throw new Error("Please select the quote again")
+const buildRouteTransaction = async (
+  step: lifiSdk.LiFiStep,
+  fromTokenId: TokenId,
+  fromAddress: string,
+  fromAmount: bigint,
+  context: SwapTransactionContext
+): Promise<SwapModuleTransaction> => {
+  const fromAsset = resolveAsset(fromTokenId)
+  if (!fromAsset) throw new Error("Not supported on Lifi")
 
-    if (!fromAddress) throw new Error("Missing from address")
-    const fromAsset = resolveAsset(fromTokenId)
-    if (!fromAsset) throw new Error("Not supported on Lifi")
+  // Fetch fresh transaction calldata from LiFi at confirmation time
+  const stepTransaction = await lifiSdk.getStepTransaction(lifiClient, step)
+  const txRequest = stepTransaction?.transactionRequest
+  if (!txRequest) throw new Error("Unknown error, please try again")
+
+  // Solana transaction handling — txRequest for Solana may omit chainId,
+  // so detect via the step's fromChainId instead.
+  const lifiSolanaChainId = await getLifiSolanaChainId()
+  const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
+  if (isSolanaStep) {
+    if (!txRequest.data) throw new Error("Missing Solana transaction data")
+
+    // LI.FI may return Solana transactions as base64 or hex-encoded
+    const txBytes = txRequest.data.startsWith("0x")
+      ? Buffer.from(txRequest.data.slice(2), "hex")
+      : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
+
+    let transaction = transactionFromBytes(txBytes)
+
+    // the fee payer is the account we are about to sign with, so a transaction naming
+    // anyone else is not the one the user is confirming
+    const { feePayer } = parseTransactionInfo(transaction)
+    if (feePayer !== fromAddress) throw new Error("Invalid sender address")
+
+    // Refresh the blockhash — the one from getStepTransaction may expire before the user
+    // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
+    const rpc = context.platform === "solana" ? context.rpc : undefined
+    if (rpc) {
+      const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+      transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
+    }
+
+    return { platform: "solana", transaction }
+  }
+
+  // EVM transaction handling
+  if (
+    txRequest.to === undefined ||
+    txRequest.data === undefined ||
+    txRequest.chainId === undefined ||
+    txRequest.value === undefined ||
+    txRequest.from === undefined ||
+    txRequest.gasLimit === undefined
+  )
+    throw new Error("Unknown error, please try again")
+
+  if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
+    throw new Error("Invalid sender address")
+
+  // the transaction must run on the network holding the token the user is swapping,
+  // not on some other network we happen to know about
+  if (txRequest.chainId.toString() !== fromAsset.chainId) throw new Error("Unexpected chain")
+
+  // a swap is executed by LI.FI's router — calldata aimed at the token contract itself can
+  // only be a transfer or an approval made in the user's name
+  if (
+    fromAsset.contractAddress &&
+    txRequest.to.toLowerCase() === fromAsset.contractAddress.toLowerCase()
+  )
+    throw new Error("Unexpected transaction target from provider. Please try again.")
+
+  assertNativeValueWithinInput({
+    value: BigInt(txRequest.value),
+    fromAmount,
+    isNativeInput: !fromAsset.contractAddress,
+    additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
+  })
+
+  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+  const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
+  if (!evmNetwork) throw new Error("Unknown chain")
+
+  const publicClient = await findEvmPublicClient(evmNetwork.id)
+  if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
+
+  const transaction = await prepareTransactionRequestWithGasCheck(
+    publicClient,
+    evmNetwork.nativeTokenId,
+    {
+      chain: null,
+      to: txRequest.to as `0x${string}`,
+      value: BigInt(txRequest.value),
+      data: txRequest.data as `0x${string}`,
+      gasLimit: txRequest.gasLimit,
+      account: txRequest.from as `0x${string}`,
+    }
+  )
+
+  return { platform: "ethereum", transaction }
+}
+
+/** Re-quotes at the user's slippage, which the quote list leaves out so editing it does not reshuffle the quotes */
+const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Promise<BuiltLeg> => {
+  try {
+    const quotedRoute = leg.data as lifiSdk.Route | undefined
+    const tool = quotedRoute?.steps[0]?.tool
+    if (!quotedRoute || !tool) throw new Error("Please select the quote again")
+    if (!leg.signer || !leg.recipient) throw new Error("Missing from address")
+
+    const freshQuotes =
+      (await quoteRoutes(
+        {
+          fromTokenId: leg.fromTokenId,
+          toTokenId: leg.toTokenId,
+          fromAmount: input,
+          fromAddress: leg.signer,
+          toAddress: leg.recipient,
+          input: "exact",
+        },
+        slippage
+      )) ?? []
+    const freshLeg = (freshQuotes.find((quote) => quote.subProtocol === tool) ?? freshQuotes[0])
+      ?.legs[0]
+    const route = (freshLeg?.data as lifiSdk.Route | undefined) ?? quotedRoute
 
     const step = route.steps[0]
     if (!step) throw new Error("No step found in route")
 
-    // Fetch fresh transaction calldata from LiFi at confirmation time
-    const stepTransaction = await lifiSdk.getStepTransaction(lifiClient, step)
-    const txRequest = stepTransaction?.transactionRequest
-    if (!txRequest) throw new Error("Unknown error, please try again")
-
-    // Solana transaction handling — txRequest for Solana may omit chainId,
-    // so detect via the step's fromChainId instead.
-    const lifiSolanaChainId = await getLifiSolanaChainId()
-    const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
-    if (isSolanaStep) {
-      if (!txRequest.data) throw new Error("Missing Solana transaction data")
-
-      // LI.FI may return Solana transactions as base64 or hex-encoded
-      const txBytes = txRequest.data.startsWith("0x")
-        ? Buffer.from(txRequest.data.slice(2), "hex")
-        : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
-
-      let transaction = transactionFromBytes(txBytes)
-
-      // the fee payer is the account we are about to sign with, so a transaction naming
-      // anyone else is not the one the user is confirming
-      const { feePayer } = parseTransactionInfo(transaction)
-      if (feePayer !== fromAddress) throw new Error("Invalid sender address")
-
-      // Refresh the blockhash — the one from getStepTransaction may expire before the user
-      // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
-      const rpc = context.platform === "solana" ? context.rpc : undefined
-      if (rpc) {
-        const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
-        transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
-      }
-
-      return { platform: "solana", transaction }
+    return {
+      transaction: await buildRouteTransaction(step, leg.fromTokenId, leg.signer, input, context),
+      fees: freshLeg?.fees ?? leg.fees,
+      expectedOutput: leg.outputAmount,
+      txInfo: {
+        type: "swap-lifi",
+        protocolName: tool,
+        fromTokenId: leg.fromTokenId,
+        toTokenId: leg.toTokenId,
+        fromAmount: input.toString(),
+        toAmount: leg.outputAmount.toString(),
+        to: leg.recipient,
+      },
     }
-
-    // EVM transaction handling
-    if (
-      txRequest.to === undefined ||
-      txRequest.data === undefined ||
-      txRequest.chainId === undefined ||
-      txRequest.value === undefined ||
-      txRequest.from === undefined ||
-      txRequest.gasLimit === undefined
-    )
-      throw new Error("Unknown error, please try again")
-
-    if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
-      throw new Error("Invalid sender address")
-
-    // the transaction must run on the network holding the token the user is swapping,
-    // not on some other network we happen to know about
-    if (txRequest.chainId.toString() !== fromAsset.chainId) throw new Error("Unexpected chain")
-
-    // a swap is executed by LI.FI's router — calldata aimed at the token contract itself can
-    // only be a transfer or an approval made in the user's name
-    if (
-      fromAsset.contractAddress &&
-      txRequest.to.toLowerCase() === fromAsset.contractAddress.toLowerCase()
-    )
-      throw new Error("Unexpected transaction target from provider. Please try again.")
-
-    assertNativeValueWithinInput({
-      value: BigInt(txRequest.value),
-      fromAmount,
-      isNativeInput: !fromAsset.contractAddress,
-      additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
-    })
-
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
-    const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
-    if (!evmNetwork) throw new Error("Unknown chain")
-
-    const publicClient = await findEvmPublicClient(evmNetwork.id)
-    if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
-
-    const transaction = await prepareTransactionRequestWithGasCheck(
-      publicClient,
-      evmNetwork.nativeTokenId,
-      {
-        chain: null,
-        to: txRequest.to as `0x${string}`,
-        value: BigInt(txRequest.value),
-        data: txRequest.data as `0x${string}`,
-        gasLimit: txRequest.gasLimit,
-        account: txRequest.from as `0x${string}`,
-      }
-    )
-
-    return { platform: "ethereum", transaction }
   } catch (cause) {
     log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
@@ -690,7 +737,6 @@ export const lifiSwapModule: SwapModule = {
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: async () => null,
-  getTransaction: getTransaction,
+  buildLeg,
   getApprovalInfo: getApprovalInfo,
 }
