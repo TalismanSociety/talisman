@@ -5,7 +5,7 @@ import { personalSign, SignTypedDataVersion, signTypedData } from "@metamask/eth
 import { isEthereumAddress } from "@talismn/crypto"
 import type { HexString } from "@talismn/util"
 import { assert } from "@talismn/util"
-import { bytesToHex } from "viem"
+import { bytesToHex, keccak256 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -18,6 +18,7 @@ import { activeNetworksStore } from "../chaindata/store.activeNetworks"
 import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
+import { admitEvmLeg } from "../swaps/plans/admit"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
@@ -114,6 +115,9 @@ export class EthHandler extends ExtensionHandler {
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
     assert(client, `Missing client for chain ${evmNetworkId}`)
 
+    if (txInfo?.plan)
+      await admitEvmLeg(txInfo.plan, { raw: signed, networkId: evmNetworkId, unsigned, txInfo })
+
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
 
@@ -124,7 +128,14 @@ export class EthHandler extends ExtensionHandler {
 
       return hash as HexString
     } catch (err) {
-      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+      if (!txInfo?.plan)
+        throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+
+      // the leg is admitted: observation decides, and the executor resends the same bytes
+      const hash = keccak256(signed)
+      log.warn("Swap plan leg broadcast failed, observation decides", { err, hash })
+      watchEthereumTransaction(evmNetworkId, hash, unsigned, { notifications: true, txInfo })
+      return hash as HexString
     }
   }
 
@@ -135,6 +146,7 @@ export class EthHandler extends ExtensionHandler {
   }) => {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
+    assert(!txInfo?.plan, "A swap plan leg is signed by its plan")
 
     // Explicitly assign nonce so it's recorded in Dexie via addEvmTransaction
     const tx = parseTransactionRequest(unsigned)

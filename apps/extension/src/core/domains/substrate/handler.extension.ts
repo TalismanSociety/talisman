@@ -14,6 +14,7 @@ import { withSecretKey } from "../keyring/withSecretKey"
 import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction, signSubstratePayload } from "../signing/signSubstratePayload"
+import { admitSubstrateLeg } from "../swaps/plans/admit"
 import { dismissTransaction } from "../transactions/store.transactions"
 import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
 
@@ -41,9 +42,12 @@ export class SubHandler extends ExtensionHandler {
       signature = result.unwrap()
     }
 
-    await watchSubstrateTransaction(chain, payload, signature, { txInfo })
-
     const { signedTransaction, hash } = await assembleSubstrateTransaction(payload, signature)
+
+    if (txInfo?.plan)
+      await admitSubstrateLeg(txInfo.plan, { networkId: chain.id, payload, hash, txInfo })
+
+    await watchSubstrateTransaction(chain, payload, signature, { txInfo })
 
     try {
       await chainConnectorDot.send(chain.id, "author_submitExtrinsic", [signedTransaction])
@@ -57,6 +61,8 @@ export class SubHandler extends ExtensionHandler {
 
   private submitWithBittensorMevShield: MessageHandler<"pri(substrate.rpc.submit.withBittensorMevShield)"> =
     async ({ payload, txInfo }) => {
+      if (txInfo?.plan) throw new Error("A swap plan leg cannot use MEV Shield")
+
       const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
       if (!chain) throw new Error(`Chain not found for genesis hash ${payload.genesisHash}`)
 

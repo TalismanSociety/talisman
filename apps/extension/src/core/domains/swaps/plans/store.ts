@@ -1,5 +1,6 @@
 import { db } from "@core/db"
 import type { WalletTransaction } from "@core/domains/transactions/types"
+import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 
 import type { NonEmpty } from "../types"
 import { derivePhase, findIntermediateConflict, PROPOSED_TTL_MS, transition } from "./machine"
@@ -116,3 +117,18 @@ export const getLivePlanIds = async (): Promise<Set<string>> =>
 
 export const isRowOfLivePlan = (row: WalletTransaction, liveIds: Set<string>) =>
   !!row.txInfo?.plan && liveIds.has(row.txInfo.plan.id)
+
+/**
+ * The nonces of the live plans' legs the signer sent on the network. A plan holds its leg's nonce
+ * until it is over, whatever the leg's row says: a preliminary receipt can still be reorged out.
+ */
+export const getLivePlanNonces = async (signer: string, networkId: string): Promise<number[]> =>
+  (await getLivePlans())
+    .flatMap((plan) => plan.legs)
+    .filter(
+      (leg) =>
+        (leg.state.at === "sent" || leg.state.at === "landed") &&
+        networkIdFromTokenId(leg.quote.fromTokenId) === networkId &&
+        leg.quote.signer.toLowerCase() === signer.toLowerCase()
+    )
+    .flatMap((leg) => (leg.nonce === undefined ? [] : [leg.nonce]))
