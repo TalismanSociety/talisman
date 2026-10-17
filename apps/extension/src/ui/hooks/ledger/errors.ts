@@ -41,7 +41,7 @@ type TalismanLedgerErrorName =
   | "InvalidRequest"
   | "UserRejected"
   | "GenericAppRequired"
-  | "Unauthorized"
+  | "NotConnected"
 
 export class TalismanLedgerError extends Error {
   readonly isTalismanLedgerError = true
@@ -103,8 +103,8 @@ export const getTalismanLedgerError = (
       case "TransportStatusError":
         return getErrorFromCode(cause.statusCode, appName, cause)
 
-      case "TransportOpenUserCancelled": // occurs when user doesn't select a device in the browser popup (also noticed it when device is turned off or sleeping)
-        return new TalismanLedgerError("Unauthorized", t("Failed to connect to your Ledger"), {
+      case "TransportOpenUserCancelled": // no authorised device available: unplugged, locked, asleep, or not authorised in the browser
+        return new TalismanLedgerError("NotConnected", t("Connect and unlock your Ledger"), {
           cause,
         })
 
