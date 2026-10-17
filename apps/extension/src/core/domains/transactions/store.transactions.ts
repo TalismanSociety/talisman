@@ -113,11 +113,13 @@ export const addEvmTransaction = async (
       // Only flag as replacement if there's a pending tx with the same nonce from the same account.
       // Terminated txs (error, unknown, replaced, success) should not trigger the replacement flag —
       // the original tx is already dead and the new tx is a fresh attempt, not a cancellation/speed-up.
+      // The row of this very hash is not another transaction: a swap plan leg is admitted before it is watched.
       const isReplacement =
         (await db.transactionsV2
           .filter(
             (row) =>
               row.platform === "ethereum" &&
+              row.id !== hash &&
               row.networkId === networkId &&
               row.nonce === payload.nonce &&
               row.status === "pending" &&
