@@ -17,11 +17,15 @@ import {
 import { privateKeyToAccount } from "viem/accounts"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const { mockDecodedCall } = vi.hoisted(() => ({ mockDecodedCall: vi.fn() }))
+const { mockDecodedCall, mockTransactionCount } = vi.hoisted(() => ({
+  mockDecodedCall: vi.fn(),
+  mockTransactionCount: vi.fn(),
+}))
 
 vi.mock("../../env.core", () => ({
   coreSwapEnv: {
     substrateApi: async () => ({ getDecodedCallFromPayload: mockDecodedCall }),
+    evmClient: async () => ({ getTransactionCount: mockTransactionCount }),
   },
 }))
 
@@ -202,6 +206,7 @@ describe("admitEvmLeg", () => {
     await db.transactionsV2.clear()
     vi.useFakeTimers({ toFake: ["Date"] })
     vi.setSystemTime(T0 + 2_000)
+    mockTransactionCount.mockReset().mockResolvedValue(12)
   })
 
   afterEach(() => {
@@ -316,6 +321,57 @@ describe("admitEvmLeg", () => {
     await expect(
       admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(await signed({ nonce: 12 })))
     ).rejects.toThrow(new PlanBoundViolation("nonce"))
+  })
+
+  it("refuses a leg signed on a nonce another pending transaction took, then admits its rebuild", async () => {
+    await planWithLeg1Building()
+    await db.transactionsV2.put({
+      id: "0xother",
+      hash: "0xother",
+      platform: "ethereum",
+      networkId: "964",
+      account: EVM_ADDRESS.toLowerCase() as Hex,
+      nonce: 12,
+      isReplacement: false,
+      payload: UNSIGNED,
+      status: "pending",
+      confirmed: false,
+      label: "Transaction",
+      timestamp: T0,
+    })
+
+    await expect(
+      admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(await signed({ nonce: 12 })))
+    ).rejects.toThrow(PlanNotAdmissible)
+    expect((await getPlan(PLAN_ID))?.legs[1].state.at).toBe("building")
+    expect(await db.transactionsV2.count()).toBe(1)
+
+    const { plan } = await admitEvmLeg(
+      { id: PLAN_ID, leg: 1 },
+      evmLegTx(await signed({ nonce: 13 }))
+    )
+    expect(plan.legs[1]).toMatchObject({ nonce: 13, state: { at: "sent" } })
+  })
+
+  it("refuses a leg signed on a nonce the chain already used", async () => {
+    await planWithLeg1Building()
+    mockTransactionCount.mockResolvedValue(13)
+
+    await expect(
+      admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(await signed({ nonce: 12 })))
+    ).rejects.toThrow(PlanNotAdmissible)
+    expect(await db.transactionsV2.count()).toBe(0)
+  })
+
+  it("admits the same bytes again once the chain included them", async () => {
+    await planWithLeg1Building()
+    const raw = await signed()
+    const first = await admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(raw))
+    mockTransactionCount.mockResolvedValue(13)
+
+    const again = await admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(raw))
+
+    expect(again.plan).toEqual(first.plan)
   })
 
   it("admits an unbound hardware leg from its signer only", async () => {

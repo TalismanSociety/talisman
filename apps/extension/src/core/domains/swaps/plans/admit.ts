@@ -1,5 +1,6 @@
 import { db } from "@core/db"
 import { BITTENSOR_SS58_PREFIX } from "@core/domains/bittensor/constants"
+import { isNonceHeldLocally } from "@core/domains/ethereum/nonceManager"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type {
   WalletTransaction,
@@ -30,7 +31,7 @@ import { getBackgroundSwapModule } from "../registry"
 import type { LegBound, SentEvidence } from "../types"
 import { isAdmissible, transition } from "./machine"
 import { type AppliedEvent, enqueue, getPlan, putPlan } from "./store"
-import type { PlanLeg, SwapPlanRef } from "./types"
+import type { PlanLeg, SwapPlan, SwapPlanRef } from "./types"
 
 /** the signed bytes do not match what the user approved: nothing is recorded, nothing is sent */
 export class PlanBoundViolation extends Error {
@@ -157,6 +158,10 @@ export const decodeMortalEra = (
 }
 
 type Admission = {
+  /** the signed transaction against the plan as it stands inside the queue */
+  check: (plan: SwapPlan) => BoundViolation | SubstrateLegViolation | null
+  /** another transaction took the nonce the leg was signed on, which the plan does not pin */
+  isNonceTaken?: () => Promise<boolean>
   hash: Hex
   nonce: number
   deadlineAt: number
@@ -182,8 +187,13 @@ const admit = (ref: SwapPlanRef, admission: Admission, now: number): Promise<App
       if (!isAdmissible(plan, ref.leg, now)) throw new PlanNotAdmissible("The leg is not due")
       if (leg.nonce !== undefined && leg.nonce !== admission.nonce)
         throw new PlanBoundViolation("nonce")
+      if (leg.nonce === undefined && (await admission.isNonceTaken?.()))
+        throw new PlanNotAdmissible("This transaction is out of date, sign it again")
+      const violation = admission.check(plan)
+      if (violation) throw new PlanBoundViolation(violation)
 
-      const result = transition(plan, { type: "admitted", leg: ref.leg, ...admission }, now)
+      const { check: _, isNonceTaken: __, ...admitted } = admission
+      const result = transition(plan, { type: "admitted", leg: ref.leg, ...admitted }, now)
       await putPlan(result.plan)
       await db.transactionsV2.put(admission.row)
       return result
@@ -194,6 +204,13 @@ const planTxInfo = (txInfo: WalletTransactionInfo, ref: SwapPlanRef): WalletTran
   ...txInfo,
   plan: ref,
 })
+
+/** the chain's count is read up front: the check itself runs inside the admission's Dexie transaction */
+const nonceTakenCheck = async (signer: Hex, networkId: NetworkId, nonce: number) => {
+  const client = await coreSwapEnv.evmClient(networkId)
+  const chainNonce = await client.getTransactionCount({ address: signer })
+  return async () => chainNonce > nonce || (await isNonceHeldLocally(signer, networkId, nonce))
+}
 
 export type EvmLegTx = {
   raw: Hex
@@ -216,9 +233,18 @@ export const admitEvmLeg = async (
     serializedTransaction: raw as TransactionSerialized,
   })
   const tx = parseTransaction(raw as TransactionSerialized)
-  const violation = leg.bound ? checkBound(leg.bound, tx, signer) : checkUnbound(leg, signer)
+  const check = (current: SwapPlan) => {
+    const currentLeg = current.legs[ref.leg]
+    return currentLeg.bound
+      ? checkBound(currentLeg.bound, tx, signer)
+      : checkUnbound(currentLeg, signer)
+  }
+  const violation = check(plan)
   if (violation) throw new PlanBoundViolation(violation)
   if (tx.nonce === undefined) throw new PlanBoundViolation("nonce")
+  const nonce = tx.nonce
+  const isNonceTaken =
+    leg.nonce === undefined ? await nonceTakenCheck(signer, networkId, nonce) : undefined
 
   const now = Date.now()
   const hash = keccak256(raw)
@@ -228,7 +254,7 @@ export const admitEvmLeg = async (
     platform: "ethereum",
     networkId,
     account: signer,
-    nonce: tx.nonce,
+    nonce,
     isReplacement: false,
     payload: unsigned,
     status: "pending",
@@ -240,8 +266,10 @@ export const admitEvmLeg = async (
   return admit(
     ref,
     {
+      check,
+      isNonceTaken,
       hash,
-      nonce: tx.nonce,
+      nonce,
       deadlineAt: now + module.legDeadlineMs,
       evidence: { platform: "ethereum", raw },
       row,
@@ -271,7 +299,12 @@ export const admitSubstrateLeg = async (
 
   const sapi = await coreSwapEnv.substrateApi(networkId)
   const call = sapi.getDecodedCallFromPayload<TransferCall>({ method: payload.method })
-  const violation = checkSubstrateLeg(leg, next, networkId, payload, call)
+  const check = (current: SwapPlan) => {
+    const [currentLeg, currentNext] = [current.legs[ref.leg], current.legs[ref.leg + 1]]
+    if (!currentNext) return "dest"
+    return checkSubstrateLeg(currentLeg, currentNext, networkId, payload, call)
+  }
+  const violation = check(plan)
   if (violation) throw new PlanBoundViolation(violation)
   const era = decodeMortalEra(payload.era, parseInt(payload.blockNumber, 16))
   if (!era) throw new PlanBoundViolation("era")
@@ -295,6 +328,7 @@ export const admitSubstrateLeg = async (
   return admit(
     ref,
     {
+      check,
       hash,
       nonce,
       deadlineAt: now + module.legDeadlineMs,

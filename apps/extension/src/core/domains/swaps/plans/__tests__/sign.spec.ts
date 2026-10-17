@@ -31,6 +31,7 @@ vi.mock("@core/domains/keyring/withSecretKey", () => ({
 vi.mock("@core/domains/ethereum/nonceManager", () => ({
   getNextNonce: (...args: unknown[]) => mockGetNextNonce(...args),
   releaseReservedNonce: (...args: unknown[]) => mockReleaseReservedNonce(...args),
+  isNonceHeldLocally: async () => false,
 }))
 vi.mock("@core/rpcs/chain-connector-evm", () => ({
   chainConnectorEvm: {
@@ -43,9 +44,7 @@ vi.mock("@core/domains/transactions/watchEthereumTransaction", () => ({
 vi.mock("../../env.core", () => ({
   coreSwapEnv: {
     getNetwork: async () => null,
-    evmClient: async () => {
-      throw new Error("no evm client in this test")
-    },
+    evmClient: async () => ({ getTransactionCount: async () => 0 }),
     substrateApi: async () => {
       throw new Error("no substrate api in this test")
     },
