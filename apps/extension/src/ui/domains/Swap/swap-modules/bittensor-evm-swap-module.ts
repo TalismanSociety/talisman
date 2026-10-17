@@ -26,14 +26,15 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, zeroHash } from "viem"
 import bittensorLogo from "./bittensor-logo.svg?url"
-import type {
-  BaseQuote,
-  GetTransactionParams,
-  QuoteFee,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapModule,
-  SwapModuleTransaction,
+import {
+  type BaseQuote,
+  type GetTransactionParams,
+  type QuoteFee,
+  type QuoteParams,
+  quoteFromLegs,
+  type SupportedSwapProtocol,
+  type SwapModule,
+  type SwapModuleTransaction,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getEvmNetwork } from "./evm-network"
@@ -209,30 +210,43 @@ const throwMinimumError = async (tokenId: TokenId, minimum: bigint, decimals: nu
 
 const buildQuote = (
   route: Route,
-  inputAmountBN: bigint,
-  outputAmountBN: bigint,
+  signer: string | null,
+  inputAmount: bigint,
+  outputAmount: bigint,
   fees: QuoteFee[],
   data: BittensorEvmQuoteData,
   note?: string
-): BaseQuote<BittensorEvmQuoteData> => ({
-  protocol: PROTOCOL,
-  decentralisationScore: DECENTRALISATION_SCORE,
-  inputAmountBN,
-  outputAmountBN,
-  fees,
-  timeInSec: ESTIMATED_DURATION_SEC,
-  providerLogo: bittensorLogo,
-  providerName: PROTOCOL_NAME,
-  note,
-  data: { ...data, fromTokenId: route.fromTokenId, toTokenId: route.toTokenId },
-})
+): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId: route.fromTokenId,
+        toTokenId: route.toTokenId,
+        signer,
+        recipient: data.toAddress,
+        inputAmount,
+        outputAmount,
+        fees,
+        timeInSec: ESTIMATED_DURATION_SEC,
+        data: { ...data, fromTokenId: route.fromTokenId, toTokenId: route.toTokenId },
+      },
+    ],
+    {
+      protocol: PROTOCOL,
+      decentralisationScore: DECENTRALISATION_SCORE,
+      providerLogo: bittensorLogo,
+      providerName: PROTOCOL_NAME,
+      note,
+    }
+  )
 
 const getSubToEvmQuote = async (
   route: Route,
   fromAmount: bigint,
   fromAddress: string | null,
   toAddress: string | null
-): Promise<BaseQuote<BittensorEvmQuoteData>> => {
+): Promise<BaseQuote> => {
   const { substrateNetworkId } = route.pair
 
   const mirror =
@@ -255,6 +269,7 @@ const getSubToEvmQuote = async (
 
   return buildQuote(
     route,
+    fromAddress,
     fromAmount,
     outputRao * BITTENSOR_WEI_PER_RAO,
     fees,
@@ -274,7 +289,7 @@ const getEvmToSubQuote = async (
   fromAmount: bigint,
   fromAddress: string | null,
   toAddress: string | null
-): Promise<BaseQuote<BittensorEvmQuoteData>> => {
+): Promise<BaseQuote> => {
   const { evmNetworkId } = route.pair
 
   const outputRao = fromAmount / BITTENSOR_WEI_PER_RAO
@@ -290,7 +305,7 @@ const getEvmToSubQuote = async (
       : null
   const fees = feeWei !== null ? [toQuoteFee(route.fromTokenId, feeWei, EVM_TAO_DECIMALS)] : []
 
-  return buildQuote(route, fromAmount, outputRao, fees, {
+  return buildQuote(route, fromAddress, fromAmount, outputRao, fees, {
     direction: "evm-to-sub",
     fromTokenId: route.fromTokenId,
     toTokenId: route.toTokenId,
@@ -317,7 +332,9 @@ const getTransaction = async (
 ): Promise<SwapModuleTransaction | null> => {
   const { fromTokenId, fromAddress, fromAmount, exchange, context, toAddress } = params
 
-  const data = (exchange as BaseQuote<BittensorEvmQuoteData> | undefined)?.data
+  const data = (exchange as BaseQuote | undefined)?.legs[0].data as
+    | BittensorEvmQuoteData
+    | undefined
   if (!data?.toAddress || data.fromTokenId !== fromTokenId)
     throw new Error("Please select the quote again")
   if (toAddress && !isAddressEqual(toAddress, data.toAddress))

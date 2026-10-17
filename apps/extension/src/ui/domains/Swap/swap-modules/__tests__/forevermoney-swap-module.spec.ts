@@ -164,7 +164,7 @@ const quote = (
   toAddress: string | null
 ) =>
   forevermoneySwapModule.getQuote(
-    { fromTokenId, toTokenId, fromAmount, fromAddress: EVM_ADDRESS, toAddress },
+    { fromTokenId, toTokenId, fromAmount, fromAddress: EVM_ADDRESS, toAddress, input: "exact" },
     signal
   )
 

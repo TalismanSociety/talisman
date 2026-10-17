@@ -3,10 +3,11 @@ import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-libr
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type {
-  BaseQuote,
-  SupportedSwapProtocol,
-  SwapModule,
+import {
+  type BaseQuote,
+  quoteFromLegs,
+  type SupportedSwapProtocol,
+  type SwapModule,
 } from "../swap-modules/common.swap-module"
 
 const getQuoteMock = vi.fn()
@@ -63,16 +64,28 @@ const createDeferred = <T,>(): Deferred<T> => {
   return { promise, resolve }
 }
 
-const makeQuote = (outputAmountBN: bigint): BaseQuote => ({
-  decentralisationScore: 2,
-  protocol: "lifi",
-  outputAmountBN,
-  inputAmountBN: 1n,
-  fees: [],
-  timeInSec: 30,
-  providerLogo: "https://example.com/logo.png",
-  providerName: "LI.FI",
-})
+const makeQuote = (outputAmountBN: bigint): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: "lifi",
+        fromTokenId: "from-token",
+        toTokenId: "to-token",
+        signer: null,
+        recipient: null,
+        inputAmount: 1n,
+        outputAmount: outputAmountBN,
+        fees: [],
+        timeInSec: 30,
+      },
+    ],
+    {
+      decentralisationScore: 2,
+      protocol: "lifi",
+      providerLogo: "https://example.com/logo.png",
+      providerName: "LI.FI",
+    }
+  )
 
 const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
   ["from-token", new Set(["lifi"])],

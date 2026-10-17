@@ -12,6 +12,7 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
@@ -35,17 +36,41 @@ export type QuoteFee = {
   additional?: boolean
 }
 
-export type BaseQuote<TData = any> = {
+export type NonEmpty<T> = [T, ...T[]]
+
+/**
+ * One transaction the funds go through. A quote's legs run in order: each leg spends what the previous one delivers,
+ * signed by the previous leg's recipient. Addresses are null while the form has none yet.
+ */
+export type QuoteLeg = {
+  protocol: SupportedSwapProtocol
+  fromTokenId: TokenId
+  toTokenId: TokenId
+  signer: string | null
+  recipient: string | null
+  inputAmount: bigint
+  outputAmount: bigint
+  fees: QuoteFee[]
+  timeInSec: number
+  /** module specific, handed back to the module that quoted the leg when it builds the leg */
+  data?: unknown
+}
+
+export type BaseQuote = {
   decentralisationScore: number
   protocol: SupportedSwapProtocol
   subProtocol?: string
-  outputAmountBN: bigint
+  legs: NonEmpty<QuoteLeg>
+  /** the first leg's input */
   inputAmountBN: bigint
-  error?: string
+  /** the last leg's output */
+  outputAmountBN: bigint
+  /** every leg's fees */
   fees: QuoteFee[]
-  talismanFee?: number
-  data?: TData
+  /** every leg's duration, added up */
   timeInSec: number
+  error?: string
+  talismanFee?: number
   providerLogo: string
   providerName: string
   /** Short provider-specific remark shown on the confirmation screen */
@@ -57,21 +82,26 @@ export type BaseQuote<TData = any> = {
   maxNativeTokenGasBuffer?: string
 }
 
-export type QuoteResponse = {
-  query: {
-    amount: string
-    quote: {
-      intermediateAmount?: string
-      egressAmount: string
-      includedFees: Array<{
-        type: "LIQUIDITY" | "NETWORK" | "INGRESS" | "EGRESS" | "BROKER" | "BOOST"
-        chain: unknown
-        asset: unknown
-        amount: string
-      }>
-      lowLiquidityWarning: boolean | undefined
-      estimatedDurationSeconds: number
-    }
+type QuoteSummary = "legs" | "inputAmountBN" | "outputAmountBN" | "fees" | "timeInSec"
+
+export const quoteFromLegs = (
+  legs: NonEmpty<QuoteLeg>,
+  presentation: Omit<BaseQuote, QuoteSummary>
+): BaseQuote => {
+  legs.slice(1).forEach((leg, index) => {
+    const previous = legs[index]
+    if (leg.fromTokenId !== previous.toTokenId) throw new Error("Quote legs do not chain")
+    if (leg.signer && previous.recipient && !isAddressEqual(leg.signer, previous.recipient))
+      throw new Error("Quote legs do not chain")
+  })
+
+  return {
+    ...presentation,
+    legs,
+    inputAmountBN: legs[0].inputAmount,
+    outputAmountBN: legs[legs.length - 1].outputAmount,
+    fees: legs.flatMap((leg) => leg.fees),
+    timeInSec: legs.reduce((total, leg) => total + leg.timeInSec, 0),
   }
 }
 
@@ -86,6 +116,8 @@ export type QuoteParams = {
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
+  /** exact: the sender holds fromAmount now. upTo: a later leg, the sender holds at most fromAmount once the previous leg lands */
+  input: "exact" | "upTo"
 }
 
 export type ExchangeParams = {
@@ -150,7 +182,7 @@ export type SwapModule = {
   getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
 
   getApprovalInfo?: (
-    params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+    params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
   ) => ApprovalInfo
 }
 

@@ -120,6 +120,7 @@ describe("simpleswapSwapModule confirm screen", () => {
         fromAmount: ONE_ETH,
         fromAddress: FROM_ADDRESS,
         toAddress: TO_ADDRESS,
+        input: "exact",
       },
       signal
     )

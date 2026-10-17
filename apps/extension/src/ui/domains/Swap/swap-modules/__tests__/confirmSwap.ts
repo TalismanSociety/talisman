@@ -46,6 +46,7 @@ export const confirmSwap = async ({
         fromAddress,
         toAddress,
         selectedSubProtocol: quote.subProtocol,
+        input: "exact",
       },
       new AbortController().signal
     )

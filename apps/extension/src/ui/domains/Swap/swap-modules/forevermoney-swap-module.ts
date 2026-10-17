@@ -38,6 +38,7 @@ import {
   type GetTransactionParams,
   type QuoteFee,
   type QuoteParams,
+  quoteFromLegs,
   type SupportedSwapProtocol,
   type SwapExchange,
   type SwapModule,
@@ -406,7 +407,7 @@ const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmoun
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei
 
-const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuoteData> | null> => {
+const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
   const route = findForevermoneyRoute(fromTokenId, toTokenId)
@@ -444,26 +445,41 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
     if (gasFeeWei !== null) fees.push(toQuoteFee("Est. Gas Fees", feeTokenId, gasFeeWei))
   }
 
-  return {
-    protocol: PROTOCOL,
-    decentralisationScore: DECENTRALISATION_SCORE,
-    inputAmountBN: fromAmount,
-    outputAmountBN: getOutputAmount(route, amounts.amountWei),
-    fees,
-    talismanFee: amounts.partnerFee ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR) : undefined,
-    timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
-    providerLogo: forevermoneyLogo,
-    providerName: PROTOCOL_NAME,
-    notice: NOTICE,
-    maxNativeTokenGasBuffer:
-      isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
-    data: {
-      direction: route.direction,
-      fromTokenId: route.fromTokenId,
-      toTokenId: route.toTokenId,
-      toAddress,
-    },
+  const data: ForevermoneyQuoteData = {
+    direction: route.direction,
+    fromTokenId: route.fromTokenId,
+    toTokenId: route.toTokenId,
+    toAddress,
   }
+
+  return quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId: route.fromTokenId,
+        toTokenId: route.toTokenId,
+        signer: fromAddress,
+        recipient: toAddress,
+        inputAmount: fromAmount,
+        outputAmount: getOutputAmount(route, amounts.amountWei),
+        fees,
+        timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
+        data,
+      },
+    ],
+    {
+      protocol: PROTOCOL,
+      decentralisationScore: DECENTRALISATION_SCORE,
+      talismanFee: amounts.partnerFee
+        ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR)
+        : undefined,
+      providerLogo: forevermoneyLogo,
+      providerName: PROTOCOL_NAME,
+      notice: NOTICE,
+      maxNativeTokenGasBuffer:
+        isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
+    }
+  )
 }
 
 // --- exchange (re-quote on the confirmation screen) ---
@@ -586,7 +602,7 @@ const getTransaction = async (
 // --- approval ---
 
 const getApprovalInfo = (
-  params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+  params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
   const { fromTokenId, toTokenId, fromAddress, fromAmount } = params
   if (!fromTokenId || !fromAddress || !fromAmount) return null

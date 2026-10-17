@@ -118,6 +118,7 @@ const quoteSubToEvm = (fromAmount: bigint, toAddress: string | null = EVM_ADDRES
       fromAmount,
       fromAddress: SUB_ADDRESS,
       toAddress,
+      input: "exact",
     },
     signal
   )
@@ -130,6 +131,7 @@ const quoteEvmToSub = (fromAmount: bigint, toAddress: string | null = SUB_ADDRES
       fromAmount,
       fromAddress: EVM_ADDRESS,
       toAddress,
+      input: "exact",
     },
     signal
   )
@@ -186,6 +188,7 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
         fromAmount: ONE_TAO_RAO,
         fromAddress: SUB_ADDRESS,
         toAddress: null,
+        input: "exact",
       },
       signal
     )
@@ -250,7 +253,7 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
   it("carries the recipient in the quote data", async () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
 
-    expect(quote?.data).toMatchObject({
+    expect(quote?.legs[0].data).toMatchObject({
       direction: "sub-to-evm",
       toAddress: EVM_ADDRESS,
       edHeldRao: ED,

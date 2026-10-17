@@ -260,6 +260,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             fromAddress,
             toAddress,
             selectedSubProtocol: subProtocol,
+            input: "exact",
           },
           signal
         )

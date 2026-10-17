@@ -90,6 +90,7 @@ const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
+const { quoteFromLegs } = await import("../common.swap-module")
 const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---
@@ -154,17 +155,24 @@ const makeRoute = (fromAmount: bigint, feeCosts: FeeCost[] = []): Route =>
     ],
   }) as unknown as Route
 
-const makeQuote = (fromAmount: bigint, feeCosts: FeeCost[] = []) => ({
-  protocol: "lifi" as const,
-  decentralisationScore: 2,
-  outputAmountBN: 950_000_000_000_000_000n,
-  inputAmountBN: fromAmount,
-  fees: [],
-  timeInSec: 30,
-  providerLogo: "",
-  providerName: "LI.FI",
-  data: makeRoute(fromAmount, feeCosts),
-})
+const makeQuote = (fromAmount: bigint, feeCosts: FeeCost[] = []) =>
+  quoteFromLegs(
+    [
+      {
+        protocol: "lifi",
+        fromTokenId: NATIVE_TOKEN_ID,
+        toTokenId: NATIVE_TOKEN_ID,
+        signer: FROM_ADDRESS,
+        recipient: FROM_ADDRESS,
+        inputAmount: fromAmount,
+        outputAmount: 950_000_000_000_000_000n,
+        fees: [],
+        timeInSec: 30,
+        data: makeRoute(fromAmount, feeCosts),
+      },
+    ],
+    { protocol: "lifi", decentralisationScore: 2, providerLogo: "", providerName: "LI.FI" }
+  )
 
 /** Set what the provider returns from `getStepTransaction`. */
 const givenProviderTransaction = (txRequest: Record<string, unknown>) =>
@@ -216,6 +224,7 @@ const getQuote = (feeCosts: FeeCost[]) => {
       fromAmount: ONE_ETH,
       fromAddress: FROM_ADDRESS,
       toAddress: FROM_ADDRESS,
+      input: "exact",
     },
     new AbortController().signal
   )

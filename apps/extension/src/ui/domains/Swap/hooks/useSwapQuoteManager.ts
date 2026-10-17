@@ -151,6 +151,7 @@ export const useSwapQuoteManager = (params: {
             fromAddress,
             toAddress,
             selectedSubProtocol,
+            input: "exact",
           },
           signal
         ),

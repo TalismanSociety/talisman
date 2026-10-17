@@ -22,6 +22,7 @@ import {
   platformFromTokenId,
   type QuoteFee,
   type QuoteParams,
+  quoteFromLegs,
   type SupportedSwapProtocol,
   type SwapExchange,
   type SwapModule,
@@ -368,7 +369,7 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
 }
 
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
-  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
@@ -407,18 +408,29 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       tokenId: fromAsset.id,
     })
 
-    return {
-      decentralisationScore: DECENTRALISATION_SCORE,
-      protocol: PROTOCOL,
-      inputAmountBN: fromAmount,
-      outputAmountBN: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
-      // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
-      timeInSec: 5 * 60,
-      fees,
-      providerLogo: LOGO,
-      providerName: PROTOCOL_NAME,
-      talismanFee,
-    }
+    return quoteFromLegs(
+      [
+        {
+          protocol: PROTOCOL,
+          fromTokenId,
+          toTokenId,
+          signer: fromAddress,
+          recipient: toAddress,
+          inputAmount: fromAmount,
+          outputAmount: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
+          fees,
+          // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
+          timeInSec: 5 * 60,
+        },
+      ],
+      {
+        decentralisationScore: DECENTRALISATION_SCORE,
+        protocol: PROTOCOL,
+        providerLogo: LOGO,
+        providerName: PROTOCOL_NAME,
+        talismanFee,
+      }
+    )
   } catch (cause) {
     log.error(`Failed to get StealthEX quote`, cause)
     return null

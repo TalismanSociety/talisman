@@ -14,6 +14,7 @@ import {
   solNativeTokenId,
   solSplTokenId,
   solToken2022TokenId,
+  type TokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
 import {
@@ -34,6 +35,7 @@ import {
   getTokenIdForSwappableAsset,
   type QuoteFee,
   type QuoteParams,
+  quoteFromLegs,
   type SupportedSwapProtocol,
   type SwapModule,
   type SwapModuleTransaction,
@@ -399,8 +401,6 @@ const getRoutes = async (
   }
 }
 
-type LifiRouteQuote = BaseQuote<lifiSdk.Route>
-
 // Solana assets in this module are stored with `chainId: SOLANA_NETWORK_ID`
 // (string), but LI.FI gas tokens use the numeric LI.FI Solana chain ID. We
 // need to accept either form to detect Solana-source swaps and to match
@@ -436,9 +436,13 @@ const getAdditionalNativeFeeWei = (
 
 const getRouteQuote = async (
   route: lifiSdk.Route,
-  fromTokenId: string,
-  toTokenId: string | null
-): Promise<LifiRouteQuote | null> => {
+  {
+    fromTokenId,
+    toTokenId,
+    fromAddress,
+    toAddress,
+  }: QuoteParams & { fromTokenId: TokenId; toTokenId: TokenId }
+): Promise<BaseQuote | null> => {
   const step = route.steps[0]
   if (!step) return null
 
@@ -466,7 +470,7 @@ const getRouteQuote = async (
 
   const talismanFee = await getTalismanFee({
     fromAssetId: fromTokenId,
-    toAssetId: toTokenId ?? undefined,
+    toAssetId: toTokenId,
   })
   fees.push({
     amount: BigNumber(step.estimate.fromAmount.toString())
@@ -491,45 +495,56 @@ const getRouteQuote = async (
           .toString()
       : undefined
 
-  return {
-    decentralisationScore: DECENTRALISATION_SCORE,
-    protocol: PROTOCOL,
-    subProtocol: step.tool,
-    inputAmountBN: BigInt(step.estimate.fromAmount),
-    outputAmountBN: BigInt(route.toAmountMin),
-    timeInSec: step.estimate.executionDuration,
-    fees,
-    providerLogo: step.toolDetails.logoURI,
-    providerName: step.toolDetails.name,
-    talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
-    data: route,
-    maxNativeTokenGasBuffer: maxNativeTokenGasBuffer,
-  }
+  return quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId,
+        toTokenId,
+        signer: fromAddress,
+        recipient: toAddress,
+        inputAmount: BigInt(step.estimate.fromAmount),
+        outputAmount: BigInt(route.toAmountMin),
+        fees,
+        timeInSec: step.estimate.executionDuration,
+        data: route,
+      },
+    ],
+    {
+      decentralisationScore: DECENTRALISATION_SCORE,
+      protocol: PROTOCOL,
+      subProtocol: step.tool,
+      providerLogo: step.toolDetails.logoURI,
+      providerName: step.toolDetails.name,
+      talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
+      maxNativeTokenGasBuffer: maxNativeTokenGasBuffer,
+    }
+  )
 }
 
 const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> => {
   const { fromTokenId, toTokenId } = params
-  if (!fromTokenId || signal.aborted) return null
+  if (!fromTokenId || !toTokenId || signal.aborted) return null
 
   const routes = await getRoutes(params, signal)
   if (!routes || signal.aborted) return null
 
   const quotes = await Promise.allSettled(
-    routes.routes.map((route) => getRouteQuote(route, fromTokenId, toTokenId))
+    routes.routes.map((route) => getRouteQuote(route, { ...params, fromTokenId, toTokenId }))
   )
   if (signal.aborted) return null
 
   // Filter out nulls and failed promises
   const validQuotes = quotes
-    .filter((r): r is PromiseFulfilledResult<LifiRouteQuote | null> => r.status === "fulfilled")
+    .filter((r): r is PromiseFulfilledResult<BaseQuote | null> => r.status === "fulfilled")
     .map((r) => r.value)
-    .filter((q): q is LifiRouteQuote => q !== null)
+    .filter((q): q is BaseQuote => q !== null)
   return validQuotes.length > 0 ? validQuotes : null
 }
 
 // if approval is required, returns the contract to approve for, the amount, and token contract
 const getApprovalInfo = (
-  params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+  params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
   const { fromTokenId, fromAddress, fromAmount, selectedSubProtocol, quoteData } = params
   if (!fromTokenId || !fromAddress || !fromAmount) return null
@@ -540,7 +555,7 @@ const getApprovalInfo = (
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
     : quoteData
 
-  const lifiData = quoteItem?.data as lifiSdk.Route | undefined
+  const lifiData = quoteItem?.legs[0].data as lifiSdk.Route | undefined
   if (!lifiData) return null
 
   const step = lifiData.steps[0]
@@ -563,16 +578,14 @@ const getTransaction = async (
 ): Promise<SwapModuleTransaction | null> => {
   try {
     const { fromTokenId, fromAddress, fromAmount, exchange: quoteData, context } = params
-    const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
-    if (!selectedQuote?.data) {
-      throw new Error("Please select the quote again")
-    }
+    const route = (quoteData as BaseQuote | undefined)?.legs[0].data as lifiSdk.Route | undefined
+    if (!route) throw new Error("Please select the quote again")
 
     if (!fromAddress) throw new Error("Missing from address")
     const fromAsset = resolveAsset(fromTokenId)
     if (!fromAsset) throw new Error("Not supported on Lifi")
 
-    const step = selectedQuote.data.steps[0]
+    const step = route.steps[0]
     if (!step) throw new Error("No step found in route")
 
     // Fetch fresh transaction calldata from LiFi at confirmation time

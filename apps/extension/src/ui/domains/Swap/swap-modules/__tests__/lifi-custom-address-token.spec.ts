@@ -161,6 +161,7 @@ describe("lifi custom address tokens", () => {
         fromAmount: 1000n,
         fromAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
         toAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+        input: "exact",
       },
       signal
     )
