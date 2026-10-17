@@ -1,12 +1,14 @@
 import { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } from "@core/domains/bittensor/constants"
-import type { SwapEnv } from "@core/domains/swaps/env"
+import type { ExtrinsicEvents, SwapEnv } from "@core/domains/swaps/env"
+import type { LegObservation, SentLeg } from "@core/domains/swaps/types"
+import type { WalletTransaction } from "@core/domains/transactions/types"
 import { abiBittensorBalanceTransfer } from "@core/util/abi"
 import type { Network, Token } from "@talismn/chaindata-provider"
 import { frontierH160ToSs58Mirror } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient } from "viem"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { bittensorEvmSwapModule } from "../bittensorEvm"
 
@@ -16,6 +18,13 @@ const mockGetStorage = vi.fn()
 const mockGetFeeEstimate = vi.fn()
 const mockEstimateGas = vi.fn()
 const mockGetGasPrice = vi.fn()
+const mockSubstrateSend = vi.fn()
+const mockDecodeEvents = vi.fn()
+const mockGetBalance = vi.fn()
+const mockGetBlock = vi.fn()
+const mockGetTransactionReceipt = vi.fn()
+const mockGetTransactionCount = vi.fn()
+const mockGetTransaction = vi.fn()
 
 const EVM_NETWORK = {
   id: "964",
@@ -50,6 +59,11 @@ const quoteSapi = {
 const evmClient = {
   estimateGas: mockEstimateGas,
   getGasPrice: mockGetGasPrice,
+  getBalance: mockGetBalance,
+  getBlock: mockGetBlock,
+  getTransactionReceipt: mockGetTransactionReceipt,
+  getTransactionCount: mockGetTransactionCount,
+  getTransaction: mockGetTransaction,
   prepareTransactionRequest: async (request: unknown) => request,
 }
 
@@ -59,6 +73,8 @@ const env: SwapEnv = {
     ([SUB_TOKEN, EVM_TOKEN].find((token) => token.id === id) as Token | undefined) ?? null,
   evmClient: async () => evmClient as unknown as PublicClient,
   substrateApi: async () => quoteSapi as unknown as ScaleApi,
+  substrateSend: (...args) => mockSubstrateSend(...args),
+  decodeExtrinsicEvents: (...args) => mockDecodeEvents(...args),
 }
 
 // --- Test helpers ---
@@ -232,6 +248,7 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
         outputAmount: (ONE_TAO_RAO - ED) * WEI_PER_RAO,
         fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
         timeInSec: 12,
+        data: { edHeldRao: "500" },
       },
     ])
   })
@@ -380,5 +397,303 @@ describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
     const transaction = await buildEvmLeg(ONE_TAO_WEI + 999n)
 
     expect(transaction.value).toBe(ONE_TAO_WEI)
+  })
+})
+
+describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const SENT_HASH = `0x${"aa".repeat(32)}` as const
+  const HEAD_HASH = `0x${"ff".repeat(32)}` as const
+  const MIRROR = frontierH160ToSs58Mirror(EVM_ADDRESS, 42)
+  const OUTPUT_WEI = (ONE_TAO_RAO - ED) * WEI_PER_RAO
+  const TRANSFER: ExtrinsicEvents["events"][number] = {
+    pallet: "Balances",
+    name: "Transfer",
+    value: { from: SUB_ADDRESS, to: MIRROR, amount: ONE_TAO_RAO },
+  }
+  const blockHashOf = (number: number) =>
+    `0x${"b".repeat(60)}${number.toString().padStart(4, "0")}` as const
+
+  type Finney = {
+    finalised: number
+    nonce: number
+    blocks?: Record<number, { success: boolean; events: ExtrinsicEvents["events"] }>
+    pruned?: boolean
+    /** blocks the node cannot read: their events fail to decode */
+    unreadable?: number[]
+    /** blocks the node does not know yet: no hash for their number */
+    unknown?: number[]
+    balance?: bigint
+    /** how long the node takes to answer for each block */
+    msPerBlock?: number
+  }
+
+  const finney = ({
+    finalised,
+    nonce,
+    blocks = {},
+    pruned = false,
+    unreadable = [],
+    unknown = [],
+    balance = 0n,
+    msPerBlock = 0,
+  }: Finney) => {
+    mockSubstrateSend.mockImplementation(async (_networkId, method, params) => {
+      switch (method) {
+        case "chain_getFinalizedHead":
+          return HEAD_HASH
+        case "chain_getHeader":
+          return params[0] === HEAD_HASH ? { number: `0x${finalised.toString(16)}` } : null
+        case "chain_getBlockHash":
+          return unknown.includes(params[0] as number) ? null : blockHashOf(params[0] as number)
+        default:
+          throw new Error(`unexpected ${method}`)
+      }
+    })
+    mockGetStorage.mockImplementation(async (_pallet, _entry, _keys, at) =>
+      at === HEAD_HASH ? { nonce } : { data: { free: 0n } }
+    )
+    mockDecodeEvents.mockImplementation(async (_networkId, blockHash: string, hash: string) => {
+      const number = Number(blockHash.slice(-4))
+      if (msPerBlock) vi.setSystemTime(Date.now() + msPerBlock)
+      if (pruned || unreadable.includes(number)) throw new Error("State already discarded")
+      const block = blocks[number]
+      return block && hash === SENT_HASH ? { blockNumber: number, ...block } : null
+    })
+    mockGetBalance.mockResolvedValue(balance)
+  }
+
+  const sentLeg = (row: WalletTransaction | null = null): SentLeg => ({
+    hash: SENT_HASH,
+    nonce: 7,
+    sentAt: 0,
+    evidence: { platform: "polkadot", era: { birth: 100, period: 64 } },
+    row,
+  })
+
+  const successRow = (blockNumber: string) =>
+    ({ platform: "polkadot", status: "success", blockNumber }) as WalletTransaction
+
+  const observe = async (sent: SentLeg) => {
+    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
+    if (!quote) throw new Error("expected a quote")
+    mockDecodeEvents.mockClear()
+    return bittensorEvmSwapModule.observeLeg({ leg: quote.legs[0], sent }, env)
+  }
+
+  it("lands with the transferred amount minus the retained deposit once finalised", async () => {
+    finney({ finalised: 110, nonce: 8, blocks: { 105: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(mockDecodeEvents).toHaveBeenCalledTimes(6)
+  })
+
+  it("checks the row's block first when the row says success", async () => {
+    finney({ finalised: 110, nonce: 8, blocks: { 105: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg(successRow("105")))).toEqual({
+      status: "landed",
+      amount: OUTPUT_WEI,
+    })
+    expect(mockDecodeEvents).toHaveBeenCalledTimes(1)
+    expect(mockDecodeEvents).toHaveBeenCalledWith("bittensor", blockHashOf(105), SENT_HASH)
+  })
+
+  it("scans the rest of the era when the row's block does not hold the extrinsic", async () => {
+    finney({ finalised: 130, nonce: 8, blocks: { 120: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg(successRow("105")))).toEqual({
+      status: "landed",
+      amount: OUTPUT_WEI,
+    })
+    expect(mockDecodeEvents).toHaveBeenNthCalledWith(1, "bittensor", blockHashOf(105), SENT_HASH)
+  })
+
+  it("stays pending while the nonce is unused and the era alive, without scanning", async () => {
+    finney({ finalised: 120, nonce: 7 })
+
+    expect(await observe(sentLeg())).toEqual({ status: "pending" })
+    expect(mockDecodeEvents).not.toHaveBeenCalled()
+  })
+
+  it("stays pending while the row's block is past the finalised head", async () => {
+    finney({ finalised: 120, nonce: 7, blocks: { 130: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg(successRow("130")))).toEqual({ status: "pending" })
+  })
+
+  it("is dropped once the era is dead and the nonce still unused", async () => {
+    finney({ finalised: 164, nonce: 7 })
+
+    expect(await observe(sentLeg())).toEqual({ status: "dropped" })
+  })
+
+  it("leaves a scan of a slow node incomplete once it ran out of time, pending", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    finney({ finalised: 200, nonce: 8, msPerBlock: 10_000 })
+
+    expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
+    expect(mockDecodeEvents.mock.calls.length).toBeLessThan(10)
+  })
+
+  const observeUntilSettled = async (sent: SentLeg) => {
+    const observations: LegObservation[] = []
+    let evidence = sent.evidence
+    while (observations.length < 64) {
+      const observation = await observe({ ...sent, evidence })
+      observations.push(observation)
+      if (observation.status !== "pending") break
+      if (evidence.platform === "polkadot")
+        evidence = {
+          ...evidence,
+          scanned: [...(evidence.scanned ?? []), ...(observation.scanned ?? [])],
+        }
+    }
+    return observations
+  }
+
+  it("carries a slow node's scan over to the next observation until it finds the extrinsic", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    const blocks = { 105: { success: true, events: [TRANSFER] } }
+    finney({ finalised: 200, nonce: 8, msPerBlock: 10_000, blocks })
+
+    const observations = await observeUntilSettled(sentLeg())
+
+    expect(observations.at(-1)).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(observations.length).toBe(20)
+  })
+
+  it("proves a dead era holds no extrinsic once a slow node's scans covered all of it", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    finney({ finalised: 200, nonce: 8, msPerBlock: 10_000 })
+
+    const observations = await observeUntilSettled(sentLeg())
+
+    expect(observations.at(-1)).toEqual({ status: "failed", reason: "indeterminate" })
+    expect(observations.length).toBe(22)
+  })
+
+  it("never counts a block it could not read, or did not know, as scanned", async () => {
+    finney({ finalised: 200, nonce: 8, unreadable: [130], unknown: [140] })
+
+    const first = await observe(sentLeg())
+    expect(first.status).toBe("pending")
+    const scanned = first.status === "pending" ? (first.scanned ?? []) : []
+    expect(scanned).toHaveLength(62)
+    expect(scanned).not.toContain(130)
+    expect(scanned).not.toContain(140)
+
+    finney({ finalised: 200, nonce: 8 })
+    const leg = sentLeg()
+    expect(
+      await observe({
+        ...leg,
+        evidence: { platform: "polkadot", era: { birth: 100, period: 64 }, scanned },
+      })
+    ).toEqual({ status: "failed", reason: "indeterminate" })
+    expect(mockDecodeEvents.mock.calls.map(([, blockHash]) => blockHash)).toEqual([
+      blockHashOf(140),
+      blockHashOf(130),
+    ])
+  })
+
+  it("reads a block that holds the extrinsic again once its outcome is readable, and lands", async () => {
+    const blocks = { 105: { success: true, events: [TRANSFER] } }
+    finney({ finalised: 200, nonce: 8, blocks, unreadable: [105] })
+
+    const first = await observe(sentLeg())
+    const scanned = first.status === "pending" ? (first.scanned ?? []) : []
+    expect(first.status).toBe("pending")
+    expect(scanned).not.toContain(105)
+
+    finney({ finalised: 200, nonce: 8, blocks })
+    const evidence = { platform: "polkadot", era: { birth: 100, period: 64 }, scanned } as const
+    expect(await observe({ ...sentLeg(), evidence })).toEqual({
+      status: "landed",
+      amount: OUTPUT_WEI,
+    })
+    expect(mockDecodeEvents).toHaveBeenCalledTimes(1)
+  })
+
+  it("fails as reverted on ExtrinsicFailed", async () => {
+    finney({ finalised: 110, nonce: 8, blocks: { 105: { success: false, events: [] } } })
+
+    expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "reverted" })
+  })
+
+  it("stays pending while the era lives and its state is pruned", async () => {
+    finney({ finalised: 110, nonce: 8, pruned: true })
+
+    expect(await observe(sentLeg())).toEqual({ status: "pending", scanned: [] })
+  })
+
+  it("stays pending when the era is dead and its state is pruned, for the deadline to decide", async () => {
+    finney({ finalised: 200, nonce: 8, pruned: true })
+
+    expect(await observe(sentLeg())).toEqual({ status: "pending", scanned: [] })
+  })
+
+  it("keeps reading a dead era past a block it could not read, and lands once it can", async () => {
+    const blocks = { 105: { success: true, events: [TRANSFER] } }
+    finney({ finalised: 200, nonce: 8, blocks, unreadable: [105] })
+    expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
+
+    finney({ finalised: 200, nonce: 8, blocks })
+    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+  })
+
+  it("stays pending when the node does not know a block of the dead era yet", async () => {
+    finney({ finalised: 200, nonce: 8, unknown: [140] })
+
+    expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
+  })
+
+  it("is indeterminate when the era is dead and the whole era was read without the extrinsic", async () => {
+    finney({ finalised: 200, nonce: 8 })
+
+    expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "indeterminate" })
+    expect(mockDecodeEvents).toHaveBeenCalledTimes(64)
+  })
+
+  it("never lands on a deposit to the recipient without the leg's extrinsic", async () => {
+    finney({ finalised: 200, nonce: 8, balance: OUTPUT_WEI })
+
+    expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "indeterminate" })
+  })
+
+  it("stays pending when the nonce moved but the extrinsic is not in the era yet", async () => {
+    finney({ finalised: 110, nonce: 8 })
+
+    expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
+  })
+})
+
+describe("bittensorEvmSwapModule observeLeg evm -> substrate", () => {
+  it("lands with the value in rao on a successful receipt", async () => {
+    mockGetBlock.mockResolvedValue({ number: 490n })
+    mockGetTransactionReceipt.mockResolvedValue({ status: "success", blockNumber: 490n })
+    mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockResolvedValue({ input: "0x", value: ONE_TAO_WEI })
+    const quote = single(await quoteEvmToSub(ONE_TAO_WEI))
+    if (!quote) throw new Error("expected a quote")
+
+    const observation = await bittensorEvmSwapModule.observeLeg(
+      {
+        leg: quote.legs[0],
+        sent: {
+          hash: `0x${"cc".repeat(32)}`,
+          nonce: 12,
+          sentAt: 0,
+          evidence: { platform: "ethereum" },
+          row: null,
+        },
+      },
+      env
+    )
+
+    expect(observation).toEqual({ status: "landed", amount: ONE_TAO_RAO })
   })
 })

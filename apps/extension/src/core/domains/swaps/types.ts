@@ -149,8 +149,6 @@ export type SentLeg = {
   nonce: number
   sentAt: number
   evidence: SentEvidence
-  /** the recipient's balance on the next leg's network before broadcast, the fallback landing proof */
-  recipientBalanceBefore: bigint | null
   /** the transactionsV2 row: evidence, not a verdict */
   row: WalletTransaction | null
 }
@@ -220,6 +218,13 @@ export type BackgroundSwapModule = {
     signal: AbortSignal
   ) => Promise<BaseQuote | BaseQuote[] | null>
   buildLeg: (params: BuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
+
+  /** how long a sent leg may stay pending before the plan calls it indeterminate */
+  legDeadlineMs: number
+  /** the template admission checks before the background signs this leg alone. Null: the leg always needs the user */
+  boundLeg: (params: BoundLegParams, env: SwapEnv) => Promise<LegBound | null>
+  /** what the chain says about a sent leg, from chain evidence only */
+  observeLeg: (params: ObserveLegParams, env: SwapEnv) => Promise<LegObservation>
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
