@@ -21,7 +21,7 @@ export type BuildSwapTransactionParams = {
 }
 
 const isSameAddress = (address: string | null, expected: string) =>
-  address !== null && isAddressEqual(address, expected)
+  address === expected || (address !== null && isAddressEqual(address, expected))
 
 const throwIfAborted = (signal: AbortSignal | undefined) => {
   if (signal?.aborted) throw new Error("Aborted")
