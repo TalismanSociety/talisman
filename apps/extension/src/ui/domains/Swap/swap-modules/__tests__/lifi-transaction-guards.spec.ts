@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import type { Route } from "@lifi/types"
+import BigNumber from "bignumber.js"
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
@@ -89,6 +90,7 @@ const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
+const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---
 
@@ -218,6 +220,8 @@ const getQuote = (feeCosts: FeeCost[]) => {
     new AbortController().signal
   )
 }
+
+const single = <T>(quote: T | T[] | null) => (Array.isArray(quote) ? quote[0] : quote)
 
 /** The module resolves assets from a cache populated by `getFromAssets`. */
 const seedAssetCache = () => lifiSwapModule.getFromAssets(new AbortController().signal)
@@ -367,6 +371,67 @@ describe("lifi getQuote — additional fees", () => {
       ["Bridge Fee", true],
       ["Protocol Fee", false],
       ["Talisman Fee", undefined],
+    ])
+  })
+})
+
+describe("lifi confirm screen", () => {
+  it("builds the step of a fresh route at the user's slippage", async () => {
+    await seedAssetCache()
+    const quote = single(await getQuote([nativeFee(1_000n, false)]))
+    if (!quote) throw new Error("expected a quote")
+    vi.mocked(lifiSdk.getRoutes).mockResolvedValue({
+      routes: [makeRoute(ONE_ETH, [nativeFee(2_000n, false)])],
+      unavailableRoutes: { failed: [], filteredOut: [] },
+    } as unknown as Awaited<ReturnType<typeof lifiSdk.getRoutes>>)
+    givenProviderTransaction({ value: `0x${(ONE_ETH + 2_000n).toString(16)}` })
+
+    expect(
+      await confirmSwap({
+        module: lifiSwapModule,
+        quote,
+        fromTokenId: NATIVE_TOKEN_ID,
+        toTokenId: NATIVE_TOKEN_ID,
+        fromAddress: FROM_ADDRESS,
+        toAddress: FROM_ADDRESS,
+        fromAmount: ONE_ETH,
+        context: { platform: "ethereum" },
+        slippage: 0.005,
+      })
+    ).toEqual({
+      transaction: {
+        platform: "ethereum",
+        transaction: {
+          chain: null,
+          to: ROUTER_ADDRESS,
+          value: ONE_ETH + 2_000n,
+          data: "0x1234",
+          gasLimit: "0x5208",
+          account: FROM_ADDRESS,
+        },
+      },
+      fees: [
+        {
+          name: "Bridge Fee",
+          tokenId: NATIVE_TOKEN_ID,
+          amount: BigNumber("0.000000000000002"),
+          additional: true,
+        },
+        { name: "Talisman Fee", tokenId: NATIVE_TOKEN_ID, amount: BigNumber("0.0045") },
+      ],
+      txInfo: {
+        type: "swap-lifi",
+        protocolName: "1inch",
+        fromTokenId: NATIVE_TOKEN_ID,
+        toTokenId: NATIVE_TOKEN_ID,
+        fromAmount: "1000000000000000000",
+        toAmount: "940000000000000000",
+        to: FROM_ADDRESS,
+      },
+    })
+    expect(vi.mocked(lifiSdk.getRoutes).mock.lastCall?.[1].options?.slippage).toBe(0.005)
+    expect(mockGetStepTransaction.mock.lastCall?.[0].estimate.feeCosts).toEqual([
+      nativeFee(2_000n, false),
     ])
   })
 })

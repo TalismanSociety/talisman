@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { encodeFunctionData } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -92,6 +93,7 @@ const { bittensorEvmSwapModule } = await import("../bittensor-evm-swap-module")
 const { abiBittensorBalanceTransfer } = await import("@core/util/abi")
 const { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } = await import("@core/domains/bittensor/constants")
 const { frontierH160ToSs58Mirror } = await import("@talismn/crypto")
+const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---
 
@@ -421,5 +423,85 @@ describe("bittensorEvmSwapModule getTransaction evm -> substrate", () => {
         context: { platform: "ethereum" },
       })
     ).rejects.toThrow("Please select the quote again")
+  })
+})
+
+describe("bittensorEvmSwapModule confirm screen", () => {
+  it("sends the whole input to the recipient's mirror", async () => {
+    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
+    if (!quote) throw new Error("expected a quote")
+
+    expect(
+      await confirmSwap({
+        module: bittensorEvmSwapModule,
+        quote,
+        fromTokenId: SUB_TOKEN.id,
+        toTokenId: EVM_TOKEN.id,
+        fromAddress: SUB_ADDRESS,
+        toAddress: EVM_ADDRESS,
+        fromAmount: ONE_TAO_RAO,
+        context: { platform: "polkadot", sapi: fakeSapi as never },
+      })
+    ).toEqual({
+      transaction: {
+        platform: "polkadot",
+        payload: {
+          pallet: "Balances",
+          method: "transfer_keep_alive",
+          args: {
+            dest: { type: "Id", value: "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu" },
+            value: ONE_TAO_RAO,
+          },
+        },
+        txMetadata: new Uint8Array([1]),
+      },
+      fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
+      txInfo: {
+        type: "swap-bittensor-evm",
+        fromTokenId: SUB_TOKEN.id,
+        toTokenId: EVM_TOKEN.id,
+        fromAmount: "1000000000",
+        toAmount: "999999500000000000",
+        to: EVM_ADDRESS,
+      },
+    })
+  })
+
+  it("calls the precompile with the recipient public key", async () => {
+    const quote = single(await quoteEvmToSub(ONE_TAO_WEI + 7n))
+    if (!quote) throw new Error("expected a quote")
+
+    expect(
+      await confirmSwap({
+        module: bittensorEvmSwapModule,
+        quote,
+        fromTokenId: EVM_TOKEN.id,
+        toTokenId: SUB_TOKEN.id,
+        fromAddress: EVM_ADDRESS,
+        toAddress: SUB_ADDRESS,
+        fromAmount: ONE_TAO_WEI + 7n,
+        context: { platform: "ethereum" },
+      })
+    ).toEqual({
+      transaction: {
+        platform: "ethereum",
+        transaction: {
+          chain: null,
+          account: EVM_ADDRESS,
+          to: "0x0000000000000000000000000000000000000800",
+          data: "0xcd6f4eb1c4518fa0ed143e016e4a1410193704924b890de8f854b94c7a6037651ec65dd0",
+          value: ONE_TAO_WEI,
+        },
+      },
+      fees: [{ name: "Est. Gas Fees", tokenId: EVM_TOKEN.id, amount: BigNumber("0.00021") }],
+      txInfo: {
+        type: "swap-bittensor-evm",
+        fromTokenId: EVM_TOKEN.id,
+        toTokenId: SUB_TOKEN.id,
+        fromAmount: "1000000000000000007",
+        toAmount: "1000000000",
+        to: SUB_ADDRESS,
+      },
+    })
   })
 })
