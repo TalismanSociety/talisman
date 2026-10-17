@@ -6,6 +6,7 @@ import {
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import { assertDepositAmountWithinInput } from "@core/domains/swaps/provider-transaction-guards"
 import type {
   BaseQuote,
   BuiltLeg,
@@ -36,7 +37,6 @@ import {
   estimateDepositGas,
 } from "./deposit-swap-transactions"
 import { getSimpleSwapApiKey as getApiKeyFromUtils, getSimpleSwapTalismanFee } from "./fee-utils"
-import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 const PROTOCOL: SupportedSwapProtocol = "simpleswap"

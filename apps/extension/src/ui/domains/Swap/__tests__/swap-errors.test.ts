@@ -1,12 +1,11 @@
+import { InsufficientGasBalanceError } from "@core/domains/swaps/evm-gas-check"
 import { describe, expect, it } from "vitest"
-
 import {
   classifyFeeEstimationError,
   classifySwapError,
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
-import { InsufficientGasBalanceError } from "../swap-modules/evm-gas-check"
 
 const mockT = ((key: string, opts?: Record<string, string>) => {
   if (!opts) return key

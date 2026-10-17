@@ -19,9 +19,12 @@ import {
   type ForevermoneyRoute,
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
-import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type { SwapEnv } from "@core/domains/swaps/env"
+import { getEvmNetwork, quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type {
   ApprovalInfo,
+  ApprovalParams,
+  BackgroundSwapModule,
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
@@ -37,14 +40,11 @@ import {
   isEthereumAddress,
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
-import type { SwapModule } from "./common.swap-module"
-import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
-import { getEvmNetwork, getEvmPublicClient } from "./evm-network"
+import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
+import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
-import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "forevermoney"
 const PROTOCOL_NAME = "ForeverMoney"
@@ -307,8 +307,8 @@ const assertWithinRateLimit = async (
     )
 }
 
-const assertVaultOpen = async (route: ForevermoneyRoute) => {
-  const client = await getEvmPublicClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
+const assertVaultOpen = async (env: SwapEnv, route: ForevermoneyRoute) => {
+  const client = await env.evmClient(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
   const [isPaused, migrationTarget, laneAllowed] = await Promise.all([
     client.readContract({
       abi: abiForevermoneyAlphaVault,
@@ -334,6 +334,7 @@ const assertVaultOpen = async (route: ForevermoneyRoute) => {
 }
 
 const runChecks = async (
+  env: SwapEnv,
   sourceClient: PublicClient,
   route: ForevermoneyRoute,
   { amountWei, partnerFee }: BridgeAmounts
@@ -348,7 +349,10 @@ const runChecks = async (
       `${PROTOCOL_NAME} minimum is ${planckToTokens(minInputWei.toString(), EVM_DECIMALS)} TAO`
     )
   }
-  await Promise.all([assertWithinRateLimit(sourceClient, route, amountWei), assertVaultOpen(route)])
+  await Promise.all([
+    assertWithinRateLimit(sourceClient, route, amountWei),
+    assertVaultOpen(env, route),
+  ])
 }
 
 const estimateGasFeeWei = async (
@@ -387,7 +391,7 @@ const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmoun
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei
 
-const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
+const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
   const route = findForevermoneyRoute(fromTokenId, toTokenId)
@@ -396,10 +400,10 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
   const isOutbound = route.direction === "evm-to-spoke"
   const [amounts, client] = await Promise.all([
     getBridgeAmounts(route, fromAmount),
-    getEvmPublicClient(route.sourceNetworkId),
+    env.evmClient(route.sourceNetworkId),
   ])
 
-  await runChecks(client, route, amounts)
+  await runChecks(env, client, route, amounts)
 
   const feeTokenId = evmNativeTokenId(route.sourceNetworkId)
   const fees: QuoteFee[] = toTalismanFees(route, amounts)
@@ -457,7 +461,10 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
 // --- leg (re-quoted on the confirmation screen) ---
 
 /** Fresh fee, fresh checks and the destination block the delivery watcher starts from */
-const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async (
+  { leg, input, context }: BuildLegParams,
+  env: SwapEnv
+): Promise<BuiltLeg> => {
   const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
   if (!route) throw new Error("Please select the quote again")
   const { signer: fromAddress, recipient: toAddress } = leg
@@ -471,14 +478,14 @@ const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltL
     throw new Error("Invalid recipient")
   if (context.platform !== "ethereum") throw new Error("Missing EVM context")
 
-  const [amounts, sourceNetwork, destinationClient] = await Promise.all([
+  const [amounts, sourceNetwork, sourceClient, destinationClient] = await Promise.all([
     getBridgeAmounts(route, input),
-    getEvmNetwork(route.sourceNetworkId),
-    getEvmPublicClient(route.destinationNetworkId),
+    getEvmNetwork(env, route.sourceNetworkId),
+    env.evmClient(route.sourceNetworkId),
+    env.evmClient(route.destinationNetworkId),
   ])
-  const sourceClient = getExtensionPublicClient(sourceNetwork)
 
-  await runChecks(sourceClient, route, amounts)
+  await runChecks(env, sourceClient, route, amounts)
 
   const [feeWei, destinationStartBlock] = await Promise.all([
     readCcipFeeWei(sourceClient, route, amounts, fromAddress, toAddress),
@@ -532,9 +539,7 @@ const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltL
 
 // --- approval ---
 
-const getApprovalInfo = (
-  params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
-): ApprovalInfo => {
+const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
   const { fromTokenId, toTokenId, fromAddress, fromAmount } = params
   if (!fromTokenId || !fromAddress || !fromAmount) return null
 
@@ -551,7 +556,7 @@ const getApprovalInfo = (
   }
 }
 
-export const forevermoneySwapModule: SwapModule = {
+export const forevermoneySwapModule: BackgroundSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: async () => [...new Set(FOREVERMONEY_ROUTES.map((route) => route.fromTokenId))],

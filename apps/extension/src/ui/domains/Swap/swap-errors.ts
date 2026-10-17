@@ -1,7 +1,7 @@
+import { InsufficientGasBalanceError } from "@core/domains/swaps/evm-gas-check"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"
-import { InsufficientGasBalanceError } from "./swap-modules/evm-gas-check"
 
 /**
  * Structured error types for the swap confirmation flow.

@@ -7,6 +7,8 @@ import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
 import type { TransactionRequest } from "viem"
 
+import type { SwapEnv } from "./env"
+
 export type SupportedSwapProtocol =
   | "simpleswap"
   | "stealthex"
@@ -130,4 +132,22 @@ export type ApprovalInfo = {
 
 export type ApprovalParams = Omit<QuoteParams, "input"> & {
   quoteData: BaseQuote | BaseQuote[] | null
+}
+
+/** A swap module that runs in the UI and in the background: everything it reads from the realm goes through `env` */
+export type BackgroundSwapModule = {
+  protocol: SupportedSwapProtocol
+  decentralisationScore: number
+
+  getFromAssets: (signal: AbortSignal) => Promise<TokenId[]>
+  getToAssets: (fromTokenId: TokenId | null, signal: AbortSignal) => Promise<TokenId[]>
+
+  getQuote: (
+    params: QuoteParams,
+    env: SwapEnv,
+    signal: AbortSignal
+  ) => Promise<BaseQuote | BaseQuote[] | null>
+  buildLeg: (params: BuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
+
+  getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }

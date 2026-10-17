@@ -1,6 +1,8 @@
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/evm-gas-check"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import { assertNativeValueWithinInput } from "@core/domains/swaps/provider-transaction-guards"
 import type {
   ApprovalInfo,
   BaseQuote,
@@ -41,10 +43,8 @@ import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
 import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-module"
-import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
-import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const

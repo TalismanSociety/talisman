@@ -7,9 +7,10 @@ import {
   BITTENSOR_WEI_PER_RAO,
   type BittensorEvmPair,
 } from "@core/domains/bittensor/constants"
-import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
-import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { SwapEnv } from "@core/domains/swaps/env"
+import { getEvmNetwork, quoteFromLegs } from "@core/domains/swaps/helpers"
 import type {
+  BackgroundSwapModule,
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
@@ -27,19 +28,12 @@ import {
   frontierSs58ToPublicKeyHex,
   isEthereumAddress,
 } from "@talismn/crypto"
-import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
-import { api } from "@ui/api"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getNetworkById$, getToken$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, zeroHash } from "viem"
+import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
+import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import bittensorLogo from "./bittensor-logo.svg?url"
-import type { SwapModule } from "./common.swap-module"
-import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
-import { getEvmNetwork } from "./evm-network"
-import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "bittensor-evm"
 const PROTOCOL_NAME = "Bittensor EVM"
@@ -75,54 +69,27 @@ const ROUTES: Route[] = BITTENSOR_EVM_PAIRS.flatMap((pair) => [
 const findRoute = (fromTokenId: string | null, toTokenId: string | null) =>
   ROUTES.find((route) => route.fromTokenId === fromTokenId && route.toTokenId === toTokenId)
 
-// --- Substrate helpers (no React, usable from getQuote) ---
+// --- Substrate helpers ---
 
-const substrateApis = new Map<string, Promise<ScaleApi>>()
-
-const createSubstrateApi = async (networkId: string): Promise<ScaleApi> => {
-  const network = await firstValueFrom(getNetworkById$(networkId))
-  if (network?.platform !== "polkadot") throw new Error("Unknown substrate network")
-
-  const nativeToken = await firstValueFrom(getToken$(network.nativeTokenId))
-  if (!nativeToken) throw new Error("Missing native token")
-
-  const metadataDef = await api.subChainMetadata(network.genesisHash)
-  const metadataRpc = getMetadataRpcFromDef(metadataDef)
-  if (!metadataRpc) throw new Error("Missing metadata")
-
-  return getScaleApi(
-    { chainId: network.id, send: (...args) => api.subSend(network.id, ...args) },
-    metadataRpc as `0x${string}`,
-    nativeToken,
-    network.hasCheckMetadataHash,
-    network.signedExtensions,
-    network.registryTypes
-  )
-}
-
-const getSubstrateApi = (networkId: string): Promise<ScaleApi> => {
-  const cached = substrateApis.get(networkId)
-  if (cached) return cached
-
-  const created = createSubstrateApi(networkId).catch((err) => {
-    substrateApis.delete(networkId)
-    throw err
-  })
-  substrateApis.set(networkId, created)
-  return created
-}
-
-const getSubstrateFreeBalance = async (networkId: string, address: string): Promise<bigint> => {
-  const sapi = await getSubstrateApi(networkId)
+const getSubstrateFreeBalance = async (
+  env: SwapEnv,
+  networkId: string,
+  address: string
+): Promise<bigint> => {
+  const sapi = await env.substrateApi(networkId)
   const account = await sapi.getStorage<{ data?: { free?: bigint } } | null>("System", "Account", [
     address,
   ])
   return account?.data?.free ?? 0n
 }
 
-const isMirrorFunded = async (networkId: string, mirror: string): Promise<boolean> => {
+const isMirrorFunded = async (
+  env: SwapEnv,
+  networkId: string,
+  mirror: string
+): Promise<boolean> => {
   try {
-    const free = await getSubstrateFreeBalance(networkId, mirror)
+    const free = await getSubstrateFreeBalance(env, networkId, mirror)
     return free >= BITTENSOR_EXISTENTIAL_DEPOSIT_RAO
   } catch (err) {
     log.warn("Failed to read Bittensor mirror balance, assuming a fresh account", { err })
@@ -131,11 +98,12 @@ const isMirrorFunded = async (networkId: string, mirror: string): Promise<boolea
 }
 
 const estimateSubstrateFeeRao = async (
+  env: SwapEnv,
   networkId: string,
   fromAddress: string
 ): Promise<bigint | null> => {
   try {
-    const sapi = await getSubstrateApi(networkId)
+    const sapi = await env.substrateApi(networkId)
     const { payload } = await sapi.getExtrinsicPayload(
       "Balances",
       "transfer_keep_alive",
@@ -159,14 +127,14 @@ const encodePrecompileTransfer = (destPubkey: `0x${string}`) =>
   })
 
 const estimateEvmFeeWei = async (
+  env: SwapEnv,
   evmNetworkId: string,
   fromAddress: string,
   toAddress: string | null,
   value: bigint
 ): Promise<bigint | null> => {
   try {
-    const network = await getEvmNetwork(evmNetworkId)
-    const client = getExtensionPublicClient(network)
+    const client = await env.evmClient(evmNetworkId)
     const destPubkey = toAddress ? frontierSs58ToPublicKeyHex(toAddress) : zeroHash
     const [gasPrice, gasLimit] = await Promise.all([
       client.getGasPrice(),
@@ -192,8 +160,13 @@ const toQuoteFee = (tokenId: TokenId, planck: bigint, decimals: number): QuoteFe
   amount: BigNumber(planckToTokens(planck.toString(), decimals)),
 })
 
-const throwMinimumError = async (tokenId: TokenId, minimum: bigint, decimals: number) => {
-  const token = await firstValueFrom(getToken$(tokenId))
+const throwMinimumError = async (
+  env: SwapEnv,
+  tokenId: TokenId,
+  minimum: bigint,
+  decimals: number
+) => {
+  const token = await env.getToken(tokenId)
   const symbol = token?.symbol ?? "TAO"
   throw new Error(
     `${PROTOCOL_NAME} minimum is ${planckToTokens(minimum.toString(), decimals)} ${symbol}`
@@ -233,6 +206,7 @@ const buildQuote = (
   )
 
 const getSubToEvmQuote = async (
+  env: SwapEnv,
   route: Route,
   fromAmount: bigint,
   fromAddress: string | null,
@@ -244,14 +218,16 @@ const getSubToEvmQuote = async (
     toAddress && isEthereumAddress(toAddress)
       ? frontierH160ToSs58Mirror(toAddress, BITTENSOR_SS58_PREFIX)
       : null
-  const funded = mirror ? await isMirrorFunded(substrateNetworkId, mirror) : false
+  const funded = mirror ? await isMirrorFunded(env, substrateNetworkId, mirror) : false
   const edHeldRao = funded ? 0n : BITTENSOR_EXISTENTIAL_DEPOSIT_RAO
 
   // the fee is paid on top by the sender, the confirmation screen checks it against the balance
   const minimum = edHeldRao + BITTENSOR_EXISTENTIAL_DEPOSIT_RAO
-  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, TAO_DECIMALS)
+  if (fromAmount < minimum) await throwMinimumError(env, route.fromTokenId, minimum, TAO_DECIMALS)
 
-  const feeRao = fromAddress ? await estimateSubstrateFeeRao(substrateNetworkId, fromAddress) : null
+  const feeRao = fromAddress
+    ? await estimateSubstrateFeeRao(env, substrateNetworkId, fromAddress)
+    : null
   const outputRao = fromAmount - edHeldRao
   const fees = feeRao !== null ? [toQuoteFee(route.fromTokenId, feeRao, TAO_DECIMALS)] : []
   const note = edHeldRao
@@ -270,6 +246,7 @@ const getSubToEvmQuote = async (
 }
 
 const getEvmToSubQuote = async (
+  env: SwapEnv,
   route: Route,
   fromAmount: bigint,
   fromAddress: string | null,
@@ -282,31 +259,33 @@ const getEvmToSubQuote = async (
 
   // gas is paid on top by the sender, the confirmation screen checks it against the balance
   const minimum = BITTENSOR_EXISTENTIAL_DEPOSIT_RAO * BITTENSOR_WEI_PER_RAO
-  if (fromAmount < minimum) await throwMinimumError(route.fromTokenId, minimum, EVM_TAO_DECIMALS)
+  if (fromAmount < minimum)
+    await throwMinimumError(env, route.fromTokenId, minimum, EVM_TAO_DECIMALS)
 
   const feeWei =
     fromAddress && isEthereumAddress(fromAddress)
-      ? await estimateEvmFeeWei(evmNetworkId, fromAddress, toAddress, value)
+      ? await estimateEvmFeeWei(env, evmNetworkId, fromAddress, toAddress, value)
       : null
   const fees = feeWei !== null ? [toQuoteFee(route.fromTokenId, feeWei, EVM_TAO_DECIMALS)] : []
 
   return buildQuote(route, fromAddress, toAddress, fromAmount, outputRao, fees)
 }
 
-const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
+const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
   const route = findRoute(fromTokenId, toTokenId)
   if (!route || !fromAmount || fromAmount <= 0n) return null
 
   return route.direction === "sub-to-evm"
-    ? getSubToEvmQuote(route, fromAmount, fromAddress, toAddress)
-    : getEvmToSubQuote(route, fromAmount, fromAddress, toAddress)
+    ? getSubToEvmQuote(env, route, fromAmount, fromAddress, toAddress)
+    : getEvmToSubQuote(env, route, fromAmount, fromAddress, toAddress)
 }
 
 // --- Transaction ---
 
 const buildTransaction = async (
+  env: SwapEnv,
   route: Route,
   signer: string,
   recipient: string,
@@ -333,8 +312,10 @@ const buildTransaction = async (
   const value = (input / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WEI_PER_RAO
   assertNativeValueWithinInput({ value, fromAmount: input, isNativeInput: true })
 
-  const network = await getEvmNetwork(route.pair.evmNetworkId)
-  const publicClient = getExtensionPublicClient(network)
+  const [network, publicClient] = await Promise.all([
+    getEvmNetwork(env, route.pair.evmNetworkId),
+    env.evmClient(route.pair.evmNetworkId),
+  ])
 
   const transaction = await prepareTransactionRequestWithGasCheck(
     publicClient,
@@ -351,12 +332,15 @@ const buildTransaction = async (
   return { platform: "ethereum", transaction }
 }
 
-const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async (
+  { leg, input, context }: BuildLegParams,
+  env: SwapEnv
+): Promise<BuiltLeg> => {
   const route = findRoute(leg.fromTokenId, leg.toTokenId)
   if (!route || !leg.signer || !leg.recipient) throw new Error("Please select the quote again")
 
   return {
-    transaction: await buildTransaction(route, leg.signer, leg.recipient, input, context),
+    transaction: await buildTransaction(env, route, leg.signer, leg.recipient, input, context),
     fees: leg.fees,
     expectedOutput: leg.outputAmount,
     txInfo: {
@@ -370,7 +354,7 @@ const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltL
   }
 }
 
-export const bittensorEvmSwapModule: SwapModule = {
+export const bittensorEvmSwapModule: BackgroundSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: async () => ROUTES.map((route) => route.fromTokenId),

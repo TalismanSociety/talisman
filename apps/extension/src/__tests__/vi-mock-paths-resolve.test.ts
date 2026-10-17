@@ -57,7 +57,7 @@ describe("vi.mock paths", () => {
     expect(findUnresolvedMocks('vi.mock("../SwapProvider", () => ({}))', file)).toEqual([])
     expect(findUnresolvedMocks('vi.mock("@ui/api", () => ({}))', file)).toEqual([])
     expect(findUnresolvedMocks('vi.mock("react-i18next", () => ({}))', file)).toEqual([])
-    expect(findUnresolvedMocks('vi.mock("../swap-modules/bittensor-logo.svg?url")', file)).toEqual(
+    expect(findUnresolvedMocks('vi.mock("../swap-modules/simpleswap-logo.svg?url")', file)).toEqual(
       []
     )
     expect(findUnresolvedMocks('vi.mock("../hooks/useGone", () => ({}))', file)).toEqual([

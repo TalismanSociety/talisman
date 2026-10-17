@@ -1,5 +1,7 @@
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 
+import type { SwapEnv } from "./env"
 import type { BaseQuote, NonEmpty, QuoteLeg } from "./types"
 
 /** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
@@ -26,4 +28,10 @@ export const quoteFromLegs = (
     fees: legs.flatMap((leg) => leg.fees),
     timeInSec: legs.reduce((total, leg) => total + leg.timeInSec, 0),
   }
+}
+
+export const getEvmNetwork = async (env: SwapEnv, networkId: NetworkId) => {
+  const network = await env.getNetwork(networkId)
+  if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
+  return network
 }

@@ -1,6 +1,7 @@
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/evm-gas-check"
 import type {
   QuoteFee,
   SwapModuleTransaction,
@@ -26,7 +27,6 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
-import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
 
 /**
