@@ -8,7 +8,7 @@ import BigNumber from "bignumber.js"
 import type { Hex } from "viem"
 
 import type { QuoteLeg } from "../types"
-import type { LegState, PersistedQuoteLeg, SwapPlan } from "./types"
+import type { LegState, PersistedQuoteLeg, PlanLeg, SwapPlan } from "./types"
 
 export const toPersistedLeg = (leg: QuoteLeg): PersistedQuoteLeg => {
   if (!leg.signer || !leg.recipient)
@@ -83,3 +83,42 @@ export const planSteps = (plan: SwapPlan): PlanStep[] =>
     status: STEP_STATUS[leg.state.at],
     hash: hashOf(leg.state),
   }))
+
+type RecoveryOffer = {
+  fromTokenId: PersistedQuoteLeg["fromTokenId"]
+  toTokenId: PersistedQuoteLeg["toTokenId"]
+  fromAddress: string
+}
+
+const stoppingLeg = (plan: SwapPlan): PlanLeg | undefined =>
+  plan.phase === "stopped" ? plan.legs.find((leg) => leg.state.at === "failed") : undefined
+
+/** Only when the stopping leg sent nothing: the funds then provably wait on its signer */
+const recoveryOffer = (plan: SwapPlan): RecoveryOffer | null => {
+  const leg = stoppingLeg(plan)
+  if (leg?.state.at !== "failed" || leg.state.hash) return null
+  return {
+    fromTokenId: leg.quote.fromTokenId,
+    toTokenId: leg.quote.toTokenId,
+    fromAddress: leg.quote.signer,
+  }
+}
+
+export type PlanCallToAction =
+  | { type: "unlock" }
+  | { type: "sign-hardware"; leg: number }
+  | { type: "finish"; offer: RecoveryOffer }
+  | { type: "check-activity" }
+
+export const planCallToAction = (plan: SwapPlan): PlanCallToAction => {
+  const waiting = plan.legs.findIndex((leg) => leg.state.at === "awaiting-user")
+  const waitingState = plan.legs[waiting]?.state
+  if (waitingState?.at === "awaiting-user")
+    return waitingState.why === "unlock"
+      ? { type: "unlock" }
+      : { type: "sign-hardware", leg: waiting }
+
+  const offer = recoveryOffer(plan)
+  if (offer) return { type: "finish", offer }
+  return { type: "check-activity" }
+}

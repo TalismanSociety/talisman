@@ -1,14 +1,18 @@
 import { db } from "@core/db"
-import { planSteps } from "@core/domains/swaps/plans/helpers"
-import type { SwapPlanId } from "@core/domains/swaps/plans/types"
+import { planCallToAction, planSteps } from "@core/domains/swaps/plans/helpers"
+import type { SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import { LoaderIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import { TransactionsStepper } from "@ui/components/TransactionsStepper"
 import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
-import { type FC, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { useSwapModal } from "../hooks/useSwapModal"
+import { SwapPlanLedgerSign } from "./SwapPlanLedgerSign"
 import { useSwapPlanSteps } from "./SwapPlanSteps"
 import { getSwapPlanProgressDetails } from "./swapPlanProgressStatus"
 
@@ -18,7 +22,54 @@ const usePlan = (id: SwapPlanId) =>
 const useRow = (hash: string | null) =>
   useLiveQuery(async () => (hash ? ((await db.transactionsV2.get(hash)) ?? null) : null), [hash])
 
-export const SwapPlanProgress: FC<{ id: SwapPlanId; onClose: () => void }> = ({ id, onClose }) => {
+const SwapPlanAction: FC<{ plan: SwapPlan; onClose: () => void; containerId?: string }> = ({
+  plan,
+  onClose,
+  containerId,
+}) => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { open: openSwapModal } = useSwapModal()
+  const action = useMemo(() => planCallToAction(plan), [plan])
+
+  const checkActivity = useCallback(() => {
+    onClose()
+    navigate("/tx-history")
+  }, [navigate, onClose])
+
+  switch (action.type) {
+    case "unlock":
+      return (
+        <Button primary fullWidth onClick={() => api.promptLogin()}>
+          {t("Unlock")}
+        </Button>
+      )
+    case "sign-hardware":
+      return <SwapPlanLedgerSign plan={plan} leg={action.leg} containerId={containerId} />
+    case "finish":
+      return (
+        <Button
+          primary
+          fullWidth
+          onClick={() => openSwapModal({ entry: "swap_plan", ...action.offer })}
+        >
+          {t("Finish the swap")}
+        </Button>
+      )
+    case "check-activity":
+      return (
+        <Button fullWidth onClick={checkActivity}>
+          {t("Check activity")}
+        </Button>
+      )
+  }
+}
+
+export const SwapPlanProgress: FC<{
+  id: SwapPlanId
+  onClose: () => void
+  containerId?: string
+}> = ({ id, onClose, containerId }) => {
   const { t } = useTranslation()
   const plan = usePlan(id)
 
@@ -47,7 +98,8 @@ export const SwapPlanProgress: FC<{ id: SwapPlanId; onClose: () => void }> = ({ 
         </div>
       </div>
       <div className="flex w-full flex-col gap-4 pt-6">
-        <Button primary fullWidth onClick={onClose}>
+        {plan ? <SwapPlanAction plan={plan} onClose={onClose} containerId={containerId} /> : null}
+        <Button fullWidth onClick={onClose}>
           {t("Close")}
         </Button>
       </div>

@@ -1,9 +1,19 @@
 import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
 
-import { deriveLegInput, planSteps, toPersistedLeg } from "../helpers"
-import type { SwapPlan } from "../types"
-import { LEG0, LEG0_HASH, LEG0_OUTPUT, LEG1, PLAN_ID, SUMMARY, T0 } from "./fixtures"
+import { deriveLegInput, planCallToAction, planSteps, toPersistedLeg } from "../helpers"
+import type { LegState, SwapPlan } from "../types"
+import {
+  BASE_WTAO,
+  EVM_ADDRESS,
+  LEG0,
+  LEG0_HASH,
+  LEG0_OUTPUT,
+  LEG1,
+  PLAN_ID,
+  SUMMARY,
+  T0,
+} from "./fixtures"
 
 const ED_WEI = 500_000_000_000n
 
@@ -117,5 +127,53 @@ describe("planSteps", () => {
       ],
     }
     expect(planSteps(paused).map((step) => step.status)).toEqual(["done", "waiting-on-you"])
+  })
+})
+
+describe("planCallToAction", () => {
+  const withSecondLeg = (phase: SwapPlan["phase"], state: LegState): SwapPlan => ({
+    ...plan(LEG0_OUTPUT),
+    phase,
+    legs: [plan(LEG0_OUTPUT).legs[0], { ...LEG1, state }],
+  })
+
+  it("asks to unlock when the plan waits for the wallet", () => {
+    expect(
+      planCallToAction(withSecondLeg("paused", { at: "awaiting-user", why: "unlock", since: T0 }))
+    ).toEqual({ type: "unlock" })
+  })
+
+  it("asks to sign the hardware leg that waits", () => {
+    expect(
+      planCallToAction(withSecondLeg("paused", { at: "awaiting-user", why: "hardware", since: T0 }))
+    ).toEqual({ type: "sign-hardware", leg: 1 })
+  })
+
+  it("offers to finish from the intermediate when the stopping leg sent nothing", () => {
+    expect(
+      planCallToAction(
+        withSecondLeg("stopped", { at: "failed", failure: "provider-unavailable", failedAt: T0 })
+      )
+    ).toEqual({
+      type: "finish",
+      offer: { fromTokenId: "964:evm-native", toTokenId: BASE_WTAO, fromAddress: EVM_ADDRESS },
+    })
+  })
+
+  it("sends to the activity when the stopping leg has a transaction", () => {
+    expect(
+      planCallToAction(
+        withSecondLeg("stopped", {
+          at: "failed",
+          failure: "indeterminate",
+          hash: LEG0_HASH,
+          failedAt: T0,
+        })
+      )
+    ).toEqual({ type: "check-activity" })
+  })
+
+  it("sends to the activity while the plan runs", () => {
+    expect(planCallToAction(plan(LEG0_OUTPUT))).toEqual({ type: "check-activity" })
   })
 })

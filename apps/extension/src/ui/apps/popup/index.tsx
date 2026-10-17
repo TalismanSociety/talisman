@@ -53,6 +53,7 @@ import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SolanaSignRequest } from "./pages/Sign/solana"
 import { SolanaSignInPage } from "./pages/Sign/solana/SignIn"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
+import { SwapPlanPage } from "./pages/SwapPlan"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
 import { VrfSignRequest } from "./pages/VrfSign"
@@ -101,6 +102,7 @@ const Popup = () => {
           <Route path="learn-more" element={<LearnMorePage />} />
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
+          <Route path="swap-plan/:id" element={<SwapPlanPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>

@@ -40,7 +40,13 @@ const SwapSubmitted = () => {
   if (!submittedTxHash || !submittedNetworkId || !submittedTxInfo) return null
 
   if (submittedTxInfo.plan)
-    return <SwapPlanProgress id={submittedTxInfo.plan.id} onClose={closeSwapTokensModal} />
+    return (
+      <SwapPlanProgress
+        id={submittedTxInfo.plan.id}
+        onClose={closeSwapTokensModal}
+        containerId="swap-modal"
+      />
+    )
 
   return (
     <SwapProgress
