@@ -30,7 +30,7 @@ type Legs = NonEmpty<PlanLeg>
 type Step = {
   legs: Legs
   effects: PlanEffect[]
-  patch?: Partial<Pick<SwapPlan, "signUntil">>
+  patch?: Partial<Pick<SwapPlan, "signUntil" | "pausedFor">>
 }
 
 export const isTerminalPhase = (phase: PlanPhase) =>
@@ -108,6 +108,7 @@ const makeDue = (plan: SwapPlan, legs: Legs, index: number, now: number): Step =
         ...leg,
         state: { at: "awaiting-user", why: "hardware", since: now },
       }),
+      patch: { pausedFor: "hardware" },
       effects: [NOTIFY_NEEDS_YOU],
     }
 
@@ -234,6 +235,7 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
           ...leg,
           state: { at: "awaiting-user", why: "unlock", since: now },
         }),
+        patch: { pausedFor: "unlock" },
         effects: [NOTIFY_NEEDS_YOU],
       }
     }

@@ -308,6 +308,7 @@ describe("a sent leg", () => {
         ...plan,
         phase: "paused",
         updatedAt: T1,
+        pausedFor: "hardware",
         legs: [
           LEG0_LANDED,
           {
@@ -580,6 +581,7 @@ describe("a building leg", () => {
       plan: {
         ...BUILDING,
         phase: "paused",
+        pausedFor: "unlock",
         legs: [LEG0_LANDED, { ...LEG1, state: { at: "awaiting-user", why: "unlock", since: T1 } }],
       },
       effects: [{ type: "notify", kind: "needs-you" }],

@@ -589,6 +589,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       }),
       used_max: fromAmount === fromBalance?.transferable.planck,
       reversed,
+      leg_count: selectedQuote?.legs.length ?? 1,
     }
   }, [
     feePlanck,

@@ -1,9 +1,16 @@
 import { db } from "@core/db"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
+import { Subject } from "rxjs"
 
 import type { NonEmpty } from "../types"
-import { derivePhase, findIntermediateConflict, PROPOSED_TTL_MS, transition } from "./machine"
+import {
+  derivePhase,
+  findIntermediateConflict,
+  isTerminalPhase,
+  PROPOSED_TTL_MS,
+  transition,
+} from "./machine"
 import type {
   PlanEffect,
   PlanEvent,
@@ -44,6 +51,11 @@ export const putPlan = (plan: SwapPlan) =>
 
 export type AppliedEvent = { plan: SwapPlan; effects: PlanEffect[] }
 
+export type SwapPlanSettledFact = { plan: SwapPlan; at: number }
+
+/** a plan reaching completed, stopped or aborted. Every terminal write goes through applyPlanEvent */
+export const swapPlanSettledFacts$ = new Subject<SwapPlanSettledFact>()
+
 /** Applies an event to the stored plan on its queue. Null when the plan does not exist */
 export const applyPlanEvent = (
   id: SwapPlanId,
@@ -54,7 +66,10 @@ export const applyPlanEvent = (
     const plan = await db.swapPlans.get(id)
     if (!plan) return null
     const result = transition(plan, event, now)
-    if (result.plan !== plan) await putPlan(result.plan)
+    if (result.plan === plan) return result
+    await putPlan(result.plan)
+    if (isTerminalPhase(result.plan.phase))
+      swapPlanSettledFacts$.next({ plan: result.plan, at: now })
     return result
   })
 
