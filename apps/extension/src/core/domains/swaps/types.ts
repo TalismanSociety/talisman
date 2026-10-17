@@ -1,11 +1,11 @@
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
-import type { TransactionRequest } from "viem"
+import type { Hex, TransactionRequest } from "viem"
 
 import type { SwapEnv } from "./env"
 
@@ -119,6 +119,78 @@ export type BuiltLeg = {
   fees: QuoteFee[]
   expectedOutput: bigint
   txInfo: WalletTransactionInfo
+}
+
+/** What the chain says about a sent leg. The engine maps these answers onto the plan's state machine */
+export type LegObservation =
+  /** scanned: blocks this observation read without finding the leg, so no later one reads them again */
+  | { status: "pending"; scanned?: number[] }
+  | { status: "landed"; amount: bigint }
+  /** proven never executed: nothing moved */
+  | { status: "dropped" }
+  | { status: "failed"; reason: "reverted" | "replaced" | "indeterminate" }
+
+export type SentEvidence =
+  | {
+      platform: "ethereum"
+      /** the signed bytes when the background signed: a resend of the same bytes keeps the same hash */
+      raw?: Hex
+    }
+  | {
+      platform: "polkadot"
+      /** the mortal era: the extrinsic can only land in [birth, birth + period) */
+      era: { birth: number; period: number }
+      /** finalised blocks of the era already read without the extrinsic */
+      scanned?: number[]
+    }
+
+export type SentLeg = {
+  hash: Hex
+  nonce: number
+  sentAt: number
+  evidence: SentEvidence
+  /** the recipient's balance on the next leg's network before broadcast, the fallback landing proof */
+  recipientBalanceBefore: bigint | null
+  /** the transactionsV2 row: evidence, not a verdict */
+  row: WalletTransaction | null
+}
+
+export type ObserveLegParams = {
+  leg: QuoteLeg
+  sent: SentLeg
+}
+
+export type BoundLegParams = {
+  leg: QuoteLeg
+  /** decimal, 0.005 is 0.5% */
+  slippage: number
+  /** the previous leg's quoted output: a later leg never spends, value and gas, more than the plan brought */
+  maxSpend: bigint
+}
+
+export type LegBoundCall = {
+  /** the approved calldata with every free amount slot zeroed */
+  template: Hex
+  /** 32-byte word indices after the selector that hold an amount */
+  amountSlots: number[]
+  /** gas × maxFeePerGas cap for this function, in wei */
+  maxNetworkFee: string
+}
+
+/**
+ * An approved calldata template for a leg the background signs alone. Admission parses the signed
+ * bytes and compares: everything is pinned except the amount slots, which must hold at least `floor`.
+ */
+export type LegBound = {
+  platform: "ethereum"
+  chainId: number
+  signer: Hex
+  to: Hex
+  calls: NonEmpty<LegBoundCall>
+  /** in planck of the leg's output token */
+  floor: string
+  /** in wei, the value plus gas × maxFeePerGas */
+  maxSpend: string
 }
 
 export type ApprovalInfo = {
