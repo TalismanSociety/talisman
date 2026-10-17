@@ -419,7 +419,8 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
   type Finney = {
     finalised: number
-    nonce: number
+    /** null: the signer has no account at the head, reaped by its own transfer */
+    nonce: number | null
     blocks?: Record<number, { success: boolean; events: ExtrinsicEvents["events"] }>
     pruned?: boolean
     /** blocks the node cannot read: their events fail to decode */
@@ -454,7 +455,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
       }
     })
     mockGetStorage.mockImplementation(async (_pallet, _entry, _keys, at) =>
-      at === HEAD_HASH ? { nonce } : { data: { free: 0n } }
+      at === HEAD_HASH ? (nonce === null ? null : { nonce }) : { data: { free: 0n } }
     )
     mockDecodeEvents.mockImplementation(async (_networkId, blockHash: string, hash: string) => {
       const number = Number(blockHash.slice(-4))
@@ -525,10 +526,29 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     expect(await observe(sentLeg(successRow("130")))).toEqual({ status: "pending" })
   })
 
-  it("is dropped once the era is dead and the nonce still unused", async () => {
+  it("scans the era when the signer was reaped by its whole-balance transfer", async () => {
+    finney({ finalised: 164, nonce: null, blocks: { 105: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+  })
+
+  it("scans the era when the signer was reaped and its account created again", async () => {
+    finney({ finalised: 164, nonce: 0, blocks: { 105: { success: true, events: [TRANSFER] } } })
+
+    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+  })
+
+  it("is dropped once the era is dead, the nonce still unused and the whole era read", async () => {
     finney({ finalised: 164, nonce: 7 })
 
     expect(await observe(sentLeg())).toEqual({ status: "dropped" })
+    expect(mockDecodeEvents).toHaveBeenCalledTimes(64)
+  })
+
+  it("stays pending when the nonce is unused but a block of the dead era is unreadable", async () => {
+    finney({ finalised: 164, nonce: 7, unreadable: [130] })
+
+    expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
   })
 
   it("leaves a scan of a slow node incomplete once it ran out of time, pending", async () => {
