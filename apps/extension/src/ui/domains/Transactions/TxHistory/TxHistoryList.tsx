@@ -440,6 +440,11 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, onSelectTx }) => {
               {t("Replacement")}
             </span>
           )}
+          {tx.txInfo?.plan && (
+            <span className="rounded bg-grey-800 px-3 py-1 font-light text-[10px] text-body-secondary">
+              {t("Step {{step}}", { step: tx.txInfo.plan.leg + 1 })}
+            </span>
+          )}
         </>
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
