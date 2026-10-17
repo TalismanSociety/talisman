@@ -3,6 +3,7 @@ import type { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn
 import type { TransactionRequest } from "viem"
 
 import type { SignerPayloadJSON } from "../signing/types"
+import type { SwapPlanRef } from "../swaps/plans/types"
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
@@ -51,62 +52,67 @@ export type WalletTransactionTransferInfo = {
   to?: Address
 }
 
-export type WalletTransactionInfo =
-  | { type: "transfer"; tokenId: TokenId; value: string; to: Address }
-  | { type: "approve-erc20"; tokenId: TokenId; contractAddress: string; amount: string }
-  | {
-      type: "swap-simpleswap"
-      exchangeId: string
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      to: Address
-    }
-  | {
-      type: "swap-stealthex"
-      exchangeId: string
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      to: Address
-    }
-  | {
-      type: "swap-lifi"
-      protocolName: string
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      to: Address
-    }
-  | {
-      type: "swap-bittensor-evm"
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      to: Address
-    }
-  | {
-      type: "swap-forevermoney"
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      to: Address
-      /** destination block read before broadcast, where the delivery watcher starts scanning */
-      destinationStartBlock: string
-    }
-  | {
-      type: "bittensor-staking"
-      fromTokenId: TokenId
-      toTokenId: TokenId
-      fromAmount: string
-      toAmount: string
-      hotkey: string
-    }
+/** a transaction that is one leg of a multi-leg swap plan carries the plan's ref */
+type PlanLegInfo = { plan?: SwapPlanRef }
+
+export type WalletTransactionInfo = PlanLegInfo &
+  (
+    | { type: "transfer"; tokenId: TokenId; value: string; to: Address }
+    | { type: "approve-erc20"; tokenId: TokenId; contractAddress: string; amount: string }
+    | {
+        type: "swap-simpleswap"
+        exchangeId: string
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
+        type: "swap-stealthex"
+        exchangeId: string
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
+        type: "swap-lifi"
+        protocolName: string
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
+        type: "swap-bittensor-evm"
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
+        type: "swap-forevermoney"
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+        /** destination block read before broadcast, where the delivery watcher starts scanning */
+        destinationStartBlock: string
+      }
+    | {
+        type: "bittensor-staking"
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        hotkey: string
+      }
+  )
 
 /** @deprecated */
 export type LegacyWalletTransactionBase = WalletTransactionTransferInfo & {

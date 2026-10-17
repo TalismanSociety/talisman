@@ -7,6 +7,7 @@ import { Subject } from "rxjs"
 import type { Hex, TransactionRequest } from "viem"
 import { db } from "../../db"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
+import { getLivePlanIds, isRowOfLivePlan } from "../swaps/plans/store"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
 import type {
   SwapStatus,
@@ -195,7 +196,7 @@ const applyTransactionStatus = async (
   const facts: PendingFact[] = []
   try {
     // Atomic read+write: a concurrent writer must not lose its status between the get and the update.
-    const updated = await db.transaction("rw", db.transactionsV2, async () => {
+    const updated = await db.transaction("rw", db.transactionsV2, db.swapPlans, async () => {
       // this can be called after the tx has been overriden/replaced, check status first
       const existing = await db.transactionsV2.get(id)
       if (!existing) return false
@@ -211,11 +212,14 @@ const applyTransactionStatus = async (
       facts.push({ row: tx, from: existing.status, to: status, reason })
 
       if (status === "success" || status === "error") {
+        const livePlanIds = await getLivePlanIds()
+
         // mark pending transactions with the same nonce as replaced
         await db.transactionsV2
           .filter(filterIsSameNetworkAndAddressTx(tx))
           .filter(
             (row) =>
+              !isRowOfLivePlan(row, livePlanIds) &&
               row.platform !== "solana" &&
               tx.platform !== "solana" &&
               row.nonce === tx.nonce &&
@@ -255,8 +259,16 @@ export const updateTransactionStatus = (
   confirmed?: boolean
 ) => applyTransactionStatus(id, status, { blockNumber, confirmed, reason: "watch" })
 
-export const markTransactionDropped = (id: string) =>
-  applyTransactionStatus(id, "error", { reason: "dropped" })
+/** A row of a live swap plan is the plan's evidence, so a cleanup never writes it off */
+const isLivePlanRow = async (id: string) => {
+  const row = await db.transactionsV2.get(id)
+  return !!row?.txInfo?.plan && isRowOfLivePlan(row, await getLivePlanIds())
+}
+
+export const markTransactionDropped = async (id: string) => {
+  if (await isLivePlanRow(id)) return false
+  return applyTransactionStatus(id, "error", { reason: "dropped" })
+}
 
 export const getTransactionStatus = async (hash: string) => {
   const tx = await db.transactionsV2.get(hash)
@@ -287,8 +299,14 @@ export const updateTransactionsRestart = async () => {
     // mark all other pending transactions as unknown
     await db.transactionsV2.where("status").equals("pending").modify({ status: "unknown" })
 
-    // keep only the last 100 transactions
-    const deleted = await db.transactionsV2.orderBy("timestamp").reverse().offset(100).delete()
+    // keep only the last 100 transactions, plus the rows of the swap plans that are still running
+    const livePlanIds = await getLivePlanIds()
+    const deleted = await db.transactionsV2
+      .orderBy("timestamp")
+      .reverse()
+      .offset(100)
+      .filter((row) => !isRowOfLivePlan(row, livePlanIds))
+      .delete()
     if (deleted) log.debug("[updateTransactionsRestart] Deleted %d entries", deleted)
 
     return true
@@ -298,7 +316,10 @@ export const updateTransactionsRestart = async () => {
   }
 }
 
-export const dismissTransaction = (hash: string) => db.transactionsV2.delete(hash)
+export const dismissTransaction = async (hash: string) => {
+  if (await isLivePlanRow(hash)) return
+  await db.transactionsV2.delete(hash)
+}
 
 export const updateSwapStatus = async (id: string, swapStatus: SwapStatus) => {
   try {
