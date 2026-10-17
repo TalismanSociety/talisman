@@ -4,6 +4,7 @@ import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm, SwapFormShimmer } from "./SwapForm"
+import { SwapPlanProgress } from "./SwapPlanProgress"
 import { SwapProgress } from "./SwapProgress"
 
 export const SwapWizard = () => {
@@ -37,6 +38,9 @@ const SwapSubmitted = () => {
   )
 
   if (!submittedTxHash || !submittedNetworkId || !submittedTxInfo) return null
+
+  if (submittedTxInfo.plan)
+    return <SwapPlanProgress id={submittedTxInfo.plan.id} onClose={closeSwapTokensModal} />
 
   return (
     <SwapProgress

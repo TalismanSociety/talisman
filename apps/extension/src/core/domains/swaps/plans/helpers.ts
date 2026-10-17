@@ -5,9 +5,23 @@ import {
 } from "@core/domains/bittensor/constants"
 import { type NetworkId, networkIdFromTokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
+import type { Hex } from "viem"
 
 import type { QuoteLeg } from "../types"
-import type { PersistedQuoteLeg, SwapPlan } from "./types"
+import type { LegState, PersistedQuoteLeg, SwapPlan } from "./types"
+
+export const toPersistedLeg = (leg: QuoteLeg): PersistedQuoteLeg => {
+  if (!leg.signer || !leg.recipient)
+    throw new Error("A swap plan leg needs a signer and a recipient")
+  return {
+    ...leg,
+    signer: leg.signer,
+    recipient: leg.recipient,
+    inputAmount: leg.inputAmount.toString(),
+    outputAmount: leg.outputAmount.toString(),
+    fees: leg.fees.map((fee) => ({ ...fee, amount: fee.amount.toFixed() })),
+  }
+}
 
 export const fromPersistedLeg = (leg: PersistedQuoteLeg): QuoteLeg => ({
   ...leg,
@@ -35,3 +49,37 @@ export const deriveLegInput = (plan: SwapPlan, index: number, balance: bigint): 
     value < min ? value : min
   )
 }
+
+/** the stepper's statuses, named here so the pages can map a plan without a core-to-ui import */
+export type PlanStepStatus =
+  | "upcoming"
+  | "waiting-on-you"
+  | "in-progress"
+  | "done"
+  | "failed"
+  | "skipped"
+
+export type PlanStep = {
+  leg: number
+  status: PlanStepStatus
+  hash: Hex | null
+}
+
+const STEP_STATUS: Record<LegState["at"], PlanStepStatus> = {
+  "queued": "upcoming",
+  "awaiting-user": "waiting-on-you",
+  "building": "in-progress",
+  "sent": "in-progress",
+  "landed": "done",
+  "failed": "failed",
+  "skipped": "skipped",
+}
+
+const hashOf = (state: LegState): Hex | null => ("hash" in state ? (state.hash ?? null) : null)
+
+export const planSteps = (plan: SwapPlan): PlanStep[] =>
+  plan.legs.map((leg, index) => ({
+    leg: index,
+    status: STEP_STATUS[leg.state.at],
+    hash: hashOf(leg.state),
+  }))

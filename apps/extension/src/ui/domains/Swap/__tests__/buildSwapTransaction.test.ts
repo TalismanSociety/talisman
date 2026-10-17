@@ -2,7 +2,7 @@ import { quoteFromLegs } from "@core/domains/swaps/helpers"
 import type { BuildLegParams, BuiltLeg } from "@core/domains/swaps/types"
 import BigNumber from "bignumber.js"
 import { describe, expect, it, vi } from "vitest"
-import { buildSwapTransaction } from "../buildSwapTransaction"
+import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import type { SwapModule } from "../swap-modules/common.swap-module"
 
 const SOL = "solana-mainnet:sol-native"
@@ -78,19 +78,19 @@ const params = {
 }
 
 describe("buildSwapTransaction", () => {
-  it("opens one exchange and builds the first leg with it", async () => {
+  it("opens one exchange and builds the first leg with it, alongside the quote it built", async () => {
     const { module, createExchange, buildLeg } = fakeModule()
     const q = quote(RECIPIENT)
 
-    expect(
-      await buildSwapTransaction({
-        ...params,
-        module,
-        quote: q,
-        context: { platform: "ethereum" },
-        slippage: 0.005,
-      })
-    ).toBe(BUILT)
+    const built = await buildSwapTransaction({
+      ...params,
+      module,
+      quote: q,
+      context: { platform: "ethereum" },
+      slippage: 0.005,
+    })
+    expect(built.leg).toBe(BUILT)
+    expect(built.quote).toBe(q)
     expect(createExchange).toHaveBeenCalledTimes(1)
     expect(createExchange).toHaveBeenCalledWith(params)
     expect(buildLeg).toHaveBeenCalledWith({
@@ -131,5 +131,11 @@ describe("buildSwapTransaction", () => {
       })
     ).rejects.toThrow("Please select the quote again")
     expect(createExchange).not.toHaveBeenCalled()
+  })
+
+  it("keys a quote by the identity of its legs", () => {
+    expect(quoteLegsKey(quote(RECIPIENT))).toEqual(quoteLegsKey(quote(RECIPIENT)))
+    expect(quoteLegsKey(quote(RECIPIENT))).not.toEqual(quoteLegsKey(quote(SENDER)))
+    expect(quoteLegsKey(null)).toEqual([])
   })
 })

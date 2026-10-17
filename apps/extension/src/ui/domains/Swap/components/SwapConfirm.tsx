@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirmActions } from "./SwapConfirmActions"
+import { SwapPlanConfirmSteps } from "./SwapPlanSteps"
 
 const CONTAINER_ID = "swap-modal-confirm"
 
@@ -18,8 +19,16 @@ export const SwapConfirm = () => {
   const { t } = useTranslation()
   const { close } = useSwapModal()
 
-  const { fromTokenId, toTokenId, fromAmount, toAmount, fromAddress, toAddress, setSwapView } =
-    useSwap()
+  const {
+    fromTokenId,
+    toTokenId,
+    fromAmount,
+    toAmount,
+    fromAddress,
+    toAddress,
+    selectedQuote,
+    setSwapView,
+  } = useSwap()
   const fromToken = useToken(fromTokenId)
   const toToken = useToken(toTokenId)
 
@@ -49,6 +58,10 @@ export const SwapConfirm = () => {
           <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
           <TokenRow tokenId={toToken.id} value={toAmount} />
         </div>
+
+        {selectedQuote && selectedQuote.legs.length > 1 ? (
+          <SwapPlanConfirmSteps quote={selectedQuote} />
+        ) : null}
 
         <div className="flex w-full flex-col gap-2 rounded-lg bg-grey-900 px-8 py-6 text-xs">
           <AddressRow label={t("Sender")} address={fromAddress} networkId={fromToken.networkId} />
