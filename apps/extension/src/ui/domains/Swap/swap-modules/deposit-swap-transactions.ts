@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/evm-gas-check"
+import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/exports"
 import type {
   QuoteFee,
   SwapModuleTransaction,

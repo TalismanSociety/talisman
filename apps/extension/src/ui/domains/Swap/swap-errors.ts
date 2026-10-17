@@ -1,4 +1,4 @@
-import { InsufficientGasBalanceError } from "@core/domains/swaps/evm-gas-check"
+import { InsufficientGasBalanceError } from "@core/domains/swaps/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"

@@ -2,7 +2,7 @@
 
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { BACKGROUND_SWAP_MODULES } from "@core/domains/swaps/registry"
+import { BACKGROUND_SWAP_MODULES } from "@core/domains/swaps/exports"
 import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"

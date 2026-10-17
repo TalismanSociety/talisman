@@ -1,8 +1,10 @@
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/evm-gas-check"
+import {
+  assertNativeValueWithinInput,
+  prepareTransactionRequestWithGasCheck,
+} from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import { assertNativeValueWithinInput } from "@core/domains/swaps/provider-transaction-guards"
 import type {
   ApprovalInfo,
   BaseQuote,
