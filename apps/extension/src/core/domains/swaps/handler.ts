@@ -8,7 +8,7 @@ import { coreSwapEnv } from "./env.core"
 import { swapPlanExecutor } from "./plans/executor"
 import { fromPersistedLeg } from "./plans/helpers"
 import { isTerminalPhase } from "./plans/machine"
-import { applyPlanEvent, proposePlan, sweepPlans } from "./plans/store"
+import { applyPlanEvent, proposePlan, sweepPlans, takeProposalArrival } from "./plans/store"
 import type { PlanLeg } from "./plans/types"
 import { getBackgroundSwapModule } from "./registry"
 import type { NonEmpty } from "./types"
@@ -23,6 +23,7 @@ const propose: MessageHandler<"pri(swaps.plan.propose)"> = async ({
   summary,
   leg0Nonce,
 }) => {
+  const arrival = takeProposalArrival()
   if (legs.length < 2) throw new Error("A swap plan needs at least two legs")
   legs.slice(1).forEach((leg, index) => {
     if (!isAddressEqual(leg.signer, legs[index].recipient))
@@ -60,7 +61,8 @@ const propose: MessageHandler<"pri(swaps.plan.propose)"> = async ({
   await sweepPlans(now)
   await proposePlan(
     { id, legs: planLegs as NonEmpty<PlanLeg>, summary, intermediate: legs[1].signer },
-    now
+    now,
+    arrival
   )
   return true
 }

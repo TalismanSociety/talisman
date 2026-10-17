@@ -1,6 +1,7 @@
 import { db } from "@core/db"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { Subject } from "rxjs"
 
 import type { NonEmpty } from "../types"
@@ -84,18 +85,44 @@ export class PlanProposalRejected extends Error {
   readonly name = "PlanProposalRejected"
 }
 
+/** the order proposals reach the background in, which a clock that repeats or goes back cannot give */
+export type ProposalArrival = number & { readonly __brand: "ProposalArrival" }
+
+let lastArrival = 0
+/** only this worker's proposals: a plan proposed before a restart arrived before every one of them */
+const arrivals = new Map<SwapPlanId, ProposalArrival>()
+
+export const takeProposalArrival = () => ++lastArrival as ProposalArrival
+
 /**
  * Creates the plan. Its legs never change, so leg 0's signature names the legs the user approved.
- * Rejected while another live plan holds the same intermediate account.
+ * Rejected while another started plan holds the same intermediate account, and once a proposal
+ * that arrived later took it. The proposed plans that arrived earlier on that account are cancelled.
  */
-export const proposePlan = (proposal: PlanProposal, now: number): Promise<SwapPlan> =>
+export const proposePlan = (
+  proposal: PlanProposal,
+  now: number,
+  arrival = takeProposalArrival()
+): Promise<SwapPlan> =>
   enqueue(proposal.id, () =>
     db.transaction("rw", db.swapPlans, async () => {
       if (await db.swapPlans.get(proposal.id))
         throw new PlanProposalRejected("The swap was already proposed")
 
-      if (findIntermediateConflict(await getLivePlans(), proposal))
+      const live = await getLivePlans()
+      if (findIntermediateConflict(live, proposal))
         throw new PlanProposalRejected("Another swap is using that account")
+
+      const proposed = live.filter(
+        (plan) =>
+          plan.phase === "proposed" && isAddressEqual(plan.intermediate, proposal.intermediate)
+      )
+      if (proposed.some((plan) => (arrivals.get(plan.id) ?? 0) > arrival))
+        throw new PlanProposalRejected("A newer swap is using that account")
+      for (const plan of proposed) {
+        await putPlan(transition(plan, { type: "cancelled" }, now).plan)
+        arrivals.delete(plan.id)
+      }
 
       const plan: SwapPlan = {
         id: proposal.id,
@@ -108,6 +135,7 @@ export const proposePlan = (proposal: PlanProposal, now: number): Promise<SwapPl
         legs: proposal.legs,
       }
       await putPlan(plan)
+      arrivals.set(plan.id, arrival)
       return plan
     })
   )

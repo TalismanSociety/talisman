@@ -790,6 +790,10 @@ describe("one plan per intermediate", () => {
     expect(findIntermediateConflict([aborted], { intermediate: EVM_ADDRESS })).toBe(null)
   })
 
+  it("lets a proposed plan's intermediate go", () => {
+    expect(findIntermediateConflict([PROPOSED], { intermediate: EVM_ADDRESS })).toBe(null)
+  })
+
   it("ignores a different intermediate", () => {
     expect(findIntermediateConflict([RUNNING], { intermediate: RECIPIENT })).toBe(null)
   })

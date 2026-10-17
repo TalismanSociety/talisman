@@ -66,14 +66,16 @@ export const isAdmissible = (plan: SwapPlan, index: number, now: number): boolea
   )
 }
 
-/** the id of a live plan that already holds `intermediate`, null when it is free */
+/** a proposed plan has sent nothing: a newer proposal on its intermediate supersedes it */
+const holdsIntermediate = (plan: SwapPlan) => plan.phase === "running" || plan.phase === "paused"
+
+/** the id of a started plan that already holds `intermediate`, null when it is free */
 export const findIntermediateConflict = (
   plans: readonly SwapPlan[],
   proposal: { intermediate: string }
 ): SwapPlanId | null =>
   plans.find(
-    (plan) =>
-      !isTerminalPhase(plan.phase) && isAddressEqual(plan.intermediate, proposal.intermediate)
+    (plan) => holdsIntermediate(plan) && isAddressEqual(plan.intermediate, proposal.intermediate)
   )?.id ?? null
 
 const replaceLeg = (legs: Legs, index: number, leg: PlanLeg): Legs =>
