@@ -490,14 +490,14 @@ const getUpToQuote = async (
     return null
 
   const client = await env.evmClient(route.sourceNetworkId)
-  const gasPrice = await client.getGasPrice()
+  const { maxFeePerGas } = await client.estimateFeesPerGas()
   const { amounts, feeWei, gasReserveWei } = await fitUpTo(
     client,
     route,
     fromAmount,
     fromAddress,
     toAddress,
-    gasPrice
+    maxFeePerGas
   )
   await runChecks(env, client, route, amounts)
 
@@ -699,7 +699,7 @@ const boundLeg = async (
     getPartnerFee(route),
     env.evmClient(route.sourceNetworkId),
   ])
-  const gasPrice = await client.getGasPrice()
+  const { maxFeePerGas } = await client.estimateFeesPerGas()
 
   const call = (fee: PartnerFee | null): LegBoundCall => ({
     template: encodeBridgeOut(route, recipient, {
@@ -708,7 +708,7 @@ const boundLeg = async (
       partnerFeeWei: 0n,
     }),
     amountSlots: [3, 5],
-    maxNetworkFee: (gasCeiling(fee) * gasPrice * MAX_NETWORK_FEE_HEADROOM).toString(),
+    maxNetworkFee: (gasCeiling(fee) * maxFeePerGas * MAX_NETWORK_FEE_HEADROOM).toString(),
   })
   const calls: NonEmpty<LegBoundCall> = partnerFee ? [call(null), call(partnerFee)] : [call(null)]
 
