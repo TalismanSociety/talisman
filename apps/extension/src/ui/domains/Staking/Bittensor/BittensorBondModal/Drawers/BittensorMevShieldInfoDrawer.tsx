@@ -42,7 +42,12 @@ export const MevShieldInfoDrawer: FC<{
           </li>
           <li>
             {t(
-              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one."
+              "The encrypted wrapper uses the public key of the validator that authors an upcoming block, so it is only valid for that block."
+            )}
+          </li>
+          <li>
+            {t(
+              "With a Ledger you sign twice: first your transaction, then the encrypted wrapper. The second signature is time-sensitive: you have about 20 seconds to approve it. If you miss it, nothing is sent and you can approve it again without signing the first one again."
             )}
           </li>
           <li>
