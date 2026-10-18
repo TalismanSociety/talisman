@@ -1,3 +1,4 @@
+import { getEraBlocksLeftAt } from "@core/domains/substrate/helpers"
 import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import { ERA_PERIOD, type ScaleApi } from "@talismn/sapi"
 import { type keepPreviousData, type QueryKey, useQuery } from "@tanstack/react-query"
@@ -23,12 +24,8 @@ export const getPayloadExpiresAt = ({ builtAt, eraBlocksLeft }: PayloadAge, bloc
 export const fetchEraBlocksLeft = async (
   sapi: ScaleApi,
   payload: SignerPayloadJSON
-): Promise<number> => {
-  const head = await sapi.getStorage<number>("System", "Number", [])
-  const blocksSinceBirth = head - Number(payload.blockNumber)
-  if (!Number.isFinite(blocksSinceBirth)) throw new Error("Invalid payload block number")
-  return Math.max(0, ERA_PERIOD - blocksSinceBirth)
-}
+): Promise<number> =>
+  getEraBlocksLeftAt(payload, await sapi.getStorage<number>("System", "Number", []))
 
 const getEraBlocksLeft = async (
   sapi: ScaleApi | null | undefined,

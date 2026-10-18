@@ -59,7 +59,10 @@ vi.mock("@ui/state/accounts", () => ({
   useAccountByAddress: (...args: unknown[]) => mockUseAccountByAddress(...args),
 }))
 
-vi.mock("@core/domains/keyring/exports", () => ({}))
+vi.mock("@core/domains/keyring/exports", () => ({
+  isAccountLedgerPolkadotGeneric: (account?: { type: string; genesisHash?: string }) =>
+    account?.type === "ledger-polkadot" && !account.genesisHash,
+}))
 
 vi.mock("@ui/util/cn", () => ({
   cn: (...args: unknown[]) => args.filter(Boolean).join(" "),
@@ -89,6 +92,10 @@ vi.mock("../../Sign/SignHardwareSubstrate", () => ({
     mockHardwareOnSentToDevice.mockImplementation(onSentToDevice)
     return <div data-testid="sign-hardware" />
   },
+}))
+
+vi.mock("../LedgerMevShield/LedgerMevShieldSendButton", () => ({
+  LedgerMevShieldSendButton: () => <div data-testid="ledger-mev-shield" />,
 }))
 
 // Mock PasswordCheckDrawer to capture its props
@@ -384,6 +391,38 @@ describe("SapiSendButton", () => {
 
       act(() => mockHardwareOnSentToDevice(false))
       expect(onPayloadLockChange).toHaveBeenLastCalledWith(false)
+    })
+
+    it("signs twice on the Ledger for a MEV Shield submit", () => {
+      render(
+        <SapiSendButton
+          payload={mockPayload}
+          onSubmitted={mockOnSubmitted}
+          mode="bittensor-mev-shield"
+        />
+      )
+
+      expect(screen.getByTestId("ledger-mev-shield")).toBeTruthy()
+      expect(screen.queryByTestId("sign-hardware")).toBeNull()
+    })
+
+    it("refuses a MEV Shield submit from the legacy Ledger app, which cannot sign it", () => {
+      mockUseAccountByAddress.mockReturnValue({
+        type: "ledger-polkadot",
+        address: mockPayload.address,
+        genesisHash: mockPayload.genesisHash,
+      })
+      render(
+        <SapiSendButton
+          payload={mockPayload}
+          onSubmitted={mockOnSubmitted}
+          mode="bittensor-mev-shield"
+        />
+      )
+
+      expect(screen.getByText(/Unsupported account type/)).toBeTruthy()
+      expect(screen.queryByTestId("sign-hardware")).toBeNull()
+      expect(screen.queryByTestId("ledger-mev-shield")).toBeNull()
     })
   })
 

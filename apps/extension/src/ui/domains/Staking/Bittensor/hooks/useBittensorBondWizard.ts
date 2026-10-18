@@ -2,7 +2,6 @@ import { classifyError } from "@common/analytics/errorCategory"
 import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingEntry } from "@common/analytics/staking"
-import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
 import {
   type Balance,
@@ -21,6 +20,7 @@ import { track } from "@ui/api/track"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
+import { canUseMevShield } from "@ui/domains/Transactions/canUseMevShield"
 import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
@@ -306,12 +306,10 @@ const useBittensorBondWizardProvider = () => {
 
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
-  const isMevShieldDisabled = useMemo(() => {
-    // disabled when feature flag is off
-    // no need for root staking
-    // supported only for hot wallets
-    return !isMevShieldFeatureEnabled || !netuid || !isAccountOfType(account, "keypair")
-  }, [isMevShieldFeatureEnabled, netuid, account])
+  const isMevShieldDisabled = useMemo(
+    () => !isMevShieldFeatureEnabled || !netuid || !canUseMevShield(account),
+    [isMevShieldFeatureEnabled, netuid, account]
+  )
 
   const withMevShield = useMemo(
     () => !isMevShieldDisabled && isMevProtectionEnabled,

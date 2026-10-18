@@ -1,7 +1,6 @@
 import type { AmountFormState } from "@common/analytics/formState"
 import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
-import { isAccountOfType } from "@core/domains/keyring/exports"
 import { BalanceFormatter } from "@talismn/balances"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 import type { ScaleApiSubmitMode } from "@talismn/sapi"
@@ -11,6 +10,7 @@ import {
   stakingSubmittedReport,
   stakingTransactionId,
 } from "@ui/domains/Staking/shared/stakingAnalytics"
+import { canUseMevShield } from "@ui/domains/Transactions/canUseMevShield"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -36,9 +36,7 @@ export function useSwapMevShield({
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
   const isMevShieldDisabled = useMemo(
-    // supported only for hot wallets on non-root subnets
-    // also disabled when feature flag is off
-    () => !isMevShieldFeatureEnabled || !netuid || !isAccountOfType(account, "keypair"),
+    () => !isMevShieldFeatureEnabled || !netuid || !canUseMevShield(account),
     [isMevShieldFeatureEnabled, netuid, account]
   )
 

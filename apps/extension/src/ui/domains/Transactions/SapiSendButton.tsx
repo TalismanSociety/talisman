@@ -1,6 +1,10 @@
 import { log } from "@common/log"
-import type { AccountPolkadotVault } from "@core/domains/keyring/exports"
+import {
+  type AccountPolkadotVault,
+  isAccountLedgerPolkadotGeneric,
+} from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import { MIN_ERA_BLOCKS_TO_SUBMIT } from "@core/domains/substrate/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { LoaderIcon } from "@talismn/icons"
 import type { ScaleApi, ScaleApiSubmitMode } from "@talismn/sapi"
@@ -12,8 +16,7 @@ import { useMarkOverlayCompleted } from "@ui/hooks/analytics/useOverlayAnalytics
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { fetchEraBlocksLeft } from "@ui/hooks/sapi/useSignerPayloadQuery"
-import { useLockedValue } from "@ui/hooks/useLockedValue"
-import { type PayloadLockListener, useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
+import type { PayloadLockListener } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
@@ -21,11 +24,9 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
+import { LedgerMevShieldSendButton } from "./LedgerMevShield/LedgerMevShieldSendButton"
 import { PasswordCheckDrawer } from "./PasswordCheckDrawer"
-
-// a signing step can outlive its payload (slow device, open password drawer): the node rejects a
-// payload outside its mortal era as a bad signature
-const MIN_ERA_BLOCKS_TO_SUBMIT = 4
+import { useLockedInputs } from "./useLockedInputs"
 
 const isPayloadExpiring = async (sapi: ScaleApi, payload: SignerPayloadJSON) =>
   (await fetchEraBlocksLeft(sapi, payload)) < MIN_ERA_BLOCKS_TO_SUBMIT
@@ -37,43 +38,6 @@ const notifyPayloadExpired = (t: (key: string) => string) => {
     subtitle: t("Please try again."),
     errorCategory: "payload_expired",
   })
-}
-
-type LockedInputs = {
-  payload: SignerPayloadJSON | undefined
-  shortMetadata?: `0x${string}` | undefined
-  txInfo?: WalletTransactionInfo | undefined
-  txMode?: ScaleApiSubmitMode | undefined
-}
-
-const useLockedInputs = (
-  { payload, shortMetadata, txInfo, txMode }: LockedInputs,
-  onPayloadLockChange?: PayloadLockListener
-) => {
-  const memoizedInputs = useMemo(
-    () => ({
-      payload,
-      shortMetadata,
-      txInfo,
-      txMode,
-    }),
-    [payload, shortMetadata, txInfo, txMode]
-  )
-
-  const [isLocked, setIsLockedState] = useState(false)
-  const lockedInputs = useLockedValue<LockedInputs>(memoizedInputs, isLocked)
-
-  const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
-
-  const setIsLocked = useCallback(
-    (locked: boolean) => {
-      setIsLockedState(locked)
-      reportPayloadLock(locked)
-    },
-    [reportPayloadLock]
-  )
-
-  return { setIsLocked, lockedInputs }
 }
 
 type SapiSendButtonProps = {
@@ -378,14 +342,15 @@ export const SapiSendButton: FC<SapiSendButtonProps> = ({
       case "polkadot-vault":
         return "qr"
       case "ledger-polkadot":
-        return "hardware"
+        if (props.mode !== "bittensor-mev-shield") return "hardware"
+        return isAccountLedgerPolkadotGeneric(account) ? "hardware-mev-shield" : "unsupported"
       case "keypair":
         return "local"
       default:
         if (props.loading) return "loading"
         return "unsupported"
     }
-  }, [account, props.loading])
+  }, [account, props.loading, props.mode])
 
   if (!props.payload)
     return (
@@ -398,6 +363,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = ({
     <Suspense fallback={<SuspenseTracker name="SapiSendButton" />}>
       {signMethod === "local" && <LocalAccountSendButton {...props} />}
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
+      {signMethod === "hardware-mev-shield" && <LedgerMevShieldSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
       {signMethod === "loading" && (
         <Button className={cn("w-full", props.className)} primary disabled color={props.color}>

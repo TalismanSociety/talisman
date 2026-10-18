@@ -25,6 +25,11 @@ export const stakingEvents = defineEventGroup(properties, {
       "The user turned MEV Shield on or off before a Bittensor stake or unstake, in the staking modal or the TAO dashboard.",
     props: { enabled: "required", direction: { narrow: z.enum(["stake", "unstake"]) } },
   },
+  mev_shield_window_missed: {
+    description:
+      "A Ledger MEV Shield submit sent nothing because its window closed: only the author of the block two after the key was read can decrypt the wrapper. The user can approve the wrapper again without signing the transaction again.",
+    props: { closed_during: "required" },
+  },
   staking_slippage_changed: {
     description:
       "The user saved the slippage tolerance for subnet staking, which applies to every subnet.",

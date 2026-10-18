@@ -369,6 +369,10 @@ export const properties = {
   symbol: p.symbol(
     "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected, send_token_selected, earn_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
   ),
+  closed_during: p.enum(
+    ["signing", "broadcast"],
+    "When the MEV Shield window closed. signing: the countdown ran out before the Ledger signed the wrapper. broadcast: the background found the deadline passed, or the block it encrypted for already built, just before it would have broadcast."
+  ),
   mev_shield: p.bool(
     "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."
   ),

@@ -83,4 +83,10 @@ export const STEP_STATE_ELSEWHERE: Readonly<Record<string, ProviderClass>> = {
   "ui/domains/Portfolio/AssetDetails/animations/monad/MonadAnimation.tsx": {
     none: "an animation frame counter",
   },
+  "ui/domains/Transactions/LedgerMevShield/LedgerMevShieldSendButton.tsx": {
+    none: "the Ledger signatures of one submit: the swap or staking flow that renders it reports it",
+  },
+  "ui/domains/Transactions/LedgerMevShield/ledgerMevShieldReducer.ts": {
+    none: "the Ledger signatures of one submit: the swap or staking flow that renders it reports it",
+  },
 }

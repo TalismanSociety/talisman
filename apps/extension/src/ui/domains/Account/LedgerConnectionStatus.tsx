@@ -3,6 +3,7 @@ import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { LedgerStatus } from "@ui/hooks/ledger/common"
 import { cn } from "@ui/util/cn"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 export type LedgerConnectionStatusProps = {
@@ -11,6 +12,7 @@ export type LedgerConnectionStatusProps = {
   className?: string
   onRetryClick?: () => void
   errorCategory?: ErrorCategory
+  children?: ReactNode
 }
 
 const wrapStrong = (text: string) => {
@@ -39,6 +41,7 @@ export const LedgerConnectionStatus = ({
   className,
   onRetryClick,
   errorCategory = "ledger",
+  children,
 }: LedgerConnectionStatusProps) => {
   const { t } = useTranslation()
   useErrorShown({
@@ -69,6 +72,7 @@ export const LedgerConnectionStatus = ({
         <LoaderIcon className="min-w-[1em] shrink-0 animate-spin-slow text-[1.25rem] text-white" />
       )}
       <div className="grow text-left leading-10">{wrapStrong(message)}</div>
+      {children}
       {!!onRetryClick && (
         <button
           type="button"
