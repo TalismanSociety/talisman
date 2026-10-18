@@ -31,6 +31,7 @@ export type TxSubmissionMessage =
   | "pri(eth.signing.approveSignAndSendHardware)"
   | "pri(substrate.rpc.submit)"
   | "pri(substrate.rpc.submit.withBittensorMevShield)"
+  | "pri(substrate.mevShield.submit)"
   | "pri(solana.rpc.submit)"
   | "pri(solana.sign.approve)"
   | "pri(signing.approveSign)"
@@ -124,6 +125,17 @@ const TX_SUBMISSION_POLICY = {
       signOnly: false,
     }),
     succeeded: always,
+  },
+  "pri(substrate.mevShield.submit)": {
+    read: ({ payload, txInfo }) => ({
+      platform: "polkadot",
+      network: { genesisHash: payload.genesisHash },
+      address: payload.address,
+      txType: txTypeOf(txInfo),
+      submittedBy: "wallet",
+      signOnly: false,
+    }),
+    succeeded: (response) => response.status === "submitted",
   },
   "pri(solana.rpc.submit)": {
     read: ({ networkId, transaction, txInfo }) => {

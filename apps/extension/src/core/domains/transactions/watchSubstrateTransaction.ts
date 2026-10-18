@@ -44,7 +44,7 @@ type ExtrinsicStatusChangeHandler = (
 ) => void
 
 /** shape of a header as returned by the chain_subscribe*Heads JSON-RPC subscriptions */
-type JsonHeader = {
+export type JsonHeader = {
   parentHash: HexString
   number: HexString
   stateRoot: HexString
@@ -70,7 +70,7 @@ const getStorageKeyHash = (...names: string[]) => {
  * their JSON form with the standard layout yields a wrong hash, so ask the node instead.
  * Returns null when the hash can't be determined (e.g. the header is on a fork the node dropped).
  */
-const getHeaderInfo = async (
+export const getHeaderInfo = async (
   chainId: DotNetworkId,
   header: JsonHeader
 ): Promise<{ hash: HexString; blockNumber: number } | null> => {

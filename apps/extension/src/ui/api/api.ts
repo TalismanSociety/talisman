@@ -268,6 +268,10 @@ export const api: MessageTypes = {
       payload,
       txInfo,
     }),
+  subPrepareMevShield: (request) =>
+    messageService.sendMessage("pri(substrate.mevShield.prepare)", request),
+  subSubmitMevShield: (request) =>
+    messageService.sendMessage("pri(substrate.mevShield.submit)", request),
   subChainMetadata: (genesisHash, specVersion) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,

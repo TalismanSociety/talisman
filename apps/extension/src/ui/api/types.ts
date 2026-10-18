@@ -73,7 +73,13 @@ import type {
   ResponseSolanaSubmit,
   SolRpcRequest,
 } from "@core/domains/solana/exports"
-import type { TalismanMetadataDef } from "@core/domains/substrate/types"
+import type {
+  MevShieldRequestPrepare,
+  MevShieldRequestSubmit,
+  MevShieldResponsePrepare,
+  MevShieldResponseSubmit,
+  TalismanMetadataDef,
+} from "@core/domains/substrate/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
@@ -292,6 +298,8 @@ export default interface MessageTypes {
     payload: SignerPayloadJSON,
     txInfo?: WalletTransactionInfo
   ) => Promise<{ hash: HexString; innerHash?: HexString }>
+  subPrepareMevShield: (request: MevShieldRequestPrepare) => Promise<MevShieldResponsePrepare>
+  subSubmitMevShield: (request: MevShieldRequestSubmit) => Promise<MevShieldResponseSubmit>
 
   solSend: (networkId: string, request: SolRpcRequest) => Promise<ResponseSolanaRpcSend>
   solSubmit: (

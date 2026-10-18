@@ -36,9 +36,36 @@ type SubstrateResponseSubmitBittensorMevShield = {
 
 type SubstrateRequestSubmitBittensorMevShield = {
   payload: SignerPayloadJSON
-  // doesnt support hardware wallet, enforce it by not having signature here
   txInfo?: WalletTransactionInfo
 }
+
+export type MevShieldWindow = {
+  headNumber: number
+  deadline: number
+}
+
+export type MevShieldRequestPrepare = {
+  payload: SignerPayloadJSON
+  innerSignature: HexString
+}
+
+export type MevShieldResponsePrepare =
+  | { status: "ready"; outerPayload: SignerPayloadJSON; shieldWindow: MevShieldWindow }
+  | { status: "unavailable" }
+  | { status: "expired" }
+
+export type MevShieldRequestSubmit = {
+  payload: SignerPayloadJSON
+  innerSignature: HexString
+  outerPayload: SignerPayloadJSON
+  outerSignature: HexString
+  shieldWindow: MevShieldWindow
+  txInfo?: WalletTransactionInfo
+}
+
+export type MevShieldResponseSubmit =
+  | { status: "submitted"; hash: HexString; innerHash: HexString }
+  | { status: "missed" }
 
 export type SubstrateMessages = {
   "pri(substrate.rpc.send)": [SubstrateRequestSend, unknown]
@@ -47,5 +74,7 @@ export type SubstrateMessages = {
     SubstrateRequestSubmitBittensorMevShield,
     SubstrateResponseSubmitBittensorMevShield,
   ]
+  "pri(substrate.mevShield.prepare)": [MevShieldRequestPrepare, MevShieldResponsePrepare]
+  "pri(substrate.mevShield.submit)": [MevShieldRequestSubmit, MevShieldResponseSubmit]
   "pri(substrate.metadata.get)": [SubstrateRequestChainMetadata, TalismanMetadataDef | undefined]
 }

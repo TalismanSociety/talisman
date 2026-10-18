@@ -111,6 +111,10 @@ export const MESSAGE_COVERAGE = {
   "pri(substrate.rpc.submit.withBittensorMevShield)": {
     event: ["tx_signed", "tx_broadcast", "tx_broadcast_failed"],
   },
+  "pri(substrate.mevShield.prepare)": "read",
+  "pri(substrate.mevShield.submit)": {
+    event: ["tx_signed", "tx_broadcast", "tx_broadcast_failed"],
+  },
   "pri(substrate.metadata.get)": "read",
   "pri(solana.rpc.send)": "read",
   "pri(solana.rpc.submit)": { event: ["tx_signed", "tx_broadcast", "tx_broadcast_failed"] },
