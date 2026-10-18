@@ -6,6 +6,7 @@ import { getDecodedCall, getDecodedCallFromPayload } from "./helpers/getDecodedC
 import { getDecodedCallFromExtrinsic } from "./helpers/getDecodedCallFromExtrinsic"
 import { getDryRunCall } from "./helpers/getDryRunCall"
 import { getFeeEstimate } from "./helpers/getFeeEstimate"
+import { getPayloadWithMetadataHash } from "./helpers/getPayloadWithMetadataHash"
 import { getRuntimeCallResult } from "./helpers/getRuntimeCallResult"
 import { getSapiConnector } from "./helpers/getSapiConnector"
 import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
@@ -92,6 +93,9 @@ export const getScaleApi = (
     ) => getSignerPayloadJSON(chain, pallet, method, args, config, chainInfo),
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload),
+
+    getPayloadWithMetadataHash: (payload: SignerPayloadJSON) =>
+      getPayloadWithMetadataHash(chain, chainInfo, payload),
 
     getRuntimeCallValue: <T>(apiName: string, method: string, args: unknown[], at?: string) =>
       getRuntimeCallResult<T>(chain, apiName, method, args, at),

@@ -6,6 +6,33 @@ import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
 import type { Chain, ChainInfo } from "./types"
 
+type MetadataHashTools = {
+  merkleizedMetadata: ReturnType<typeof merkleizeMetadata>
+  pjsTxHelper: ReturnType<typeof getPjsTxHelper>
+}
+
+const metadataHashToolsCache = new WeakMap<Chain, MetadataHashTools>()
+
+const getMetadataHashTools = (chain: Chain, chainInfo: ChainInfo) => {
+  const cached = metadataHashToolsCache.get(chain)
+  if (cached) return cached
+
+  const { decimals, symbol: tokenSymbol } = chain.token
+  const { base58Prefix, specName, specVersion } = chainInfo
+  const tools = {
+    merkleizedMetadata: merkleizeMetadata(chain.hexMetadata, {
+      tokenSymbol,
+      decimals,
+      base58Prefix,
+      specName,
+      specVersion,
+    }),
+    pjsTxHelper: getPjsTxHelper(chain.hexMetadata, CUSTOM_SIGNED_EXTENSIONS),
+  }
+  metadataHashToolsCache.set(chain, tools)
+  return tools
+}
+
 export const getPayloadWithMetadataHash = (
   chain: Chain,
   chainInfo: ChainInfo,
@@ -18,14 +45,8 @@ export const getPayloadWithMetadataHash = (
     }
 
   try {
-    const { decimals, symbol: tokenSymbol } = chain.token
-    const { base58Prefix, specName, specVersion } = chainInfo
-    const metadataHashInputs = { tokenSymbol, decimals, base58Prefix, specName, specVersion }
-
-    // since ultimately this needs a V15 object, would be nice if this accepted one directly as input
-    const merkleizedMetadata = merkleizeMetadata(chain.hexMetadata, metadataHashInputs)
+    const { merkleizedMetadata, pjsTxHelper } = getMetadataHashTools(chain, chainInfo)
     const metadataHash = toHex(merkleizedMetadata.digest()) as `0x${string}`
-    log.log("metadataHash", metadataHash, metadataHashInputs)
 
     const payloadWithMetadataHash = {
       ...payload,
@@ -34,10 +55,7 @@ export const getPayloadWithMetadataHash = (
       withSignedTransaction: true,
     }
 
-    const { callData, extra, additionalSigned } = getPjsTxHelper(
-      chain.hexMetadata,
-      CUSTOM_SIGNED_EXTENSIONS
-    )(payloadWithMetadataHash)
+    const { callData, extra, additionalSigned } = pjsTxHelper(payloadWithMetadataHash)
     const barePayload = mergeUint8([callData, extra, additionalSigned])
 
     const txMetadata = merkleizedMetadata.getProofForExtrinsicPayload(barePayload)

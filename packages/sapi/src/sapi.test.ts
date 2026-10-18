@@ -128,4 +128,16 @@ describe("getScaleApi", () => {
       ).rejects.toThrow("submitWithBittensorMevShield handler not provided")
     })
   })
+  it("adds the metadata hash and its proof to a payload it did not build", () => {
+    const api = getTestScaleApi("polkadot", { hasCheckMetadataHash: true })
+    const { payload } = getParityFixture("polkadot ed25519 mortal")
+    const nextNonce = { ...payload, nonce: "0x00000001" as const }
+
+    const signed = api.getPayloadWithMetadataHash(payload)
+    const next = api.getPayloadWithMetadataHash(nextNonce)
+
+    expect(signed.payload).toMatchObject({ mode: 1, withSignedTransaction: true })
+    expect(next.payload).toEqual({ ...signed.payload, nonce: "0x00000001" })
+    expect(next.txMetadata?.length).toBe(2128)
+  })
 })
