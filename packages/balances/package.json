@@ -30,7 +30,7 @@
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
     "@metaplex-foundation/umi": "^1.6.0",
-    "@polkadot-api/substrate-bindings": "0.20.3",
+    "@polkadot-api/substrate-bindings": "0.21.2",
     "@polkadot-api/utils": "0.4.0",
     "@solana-program/system": "0.14.1",
     "@solana-program/token": "0.16.1",

@@ -5,7 +5,7 @@ import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper, getScaleApi } from "@talismn/sapi"
-import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
+import { decAnyMetadata, hasSignedExtension, unifyMetadata } from "@talismn/scale"
 import { assert, hexToNumber, u8aToHex } from "@talismn/util"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -79,10 +79,9 @@ const getSubstratePayloadMetadata = async ({
           )
         : null
 
-    // check if runtime supports CheckMetadataHash
     const hasCheckMetadataHash =
       network.hasCheckMetadataHash && // this can be toggled off from chaindata
-      metadata.extrinsic.signedExtensions[0]?.some((ext) => ext.identifier === "CheckMetadataHash")
+      hasSignedExtension(metadata, "CheckMetadataHash")
 
     // it is not possible to generate a valid metadata hash for dev chains as they are missing symbol and decimals in their chain spec
     // this should be check using a system_properties rpc call but checking token details achieves the same thing

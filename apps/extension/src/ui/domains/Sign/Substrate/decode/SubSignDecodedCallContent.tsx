@@ -130,7 +130,7 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "bigint") return `${args.toString()}n`
   if (Array.isArray(args)) return args.map(formatArgs)
 
-  // polkadot-api v2: variable-length byte fields (`Vec<u8>`) are plain `Uint8Array`s
+  // polkadot-api: variable-length byte fields (`Vec<u8>`) are plain `Uint8Array`s
   if (args instanceof Uint8Array) {
     const text = Binary.toText(args)
     return isAscii(text) ? text : Binary.toHex(args)
@@ -138,7 +138,7 @@ const formatArgs = (args: unknown): unknown => {
 
   if (typeof args === "object") {
     // workaround for AccountId32 - decoding to text returns glyphs, so decode to an address instead.
-    // polkadot-api v2 decodes the fixed-size `id` as a hex string.
+    // polkadot-api decodes the fixed-size `id` as a hex string.
     // biome-ignore lint/suspicious/noExplicitAny: legacy
     const anyArgs = args as any
     if (anyArgs.type === "AccountId32" && anyArgs.value.id)

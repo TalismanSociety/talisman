@@ -107,8 +107,8 @@ describe("decodeProxiesValue", () => {
     expect(out.proxies[0].delegate).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
   })
 
-  it("encodes a hex-string AccountId32 delegate (polkadot-api v2) to SS58", () => {
-    // Alice public key as a hex string — polkadot-api v2 decodes AccountId32 as SizedHex
+  it("encodes a hex-string AccountId32 delegate to SS58", () => {
+    // Alice public key as a hex string — polkadot-api decodes AccountId32 as SizedHex
     const aliceHex = "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
     const fakeCodec = {
       value: { dec: () => [[{ delegate: aliceHex, proxy_type: "Any", delay: 0 }], 0n] },

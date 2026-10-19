@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@polkadot-api/substrate-client": "0.7.0",
-    "@polkadot-api/ws-provider": "0.9.1",
+    "@polkadot-api/ws-provider": "0.9.2",
     "@solana/kit": "8.3.0",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "polkadot-api": "2.2.0",
+    "polkadot-api": "3.2.2",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

@@ -45,7 +45,7 @@ overrides:
   # writes that file), which otherwise resolves to its own copy and ships a second
   # polkadot-api — and a second sync-provider — in the bundle. Keep in sync with the
   # polkadot-api version in the root package.json.
-  "polkadot-api": "2.2.0"
+  "polkadot-api": "3.2.2"
   "braces@<3.0.3": ">=3.0.3 <4.0.0"
   "cookie@<0.7.0": ">=0.7.0 <0.8.0"
   "decode-uri-component": "0.2.2"

@@ -63,7 +63,7 @@
     "pre-commit": "./node_modules/.bin/biome check --staged --error-on-warnings --no-errors-on-unmatched"
   },
   "dependencies": {
-    "polkadot-api": "2.2.0"
+    "polkadot-api": "3.2.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
