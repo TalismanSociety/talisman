@@ -249,8 +249,6 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
         fromTokenId,
         toTokenId,
         fromAmount,
-        isLoadingQuotes,
-        isAllQuotesSettled,
         isQuoteDataCurrent,
         quoteCount: sortedQuotes.length,
         transferable: fromBalance?.transferable.planck ?? (fromAddress ? 0n : null),

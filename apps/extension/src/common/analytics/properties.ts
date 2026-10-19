@@ -321,7 +321,7 @@ export const properties = {
   ),
   form_state: p.enum(
     SWAP_FORM_STATES,
-    "How far the swap form got: the first that applies. no_tokens: the token to swap from or to is missing. no_amount: no amount, or zero. quoting: quotes are loading, refreshing, or not yet for the current inputs. no_quote: no provider quoted. insufficient_balance: the amount is above the transferable balance. ready: the user could go on to review. On swap_abandoned, it is where the user left the form."
+    "How far the swap form got: the first that applies. no_tokens: the token to swap from or to is missing. no_amount: no amount, or zero. quoting: every provider has not yet answered for the current inputs. A refresh of the quotes shown does not count. no_quote: no provider quoted. insufficient_balance: the amount is above the transferable balance. ready: the user could go on to review. On swap_abandoned, it is where the user left the form."
   ),
   is_revoke: p.bool("The approval resets an existing allowance to zero, as some tokens require."),
   replace_type: p.enum(REPLACE_TYPES, "How the user replaced a pending transaction."),
