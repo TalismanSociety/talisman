@@ -56,13 +56,21 @@ const rejectSend: JsonRpcRequestSend = async (method) => {
 type TestScaleApiOptions = {
   send?: JsonRpcRequestSend
   hasCheckMetadataHash?: boolean
+  hexMetadata?: `0x${string}`
 }
 
 export const getTestScaleApi = (
   chain: FixtureChain,
-  { send = rejectSend, hasCheckMetadataHash = false }: TestScaleApiOptions = {}
+  {
+    send = rejectSend,
+    hasCheckMetadataHash = false,
+    hexMetadata = getMetadata(chain),
+  }: TestScaleApiOptions = {}
 ): ScaleApi =>
-  getScaleApi({ chainId: chain, send }, getMetadata(chain), TOKENS[chain], hasCheckMetadataHash)
+  getScaleApi({ chainId: chain, send }, hexMetadata, TOKENS[chain], hasCheckMetadataHash)
+
+export const getPolkadotV16Metadata = (): `0x${string}` =>
+  `0x${readFileSync(path.resolve(import.meta.dirname, "../../../../.papi/scale/polkadot.scale")).toString("hex")}`
 
 type RpcCall = { method: string; params: unknown[]; isCacheable?: boolean }
 
