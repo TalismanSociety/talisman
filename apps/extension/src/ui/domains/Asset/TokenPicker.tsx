@@ -75,7 +75,7 @@ const TokenRows: FC<{
   tokens: TokenData[]
   selectedTokenId?: TokenId
   allowUntransferable?: boolean
-  onTokenClick: (tokenId: TokenId) => void
+  onTokenClick: (tokenId: TokenId, index: number) => void
 }> = ({ tokens, selectedTokenId, allowUntransferable, onTokenClick }) => {
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
@@ -120,7 +120,7 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 allowUntransferable={allowUntransferable}
-                onClick={() => onTokenClick(tokenData.token.id)}
+                onClick={() => onTokenClick(tokenData.token.id, item.index)}
               />
             </div>
           )
@@ -258,6 +258,8 @@ const DEFAULT_FILTER = () => true
  */
 export type TokenPickerScope = "active" | "signable" | "all"
 
+export type TokenPick = { searched: boolean; networkFiltered: boolean; position: number }
+
 type TokensListProps = {
   address?: Address
   selected?: TokenId
@@ -273,7 +275,7 @@ type TokensListProps = {
   priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
   onAvailableNetworksChange?: (networks: Network[]) => void
-  onSelect?: (tokenId: TokenId) => void
+  onSelect?: (tokenId: TokenId, pick: TokenPick) => void
 }
 
 const TokensList: FC<TokensListProps> = ({
@@ -413,10 +415,14 @@ const TokensList: FC<TokensListProps> = ({
   }, [search, networkFilteredTokens])
 
   const handleTokenClick = useCallback(
-    (tokenId: string) => {
-      onSelect?.(tokenId)
+    (tokenId: TokenId, index: number) => {
+      onSelect?.(tokenId, {
+        searched: !!search,
+        networkFiltered: !!selectedNetworkId,
+        position: index + 1,
+      })
     },
-    [onSelect]
+    [onSelect, search, selectedNetworkId]
   )
 
   return (
@@ -504,7 +510,7 @@ type TokenPickerProps = {
   tokenFilterOptions?: Array<[string, string]>
   tokenFilterDefaultOption?: string
   onTokenFilterOptionChange?: (option: string) => void
-  onSelect?: (tokenId: TokenId) => void
+  onSelect?: (tokenId: TokenId, pick: TokenPick) => void
 }
 
 export const TokenPicker: FC<TokenPickerProps> = ({

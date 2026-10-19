@@ -114,7 +114,7 @@ export const SwapForm = () => {
                 onSelectTokenId={handleChangeFromToken}
                 selectedTokenId={fromTokenId}
                 allowedTokenIds={fromAssetIds}
-                priorityMode="sell"
+                side="from"
                 tokenScope="signable"
               />
             }
@@ -144,7 +144,7 @@ export const SwapForm = () => {
                 onSelectTokenId={handleChangeToToken}
                 selectedTokenId={toTokenId}
                 allowedTokenIds={toAssetIds}
-                priorityMode="buy"
+                side="to"
                 tokenScope="all"
               />
             }

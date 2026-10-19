@@ -77,6 +77,22 @@ export const SWAP_OUTCOMES = [
 ] as const
 export type SwapOutcome = (typeof SWAP_OUTCOMES)[number]
 
+export const SWAP_SIDES = ["from", "to"] as const
+export type SwapSide = (typeof SWAP_SIDES)[number]
+
+export const SWAP_TOKEN_TABS = ["all", "recent", "popular"] as const
+export type SwapTokenTab = (typeof SWAP_TOKEN_TABS)[number]
+
+export const SWAP_FORM_STATES = [
+  "no_tokens",
+  "no_amount",
+  "quoting",
+  "no_quote",
+  "insufficient_balance",
+  "ready",
+] as const
+export type SwapFormState = (typeof SWAP_FORM_STATES)[number]
+
 export const FEE_PRIORITIES = ["low", "medium", "high", "recommended", "custom"] as const
 export const GAS_TYPES = ["eip1559", "legacy"] as const
 export const RAMP_PROVIDERS = ["coinbase", "ramp"] as const

@@ -1,3 +1,4 @@
+import type { SwapTokenTab } from "@common/analytics/funds"
 import type { Token } from "@talismn/chaindata-provider"
 import type { TFunction } from "i18next"
 
@@ -6,7 +7,7 @@ import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 // ─── Token tab definitions ──────────────────────────────────────────
 
 export type TokenTab = {
-  value: string
+  value: SwapTokenTab
   label: string
   filter?: (tokenId: string) => boolean
   sort?: (a: string, b: string) => number
@@ -100,7 +101,7 @@ export function buildAssetRegistry(
 
 export const filterAndSortTokensByTab = (
   tokenIds: string[],
-  tokenTab: string,
+  tokenTab: SwapTokenTab,
   tokenTabs: TokenTab[]
 ): string[] => {
   const filter = tokenTabs.find((tb) => tb.value === tokenTab)?.filter

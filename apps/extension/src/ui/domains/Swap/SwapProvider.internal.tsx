@@ -9,7 +9,8 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
-import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
@@ -36,12 +37,6 @@ export type { SwapView } from "./swap-modules/common.swap-module"
 export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProviderProps) => {
   // -- View --
   const [swapView, setSwapView] = useState<SwapView>("form")
-  useFlow(flows.swap, {
-    active: isOpen && !!stateInit,
-    entry: stateInit?.entry ?? "dashboard",
-    started: { prefill_from_token: !!stateInit?.fromTokenId },
-    step: STEP_OF_VIEW[swapView],
-  })
 
   // -- Core form state --
   const [fromTokenId, setFromTokenId] = useState<string | null>(null)
@@ -52,6 +47,27 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
   const [quoteSorting, setQuoteSorting] = useState<
     "decentalised" | "cheapest" | "fastest" | "bestRate"
   >("bestRate")
+  const [reversed, setReversed] = useState(false)
+  const [pickedQuote, setPickedQuote] = useState<Pick<
+    BaseQuote,
+    "protocol" | "subProtocol"
+  > | null>(null)
+  const isQuotePicked =
+    !!pickedQuote &&
+    pickedQuote.protocol === selectedProtocol &&
+    pickedQuote.subProtocol === selectedSubProtocol
+
+  const pickQuote = useCallback(({ protocol, subProtocol }: BaseQuote) => {
+    setPickedQuote({ protocol, subProtocol })
+    setSelectedProtocol(protocol)
+    setSelectedSubProtocol(subProtocol)
+  }, [])
+
+  const autoSelectQuote = useCallback((quote: BaseQuote | null) => {
+    setPickedQuote(null)
+    setSelectedProtocol(quote?.protocol ?? null)
+    setSelectedSubProtocol(quote?.subProtocol)
+  }, [])
 
   // Register selected swap tokens for rate fetching so fiat values can displayed even for disabled tokens
   useAdditionalTokenRates([fromTokenId, toTokenId])
@@ -121,6 +137,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setSelectedProtocol(null)
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")
+    setReversed(false)
+    setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
     setAcknowledgedTokenVerdicts(new Map())
@@ -212,6 +230,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
   const reverse = useCallback(() => {
     reverseRaw()
     resetFromAddressManuallySet()
+    setReversed(true)
   }, [reverseRaw, resetFromAddressManuallySet])
 
   const erc20Approval = useSwapErc20Approval({
@@ -238,6 +257,27 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setFromAmount(fromBalance.transferable.planck)
   }, [fromBalance, isFromTokenNative])
 
+  useFlow(flows.swap, {
+    active: isOpen && !!stateInit,
+    entry: stateInit?.entry ?? "dashboard",
+    started: {
+      prefill_from_token: !!stateInit?.fromTokenId,
+      prefill_to_token: !!stateInit?.toTokenId,
+    },
+    step: STEP_OF_VIEW[swapView],
+    attributes: {
+      form_state: getSwapFormState({
+        fromTokenId,
+        toTokenId,
+        fromAmount,
+        isQuoteDataCurrent,
+        quoteCount: sortedQuotes.length,
+        transferable: fromBalance?.transferable.planck ?? (fromAddress ? 0n : null),
+        gasBuffer: BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0"),
+      }),
+    },
+  })
+
   return {
     fromTokenId,
     setFromTokenId,
@@ -251,12 +291,14 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     toAddress,
     setToAddress,
     selectedProtocol,
-    setSelectedProtocol,
     selectedSubProtocol,
-    setSelectedSubProtocol,
     quoteSorting,
     setQuoteSorting,
     reverse,
+    reversed,
+    pickQuote,
+    autoSelectQuote,
+    isQuotePicked,
     resetForm,
     fromAssetIds,
     toAssetIds,

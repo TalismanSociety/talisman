@@ -1,13 +1,21 @@
+import {
+  networkIdForAnalytics,
+  type SwapSide,
+  type SwapTokenTab,
+  tokenIdForAnalytics,
+  tokenSymbolForAnalytics,
+} from "@common/analytics/funds"
 import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
 import { useQueryClient } from "@tanstack/react-query"
+import { track } from "@ui/api/track"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
+import { type TokenPick, TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import {
@@ -18,7 +26,7 @@ import {
 } from "@ui/domains/TokenRisk/tokenRiskScan"
 import { useIsTokenRiskScanEnabled, useTokenRiskScan } from "@ui/domains/TokenRisk/useTokenRiskScan"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
+import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import { type FC, memo, useCallback, useEffect, useMemo, useState } from "react"
@@ -33,13 +41,12 @@ type Props = {
   allowedTokenIds: string[] | undefined // todo rename, these are tokenIds
   selectedTokenId?: string | null
   onSelectTokenId: (tokenId: string) => void
-  /** Used to determine which tokens should be prioritized to the top of the list */
-  priorityMode?: "buy" | "sell"
+  side: SwapSide
   tokenScope?: TokenPickerScope
 }
 
 export const SelectTokenButton: React.FC<Props> = memo(
-  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, priorityMode, tokenScope }) => {
+  ({ allowedTokenIds, selectedTokenId, onSelectTokenId, side, tokenScope }) => {
     const { open, close, isOpen } = useOpenClose()
 
     const handleSelect = useCallback(
@@ -57,7 +64,7 @@ export const SelectTokenButton: React.FC<Props> = memo(
           isOpen={isOpen}
           tokenId={selectedTokenId ?? null}
           allowedTokenIds={allowedTokenIds}
-          priorityMode={priorityMode}
+          side={side}
           tokenScope={tokenScope}
           onSelect={handleSelect}
           onDismiss={close}
@@ -71,7 +78,7 @@ const TokenPickerModal: FC<{
   isOpen: boolean
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
-  priorityMode?: "buy" | "sell"
+  side: SwapSide
   tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
@@ -92,39 +99,43 @@ const TokenPickerModalContent: FC<{
   isOpen: boolean
   tokenId: TokenId | null
   allowedTokenIds: string[] | undefined
-  priorityMode?: "buy" | "sell"
+  side: SwapSide
   tokenScope?: TokenPickerScope
   onSelect: (tokenId: TokenId) => void
   onDismiss: () => void
-}> = ({ isOpen, tokenId, allowedTokenIds, priorityMode, tokenScope, onSelect, onDismiss }) => {
+}> = ({ isOpen, tokenId, allowedTokenIds, side, tokenScope, onSelect, onDismiss }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
-  const [warningTokenId, setWarningTokenId] = useState<string | null>(null)
+  const [warning, setWarning] = useState<{ tokenId: TokenId; pick: TokenPick } | null>(null)
   const { safeTokens, acknowledgedTokenVerdicts, acknowledgeToken } = useSwap()
   const tokensMap = useTokensMap()
+  const networksMap = useNetworksMapById()
   const getCachedVerdict = useCachedTokenRiskVerdict()
 
   // the modal keeps this component mounted while its closing animation runs
   useEffect(() => {
-    if (!isOpen) setWarningTokenId(null)
+    if (!isOpen) setWarning(null)
   }, [isOpen])
 
   const priorityTokens = useCallback(
     (token: Token) => {
       const promotedTokens =
-        priorityMode === "buy"
-          ? remoteConfig.swaps.promotedBuyTokens
-          : priorityMode === "sell"
-            ? remoteConfig.swaps.promotedSellTokens
-            : undefined
+        side === "from"
+          ? remoteConfig.swaps.promotedSellTokens
+          : remoteConfig.swaps.promotedBuyTokens
       return promotedTokens?.includes(token.id) || false
     },
-    [priorityMode, remoteConfig]
+    [side, remoteConfig]
   )
 
-  const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption, filterByTab } =
-    useTokenFilterOptions()
+  const {
+    tokenTab,
+    tokenFilterOptions,
+    defaultTokenFilterOption,
+    onSelectTokenFilterOption,
+    filterByTab,
+  } = useTokenFilterOptions()
 
   const filteredTokenIds = useMemo(
     () => filterByTab(allowedTokenIds),
@@ -156,24 +167,44 @@ const TokenPickerModalContent: FC<{
     [safeTokens, tokensMap]
   )
 
-  const acceptToken = useCallback(
-    (tokenId: string, verdict: TokenRiskVerdict) => {
-      acknowledgeToken(tokenId, verdict)
-      setWarningTokenId(null)
+  const select = useCallback(
+    (tokenId: TokenId, pick: TokenPick, warningAccepted: boolean) => {
+      const token = tokensMap[tokenId]
+      track("swap_token_selected", {
+        side,
+        token_tab: tokenTab,
+        searched: pick.searched,
+        network_filtered: pick.networkFiltered,
+        position: pick.position,
+        token_id: tokenIdForAnalytics(token),
+        symbol: tokenSymbolForAnalytics(token),
+        network_id: networkIdForAnalytics(token && networksMap[token.networkId]),
+        warning_accepted: warningAccepted,
+      })
       onSelect(tokenId)
     },
-    [acknowledgeToken, onSelect]
+    [tokensMap, networksMap, side, tokenTab, onSelect]
+  )
+
+  const acceptToken = useCallback(
+    (verdict: TokenRiskVerdict) => {
+      if (!warning) return
+      acknowledgeToken(warning.tokenId, verdict)
+      setWarning(null)
+      select(warning.tokenId, warning.pick, true)
+    },
+    [acknowledgeToken, select, warning]
   )
 
   const handleSelectTokenId = useCallback(
-    (tokenId: string) => {
-      if (isSafeListed(tokenId)) return onSelect(tokenId)
+    (tokenId: TokenId, pick: TokenPick) => {
+      if (isSafeListed(tokenId)) return select(tokenId, pick, false)
       const acknowledgedVerdict = acknowledgedTokenVerdicts.get(tokenId)
       if (acknowledgedVerdict && acknowledgedVerdict === getCachedVerdict(tokensMap[tokenId]))
-        return onSelect(tokenId)
-      setWarningTokenId(tokenId)
+        return select(tokenId, pick, false)
+      setWarning({ tokenId, pick })
     },
-    [tokensMap, onSelect, isSafeListed, acknowledgedTokenVerdicts, getCachedVerdict]
+    [tokensMap, select, isSafeListed, acknowledgedTokenVerdicts, getCachedVerdict]
   )
 
   return (
@@ -200,9 +231,9 @@ const TokenPickerModalContent: FC<{
         showEmptyBalances
       />
       <SelectTokenWarningDrawer
-        tokenId={warningTokenId}
-        requireAcknowledgement={priorityMode !== "sell"}
-        onBack={() => setWarningTokenId(null)}
+        tokenId={warning?.tokenId ?? null}
+        requireAcknowledgement={side !== "from"}
+        onBack={() => setWarning(null)}
         onAccept={acceptToken}
       />
     </ModalDialog>
@@ -318,7 +349,7 @@ const useTokenFilterOptions = () => {
     [tabs]
   )
 
-  const [tokenTab, setTokenTab] = useState("all")
+  const [tokenTab, setTokenTab] = useState<SwapTokenTab>("all")
 
   // Reset to "all" if the currently selected tab is no longer visible
   useEffect(() => {
@@ -335,10 +366,19 @@ const useTokenFilterOptions = () => {
     [tokenTab, tabs]
   )
 
+  const onSelectTokenFilterOption = useCallback(
+    (option: string) => {
+      const tab = tabs.find((tab) => tab.value === option)
+      if (tab) setTokenTab(tab.value)
+    },
+    [tabs]
+  )
+
   return {
+    tokenTab,
     tokenFilterOptions,
     defaultTokenFilterOption: tokenTab,
-    onSelectTokenFilterOption: setTokenTab,
+    onSelectTokenFilterOption,
     filterByTab,
   }
 }
@@ -347,7 +387,7 @@ const SelectTokenWarningDrawer: FC<{
   tokenId: string | null
   requireAcknowledgement: boolean
   onBack: () => void
-  onAccept: (tokenId: string, verdict: TokenRiskVerdict) => void
+  onAccept: (verdict: TokenRiskVerdict) => void
 }> = ({ tokenId, requireAcknowledgement, onBack, onAccept }) => {
   const { t } = useTranslation()
 
@@ -402,7 +442,7 @@ const SelectTokenWarningDrawer: FC<{
             <Button
               primary
               disabled={isScanning || (needsAcknowledgement && !isAcknowledged)}
-              onClick={() => onAccept(safeTokenId, scan?.verdict ?? "unknown")}
+              onClick={() => onAccept(scan?.verdict ?? "unknown")}
             >
               {needsAcknowledgement ? t("Proceed") : t("I Understand")}
             </Button>

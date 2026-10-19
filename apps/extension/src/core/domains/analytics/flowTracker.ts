@@ -4,6 +4,7 @@ import {
   completeOnSettlement,
   type Emission,
   type Mirror,
+  mirrorAttributes,
   mirrorError,
   mirrorEvent,
   mirrorScreen,
@@ -90,6 +91,13 @@ export class FlowTracker {
     slots.set(flowId, slot)
     const oldest = slots.keys().next().value
     if (slots.size > MAX_OPEN_PER_PORT && oldest !== undefined) slots.delete(oldest)
+  }
+
+  noteAttributes(port: Port, flowId: string, attributes: EventProperties): void {
+    const slots = this.#ports.get(port)?.slots
+    const slot = slots?.get(flowId)
+    if (slots && slot)
+      slots.set(flowId, { ...slot, mirror: mirrorAttributes(slot.mirror, attributes) })
   }
 
   async settled(transactionId: string, settled: Settled, now: number): Promise<void> {

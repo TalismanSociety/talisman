@@ -111,6 +111,37 @@ describe("FlowTracker", () => {
     ])
   })
 
+  it("closes the page with the attributes the page reported last", () => {
+    const { port, disconnect } = fakePort()
+    observe(
+      port,
+      parsed("swap_started", {
+        flow_id: "s",
+        entry: "dashboard",
+        prefill_from_token: false,
+        prefill_to_token: false,
+        form_state: "no_tokens",
+      }),
+      10_000
+    )
+    tracker.noteAttributes(port, "s", { form_state: "ready" })
+    tracker.noteAttributes(port, "unknown", { form_state: "quoting" })
+
+    disconnect()
+
+    expect(sent()).toEqual([
+      {
+        event: "swap_abandoned",
+        properties: {
+          flow_id: "s",
+          form_state: "ready",
+          duration_ms: 40_000,
+          abandon_cause: "page_closed",
+        },
+      },
+    ])
+  })
+
   it("sends nothing on page close for an attempt the page already ended", () => {
     const { port, disconnect } = fakePort()
     observe(port, parsed(`${PILOT}_started`, { flow_id: "a", entry: "settings" }))

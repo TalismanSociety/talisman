@@ -18,6 +18,7 @@ import { FLOWS, type FlowName, type Flows } from "@common/analytics/flow/registr
 import type { EventProperties } from "@common/analytics/schema"
 import { DEBUG } from "@common/constants"
 import { log } from "@common/log"
+import { api } from "@ui/api/api"
 import { pageContext } from "@ui/api/pageContext"
 import { trackFlowEvent } from "@ui/api/track"
 import { useEffect, useRef } from "react"
@@ -131,8 +132,10 @@ export const useFlow = <N extends string, T extends FlowTypes>(
   const attributesKey = JSON.stringify(attributes ?? null)
   useEffect(() => {
     const current: Attributes | null = JSON.parse(attributesKey)
-    if (live && name && current && running.get(name)?.flowId === flowId.current)
-      apply(name, { type: "attributes", attributes: current })
+    if (!live || !name || !current || !flowId.current) return
+    if (running.get(name)?.flowId !== flowId.current) return
+    apply(name, { type: "attributes", attributes: current })
+    api.analyticsFlowAttributes({ flowId: flowId.current, attributes: current }).catch(() => {})
   }, [live, name, attributesKey])
 
   useEffect(() => {

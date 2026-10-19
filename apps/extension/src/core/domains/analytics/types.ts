@@ -1,7 +1,7 @@
 import type { TrackRequest } from "@common/analytics/catalogue"
 import type { RiskVerdict } from "@common/analytics/dapp"
 import type { ExceptionMechanism, ExceptionReport } from "@common/analytics/exceptionReport"
-import type { ConsentKind, PropertyValue } from "@common/analytics/schema"
+import type { ConsentKind, EventProperties, PropertyValue } from "@common/analytics/schema"
 
 export type Disposition =
   | "queued"
@@ -13,10 +13,13 @@ export type Disposition =
 
 export type RequestRiskReport = { id: string; verdict: RiskVerdict }
 
+export type FlowAttributesReport = { flowId: string; attributes: EventProperties }
+
 export interface AnalyticsMessages {
   "pri(analytics.track)": [TrackRequest, Disposition]
   "pri(analytics.requestRisk)": [RequestRiskReport, boolean]
   "pri(analytics.exception)": [ExceptionReport, Disposition]
+  "pri(analytics.flowAttributes)": [FlowAttributesReport, boolean]
 }
 
 export type WireTime = number & { readonly __brand: "WireTime" }

@@ -7,8 +7,9 @@ export const swap = defineFlow("swap", {
   subject: "swapping tokens",
   steps: ["form", "recipient", "confirm"],
   entries: SWAP_ENTRIES,
+  attributes: { form_state: "required" },
   extras: {
-    started: { prefill_from_token: "required" },
+    started: { prefill_from_token: "required", prefill_to_token: "required" },
     submitted: {
       protocol: "required",
       platform: "required",
@@ -22,6 +23,11 @@ export const swap = defineFlow("swap", {
       fee_usd_bucket: "required",
       slippage_percent: "required",
       slippage_is_default: "required",
+      quote_count: "required",
+      quote_rank: "required",
+      provider_picked: "required",
+      used_max: "required",
+      reversed: "required",
     },
     failed: { protocol: "required", phase: { narrow: z.enum(["approval", "submit"]) } },
     completed: { swap_status: "optional", protocol: "required", cross_chain: "required" },
