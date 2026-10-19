@@ -62,6 +62,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { getSwapRouteReport } from "../swapRouteReport"
 import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
@@ -300,7 +301,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
       const fees = exchange?.fees ?? freshQuote?.fees ?? selectedQuote?.fees ?? []
 
-      return { exchange, transaction, fees }
+      return { exchange, transaction, fees, route: freshQuote ?? selectedQuote }
     },
     enabled:
       !!swapModule &&
@@ -609,6 +610,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const toNetwork = useNetworkById(toToken?.networkId)
   const fromTokenRates = useTokenRates(fromTokenId ?? undefined)
   const feeTokenRates = useTokenRates(activeFeeTokenId ?? undefined)
+  const submittedRoute = exchangeAndTransactionQuery.data?.route ?? selectedQuote
   const swapReport = useMemo(() => {
     const signer = fromAccount && signerOf(fromAccount.type)
     if (!protocol || !fromToken || !toToken || !signer) return null
@@ -633,8 +635,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       slippage_percent: supportsSlippage ? toSlippagePercent(slippagePercent) : null,
       slippage_is_default: supportsSlippage ? slippagePercent === SWAP_SLIPPAGE_DEFAULT : null,
       quote_count: sortedQuotes.length,
-      quote_rank: sortedQuotes.findIndex(({ quote }) => quote === selectedQuote) + 1,
-      provider_picked: isQuotePicked,
+      ...getSwapRouteReport({ sortedQuotes, selectedQuote, submittedRoute, isQuotePicked }),
       used_max: fromAmount === fromBalance?.transferable.planck,
       reversed,
     }
@@ -654,6 +655,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     selectedQuote,
     slippagePercent,
     sortedQuotes,
+    submittedRoute,
     supportsSlippage,
     toNetwork,
     toToken,
