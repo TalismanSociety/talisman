@@ -11,8 +11,11 @@ import {
   RAMP_PROVIDERS,
   RECIPIENT_SOURCES,
   REPLACE_TYPES,
+  SWAP_FORM_STATES,
   SWAP_OUTCOMES,
   SWAP_PROTOCOLS,
+  SWAP_SIDES,
+  SWAP_TOKEN_TABS,
   TX_PHASES,
 } from "./funds"
 import { ACCOUNT_SELECTIONS, SEARCH_SURFACES } from "./portfolio"
@@ -289,6 +292,37 @@ export const properties = {
   ),
   stage: p.slug("The step the user left the swap on: mobile's name for last_step."),
   prefill_from_token: p.bool("The swap opened with the token to swap from already picked."),
+  prefill_to_token: p.bool("The swap opened with the token to swap to already picked."),
+  side: p.enum(
+    SWAP_SIDES,
+    "The side of the swap the token picker filled. from: the token the user pays with. to: the token they receive."
+  ),
+  token_tab: p.enum(
+    SWAP_TOKEN_TABS,
+    "The tab of the swap token picker when the user picked. all: every swappable token. recent: the tokens they swapped lately. popular: the tokens the remote config curates."
+  ),
+  token_id: p.tokenId(
+    "Chaindata token id of the token. custom: a token outside the chaindata catalogue, such as one the user added."
+  ),
+  network_filtered: p.bool(
+    "The user had picked a network in the list's network filter when they picked."
+  ),
+  warning_accepted: p.bool(
+    "The user accepted the risk warning before the pick went through. The warning shows for a token outside the swap safe list that the user has not accepted in this swap yet."
+  ),
+  quote_rank: p.count(
+    "1-based rank of the chosen quote among the sorted quotes. 1: the quote the wallet picks by itself. Above 1: the user picked another provider."
+  ),
+  used_max: p.bool(
+    "The amount equals the transferable balance of the token swapped from, which is the amount the Max button sets."
+  ),
+  reversed: p.bool(
+    "The user switched the from and to tokens during the attempt: with the flip button, or by picking on one side the token of the other."
+  ),
+  form_state: p.enum(
+    SWAP_FORM_STATES,
+    "How far the swap form got: the first that applies. no_tokens: the token to swap from or to is missing. no_amount: no amount, or zero. quoting: quotes are loading, refreshing, or not yet for the current inputs. no_quote: no provider quoted. insufficient_balance: the amount is above the transferable balance. ready: the user could go on to review. On swap_abandoned, it is where the user left the form."
+  ),
   is_revoke: p.bool("The approval resets an existing allowance to zero, as some tokens require."),
   replace_type: p.enum(REPLACE_TYPES, "How the user replaced a pending transaction."),
   tab: p.enum(RAMP_DIRECTIONS, "The buy and sell tab the modal opened on."),
@@ -337,7 +371,7 @@ export const properties = {
   is_featured: p.bool("The validator is featured in the validator list."),
   sort: p.enum(VALIDATOR_SORTS, "The order the validator list was sorted in."),
   searched: p.bool("The user had typed a search in the list when they picked."),
-  position: p.count("1-based position of the pick in the list, as sorted and searched."),
+  position: p.count("1-based position of the pick in the list, as sorted, filtered and searched."),
   preset: p.bool("The user picked a preset value: the Reset button, not a typed value."),
   system: p.enum(
     EARN_SYSTEMS,

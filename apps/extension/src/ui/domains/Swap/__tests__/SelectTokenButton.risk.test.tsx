@@ -15,6 +15,7 @@ const TOKENS = {
     networkId: "1",
     symbol: "BAD",
     contractAddress: "0x1111111111111111111111111111111111111111",
+    __isKnown: true,
   },
   [BENIGN_ID]: {
     id: BENIGN_ID,
@@ -22,6 +23,7 @@ const TOKENS = {
     networkId: "1",
     symbol: "GOOD",
     contractAddress: "0x2222222222222222222222222222222222222222",
+    __isKnown: true,
   },
   [UNCOVERED_ID]: {
     id: UNCOVERED_ID,
@@ -38,6 +40,9 @@ const TOKENS = {
     mintAddress: "5b5Eu6FvdNSxRfBE87aMDhkZmLnP3xL7CXwE4wFxHGwN",
   },
 }
+
+const track = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track }))
 
 const mockGandalfFetch = vi.fn()
 const mockAcknowledgeToken = vi.fn()
@@ -71,6 +76,7 @@ vi.mock("@ui/state/settings", () => ({
 
 vi.mock("@ui/state/chaindata", () => ({
   useTokensMap: () => TOKENS,
+  useNetworksMapById: () => ({ "1": { id: "1", __isKnown: true } }),
   useToken: (tokenId?: string) => (tokenId ? TOKENS[tokenId as keyof typeof TOKENS] : undefined),
   useNetworkById: () => ({ name: "Ethereum" }),
 }))
@@ -112,10 +118,29 @@ vi.mock("@ui/domains/Asset/TokenLogo", () => ({ TokenLogo: () => null }))
 vi.mock("@ui/domains/Networks/NetworkLogo", () => ({ NetworkLogo: () => null }))
 
 vi.mock("@ui/domains/Asset/TokenPicker", () => ({
-  TokenPicker: ({ onSelect }: { onSelect: (tokenId: string) => void }) => (
+  TokenPicker: ({
+    tokenFilterOptions,
+    onTokenFilterOptionChange,
+    onSelect,
+  }: {
+    tokenFilterOptions: Array<[string, string]>
+    onTokenFilterOptionChange: (option: string) => void
+    onSelect: (tokenId: string, pick: TokenPick) => void
+  }) => (
     <div>
-      {Object.values(TOKENS).map((token) => (
-        <button key={token.id} type="button" onClick={() => onSelect(token.id)}>
+      {tokenFilterOptions.map(([option, label]) => (
+        <button key={option} type="button" onClick={() => onTokenFilterOptionChange(option)}>
+          {label}
+        </button>
+      ))}
+      {Object.values(TOKENS).map((token, index) => (
+        <button
+          key={token.id}
+          type="button"
+          onClick={() =>
+            onSelect(token.id, { searched: true, networkFiltered: false, position: index + 1 })
+          }
+        >
           {token.symbol}
         </button>
       ))}
@@ -123,6 +148,7 @@ vi.mock("@ui/domains/Asset/TokenPicker", () => ({
   ),
 }))
 
+import type { TokenPick } from "@ui/domains/Asset/TokenPicker"
 import { SelectTokenButton } from "../components/SelectTokenButton"
 
 const scanResults = {
@@ -139,14 +165,14 @@ const scanResults = {
   "11155111:0x3333333333333333333333333333333333333333": { status: "unsupported" },
 }
 
-const renderPicker = (priorityMode: "buy" | "sell") => {
+const renderPicker = (side: "from" | "to") => {
   const onSelectTokenId = vi.fn()
   render(
     <QueryClientProvider client={new QueryClient()}>
       <SelectTokenButton
         allowedTokenIds={Object.keys(TOKENS)}
         onSelectTokenId={onSelectTokenId}
-        priorityMode={priorityMode}
+        side={side}
       />
     </QueryClientProvider>
   )
@@ -166,7 +192,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("selects a safe listed token without any scan or warning", () => {
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("GOOD"))
 
@@ -176,7 +202,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("warns about a Solana token outside the safe list", () => {
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("wSN1"))
 
@@ -186,7 +212,7 @@ describe("SelectTokenButton token risk scan", () => {
 
   it("selects a safe listed Solana token without any warning", () => {
     mockSafeTokens.add(`solana-mainnet:${TOKENS[SOLANA_ID].mintAddress}`)
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("wSN1"))
 
@@ -201,7 +227,7 @@ describe("SelectTokenButton token risk scan", () => {
         resolveFetch = resolve
       })
     )
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -218,7 +244,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("requires acknowledging a malicious token before buying it", async () => {
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -235,7 +261,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("never blocks selling a malicious token", async () => {
-    const onSelectTokenId = renderPicker("sell")
+    const onSelectTokenId = renderPicker("from")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -247,7 +273,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("falls back to the safe list warning for unsupported networks", async () => {
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("SEP"))
 
@@ -267,7 +293,7 @@ describe("SelectTokenButton token risk scan", () => {
 
   it("skips the warning for a token acknowledged with the same verdict", async () => {
     mockAcknowledgedTokenVerdicts.set(MALICIOUS_ID, "Malicious")
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
     expect(await screen.findByText("Malicious")).toBeTruthy()
@@ -280,7 +306,7 @@ describe("SelectTokenButton token risk scan", () => {
 
   it("warns about a malicious token that was only acknowledged as unknown", async () => {
     mockAcknowledgedTokenVerdicts.set(MALICIOUS_ID, "unknown")
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
     expect(await screen.findByText("Malicious")).toBeTruthy()
@@ -296,7 +322,7 @@ describe("SelectTokenButton token risk scan", () => {
     mockGandalfFetch
       .mockResolvedValueOnce(Response.json({ results: pendingResults }))
       .mockResolvedValueOnce(Response.json({ results: scanResults }))
-    renderPicker("buy")
+    renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -307,7 +333,7 @@ describe("SelectTokenButton token risk scan", () => {
   it("lets the user accept a token whose scan is still pending after one retry", async () => {
     const pendingResults = { "1:0x1111111111111111111111111111111111111111": { status: "miss" } }
     mockGandalfFetch.mockImplementation(async () => Response.json({ results: pendingResults }))
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -321,7 +347,7 @@ describe("SelectTokenButton token risk scan", () => {
   })
 
   it("closes the warning when the picker is dismissed", async () => {
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
     expect(await screen.findByText("Malicious")).toBeTruthy()
@@ -333,7 +359,7 @@ describe("SelectTokenButton token risk scan", () => {
 
   it("falls back to the safe list warning when scanning is disabled", async () => {
     mockUseSettingValue.mockReturnValue(false)
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("BAD"))
 
@@ -342,9 +368,59 @@ describe("SelectTokenButton token risk scan", () => {
     expect(onSelectTokenId).not.toHaveBeenCalled()
   })
 
+  it("tracks a direct pick with its side and tab", () => {
+    renderPicker("from")
+
+    fireEvent.click(screen.getByText("Recent"))
+    fireEvent.click(screen.getByText("GOOD"))
+
+    expect(track).toHaveBeenCalledExactlyOnceWith("swap_token_selected", {
+      side: "from",
+      token_tab: "recent",
+      searched: true,
+      network_filtered: false,
+      position: 2,
+      token_id: BENIGN_ID,
+      network_id: "1",
+      warning_accepted: false,
+    })
+  })
+
+  it("tracks a pick only once the user accepts the risk warning", async () => {
+    renderPicker("to")
+
+    fireEvent.click(screen.getByText("BAD"))
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    expect(track).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByLabelText("I acknowledge the risks"))
+    fireEvent.click(screen.getByText("Proceed"))
+
+    expect(track).toHaveBeenCalledExactlyOnceWith(
+      "swap_token_selected",
+      expect.objectContaining({
+        side: "to",
+        token_tab: "all",
+        position: 1,
+        token_id: MALICIOUS_ID,
+        warning_accepted: true,
+      })
+    )
+  })
+
+  it("does not track a pick the user backs out of", async () => {
+    renderPicker("to")
+
+    fireEvent.click(screen.getByText("BAD"))
+    expect(await screen.findByText("Malicious")).toBeTruthy()
+    fireEvent.click(screen.getByText("Back"))
+
+    expect(track).not.toHaveBeenCalled()
+  })
+
   it("shows the GoPlus and Blockaid reports for a benign token outside the safe list", async () => {
     mockSafeTokens.clear()
-    const onSelectTokenId = renderPicker("buy")
+    const onSelectTokenId = renderPicker("to")
 
     fireEvent.click(screen.getByText("GOOD"))
 

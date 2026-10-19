@@ -36,6 +36,20 @@ export const fundsEvents = defineEventGroup(properties, {
       usd_bucket: "required",
     },
   },
+  swap_token_selected: {
+    description:
+      "The user picked a token in the swap token picker, once the pick went through: at once, or after they accepted the risk warning. Not sent when the swap opens with a token, nor when the user flips the tokens.",
+    props: {
+      side: "required",
+      token_tab: "required",
+      searched: "required",
+      network_filtered: "required",
+      position: "required",
+      token_id: "required",
+      network_id: "required",
+      warning_accepted: "required",
+    },
+  },
   swap_approval_submitted: {
     description:
       "The user sent the token approval a swap needs before the swap itself, or the revoke some tokens need first.",
