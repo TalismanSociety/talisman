@@ -46,6 +46,7 @@ export const fundsEvents = defineEventGroup(properties, {
       network_filtered: "required",
       position: "required",
       token_id: "required",
+      symbol: "required",
       network_id: "required",
       warning_accepted: "required",
     },

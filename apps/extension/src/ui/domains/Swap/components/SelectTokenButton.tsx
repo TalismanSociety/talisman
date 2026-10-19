@@ -3,6 +3,7 @@ import {
   type SwapSide,
   type SwapTokenTab,
   tokenIdForAnalytics,
+  tokenSymbolForAnalytics,
 } from "@common/analytics/funds"
 import { isTokenInTypes, type Token, type TokenId } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronDownIcon, PlusIcon } from "@talismn/icons"
@@ -176,6 +177,7 @@ const TokenPickerModalContent: FC<{
         network_filtered: pick.networkFiltered,
         position: pick.position,
         token_id: tokenIdForAnalytics(token),
+        symbol: tokenSymbolForAnalytics(token),
         network_id: networkIdForAnalytics(token && networksMap[token.networkId]),
         warning_accepted: warningAccepted,
       })

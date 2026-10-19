@@ -360,7 +360,7 @@ export const properties = {
   netuid: p.count("The Bittensor subnet, by its number. 0 is root."),
   is_root: p.bool("The Bittensor subnet is root, netuid 0."),
   symbol: p.symbol(
-    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. unknown: a symbol the catalogue cannot hold."
+    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
   ),
   mev_shield: p.bool(
     "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."

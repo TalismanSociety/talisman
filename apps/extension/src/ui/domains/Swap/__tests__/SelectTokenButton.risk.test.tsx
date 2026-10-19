@@ -381,6 +381,7 @@ describe("SelectTokenButton token risk scan", () => {
       network_filtered: false,
       position: 2,
       token_id: BENIGN_ID,
+      symbol: "GOOD",
       network_id: "1",
       warning_accepted: false,
     })
