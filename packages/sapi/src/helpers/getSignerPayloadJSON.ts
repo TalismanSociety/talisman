@@ -60,8 +60,7 @@ export const getSignerPayloadJSON = async (
   if (!blockHash) throw new Error("Block hash not found")
 
   const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
-  // signedExtensions is keyed by extension version, 0 is the default
-  const signedExtensions = (chain.metadata.extrinsic.signedExtensions[0] ?? []).map(
+  const signedExtensions = (chain.metadata.extrinsic.extensionsByVersion[0] ?? []).map(
     (ext) => ext.identifier
   )
 

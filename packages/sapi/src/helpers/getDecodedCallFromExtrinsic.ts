@@ -31,8 +31,7 @@ export const getDecodedCallFromExtrinsic = <Res extends DecodedCall>(
     const { metadata, builder } = chain
 
     // Build decoder for signed extensions (extra field)
-    // signedExtensions is keyed by extension version, 0 is the default
-    const extensionsArray = metadata.extrinsic.signedExtensions[0] ?? []
+    const extensionsArray = metadata.extrinsic.extensionsByVersion[0] ?? []
     const extraDec = Struct.dec(
       Object.fromEntries(
         extensionsArray.map((x) => [x.identifier, builder.buildDefinition(x.type)[1]])

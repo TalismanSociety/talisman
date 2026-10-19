@@ -173,7 +173,7 @@ describe("Extension", () => {
 
       const { parseMetadataRpc } = await import("@talismn/scale")
       signedExtensions = (
-        parseMetadataRpc(metadataHex).unifiedMetadata.extrinsic.signedExtensions[0] ?? []
+        parseMetadataRpc(metadataHex).unifiedMetadata.extrinsic.extensionsByVersion[0] ?? []
       ).map((e) => e.identifier)
 
       const { encodeMetadataRpc } = await import("../domains/metadata/helpers")

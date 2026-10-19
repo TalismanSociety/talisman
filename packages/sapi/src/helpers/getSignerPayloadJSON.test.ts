@@ -155,16 +155,16 @@ describe("getSignerPayloadJSON", () => {
   it("defaults the Avail app id to 0", async () => {
     const rpc = createChainRpc({ finalized: 42, current: 50 })
     const { chain } = getTestScaleApi("polkadot", { send: rpc.send })
-    const [checkAppId] = chain.metadata.extrinsic.signedExtensions[0] ?? []
+    const [checkAppId] = chain.metadata.extrinsic.extensionsByVersion[0] ?? []
     const availLike: Chain = {
       ...chain,
       metadata: {
         ...chain.metadata,
         extrinsic: {
           ...chain.metadata.extrinsic,
-          signedExtensions: {
+          extensionsByVersion: {
             0: [
-              ...(chain.metadata.extrinsic.signedExtensions[0] ?? []),
+              ...(chain.metadata.extrinsic.extensionsByVersion[0] ?? []),
               { ...checkAppId, identifier: "CheckAppId" },
             ],
           },

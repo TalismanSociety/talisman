@@ -140,7 +140,7 @@ const getDevnetChaindata = async (send: RpcSend) => {
     specVersion: runtimeVersion.specVersion,
     account: "*25519",
     prefix: properties?.ss58Format ?? 42,
-    hasCheckMetadataHash: !!metadata.extrinsic.signedExtensions[0]?.some(
+    hasCheckMetadataHash: !!metadata.extrinsic.extensionsByVersion[0]?.some(
       ({ identifier }) => identifier === "CheckMetadataHash"
     ),
     hasFrontierMirrorWithdraw: true,
