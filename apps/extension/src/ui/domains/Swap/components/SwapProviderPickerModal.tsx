@@ -17,21 +17,14 @@ export const SwapProviderPickerModal: FC<{
   onClose: () => void
 }> = ({ isOpen, onClose }) => {
   const { t } = useTranslation()
-  const {
-    sortedQuotes,
-    selectedProtocol,
-    selectedSubProtocol,
-    setSelectedProtocol,
-    setSelectedSubProtocol,
-  } = useSwap()
+  const { sortedQuotes, selectedProtocol, selectedSubProtocol, pickQuote } = useSwap()
 
   const handleSelect = useCallback(
     (quote: BaseQuote) => {
-      setSelectedProtocol(quote.protocol)
-      setSelectedSubProtocol(quote.subProtocol)
+      pickQuote(quote)
       onClose()
     },
-    [setSelectedProtocol, setSelectedSubProtocol, onClose]
+    [pickQuote, onClose]
   )
 
   return (

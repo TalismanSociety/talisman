@@ -25,6 +25,7 @@ export const swap = defineFlow("swap", {
       slippage_is_default: "required",
       quote_count: "required",
       quote_rank: "required",
+      provider_picked: "required",
       used_max: "required",
       reversed: "required",
     },

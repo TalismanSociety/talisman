@@ -311,7 +311,10 @@ export const properties = {
     "The user accepted the risk warning before the pick went through. The warning shows for a token outside the swap safe list that the user has not accepted in this swap yet."
   ),
   quote_rank: p.count(
-    "1-based rank of the chosen quote among the sorted quotes. 1: the quote the wallet picks by itself. Above 1: the user picked another provider."
+    "1-based rank of the chosen quote among the sorted quotes when the user submitted. A quote the wallet picked by itself can rank above 1 once the quotes refresh."
+  ),
+  provider_picked: p.bool(
+    "The user chose the submitted quote in the provider list, instead of keeping the one the wallet picked."
   ),
   used_max: p.bool(
     "The amount equals the transferable balance of the token swapped from, which is the amount the Max button sets."

@@ -9,7 +9,7 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
-import type { SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
@@ -48,6 +48,20 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     "decentalised" | "cheapest" | "fastest" | "bestRate"
   >("bestRate")
   const [reversed, setReversed] = useState(false)
+  const [pickedQuote, setPickedQuote] = useState<Pick<
+    BaseQuote,
+    "protocol" | "subProtocol"
+  > | null>(null)
+  const isQuotePicked =
+    !!pickedQuote &&
+    pickedQuote.protocol === selectedProtocol &&
+    pickedQuote.subProtocol === selectedSubProtocol
+
+  const pickQuote = useCallback(({ protocol, subProtocol }: BaseQuote) => {
+    setPickedQuote({ protocol, subProtocol })
+    setSelectedProtocol(protocol)
+    setSelectedSubProtocol(subProtocol)
+  }, [])
 
   // Register selected swap tokens for rate fetching so fiat values can displayed even for disabled tokens
   useAdditionalTokenRates([fromTokenId, toTokenId])
@@ -118,6 +132,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setSelectedSubProtocol(undefined)
     setQuoteSorting("bestRate")
     setReversed(false)
+    setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
     setAcknowledgedTokenVerdicts(new Map())
@@ -277,6 +292,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setQuoteSorting,
     reverse,
     reversed,
+    pickQuote,
+    isQuotePicked,
     resetForm,
     fromAssetIds,
     toAssetIds,

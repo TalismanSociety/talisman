@@ -84,6 +84,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     sortedQuotes,
     selectedSubProtocol: subProtocol,
     reversed,
+    isQuotePicked,
     gotoSubmitted,
     approvalCounter,
     incrementApprovalCounter,
@@ -633,6 +634,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       slippage_is_default: supportsSlippage ? slippagePercent === SWAP_SLIPPAGE_DEFAULT : null,
       quote_count: sortedQuotes.length,
       quote_rank: sortedQuotes.findIndex(({ quote }) => quote === selectedQuote) + 1,
+      provider_picked: isQuotePicked,
       used_max: fromAmount === fromBalance?.transferable.planck,
       reversed,
     }
@@ -646,6 +648,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromNetwork,
     fromToken,
     fromTokenRates,
+    isQuotePicked,
     protocol,
     reversed,
     selectedQuote,
