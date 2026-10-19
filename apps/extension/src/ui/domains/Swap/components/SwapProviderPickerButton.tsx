@@ -31,9 +31,8 @@ const Details = () => {
     isQuoteDataCurrent,
     quoteErrorMessages,
     selectedProtocol,
-    setSelectedProtocol,
     selectedSubProtocol,
-    setSelectedSubProtocol,
+    autoSelectQuote,
   } = useSwap()
 
   const openModal = useCallback(() => setIsModalOpen(true), [])
@@ -44,8 +43,7 @@ const Details = () => {
     // re-pick the best provider once all new quotes arrive.
     if (!isQuoteDataCurrent) {
       if (selectedProtocol !== null) {
-        setSelectedProtocol(null)
-        setSelectedSubProtocol(undefined)
+        autoSelectQuote(null)
       }
       return
     }
@@ -61,25 +59,21 @@ const Details = () => {
           (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
       )
       if (!isAvailable) {
-        setSelectedProtocol(null)
-        setSelectedSubProtocol(undefined)
+        autoSelectQuote(null)
       }
       return
     }
 
     // Auto-select the best quote once all providers have settled
     if (sortedQuotes.length > 0) {
-      const defaultQuote = sortedQuotes[0]
-      setSelectedProtocol(defaultQuote.quote.protocol)
-      setSelectedSubProtocol(defaultQuote.quote.subProtocol)
+      autoSelectQuote(sortedQuotes[0].quote)
     }
   }, [
     isQuoteDataCurrent,
     isAllQuotesSettled,
     selectedProtocol,
     selectedSubProtocol,
-    setSelectedProtocol,
-    setSelectedSubProtocol,
+    autoSelectQuote,
     sortedQuotes,
   ])
 

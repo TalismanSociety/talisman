@@ -82,6 +82,7 @@ vi.mock("@ui/state/chaindata", () => {
 // ── Import after mocks ────────────────────────────────────────────
 
 import { useSwapContextProvider } from "../SwapProvider.internal"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
 
 // ── Tests ─────────────────────────────────────────────────────────
 
@@ -230,5 +231,28 @@ describe("useSwapContextProvider isInitializing", () => {
     )
 
     expect(result.current.isInitializing).toBe(false)
+  })
+})
+
+describe("useSwapContextProvider isQuotePicked", () => {
+  const lifi = { protocol: "lifi", subProtocol: "uniswap" } as BaseQuote
+
+  it("holds while the quote the user picked stays selected", () => {
+    const { result } = renderHook(() => useSwapContextProvider({ stateInit: null }))
+
+    act(() => result.current.pickQuote(lifi))
+
+    expect(result.current.isQuotePicked).toBe(true)
+  })
+
+  it("drops once the wallet selects a quote, even the one the user picked before", () => {
+    const { result } = renderHook(() => useSwapContextProvider({ stateInit: null }))
+
+    act(() => result.current.pickQuote(lifi))
+    act(() => result.current.autoSelectQuote(null))
+    act(() => result.current.autoSelectQuote(lifi))
+
+    expect(result.current.selectedProtocol).toBe("lifi")
+    expect(result.current.isQuotePicked).toBe(false)
   })
 })

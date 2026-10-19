@@ -63,6 +63,12 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setSelectedSubProtocol(subProtocol)
   }, [])
 
+  const autoSelectQuote = useCallback((quote: BaseQuote | null) => {
+    setPickedQuote(null)
+    setSelectedProtocol(quote?.protocol ?? null)
+    setSelectedSubProtocol(quote?.subProtocol)
+  }, [])
+
   // Register selected swap tokens for rate fetching so fiat values can displayed even for disabled tokens
   useAdditionalTokenRates([fromTokenId, toTokenId])
 
@@ -285,14 +291,13 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     toAddress,
     setToAddress,
     selectedProtocol,
-    setSelectedProtocol,
     selectedSubProtocol,
-    setSelectedSubProtocol,
     quoteSorting,
     setQuoteSorting,
     reverse,
     reversed,
     pickQuote,
+    autoSelectQuote,
     isQuotePicked,
     resetForm,
     fromAssetIds,
