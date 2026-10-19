@@ -47,7 +47,7 @@ export const getMiniMetadata: IBalanceModule<
     "Balances",
     "ExistentialDeposit"
   )?.toString()
-  // NominationPools.PalletId is a fixed-size `[u8; 8]`, which polkadot-api v2 decodes to a hex
+  // NominationPools.PalletId is a fixed-size `[u8; 8]`, which polkadot-api decodes to a hex
   // string. Convert it back to its ASCII text form (e.g. "py/nopls"), which nompoolAccountId
   // re-encodes as utf-8 to derive pool account ids.
   const nominationPoolsPalletIdHex = tryGetConstantValue<`0x${string}`>(

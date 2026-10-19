@@ -10,14 +10,13 @@ import { Binary } from "@polkadot-api/substrate-bindings"
  * that serialise *any* decoded papi value to a deterministic string and back.
  *
  * Only two decoded types are not valid JSON, so only these get a tag — everything else (numbers,
- * objects, and strings, including the `0x…` hex strings papi v2 decodes fixed-size `[u8; N]` fields
+ * objects, and strings, including the `0x…` hex strings papi decodes fixed-size `[u8; N]` fields
  * into) is already JSON and is left untouched:
  *   - `bigint`      → `bigint:<n>`
- *   - `Uint8Array`  → `u8a:0x<hex>`   (papi v2 decodes variable-length `Vec<u8>` to a `Uint8Array`)
+ *   - `Uint8Array`  → `u8a:0x<hex>`   (papi decodes variable-length `Vec<u8>` to a `Uint8Array`)
  *
- * Note on polkadot-api v2 byte fields. The `Binary` class was removed and the SCALE codecs split
- * byte decoding into two distinct JS types, which `papiParse` must reproduce exactly or the codec
- * silently builds a garbage statekey (→ no balance):
+ * Note on polkadot-api byte fields. The SCALE codecs split byte decoding into two distinct JS
+ * types, which `papiParse` must reproduce exactly or the codec silently builds a garbage statekey (→ no balance):
  *   - fixed-size `[u8; N]` (`AccountId32`, `AccountKey20`, `GeneralKey.data`, Erc20 addresses,
  *     Stellar code/issuer, …) → a plain `0x` hex **string** (`SizedHex`). The codec's `.enc`
  *     expects that string. So a fixed-size field is just a JSON string: no tag, round-trips as-is.
@@ -43,7 +42,7 @@ export const papiParse = <T = unknown>(text: string | T): T => {
   const reviver = (_key: string, value: any) => {
     if (typeof value !== "string") return value
     if (value.startsWith("bigint:")) return BigInt(value.slice("bigint:".length))
-    // variable-length `Vec<u8>` → restore the `Uint8Array` the papi v2 codec expects.
+    // variable-length `Vec<u8>` → restore the `Uint8Array` the papi codec expects.
     if (value.startsWith("u8a:")) return Binary.fromHex(value.slice("u8a:".length) as `0x${string}`)
     // legacy/authoring input forms. Fixed-size `[u8; N]` codecs expect a `0x` hex string, so both
     // map to a bare hex string (the bare `0x` canonical form passes through unchanged below).

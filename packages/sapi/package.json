@@ -40,7 +40,11 @@
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
+    "rxjs": "^7.8.2",
     "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "rxjs": ">=7.8.0"
   },
   "types": "./dist/index.d.ts",
   "exports": {

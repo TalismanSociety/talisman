@@ -1,4 +1,5 @@
 import { toHex } from "@polkadot-api/utils"
+import { getSignedExtensions } from "@talismn/scale"
 import { describe, expect, it } from "vitest"
 
 import { createRpcStub, getParityFixture, getTestScaleApi } from "../__fixtures__/chains"
@@ -155,19 +156,16 @@ describe("getSignerPayloadJSON", () => {
   it("defaults the Avail app id to 0", async () => {
     const rpc = createChainRpc({ finalized: 42, current: 50 })
     const { chain } = getTestScaleApi("polkadot", { send: rpc.send })
-    const [checkAppId] = chain.metadata.extrinsic.extensionsByVersion[0] ?? []
+    const signedExtensions = getSignedExtensions(chain.metadata)
+    const checkAppId = { ...signedExtensions[0], identifier: "CheckAppId" }
     const availLike: Chain = {
       ...chain,
       metadata: {
         ...chain.metadata,
         extrinsic: {
           ...chain.metadata.extrinsic,
-          extensionsByVersion: {
-            0: [
-              ...(chain.metadata.extrinsic.extensionsByVersion[0] ?? []),
-              { ...checkAppId, identifier: "CheckAppId" },
-            ],
-          },
+          extensions: { ...chain.metadata.extrinsic.extensions, CheckAppId: checkAppId },
+          extensionsByVersion: { 0: [...signedExtensions, checkAppId] },
         },
       },
     }

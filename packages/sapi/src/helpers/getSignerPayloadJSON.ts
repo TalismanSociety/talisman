@@ -1,5 +1,6 @@
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { mergeUint8, toHex } from "@polkadot-api/utils"
+import { getSignedExtensions } from "@talismn/scale"
 import log from "../log"
 import type { SignerPayloadJSON } from "../pjsInterop"
 import type { PayloadSignerConfig } from "../types"
@@ -60,9 +61,7 @@ export const getSignerPayloadJSON = async (
   if (!blockHash) throw new Error("Block hash not found")
 
   const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
-  const signedExtensions = (chain.metadata.extrinsic.extensionsByVersion[0] ?? []).map(
-    (ext) => ext.identifier
-  )
+  const signedExtensions = getSignedExtensions(chain.metadata).map((ext) => ext.identifier)
 
   const basePayload: SignerPayloadJSON = {
     address: signerConfig.address,

@@ -75,8 +75,8 @@ describe("papiParse/papiStringify", () => {
     }
   })
 
-  test("byte fields parse to 0x hex strings (papi v2 SizedHex codecs reject Uint8Array)", () => {
-    // Regression: under polkadot-api v2 the fixed-size byte codecs expect a `0x` hex string.
+  test("byte fields parse to 0x hex strings (papi SizedHex codecs reject Uint8Array)", () => {
+    // Regression: polkadot-api fixed-size byte codecs expect a `0x` hex string.
     // The previous implementation returned a `Uint8Array` (`Binary.fromHex`/`fromText`), which made
     // foreign-asset / token statekeys silently encode to garbage and balances disappear.
     const erc20 = papiParse<{ type: string; value: unknown }>(
@@ -102,7 +102,7 @@ describe("papiParse/papiStringify", () => {
   })
 
   test("fixed-size byte fields: bare `0x` strings are the canonical form and round-trip unchanged", () => {
-    // papi v2 decodes fixed-size `[u8; N]` to a bare `0x` hex string, and `papiStringify` leaves
+    // papi decodes fixed-size `[u8; N]` to a bare `0x` hex string, and `papiStringify` leaves
     // strings untouched — so the canonical form is bare `0x`, with no tag, and is idempotent.
     expect(papiParse('"0xabcdef"')).toBe("0xabcdef")
     expect(papiStringify(papiParse('"0xabcdef"'))).toBe('"0xabcdef"')
@@ -119,7 +119,7 @@ describe("papiParse/papiStringify", () => {
   })
 
   test("variable-length `Vec<u8>` (Uint8Array) round-trips via the `u8a:` tag", () => {
-    // papi v2 decodes variable-length `Vec<u8>` to a `Uint8Array` whose codec `.enc` rejects a hex
+    // papi decodes variable-length `Vec<u8>` to a `Uint8Array` whose codec `.enc` rejects a hex
     // string. The `u8a:` tag preserves the type across a full round-trip so re-encoding is correct.
     const bytes = new Uint8Array([0xde, 0xad, 0xbe, 0xef])
 

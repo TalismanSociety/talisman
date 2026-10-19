@@ -83,7 +83,7 @@ const makeMetadata = ({
         makeVariantLookup(PROXY_TYPE_LOOKUP_ID, proxyTypeVariants),
         ...extraLookups,
       ],
-      extrinsic: { version: 4, type: 0, signedExtensions: [] },
+      extrinsic: { version: [4], type: 0, extensions: {}, extensionsByVersion: { 0: [] } },
       type: 0,
       apis: [],
     },

@@ -57,7 +57,7 @@ const stringifyProxyType = (raw: unknown): string => {
 
 /**
  * Convert a delegate field (as produced by the Proxy storage codec) to a wallet
- * address. polkadot-api v2 decodes `AccountId32` as a hex string (raw bytes), not
+ * address. polkadot-api decodes `AccountId32` as a hex string (raw bytes), not
  * as an SS58 string. A 0x-prefixed 20/32-byte hex is raw account bytes that must be
  * encoded; any other string is already an address. Some shapes may still be a
  * Uint8Array or a Binary-like object; handle all of them.

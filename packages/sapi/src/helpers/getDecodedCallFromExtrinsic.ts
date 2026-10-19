@@ -9,6 +9,7 @@ import {
   Struct,
   u8,
 } from "@polkadot-api/substrate-bindings"
+import { getSignedExtensions } from "@talismn/scale"
 
 import type { DecodedCall } from "../types"
 import type { Chain } from "./types"
@@ -31,7 +32,7 @@ export const getDecodedCallFromExtrinsic = <Res extends DecodedCall>(
     const { metadata, builder } = chain
 
     // Build decoder for signed extensions (extra field)
-    const extensionsArray = metadata.extrinsic.extensionsByVersion[0] ?? []
+    const extensionsArray = getSignedExtensions(metadata)
     const extraDec = Struct.dec(
       Object.fromEntries(
         extensionsArray.map((x) => [x.identifier, builder.buildDefinition(x.type)[1]])

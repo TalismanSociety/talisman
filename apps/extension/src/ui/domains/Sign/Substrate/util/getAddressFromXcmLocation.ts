@@ -39,7 +39,7 @@ const getAddressFromAccountId32 = (accountId32: SizedHex<32>): Address => {
   // in this case we should identify the corresponding evm address
   // test case: hydration portal, xcm mythos from mythos to hydration
 
-  // polkadot-api v2 decodes the fixed-size AccountId32 as a hex string
+  // polkadot-api decodes the fixed-size AccountId32 as a hex string
   const bytes = Binary.fromHex(accountId32)
   if (isPrefixMatch(bytes, ETH_PREFIX)) return encodeAddressEthereum(bytes.slice(4, 24))
 

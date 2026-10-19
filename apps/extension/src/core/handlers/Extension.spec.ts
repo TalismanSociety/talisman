@@ -171,10 +171,10 @@ describe("Extension", () => {
       )
       metadataHex = `0x${Buffer.from(metadataBytes).toString("hex")}`
 
-      const { parseMetadataRpc } = await import("@talismn/scale")
-      signedExtensions = (
-        parseMetadataRpc(metadataHex).unifiedMetadata.extrinsic.extensionsByVersion[0] ?? []
-      ).map((e) => e.identifier)
+      const { getSignedExtensions, parseMetadataRpc } = await import("@talismn/scale")
+      signedExtensions = getSignedExtensions(parseMetadataRpc(metadataHex).unifiedMetadata).map(
+        (e) => e.identifier
+      )
 
       const { encodeMetadataRpc } = await import("../domains/metadata/helpers")
       await db.metadata.put({

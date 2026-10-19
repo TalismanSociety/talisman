@@ -12,7 +12,13 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import {
+  decAnyMetadata,
+  getDynamicBuilder,
+  getLookupFn,
+  hasSignedExtension,
+  unifyMetadata,
+} from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
 import { noop } from "lodash-es"
 import { firstValueFrom } from "rxjs"
@@ -140,9 +146,7 @@ const getDevnetChaindata = async (send: RpcSend) => {
     specVersion: runtimeVersion.specVersion,
     account: "*25519",
     prefix: properties?.ss58Format ?? 42,
-    hasCheckMetadataHash: !!metadata.extrinsic.extensionsByVersion[0]?.some(
-      ({ identifier }) => identifier === "CheckMetadataHash"
-    ),
+    hasCheckMetadataHash: hasSignedExtension(metadata, "CheckMetadataHash"),
     hasFrontierMirrorWithdraw: true,
     topology: { type: "standalone" },
   })

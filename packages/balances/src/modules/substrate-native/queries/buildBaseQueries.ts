@@ -291,7 +291,7 @@ const decodeLocksResult = (
   const locksQueryLocks: Array<AmountWithLabel<string>> =
     decoded?.map?.((lock) => {
       // lock id is a fixed-size `[u8; 8]` (LockIdentifier), decoded as a hex string by
-      // polkadot-api v2 — convert back to its ASCII text form (e.g. "staking ").
+      // polkadot-api — convert back to its ASCII text form (e.g. "staking ").
       const id = lock?.id ? Binary.toText(Binary.fromHex(lock.id)) : undefined
       return {
         type: "locked" as const,
