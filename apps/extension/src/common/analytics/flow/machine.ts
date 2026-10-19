@@ -236,6 +236,11 @@ export const mirrorScreen = (mirror: Mirror, screen: string): Mirror => ({
   step: stepOfScreen(mirror.flow, screen) ?? mirror.step,
 })
 
+export const mirrorAttributes = (mirror: Mirror, properties: EventProperties): Mirror => ({
+  ...mirror,
+  attributes: attributesIn(mirror.flow, properties),
+})
+
 export const mirrorError = (mirror: Mirror, category: ErrorCategory): Mirror => ({
   ...mirror,
   lastError: category,

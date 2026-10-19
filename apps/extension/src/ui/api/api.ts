@@ -20,6 +20,8 @@ export const api: MessageTypes = {
   analyticsException: (report) => messageService.sendMessage("pri(analytics.exception)", report),
   analyticsRequestRisk: (report) =>
     messageService.sendMessage("pri(analytics.requestRisk)", report),
+  analyticsFlowAttributes: (report) =>
+    messageService.sendMessage("pri(analytics.flowAttributes)", report),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>
     messageService.sendMessage("pri(app.onboardCreatePassword)", { pass, passConfirm }),

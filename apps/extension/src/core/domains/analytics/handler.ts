@@ -16,6 +16,14 @@ const requestRiskSchema = z.strictObject({
   verdict: z.enum(RISK_VERDICTS),
 })
 
+const flowAttributesSchema = z.strictObject({
+  flowId: z.string().max(64),
+  attributes: z.record(
+    z.string().max(64),
+    z.union([z.string().max(256), z.number(), z.boolean(), z.null()])
+  ),
+})
+
 export class AnalyticsHandler extends ExtensionHandler {
   async handle<TMessageType extends MessageTypes>(
     _id: string,
@@ -40,6 +48,11 @@ export class AnalyticsHandler extends ExtensionHandler {
       case "pri(analytics.requestRisk)": {
         const { id, verdict } = requestRiskSchema.parse(request)
         dappRequestTracker.noteRisk(id, verdict)
+        return true as ResponseType<TMessageType>
+      }
+      case "pri(analytics.flowAttributes)": {
+        const { flowId, attributes } = flowAttributesSchema.parse(request)
+        flowTracker.noteAttributes(port, flowId, attributes)
         return true as ResponseType<TMessageType>
       }
       default:
