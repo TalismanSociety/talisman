@@ -1,4 +1,9 @@
 import {
+  networkIdForAnalytics,
+  tokenIdForAnalytics,
+  tokenSymbolForAnalytics,
+} from "@common/analytics/funds"
+import {
   isTokenDot,
   isTokenEth,
   isTokenSol,
@@ -6,19 +11,32 @@ import {
   type TokenId,
 } from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
+import { track } from "@ui/api/track"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { useCallback, useMemo } from "react"
 
-import { TokenPicker } from "../Asset/TokenPicker"
+import { type TokenPick, TokenPicker } from "../Asset/TokenPicker"
 
 export const SendFundsTokenPicker = () => {
   const { from, to, tokenId, tokenSymbol, set } = useSendFundsWizard()
+  const tokensMap = useTokensMap()
+  const networksMap = useNetworksMapById()
 
   const handleTokenSelect = useCallback(
-    (tokenId: TokenId) => {
+    (tokenId: TokenId, pick: TokenPick) => {
+      const token = tokensMap[tokenId]
+      track("send_token_selected", {
+        searched: pick.searched,
+        network_filtered: pick.networkFiltered,
+        position: pick.position,
+        token_id: tokenIdForAnalytics(token),
+        symbol: tokenSymbolForAnalytics(token),
+        network_id: networkIdForAnalytics(token && networksMap[token.networkId]),
+      })
       set("tokenId", tokenId, true)
     },
-    [set]
+    [set, tokensMap, networksMap]
   )
 
   const tokenFilter = useMemo<((token: Token) => boolean) | undefined>(() => {

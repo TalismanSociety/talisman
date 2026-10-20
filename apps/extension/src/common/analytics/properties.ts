@@ -363,7 +363,7 @@ export const properties = {
   netuid: p.count("The Bittensor subnet, by its number. 0 is root."),
   is_root: p.bool("The Bittensor subnet is root, netuid 0."),
   symbol: p.symbol(
-    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
+    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected, send_token_selected, earn_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
   ),
   mev_shield: p.bool(
     "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."
@@ -373,7 +373,9 @@ export const properties = {
   ),
   is_featured: p.bool("The validator is featured in the validator list."),
   sort: p.enum(VALIDATOR_SORTS, "The order the validator list was sorted in."),
-  searched: p.bool("The user had typed a search in the list when they picked."),
+  searched: p.bool(
+    "The list's search box held text when the user picked: typed by the user, or filled in by the screen that opened the list."
+  ),
   position: p.count("1-based position of the pick in the list, as sorted, filtered and searched."),
   preset: p.bool("The user picked a preset value: the Reset button, not a typed value."),
   system: p.enum(

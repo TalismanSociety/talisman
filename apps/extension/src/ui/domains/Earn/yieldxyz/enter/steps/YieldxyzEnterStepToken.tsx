@@ -1,6 +1,13 @@
-import type { Token } from "@talismn/chaindata-provider"
+import {
+  networkIdForAnalytics,
+  tokenIdForAnalytics,
+  tokenSymbolForAnalytics,
+} from "@common/analytics/funds"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
+import { track } from "@ui/api/track"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
+import { type TokenPick, TokenPicker } from "@ui/domains/Asset/TokenPicker"
+import { useNetworksMapById, useTokensMap } from "@ui/state/chaindata"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,6 +18,23 @@ export const YieldxyzEnterStepToken: FC = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzEnterModal()
   const { pickerTokenIds, pickerTokenId, onPickerTokenChanged } = useYieldxyzEnterWizard()
+  const tokensMap = useTokensMap()
+  const networksMap = useNetworksMapById()
+
+  const handleSelect = useCallback(
+    (tokenId: TokenId, pick: TokenPick) => {
+      const token = tokensMap[tokenId]
+      track("earn_token_selected", {
+        searched: pick.searched,
+        position: pick.position,
+        token_id: tokenIdForAnalytics(token),
+        symbol: tokenSymbolForAnalytics(token),
+        network_id: networkIdForAnalytics(token && networksMap[token.networkId]),
+      })
+      onPickerTokenChanged(tokenId)
+    },
+    [onPickerTokenChanged, tokensMap, networksMap]
+  )
 
   const tokenFilter = useCallback(
     (token: Token): boolean => {
@@ -33,7 +57,7 @@ export const YieldxyzEnterStepToken: FC = () => {
       <TokenPicker
         tokenFilter={tokenFilter}
         selected={pickerTokenId ?? undefined}
-        onSelect={onPickerTokenChanged}
+        onSelect={handleSelect}
       />
     </ModalDialog>
   )

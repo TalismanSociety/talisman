@@ -51,6 +51,18 @@ export const fundsEvents = defineEventGroup(properties, {
       warning_accepted: "required",
     },
   },
+  send_token_selected: {
+    description:
+      "The user picked a token in the send token picker. Not sent when the send opens with a token. searched is true when the send opened the picker with the token's symbol in the search box, even if the user typed nothing.",
+    props: {
+      searched: "required",
+      network_filtered: "required",
+      position: "required",
+      token_id: "required",
+      symbol: "required",
+      network_id: "required",
+    },
+  },
   swap_approval_submitted: {
     description:
       "The user sent the token approval a swap needs before the swap itself, or the revoke some tokens need first.",
