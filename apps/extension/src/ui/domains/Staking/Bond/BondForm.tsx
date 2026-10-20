@@ -255,7 +255,7 @@ const AmountEdit = () => {
     inputErrorMessage,
     inputErrorCategory,
     maxPlancks,
-    setPlancks,
+    setMaxPlancks,
   } = useBondWizard()
   useErrorShown({
     shown: inputErrorMessage,
@@ -263,11 +263,6 @@ const AmountEdit = () => {
     category: inputErrorCategory ?? "input_invalid",
     field: "amount",
   })
-
-  const onSetMaxClick = useCallback(() => {
-    if (!maxPlancks) return
-    setPlancks(maxPlancks)
-  }, [maxPlancks, setPlancks])
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
@@ -291,7 +286,7 @@ const AmountEdit = () => {
               </>
             )}
             <PillButton
-              onClick={onSetMaxClick}
+              onClick={setMaxPlancks}
               disabled={!maxPlancks}
               size="xs"
               className={cn("h-11 rounded-sm px-4! py-0!")}

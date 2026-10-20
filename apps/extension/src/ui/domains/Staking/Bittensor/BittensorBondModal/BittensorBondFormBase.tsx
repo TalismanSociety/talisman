@@ -257,6 +257,7 @@ const AmountEdit = () => {
     maxPlancks,
     inputErrorFillAmount,
     setPlancks,
+    setMaxPlancks,
   } = useBittensorBondWizard()
   useErrorShown({
     shown: inputErrorMessage,
@@ -264,11 +265,6 @@ const AmountEdit = () => {
     category: inputErrorCategory ?? "input_invalid",
     field: "amount",
   })
-
-  const onSetMaxClick = useCallback(() => {
-    if (!maxPlancks) return
-    setPlancks(maxPlancks)
-  }, [maxPlancks, setPlancks])
 
   const onFillClick = useCallback(() => {
     if (inputErrorFillAmount === null) return
@@ -297,7 +293,7 @@ const AmountEdit = () => {
               </>
             )}
             <PillButton
-              onClick={onSetMaxClick}
+              onClick={setMaxPlancks}
               disabled={!maxPlancks}
               size="xs"
               className={cn("h-11 rounded-sm px-4! py-0!")}

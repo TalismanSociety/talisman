@@ -1,5 +1,6 @@
 import { z } from "zod/v4"
 
+import { AMOUNT_FORM_STATES } from "../../formState"
 import { STAKING_ACTIONS, STAKING_ENTRIES } from "../../staking"
 import { defineFlow } from "../defineFlow"
 
@@ -13,6 +14,7 @@ export const staking = defineFlow("staking", {
     staking_type: "required",
     direction: action,
     netuid: "optional",
+    form_state: { narrow: z.enum(AMOUNT_FORM_STATES), optional: true },
   },
   extras: {
     started: { mode: action },
@@ -24,6 +26,7 @@ export const staking = defineFlow("staking", {
       slippage_percent: "required",
       slippage_is_default: "required",
       mev_shield: "optional",
+      used_max: "optional",
     },
   },
   settlement: "transaction",

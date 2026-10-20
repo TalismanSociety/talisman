@@ -24,6 +24,7 @@ type TokenAmountFieldProps = {
   plancks: bigint | null
   maxPlancks: bigint
   onChange: (plancks: bigint | null) => void
+  onMax?: (plancks: bigint) => void
   errorMessage?: string | null
 }
 
@@ -34,6 +35,7 @@ export const TokenAmountField: FC<TokenAmountFieldProps> = ({
   plancks,
   maxPlancks,
   onChange,
+  onMax = onChange,
   errorMessage,
 }) => {
   const { t } = useTranslation()
@@ -97,8 +99,8 @@ export const TokenAmountField: FC<TokenAmountFieldProps> = ({
   useInputAutoWidth(refInput)
 
   const onSetMaxClick = useCallback(() => {
-    if (maxPlancks > 0n) onChange(maxPlancks)
-  }, [maxPlancks, onChange])
+    if (maxPlancks > 0n) onMax(maxPlancks)
+  }, [maxPlancks, onMax])
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
