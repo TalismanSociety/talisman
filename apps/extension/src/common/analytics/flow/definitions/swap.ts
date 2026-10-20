@@ -1,13 +1,13 @@
 import { z } from "zod/v4"
 
-import { SWAP_ENTRIES } from "../../funds"
+import { SWAP_ENTRIES, SWAP_FORM_STATES } from "../../funds"
 import { defineFlow } from "../defineFlow"
 
 export const swap = defineFlow("swap", {
   subject: "swapping tokens",
   steps: ["form", "recipient", "confirm"],
   entries: SWAP_ENTRIES,
-  attributes: { form_state: "required" },
+  attributes: { form_state: { narrow: z.enum(SWAP_FORM_STATES) } },
   extras: {
     started: { prefill_from_token: "required", prefill_to_token: "required" },
     submitted: {
