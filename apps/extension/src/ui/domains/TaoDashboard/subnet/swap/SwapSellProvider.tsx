@@ -302,7 +302,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
           amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
           symbol: tokenIn.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null

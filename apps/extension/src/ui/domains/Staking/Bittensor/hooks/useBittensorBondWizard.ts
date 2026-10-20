@@ -613,7 +613,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minTaoBondForInput, nativeToken?.decimals).tokens,
           symbol: nativeToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     // no staking operation can be less than minTaoStakeForInput
@@ -623,7 +623,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minTaoStakeForInput, nativeToken?.decimals).tokens,
           symbol: nativeToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null
@@ -736,7 +736,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minAlphaUnstake, dtaoToken?.decimals).tokens,
           symbol: dtaoToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null

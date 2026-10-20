@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import type { ActionArgumentsDto, ArgumentSchemaDto } from "@core/domains/earn/exports"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { useMemo } from "react"
 
 type UseYieldxyzEnterTransactionProps = {
@@ -11,16 +12,19 @@ export const useYieldxyzActionValidation = ({
   schema,
   inputs,
 }: UseYieldxyzEnterTransactionProps) => {
-  return useMemo(() => {
+  return useMemo((): { args: ActionArgumentsDto | null; error: InlineError | null } => {
     if (!schema || !inputs) return { args: null, error: null }
 
-    const result = { args: {} as ActionArgumentsDto | null, error: null as string | null }
+    const result: { args: ActionArgumentsDto | null; error: InlineError | null } = {
+      args: {},
+      error: null,
+    }
 
     try {
       const inputsRecord = inputs as Record<string, unknown>
       for (const field of schema.fields) {
         if (field.required && !inputsRecord[field.name]) {
-          result.error = `${field.name} is required`
+          result.error = { message: `${field.name} is required`, category: "input_invalid" }
           result.args = null
           break
         }
@@ -29,13 +33,19 @@ export const useYieldxyzActionValidation = ({
           const value = inputsRecord[field.name]
 
           if (field.minimum && Number(value) < Number(field.minimum)) {
-            result.error = `Minimum ${field.name} is ${field.minimum}`
+            result.error = {
+              message: `Minimum ${field.name} is ${field.minimum}`,
+              category: "below_minimum",
+            }
             result.args = null
             break
           }
 
           if (field.maximum && Number(value) > Number(field.maximum)) {
-            result.error = `Maximum ${field.name} is ${field.maximum}`
+            result.error = {
+              message: `Maximum ${field.name} is ${field.maximum}`,
+              category: "input_invalid",
+            }
             result.args = null
             break
           }
@@ -50,7 +60,7 @@ export const useYieldxyzActionValidation = ({
       log.error("useYieldxyzActionValidation: error during validation", { err, schema, inputs })
       return {
         args: null,
-        error: "Invalid arguments",
+        error: { message: "Invalid arguments", category: "input_invalid" },
       }
     }
   }, [inputs, schema])

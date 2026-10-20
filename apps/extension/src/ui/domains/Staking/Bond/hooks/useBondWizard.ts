@@ -249,7 +249,7 @@ const useBondWizardProvider = () => {
           amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
           symbol: token?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null

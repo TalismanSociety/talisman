@@ -90,7 +90,7 @@ export const getSweepableRemainderError = (
           taoSymbol: tao.symbol,
         }
       ),
-      category: "input_invalid",
+      category: "below_minimum",
       fillAmount: null,
     }
 
@@ -104,7 +104,7 @@ export const getSweepableRemainderError = (
         symbol: alpha.symbol,
       }
     ),
-    category: "input_invalid",
+    category: "below_minimum",
     fillAmount: remainder.maxPartial,
   }
 }

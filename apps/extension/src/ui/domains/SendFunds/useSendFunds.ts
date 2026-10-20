@@ -374,6 +374,7 @@ const useSendFundsProvider = () => {
               amount: formatDecimals(new BalanceFormatter(minAlphaTransfer, token.decimals).tokens),
               symbol: token.symbol,
             }),
+            errorCategory: "below_minimum",
           }
         }
       }
@@ -436,6 +437,7 @@ const useSendFundsProvider = () => {
             value: formatDecimals(ed.tokens),
             symbol: token.symbol,
           }),
+          errorCategory: "below_minimum",
         }
       }
 

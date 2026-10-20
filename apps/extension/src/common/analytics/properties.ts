@@ -70,7 +70,7 @@ export const properties = {
   ),
   error_category: p.enum(
     ERROR_CATEGORIES,
-    "What kind of failure, never its text. input_invalid: a form field's own validation. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
+    "What kind of failure, never its text. input_invalid: a form field's own validation. below_minimum: the amount, or what it would leave, is under the minimum the chain or the product sets. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
   ),
   flow: p.slug(
     "The flow running when it happened. Account events: onboarding for the wallet's first account, add_account for the others, as on mobile."

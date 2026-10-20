@@ -380,6 +380,7 @@ describe("useSendFunds", () => {
         expect(result.current).toMatchObject({
           isValid: false,
           error: "Please send a minimum of 1 DOT",
+          errorCategory: "below_minimum",
         })
       )
     })
@@ -542,6 +543,7 @@ describe("useSendFunds", () => {
       expect(render().current).toMatchObject({
         isValid: false,
         error: "Minimum transfer is 2 SN1",
+        errorCategory: "below_minimum",
       })
     })
 

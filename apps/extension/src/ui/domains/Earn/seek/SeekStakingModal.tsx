@@ -264,7 +264,7 @@ const SeekStakingForm: FC<{
           amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
           symbol: token.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
     if (action === "requestWithdrawal") {
       if ((position.data?.pendingWithdrawal.amount ?? 0n) > 0n)
@@ -283,7 +283,7 @@ const SeekStakingForm: FC<{
             amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
             symbol: token.symbol,
           }),
-          category: "input_invalid",
+          category: "below_minimum",
         }
     }
     return null

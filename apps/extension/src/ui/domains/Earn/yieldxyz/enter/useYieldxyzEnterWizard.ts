@@ -1,4 +1,3 @@
-import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { type EarnEntry, yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
@@ -152,13 +151,11 @@ const useYieldxyzEnterWizardProvider = ({
     return [inputs, null]
   }, [state.amountIn, tokenIn, balance, account, t])
 
-  const validationErrorCategory: ErrorCategory =
-    talismanValidationError?.category ?? "input_invalid"
-
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: product?.mechanics.arguments?.enter,
     inputs,
   })
+  const validationError = talismanValidationError ?? yieldxyzValidationError
 
   const {
     canCreateAction,
@@ -301,8 +298,8 @@ const useYieldxyzEnterWizardProvider = ({
     network,
     balance,
     product,
-    validationError: talismanValidationError?.message ?? yieldxyzValidationError,
-    validationErrorCategory,
+    validationError: validationError?.message ?? null,
+    validationErrorCategory: validationError?.category ?? "input_invalid",
     goTo,
     goBack,
     canGoBack,
