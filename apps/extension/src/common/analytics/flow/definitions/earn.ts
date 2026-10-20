@@ -1,3 +1,6 @@
+import { z } from "zod/v4"
+
+import { AMOUNT_FORM_STATES } from "../../formState"
 import { EARN_ENTRIES } from "../../staking"
 import { defineFlow } from "../defineFlow"
 
@@ -13,7 +16,8 @@ export const earnDeposit = defineFlow("earn_deposit", {
   subject: "entering a yield.xyz Earn position",
   steps: ["token", "product", "account", "amount", "confirm"],
   entries: EARN_ENTRIES,
-  extras: { submitted },
+  attributes: { form_state: { narrow: z.enum(AMOUNT_FORM_STATES) } },
+  extras: { submitted: { ...submitted, used_max: "required" } },
 })
 
 export const earnWithdraw = defineFlow("earn_withdraw", {

@@ -4,6 +4,7 @@ import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "
 import { AMOUNT_BUCKETS, COUNT_BUCKETS, DAY_BUCKETS, HELD_BUCKETS, SHARE_BUCKETS } from "./buckets"
 import { DAPP_METHODS, PROTECTION_SOURCES, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
+import { FORM_STATES } from "./formState"
 import {
   FEE_PRIORITIES,
   GAS_TYPES,
@@ -11,7 +12,6 @@ import {
   RAMP_PROVIDERS,
   RECIPIENT_SOURCES,
   REPLACE_TYPES,
-  SWAP_FORM_STATES,
   SWAP_OUTCOMES,
   SWAP_PROTOCOLS,
   SWAP_SIDES,
@@ -70,7 +70,7 @@ export const properties = {
   ),
   error_category: p.enum(
     ERROR_CATEGORIES,
-    "What kind of failure, never its text. input_invalid: a form field's own validation. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
+    "What kind of failure, never its text. input_invalid: a form field's own validation. below_minimum: the amount, or what it would leave, is under the minimum the chain or the product sets. clipboard: the browser refused a copy. A flow's abandoned event: the last error the user saw during the attempt, if any."
   ),
   flow: p.slug(
     "The flow running when it happened. Account events: onboarding for the wallet's first account, add_account for the others, as on mobile."
@@ -317,14 +317,14 @@ export const properties = {
     "The user chose the submitted route in the provider list, instead of keeping the one the wallet picked. False when the provider replaced the chosen route at confirmation."
   ),
   used_max: p.bool(
-    "The amount equals the transferable balance of the token swapped from, which is the amount the Max button sets."
+    "The amount is the one the Max button set: the user clicked Max and did not change the amount after."
   ),
   reversed: p.bool(
     "The user switched the from and to tokens during the attempt: with the flip button, or by picking on one side the token of the other."
   ),
   form_state: p.enum(
-    SWAP_FORM_STATES,
-    "How far the swap form got: the first that applies. no_tokens: the token to swap from or to is missing. no_amount: no amount, or zero. quoting: every provider has not yet answered for the current inputs. A refresh of the quotes shown does not count. no_quote: no provider quoted. insufficient_balance: the amount is above the transferable balance. ready: the user could go on to review. On swap_abandoned, it is where the user left the form."
+    FORM_STATES,
+    "How far the amount form got. no_tokens: the token to swap from or to is missing. no_amount: no amount, or zero. quoting: every provider has not yet answered for the current inputs. A refresh of the quotes shown does not count. no_quote: no provider quoted. loading: the wallet is still checking the amount, such as estimating the fee. insufficient_balance: the amount is above the balance it comes from. insufficient_fee: the balance left cannot pay the network fee. below_minimum: the amount, or what it would leave, is under the minimum the chain or the product sets. invalid: the form shows another error. ready: the user could go on to review or submit. no_tokens, quoting and no_quote apply to swap only. Swap reads the first of no_tokens, no_amount, quoting, no_quote, insufficient_balance and ready that applies. The other flows read no_amount first, then the error the form shows, then ready, and loading otherwise. On <flow>_abandoned, it is where the user left the form."
   ),
   is_revoke: p.bool("The approval resets an existing allowance to zero, as some tokens require."),
   replace_type: p.enum(REPLACE_TYPES, "How the user replaced a pending transaction."),
@@ -363,7 +363,7 @@ export const properties = {
   netuid: p.count("The Bittensor subnet, by its number. 0 is root."),
   is_root: p.bool("The Bittensor subnet is root, netuid 0."),
   symbol: p.symbol(
-    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
+    "Symbol of the token whose amount the user entered: staked, unstaked, claimed or traded. token_details_opened: the token whose page opened. swap_token_selected, send_token_selected, earn_token_selected: the token picked. unknown: a symbol the catalogue cannot hold."
   ),
   mev_shield: p.bool(
     "The transaction went through Bittensor's MEV Shield, encrypted until it is included in a block."
@@ -373,7 +373,9 @@ export const properties = {
   ),
   is_featured: p.bool("The validator is featured in the validator list."),
   sort: p.enum(VALIDATOR_SORTS, "The order the validator list was sorted in."),
-  searched: p.bool("The user had typed a search in the list when they picked."),
+  searched: p.bool(
+    "The list's search box held text when the user picked: typed by the user, or filled in by the screen that opened the list."
+  ),
   position: p.count("1-based position of the pick in the list, as sorted, filtered and searched."),
   preset: p.bool("The user picked a preset value: the Reset button, not a typed value."),
   system: p.enum(

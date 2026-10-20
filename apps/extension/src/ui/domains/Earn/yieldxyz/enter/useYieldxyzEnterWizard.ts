@@ -1,4 +1,4 @@
-import type { ErrorCategory } from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { type EarnEntry, yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
@@ -7,6 +7,7 @@ import { type Balance, BalanceFormatter } from "@talismn/balances"
 import { isTokenInTypes, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -78,6 +79,7 @@ const useYieldxyzEnterWizardProvider = ({
   const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(state.amountIn)
   // back-navigation floor: when a picker token is provided the wizard was entered via the product
   // picker, so "product" stays reachable (even when a productId is preset, e.g. from the unified
   // deposit picker) — preserving the ability to go back and change product.
@@ -152,13 +154,11 @@ const useYieldxyzEnterWizardProvider = ({
     return [inputs, null]
   }, [state.amountIn, tokenIn, balance, account, t])
 
-  const validationErrorCategory: ErrorCategory =
-    talismanValidationError?.category ?? "input_invalid"
-
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: product?.mechanics.arguments?.enter,
     inputs,
   })
+  const validationError = talismanValidationError ?? yieldxyzValidationError
 
   const {
     canCreateAction,
@@ -234,6 +234,13 @@ const useYieldxyzEnterWizardProvider = ({
   useFlow(flows.earn_deposit, {
     active: isOpen && !!stateInit,
     entry: stateInit?.entry ?? "discover",
+    attributes: {
+      form_state: getAmountFormState({
+        amount: state.amountIn,
+        error: validationError?.category,
+        ready: canCreateAction,
+      }),
+    },
     step: state.step,
   })
 
@@ -252,8 +259,12 @@ const useYieldxyzEnterWizardProvider = ({
           : new BalanceFormatter(state.amountIn, tokenIn?.decimals, tokenRates).fiat("usd"),
     })
     if (report)
-      flows.earn_deposit.submitted({ ...report, yield_id: yieldIdForAnalytics(state.productId) })
-  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId])
+      flows.earn_deposit.submitted({
+        ...report,
+        yield_id: yieldIdForAnalytics(state.productId),
+        used_max: state.amountIn === amountSetByMax,
+      })
+  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId, amountSetByMax])
 
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return
@@ -270,11 +281,12 @@ const useYieldxyzEnterWizardProvider = ({
         : 0n
       : balance.transferable.planck
 
+    setAmountSetByMax(maxAmmount)
     setState((state) => ({
       ...state,
       amountIn: maxAmmount,
     }))
-  }, [tokenIn, balance, dummyTx?.estimatedFee])
+  }, [tokenIn, balance, dummyTx?.estimatedFee, setAmountSetByMax])
 
   const maxNativeValue = useMemo(() => {
     if (!tokenIn || !isTokenInTypes(tokenIn, ["evm-native", "substrate-native", "sol-native"]))
@@ -301,8 +313,8 @@ const useYieldxyzEnterWizardProvider = ({
     network,
     balance,
     product,
-    validationError: talismanValidationError?.message ?? yieldxyzValidationError,
-    validationErrorCategory,
+    validationError: validationError?.message ?? null,
+    validationErrorCategory: validationError?.category ?? "input_invalid",
     goTo,
     goBack,
     canGoBack,

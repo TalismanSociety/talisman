@@ -1,7 +1,6 @@
 import { type RecipientSource, SEND_ENTRIES, type SendEntry } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import type { TokenId } from "@talismn/chaindata-provider"
-import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useTokensMap } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useMemo, useState } from "react"
@@ -30,7 +29,6 @@ const useSendFundsWizardProvider = () => {
   const allTokensMap = useTokensMap()
 
   const [entry] = useState(() => entryOf(searchParams.get("entry")))
-  useFlow(flows.send, { entry })
   const [recipientSource, setRecipientSource] = useState<RecipientSource>(() =>
     searchParams.has("to") ? "prefilled" : "unknown"
   )
@@ -137,6 +135,7 @@ const useSendFundsWizardProvider = () => {
   )
 
   return {
+    entry,
     from,
     to,
     tokenId,

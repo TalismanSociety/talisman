@@ -1,3 +1,4 @@
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -14,6 +15,7 @@ import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
@@ -28,7 +30,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
-import { useSwapSubmit } from "./useSwapSubmit"
+import { useSwapMevShield, useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
 const subjectLastSelectedAddress = new BehaviorSubject<string | null>(null)
@@ -137,6 +139,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, valueIn: value }))
   }, [])
 
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(valueIn)
+  const setMaxValueIn = useCallback(() => {
+    setAmountSetByMax(maxValueIn)
+    setState((s) => ({ ...s, valueIn: maxValueIn }))
+  }, [maxValueIn, setAmountSetByMax])
+
   const onAccountChange = useCallback((address: string | null) => {
     setState((s) => ({ ...s, address }))
   }, [])
@@ -215,17 +223,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     withMevShield,
     setIsMevProtectionEnabled,
     txMode,
-    onSubmit,
-    confirm,
-  } = useSwapSubmit({
-    netuid,
-    account,
-    direction: "buy",
-    resetValueIn,
-    valueIn,
-    symbol: tokenSymbolForAnalytics(tokenIn),
-    taoPlancks: valueIn,
-  })
+  } = useSwapMevShield({ netuid, account, direction: "buy" })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
@@ -280,6 +278,23 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const canSubmit = !!payload && isValid && !inputErrorMessage
+
+  const { onSubmit, confirm } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "buy",
+    resetValueIn,
+    valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: valueIn,
+    withMevShield,
+    formState: getAmountFormState({
+      amount: valueIn,
+      error: inputErrorCategory,
+      ready: canSubmit,
+    }),
+    usedMax: valueIn === amountSetByMax,
+  })
   useErrorShown({
     shown: inputErrorMessage,
     surface: "field",
@@ -338,6 +353,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     onAccountChange,
     onHotkeyChange,
     onValueChange,
+    setMaxValueIn,
   }
 }
 

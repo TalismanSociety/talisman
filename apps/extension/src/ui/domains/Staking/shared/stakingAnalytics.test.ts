@@ -57,6 +57,8 @@ describe("submitted reports", () => {
         ...stamps,
         ...report,
         yield_id: "bittensor-tao-native-staking",
+        form_state: "ready",
+        used_max: false,
       }).success
 
     expect(earn(valueReport(value))).toBe(true)

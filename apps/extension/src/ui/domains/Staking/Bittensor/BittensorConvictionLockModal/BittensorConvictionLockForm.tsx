@@ -55,6 +55,7 @@ export const BittensorConvictionLockForm = () => {
     setStep,
     setActivePicker,
     setPlancks,
+    setPlancksFromMax,
     selectAccount,
     selectHotkey,
     selectLockType,
@@ -113,6 +114,7 @@ export const BittensorConvictionLockForm = () => {
           plancks={plancks}
           maxPlancks={stakedTotal}
           onChange={setPlancks}
+          onMax={setPlancksFromMax}
           errorMessage={errorMessage ?? feeErrorMessage ?? payloadErrorMessage}
         />
 

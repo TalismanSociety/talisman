@@ -19,6 +19,7 @@ export const ERROR_CATEGORIES = [
   "rpc",
   "timeout",
   "input_invalid",
+  "below_minimum",
   "storage",
   "clipboard",
   "unknown",

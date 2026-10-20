@@ -35,4 +35,15 @@ export const stakingEvents = defineEventGroup(properties, {
       "An Earn position page opened. yield_id names the yield.xyz product, which the route pattern drops.",
     props: { system: "required", yield_id: "required" },
   },
+  earn_token_selected: {
+    description:
+      "The user picked a token in the token picker that opens an Earn deposit, before they pick a product for it.",
+    props: {
+      searched: "required",
+      position: "required",
+      token_id: "required",
+      symbol: "required",
+      network_id: "required",
+    },
+  },
 })

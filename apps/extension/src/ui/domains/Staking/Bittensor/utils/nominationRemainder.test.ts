@@ -98,7 +98,7 @@ describe("getSweepableRemainderError", () => {
     ).toEqual({
       message:
         "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything, or at most 0.1894 SN4.",
-      category: "input_invalid",
+      category: "below_minimum",
       fillAmount: 189_453_899n,
     })
   })
@@ -106,7 +106,7 @@ describe("getSweepableRemainderError", () => {
   it("asks for a full exit with nothing to fill", () => {
     expect(getSweepableRemainderError(t, { kind: "exit-only" }, tokens)).toEqual({
       message: "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything.",
-      category: "input_invalid",
+      category: "below_minimum",
       fillAmount: null,
     })
   })

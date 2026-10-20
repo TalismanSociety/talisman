@@ -1,7 +1,10 @@
+import { classifyError } from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -56,6 +59,7 @@ const useBondWizardProvider = () => {
       ? { ...DEFAULT_STATE, address: args.address, tokenId: args.tokenId, poolId: args.poolId }
       : DEFAULT_STATE
   )
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(plancks)
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -107,19 +111,16 @@ const useBondWizardProvider = () => {
         symbol: tokenSymbolForAnalytics(token),
         usd: amountToStake?.fiat("usd"),
       })
-      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      if (report)
+        flows.staking.submitted({
+          ...report,
+          used_max: plancks === amountSetByMax,
+          transactionId: hash,
+        })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [account, network, token, amountToStake]
+    [account, network, token, amountToStake, plancks, amountSetByMax]
   )
-
-  useFlow(flows.staking, {
-    active: isOpen && !!args,
-    entry: args?.entry ?? "token_details",
-    started: { mode: "stake" },
-    attributes: { staking_type: "nomination_pool", direction: "stake" },
-    step: step === "follow-up" ? null : step,
-  })
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
@@ -192,6 +193,12 @@ const useBondWizardProvider = () => {
     return balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
   }, [balance, existentialDeposit, feeEstimate])
 
+  const setMaxPlancks = useCallback(() => {
+    if (!maxPlancks) return
+    setAmountSetByMax(maxPlancks)
+    setPlancks(maxPlancks)
+  }, [maxPlancks, setPlancks, setAmountSetByMax])
+
   const inputError = useMemo<InlineError | null>(() => {
     // NOTE: We don't have to check for this anymore.
     //       Users are now able to both solo stake and nompool stake at the same time.
@@ -249,7 +256,7 @@ const useBondWizardProvider = () => {
           amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
           symbol: token?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null
@@ -268,6 +275,27 @@ const useBondWizardProvider = () => {
   ])
 
   const inputErrorMessage = inputError?.message ?? null
+  const payloadToSubmit = !inputErrorMessage && isFormValid ? payload : null
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "token_details",
+    started: { mode: "stake" },
+    attributes: {
+      staking_type: "nomination_pool",
+      direction: "stake",
+      form_state: getAmountFormState({
+        amount: plancks,
+        error:
+          inputError?.category ??
+          (errorPayload || errorFeeEstimate
+            ? classifyError(errorPayload ?? errorFeeEstimate)
+            : null),
+        ready: !!payloadToSubmit,
+      }),
+    },
+    step: step === "follow-up" ? null : step,
+  })
 
   return {
     account,
@@ -286,7 +314,7 @@ const useBondWizardProvider = () => {
     inputErrorCategory: inputError?.category,
     bondType,
 
-    payload: !inputErrorMessage && isFormValid ? payload : null,
+    payload: payloadToSubmit,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
@@ -299,6 +327,7 @@ const useBondWizardProvider = () => {
     setTokenId,
     setPoolId,
     setPlancks,
+    setMaxPlancks,
     setStep,
     setIsDefaultOption,
     toggleDisplayMode,

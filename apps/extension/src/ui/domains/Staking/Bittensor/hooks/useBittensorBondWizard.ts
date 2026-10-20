@@ -1,3 +1,5 @@
+import { classifyError } from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingEntry } from "@common/analytics/staking"
 import { isAccountOfType } from "@core/domains/keyring/exports"
@@ -19,6 +21,7 @@ import { track } from "@ui/api/track"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -194,6 +197,7 @@ const useBittensorBondWizardProvider = () => {
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(amountIn)
 
   const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
@@ -522,6 +526,7 @@ const useBittensorBondWizardProvider = () => {
         flows.staking.submitted({
           ...report,
           mev_shield: withMevShield,
+          used_max: amountIn === amountSetByMax,
           transactionId: stakingTransactionId(hash, innerHash),
         })
       setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
@@ -537,20 +542,10 @@ const useBittensorBondWizardProvider = () => {
       withMevShield,
       nativeToken,
       dtaoToken,
+      amountIn,
+      amountSetByMax,
     ]
   )
-
-  useFlow(flows.staking, {
-    active: isOpen && !!args,
-    entry: args?.entry ?? "portfolio",
-    started: { mode: args?.stakeDirection === "unbond" ? "unstake" : "stake" },
-    attributes: {
-      staking_type: "bittensor",
-      direction: stakeDirection === "bond" ? "stake" : "unstake",
-      ...(typeof netuid === "number" && { netuid }),
-    },
-    step: FLOW_STEPS[step],
-  })
 
   // (spec 441) root stake inside its RootStakeUnlockInterval hold window cannot leave root:
   // remove_stake would revert with RootStakeLocked
@@ -569,6 +564,12 @@ const useBittensorBondWizardProvider = () => {
     if (existentialDeposit.planck + feeWithMargin > nativeBalance.transferable.planck) return null
     return nativeBalance.transferable.planck - existentialDeposit.planck - feeWithMargin
   }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, availableToUnstakePlancks])
+
+  const setMaxPlancks = useCallback(() => {
+    if (!maxPlancks) return
+    setAmountSetByMax(maxPlancks)
+    setPlancks(maxPlancks)
+  }, [maxPlancks, setPlancks, setAmountSetByMax])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -613,7 +614,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minTaoBondForInput, nativeToken?.decimals).tokens,
           symbol: nativeToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     // no staking operation can be less than minTaoStakeForInput
@@ -623,7 +624,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minTaoStakeForInput, nativeToken?.decimals).tokens,
           symbol: nativeToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null
@@ -736,7 +737,7 @@ const useBittensorBondWizardProvider = () => {
           amount: new BalanceFormatter(minAlphaUnstake, dtaoToken?.decimals).tokens,
           symbol: dtaoToken?.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null
@@ -760,6 +761,35 @@ const useBittensorBondWizardProvider = () => {
 
   const inputError = stakeDirection === "bond" ? stakeInputError : unstakeInputError
   const inputErrorMessage = inputError?.message ?? null
+
+  const payloadToSubmit =
+    !inputErrorMessage &&
+    isFormValid &&
+    !rootStakeHoldGate.isBlocked &&
+    (stakeDirection === "bond" || typeof knownTransferableTao === "bigint")
+      ? payload
+      : null
+
+  useFlow(flows.staking, {
+    active: isOpen && !!args,
+    entry: args?.entry ?? "portfolio",
+    started: { mode: args?.stakeDirection === "unbond" ? "unstake" : "stake" },
+    attributes: {
+      staking_type: "bittensor",
+      direction: stakeDirection === "bond" ? "stake" : "unstake",
+      ...(typeof netuid === "number" && { netuid }),
+      form_state: getAmountFormState({
+        amount: amountIn,
+        error:
+          inputError?.category ??
+          (errorPayload || errorFeeEstimate
+            ? classifyError(errorPayload ?? errorFeeEstimate)
+            : null),
+        ready: !!payloadToSubmit,
+      }),
+    },
+    step: FLOW_STEPS[step],
+  })
 
   // positions are used only when unstaking
   const positions = useBittensorStakingPositions(networkId)
@@ -819,13 +849,7 @@ const useBittensorBondWizardProvider = () => {
     dustThreshold: claimGate.dustThreshold,
     isBelowDustThreshold: claimGate.isBelowDustThreshold,
     claimHoldDurationMs: claimGate.holdDurationMs,
-    payload:
-      !inputErrorMessage &&
-      isFormValid &&
-      !rootStakeHoldGate.isBlocked &&
-      (stakeDirection === "bond" || typeof knownTransferableTao === "bigint")
-        ? payload
-        : null,
+    payload: payloadToSubmit,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
@@ -846,6 +870,7 @@ const useBittensorBondWizardProvider = () => {
     setNetuid,
     setHotkey,
     setPlancks,
+    setMaxPlancks,
     setWithClaim,
     setStep,
     setPosition,

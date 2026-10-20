@@ -1,4 +1,9 @@
-import { attachErrorCategory, type ErrorCategory } from "@common/analytics/errorCategory"
+import {
+  attachErrorCategory,
+  classifyError,
+  type ErrorCategory,
+} from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingAction, StakingEntry } from "@common/analytics/staking"
 import { log } from "@common/log"
@@ -30,6 +35,7 @@ import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { stakingSubmittedReport } from "@ui/domains/Staking/shared/stakingAnalytics"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -143,6 +149,7 @@ const SeekStakingForm: FC<{
   const balances = useBalances("owned")
   const [address, setAddress] = useState<string | null>(initialAddress ?? null)
   const [amount, setAmount] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(amount)
   const [submittedHash, setSubmittedHash] = useState<string | null>(null)
   // staking follows the yieldxyz wizard UX: the form leads to a confirm screen which walks the
   // user through the required transactions (ERC-20 approval then stake) with a visible stepper
@@ -225,7 +232,10 @@ const SeekStakingForm: FC<{
 
   const maxAmount = action === "stake" ? transferable : (position.data?.staked ?? 0n)
 
-  const handleMaxClick = useCallback(() => setAmount(maxAmount), [maxAmount])
+  const handleMaxClick = useCallback(() => {
+    setAmountSetByMax(maxAmount)
+    setAmount(maxAmount)
+  }, [maxAmount, setAmountSetByMax])
   const handleReplacementComplete = useCallback((args: ReplacementCallbackArgs) => {
     setSubmittedHash(args.txId)
   }, [])
@@ -264,7 +274,7 @@ const SeekStakingForm: FC<{
           amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
           symbol: token.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
     if (action === "requestWithdrawal") {
       if ((position.data?.pendingWithdrawal.amount ?? 0n) > 0n)
@@ -283,7 +293,7 @@ const SeekStakingForm: FC<{
             amount: planckToTokens(metadata.data.minStakeAmount.toString(), token.decimals),
             symbol: token.symbol,
           }),
-          category: "input_invalid",
+          category: "below_minimum",
         }
     }
     return null
@@ -390,16 +400,41 @@ const SeekStakingForm: FC<{
             ? null
             : new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd"),
       })
-      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      if (report)
+        flows.staking.submitted({
+          ...report,
+          ...(isAmountAction(action) && { used_max: amount === amountSetByMax }),
+          transactionId: hash,
+        })
     },
-    [account, network, token, amount, tokenRates]
+    [account, network, token, amount, amountSetByMax, action, tokenRates]
   )
+
+  const canContinue =
+    !error &&
+    (action === "stake"
+      ? !allowance.isLoading
+      : !isCompleteLocked && !ethTx.error && !!ethTx.transaction)
 
   useFlow(flows.staking, {
     active: isOpen,
     entry,
     started: { mode: STAKING_ACTION_OF_SEEK[action] },
-    attributes: { staking_type: "seek", direction: STAKING_ACTION_OF_SEEK[action] },
+    attributes: {
+      staking_type: "seek",
+      direction: STAKING_ACTION_OF_SEEK[action],
+      ...(isAmountAction(action) && {
+        form_state: getAmountFormState({
+          amount,
+          error: amountError
+            ? (amountError.category ?? "input_invalid")
+            : ethTx.error
+              ? classifyError(ethTx.error)
+              : null,
+          ready: canContinue,
+        }),
+      }),
+    },
     step: submittedHash ? null : isConfirmStep ? "review" : "form",
   })
 
@@ -598,12 +633,7 @@ const SeekStakingForm: FC<{
         <TransactionError error={displayError} errorDetails={ethTx.errorDetails} />
 
         {action === "stake" ? (
-          <Button
-            primary
-            className="w-full"
-            disabled={!!error || allowance.isLoading}
-            onClick={handleReviewClick}
-          >
+          <Button primary className="w-full" disabled={!canContinue} onClick={handleReviewClick}>
             {t("Review")}
           </Button>
         ) : (
@@ -620,7 +650,7 @@ const SeekStakingForm: FC<{
             }
             label={submitLabel}
             className="w-full"
-            disabled={!!error || isCompleteLocked || !!ethTx.error || !ethTx.transaction}
+            disabled={!canContinue}
             isProcessing={ethTx.isLoading || allowance.isFetching}
             onSubmit={handleSubmit}
             onError={flows.staking.failed}

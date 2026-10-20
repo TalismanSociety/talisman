@@ -1,5 +1,6 @@
 import { toAmountBucket } from "@common/analytics/buckets"
 import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
@@ -27,7 +28,8 @@ import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dT
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
-import { flows } from "@ui/hooks/analytics/flows"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
+import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
 import { useNetworkById, useToken, useTokensMap } from "@ui/state/chaindata"
@@ -122,8 +124,18 @@ export type ToWarning = "AZERO_ID" | undefined
 
 const useSendFundsProvider = () => {
   const { t } = useTranslation()
-  const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress, recipientSource } =
-    useSendFundsWizard()
+  const {
+    entry,
+    from,
+    to,
+    tokenId,
+    amount,
+    allowReap,
+    sendMax,
+    set,
+    gotoProgress,
+    recipientSource,
+  } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
   const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
@@ -374,6 +386,7 @@ const useSendFundsProvider = () => {
               amount: formatDecimals(new BalanceFormatter(minAlphaTransfer, token.decimals).tokens),
               symbol: token.symbol,
             }),
+            errorCategory: "below_minimum",
           }
         }
       }
@@ -436,6 +449,7 @@ const useSendFundsProvider = () => {
             value: formatDecimals(ed.tokens),
             symbol: token.symbol,
           }),
+          errorCategory: "below_minimum",
         }
       }
 
@@ -487,14 +501,28 @@ const useSendFundsProvider = () => {
   const isLoading = transaction?.isLoading
   const isEstimatingMaxAmount = sendMax && !transaction?.maxAmount
 
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(transfer?.planck)
+
+  useFlow(flows.send, {
+    entry,
+    attributes: {
+      form_state: getAmountFormState({
+        amount: transfer?.planck ?? (isEstimatingMaxAmount && amount ? BigInt(amount) : null),
+        error: error ? (errorCategory ?? "input_invalid") : null,
+        ready: isValid,
+      }),
+    },
+  })
+
   const onSendMaxClick = useCallback(() => {
     if (!token || !transaction?.maxAmount) return
 
+    setAmountSetByMax(BigInt(transaction.maxAmount))
     if (isTokenDot(token)) {
       set("amount", transaction.maxAmount) // amount is necessary for pallets that dont have a transfer_all method
       set("sendMax", true)
     } else set("amount", transaction.maxAmount)
-  }, [transaction?.maxAmount, set, token])
+  }, [transaction?.maxAmount, set, token, setAmountSetByMax])
 
   const reported = useMemo(() => {
     const signer = fromAccount && signerOf(fromAccount.type)
@@ -513,11 +541,13 @@ const useSendFundsProvider = () => {
           usd_bucket: toAmountBucket((sendMax ? maxAmount : transfer)?.fiat("usd")),
           fee_usd_bucket: toAmountBucket(estimatedFee?.fiat("usd")),
           recipient_source: recipientSource,
+          used_max: sendMax || transfer?.planck === amountSetByMax,
           transactionId: args.txId,
         })
       gotoProgress(args)
     },
     [
+      amountSetByMax,
       estimatedFee,
       gotoProgress,
       maxAmount,

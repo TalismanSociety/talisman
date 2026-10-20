@@ -1,3 +1,4 @@
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter, getBalanceId } from "@talismn/balances"
@@ -15,6 +16,7 @@ import {
 } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
@@ -26,7 +28,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
-import { useSwapSubmit } from "./useSwapSubmit"
+import { useSwapMevShield, useSwapSubmit } from "./useSwapSubmit"
 
 type SwapSellInputs = {
   positionId: string | null
@@ -145,6 +147,12 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: value }))
   }, [])
 
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(state.valueIn)
+  const setMaxValueIn = useCallback(() => {
+    setAmountSetByMax(maxValueIn)
+    setState((prev) => ({ ...prev, valueIn: maxValueIn }))
+  }, [maxValueIn, setAmountSetByMax])
+
   const onPositionChange = useCallback((positionId: string) => {
     setState((prev) => ({ ...prev, positionId, valueIn: null }))
   }, [])
@@ -185,17 +193,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     withMevShield,
     setIsMevProtectionEnabled,
     txMode,
-    onSubmit,
-    confirm,
-  } = useSwapSubmit({
-    netuid,
-    account,
-    direction: "sell",
-    resetValueIn,
-    valueIn: state.valueIn,
-    symbol: tokenSymbolForAnalytics(tokenIn),
-    taoPlancks: typeof valueOut === "bigint" ? valueOut : null,
-  })
+  } = useSwapMevShield({ netuid, account, direction: "sell" })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof state.valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
@@ -302,7 +300,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
           amount: new BalanceFormatter(minAlphaUnstake, tokenIn.decimals).tokens,
           symbol: tokenIn.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null
@@ -332,6 +330,23 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
   const isValid = typeof state.valueIn === "bigint" && state.valueIn > 0n && !inputErrorMessage
 
   const canSubmit = !!payload && isValid && typeof knownTransferableTao === "bigint"
+
+  const { onSubmit, confirm } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "sell",
+    resetValueIn,
+    valueIn: state.valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: typeof valueOut === "bigint" ? valueOut : null,
+    withMevShield,
+    formState: getAmountFormState({
+      amount: state.valueIn,
+      error: inputError?.category,
+      ready: canSubmit,
+    }),
+    usedMax: state.valueIn === amountSetByMax,
+  })
 
   return {
     netuid,
@@ -384,6 +399,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     confirm,
 
     onValueChange,
+    setMaxValueIn,
   }
 }
 

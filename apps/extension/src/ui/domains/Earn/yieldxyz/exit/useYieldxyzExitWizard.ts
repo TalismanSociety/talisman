@@ -1,4 +1,3 @@
-import type { ErrorCategory } from "@common/analytics/errorCategory"
 import { yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
 import { isAccountOwned } from "@core/domains/keyring/exports"
@@ -71,13 +70,11 @@ const useYieldxyzExitWizardProvider = ({
     return [inputs, null]
   }, [state.amountOut, position?.product.token, balance, account, t])
 
-  const validationErrorCategory: ErrorCategory =
-    talismanValidationError?.category ?? "input_invalid"
-
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: state.position?.product?.mechanics.arguments?.exit,
     inputs,
   })
+  const validationError = talismanValidationError ?? yieldxyzValidationError
 
   const {
     canCreateAction,
@@ -152,8 +149,8 @@ const useYieldxyzExitWizardProvider = ({
     ...state,
     network,
     balance,
-    validationError: talismanValidationError?.message ?? yieldxyzValidationError,
-    validationErrorCategory,
+    validationError: validationError?.message ?? null,
+    validationErrorCategory: validationError?.category ?? "input_invalid",
     goTo,
     onAmountOutChanged,
     setMaxAmountOut,

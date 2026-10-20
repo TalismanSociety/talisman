@@ -1,4 +1,5 @@
 import { classifyError } from "@common/analytics/errorCategory"
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { TAO_DECIMALS } from "@talismn/balances"
@@ -6,6 +7,7 @@ import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -99,6 +101,7 @@ const useBittensorConvictionLockWizardProvider = () => {
   // each open, see above)
   const [hideConvictionLockInfo] = useAppState("hideBittensorConvictionLockInfo")
   const [showInfoDrawer, setShowInfoDrawer] = useState(() => !hideConvictionLockInfo)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(plancks)
 
   const accounts = useAccounts("owned")
   const network = useDotNetwork(networkId)
@@ -248,6 +251,14 @@ const useBittensorConvictionLockWizardProvider = () => {
     setWizardState((prev) => ({ ...prev, plancks }))
   }, [])
 
+  const setPlancksFromMax = useCallback(
+    (plancks: bigint) => {
+      setAmountSetByMax(plancks)
+      setWizardState((prev) => ({ ...prev, plancks }))
+    },
+    [setAmountSetByMax]
+  )
+
   const selectAccount = useCallback((address: string) => {
     // a different account may carry its own lock/hotkey/type constraints; the pre-fill effect
     // re-seeds the amount from the new account's existing lock (if any)
@@ -280,17 +291,37 @@ const useBittensorConvictionLockWizardProvider = () => {
         symbol: tokenSymbolForAnalytics(baseToken),
         usd: null,
       })
-      if (report) flows.staking.submitted({ ...report, transactionId: hash })
+      if (report)
+        flows.staking.submitted({
+          ...report,
+          used_max: plancks === amountSetByMax,
+          transactionId: hash,
+        })
       setWizardState((prev) => ({ ...prev, hash, step: "submitted" }))
     },
-    [account, network, baseToken]
+    [account, network, baseToken, plancks, amountSetByMax]
   )
 
   useFlow(flows.staking, {
     active: isOpen && !!args,
     entry: args?.entry ?? "token_details",
     started: { mode: "lock" },
-    attributes: { staking_type: "bittensor", direction: "lock", netuid },
+    attributes: {
+      staking_type: "bittensor",
+      direction: "lock",
+      netuid,
+      form_state: getAmountFormState({
+        amount: lockDelta,
+        error:
+          amountError?.category ??
+          (feeErrorMessage
+            ? "insufficient_fee"
+            : payloadErrorMessage
+              ? classifyError(errorPayload)
+              : null),
+        ready: canContinue,
+      }),
+    },
     step:
       step === "confirm"
         ? "review"
@@ -354,6 +385,7 @@ const useBittensorConvictionLockWizardProvider = () => {
     setStep,
     setActivePicker,
     setPlancks,
+    setPlancksFromMax,
     selectAccount,
     selectHotkey,
     selectLockType,

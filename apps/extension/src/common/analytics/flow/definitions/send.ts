@@ -1,5 +1,6 @@
 import { z } from "zod/v4"
 
+import { AMOUNT_FORM_STATES } from "../../formState"
 import { SEND_ENTRIES } from "../../funds"
 import { defineFlow } from "../defineFlow"
 
@@ -13,6 +14,7 @@ export const send = defineFlow("send", {
     { name: "confirm", screen: "/send/confirm" },
   ],
   entries: SEND_ENTRIES,
+  attributes: { form_state: { narrow: z.enum(AMOUNT_FORM_STATES) } },
   extras: {
     submitted: {
       platform: "required",
@@ -23,6 +25,7 @@ export const send = defineFlow("send", {
       usd_bucket: "required",
       fee_usd_bucket: "required",
       recipient_source: "required",
+      used_max: "required",
     },
     failed: {
       platform: "required",

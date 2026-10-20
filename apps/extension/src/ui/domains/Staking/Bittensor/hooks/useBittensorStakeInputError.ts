@@ -74,7 +74,7 @@ export const useBittensorStakeInputError = ({
           amount: new BalanceFormatter(minTaoBondForInput, taoToken.decimals).tokens,
           symbol: taoToken.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     // no staking operation can be less than minTaoStakeForInput
@@ -84,7 +84,7 @@ export const useBittensorStakeInputError = ({
           amount: new BalanceFormatter(minTaoStakeForInput, taoToken.decimals).tokens,
           symbol: taoToken.symbol,
         }),
-        category: "input_invalid",
+        category: "below_minimum",
       }
 
     return null

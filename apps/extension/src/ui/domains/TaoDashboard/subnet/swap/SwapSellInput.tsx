@@ -31,6 +31,7 @@ export const SwapSellInput: FC = () => {
     tokenIn,
     valueIn,
     maxValueIn,
+    setMaxValueIn,
     onValueChange,
     inputErrorMessage,
     inputErrorFillAmount,
@@ -47,10 +48,6 @@ export const SwapSellInput: FC = () => {
     },
     [onPositionChange]
   )
-
-  const handleMaxClick = useCallback(() => {
-    onValueChange(maxValueIn)
-  }, [maxValueIn, onValueChange])
 
   const handleFillClick = useCallback(() => {
     if (inputErrorFillAmount === null) return
@@ -74,7 +71,7 @@ export const SwapSellInput: FC = () => {
           />
           <div className="flex items-center gap-2">
             <BalanceDisplay />
-            <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
+            <MaxButton maxAmount={maxValueIn} onClick={setMaxValueIn} />
           </div>
         </div>
         <div className="w-full overflow-hidden">
