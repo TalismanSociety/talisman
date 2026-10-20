@@ -51,6 +51,12 @@ const mocks = vi.hoisted(() => ({
 
 const { state } = mocks
 
+const trackFlowEvent = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track: vi.fn(), trackFlowEvent }))
+
+const flowEvents = (event: string) =>
+  trackFlowEvent.mock.calls.filter(([name]) => name === event).map(([, properties]) => properties)
+
 const fakeBalance = (tokenId: string) =>
   tokenId in state.transferable
     ? {
@@ -61,6 +67,7 @@ const fakeBalance = (tokenId: string) =>
 
 vi.mock("@ui/apps/popup/pages/SendFunds/context", () => ({
   useSendFundsWizard: () => ({
+    entry: "token_details",
     ...mocks.state.wizard,
     set: mocks.set,
     gotoProgress: mocks.gotoProgress,
@@ -241,14 +248,28 @@ const dotTransaction = (overrides: Partial<FakeTransaction> = {}): FakeTransacti
 
 let queryClient: QueryClient
 
-const render = () => {
+const mount = () => {
   queryClient = new QueryClient()
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <SendFundsProvider>{children}</SendFundsProvider>
     </QueryClientProvider>
   )
-  return renderHook(() => useSendFunds(), { wrapper }).result
+  return renderHook(() => useSendFunds(), { wrapper })
+}
+
+const render = () => mount().result
+
+const formStateOnLeave = async (settle?: () => Promise<void>) => {
+  const { unmount } = mount()
+  await settle?.()
+  unmount()
+  return flowEvents("send_abandoned").map(({ form_state }) => form_state)
+}
+
+const usedMaxOnSubmit = (current: ReturnType<typeof useSendFunds>) => {
+  act(() => current.onSubmitted({ networkId: "polkadot", txId: "tx" }))
+  return flowEvents("send_submitted").map(({ used_max }) => used_max)
 }
 
 describe("useSendFunds", () => {
@@ -584,6 +605,121 @@ describe("useSendFunds", () => {
       state.dtao.holdGate = { isBlocked: true, message: null }
 
       expect(render().current).toMatchObject({ isValid: false, error: undefined })
+    })
+  })
+
+  describe("send flow", () => {
+    it("starts with the entry the wizard read", () => {
+      render()
+
+      expect(flowEvents("send_started")).toEqual([
+        expect.objectContaining({ entry: "token_details" }),
+      ])
+    })
+
+    describe("form_state on leaving", () => {
+      it("is ready when the user could go on", async () => {
+        expect(await formStateOnLeave()).toEqual(["ready"])
+      })
+
+      it("is no_amount before the user enters one", async () => {
+        sendDot(0n, { amount: undefined })
+
+        expect(await formStateOnLeave()).toEqual(["no_amount"])
+      })
+
+      it("is loading while the dry run runs", async () => {
+        state.transaction = dotTransaction({ isLoadingDryRun: true })
+
+        expect(await formStateOnLeave()).toEqual(["loading"])
+      })
+
+      it("is insufficient_balance for an amount above the balance", async () => {
+        sendDot(101n * DOT_UNIT)
+
+        expect(await formStateOnLeave()).toEqual(["insufficient_balance"])
+      })
+
+      it("is insufficient_fee when the fee token cannot pay the fee", async () => {
+        state.wizard = { from: "alice", to: "bob", tokenId: USDT.id, amount: "1000000" }
+        state.feeTokenId = AH_DOT.id
+        state.transferable = { [USDT.id]: 5_000_000n, [AH_DOT.id]: 1n }
+
+        expect(await formStateOnLeave()).toEqual(["insufficient_fee"])
+      })
+
+      it("is below_minimum under the existential deposit to an empty account", async () => {
+        state.recipientFree = 0n
+        sendDot(DOT_UNIT / 2n)
+
+        expect(await formStateOnLeave(recipientBalanceLoaded)).toEqual(["below_minimum"])
+      })
+
+      it("is invalid for another error", async () => {
+        state.accountType = "watch-only"
+
+        expect(await formStateOnLeave()).toEqual(["invalid"])
+      })
+
+      it("is invalid for an error shown without a category", async () => {
+        state.dtao.holdGate = { isBlocked: true, message: "Root stake is on hold" }
+
+        expect(await formStateOnLeave()).toEqual(["invalid"])
+      })
+
+      it("is loading while the max amount re-estimates after Max", () => {
+        const hook = mount()
+        act(() => hook.result.current.onSendMaxClick())
+        sendDot(99n * DOT_UNIT, { sendMax: true })
+        state.transaction = dotTransaction({ maxAmount: undefined })
+        hook.rerender()
+        hook.unmount()
+
+        expect(flowEvents("send_abandoned").map(({ form_state }) => form_state)).toEqual([
+          "loading",
+        ])
+      })
+    })
+
+    describe("used_max on submit", () => {
+      const sendEth = (amount: string) => {
+        state.wizard = { from: "alice", to: "bob", tokenId: ETH.id, amount }
+        state.feeTokenId = ETH.id
+        state.transferable = { [ETH.id]: 10n ** 18n }
+        state.transaction = { platform: "ethereum", estimatedFee: "1", maxFee: "2", maxAmount: "5" }
+      }
+
+      it("is true when the amount is the one Max set", () => {
+        sendEth("1")
+        const hook = mount()
+        act(() => hook.result.current.onSendMaxClick())
+        state.wizard.amount = "5"
+        hook.rerender()
+
+        expect(usedMaxOnSubmit(hook.result.current)).toEqual([true])
+      })
+
+      it("is false once the user changed the amount Max set", () => {
+        sendEth("1")
+        const hook = mount()
+        act(() => hook.result.current.onSendMaxClick())
+        state.wizard.amount = "4"
+        hook.rerender()
+
+        expect(usedMaxOnSubmit(hook.result.current)).toEqual([false])
+      })
+
+      it("is false when the user typed the max amount", () => {
+        sendEth("5")
+
+        expect(usedMaxOnSubmit(render().current)).toEqual([false])
+      })
+
+      it("is true for a substrate transfer_all", () => {
+        sendDot(0n, { amount: undefined, sendMax: true })
+
+        expect(usedMaxOnSubmit(render().current)).toEqual([true])
+      })
     })
   })
 })

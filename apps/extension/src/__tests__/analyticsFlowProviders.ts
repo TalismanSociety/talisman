@@ -7,7 +7,7 @@ export type ProviderClass =
 
 export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   AppOnboardProvider: { flow: "onboarding" },
-  SendFundsWizardProvider: { flow: "send" },
+  SendFundsWizardProvider: { flow: "send", runBy: "ui/domains/SendFunds/useSendFunds.ts" },
   AccountAddQrProvider: { flow: "add_account", runBy: "ui/domains/Account/AccountAdd/flow.ts" },
   CopyAddressWizardProvider: { flow: "receive" },
   MnemonicBackupModalProviderWrapper: { flow: "recovery_phrase_backup" },
@@ -54,7 +54,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
   MnemonicUnlockProvider: { none: "a password gate inside other flows" },
   PortfolioNavigationProvider: { none: "the portfolio selection" },
   ExternalAddressWarningProvider: { none: "a warning inside the send flow" },
-  SendFundsProvider: { none: "the send form: its steps live in SendFundsWizardProvider" },
+  SendFundsProvider: { flow: "send" },
   EthSignMessageRequestProvider: { none: "a dapp request: dapp_request_* covers it" },
   EthSignTransactionRequestProvider: { none: "a dapp request: dapp_request_* covers it" },
   PolkadotSigningRequestProvider: { none: "a dapp request: dapp_request_* covers it" },
@@ -78,7 +78,7 @@ export const FLOW_PROVIDERS: Readonly<Record<string, ProviderClass>> = {
 export const STEP_STATE_ELSEWHERE: Readonly<Record<string, ProviderClass>> = {
   "ui/domains/AccountProxies/AddProxy/AddProxyModal.tsx": { flow: "account_proxy_add" },
   "ui/apps/popup/pages/SendFunds/SendFundsRedirect.tsx": {
-    none: "redirects into the send route: the send flow runs in SendFundsWizardProvider",
+    none: "redirects into the send route: the send flow runs in SendFundsProvider",
   },
   "ui/domains/Portfolio/AssetDetails/animations/monad/MonadAnimation.tsx": {
     none: "an animation frame counter",
