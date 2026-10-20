@@ -26,14 +26,11 @@ export const SwapBuyInput: FC = () => {
     tokenIn,
     valueIn,
     maxValueIn,
+    setMaxValueIn,
     onAccountChange,
     onValueChange,
     inputErrorMessage,
   } = useSwapBuy()
-
-  const handleMaxClick = useCallback(() => {
-    onValueChange(maxValueIn)
-  }, [maxValueIn, onValueChange])
 
   if (!tokenIn) return null
 
@@ -54,7 +51,7 @@ export const SwapBuyInput: FC = () => {
         {address && (
           <div className="flex items-center gap-2">
             <BalanceDisplay />
-            <MaxButton maxAmount={maxValueIn} onClick={handleMaxClick} />
+            <MaxButton maxAmount={maxValueIn} onClick={setMaxValueIn} />
           </div>
         )}
       </div>

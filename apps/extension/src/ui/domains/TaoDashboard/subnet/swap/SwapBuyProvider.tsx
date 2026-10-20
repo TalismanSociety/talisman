@@ -1,3 +1,4 @@
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
@@ -28,7 +29,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
-import { useSwapSubmit } from "./useSwapSubmit"
+import { useSwapMevShield, useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
 const subjectLastSelectedAddress = new BehaviorSubject<string | null>(null)
@@ -137,6 +138,12 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, valueIn: value }))
   }, [])
 
+  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const setMaxValueIn = useCallback(() => {
+    setAmountSetByMax(maxValueIn)
+    setState((s) => ({ ...s, valueIn: maxValueIn }))
+  }, [maxValueIn])
+
   const onAccountChange = useCallback((address: string | null) => {
     setState((s) => ({ ...s, address }))
   }, [])
@@ -215,17 +222,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     withMevShield,
     setIsMevProtectionEnabled,
     txMode,
-    onSubmit,
-    confirm,
-  } = useSwapSubmit({
-    netuid,
-    account,
-    direction: "buy",
-    resetValueIn,
-    valueIn,
-    symbol: tokenSymbolForAnalytics(tokenIn),
-    taoPlancks: valueIn,
-  })
+  } = useSwapMevShield({ netuid, account, direction: "buy" })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)
@@ -280,6 +277,23 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
   })
 
   const canSubmit = !!payload && isValid && !inputErrorMessage
+
+  const { onSubmit, confirm } = useSwapSubmit({
+    netuid,
+    account,
+    direction: "buy",
+    resetValueIn,
+    valueIn,
+    symbol: tokenSymbolForAnalytics(tokenIn),
+    taoPlancks: valueIn,
+    withMevShield,
+    formState: getAmountFormState({
+      amount: valueIn,
+      error: inputErrorCategory,
+      ready: canSubmit,
+    }),
+    usedMax: valueIn === amountSetByMax,
+  })
   useErrorShown({
     shown: inputErrorMessage,
     surface: "field",
@@ -338,6 +352,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     onAccountChange,
     onHotkeyChange,
     onValueChange,
+    setMaxValueIn,
   }
 }
 

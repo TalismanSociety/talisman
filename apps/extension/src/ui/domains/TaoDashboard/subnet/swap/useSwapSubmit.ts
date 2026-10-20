@@ -1,3 +1,4 @@
+import type { AmountFormState } from "@common/analytics/formState"
 import { log } from "@common/log"
 import type { Account } from "@core/domains/keyring/exports"
 import { isAccountOfType } from "@core/domains/keyring/exports"
@@ -20,29 +21,17 @@ import { useTranslation } from "react-i18next"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useSwapTxWatcher } from "./SwapTxWatcher"
 
-/**
- * Shared hook for MEV shield state and transaction submission logic
- * used by both SwapBuyProvider and SwapSellProvider.
- */
-export function useSwapSubmit({
+type TradeDirection = "buy" | "sell"
+
+export function useSwapMevShield({
   netuid,
   account,
   direction,
-  resetValueIn,
-  valueIn,
-  symbol,
-  taoPlancks,
 }: {
   netuid: number
   account: Account | null
-  direction: "buy" | "sell"
-  resetValueIn: () => void
-  valueIn: bigint | null
-  symbol: string | undefined
-  taoPlancks: bigint | null
+  direction: TradeDirection
 }) {
-  const { t } = useTranslation()
-  const { addTransaction } = useSwapTxWatcher()
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
   const isMevShieldFeatureEnabled = useFeatureFlag("BITTENSOR_MEV_SHIELD")
 
@@ -63,13 +52,6 @@ export function useSwapSubmit({
     [withMevShield]
   )
 
-  const networkId = useTaoDashboardNetworkId()
-  const network = useNetworkById(networkId)
-  const taoTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
-  const taoToken = useToken(taoTokenId, "substrate-native")
-  const taoRates = useTokenRates(taoTokenId)
-  const [slippageTolerance, , isDefaultSlippage] = useBittensorSubnetSlippage(netuid)
-
   const toggleMevProtection = useCallback(
     (enabled: boolean) => {
       track("staking_mev_shield_toggled", {
@@ -81,6 +63,48 @@ export function useSwapSubmit({
     [direction]
   )
 
+  return {
+    setIsMevProtectionEnabled: toggleMevProtection,
+    isMevShieldDisabled,
+    isMevShieldFeatureDisabled: !isMevShieldFeatureEnabled,
+    withMevShield,
+    txMode,
+  }
+}
+
+export function useSwapSubmit({
+  netuid,
+  account,
+  direction,
+  resetValueIn,
+  valueIn,
+  symbol,
+  taoPlancks,
+  withMevShield,
+  formState,
+  usedMax,
+}: {
+  netuid: number
+  account: Account | null
+  direction: TradeDirection
+  resetValueIn: () => void
+  valueIn: bigint | null
+  symbol: string | undefined
+  taoPlancks: bigint | null
+  withMevShield: boolean
+  formState: AmountFormState
+  usedMax: boolean
+}) {
+  const { t } = useTranslation()
+  const { addTransaction } = useSwapTxWatcher()
+
+  const networkId = useTaoDashboardNetworkId()
+  const network = useNetworkById(networkId)
+  const taoTokenId = useMemo(() => subNativeTokenId(networkId), [networkId])
+  const taoToken = useToken(taoTokenId, "substrate-native")
+  const taoRates = useTokenRates(taoTokenId)
+  const [slippageTolerance, , isDefaultSlippage] = useBittensorSubnetSlippage(netuid)
+
   const confirm = useOpenClose()
   const [tradingNetuid, setTradingNetuid] = useState<number | null>(null)
   useEffect(() => {
@@ -89,7 +113,7 @@ export function useSwapSubmit({
 
   useFlow(flows.tao_trade, {
     active: !!valueIn || tradingNetuid === netuid,
-    attributes: { direction, netuid },
+    attributes: { direction, netuid, form_state: formState },
     step: confirm.isOpen ? "confirm" : "amount",
   })
 
@@ -111,6 +135,7 @@ export function useSwapSubmit({
         flows.tao_trade.submitted({
           ...report,
           mev_shield: withMevShield,
+          used_max: usedMax,
           transactionId: stakingTransactionId(hash, innerHash),
         })
       setTradingNetuid(null)
@@ -142,17 +167,9 @@ export function useSwapSubmit({
       slippageTolerance,
       isDefaultSlippage,
       withMevShield,
+      usedMax,
     ]
   )
 
-  return {
-    isMevProtectionEnabled,
-    setIsMevProtectionEnabled: toggleMevProtection,
-    isMevShieldDisabled,
-    isMevShieldFeatureDisabled: !isMevShieldFeatureEnabled,
-    withMevShield,
-    txMode,
-    onSubmit,
-    confirm,
-  }
+  return { onSubmit, confirm }
 }
