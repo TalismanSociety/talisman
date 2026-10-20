@@ -1,3 +1,4 @@
+import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { type EarnEntry, yieldIdForAnalytics } from "@common/analytics/staking"
 import { log } from "@common/log"
@@ -77,6 +78,7 @@ const useYieldxyzEnterWizardProvider = ({
   const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
+  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
   // back-navigation floor: when a picker token is provided the wizard was entered via the product
   // picker, so "product" stays reachable (even when a productId is preset, e.g. from the unified
   // deposit picker) — preserving the ability to go back and change product.
@@ -231,6 +233,13 @@ const useYieldxyzEnterWizardProvider = ({
   useFlow(flows.earn_deposit, {
     active: isOpen && !!stateInit,
     entry: stateInit?.entry ?? "discover",
+    attributes: {
+      form_state: getAmountFormState({
+        amount: state.amountIn,
+        error: validationError?.category,
+        ready: canCreateAction,
+      }),
+    },
     step: state.step,
   })
 
@@ -249,8 +258,12 @@ const useYieldxyzEnterWizardProvider = ({
           : new BalanceFormatter(state.amountIn, tokenIn?.decimals, tokenRates).fiat("usd"),
     })
     if (report)
-      flows.earn_deposit.submitted({ ...report, yield_id: yieldIdForAnalytics(state.productId) })
-  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId])
+      flows.earn_deposit.submitted({
+        ...report,
+        yield_id: yieldIdForAnalytics(state.productId),
+        used_max: state.amountIn === amountSetByMax,
+      })
+  }, [account, network, tokenIn, tokenRates, state.amountIn, state.productId, amountSetByMax])
 
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return
@@ -267,6 +280,7 @@ const useYieldxyzEnterWizardProvider = ({
         : 0n
       : balance.transferable.planck
 
+    setAmountSetByMax(maxAmmount)
     setState((state) => ({
       ...state,
       amountIn: maxAmmount,
