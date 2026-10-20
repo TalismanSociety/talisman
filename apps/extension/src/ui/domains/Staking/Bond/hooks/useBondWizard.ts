@@ -1,8 +1,10 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { Address } from "@core/types/base"
 import { BalanceFormatter } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -57,7 +59,7 @@ const useBondWizardProvider = () => {
       ? { ...DEFAULT_STATE, address: args.address, tokenId: args.tokenId, poolId: args.poolId }
       : DEFAULT_STATE
   )
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(plancks)
 
   const balance = useBalance(address, tokenId)
   const account = useAccountByAddress(address)
@@ -195,7 +197,7 @@ const useBondWizardProvider = () => {
     if (!maxPlancks) return
     setAmountSetByMax(maxPlancks)
     setPlancks(maxPlancks)
-  }, [maxPlancks, setPlancks])
+  }, [maxPlancks, setPlancks, setAmountSetByMax])
 
   const inputError = useMemo<InlineError | null>(() => {
     // NOTE: We don't have to check for this anymore.
@@ -284,7 +286,11 @@ const useBondWizardProvider = () => {
       direction: "stake",
       form_state: getAmountFormState({
         amount: plancks,
-        error: inputError?.category,
+        error:
+          inputError?.category ??
+          (errorPayload || errorFeeEstimate
+            ? classifyError(errorPayload ?? errorFeeEstimate)
+            : null),
         ready: !!payloadToSubmit,
       }),
     },

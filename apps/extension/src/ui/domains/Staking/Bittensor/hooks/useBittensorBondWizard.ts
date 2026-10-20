@@ -1,3 +1,4 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { getAmountFormState } from "@common/analytics/formState"
 import { tokenSymbolForAnalytics } from "@common/analytics/funds"
 import type { StakingEntry } from "@common/analytics/staking"
@@ -20,6 +21,7 @@ import { track } from "@ui/api/track"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -195,7 +197,7 @@ const useBittensorBondWizardProvider = () => {
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
   const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(amountIn)
 
   const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
@@ -567,7 +569,7 @@ const useBittensorBondWizardProvider = () => {
     if (!maxPlancks) return
     setAmountSetByMax(maxPlancks)
     setPlancks(maxPlancks)
-  }, [maxPlancks, setPlancks])
+  }, [maxPlancks, setPlancks, setAmountSetByMax])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -778,7 +780,11 @@ const useBittensorBondWizardProvider = () => {
       ...(typeof netuid === "number" && { netuid }),
       form_state: getAmountFormState({
         amount: amountIn,
-        error: inputError?.category,
+        error:
+          inputError?.category ??
+          (errorPayload || errorFeeEstimate
+            ? classifyError(errorPayload ?? errorFeeEstimate)
+            : null),
         ready: !!payloadToSubmit,
       }),
     },

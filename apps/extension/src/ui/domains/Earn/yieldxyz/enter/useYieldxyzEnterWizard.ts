@@ -7,6 +7,7 @@ import { type Balance, BalanceFormatter } from "@talismn/balances"
 import { isTokenInTypes, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -78,7 +79,7 @@ const useYieldxyzEnterWizardProvider = ({
   const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(state.amountIn)
   // back-navigation floor: when a picker token is provided the wizard was entered via the product
   // picker, so "product" stays reachable (even when a productId is preset, e.g. from the unified
   // deposit picker) — preserving the ability to go back and change product.
@@ -285,7 +286,7 @@ const useYieldxyzEnterWizardProvider = ({
       ...state,
       amountIn: maxAmmount,
     }))
-  }, [tokenIn, balance, dummyTx?.estimatedFee])
+  }, [tokenIn, balance, dummyTx?.estimatedFee, setAmountSetByMax])
 
   const maxNativeValue = useMemo(() => {
     if (!tokenIn || !isTokenInTypes(tokenIn, ["evm-native", "substrate-native", "sol-native"]))

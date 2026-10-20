@@ -7,6 +7,7 @@ import { type DotNetworkId, subDTaoTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -100,7 +101,7 @@ const useBittensorConvictionLockWizardProvider = () => {
   // each open, see above)
   const [hideConvictionLockInfo] = useAppState("hideBittensorConvictionLockInfo")
   const [showInfoDrawer, setShowInfoDrawer] = useState(() => !hideConvictionLockInfo)
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(plancks)
 
   const accounts = useAccounts("owned")
   const network = useDotNetwork(networkId)
@@ -250,10 +251,13 @@ const useBittensorConvictionLockWizardProvider = () => {
     setWizardState((prev) => ({ ...prev, plancks }))
   }, [])
 
-  const setPlancksFromMax = useCallback((plancks: bigint) => {
-    setAmountSetByMax(plancks)
-    setWizardState((prev) => ({ ...prev, plancks }))
-  }, [])
+  const setPlancksFromMax = useCallback(
+    (plancks: bigint) => {
+      setAmountSetByMax(plancks)
+      setWizardState((prev) => ({ ...prev, plancks }))
+    },
+    [setAmountSetByMax]
+  )
 
   const selectAccount = useCallback((address: string) => {
     // a different account may carry its own lock/hotkey/type constraints; the pre-fill effect

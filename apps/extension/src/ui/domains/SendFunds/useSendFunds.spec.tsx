@@ -667,13 +667,10 @@ describe("useSendFunds", () => {
         expect(await formStateOnLeave()).toEqual(["invalid"])
       })
 
-      it("is loading while the max amount re-estimates after Max", () => {
-        const hook = mount()
-        act(() => hook.result.current.onSendMaxClick())
+      it("is loading while the max amount of a Max send estimates", () => {
         sendDot(99n * DOT_UNIT, { sendMax: true })
         state.transaction = dotTransaction({ maxAmount: undefined })
-        hook.rerender()
-        hook.unmount()
+        mount().unmount()
 
         expect(flowEvents("send_abandoned").map(({ form_state }) => form_state)).toEqual([
           "loading",
@@ -689,12 +686,22 @@ describe("useSendFunds", () => {
         state.transaction = { platform: "ethereum", estimatedFee: "1", maxFee: "2", maxAmount: "5" }
       }
 
+      const typeAmount = (hook: ReturnType<typeof mount>, amount: string) => {
+        state.wizard.amount = amount
+        hook.rerender()
+      }
+
+      const clickMax = (hook: ReturnType<typeof mount>) => {
+        act(() => hook.result.current.onSendMaxClick())
+        const [key, amount] = mocks.set.mock.calls.at(-1) ?? []
+        expect(key).toBe("amount")
+        typeAmount(hook, amount)
+      }
+
       it("is true when the amount is the one Max set", () => {
         sendEth("1")
         const hook = mount()
-        act(() => hook.result.current.onSendMaxClick())
-        state.wizard.amount = "5"
-        hook.rerender()
+        clickMax(hook)
 
         expect(usedMaxOnSubmit(hook.result.current)).toEqual([true])
       })
@@ -702,9 +709,18 @@ describe("useSendFunds", () => {
       it("is false once the user changed the amount Max set", () => {
         sendEth("1")
         const hook = mount()
-        act(() => hook.result.current.onSendMaxClick())
-        state.wizard.amount = "4"
-        hook.rerender()
+        clickMax(hook)
+        typeAmount(hook, "4")
+
+        expect(usedMaxOnSubmit(hook.result.current)).toEqual([false])
+      })
+
+      it("is false when the user typed the amount Max had set after changing it", () => {
+        sendEth("1")
+        const hook = mount()
+        clickMax(hook)
+        typeAmount(hook, "4")
+        typeAmount(hook, "5")
 
         expect(usedMaxOnSubmit(hook.result.current)).toEqual([false])
       })

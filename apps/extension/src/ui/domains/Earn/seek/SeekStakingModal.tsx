@@ -35,6 +35,7 @@ import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import seekSinglePoolStakingAbi from "@ui/domains/Staking/Seek/seekSinglePoolStakingAbi"
 import { stakingSubmittedReport } from "@ui/domains/Staking/shared/stakingAnalytics"
 import { type ReplacementCallbackArgs, TxProgress } from "@ui/domains/Transactions"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
@@ -148,7 +149,7 @@ const SeekStakingForm: FC<{
   const balances = useBalances("owned")
   const [address, setAddress] = useState<string | null>(initialAddress ?? null)
   const [amount, setAmount] = useState<bigint | null>(null)
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(amount)
   const [submittedHash, setSubmittedHash] = useState<string | null>(null)
   // staking follows the yieldxyz wizard UX: the form leads to a confirm screen which walks the
   // user through the required transactions (ERC-20 approval then stake) with a visible stepper
@@ -234,7 +235,7 @@ const SeekStakingForm: FC<{
   const handleMaxClick = useCallback(() => {
     setAmountSetByMax(maxAmount)
     setAmount(maxAmount)
-  }, [maxAmount])
+  }, [maxAmount, setAmountSetByMax])
   const handleReplacementComplete = useCallback((args: ReplacementCallbackArgs) => {
     setSubmittedHash(args.txId)
   }, [])

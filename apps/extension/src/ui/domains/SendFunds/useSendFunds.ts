@@ -28,6 +28,7 @@ import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dT
 import { useBittensorAlphaPrice } from "@ui/domains/Staking/Bittensor/hooks/useBittensorAlphaPrice"
 import { useGetBittensorAcceptsLockedAlpha } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorAcceptsLockedAlpha"
 import { useGetBittensorDefaultMinStake } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorDefaultMinStake"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance, useBalancesByAddress, useBalancesHydrate } from "@ui/state/balances"
@@ -500,13 +501,13 @@ const useSendFundsProvider = () => {
   const isLoading = transaction?.isLoading
   const isEstimatingMaxAmount = sendMax && !transaction?.maxAmount
 
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(transfer?.planck)
 
   useFlow(flows.send, {
     entry,
     attributes: {
       form_state: getAmountFormState({
-        amount: transfer?.planck ?? (isEstimatingMaxAmount ? amountSetByMax : null),
+        amount: transfer?.planck ?? (isEstimatingMaxAmount && amount ? BigInt(amount) : null),
         error: error ? (errorCategory ?? "input_invalid") : null,
         ready: isValid,
       }),
@@ -521,7 +522,7 @@ const useSendFundsProvider = () => {
       set("amount", transaction.maxAmount) // amount is necessary for pallets that dont have a transfer_all method
       set("sendMax", true)
     } else set("amount", transaction.maxAmount)
-  }, [transaction?.maxAmount, set, token])
+  }, [transaction?.maxAmount, set, token, setAmountSetByMax])
 
   const reported = useMemo(() => {
     const signer = fromAccount && signerOf(fromAccount.type)

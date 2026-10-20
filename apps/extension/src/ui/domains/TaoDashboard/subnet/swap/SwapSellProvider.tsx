@@ -16,6 +16,7 @@ import {
 } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useSubnetTokens } from "@ui/domains/TaoDashboard/hooks/useSubnetTokens"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
@@ -146,11 +147,11 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     setState((prev) => ({ ...prev, valueIn: value }))
   }, [])
 
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(state.valueIn)
   const setMaxValueIn = useCallback(() => {
     setAmountSetByMax(maxValueIn)
     setState((prev) => ({ ...prev, valueIn: maxValueIn }))
-  }, [maxValueIn])
+  }, [maxValueIn, setAmountSetByMax])
 
   const onPositionChange = useCallback((positionId: string) => {
     setState((prev) => ({ ...prev, positionId, valueIn: null }))

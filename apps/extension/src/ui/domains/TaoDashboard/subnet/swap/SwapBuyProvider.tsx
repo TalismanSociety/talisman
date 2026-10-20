@@ -15,6 +15,7 @@ import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
+import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { type BalancesByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
@@ -138,11 +139,11 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     setState((s) => ({ ...s, valueIn: value }))
   }, [])
 
-  const [amountSetByMax, setAmountSetByMax] = useState<bigint | null>(null)
+  const [amountSetByMax, setAmountSetByMax] = useAmountSetByMax(valueIn)
   const setMaxValueIn = useCallback(() => {
     setAmountSetByMax(maxValueIn)
     setState((s) => ({ ...s, valueIn: maxValueIn }))
-  }, [maxValueIn])
+  }, [maxValueIn, setAmountSetByMax])
 
   const onAccountChange = useCallback((address: string | null) => {
     setState((s) => ({ ...s, address }))
