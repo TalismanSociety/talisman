@@ -2,6 +2,7 @@ const messages = new Set([
   "pub(authorize.tab)",
   "pub(bytes.sign)",
   "pub(extrinsic.sign)",
+  "pub(extrinsic.create)",
   "pub(vrf.sign)",
   "pub(accounts.list)",
   "pub(accounts.subscribe)",

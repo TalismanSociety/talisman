@@ -20,6 +20,14 @@ describe("describeDappRequest", () => {
       "polkadot",
     ],
     [{ type: "substrate-sign", request: { payload: { data: "0x00" } } }, "signRaw", "polkadot"],
+    [
+      {
+        type: "substrate-sign",
+        request: { payload: { genesisHash: "0x91" }, method: "createTransaction" },
+      },
+      "createTransaction",
+      "polkadot",
+    ],
     [{ type: "vrf-sign" }, "signVrf", "polkadot"],
     [{ type: "sol-sign", request: { type: "message" } }, "signMessage", "solana"],
     [
