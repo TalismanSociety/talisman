@@ -157,6 +157,26 @@ describe("gandalfAccessToken$", () => {
     })
   })
 
+  it("reports how long the proof of work took when it registers", async () => {
+    mockGandalfStore.get.mockResolvedValue({ installId: null, privateKeyHex: null })
+    mockRegisterInstall.mockResolvedValue({
+      installId: "new-inst",
+      privateKeyHex: "ccdd",
+      proofOfWork: { durationMs: 1234, difficulty: 18 },
+    })
+    mockRequestAccessToken.mockResolvedValue({ accessToken: "jwt-new", expiresIn: 300 })
+
+    const { gandalfAccessToken$, proofOfWorkSolves$ } = await importFresh()
+    const solves: unknown[] = []
+    proofOfWorkSolves$.subscribe((solve) => solves.push(solve))
+
+    const resultPromise = firstValueFrom(gandalfAccessToken$.pipe(take(2), toArray()))
+    await vi.advanceTimersByTimeAsync(0)
+    await resultPromise
+
+    expect(solves).toEqual([{ durationMs: 1234, difficulty: 18 }])
+  })
+
   it("does not call registerInstall when credentials exist", async () => {
     mockGandalfStore.get.mockResolvedValue({
       installId: "existing-inst",
