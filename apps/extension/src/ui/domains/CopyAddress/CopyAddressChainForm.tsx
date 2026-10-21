@@ -28,6 +28,8 @@ import {
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
+const POLKADOT_PREFIX = 0
+
 const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   const { t } = useTranslation()
   const { setChainId, copySpecific } = useCopyAddressWizard()
@@ -167,8 +169,18 @@ export const CopyAddressChainForm = () => {
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
 
+    const polkadotPrefixNetworkIds = new Set(
+      chains.filter((c) => c.prefix === POLKADOT_PREFIX).map((c) => c.id)
+    )
+    const hasFundsOnPolkadotPrefix = balances.each.some(
+      (b) => polkadotPrefixNetworkIds.has(b.networkId) && b.total.planck > 0n
+    )
+
     const sortedChains = chains
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
+      .filter(
+        (c) => c.id !== "polkadot" || hasFundsOnPolkadotPrefix || accountChain?.id === "polkadot"
+      )
       .filter(
         // if ledger generic account, restrict to compatible chains
         (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash
@@ -197,7 +209,7 @@ export const CopyAddressChainForm = () => {
             : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, SUBSTRATE_FORMAT, account, balancesPerNetwork, accountChain])
+  }, [address, chains, SUBSTRATE_FORMAT, account, balances, balancesPerNetwork, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
