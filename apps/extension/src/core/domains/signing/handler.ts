@@ -70,7 +70,6 @@ export default class SigningHandler extends ExtensionHandler {
         const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
 
         const signed = await signSubstratePayload(payload, secretKey, curve, {
-          exactRuntime: request.method === "createTransaction",
           // chaindata override of the signature type prefix (LAOS signing quirk),
           // auto-detected from the chain metadata when not set
           hasExtrinsicSignatureTypePrefix:
@@ -161,9 +160,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       if (chain) {
         if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload)) {
-          const assembled = await assembleSubstrateTransaction(payload, signature, {
-            exactRuntime: request.method === "createTransaction",
-          })
+          const assembled = await assembleSubstrateTransaction(payload, signature)
           signedTransaction = assembled.signedTransaction
         }
 
