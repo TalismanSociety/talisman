@@ -91,7 +91,10 @@ export default class SigningHandler extends ExtensionHandler {
               : undefined,
         })
         signature = signed.signature
-        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload))
+        if (
+          request.method === "createTransaction" ||
+          (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload))
+        )
           signedTransaction = signed.signedTransaction
 
         // notify user about transaction progress
@@ -174,12 +177,17 @@ export default class SigningHandler extends ExtensionHandler {
       const genesisHash = validateHexString(payload.genesisHash)
       const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
 
-      if (chain) {
-        if (payload.withSignedTransaction && isPayloadModified(originalPayload, modifiedPayload)) {
-          const assembled = await assembleSubstrateTransaction(payload, signature)
-          signedTransaction = assembled.signedTransaction
-        }
+      if (
+        request.method === "createTransaction" ||
+        (chain &&
+          payload.withSignedTransaction &&
+          isPayloadModified(originalPayload, modifiedPayload))
+      ) {
+        const assembled = await assembleSubstrateTransaction(payload, signature)
+        signedTransaction = assembled.signedTransaction
+      }
 
+      if (chain) {
         await watchSubstrateTransaction(chain, payload, signature, {
           siteUrl: url,
           notifications: true,

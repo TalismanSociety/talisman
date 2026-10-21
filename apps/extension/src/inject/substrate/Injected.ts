@@ -105,7 +105,8 @@ export class TalismanSigner {
    * Talisman sign transactions with extensions `SignerPayloadJSON` cannot express.
    *
    * Requires `signer` to be the address of a Talisman account. Rejects unless every supplied
-   * extension matches, byte for byte, what Talisman builds from its own chain metadata.
+   * extension matches, byte for byte, what Talisman builds from its own chain metadata. Talisman
+   * may turn on CheckMetadataHash.
    */
   public createTransaction = (payload: TxPayloadV1): Promise<HexString> => {
     return this.#sendRequest("pub(extrinsic.create)", payload)

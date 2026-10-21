@@ -16,7 +16,6 @@ import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { getMetadataDef } from "../domains/metadata/getMetadataDef"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
-import { assembleSubstrateTransaction } from "../domains/signing/signSubstratePayload"
 import {
   type ParsedTxPayloadV1,
   parseTxPayloadV1,
@@ -180,17 +179,15 @@ export default class Tabs extends TabsHandler {
 
     const payload = signerPayloadFromTxPayloadV1(txPayload)
 
-    const { signature, signedTransaction } = await requestSubstrateSign(
+    const { signedTransaction } = await requestSubstrateSign(
       url,
       { payload, method: "createTransaction", extensions: txPayload.extensions },
       account,
       port
     )
 
-    if (signedTransaction)
-      return typeof signedTransaction === "string" ? signedTransaction : u8aToHex(signedTransaction)
-
-    return (await assembleSubstrateTransaction(payload, signature)).signedTransaction
+    assert(signedTransaction, "Missing signed transaction")
+    return typeof signedTransaction === "string" ? signedTransaction : u8aToHex(signedTransaction)
   }
 
   private async vrfSign(

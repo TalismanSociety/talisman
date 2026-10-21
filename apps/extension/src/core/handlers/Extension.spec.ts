@@ -390,6 +390,44 @@ describe("Extension", () => {
         )
       })
 
+      test("returns the extrinsic a hardware wallet signed", async () => {
+        const signature = `0x01${"cd".repeat(64)}` as const
+        const transactionPromise = createTransaction(txPayload(account.address))
+        const request = await queuedRequest()
+        await messageSender("pri(signing.approveSign.hardware)", { id: request.id, signature })
+
+        const transaction = await transactionPromise
+        expect(transaction.slice(-(EXTRA.length - 2 + CALL_DATA.length - 2))).toBe(
+          `${EXTRA.slice(2)}${CALL_DATA.slice(2)}`
+        )
+        expect(transaction).toContain(signature.slice(2))
+      })
+
+      test("rejects a hardware approval when an extension does not match", async () => {
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: payload.extensions.map((extension) =>
+            extension.id === "CheckGenesis"
+              ? { ...extension, additionalSigned: BLOCK_HASH }
+              : extension
+          ),
+        })
+        transactionPromise.catch(() => {})
+        const request = await queuedRequest()
+
+        await expect(
+          messageSender("pri(signing.approveSign.hardware)", {
+            id: request.id,
+            signature: `0x01${"cd".repeat(64)}`,
+          })
+        ).rejects.toThrow("Unsupported value for transaction extension CheckGenesis")
+        await expect(transactionPromise).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+        expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
+      })
+
       test("rejects a payload without a signer before asking the user", async () => {
         await expect(createTransaction(txPayload(null))).rejects.toThrow(/Missing signer/)
         expect(requestStore.getCounts().get("substrate-sign")).toBe(0)

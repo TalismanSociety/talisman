@@ -162,8 +162,8 @@ export const signerPayloadFromTxPayloadV1 = (txPayload: ParsedTxPayloadV1): Sign
 
 /**
  * Rebuilds every extension from the converted payload with the chain's metadata and requires each
- * one the dapp supplied to match byte for byte. The user signs exactly what the dapp asked, or
- * nothing.
+ * one the dapp supplied to match byte for byte. Approval may still turn on CheckMetadataHash, as
+ * for any substrate sign.
  */
 export const assertExtensionsMatch = (
   payload: SignerPayloadJSON,
