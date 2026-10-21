@@ -103,9 +103,10 @@ const send = <T extends MessageTypes>(type: T, request: RequestType<T>) =>
 
 const queueSubstrateSign = async (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  queuedAccount = account()
+  queuedAccount = account(),
+  method?: "createTransaction"
 ) => {
-  const response = requestSubstrateSign(DAPP_URL, { payload }, queuedAccount, PORT)
+  const response = requestSubstrateSign(DAPP_URL, { payload, method }, queuedAccount, PORT)
   response.catch(() => {})
   await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
   const [request] = requestStore.allRequests("substrate-sign")
@@ -175,6 +176,22 @@ describe("SigningHandler", () => {
         MORTAL.signature,
         { siteUrl: DAPP_URL, notifications: true }
       )
+    })
+
+    it("refuses to sign a createTransaction payload with another runtime's metadata", async () => {
+      vi.mocked(chaindataProvider.getNetworkByGenesisHash).mockResolvedValue(null as never)
+      const nextRuntime = parseInt(MORTAL.payload.specVersion, 16) + 1
+      const payload = {
+        ...MORTAL.payload,
+        specVersion: `0x${nextRuntime.toString(16).padStart(8, "0")}`,
+      } as SignerPayloadJSON
+      const { id, response } = await queueSubstrateSign(payload, account(), "createTransaction")
+
+      await expect(send("pri(signing.approveSign)", { id })).rejects.toThrow(
+        `Unable to find metadata for runtime ${nextRuntime}`
+      )
+
+      await expect(response).rejects.toThrow(`Unable to find metadata for runtime ${nextRuntime}`)
     })
 
     it("still signs, without watching, on a chain missing from chaindata", async () => {
