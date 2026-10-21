@@ -158,12 +158,17 @@ describe("signerPayloadFromTxPayloadV1", () => {
     )
   })
 
-  it("rejects an extension the chain does not declare", () => {
-    const extensions = toExtensions({ ...EXTENSIONS, AsScarcity: ["0x00", "0x"] })
+  it("ignores the extensions a v4 transaction does not carry", () => {
+    // papi fills those of every transaction version, as on Polkadot Asset Hub
+    const extensions = toExtensions({
+      ...EXTENSIONS,
+      UnitTransactionExtension: ["0x", "0x"],
+      AsPgas: ["0x00", "0x"],
+    })
 
-    expect(() => convert(txPayload({ extensions }))).toThrow(
-      "Unknown transaction extension AsScarcity"
-    )
+    const payload = convert(txPayload({ extensions }))
+
+    expect(signedParts(ASSET_HUB_METADATA, payload)).toEqual(concatExtensions(EXTENSIONS))
   })
 
   it.each(["CheckSpecVersion", "CheckTxVersion"])(

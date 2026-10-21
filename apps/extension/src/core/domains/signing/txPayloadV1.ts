@@ -163,8 +163,9 @@ export const signerPayloadFromTxPayloadV1 = (txPayload: ParsedTxPayloadV1): Sign
 
 /**
  * Rebuilds every extension from the converted payload with the chain's metadata and requires each
- * one the dapp supplied to match byte for byte. Approval may still turn on CheckMetadataHash, as
- * for any substrate sign.
+ * one the dapp supplied to match byte for byte. Like papi's own signers, it ignores the extensions
+ * a v4 transaction does not carry: papi supplies those of every transaction version. Approval may
+ * still turn on CheckMetadataHash, as for any substrate sign.
  */
 export const assertExtensionsMatch = (
   payload: SignerPayloadJSON,
@@ -187,8 +188,10 @@ export const assertExtensionsMatch = (
 
   for (const { id, extra, additionalSigned } of extensions) {
     const rebuilt = signed.get(id)
-    assert(rebuilt, `Unknown transaction extension ${id}`)
-    if (toHex(rebuilt.extra) !== extra || toHex(rebuilt.additionalSigned) !== additionalSigned)
+    if (
+      rebuilt &&
+      (toHex(rebuilt.extra) !== extra || toHex(rebuilt.additionalSigned) !== additionalSigned)
+    )
       throw unsupportedValue(id)
   }
 }
