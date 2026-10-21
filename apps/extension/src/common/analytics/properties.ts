@@ -61,7 +61,7 @@ export const properties = {
     "How it closed. escape, backdrop: the user dismissed it with that gesture. completed: the user finished what it was for (a transaction submitted inside it) before it closed. button: any other close, by its own buttons or by code. A close that follows an asynchronous dismiss handler reads button."
   ),
   duration_ms: p.durationMs(
-    "Elapsed milliseconds. modal_closed: how long it was open. balances_loaded: from the unlock (or the page load when already unlocked) to balances loaded. Flow events: since the flow's started event."
+    "Elapsed milliseconds. modal_closed: how long it was open. balances_loaded: from the unlock (or the page load when already unlocked) to balances loaded. api_credential_registered: solving the proof of work that registration requires, rounded to the second so it cannot be matched to the server's own timing of the registration. Flow events: since the flow's started event."
   ),
 
   surface: p.enum(
@@ -138,6 +138,10 @@ export const properties = {
   ),
   render_ms: p.durationMs(
     "From the request window starting to load to the request painted. Decoding, fees and the risk scan can still be running."
+  ),
+  difficulty: p.int(
+    "Leading zero bits the proof of work had to find, set by the server per challenge.",
+    { min: 0, max: 256 }
   ),
   ready_at_unlock: p.bool(
     "Balances had already loaded when the page started measuring, so duration_ms is 0."

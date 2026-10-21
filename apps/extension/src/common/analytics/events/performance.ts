@@ -15,6 +15,12 @@ export const performanceEvents = defineEventGroup(properties, {
       "Balances stopped initialising for the first time in a page that shows them, measured from the unlock seen in that page, or from the page load when it opened unlocked.",
     props: { duration_ms: "required", ready_at_unlock: "required" },
   },
+  api_credential_registered: {
+    description:
+      "The wallet registered this install for the anonymous credential that Talisman's own APIs rate limit by, once per install. Unlinked: it has an id of its own, no session and its own time shift.",
+    unlinked: true,
+    props: { duration_ms: "required", difficulty: "required" },
+  },
   dapp_request_rendered: {
     description: "A request window painted the request for the first time.",
     props: {

@@ -1,9 +1,11 @@
 import { log } from "@common/log"
 import { getErrorMessage, isAbortError, type Loadable } from "@talismn/util"
-import { Observable, shareReplay, startWith, switchMap, timer } from "rxjs"
+import { Observable, Subject, shareReplay, startWith, switchMap, timer } from "rxjs"
 
-import { registerInstall, requestAccessToken } from "./client"
+import { type ProofOfWorkSolve, registerInstall, requestAccessToken } from "./client"
 import { gandalfStore } from "./store"
+
+export const proofOfWorkSolves$ = new Subject<ProofOfWorkSolve>()
 
 /** Refresh tokens every 4 minutes (tokens last 5 min, this gives 1 min buffer). */
 const REFRESH_INTERVAL_MS = 4 * 60 * 1000
@@ -36,6 +38,7 @@ async function ensureRegistered(
 
   log.debug("Gandalf: no install credentials found, registering…")
   const credentials = await registerInstall(signal)
+  proofOfWorkSolves$.next(credentials.proofOfWork)
 
   // credentials may have appeared while the proof-of-work was solving (e.g. e2e fixtures
   // seeding pre-registered ones) - keep them, ours were never used to sign anything

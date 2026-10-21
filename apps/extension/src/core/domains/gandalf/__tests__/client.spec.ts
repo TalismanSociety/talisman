@@ -235,6 +235,8 @@ describe("registerInstall", () => {
 
     expect(result.installId).toBe("inst-xyz")
     expect(result.privateKeyHex).toHaveLength(64) // 32-byte private key = 64 hex chars
+    expect(result.proofOfWork).toEqual({ durationMs: expect.any(Number), difficulty: 1 })
+    expect(Number.isInteger(result.proofOfWork.durationMs)).toBe(true)
 
     // Verify the register call sent the right shape
     const registerCall = fetchMock.mock.calls[1]

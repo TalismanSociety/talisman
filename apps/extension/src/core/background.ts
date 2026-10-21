@@ -5,6 +5,7 @@ import { assert } from "@talismn/util"
 import { analyticsEngine } from "./domains/analytics/engine"
 import { installErrorHandlers, reportError } from "./domains/analytics/errorReporting"
 import { startAnalyticsMechanisms } from "./domains/analytics/mechanisms"
+import { track } from "./domains/analytics/track"
 import { passwordStore } from "./domains/app/store.password"
 import { remoteConfigStore } from "./domains/app/store.remoteConfig"
 import { sessionStore } from "./domains/app/store.session"
@@ -12,6 +13,7 @@ import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
 import { initialiseSubstrateAssetDiscovery } from "./domains/assetDiscovery/substrate"
 import { initialiseBittensorDevnet } from "./domains/bittensor/devnet"
+import { proofOfWorkSolves$ } from "./domains/gandalf/observable"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
@@ -22,6 +24,12 @@ import { trackUiPort } from "./libs/uiOpenState"
 installErrorHandlers()
 analyticsEngine.start()
 startAnalyticsMechanisms()
+proofOfWorkSolves$.subscribe(({ durationMs, difficulty }) =>
+  track("api_credential_registered", {
+    duration_ms: Math.round(durationMs / 1000) * 1000,
+    difficulty,
+  })
+)
 
 chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 

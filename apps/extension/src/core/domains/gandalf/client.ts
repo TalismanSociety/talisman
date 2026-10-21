@@ -63,15 +63,18 @@ export async function fetchChallenge(
   return res.json()
 }
 
+export type ProofOfWorkSolve = { durationMs: number; difficulty: number }
+
 /**
  * One-time registration: generates an Ed25519 keypair, solves a PoW challenge,
  * and registers with Gandalf.
  *
- * @returns The install credentials (installId + privateKeyHex).
+ * @returns The install credentials (installId + privateKeyHex) and how long the PoW took.
  */
 export async function registerInstall(signal?: AbortSignal): Promise<{
   installId: string
   privateKeyHex: string
+  proofOfWork: ProofOfWorkSolve
 }> {
   // Generate a new Ed25519 keypair
   const privateKey = ed25519.utils.randomSecretKey()
@@ -85,7 +88,9 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
 
   // Fetch and solve PoW challenge
   const { challenge, difficulty } = await fetchChallenge(signal)
+  const solveStartedAt = performance.now()
   const solution = await solveProofOfWork(challenge, difficulty, signal)
+  const proofOfWork = { durationMs: Math.round(performance.now() - solveStartedAt), difficulty }
 
   // Register
   const res = await fetch(`${GANDALF_URL}/v1/install/register`, {
@@ -103,7 +108,7 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
   const { installId } = (await res.json()) as { installId: string }
   const privateKeyHex = bytesToHex(privateKey)
 
-  return { installId, privateKeyHex }
+  return { installId, privateKeyHex, proofOfWork }
 }
 
 /**
