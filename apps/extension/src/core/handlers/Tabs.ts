@@ -15,11 +15,9 @@ import type { SettingsStoreData } from "../domains/app/store.settings"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { getMetadataDef } from "../domains/metadata/getMetadataDef"
-import { getMetadataRpcFromDef } from "../domains/metadata/helpers"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
-import { assemblePjsTransaction } from "../domains/signing/signPjsPayload"
+import { assembleSubstrateTransaction } from "../domains/signing/signSubstratePayload"
 import {
-  getTxPayloadSpecVersion,
   type ParsedTxPayloadV1,
   parseTxPayloadV1,
   signerPayloadFromTxPayloadV1,
@@ -180,16 +178,11 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(txPayload.signer)
     if (!account) throw new Error("Account not found")
 
-    const { genesisHash } = txPayload.context
-    const metadataDef = await getMetadataDef(genesisHash, getTxPayloadSpecVersion(txPayload))
-    const metadataRpc = getMetadataRpcFromDef(metadataDef)
-    assert(metadataRpc, `Unable to find metadata for chain ${genesisHash}`)
-
-    const payload = signerPayloadFromTxPayloadV1(txPayload, metadataRpc)
+    const payload = signerPayloadFromTxPayloadV1(txPayload)
 
     const { signature, signedTransaction } = await requestSubstrateSign(
       url,
-      { payload, method: "createTransaction" },
+      { payload, method: "createTransaction", extensions: txPayload.extensions },
       account,
       port
     )
@@ -197,7 +190,7 @@ export default class Tabs extends TabsHandler {
     if (signedTransaction)
       return typeof signedTransaction === "string" ? signedTransaction : u8aToHex(signedTransaction)
 
-    return assemblePjsTransaction(metadataRpc, payload, signature).signedTransaction
+    return (await assembleSubstrateTransaction(payload, signature)).signedTransaction
   }
 
   private async vrfSign(

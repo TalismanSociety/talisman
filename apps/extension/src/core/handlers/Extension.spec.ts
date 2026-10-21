@@ -350,6 +350,46 @@ describe("Extension", () => {
         await expect(transactionPromise).rejects.toThrow("Cancelled")
       })
 
+      test("asks the user before the chain metadata is available", async () => {
+        const unknownGenesis = `0x${"42".repeat(32)}` as const
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: payload.extensions.map((extension) =>
+            extension.id === "CheckGenesis"
+              ? { ...extension, additionalSigned: unknownGenesis }
+              : extension
+          ),
+          context: { ...payload.context, genesisHash: unknownGenesis },
+        })
+        transactionPromise.catch(() => {})
+
+        const request = await queuedRequest()
+
+        expect(request.request.payload).toMatchObject({ genesisHash: unknownGenesis })
+      })
+
+      test("rejects on approval an extension the wallet cannot reproduce", async () => {
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: payload.extensions.map((extension) =>
+            extension.id === "CheckGenesis"
+              ? { ...extension, additionalSigned: BLOCK_HASH }
+              : extension
+          ),
+        })
+        transactionPromise.catch(() => {})
+        const request = await queuedRequest()
+
+        await expect(messageSender("pri(signing.approveSign)", { id: request.id })).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+        await expect(transactionPromise).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+      })
+
       test("rejects a payload without a signer before asking the user", async () => {
         await expect(createTransaction(txPayload(null))).rejects.toThrow(/Missing signer/)
         expect(requestStore.getCounts().get("substrate-sign")).toBe(0)

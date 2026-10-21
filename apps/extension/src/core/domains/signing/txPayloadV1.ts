@@ -13,7 +13,7 @@ import {
   type SignerPayloadJSON,
   toPjsHex,
 } from "@talismn/sapi"
-import { getConstantValueFromMetadata, getSignedExtensions, parseMetadataRpc } from "@talismn/scale"
+import { getSignedExtensions, parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert } from "@talismn/util"
 import { z } from "zod"
@@ -52,7 +52,7 @@ const txPayloadV1Schema = z.object({
 })
 
 export type ParsedTxPayloadV1 = z.output<typeof txPayloadV1Schema>
-type TxExtension = ParsedTxPayloadV1["extensions"][number]
+export type TxExtension = ParsedTxPayloadV1["extensions"][number]
 
 /**
  * Validates a dapp's `createTransaction` payload. `context.metadata` is dropped unread: only
@@ -66,17 +66,6 @@ export const parseTxPayloadV1 = (payload: unknown): ParsedTxPayloadV1 => {
   throw new Error(`Invalid transaction payload: ${issue.message} (at ${issue.path.join(".")})`)
 }
 
-/** the runtime the dapp built the payload for, if it says */
-export const getTxPayloadSpecVersion = ({ extensions }: ParsedTxPayloadV1) => {
-  const checkSpecVersion = extensions.find(({ id }) => id === "CheckSpecVersion")
-  if (!checkSpecVersion) return undefined
-  try {
-    return u32.dec(checkSpecVersion.additionalSigned)
-  } catch {
-    throw new Error("Unsupported value for transaction extension CheckSpecVersion")
-  }
-}
-
 type PjsExtension = {
   toPayloadFields: (extension: TxExtension) => Partial<SignerPayloadJSON>
   /** no safe default exists, so the dapp must supply it when the chain uses it */
@@ -86,11 +75,20 @@ type PjsExtension = {
 const assetTxPaymentDec = Struct({ tip: compactBn, asset: Option(Bytes(Infinity)) }).dec
 
 /**
- * Extensions whose values `SignerPayloadJSON` carries as fields. Chain-derived ones (genesis, spec
- * and transaction versions) come from Talisman's own context and metadata instead, and the
- * byte-exact check holds the dapp's values to them.
+ * Extensions whose values `SignerPayloadJSON` carries as fields. The genesis hash comes from the
+ * context instead, and `assertExtensionsMatch` holds the dapp's CheckGenesis bytes to it.
  */
 const PJS_EXTENSIONS: Record<string, PjsExtension> = {
+  CheckSpecVersion: {
+    toPayloadFields: ({ additionalSigned }) => ({
+      specVersion: toPjsHex(u32.dec(additionalSigned), 4),
+    }),
+  },
+  CheckTxVersion: {
+    toPayloadFields: ({ additionalSigned }) => ({
+      transactionVersion: toPjsHex(u32.dec(additionalSigned), 4),
+    }),
+  },
   CheckNonce: {
     toPayloadFields: ({ extra }) => ({ nonce: toPjsHex(compactNumber.dec(extra), 4) }),
     required: true,
@@ -121,40 +119,31 @@ const unsupportedValue = (id: string) =>
 
 /**
  * Converts a `createTransaction` payload into the `SignerPayloadJSON` the signing pipeline
- * handles, then rebuilds every extension from that payload and requires each one the dapp
- * supplied to match byte for byte. The user signs exactly what the dapp asked, or nothing.
- * Extensions the dapp omitted get Talisman's own default.
+ * handles, without metadata so the sign popup opens straight away. Extensions the dapp omitted
+ * get Talisman's own default. Approval runs `assertExtensionsMatch` once the metadata is loaded.
  */
-export const signerPayloadFromTxPayloadV1 = (
-  txPayload: ParsedTxPayloadV1,
-  metadataRpc: HexString
-): SignerPayloadJSON => {
-  const { builder, unifiedMetadata } = parseMetadataRpc(metadataRpc)
-  assert(
-    unifiedMetadata.extrinsic.version.includes(4),
-    "Unsupported chain: Talisman only creates v4 transactions"
-  )
+export const signerPayloadFromTxPayloadV1 = (txPayload: ParsedTxPayloadV1): SignerPayloadJSON => {
+  const fields: Partial<SignerPayloadJSON> = {}
+  for (const extension of txPayload.extensions) {
+    const pjsExtension = PJS_EXTENSIONS[extension.id]
+    if (!pjsExtension) continue
+    try {
+      Object.assign(fields, pjsExtension.toPayloadFields(extension))
+    } catch {
+      throw unsupportedValue(extension.id)
+    }
+  }
 
-  const chainExtensionIds = getSignedExtensions(unifiedMetadata).map(({ identifier }) => identifier)
-  const supplied = new Map(txPayload.extensions.map((extension) => [extension.id, extension]))
-
-  for (const id of supplied.keys())
-    assert(chainExtensionIds.includes(id), `Unknown transaction extension ${id}`)
-  for (const id of chainExtensionIds)
-    assert(!PJS_EXTENSIONS[id]?.required || supplied.has(id), `Missing transaction extension ${id}`)
-
-  const { spec_version, transaction_version } = getConstantValueFromMetadata<{
-    spec_version: number
-    transaction_version: number
-  }>({ builder, unifiedMetadata }, "System", "Version")
+  // the runtime the dapp built for, which decides the metadata Talisman decodes and signs with
+  const { specVersion, transactionVersion } = fields
+  assert(specVersion, "Missing transaction extension CheckSpecVersion")
+  assert(transactionVersion, "Missing transaction extension CheckTxVersion")
 
   const { genesisHash, bestBlockHeight } = txPayload.context
-  const payload: SignerPayloadJSON = {
+  return {
     address: txPayload.signer,
     method: txPayload.callData,
     genesisHash,
-    specVersion: toPjsHex(spec_version, 4),
-    transactionVersion: toPjsHex(transaction_version, 4),
     blockNumber: toPjsHex(bestBlockHeight, 4),
     // placeholders for chains without CheckMortality or CheckNonce, which are required otherwise
     blockHash: genesisHash,
@@ -162,20 +151,38 @@ export const signerPayloadFromTxPayloadV1 = (
     nonce: toPjsHex(0, 4),
     tip: toPjsHex(0, 16),
     mode: 0,
-    signedExtensions: chainExtensionIds,
+    ...fields,
+    specVersion,
+    transactionVersion,
+    signedExtensions: txPayload.extensions.map(({ id }) => id),
     version: 4,
     withSignedTransaction: true,
   }
+}
 
-  for (const extension of supplied.values()) {
-    const pjsExtension = PJS_EXTENSIONS[extension.id]
-    if (!pjsExtension) continue
-    try {
-      Object.assign(payload, pjsExtension.toPayloadFields(extension))
-    } catch {
-      throw unsupportedValue(extension.id)
-    }
-  }
+/**
+ * Rebuilds every extension from the converted payload with the chain's metadata and requires each
+ * one the dapp supplied to match byte for byte. The user signs exactly what the dapp asked, or
+ * nothing.
+ */
+export const assertExtensionsMatch = (
+  payload: SignerPayloadJSON,
+  extensions: TxExtension[],
+  metadataRpc: HexString
+) => {
+  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
+  assert(
+    unifiedMetadata.extrinsic.version.includes(4),
+    "Unsupported chain: Talisman only creates v4 transactions"
+  )
+
+  const chainExtensionIds = getSignedExtensions(unifiedMetadata).map(({ identifier }) => identifier)
+  const supplied = new Map(extensions.map((extension) => [extension.id, extension]))
+
+  for (const id of supplied.keys())
+    assert(chainExtensionIds.includes(id), `Unknown transaction extension ${id}`)
+  for (const id of chainExtensionIds)
+    assert(!PJS_EXTENSIONS[id]?.required || supplied.has(id), `Missing transaction extension ${id}`)
 
   const { input } = getTxHelper(metadataRpc, {
     customExtensionMappers: CUSTOM_SIGNED_EXTENSIONS,
@@ -188,6 +195,4 @@ export const signerPayloadFromTxPayloadV1 = (
     if (toHex(signed.additionalSigned) !== requested.additionalSigned)
       throw unsupportedValue(signed.id)
   }
-
-  return payload
 }

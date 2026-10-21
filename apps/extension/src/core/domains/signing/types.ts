@@ -7,11 +7,15 @@ import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "../../ty
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
 // structural equivalents of the legacy @polkadot/extension-base signing request types
-export type RequestSign = {
-  payload: SignerPayloadJSON | SignerPayloadRaw
-  /** set when the payload was converted from a `createTransaction` request */
-  method?: "createTransaction"
-}
+export type RequestSign =
+  | { payload: SignerPayloadJSON | SignerPayloadRaw; method?: undefined }
+  | {
+      /** converted from a `createTransaction` request */
+      payload: SignerPayloadJSON
+      method: "createTransaction"
+      /** the dapp's extensions, held byte for byte to what approval encodes from `payload` */
+      extensions: Array<{ id: string; extra: HexString; additionalSigned: HexString }>
+    }
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 

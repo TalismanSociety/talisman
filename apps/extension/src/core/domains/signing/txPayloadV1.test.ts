@@ -9,7 +9,7 @@ import type { HexString } from "@talismn/util"
 import { describe, expect, it } from "vitest"
 
 import {
-  getTxPayloadSpecVersion,
+  assertExtensionsMatch,
   parseTxPayloadV1,
   signerPayloadFromTxPayloadV1,
 } from "./txPayloadV1"
@@ -75,8 +75,13 @@ const txPayload = (overrides: Partial<TxPayloadV1> = {}): TxPayloadV1 => ({
   ...overrides,
 })
 
-const convert = (payload: TxPayloadV1, metadataRpc = ASSET_HUB_METADATA) =>
-  signerPayloadFromTxPayloadV1(parseTxPayloadV1(payload), metadataRpc)
+// request time converts without metadata, approval checks the extensions once it is loaded
+const convert = (txPayload: TxPayloadV1, metadataRpc = ASSET_HUB_METADATA) => {
+  const parsed = parseTxPayloadV1(txPayload)
+  const payload = signerPayloadFromTxPayloadV1(parsed)
+  assertExtensionsMatch(payload, parsed.extensions, metadataRpc)
+  return payload
+}
 
 const concatHex = (parts: string[]) => `0x${parts.map((part) => part.slice(2)).join("")}`
 
@@ -161,6 +166,18 @@ describe("signerPayloadFromTxPayloadV1", () => {
     )
   })
 
+  it.each(["CheckSpecVersion", "CheckTxVersion"])(
+    "rejects a payload without %s before loading metadata",
+    (id) => {
+      const { [id as keyof typeof EXTENSIONS]: _, ...supplied } = EXTENSIONS
+      const parsed = parseTxPayloadV1(txPayload({ extensions: toExtensions(supplied) }))
+
+      expect(() => signerPayloadFromTxPayloadV1(parsed)).toThrow(
+        `Missing transaction extension ${id}`
+      )
+    }
+  )
+
   it.each(["CheckNonce", "CheckMortality"])("rejects a payload without %s", (id) => {
     const { [id as keyof typeof EXTENSIONS]: _, ...supplied } = EXTENSIONS
 
@@ -238,19 +255,5 @@ describe("parseTxPayloadV1", () => {
 
   it("accepts an explicit v4 extension version", () => {
     expect(parseTxPayloadV1(txPayload({ txExtVersion: 0 })).txExtVersion).toBe(0)
-  })
-})
-
-describe("getTxPayloadSpecVersion", () => {
-  it("reads the runtime the dapp built for", () => {
-    expect(getTxPayloadSpecVersion(parseTxPayloadV1(txPayload()))).toBe(2_003_001)
-  })
-
-  it("is unknown when the dapp leaves the spec version to the wallet", () => {
-    const { CheckSpecVersion: _, ...supplied } = EXTENSIONS
-
-    expect(
-      getTxPayloadSpecVersion(parseTxPayloadV1(txPayload({ extensions: toExtensions(supplied) })))
-    ).toBeUndefined()
   })
 })

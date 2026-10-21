@@ -15,10 +15,16 @@ import { isJsonPayload } from "../../util/isJsonPayload"
 import { urlToOrigin } from "../../util/urlToDomain"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSubstrateTransaction } from "../transactions/watchSubstrateTransaction"
-import { assembleSubstrateTransaction, signSubstratePayload } from "./signSubstratePayload"
+import {
+  assembleSubstrateTransaction,
+  getPayloadMetadataRpc,
+  signSubstratePayload,
+} from "./signSubstratePayload"
+import { assertExtensionsMatch } from "./txPayloadV1"
 import type {
   KnownSigningRequestApprove,
   KnownSigningRequestIdOnly,
+  RequestSign,
   RequestSigningApproveSignature,
   SignerPayloadJSON,
   SignerPayloadRaw,
@@ -36,6 +42,12 @@ const isPayloadModified = (
   original: SignerPayloadJSON | SignerPayloadRaw,
   modified: SignerPayloadJSON | undefined
 ) => !!modified && !isEqual(modified, original)
+
+const assertCreateTransactionMatches = async (request: RequestSign) => {
+  if (request.method !== "createTransaction") return
+  const metadataRpc = await getPayloadMetadataRpc(request.payload)
+  assertExtensionsMatch(request.payload, request.extensions, metadataRpc)
+}
 
 // the store only drops a request through resolve/reject, so throwing alone would leave it queued
 const rejectApprovalFailure = (reject: (error: Error) => void, val: string | Error): never => {
@@ -60,6 +72,7 @@ export default class SigningHandler extends ExtensionHandler {
     const address = encodeAnyAddress(queued.account.address)
 
     const result = await withSecretKey(address, async (secretKey, curve) => {
+      await assertCreateTransactionMatches(request)
       const { payload: originalPayload } = request
       const payload = modifiedPayload || originalPayload
       let signature: HexString | undefined
@@ -149,6 +162,9 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued.type === "substrate-sign", "Not a substrate signing request")
 
     const { request, url } = queued
+    await assertCreateTransactionMatches(request).catch((err) =>
+      rejectApprovalFailure(queued.reject, err)
+    )
     const { payload: originalPayload } = request
     const payload = modifiedPayload || originalPayload
 
