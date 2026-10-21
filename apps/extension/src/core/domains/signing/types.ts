@@ -1,3 +1,4 @@
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
 import type { HexString } from "@talismn/util"
@@ -5,6 +6,7 @@ import type { RpcTransactionRequest } from "viem"
 import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "../../types/pjsInterop"
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
+import type { TxExtension } from "./txPayloadV1"
 
 // structural equivalents of the legacy @polkadot/extension-base signing request types
 export type RequestSign =
@@ -14,7 +16,7 @@ export type RequestSign =
       payload: SignerPayloadJSON
       method: "createTransaction"
       /** the dapp's extensions, held byte for byte to what approval encodes from `payload` */
-      extensions: Array<{ id: string; extra: HexString; additionalSigned: HexString }>
+      extensions: TxExtension[]
     }
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
@@ -65,28 +67,6 @@ export interface VrfSignPayload {
 }
 
 export type RequestVrfSign = { payload: VrfSignPayload }
-
-/**
- * Dapp-provided payload for `pub(extrinsic.create)`, a structural copy of `TxPayloadV1` from
- * `@polkadot-api/tx-creator`. Byte fields are hex-encoded SCALE.
- */
-export interface TxPayloadV1 {
-  version: 1
-  /** address of the signing account, `null` lets the wallet pick */
-  signer: string | null
-  callData: string
-  /** matched by `id`, in any order; an omitted extension is a gap the wallet may fill */
-  extensions: Array<{ id: string; extra: string; additionalSigned: string }>
-  /** `null` lets the wallet choose, `0` asks for a v4 transaction */
-  txExtVersion: number | null
-  context: {
-    metadata: string
-    token: { symbol: string; decimals: number } | null
-    bestBlockHeight: number
-    bestBlockHash: string
-    genesisHash: string
-  }
-}
 
 export interface VrfSigningRequest extends BaseSigningRequest<VRF_SIGN> {
   request: RequestVrfSign

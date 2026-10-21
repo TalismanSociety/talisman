@@ -71,8 +71,8 @@ export default class SigningHandler extends ExtensionHandler {
 
     const address = encodeAnyAddress(queued.account.address)
 
+    await assertCreateTransactionMatches(request).catch((err) => rejectApprovalFailure(reject, err))
     const result = await withSecretKey(address, async (secretKey, curve) => {
-      await assertCreateTransactionMatches(request)
       const { payload: originalPayload } = request
       const payload = modifiedPayload || originalPayload
       let signature: HexString | undefined

@@ -2,9 +2,11 @@ import {
   Bytes,
   compactBn,
   compactNumber,
+  decAnyMetadata,
   Option,
   Struct,
   u32,
+  unifyMetadata,
 } from "@polkadot-api/substrate-bindings"
 import { fromHex, toHex } from "@polkadot-api/utils"
 import {
@@ -13,7 +15,6 @@ import {
   type SignerPayloadJSON,
   toPjsHex,
 } from "@talismn/sapi"
-import { getSignedExtensions, parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert } from "@talismn/util"
 import { z } from "zod"
@@ -110,7 +111,7 @@ const PJS_EXTENSIONS: Record<string, PjsExtension> = {
     toPayloadFields: ({ extra, additionalSigned }) =>
       fromHex(extra)[0]
         ? { mode: 1, metadataHash: toHex(fromHex(additionalSigned).slice(1)) as HexString }
-        : { mode: 0 },
+        : {},
   },
 }
 
@@ -170,29 +171,24 @@ export const assertExtensionsMatch = (
   extensions: TxExtension[],
   metadataRpc: HexString
 ) => {
-  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
   assert(
-    unifiedMetadata.extrinsic.version.includes(4),
+    unifyMetadata(decAnyMetadata(metadataRpc)).extrinsic.version.includes(4),
     "Unsupported chain: Talisman only creates v4 transactions"
   )
-
-  const chainExtensionIds = getSignedExtensions(unifiedMetadata).map(({ identifier }) => identifier)
-  const supplied = new Map(extensions.map((extension) => [extension.id, extension]))
-
-  for (const id of supplied.keys())
-    assert(chainExtensionIds.includes(id), `Unknown transaction extension ${id}`)
-  for (const id of chainExtensionIds)
-    assert(!PJS_EXTENSIONS[id]?.required || supplied.has(id), `Missing transaction extension ${id}`)
 
   const { input } = getTxHelper(metadataRpc, {
     customExtensionMappers: CUSTOM_SIGNED_EXTENSIONS,
   }).fromPjsToInputRaw(payload)
+  const signed = new Map(input.extensions.map((extension) => [extension.id, extension]))
+  const supplied = new Map(extensions.map((extension) => [extension.id, extension]))
 
-  for (const signed of input.extensions) {
-    const requested = supplied.get(signed.id)
-    if (!requested) continue
-    if (toHex(signed.extra) !== requested.extra) throw unsupportedValue(signed.id)
-    if (toHex(signed.additionalSigned) !== requested.additionalSigned)
-      throw unsupportedValue(signed.id)
+  for (const id of signed.keys())
+    assert(!PJS_EXTENSIONS[id]?.required || supplied.has(id), `Missing transaction extension ${id}`)
+
+  for (const { id, extra, additionalSigned } of extensions) {
+    const rebuilt = signed.get(id)
+    assert(rebuilt, `Unknown transaction extension ${id}`)
+    if (toHex(rebuilt.extra) !== extra || toHex(rebuilt.additionalSigned) !== additionalSigned)
+      throw unsupportedValue(id)
   }
 }

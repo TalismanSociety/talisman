@@ -3,7 +3,8 @@ import path from "node:path"
 import { gunzipSync } from "node:zlib"
 
 import { decAnyMetadata, metadata as metadataCodec } from "@polkadot-api/substrate-bindings"
-import { toHex } from "@polkadot-api/utils"
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
+import { fromHex, mergeUint8, toHex } from "@polkadot-api/utils"
 import { CUSTOM_SIGNED_EXTENSIONS, getPjsTxHelper } from "@talismn/sapi"
 import type { HexString } from "@talismn/util"
 import { describe, expect, it } from "vitest"
@@ -13,7 +14,6 @@ import {
   parseTxPayloadV1,
   signerPayloadFromTxPayloadV1,
 } from "./txPayloadV1"
-import type { TxPayloadV1 } from "./types"
 
 const ASSET_HUB_METADATA = `0x${gunzipSync(
   readFileSync(path.resolve(__dirname, "../../../../tests/fixtures/assethub-metadata-v15.scale.gz"))
@@ -83,7 +83,7 @@ const convert = (txPayload: TxPayloadV1, metadataRpc = ASSET_HUB_METADATA) => {
   return payload
 }
 
-const concatHex = (parts: string[]) => `0x${parts.map((part) => part.slice(2)).join("")}`
+const concatHex = (parts: string[]) => toHex(mergeUint8(parts.map(fromHex)))
 
 const concatExtensions = (entries: Record<string, readonly [string, string]>) => ({
   extra: concatHex(Object.values(entries).map(([extra]) => extra)),

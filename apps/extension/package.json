@@ -28,6 +28,7 @@
     "@polkadot-api/signers-common": "0.4.0",
     "@polkadot-api/substrate-bindings": "0.21.2",
     "@polkadot-api/substrate-client": "0.7.0",
+    "@polkadot-api/tx-creator": "0.2.0",
     "@polkadot-api/utils": "0.4.0",
     "@polkadot-api/ws-provider": "0.9.2",
     "@posthog/core": "1.55.2",

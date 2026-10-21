@@ -1,6 +1,7 @@
-import type { TxPayloadV1, VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
+import type { VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
 import type { SendRequest } from "@core/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
 import type { HexString } from "@talismn/util"
 
 import type {
@@ -109,7 +110,10 @@ export class TalismanSigner {
    * may turn on CheckMetadataHash.
    */
   public createTransaction = (payload: TxPayloadV1): Promise<HexString> => {
-    return this.#sendRequest("pub(extrinsic.create)", payload)
+    return this.#sendRequest("pub(extrinsic.create)", {
+      ...payload,
+      context: { ...payload.context, metadata: "0x" },
+    })
   }
 
   /**

@@ -1,5 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { Blake2256, getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { base64 } from "@scure/base"
 import { verify as sr25519Verify } from "@scure/sr25519"
@@ -15,7 +16,7 @@ import { db } from "../db"
 import { passwordStore } from "../domains/app/store.password"
 import { keyringStore } from "../domains/keyring/store"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
-import type { TxPayloadV1, VrfSignPayload } from "../domains/signing/types"
+import type { VrfSignPayload } from "../domains/signing/types"
 import { requestStore } from "../libs/requests/store"
 import type { SignerPayloadJSON } from "../types/pjsInterop"
 import Extension from "./Extension"
@@ -282,6 +283,11 @@ describe("Extension", () => {
         },
       })
 
+      const withCheckGenesis = (payload: TxPayloadV1, additionalSigned: string) =>
+        payload.extensions.map((extension) =>
+          extension.id === "CheckGenesis" ? { ...extension, additionalSigned } : extension
+        )
+
       const createTransaction = (payload: TxPayloadV1) =>
         tabs.handle(v4(), "pub(extrinsic.create)", payload, {} as chrome.runtime.Port, DAPP_URL)
 
@@ -355,11 +361,7 @@ describe("Extension", () => {
         const payload = txPayload(account.address)
         const transactionPromise = createTransaction({
           ...payload,
-          extensions: payload.extensions.map((extension) =>
-            extension.id === "CheckGenesis"
-              ? { ...extension, additionalSigned: unknownGenesis }
-              : extension
-          ),
+          extensions: withCheckGenesis(payload, unknownGenesis),
           context: { ...payload.context, genesisHash: unknownGenesis },
         })
         transactionPromise.catch(() => {})
@@ -373,11 +375,7 @@ describe("Extension", () => {
         const payload = txPayload(account.address)
         const transactionPromise = createTransaction({
           ...payload,
-          extensions: payload.extensions.map((extension) =>
-            extension.id === "CheckGenesis"
-              ? { ...extension, additionalSigned: BLOCK_HASH }
-              : extension
-          ),
+          extensions: withCheckGenesis(payload, BLOCK_HASH),
         })
         transactionPromise.catch(() => {})
         const request = await queuedRequest()
@@ -407,11 +405,7 @@ describe("Extension", () => {
         const payload = txPayload(account.address)
         const transactionPromise = createTransaction({
           ...payload,
-          extensions: payload.extensions.map((extension) =>
-            extension.id === "CheckGenesis"
-              ? { ...extension, additionalSigned: BLOCK_HASH }
-              : extension
-          ),
+          extensions: withCheckGenesis(payload, BLOCK_HASH),
         })
         transactionPromise.catch(() => {})
         const request = await queuedRequest()
