@@ -173,4 +173,19 @@ describe("useFeeBalanceCheck", () => {
     // 999_000 + 5000 = 1_004_000 <= 2_000_000 → sufficient
     expect(result.current.status).toBe("sufficient")
   })
+
+  it("compares a bigint feePlanck against the fee balance", () => {
+    makeResult(10_000n)
+    const { result } = renderHook(() =>
+      useFeeBalanceCheck({
+        fromAddress: "0x123",
+        feeTokenId: "sol-native",
+        feePlanck: 20_000n,
+        isFeeLoading: false,
+        fromTokenId: "sol-spl-usdc",
+        fromAmount: 1_000_000n,
+      })
+    )
+    expect(result.current.status).toBe("insufficient")
+  })
 })

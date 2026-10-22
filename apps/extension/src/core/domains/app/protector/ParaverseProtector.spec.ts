@@ -188,6 +188,23 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
   expect(await isPhishingSite("https://sites.google.com/view/other-phish")).toBeTruthy()
 })
 
+it.each([
+  ["MetaMask config", "metamask", { broken: true }, "https://sites.google.com/view/other-phish"],
+  ["Polkadot list", "polkadot", "not-an-object", "https://an.other-badsite.io"],
+])(
+  "Keeps the last valid %s when a refresh returns a malformed one",
+  async (_, source, body, phishingSite) => {
+    mockFetch.mockImplementation(async (input) =>
+      fetchInputToString(input).includes(source)
+        ? new Response(JSON.stringify(body), { status: 200, headers: { etag: "bad-etag" } })
+        : new Response(null, { status: 304 })
+    )
+    await refreshPhishingLists()
+    expect(await isPhishingSite(phishingSite)).toBeTruthy()
+    expect(await isPhishingSite("https://something.else")).toBeFalsy()
+  }
+)
+
 afterAll(() => {
   dispose()
   vi.restoreAllMocks()

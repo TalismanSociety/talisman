@@ -576,6 +576,16 @@ describe("findSubtensorStakeCall", () => {
 
   // --- Without effectiveColdkey, direct SubtensorModule calls match any coldkey ---
 
+  it("finds a PAPI-format call nested in a decoded batch", () => {
+    const papiInner = makePapiCall("SubtensorModule", "add_stake", {
+      hotkey: HOTKEY_A,
+      netuid: NETUID,
+    })
+    const batch = makeDecodedCall("Utility", "batch", { calls: [papiInner] })
+    const result = findSubtensorStakeCall(batch, NETUID, HOTKEY_A, COLDKEY_A, "buy")
+    expect(result?.method).toBe("add_stake")
+  })
+
   it("matches direct SubtensorModule call regardless of targetColdkey when not inside proxy", () => {
     const call = makeDecodedCall("SubtensorModule", "add_stake", {
       hotkey: HOTKEY_A,

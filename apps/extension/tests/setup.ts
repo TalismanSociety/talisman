@@ -3,7 +3,7 @@ import { format } from "node:util"
 import { cloneDeep } from "lodash-es"
 import { WebSocket } from "mock-socket"
 import sinon from "sinon-chrome"
-import { afterEach, vi } from "vitest"
+import { afterEach, beforeEach, vi } from "vitest"
 import type { Browser } from "webextension-polyfill"
 
 // Mock WebSocket in tests
@@ -230,6 +230,9 @@ for (const method of ["error", "warn"] as const) {
     original(...args)
   }
 }
+beforeEach(() => {
+  consoleNoise.length = 0
+})
 afterEach(() => {
   if (consoleNoise.length) throw new Error(consoleNoise.splice(0).join("\n"))
 })

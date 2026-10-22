@@ -160,6 +160,15 @@ describe("SimpleSwap fee logic", () => {
       )
     })
 
+    it("returns true when both currencies are in discounted list", async () => {
+      mockRemoteConfigGet.mockResolvedValue({
+        simpleswapDiscountedCurrencies: ["dot", "eth"],
+      })
+      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "dot", currencyTo: "eth" })).toBe(
+        true
+      )
+    })
+
     it("returns false when neither currency is in discounted list", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot", "ksm"],
