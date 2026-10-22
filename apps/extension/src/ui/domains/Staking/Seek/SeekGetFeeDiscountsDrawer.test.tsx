@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render } from "@testing-library/react"
+import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { SeekGetFeeDiscountsDrawer } from "./SeekGetFeeDiscountsDrawer"
@@ -7,6 +8,10 @@ const openSwapModal = vi.hoisted(() => vi.fn())
 const openSeekStakingModal = vi.hoisted(() => vi.fn())
 
 vi.mock("@talismn/icons", () => ({ ArrowRightIcon: () => null, CloseIcon: () => null }))
+vi.mock("@ui/components/Drawer", () => ({
+  Drawer: ({ isOpen, children }: { isOpen?: boolean; children?: ReactNode }) =>
+    isOpen ? <div>{children}</div> : null,
+}))
 vi.mock("@ui/api/track", () => ({ track: vi.fn() }))
 vi.mock("@ui/domains/Swap/hooks/useSwapModal", () => ({
   useSwapModal: () => ({ open: openSwapModal }),
