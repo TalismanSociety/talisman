@@ -127,6 +127,18 @@ describe("QuickUnlockOfferGate", () => {
     shows("portfolio")
   })
 
+  test("never interrupts the user once it has skipped", async () => {
+    mockUseEnrolment.mockReturnValue(true)
+    const view = await openLockedThenLogin()
+    shows("portfolio")
+
+    mockUseEnrolment.mockReturnValue(false)
+    view.rerender(<Popup isLoggedIn />)
+    await settle()
+
+    shows("portfolio")
+  })
+
   test("waits for the availability check before deciding", async () => {
     mockIsAvailable.mockReturnValue(new Promise(() => {}))
 

@@ -7,22 +7,19 @@ import { type ReactNode, useCallback, useEffect, useState } from "react"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
 
-type OfferStage = "deciding" | "offering" | "answered"
+type Decision = "pending" | "offer" | "skip"
 
-type OfferState = {
-  stage: OfferStage
+type OfferInputs = {
   dismissedForGood: boolean
   isFeatureEnabled: boolean
   enrolled: boolean | null
   available: boolean | null
 }
 
-const decide = (state: OfferState): "pending" | "offer" | "skip" => {
-  if (state.stage === "answered") return "skip"
-  if (state.stage === "offering") return "offer"
-  if (state.dismissedForGood || !state.isFeatureEnabled || state.enrolled) return "skip"
-  if (state.enrolled === null || state.available === null) return "pending"
-  return state.available ? "offer" : "skip"
+const decide = (inputs: OfferInputs): Decision => {
+  if (inputs.dismissedForGood || !inputs.isFeatureEnabled || inputs.enrolled) return "skip"
+  if (inputs.enrolled === null || inputs.available === null) return "pending"
+  return inputs.available ? "offer" : "skip"
 }
 
 /**
@@ -35,7 +32,7 @@ export const useCanOfferQuickUnlock = (isLoggedIn: boolean) => {
 }
 
 export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
-  const [stage, setStage] = useState<OfferStage>("deciding")
+  const [settled, setSettled] = useState<Exclude<Decision, "pending"> | null>(null)
   const [available, setAvailable] = useState<boolean | null>(null)
   const enrolled = useQuickUnlockEnrolment()
   const isFeatureEnabled = useFeatureFlag("QUICK_UNLOCK")
@@ -45,21 +42,18 @@ export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
     isQuickUnlockAvailable().then(setAvailable)
   }, [])
 
-  const decision = decide({
-    stage,
-    dismissedForGood: !!dismissedForGood,
-    isFeatureEnabled,
-    enrolled,
-    available,
-  })
+  const decision =
+    settled ??
+    decide({ dismissedForGood: !!dismissedForGood, isFeatureEnabled, enrolled, available })
 
-  // once on screen, the offer stays until the user answers it: enrolling flips `enrolled` before
-  // the offer has reported the enrolment, and unmounting it then would abandon the setup flow
+  // the first decision holds for the life of the popup. an offer stays until the user answers it,
+  // as enrolling flips `enrolled` before the offer has reported the enrolment. a skip never turns
+  // into an offer later, which would swap out whatever route the user is on by then
   useEffect(() => {
-    if (decision === "offer" && stage === "deciding") setStage("offering")
-  }, [decision, stage])
+    if (!settled && decision !== "pending") setSettled(decision)
+  }, [settled, decision])
 
-  const answer = useCallback(() => setStage("answered"), [])
+  const answer = useCallback(() => setSettled("skip"), [])
 
   if (decision === "pending") return null
   if (decision === "offer") return <QuickUnlockOffer onAnswer={answer} />
