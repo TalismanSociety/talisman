@@ -15,13 +15,18 @@ import { encodePjsKeyringPairJson } from "./pjsKeystore"
 // scrypt at the exported params (N=2^17) takes about a second per run and the keystore layout
 // is what this file proves, so keys are derived at N=2^10 instead. The setup files load
 // @talismn/crypto before this mock registers, hence the module cache reset.
-vi.hoisted(() => vi.resetModules())
+const requestedScryptParams = vi.hoisted(() => {
+  vi.resetModules()
+  return [] as unknown[]
+})
 vi.mock("@noble/hashes/scrypt.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@noble/hashes/scrypt.js")>()
   return {
     ...actual,
-    scrypt: ((password, salt, opts) =>
-      actual.scrypt(password, salt, { ...opts, N: 1 << 10 })) satisfies typeof actual.scrypt,
+    scrypt: ((password, salt, opts) => {
+      requestedScryptParams.push(opts)
+      return actual.scrypt(password, salt, { ...opts, N: 1 << 10 })
+    }) satisfies typeof actual.scrypt,
   }
 })
 
@@ -83,6 +88,7 @@ describe("encodePjsKeyringPairJson (export/import round-trip)", () => {
 
   for (const fixture of byCurve) {
     it(`round-trips a ${fixture.curve} account`, async () => {
+      requestedScryptParams.length = 0
       const { source, exported } = await exportFixture(fixture)
 
       expect(exported.encoding).toEqual({
@@ -95,6 +101,9 @@ describe("encodePjsKeyringPairJson (export/import round-trip)", () => {
 
       const imported = createPairFromJson(exported)
       await unlockPair(imported, EXPORT_PASSWORD)
+      expect(requestedScryptParams).not.toHaveLength(0)
+      for (const params of requestedScryptParams)
+        expect(params).toEqual({ N: 1 << 17, p: 1, r: 8, dkLen: 64 })
 
       expect(imported.secretKey).toEqual(source.secretKey)
       expect(imported.publicKey).toEqual(hexToU8a(fixture.expected.publicKey))

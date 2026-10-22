@@ -4,17 +4,15 @@ import { decryptPjsKeystore, encryptPjsKeystore } from "."
 
 // scrypt at the current params (N=2^17) takes about a second per run. The polkadot-js vectors
 // below need the real thing; the round-trip only proves the layout, so it derives at N=2^10.
-const kdf = vi.hoisted(() => ({ cheap: false }))
+const kdf = vi.hoisted(() => ({ cheap: false, requested: [] as unknown[] }))
 vi.mock("@noble/hashes/scrypt.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@noble/hashes/scrypt.js")>()
   return {
     ...actual,
-    scrypt: ((password, salt, opts) =>
-      actual.scrypt(
-        password,
-        salt,
-        kdf.cheap ? { ...opts, N: 1 << 10 } : opts
-      )) satisfies typeof actual.scrypt,
+    scrypt: ((password, salt, opts) => {
+      kdf.requested.push(opts)
+      return actual.scrypt(password, salt, kdf.cheap ? { ...opts, N: 1 << 10 } : opts)
+    }) satisfies typeof actual.scrypt,
   }
 })
 
@@ -54,6 +52,7 @@ const readScryptParams = (encoded: string) => {
 describe("pjs keystore (polkadot-js parity)", () => {
   afterEach(() => {
     kdf.cheap = false
+    kdf.requested = []
   })
 
   it("decrypts a polkadot-js generated keystore", () => {
@@ -85,5 +84,9 @@ describe("pjs keystore (polkadot-js parity)", () => {
     expect(keystore.encoding).toEqual(PJS_VECTOR.encoding)
     expect(readScryptParams(keystore.encoded)).toEqual(readScryptParams(PJS_VECTOR.encoded))
     expect(decryptPjsKeystore(keystore, PASSWORD)).toEqual(SECRET)
+    expect(kdf.requested).toEqual([
+      { N: 1 << 17, p: 1, r: 8, dkLen: 64 },
+      { N: 1 << 17, p: 1, r: 8, dkLen: 64 },
+    ])
   })
 })
