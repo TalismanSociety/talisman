@@ -45,7 +45,7 @@ function setDefaultFetchResponses() {
     if (url.includes("polkadot")) {
       return new Response(
         JSON.stringify({
-          deny: ["badsite.com", "an.other-badsite.io"],
+          deny: ["badsite.com", "an.other-badsite.io", "polkadot-only-badsite.io"],
           allow: ["goodsite.com", "polkadot.js.org"],
         }),
         { status: 200, headers: { etag: "pd-etag-1" } }
@@ -190,7 +190,7 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
 
 it.each([
   ["MetaMask config", "metamask", { broken: true }, "https://sites.google.com/view/other-phish"],
-  ["Polkadot list", "polkadot", "not-an-object", "https://an.other-badsite.io"],
+  ["Polkadot list", "polkadot", "not-an-object", "https://polkadot-only-badsite.io"],
 ])(
   "Keeps the last valid %s when a refresh returns a malformed one",
   async (_, source, body, phishingSite) => {
