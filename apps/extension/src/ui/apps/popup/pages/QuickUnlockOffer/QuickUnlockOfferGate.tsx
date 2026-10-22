@@ -6,9 +6,10 @@ import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { isQuickUnlockAvailable } from "@ui/util/webauthnPrf"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
-import { defer, shareReplay } from "rxjs"
+import { defer, of, shareReplay, timeout } from "rxjs"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
+import { QuickUnlockOfferBackdrop } from "./QuickUnlockOfferBackdrop"
 
 type Decision = "pending" | "offer" | "skip"
 
@@ -25,8 +26,14 @@ const decide = (inputs: OfferInputs): Decision => {
   return inputs.available ? "offer" : "skip"
 }
 
-// slow on some platforms (Windows Hello), so it starts while the user types their password
-const quickUnlockAvailable$ = defer(isQuickUnlockAvailable).pipe(shareReplay(1))
+export const AVAILABILITY_CHECK_TIMEOUT_MS = 1_500
+
+// slow on some platforms (Windows Hello), so it starts while the user types their password.
+// some broken authenticator setups never answer, and the user must not wait on them after login
+const quickUnlockAvailable$ = defer(isQuickUnlockAvailable).pipe(
+  timeout({ first: AVAILABILITY_CHECK_TIMEOUT_MS, with: () => of(false) }),
+  shareReplay(1)
+)
 const [useQuickUnlockAvailable] = bind(quickUnlockAvailable$, null)
 
 /**
@@ -64,7 +71,7 @@ export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
 
   const answer = useCallback(() => setSettled("skip"), [])
 
-  if (decision === "pending") return null
+  if (decision === "pending") return <QuickUnlockOfferBackdrop />
   if (decision === "offer") return <QuickUnlockOffer onAnswer={answer} />
   return children
 }

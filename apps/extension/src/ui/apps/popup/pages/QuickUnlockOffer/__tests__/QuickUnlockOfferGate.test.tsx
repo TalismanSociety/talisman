@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import type { FC } from "react"
-import { beforeEach, describe, expect, test, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 type AuthStatus = "TRUE" | "FALSE" | "UNKNOWN"
 
@@ -53,6 +53,9 @@ vi.mock("../QuickUnlockOffer", () => ({
     </button>
   ),
 }))
+vi.mock("../QuickUnlockOfferBackdrop", () => ({ QuickUnlockOfferBackdrop: () => <p>backdrop</p> }))
+
+import { AVAILABILITY_CHECK_TIMEOUT_MS } from "../QuickUnlockOfferGate"
 
 let Popup: FC
 
@@ -93,11 +96,16 @@ const openLockedThenLogin = async () => {
   return view
 }
 
-const shows = (screenName: "offer" | "portfolio" | "nothing") => {
+const shows = (screenName: "offer" | "portfolio" | "backdrop" | "nothing") => {
   expect({
     offer: !!screen.queryByText("quick unlock offer"),
     portfolio: !!screen.queryByText("portfolio"),
-  }).toEqual({ offer: screenName === "offer", portfolio: screenName === "portfolio" })
+    backdrop: !!screen.queryByText("backdrop"),
+  }).toEqual({
+    offer: screenName === "offer",
+    portfolio: screenName === "portfolio",
+    backdrop: screenName === "backdrop",
+  })
 }
 
 const expectNoOfferInputsRead = () => {
@@ -116,6 +124,10 @@ describe("QuickUnlockOfferGate", () => {
     mockUseEnrolment.mockReturnValue(false)
     mockUseFeatureFlag.mockImplementation((flag: string) => flag === "QUICK_UNLOCK")
     mockUseAppState.mockImplementation((key: string) => [flags[key], vi.fn()])
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   test("offers quick unlock after a login in the toolbar popup", async () => {
@@ -213,19 +225,31 @@ describe("QuickUnlockOfferGate", () => {
     shows("portfolio")
   })
 
-  test("waits for the availability check before deciding", async () => {
+  test("shows the offer backdrop while the availability check runs", async () => {
     mockIsAvailable.mockReturnValue(new Promise(() => {}))
 
     await openLockedThenLogin()
 
-    shows("nothing")
+    shows("backdrop")
+  })
+
+  test("skips when the availability check never answers", async () => {
+    vi.useFakeTimers()
+    mockIsAvailable.mockReturnValue(new Promise(() => {}))
+
+    await openLockedThenLogin()
+    shows("backdrop")
+
+    await act(async () => vi.advanceTimersByTime(AVAILABILITY_CHECK_TIMEOUT_MS))
+
+    shows("portfolio")
   })
 
   test("waits for the enrolment instead of trusting an unknown one", async () => {
     mockUseEnrolment.mockReturnValue(null)
 
     const view = await openLockedThenLogin()
-    shows("nothing")
+    shows("backdrop")
 
     mockUseEnrolment.mockReturnValue(true)
     view.rerender(<Popup />)

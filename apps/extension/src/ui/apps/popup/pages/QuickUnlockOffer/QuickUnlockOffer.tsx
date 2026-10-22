@@ -3,18 +3,15 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { notify } from "@ui/components/Notifications"
-import { SuspenseTracker } from "@ui/components/SuspenseTracker"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { useEnableQuickUnlock } from "@ui/hooks/useEnableQuickUnlock"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
-import { HandMonoLogo } from "@ui/theme/logos"
-import { Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
-import { LoginScreenBackground } from "../Login"
+import { QuickUnlockOfferBackdrop } from "./QuickUnlockOfferBackdrop"
 
 export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
   const { t } = useTranslation()
@@ -70,15 +67,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
   }, [enableQuickUnlock, onAnswer, t])
 
   return (
-    <PopupLayout>
-      <Suspense fallback={<SuspenseTracker name="Background" />}>
-        <LoginScreenBackground />
-      </Suspense>
-      <PopupContent className="z-10 select-none pt-32 text-center">
-        <div className="mt-[60px]">
-          <HandMonoLogo className="inline-block text-[64px]" />
-        </div>
-      </PopupContent>
+    <QuickUnlockOfferBackdrop>
       <Drawer
         analyticsId="quick_unlock_offer"
         containerId="main"
@@ -114,6 +103,6 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
           </div>
         </DrawerContent>
       </Drawer>
-    </PopupLayout>
+    </QuickUnlockOfferBackdrop>
   )
 }
