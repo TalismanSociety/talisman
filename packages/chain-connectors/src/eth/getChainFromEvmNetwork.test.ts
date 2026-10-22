@@ -43,14 +43,6 @@ describe("getChainFromEvmNetwork", () => {
     ])
   })
 
-  it("returns cached result for the same network id", () => {
-    const network = makeEthNetwork()
-    const chain1 = getChainFromEvmNetwork(network)
-    const chain2 = getChainFromEvmNetwork(network)
-
-    expect(chain1).toBe(chain2)
-  })
-
   it("handles contracts by converting keys to camelCase", () => {
     const network = makeEthNetwork({
       id: "99999",

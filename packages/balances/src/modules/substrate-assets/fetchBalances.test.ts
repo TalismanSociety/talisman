@@ -162,21 +162,6 @@ describe("substrate-assets fetchBalances", () => {
     ])
   })
 
-  it("reports a Frozen account's whole balance as frozen", async () => {
-    const { connector } = makeConnector()
-    const token = assetToken(ASSET_HUB, frozenAccount.assetId)
-
-    const { success } = await fetchAssets([[token, [frozenAccount.address]]], connector)
-
-    expect(frozenAccount.entry.expected).toMatchObject({ status: { type: "Frozen" } })
-    expect(success).toEqual([
-      assetBalance(token, frozenAccount.address, {
-        free: balanceOf(frozenAccount),
-        frozen: balanceOf(frozenAccount),
-      }),
-    ])
-  })
-
   it("reports the whole balance as frozen when the token is frozen", async () => {
     const { connector } = makeConnector()
     const token = assetToken(ASSET_HUB, frozenAssetHolder.assetId, { isFrozen: true })

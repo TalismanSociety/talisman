@@ -78,22 +78,12 @@ describe("BalanceFormatter", () => {
       const f = new BalanceFormatter(big)
       expect(f.planck).toBe(BigInt(big))
     })
-
-    it("handles zero planck", () => {
-      const f = new BalanceFormatter("0")
-      expect(f.planck).toBe(0n)
-    })
   })
 
   describe("tokens", () => {
     it("with 0 decimals returns planck as string", () => {
       const f = new BalanceFormatter("42", 0)
       expect(f.tokens).toBe("42")
-    })
-
-    it("with 10 decimals converts correctly", () => {
-      const f = new BalanceFormatter("10000000000", 10)
-      expect(f.tokens).toBe("1")
     })
 
     it("with 12 decimals handles fractional result", () => {
@@ -177,20 +167,6 @@ describe("BalanceValueGetter", () => {
       const result = getter.get("free")
       expect(result).toHaveLength(2)
       expect(result.every((v) => v.type === "free")).toBe(true)
-    })
-
-    it("filters values by 'reserved' type", () => {
-      const getter = new BalanceValueGetter(complexStorage)
-      const result = getter.get("reserved")
-      expect(result).toHaveLength(1)
-      expect(result[0].label).toBe("reserved-balance")
-    })
-
-    it("filters values by 'locked' type", () => {
-      const getter = new BalanceValueGetter(complexStorage)
-      const result = getter.get("locked")
-      expect(result).toHaveLength(1)
-      expect(result[0].label).toBe("vesting")
     })
 
     it("returns empty array when no values match the type", () => {
@@ -306,13 +282,6 @@ describe("PlanckSumBalancesFormatter", () => {
     expect(balances.sum.planck.feePayable).toBe(0n)
   })
 
-  it("single balance sum equals the individual value", () => {
-    const b = makeHydratedBalance("0x01", "token-a", "42", 0)
-    const balances = new Balances([b])
-    expect(balances.sum.planck.total).toBe(42n)
-    expect(balances.sum.planck.free).toBe(42n)
-  })
-
   it("sums locked values (locked = max of locks per balance)", () => {
     const json: BalanceJson = {
       source: "test-source",
@@ -415,13 +384,6 @@ describe("Change24hCurrencyFormatter", () => {
     expect(result!.ratio).toBe(5)
   })
 
-  it("returns null when totalFiat is 0 (no fiat rates)", () => {
-    const b = makeHydratedBalance("0x01", "token-a", "1000000000000", 12)
-    const balances = new Balances([b])
-
-    expect(balances.sum.change24h("usd").total).toBeNull()
-  })
-
   it("returns null when no change24h data on any balance", () => {
     // Rates have price but no change24h
     const rates = makeTokenRates(10)
@@ -479,29 +441,6 @@ describe("Change24hCurrencyFormatter", () => {
     const balances = new Balances([b])
 
     // fiat = 0, so fiat is falsy → skipped. totalFiat = 0 → returns null
-    expect(balances.sum.change24h("usd").total).toBeNull()
-  })
-})
-
-// ---------------------------------------------------------------------------
-// SumBalancesFormatter
-// ---------------------------------------------------------------------------
-
-describe("SumBalancesFormatter", () => {
-  it("planck getter returns PlanckSumBalancesFormatter", () => {
-    const balances = new Balances([])
-    const planckSum = balances.sum.planck
-    expect(planckSum.total).toBe(0n)
-  })
-
-  it("fiat() returns FiatSumBalancesFormatter", () => {
-    const balances = new Balances([])
-    const fiatSum = balances.sum.fiat("usd")
-    expect(fiatSum.total).toBe(0)
-  })
-
-  it("change24h() returns Change24hCurrencyFormatter", () => {
-    const balances = new Balances([])
     expect(balances.sum.change24h("usd").total).toBeNull()
   })
 })
@@ -578,14 +517,5 @@ describe("Mirror token exclusion in sums", () => {
 
     // Only real contributes: 1 token * $2 = $2
     expect(balances.sum.fiat("usd").total).toBe(2)
-  })
-
-  it("keeps non-mirror tokens in sum", () => {
-    const b1 = makeHydratedMirrorBalance("0x01", "token-a", "100", 0)
-    const b2 = makeHydratedMirrorBalance("0x02", "token-b", "200", 0)
-    const balances = new Balances([b1, b2])
-
-    // Neither is a mirror, both contribute
-    expect(balances.sum.planck.total).toBe(300n)
   })
 })

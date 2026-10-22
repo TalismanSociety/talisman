@@ -17,10 +17,15 @@ const FIXTURES_DIR = path.resolve(
 const loadMetadataRpc = (name: string): `0x${string}` =>
   `0x${gunzipSync(readFileSync(path.join(FIXTURES_DIR, name))).toString("hex")}`
 
-const ASSET_HUB_METADATA = loadMetadataRpc("assethub-metadata-v15.scale.gz")
 const ASSET_HUB_SPEC_VERSION = 2003001
 const POLKADOT_METADATA = loadMetadataRpc("polkadot-metadata-v15.scale.gz")
 const POLKADOT_SPEC_VERSION = 2003000
+
+const assetHubMiniMetadata = getMiniMetadata({
+  networkId: "polkadot-asset-hub",
+  specVersion: ASSET_HUB_SPEC_VERSION,
+  metadataRpc: loadMetadataRpc("assethub-metadata-v15.scale.gz"),
+})
 
 const storageItemsByPallet = (data: `0x${string}`) =>
   Object.fromEntries(
@@ -32,13 +37,7 @@ const storageItemsByPallet = (data: `0x${string}`) =>
 
 describe("substrate-native getMiniMetadata", () => {
   it("reads the Asset Hub constants the balance queries depend on", () => {
-    const miniMetadata = getMiniMetadata({
-      networkId: "polkadot-asset-hub",
-      specVersion: ASSET_HUB_SPEC_VERSION,
-      metadataRpc: ASSET_HUB_METADATA,
-    })
-
-    expect(miniMetadata).toEqual({
+    expect(assetHubMiniMetadata).toEqual({
       id: deriveMiniMetadataId({
         source: "substrate-native",
         chainId: "polkadot-asset-hub",
@@ -58,13 +57,7 @@ describe("substrate-native getMiniMetadata", () => {
   })
 
   it("keeps only the storage items the balance queries read", () => {
-    const { data } = getMiniMetadata({
-      networkId: "polkadot-asset-hub",
-      specVersion: ASSET_HUB_SPEC_VERSION,
-      metadataRpc: ASSET_HUB_METADATA,
-    })
-
-    expect(storageItemsByPallet(data!)).toEqual({
+    expect(storageItemsByPallet(assetHubMiniMetadata.data!)).toEqual({
       System: ["Account"],
       Balances: ["Freezes", "Holds", "Locks", "Reserves"],
       NominationPools: ["BondedPools", "Metadata", "PoolMembers"],

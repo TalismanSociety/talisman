@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderHook, waitFor } from "@testing-library/react"
+import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-library/react"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -53,6 +53,9 @@ vi.mock("../swaps.api", () => {
 })
 
 import { useSwapQuoteManager } from "../hooks/useSwapQuoteManager"
+
+// renderHook paints no DOM, so waitFor only polls: at its default 50ms each wait costs a frame
+const waitFor = (check: () => void) => waitForWithDefaultInterval(check, { interval: 5 })
 
 type Deferred<T> = {
   promise: Promise<T>
@@ -114,51 +117,6 @@ describe("useSwapQuoteManager – multi-provider", () => {
     queryClient.clear()
   })
 
-  it("is not settled until all providers respond", async () => {
-    const lifiDeferred = createDeferred<BaseQuote | null>()
-    const simpleswapDeferred = createDeferred<BaseQuote | null>()
-
-    lifiGetQuoteMock.mockReturnValue(lifiDeferred.promise)
-    simpleswapGetQuoteMock.mockReturnValue(simpleswapDeferred.promise)
-
-    const wrapper = ({ children }: PropsWithChildren) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
-
-    const params = {
-      fromTokenId: "from-token",
-      toTokenId: "to-token",
-      fromSupportMap,
-      toSupportMap,
-      fromAmount: 1n,
-      fromAddress: "0xaaa",
-      toAddress: "0xbbb",
-      selectedProtocol: null as SupportedSwapProtocol | null,
-      selectedSubProtocol: undefined,
-      quoteSorting: "bestRate" as const,
-      slippagePercent: 0.5,
-    }
-
-    const { result } = renderHook(() => useSwapQuoteManager(params), { wrapper })
-
-    await waitFor(() => {
-      expect(lifiGetQuoteMock).toHaveBeenCalledTimes(1)
-      expect(simpleswapGetQuoteMock).toHaveBeenCalledTimes(1)
-    })
-
-    // Only resolve the first provider — should NOT be settled yet
-    simpleswapDeferred.resolve(makeSimpleswapQuote(100n))
-
-    await waitFor(() => expect(result.current.sortedQuotes.length).toBeGreaterThan(0))
-    expect(result.current.isAllQuotesSettled).toBe(false)
-
-    // Now resolve the second provider
-    lifiDeferred.resolve(makeLifiQuote(200n))
-
-    await waitFor(() => expect(result.current.isAllQuotesSettled).toBe(true))
-    expect(result.current.sortedQuotes).toHaveLength(2)
-  })
-
   it("selects the best rate after all providers settle (not the first to arrive)", async () => {
     const lifiDeferred = createDeferred<BaseQuote | null>()
     const simpleswapDeferred = createDeferred<BaseQuote | null>()
@@ -205,6 +163,7 @@ describe("useSwapQuoteManager – multi-provider", () => {
     lifiDeferred.resolve(makeLifiQuote(200n))
 
     await waitFor(() => expect(result.current.isAllQuotesSettled).toBe(true))
+    expect(result.current.sortedQuotes).toHaveLength(2)
 
     // Now sortedQuotes[0] should be lifi (best rate = highest output)
     expect(result.current.sortedQuotes[0]?.quote.protocol).toBe("lifi")

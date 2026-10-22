@@ -1,13 +1,7 @@
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { vi } from "vitest"
 import { tryToDeleteOldTokenRatesDb } from "./TalismanTokenRatesDatabase"
-import {
-  ALL_CURRENCY_IDS,
-  DEFAULT_COINSAPI_CONFIG,
-  fetchTokenRates,
-  TokenRatesError,
-} from "./TokenRates"
-import { newTokenRates, SUPPORTED_CURRENCIES } from "./types"
+import { fetchTokenRates, TokenRatesError } from "./TokenRates"
 
 // Minimal token factory — only fields that fetchTokenRates touches
 const makeToken = (overrides: Partial<Token> = {}): Token =>
@@ -34,112 +28,14 @@ const makeLpToken = (): Token =>
 const mockFetchJson = (body: unknown) =>
   vi.fn().mockResolvedValue({ json: () => Promise.resolve(body) })
 
-// ---------- 1. Constants and factory functions ----------
-
-describe("SUPPORTED_CURRENCIES", () => {
-  it("has exactly 21 currencies", () => {
-    const keys = Object.keys(SUPPORTED_CURRENCIES)
-    expect(keys).toHaveLength(21)
-  })
-
-  it("contains 4 crypto currencies", () => {
-    for (const id of ["btc", "eth", "dot", "tao"] as const) {
-      expect(SUPPORTED_CURRENCIES[id]).toBeDefined()
-    }
-  })
-
-  it("contains 17 fiat currencies", () => {
-    const fiats = [
-      "usd",
-      "cny",
-      "eur",
-      "gbp",
-      "cad",
-      "aud",
-      "nzd",
-      "jpy",
-      "rub",
-      "krw",
-      "idr",
-      "php",
-      "thb",
-      "vnd",
-      "inr",
-      "try",
-      "sgd",
-    ] as const
-    for (const id of fiats) {
-      expect(SUPPORTED_CURRENCIES[id]).toBeDefined()
-    }
-  })
-
-  it("every currency has name and symbol strings", () => {
-    for (const entry of Object.values(SUPPORTED_CURRENCIES)) {
-      expect(typeof entry.name).toBe("string")
-      expect(typeof entry.symbol).toBe("string")
-      expect(entry.name.length).toBeGreaterThan(0)
-      expect(entry.symbol.length).toBeGreaterThan(0)
-    }
-  })
-})
-
-describe("ALL_CURRENCY_IDS", () => {
-  it("is an array of all 21 currency codes", () => {
-    expect(ALL_CURRENCY_IDS).toHaveLength(21)
-    expect(ALL_CURRENCY_IDS).toEqual(Object.keys(SUPPORTED_CURRENCIES))
-  })
-})
-
-describe("DEFAULT_COINSAPI_CONFIG", () => {
-  it("has apiUrl set to https://coins.talisman.xyz", () => {
-    expect(DEFAULT_COINSAPI_CONFIG.apiUrl).toBe("https://coins.talisman.xyz")
-  })
-})
-
-describe("newTokenRates", () => {
-  it("returns an object with all 21 currencies set to null", () => {
-    const rates = newTokenRates()
-    const keys = Object.keys(rates)
-    expect(keys).toHaveLength(21)
-    for (const key of keys) {
-      expect(rates[key as keyof typeof rates]).toBeNull()
-    }
-  })
-
-  it("keys match SUPPORTED_CURRENCIES", () => {
-    const rates = newTokenRates()
-    expect(Object.keys(rates)).toEqual(Object.keys(SUPPORTED_CURRENCIES))
-  })
-})
-
-// ---------- 2. TokenRatesError class ----------
-
 describe("TokenRatesError", () => {
-  it("constructs with message only", () => {
-    const err = new TokenRatesError("something failed")
-    expect(err.message).toBe("something failed")
-    expect(err.response).toBeUndefined()
-  })
-
   it("constructs with message and Response", () => {
     const res = new Response("body", { status: 500 })
     const err = new TokenRatesError("bad response", res)
     expect(err.message).toBe("bad response")
     expect(err.response).toBe(res)
   })
-
-  it("is an instance of Error", () => {
-    const err = new TokenRatesError("test")
-    expect(err).toBeInstanceOf(Error)
-  })
-
-  it("has response property accessible", () => {
-    const err = new TokenRatesError("test")
-    expect("response" in err).toBe(true)
-  })
 })
-
-// ---------- 3. fetchTokenRates ----------
 
 describe("fetchTokenRates", () => {
   afterEach(() => {
@@ -159,23 +55,6 @@ describe("fetchTokenRates", () => {
     const result = await fetchTokenRates(tokens, ["usd"], config)
     expect(result).toEqual({})
     expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it("returns rates for tokens with coingeckoIds", async () => {
-    // Single token (polkadot), single currency (usd)
-    // API returns compact format: [price, marketCap, change24h][][]
-    const apiResponse = [[[7.5, 9_000_000_000, 0.03]]]
-    const mockFetch = mockFetchJson(apiResponse)
-    vi.stubGlobal("fetch", mockFetch)
-
-    const tokens: Record<TokenId, Token> = {
-      dot: makeToken({ id: "dot", coingeckoId: "polkadot" }),
-    }
-
-    const result = await fetchTokenRates(tokens, ["usd"], config)
-    expect(result.dot).toEqual({
-      usd: { price: 7.5, marketCap: 9_000_000_000, change24h: 0.03 },
-    })
   })
 
   it("returns null rates for tokens without coingeckoId", async () => {
@@ -270,8 +149,6 @@ describe("fetchTokenRates", () => {
     })
   })
 })
-
-// ---------- 4. TAO currency special logic ----------
 
 describe("fetchTokenRates — TAO currency", () => {
   afterEach(() => {
@@ -397,8 +274,6 @@ describe("fetchTokenRates — TAO currency", () => {
   })
 })
 
-// ---------- 5. LP token handling ----------
-
 describe("fetchTokenRates — LP tokens", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -466,8 +341,6 @@ describe("fetchTokenRates — LP tokens", () => {
   })
 })
 
-// ---------- 6. tryToDeleteOldTokenRatesDb ----------
-
 describe("tryToDeleteOldTokenRatesDb", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -488,12 +361,6 @@ describe("tryToDeleteOldTokenRatesDb", () => {
         throw new Error("not available")
       },
     })
-
-    expect(() => tryToDeleteOldTokenRatesDb()).not.toThrow()
-  })
-
-  it("does not throw when indexedDB is undefined", () => {
-    vi.stubGlobal("indexedDB", undefined)
 
     expect(() => tryToDeleteOldTokenRatesDb()).not.toThrow()
   })

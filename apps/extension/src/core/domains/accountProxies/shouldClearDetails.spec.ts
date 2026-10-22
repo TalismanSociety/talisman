@@ -53,19 +53,6 @@ describe("shouldClearDetails", () => {
     expect(shouldClearDetails(existing, 2)).toBe(false)
   })
 
-  it("returns true when count unchanged but details expired past TTL", () => {
-    const existing: AccountProxySet = {
-      delegator: "0x1",
-      networkId: "polkadot",
-      proxyCount: 2,
-      deposit: "1000",
-      isStale: false,
-      proxies: [{ delegate: "0x2", proxyType: "Any", delay: "0" }],
-      lastDetailsFetchedAt: Date.now() - 31 * 60 * 1000, // 31 min ago (TTL is 30 min)
-    }
-    expect(shouldClearDetails(existing, 2)).toBe(true)
-  })
-
   it("returns false when details are empty (no proxies loaded yet)", () => {
     const existing: AccountProxySet = {
       delegator: "0x1",

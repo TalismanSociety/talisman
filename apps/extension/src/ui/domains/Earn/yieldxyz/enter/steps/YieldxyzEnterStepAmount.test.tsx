@@ -101,7 +101,7 @@ describe("YieldxyzEnterStepAmount", () => {
     expect(mockGoTo).not.toHaveBeenCalled()
   })
 
-  it("hides the createAction error once the amount changes", async () => {
+  it("hides the createAction error once the amount changes, even back to the failed amount", async () => {
     mockCreateAction.mockRejectedValue(new Error("Amount is below the minimum"))
 
     const { rerender } = render(<YieldxyzEnterStepAmount />)
@@ -110,22 +110,10 @@ describe("YieldxyzEnterStepAmount", () => {
 
     wizard.amountIn = 2n
     rerender(<YieldxyzEnterStepAmount />)
-
     expect(screen.queryByText("Amount is below the minimum")).toBeNull()
-  })
 
-  it("keeps the createAction error hidden when the failed amount is entered again", async () => {
-    mockCreateAction.mockRejectedValue(new Error("Amount is below the minimum"))
-
-    const { rerender } = render(<YieldxyzEnterStepAmount />)
-    fireEvent.click(screen.getByText("Review"))
-    await screen.findByText("Amount is below the minimum")
-
-    wizard.amountIn = 2n
-    rerender(<YieldxyzEnterStepAmount />)
     wizard.amountIn = 1n
     rerender(<YieldxyzEnterStepAmount />)
-
     expect(screen.queryByText("Amount is below the minimum")).toBeNull()
   })
 
@@ -148,6 +136,6 @@ describe("YieldxyzEnterStepAmount", () => {
     render(<YieldxyzEnterStepAmount />)
     fireEvent.click(screen.getByText("Review"))
 
-    await waitFor(() => expect(mockGoTo).toHaveBeenCalledWith("confirm"))
+    await waitFor(() => expect(mockGoTo).toHaveBeenCalledWith("confirm"), { interval: 1 })
   })
 })

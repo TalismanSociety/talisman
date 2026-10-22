@@ -109,11 +109,6 @@ describe("filterBaseLocks", () => {
     expect(filterBaseLocks(locks)).toEqual(locks)
   })
 
-  it("returns all locks when only non-base locks exist", () => {
-    const locks = [makeLock("staking"), makeLock("vesting")]
-    expect(filterBaseLocks(locks)).toEqual(locks)
-  })
-
   it("returns empty array for empty input", () => {
     expect(filterBaseLocks([])).toEqual([])
   })

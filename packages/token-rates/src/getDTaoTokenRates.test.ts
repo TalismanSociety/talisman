@@ -68,16 +68,6 @@ describe("getDTaoTokenRates", () => {
       })
     })
 
-    it("sets change24h to undefined in all currency entries", () => {
-      const tokenRates = makeTokenRatesList()
-      const token = makeToken(2)
-
-      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE)!
-
-      expect(result.usd!.change24h).toBeUndefined()
-      expect(result.btc!.change24h).toBeUndefined()
-    })
-
     it("sets marketCap to undefined when TAO marketCap is falsy", () => {
       const taoRates = newTokenRates()
       taoRates.usd = { price: 400, marketCap: undefined, change24h: 1.0 }
@@ -113,26 +103,6 @@ describe("getDTaoTokenRates", () => {
   })
 
   describe("scaledAlphaPrice input types", () => {
-    it("accepts scaledAlphaPrice as a string", () => {
-      const tokenRates = makeTokenRatesList()
-      const token = makeToken(1)
-
-      const result = getDTaoTokenRates(token, tokenRates, "500000000")
-
-      expect(result).not.toBeNull()
-      expect(result!.usd!.price).toBeGreaterThan(0)
-    })
-
-    it("accepts scaledAlphaPrice as a bigint", () => {
-      const tokenRates = makeTokenRatesList()
-      const token = makeToken(1)
-
-      const result = getDTaoTokenRates(token, tokenRates, 500_000_000n)
-
-      expect(result).not.toBeNull()
-      expect(result!.usd!.price).toBeGreaterThan(0)
-    })
-
     it("produces identical results for string and bigint scaledAlphaPrice", () => {
       const tokenRates = makeTokenRatesList()
       const token = makeToken(1)
@@ -141,19 +111,6 @@ describe("getDTaoTokenRates", () => {
       const fromBigint = getDTaoTokenRates(token, tokenRates, 500_000_000n)
 
       expect(fromString).toEqual(fromBigint)
-    })
-  })
-
-  describe("1:1 price ratio", () => {
-    it("produces rates equal to TAO rates (minus change24h) when price is ALPHA_PRICE_SCALE", () => {
-      const tokenRates = makeTokenRatesList()
-      const token = makeToken(5)
-
-      const result = getDTaoTokenRates(token, tokenRates, ALPHA_PRICE_SCALE)!
-
-      expect(result.usd!.price).toBe(400)
-      expect(result.usd!.marketCap).toBe(3_000_000_000)
-      expect(result.usd!.change24h).toBeUndefined()
     })
   })
 

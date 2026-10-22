@@ -19,7 +19,7 @@ const getSeekStakingMetadataCacheKey = (
     scope: [networkId, stakingContractAddress],
   })
 
-export const getSeekStakingPositionCacheKey = (
+const getSeekStakingPositionCacheKey = (
   networkId: EthNetworkId,
   stakingContractAddress: `0x${string}`,
   address: string

@@ -162,55 +162,6 @@ describe("getCombinedChaindata$", () => {
     })
   })
 
-  // ── Custom chaindata validation ────────────────────────────────
-
-  describe("custom chaindata validation", () => {
-    it("undefined custom$ uses default empty custom data", async () => {
-      const result = await combine(makeChaindata(), undefined)
-
-      // All networks should be from default (not custom)
-      for (const network of result.networks) {
-        const n = network as Network & Record<string, unknown>
-        expect(n.__isCustom).toBe(false)
-      }
-    })
-
-    it("plain object custom$ (not observable) is accepted", async () => {
-      const customToken = makeEvmNativeToken({ id: "1-evm-native", symbol: "CETH" })
-      const custom = makeCustomChaindata({ tokens: [customToken] })
-
-      // Pass as observable wrapping the object
-      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
-      dynamicTokens$.next([])
-      const result$ = getCombinedChaindata$(of(makeChaindata()), custom, dynamicTokens$)
-      const result = await firstValueFrom(result$)
-
-      const merged = findToken(result.tokens, "1-evm-native")
-      expect(merged.__isCustom).toBe(true)
-      expect(merged.symbol).toBe("CETH")
-    })
-
-    it("invalid custom chaindata falls back to empty", async () => {
-      // strictObject rejects extra properties
-      const invalidCustom = {
-        tokens: [],
-        networks: [],
-        extraField: true,
-      } as unknown as CustomChaindata
-
-      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
-      dynamicTokens$.next([])
-      const result$ = getCombinedChaindata$(of(makeChaindata()), of(invalidCustom), dynamicTokens$)
-      const result = await firstValueFrom(result$)
-
-      // All networks should be from default (custom fell back to empty)
-      for (const network of result.networks) {
-        const n = network as Network & Record<string, unknown>
-        expect(n.__isCustom).toBe(false)
-      }
-    })
-  })
-
   // ── Dynamic tokens ─────────────────────────────────────────────
 
   describe("dynamic tokens", () => {
@@ -325,6 +276,23 @@ describe("getCombinedChaindata$", () => {
   // ── Edge cases ─────────────────────────────────────────────────
 
   describe("edge cases", () => {
+    it("invalid custom chaindata falls back to empty", async () => {
+      const invalidCustom = {
+        ...makeCustomChaindata({
+          networks: [makeEthNetwork({ id: "999", nativeTokenId: "999-evm-native" })],
+          tokens: [makeEvmNativeToken({ id: "999-evm-native", networkId: "999" })],
+        }),
+        extraField: true,
+      } as CustomChaindata
+
+      const result = await combine(makeChaindata(), invalidCustom)
+
+      expect(findNetwork(result.networks, "999")).toBeUndefined()
+      expect(findToken(result.tokens, "999-evm-native")).toBeUndefined()
+      for (const network of result.networks)
+        expect((network as Network & Record<string, unknown>).__isCustom).toBe(false)
+    })
+
     it("empty default + empty custom → empty arrays", async () => {
       const emptyData: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
       const emptyCustom = makeCustomChaindata({ tokens: [] })

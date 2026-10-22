@@ -1,7 +1,7 @@
 import type { SignerPayloadJSON } from "@core/types/pjsInterop"
 import type { ScaleApi } from "@talismn/sapi"
 import { keepPreviousData, QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderHook, waitFor } from "@testing-library/react"
+import { act, renderHook } from "@testing-library/react"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -24,6 +24,13 @@ const buildPayload = (method: string) => ({
   payload: { method, blockNumber: `0x${BIRTH_BLOCK.toString(16)}` } as SignerPayloadJSON,
 })
 type BuiltPayload = ReturnType<typeof buildPayload>
+
+// a zero-delay timer created while the clock ticks is due one millisecond later
+const elapse = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms + 1))
+
+const travel = (ms: number) => {
+  vi.setSystemTime(Date.now() + ms)
+}
 
 describe("getPayloadRefreshIntervalMs", () => {
   it("rebuilds after a quarter of the era left at build time", () => {
@@ -48,12 +55,14 @@ describe("useSignerPayloadQuery", () => {
   )
 
   beforeEach(() => {
+    vi.useFakeTimers()
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   })
 
   afterEach(() => {
     queryClient.clear()
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it("withholds a stale payload and reports it as loading until a fresh one lands", async () => {
@@ -63,17 +72,17 @@ describe("useSignerPayloadQuery", () => {
       () => useSignerPayloadQuery({ sapi, queryKey: ["stale"], queryFn }),
       { wrapper }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
     expect(result.current.isLoading).toBe(false)
 
-    const builtAt = Date.now()
-    vi.spyOn(Date, "now").mockReturnValue(builtAt + 33 * 12_000)
+    travel(33 * 12_000)
     rerender()
 
     expect(result.current.data).toBeUndefined()
     expect(result.current.isLoading).toBe(true)
 
-    vi.restoreAllMocks()
+    travel(-33 * 12_000)
     rerender()
 
     expect(result.current.data?.payload.method).toBe("0x01")
@@ -86,10 +95,10 @@ describe("useSignerPayloadQuery", () => {
       () => useSignerPayloadQuery({ sapi, queryKey: ["lag"], queryFn }),
       { wrapper }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
 
-    const builtAt = Date.now()
-    vi.spyOn(Date, "now").mockReturnValue(builtAt + 17 * 12_000)
+    travel(17 * 12_000)
     rerender()
 
     expect(result.current.data).toBeUndefined()
@@ -105,19 +114,24 @@ describe("useSignerPayloadQuery", () => {
       () => useSignerPayloadQuery({ sapi, queryKey: ["stalled"], queryFn }),
       { wrapper }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
 
-    await waitFor(() => expect(result.current.data).toBeUndefined(), { timeout: 2_000 })
+    await elapse(32 * 20 - 10)
+    expect(result.current.data?.payload.method).toBe("0x01")
+
+    await elapse(10)
+    expect(result.current.data).toBeUndefined()
     expect(result.current.isLoading).toBe(true)
   })
 
   it("withholds the payload when its expiry timer fires before the deadline", async () => {
-    const realSetTimeout = globalThis.setTimeout
+    const fakeSetTimeout = globalThis.setTimeout
     vi.spyOn(globalThis, "setTimeout").mockImplementation(((
       fn: () => void,
       ms = 0,
       ...args: unknown[]
-    ) => realSetTimeout(fn, Math.max(0, ms - 5), ...args)) as typeof setTimeout)
+    ) => fakeSetTimeout(fn, Math.max(0, ms - 5), ...args)) as typeof setTimeout)
     const sapi = sapiWithBlockTime(20)
     const queryFn = vi
       .fn<() => Promise<BuiltPayload>>()
@@ -127,9 +141,11 @@ describe("useSignerPayloadQuery", () => {
       () => useSignerPayloadQuery({ sapi, queryKey: ["early"], queryFn }),
       { wrapper }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
 
-    await waitFor(() => expect(result.current.data).toBeUndefined(), { timeout: 2_000 })
+    await elapse(32 * 20 - 5)
+    expect(result.current.data).toBeUndefined()
   })
 
   it("rebuilds the payload on the block-time interval without a loading state", async () => {
@@ -140,9 +156,11 @@ describe("useSignerPayloadQuery", () => {
       () => useSignerPayloadQuery({ sapi, queryKey: ["refresh"], queryFn }),
       { wrapper }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
 
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x02"))
+    await elapse(16 * 20 + 10)
+    expect(result.current.data?.payload.method).toBe("0x02")
     expect(result.current.isLoading).toBe(false)
   })
 
@@ -150,9 +168,10 @@ describe("useSignerPayloadQuery", () => {
     const sapi = sapiWithBlockTime(20)
     const queryFn = vi.fn(async () => null)
     renderHook(() => useSignerPayloadQuery({ sapi, queryKey: ["empty"], queryFn }), { wrapper })
-    await waitFor(() => expect(queryFn).toHaveBeenCalledTimes(1))
+    await elapse(0)
+    expect(queryFn).toHaveBeenCalledTimes(1)
 
-    await new Promise((resolve) => setTimeout(resolve, 1_000))
+    await elapse(1_000)
 
     expect(queryFn).toHaveBeenCalledTimes(1)
   })
@@ -175,20 +194,21 @@ describe("useSignerPayloadQuery", () => {
         }),
       { wrapper, initialProps: { method: "0x01" } }
     )
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x01"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x01")
 
     rerender({ method: "0x02" })
     expect(result.current.isPlaceholderData).toBe(true)
     expect(result.current.data?.payload.method).toBe("0x01")
 
-    const builtAt = Date.now()
-    vi.spyOn(Date, "now").mockReturnValue(builtAt + 33 * 12_000)
+    travel(33 * 12_000)
     rerender({ method: "0x02" })
     expect(result.current.data).toBeUndefined()
 
-    vi.restoreAllMocks()
+    travel(-33 * 12_000)
     resolveNext(buildPayload("0x02"))
-    await waitFor(() => expect(result.current.data?.payload.method).toBe("0x02"))
+    await elapse(0)
+    expect(result.current.data?.payload.method).toBe("0x02")
     expect(result.current.isPlaceholderData).toBe(false)
   })
 })

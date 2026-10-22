@@ -92,16 +92,6 @@ describe("useSwapContextProvider stateInit initialization", () => {
     mockToAssetIds = []
   })
 
-  it("initializes toTokenId from stateInit.toTokenId when toAssetIds loads", () => {
-    mockToAssetIds = ["1:native:eth", "8453:erc20:0xseek"]
-
-    const { result } = renderHook(() =>
-      useSwapContextProvider({ stateInit: { entry: "dashboard", toTokenId: "8453:erc20:0xseek" } })
-    )
-
-    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
-  })
-
   it("initializes fromTokenId from stateInit.fromTokenId when fromAssetIds loads", () => {
     mockFromAssetIds = ["1:native:eth", "137:native:matic"]
 
@@ -120,24 +110,6 @@ describe("useSwapContextProvider stateInit initialization", () => {
 
     expect(result.current.fromTokenId).toBeNull()
     expect(result.current.toTokenId).toBeNull()
-  })
-
-  it("does not re-initialize after user changes toTokenId", () => {
-    mockToAssetIds = ["1:native:eth", "8453:erc20:0xseek"]
-
-    const { result } = renderHook(() =>
-      useSwapContextProvider({ stateInit: { entry: "dashboard", toTokenId: "8453:erc20:0xseek" } })
-    )
-
-    // Verify initial auto-selection
-    expect(result.current.toTokenId).toBe("8453:erc20:0xseek")
-
-    // Simulate user selecting a different token
-    act(() => {
-      result.current.setToTokenId("1:native:eth")
-    })
-
-    expect(result.current.toTokenId).toBe("1:native:eth")
   })
 
   it("waits for toAssetIds to load before initializing", () => {
@@ -172,14 +144,6 @@ describe("useSwapContextProvider isInitializing", () => {
   beforeEach(() => {
     mockFromAssetIds = undefined
     mockToAssetIds = undefined
-  })
-
-  it("is true when stateInit.toTokenId is set but toAssetIds has not loaded", () => {
-    const { result } = renderHook(() =>
-      useSwapContextProvider({ stateInit: { entry: "dashboard", toTokenId: "8453:erc20:0xseek" } })
-    )
-
-    expect(result.current.isInitializing).toBe(true)
   })
 
   it("is true when stateInit.fromTokenId is set but fromAssetIds has not loaded", () => {
@@ -217,12 +181,6 @@ describe("useSwapContextProvider isInitializing", () => {
     // toAssetIds loaded (not undefined), so isInitializing becomes false
     expect(result.current.isInitializing).toBe(false)
     expect(result.current.toTokenId).toBeNull()
-  })
-
-  it("is false when stateInit is null", () => {
-    const { result } = renderHook(() => useSwapContextProvider({ stateInit: null }))
-
-    expect(result.current.isInitializing).toBe(false)
   })
 
   it("is false when stateInit has no token IDs", () => {

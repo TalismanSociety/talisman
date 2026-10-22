@@ -1,4 +1,4 @@
-import { Keyring } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { describe, expect, vi } from "vitest"
 import { requestSubstrateSign } from "../../../domains/signing/requests"
@@ -6,23 +6,12 @@ import { requestStore } from "../../../libs/requests/store"
 import { windowManager } from "../../../libs/WindowManager"
 import type { SignerPayloadJSON } from "../../../types/pjsInterop"
 
-const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
-const password = "passw0rd"
-
-const createAccount = () => {
-  const keyring = Keyring.create()
-  return keyring.addAccountDerive(
-    {
-      type: "new-mnemonic",
-      mnemonicName: "Test Mnemonic",
-      mnemonic,
-      name: "Test Account",
-      curve: "sr25519",
-      derivationPath: "",
-      confirmed: true,
-    },
-    password
-  )
+const account: Account = {
+  type: "keypair",
+  curve: "sr25519",
+  name: "Test Account",
+  address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  createdAt: 0,
 }
 
 vi.mock("../../../libs/WindowManager", () => {
@@ -37,7 +26,6 @@ vi.mock("../../../libs/WindowManager", () => {
 
 describe("Signing requests store", () => {
   test("create request method", async () => {
-    const account = await createAccount()
     const payload: SignerPayloadJSON = {
       address: account.address,
       blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",

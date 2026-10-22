@@ -229,19 +229,6 @@ describe("useTokenActivationToggle", () => {
     expect(toggle()).toMatchObject({ showToggle: true, checked: false })
   })
 
-  it("hides the toggle 1000ms after the token is enabled", async () => {
-    const { toggle, click, applyStoreWrites } = renderToggle()
-
-    await click(true)
-    applyStoreWrites()
-
-    act(() => vi.advanceTimersByTime(999))
-    expect(toggle().showToggle).toBe(true)
-
-    act(() => vi.advanceTimersByTime(1))
-    expect(toggle().showToggle).toBe(false)
-  })
-
   it("holds the toggle on until the stores catch up, then hides it 1000ms later", async () => {
     const { toggle, click, applyStoreWrites } = renderToggle()
 

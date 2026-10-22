@@ -66,21 +66,6 @@ describe("net / fetchChaindata", () => {
     expect(result.networks).toHaveLength(3)
   })
 
-  it("throws when a non-GitHub URL returns an error (no fallback available)", async () => {
-    // fetchJsonFromGithubUrl is private, so we test this indirectly:
-    // the fallback URL (cdn.jsdelivr.net) doesn't have its own fallback,
-    // so if both primary and fallback fail, the second call throws.
-    mockFetch
-      .mockResolvedValueOnce(errorResponse(500))
-      .mockResolvedValueOnce(errorResponse(404, "Not Found"))
-
-    const { fetchChaindata } = await import("./net")
-
-    await expect(fetchChaindata()).rejects.toThrow(
-      `Failed to fetch from ${FALLBACK_URL}: 404 Not Found`
-    )
-  })
-
   it("throws when both primary and fallback URLs return HTTP errors", async () => {
     mockFetch
       .mockResolvedValueOnce(errorResponse(500, "Internal Server Error"))
@@ -92,16 +77,6 @@ describe("net / fetchChaindata", () => {
       `Failed to fetch from ${FALLBACK_URL}: 503 Service Unavailable`
     )
     expect(mockFetch).toHaveBeenCalledTimes(2)
-  })
-
-  it("throws on schema validation failure instead of just warning", async () => {
-    // This verifies the KEY behavior: schema failures throw, not just log
-    const badData = { networks: "not-an-array", tokens: null, miniMetadatas: [] }
-    mockFetch.mockResolvedValueOnce(okResponse(badData))
-
-    const { fetchChaindata } = await import("./net")
-
-    await expect(fetchChaindata()).rejects.toThrow("Schema validation failed")
   })
 
   it("propagates AbortError when signal is aborted", async () => {

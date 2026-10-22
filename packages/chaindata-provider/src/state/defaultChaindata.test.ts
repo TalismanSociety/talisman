@@ -145,14 +145,6 @@ describe("getDefaultChaindata$", () => {
       expect(data).toEqual(EMPTY_DATA)
     })
 
-    it("emits EMPTY_DATA for legacy data with extra props on network (strictObject)", async () => {
-      const result$ = getDefaultChaindata$(storage$)
-      storage$.next(makeLegacyPersistedData() as ChaindataStorage)
-
-      const data = await firstValueFrom(result$)
-      expect(data).toEqual(EMPTY_DATA)
-    })
-
     it("emits EMPTY_DATA for unknown token type", async () => {
       const result$ = getDefaultChaindata$(storage$)
       storage$.next(makeUnknownTokenTypeData() as ChaindataStorage)
@@ -211,14 +203,6 @@ describe("getDefaultChaindata$", () => {
       expect(data).toEqual(EMPTY_DATA)
     })
 
-    it("persisted data with unknown token type → EMPTY_DATA", async () => {
-      const result$ = getDefaultChaindata$(storage$)
-      storage$.next(makeUnknownTokenTypeData() as ChaindataStorage)
-
-      const data = await firstValueFrom(result$)
-      expect(data).toEqual(EMPTY_DATA)
-    })
-
     it("completely malformed data (not an object with expected shape) → EMPTY_DATA", async () => {
       const result$ = getDefaultChaindata$(storage$)
       storage$.next("this is not valid" as unknown as ChaindataStorage)
@@ -264,11 +248,13 @@ describe("getDefaultChaindata$", () => {
       // Error from github → should NOT provision since storage is non-empty
       mockRemoteChaindata$.error(new Error("fetch failed"))
 
-      await vi.waitFor(() =>
-        expect(log.info).toHaveBeenCalledWith(
-          expect.stringContaining("skipping initial data provision"),
-          existing
-        )
+      await vi.waitFor(
+        () =>
+          expect(log.info).toHaveBeenCalledWith(
+            expect.stringContaining("skipping initial data provision"),
+            existing
+          ),
+        { interval: 5 }
       )
 
       // storage$.next should not have been called (no provisioning)
@@ -288,7 +274,13 @@ describe("getDefaultChaindata$", () => {
       await waitForCount(1)
       const nextSpy = vi.spyOn(storage$, "next")
 
-      await new Promise((resolve) => setTimeout(resolve, 200))
+      await vi.waitFor(() =>
+        expect(log.error).toHaveBeenCalledWith(
+          expect.stringContaining("Provided chaindata failed"),
+          expect.anything()
+        )
+      )
+      await new Promise((resolve) => setTimeout(resolve, 0))
 
       expect(nextSpy).not.toHaveBeenCalled()
       expect(values).toEqual([EMPTY_DATA])
@@ -343,8 +335,10 @@ describe("getDefaultChaindata$", () => {
       // GitHub serves a schema-validated copy of the same data, like fetchChaindata does
       mockRemoteChaindata$.next(structuredClone(validated))
 
-      await vi.waitFor(() =>
-        expect(log.debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed"))
+      await vi.waitFor(
+        () =>
+          expect(log.debug).toHaveBeenCalledWith(expect.stringContaining("No db updates needed")),
+        { interval: 5 }
       )
       expect(nextSpy).not.toHaveBeenCalled()
     })

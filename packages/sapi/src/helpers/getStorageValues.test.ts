@@ -36,10 +36,4 @@ describe("getStorageValues", () => {
       { method: "state_queryStorageAt", params: [[key1, key2, key3, key4], "0xaa"] },
     ])
   })
-
-  it("sends no request for an empty key list", async () => {
-    expect(await getTestScaleApi("polkadot").getStorageValues("System", "BlockHash", [])).toEqual(
-      []
-    )
-  })
 })

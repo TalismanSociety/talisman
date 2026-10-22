@@ -1,23 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  ALPHA_PRICE_SCALE,
-  alphaToTao,
-  TAO_DECIMALS,
-  taoToAlpha,
-  taoToAlphaCeil,
-} from "./alphaPrice"
-
-describe("TAO_DECIMALS", () => {
-  it("equals 9n", () => {
-    expect(TAO_DECIMALS).toBe(9n)
-  })
-})
-
-describe("ALPHA_PRICE_SCALE", () => {
-  it("equals 10^9", () => {
-    expect(ALPHA_PRICE_SCALE).toBe(1_000_000_000n)
-  })
-})
+import { alphaToTao, taoToAlpha, taoToAlphaCeil } from "./alphaPrice"
 
 describe("alphaToTao", () => {
   it("converts alpha to tao using scaled price", () => {
@@ -33,10 +15,6 @@ describe("alphaToTao", () => {
 
   it("returns 0n when scaledAlphaPrice is 0n", () => {
     expect(alphaToTao(100n, 0n)).toBe(0n)
-  })
-
-  it("returns the same value when price is 1:1", () => {
-    expect(alphaToTao(1000n, ALPHA_PRICE_SCALE)).toBe(1000n)
   })
 })
 
@@ -54,10 +32,6 @@ describe("taoToAlpha", () => {
 
   it("returns 0n when scaledAlphaPrice is 0n", () => {
     expect(taoToAlpha(100n, 0n)).toBe(0n)
-  })
-
-  it("returns the same value when price is 1:1", () => {
-    expect(taoToAlpha(1000n, ALPHA_PRICE_SCALE)).toBe(1000n)
   })
 })
 
@@ -90,22 +64,6 @@ describe("taoToAlphaCeil", () => {
 })
 
 describe("round-trip consistency", () => {
-  it("alphaToTao then taoToAlpha recovers original (exact when divisible)", () => {
-    const scaledPrice = 500_000_000n // 0.5 ratio
-    const alpha = 200n
-    const tao = alphaToTao(alpha, scaledPrice)
-    const recovered = taoToAlpha(tao, scaledPrice)
-    expect(recovered).toBe(alpha)
-  })
-
-  it("taoToAlpha then alphaToTao recovers original (exact when divisible)", () => {
-    const scaledPrice = 500_000_000n
-    const tao = 100n
-    const alpha = taoToAlpha(tao, scaledPrice)
-    const recovered = alphaToTao(alpha, scaledPrice)
-    expect(recovered).toBe(tao)
-  })
-
   it("round-trip is within ±1 for arbitrary values due to integer rounding", () => {
     const scaledPrice = 333_333_333n // 1/3 ratio
     const alpha = 100n

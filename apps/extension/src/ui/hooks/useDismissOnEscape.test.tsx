@@ -2,13 +2,14 @@ import { cleanup, fireEvent, render } from "@testing-library/react"
 import { Drawer } from "@ui/components/Drawer"
 import { Modal } from "@ui/components/Modal"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { settleTransitions } from "../../../tests/settleTransitions"
 
 const pressEscape = () => fireEvent.keyDown(window, { key: "Escape" })
 
 describe("useDismissOnEscape", () => {
   afterEach(cleanup)
 
-  it("dismisses an open modal", () => {
+  it("dismisses an open modal", async () => {
     const onDismiss = vi.fn()
     render(
       <Modal analyticsId="test_modal" isOpen onDismiss={onDismiss}>
@@ -19,9 +20,11 @@ describe("useDismissOnEscape", () => {
     pressEscape()
 
     expect(onDismiss).toHaveBeenCalledOnce()
+
+    await settleTransitions()
   })
 
-  it("ignores closed modals and other keys", () => {
+  it("ignores closed modals and other keys", async () => {
     const onDismiss = vi.fn()
     render(
       <Modal analyticsId="test_modal" isOpen={false} onDismiss={onDismiss}>
@@ -39,9 +42,11 @@ describe("useDismissOnEscape", () => {
     fireEvent.keyDown(window, { key: "Enter" })
 
     expect(onDismiss).not.toHaveBeenCalled()
+
+    await settleTransitions()
   })
 
-  it("dismisses the drawer above a modal first, then the modal", () => {
+  it("dismisses the drawer above a modal first, then the modal", async () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     const { rerender } = render(
@@ -76,9 +81,11 @@ describe("useDismissOnEscape", () => {
     pressEscape()
     expect(onDismissModal).toHaveBeenCalledOnce()
     expect(onDismissDrawer).toHaveBeenCalledOnce()
+
+    await settleTransitions()
   })
 
-  it("dismisses a drawer that opens in the same render as its modal first", () => {
+  it("dismisses a drawer that opens in the same render as its modal first", async () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     render(
@@ -93,9 +100,11 @@ describe("useDismissOnEscape", () => {
 
     expect(onDismissDrawer).toHaveBeenCalledOnce()
     expect(onDismissModal).not.toHaveBeenCalled()
+
+    await settleTransitions()
   })
 
-  it("does not reach the modal beneath a layer that cannot be dismissed", () => {
+  it("does not reach the modal beneath a layer that cannot be dismissed", async () => {
     const onDismissModal = vi.fn()
     const { rerender } = render(
       <Modal analyticsId="test_modal" isOpen onDismiss={onDismissModal}>
@@ -113,9 +122,11 @@ describe("useDismissOnEscape", () => {
     pressEscape()
 
     expect(onDismissModal).not.toHaveBeenCalled()
+
+    await settleTransitions()
   })
 
-  it("keeps the open order when the modal beneath re-renders with a new callback", () => {
+  it("keeps the open order when the modal beneath re-renders with a new callback", async () => {
     const onDismissModal = vi.fn()
     const onDismissDrawer = vi.fn()
     const { rerender } = render(
@@ -135,9 +146,11 @@ describe("useDismissOnEscape", () => {
 
     expect(onDismissDrawer).toHaveBeenCalledOnce()
     expect(onDismissModal).not.toHaveBeenCalled()
+
+    await settleTransitions()
   })
 
-  it("leaves an Escape handled by an inner element alone", () => {
+  it("leaves an Escape handled by an inner element alone", async () => {
     const onDismiss = vi.fn()
     render(
       <Modal analyticsId="test_modal" isOpen onDismiss={onDismiss}>
@@ -150,5 +163,7 @@ describe("useDismissOnEscape", () => {
     window.dispatchEvent(event)
 
     expect(onDismiss).not.toHaveBeenCalled()
+
+    await settleTransitions()
   })
 })

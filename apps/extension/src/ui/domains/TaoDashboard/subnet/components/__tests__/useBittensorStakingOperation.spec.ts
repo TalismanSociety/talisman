@@ -62,10 +62,6 @@ describe("normalizeCall", () => {
     // Has type & value object but value has no type
     expect(normalizeCall({ type: "X", value: { data: 1 } })).toBeNull()
   })
-
-  it("returns null for an empty object", () => {
-    expect(normalizeCall({})).toBeNull()
-  })
 })
 
 // ─── matchesSubtensorStakeCall ──────────────────────────────────────────────
@@ -227,10 +223,6 @@ describe("extractProxyColdkey", () => {
     expect(extractProxyColdkey(undefined)).toBeNull()
     expect(extractProxyColdkey(42)).toBeNull()
   })
-
-  it("returns null for an empty object", () => {
-    expect(extractProxyColdkey({})).toBeNull()
-  })
 })
 
 // ─── getOperationType ───────────────────────────────────────────────────────
@@ -355,28 +347,11 @@ describe("findSubtensorStakeCall", () => {
     expect(result?.method).toBe("add_stake")
   })
 
-  it("finds a direct SubtensorModule remove_stake call", () => {
-    const call = makeDecodedCall("SubtensorModule", "remove_stake", {
-      hotkey: HOTKEY_A,
-      netuid: NETUID,
-      amount_unstaked: 500n,
-    })
-    const result = findSubtensorStakeCall(call, NETUID, HOTKEY_A, COLDKEY_A, "sell")
-    expect(result).not.toBeNull()
-    expect(result?.method).toBe("remove_stake")
-  })
-
   it("returns null for a non-matching direct call", () => {
     const call = makeDecodedCall("SubtensorModule", "add_stake", {
       hotkey: HOTKEY_B,
       netuid: 99,
     })
-    const result = findSubtensorStakeCall(call, NETUID, HOTKEY_A, COLDKEY_A, "buy")
-    expect(result).toBeNull()
-  })
-
-  it("returns null for a completely unrelated pallet", () => {
-    const call = makeDecodedCall("Balances", "transfer", { dest: HOTKEY_A, value: 100n })
     const result = findSubtensorStakeCall(call, NETUID, HOTKEY_A, COLDKEY_A, "buy")
     expect(result).toBeNull()
   })
@@ -555,32 +530,15 @@ describe("findSubtensorStakeCall", () => {
     expect(result?.method).toBe("add_stake")
   })
 
-  // --- Deeply nested: Proxy > Batch > SubtensorModule ---
-
-  it("finds a call through Proxy > Batch nesting", () => {
-    const stakeCall = makeDecodedCall("SubtensorModule", "add_stake", {
-      hotkey: HOTKEY_A,
-      netuid: NETUID,
-    })
-    const batch = makeDecodedCall("Utility", "batch", { calls: [stakeCall] })
-    const proxy = makeDecodedCall("Proxy", "proxy", {
-      real: COLDKEY_A,
-      call: batch,
-    })
-    const result = findSubtensorStakeCall(proxy, NETUID, HOTKEY_A, COLDKEY_A, "buy")
-    expect(result).not.toBeNull()
-    expect(result?.method).toBe("add_stake")
-  })
-
   // --- Batch with multiple proxy calls: coldkey filtering ---
 
-  it("selects the correct proxy call in a batch by coldkey match", () => {
-    // Two proxy calls in a batch, same hotkey+netuid, different coldkeys
+  it("selects the proxy call in a batch whose coldkey matches", () => {
     const callForColdkeyA = makeDecodedCall("Proxy", "proxy", {
       real: COLDKEY_A,
       call: makeDecodedCall("SubtensorModule", "add_stake", {
         hotkey: HOTKEY_A,
         netuid: NETUID,
+        amount_staked: 1n,
       }),
     })
     const callForColdkeyB = makeDecodedCall("Proxy", "proxy", {
@@ -588,16 +546,16 @@ describe("findSubtensorStakeCall", () => {
       call: makeDecodedCall("SubtensorModule", "add_stake", {
         hotkey: HOTKEY_A,
         netuid: NETUID,
+        amount_staked: 2n,
       }),
     })
     const batch = makeDecodedCall("Utility", "batch", {
       calls: [callForColdkeyB, callForColdkeyA],
     })
 
-    // Should find the call for COLDKEY_A, not COLDKEY_B
     const result = findSubtensorStakeCall(batch, NETUID, HOTKEY_A, COLDKEY_A, "buy")
-    expect(result).not.toBeNull()
     expect(result?.method).toBe("add_stake")
+    expect(result?.args).toMatchObject({ amount_staked: 1n })
   })
 
   it("returns null from a batch when no proxy coldkey matches", () => {
@@ -616,20 +574,17 @@ describe("findSubtensorStakeCall", () => {
     expect(result).toBeNull()
   })
 
-  // --- Mixed PAPI nested inside DecodedCall wrapper ---
+  // --- Without effectiveColdkey, direct SubtensorModule calls match any coldkey ---
 
-  it("handles mixed PAPI/DecodedCall nesting", () => {
+  it("finds a PAPI-format call nested in a decoded batch", () => {
     const papiInner = makePapiCall("SubtensorModule", "add_stake", {
       hotkey: HOTKEY_A,
       netuid: NETUID,
     })
     const batch = makeDecodedCall("Utility", "batch", { calls: [papiInner] })
     const result = findSubtensorStakeCall(batch, NETUID, HOTKEY_A, COLDKEY_A, "buy")
-    expect(result).not.toBeNull()
     expect(result?.method).toBe("add_stake")
   })
-
-  // --- Without effectiveColdkey, direct SubtensorModule calls match any coldkey ---
 
   it("matches direct SubtensorModule call regardless of targetColdkey when not inside proxy", () => {
     const call = makeDecodedCall("SubtensorModule", "add_stake", {

@@ -12,26 +12,10 @@ describe("BalanceFetchError", () => {
     expect(err.name).toBe("BalanceFetchError")
   })
 
-  it("sets tokenId and address properties", () => {
-    const err = new BalanceFetchError("msg", "token-1", "0xabc")
-    expect(err.tokenId).toBe("token-1")
-    expect(err.address).toBe("0xabc")
-  })
-
   it("sets cause when provided", () => {
     const cause = new Error("root cause")
     const err = new BalanceFetchError("msg", "token-1", "0xabc", cause)
     expect(err.cause).toBe(cause)
-  })
-
-  it("does NOT set cause when not provided", () => {
-    const err = new BalanceFetchError("msg", "token-1", "0xabc")
-    expect(err.cause).toBeUndefined()
-  })
-
-  it("is instanceof Error", () => {
-    const err = new BalanceFetchError("msg", "token-1", "0xabc")
-    expect(err).toBeInstanceOf(Error)
   })
 })
 
@@ -60,10 +44,5 @@ describe("BalanceFetchNetworkError", () => {
     const cause = new Error("root")
     const err = new BalanceFetchNetworkError("msg", "evm-1", cause)
     expect(err.cause).toBe(cause)
-  })
-
-  it("is instanceof Error", () => {
-    const err = new BalanceFetchNetworkError("msg")
-    expect(err).toBeInstanceOf(Error)
   })
 })

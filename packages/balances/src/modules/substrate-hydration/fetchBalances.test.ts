@@ -136,13 +136,6 @@ describe("substrate-hydration fetchBalances", () => {
     expect(result).toEqual({ success: [expectedBalance(FREE_AND_RESERVED, 5)], errors: [] })
   })
 
-  it("ignores held assets that were not requested", async () => {
-    const result = await run([[makeToken(15), [RESERVED_ONLY]]])
-
-    expect(callOf(RESERVED_ONLY).expected.length).toBeGreaterThan(1)
-    expect(result.success).toEqual([expectedBalance(RESERVED_ONLY, 15)])
-  })
-
   it("keys each row by its own address when several addresses hold the same asset", async () => {
     const result = await run([[makeToken(0), [RESERVED_ONLY, FREE_AND_RESERVED]]])
 

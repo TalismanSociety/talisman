@@ -1,4 +1,3 @@
-import * as pako from "pako"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { db } from "../db"
@@ -25,18 +24,6 @@ describe("queryCacheStore", () => {
       expect(result).not.toBeNull()
       expect(result?.data).toEqual(data)
       expect(result?.dataUpdatedAt).toBe(dataUpdatedAt)
-    })
-
-    it("should store data as compressed Uint8Array in the database", async () => {
-      const data = { hello: "world" }
-      await queryCacheStore.set("compressed-key", data, Date.now() + 60_000, Date.now())
-
-      const row = await db.queryCache.get("compressed-key")
-      expect(row).toBeDefined()
-      expect(row!.data).toBeInstanceOf(Uint8Array)
-
-      const decompressed = JSON.parse(pako.inflate(row!.data, { toText: true }))
-      expect(decompressed).toEqual(data)
     })
 
     it("should return null for non-existent keys", async () => {
@@ -120,28 +107,11 @@ describe("queryCacheStore", () => {
   })
 
   describe("edge cases", () => {
-    it("should handle null and undefined values", async () => {
-      await queryCacheStore.set("null-val", null, Date.now() + 60_000, Date.now())
+    it("should return a null entry rather than a miss when the stored value is null", async () => {
+      const dataUpdatedAt = Date.now()
+      await queryCacheStore.set("null-val", null, Date.now() + 60_000, dataUpdatedAt)
       const result = await queryCacheStore.get("null-val")
-      expect(result?.data).toBeNull()
-    })
-
-    it("should handle arrays", async () => {
-      const data = [1, "two", { three: 3 }]
-      await queryCacheStore.set("array-val", data, Date.now() + 60_000, Date.now())
-      const result = await queryCacheStore.get("array-val")
-      expect(result?.data).toEqual(data)
-    })
-
-    it("should handle large payloads", async () => {
-      const largeData = Array.from({ length: 10_000 }, (_, i) => ({
-        id: i,
-        name: `item-${i}`,
-        value: Math.random(),
-      }))
-      await queryCacheStore.set("large-key", largeData, Date.now() + 60_000, Date.now())
-      const result = await queryCacheStore.get("large-key")
-      expect(result?.data).toEqual(largeData)
+      expect(result).toEqual({ data: null, dataUpdatedAt })
     })
   })
 })

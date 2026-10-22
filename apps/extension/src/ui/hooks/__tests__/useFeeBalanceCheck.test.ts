@@ -174,18 +174,18 @@ describe("useFeeBalanceCheck", () => {
     expect(result.current.status).toBe("sufficient")
   })
 
-  it("accepts feePlanck as bigint", () => {
+  it("compares a bigint feePlanck against the fee balance", () => {
     makeResult(10_000n)
     const { result } = renderHook(() =>
       useFeeBalanceCheck({
         fromAddress: "0x123",
         feeTokenId: "sol-native",
-        feePlanck: 5000n,
+        feePlanck: 20_000n,
         isFeeLoading: false,
         fromTokenId: "sol-spl-usdc",
         fromAmount: 1_000_000n,
       })
     )
-    expect(result.current.status).toBe("sufficient")
+    expect(result.current.status).toBe("insufficient")
   })
 })

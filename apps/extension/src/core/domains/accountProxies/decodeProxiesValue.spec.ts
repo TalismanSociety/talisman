@@ -51,17 +51,6 @@ describe("decodeProxiesValue", () => {
     })
   })
 
-  it("decodes a single Any proxy with delay 0", () => {
-    const fakeCodec = {
-      value: {
-        dec: () => [[{ delegate: "0xdead", proxy_type: { tag: "Any" }, delay: 0 }], 1_002_005_000n],
-      },
-    }
-    const out = decodeProxiesValue("0x00", fakeCodec, SS58_FORMAT)
-    expect(out.deposit).toBe(1_002_005_000n)
-    expect(out.proxies).toEqual([{ delegate: "0xdead", proxyType: "Any", delay: "0" }])
-  })
-
   it("decodes multiple proxies with non-zero delay", () => {
     const fakeCodec = {
       value: {

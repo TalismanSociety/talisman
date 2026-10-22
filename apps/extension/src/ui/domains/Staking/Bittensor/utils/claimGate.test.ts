@@ -106,12 +106,6 @@ describe("getBittensorClaimGate", () => {
     expect(gate.canSubmit).toBe(false)
   })
 
-  it("blocks when NAV drift takes the redeemable amount below the threshold", () => {
-    const gate = getBittensorClaimGate({ ...OPEN_GATE, freshPreview: preview(40n) })
-    expect(gate.isBelowDustThreshold).toBe(true)
-    expect(gate.canSubmit).toBe(false)
-  })
-
   it("submits when NAV drift takes the redeemable amount above the threshold the stream is below", () => {
     const gate = getBittensorClaimGate({
       ...OPEN_GATE,

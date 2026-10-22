@@ -55,17 +55,6 @@ describe("createGlobalOpenClose", () => {
     expect(result.current.openKey).not.toBe(firstKey)
   })
 
-  it("changes openKey when reopened while still open", () => {
-    const [useModal] = createGlobalOpenClose()
-    const { result } = renderHook(() => useModal(), { wrapper })
-
-    act(() => result.current.open())
-    const firstKey = result.current.openKey
-
-    act(() => result.current.open())
-    expect(result.current.openKey).not.toBe(firstKey)
-  })
-
   it("resets content keyed on openKey when reopened without closing", () => {
     const [useModal] = createGlobalOpenClose<{ start: number }>()
     const Counter = () => {

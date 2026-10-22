@@ -9,7 +9,7 @@ describe("encryption", () => {
     const encrypted = await encryptData(new TextEncoder().encode(TEST_STRING), TEST_PASSWORD)
     const decrypted = await decryptData(encrypted, TEST_PASSWORD)
 
-    expect(decrypted).toEqual(new TextEncoder().encode(TEST_STRING))
+    expect(new TextDecoder("utf-8", { ignoreBOM: true }).decode(decrypted)).toBe(TEST_STRING)
   })
 
   it("encrypt/decrypt long string", async () => {
@@ -19,7 +19,7 @@ describe("encryption", () => {
     const encrypted = await encryptData(new TextEncoder().encode(TEST_STRING), TEST_PASSWORD)
     const decrypted = await decryptData(encrypted, TEST_PASSWORD)
 
-    expect(decrypted).toEqual(new TextEncoder().encode(TEST_STRING))
+    expect(new TextDecoder("utf-8", { ignoreBOM: true }).decode(decrypted)).toBe(TEST_STRING)
   })
 
   it("breaks when decrypting garbage data", async () => {
@@ -30,22 +30,11 @@ describe("encryption", () => {
   })
 })
 
-const generateRandomUnicodeString = (length: number) => {
-  const result = new Array(length)
-  for (let i = 0; i < length; i++) {
-    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
-    let randomCodePoint
+// valid code points only: no surrogates, no control characters
+const randomCodePoint = () =>
+  Math.random() < 0.9
+    ? Math.floor(Math.random() * (0xd7ff - 0x0020)) + 0x0020
+    : Math.floor(Math.random() * (0x10ffff - 0xe000)) + 0xe000
 
-    // Generate a valid Unicode character, avoiding surrogate pairs and control characters
-    if (Math.random() < 0.9) {
-      // 90% chance: Pick from common BMP (Basic Multilingual Plane)
-      randomCodePoint = Math.floor(Math.random() * (0xd7ff - 0x0020)) + 0x0020
-    } else {
-      // 10% chance: Pick from Supplementary Planes (excluding surrogates)
-      randomCodePoint = Math.floor(Math.random() * (0x10ffff - 0xe000)) + 0xe000
-    }
-
-    result[i] = String.fromCodePoint(randomCodePoint)
-  }
-  return result.join("")
-}
+const generateRandomUnicodeString = (length: number) =>
+  Array.from({ length }, () => String.fromCodePoint(randomCodePoint())).join("")

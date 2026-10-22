@@ -3,6 +3,8 @@ import { act, fireEvent, render, renderHook, screen } from "@testing-library/rea
 import { type ReactNode, useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 
+import { settleTransitions } from "../../../../../../tests/settleTransitions"
+
 const StatefulWizardProvider = () => {
   const [clicks, setClicks] = useState(0)
   return (
@@ -36,17 +38,19 @@ import { useBittensorConvictionLockModal } from "../hooks/useBittensorConviction
 
 const wrapper = ({ children }: { children: ReactNode }) => <Subscribe>{children}</Subscribe>
 
-const expectWizardResetOnReopen = (open: () => void) => {
+const expectWizardResetOnReopen = async (open: () => void) => {
   act(open)
   fireEvent.click(screen.getByText("0"))
   expect(screen.getByText("1")).toBeTruthy()
 
   act(open)
   expect(screen.getByText("0")).toBeTruthy()
+
+  await settleTransitions()
 }
 
 describe("Bittensor wizard modals", () => {
-  it("resets the claim wizard when reopened for the same target", () => {
+  it("resets the claim wizard when reopened for the same target", async () => {
     render(<BittensorClaimModal />, { wrapper })
     const { result } = renderHook(() => useBittensorClaimModal(), { wrapper })
     const args = {
@@ -56,10 +60,10 @@ describe("Bittensor wizard modals", () => {
       hotkey: "5Hotkey",
     }
 
-    expectWizardResetOnReopen(() => result.current.open(args))
+    await expectWizardResetOnReopen(() => result.current.open(args))
   })
 
-  it("resets the conviction lock wizard when reopened for the same target", () => {
+  it("resets the conviction lock wizard when reopened for the same target", async () => {
     render(<BittensorConvictionLockModal />, { wrapper })
     const { result } = renderHook(() => useBittensorConvictionLockModal(), { wrapper })
     const args = {
@@ -69,6 +73,6 @@ describe("Bittensor wizard modals", () => {
       address: "5Coldkey",
     }
 
-    expectWizardResetOnReopen(() => result.current.open(args))
+    await expectWizardResetOnReopen(() => result.current.open(args))
   })
 })

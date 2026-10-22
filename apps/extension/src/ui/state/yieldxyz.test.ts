@@ -4,7 +4,6 @@ import {
   type Network,
   type NetworkId,
   solNativeTokenId,
-  solSplTokenId,
   solToken2022TokenId,
 } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
@@ -48,30 +47,6 @@ describe("getYieldxyzTokenId", () => {
     )
 
     expect(result).toBe(token2022Id)
-  })
-
-  it("maps an SPL Solana mint when present in the token map", () => {
-    const splId = solSplTokenId("solana-mainnet", PYUSD_MINT)
-
-    const result = getYieldxyzTokenId(
-      makeToken({ address: PYUSD_MINT }),
-      mapToTalismanNetworkId,
-      networksMap,
-      { [splId]: { id: splId } }
-    )
-
-    expect(result).toBe(splId)
-  })
-
-  it("returns null for unknown addressed Solana mints", () => {
-    const result = getYieldxyzTokenId(
-      makeToken({ address: PYUSD_MINT }),
-      mapToTalismanNetworkId,
-      networksMap,
-      {}
-    )
-
-    expect(result).toBeNull()
   })
 
   it("maps native SOL when the token has no address", () => {

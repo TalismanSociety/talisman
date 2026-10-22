@@ -2,7 +2,12 @@ import { toHex } from "@polkadot-api/utils"
 import { getSignedExtensions } from "@talismn/scale"
 import { describe, expect, it } from "vitest"
 
-import { createRpcStub, getParityFixture, getTestScaleApi } from "../__fixtures__/chains"
+import {
+  createRpcStub,
+  getParityFixture,
+  getTestChain,
+  getTestScaleApi,
+} from "../__fixtures__/chains"
 import { getChainInfo } from "./getChainInfo"
 import { getSignerPayloadJSON } from "./getSignerPayloadJSON"
 import type { Chain } from "./types"
@@ -48,17 +53,26 @@ const buildRemark = (
   { hasCheckMetadataHash = false, tip }: { hasCheckMetadataHash?: boolean; tip?: bigint } = {}
 ) => {
   const rpc = createChainRpc(head)
-  const api = getTestScaleApi("polkadot", { send: rpc.send, hasCheckMetadataHash })
-  const result = api.getExtrinsicPayload("System", "remark", REMARK_ARGS, {
-    address: reference.address,
-    tip,
-  })
+  const chain = getTestChain("polkadot", { send: rpc.send, hasCheckMetadataHash })
+  const result = getSignerPayloadJSON(
+    chain,
+    "System",
+    "remark",
+    REMARK_ARGS,
+    { address: reference.address, tip },
+    getChainInfo(chain)
+  )
   return { result, calls: rpc.calls }
 }
 
 describe("getSignerPayloadJSON", () => {
   it("builds a payload mortal from the finalized block", async () => {
-    const { result } = buildRemark({ finalized: 42, current: 50 })
+    const rpc = createChainRpc({ finalized: 42, current: 50 })
+    const api = getTestScaleApi("polkadot", { send: rpc.send })
+
+    const result = api.getExtrinsicPayload("System", "remark", REMARK_ARGS, {
+      address: reference.address,
+    })
 
     expect(await result).toEqual({
       payload: {
@@ -131,10 +145,17 @@ describe("getSignerPayloadJSON", () => {
       if (method === "system_accountNextIndex") return 5
       return (params[0] as string) === SYSTEM_NUMBER_KEY ? u32Hex(42) : null
     })
-    const api = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
 
     await expect(
-      api.getExtrinsicPayload("System", "remark", REMARK_ARGS, { address: reference.address })
+      getSignerPayloadJSON(
+        chain,
+        "System",
+        "remark",
+        REMARK_ARGS,
+        { address: reference.address },
+        getChainInfo(chain)
+      )
     ).rejects.toThrow("Genesis hash not found")
   })
 
@@ -155,7 +176,7 @@ describe("getSignerPayloadJSON", () => {
 
   it("defaults the Avail app id to 0", async () => {
     const rpc = createChainRpc({ finalized: 42, current: 50 })
-    const { chain } = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
     const signedExtensions = getSignedExtensions(chain.metadata)
     const checkAppId = { ...signedExtensions[0], identifier: "CheckAppId" }
     const availLike: Chain = {

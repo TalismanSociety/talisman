@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vitest"
 import {
   deserializeSeekStakingMetadata,
   deserializeSeekStakingPosition,
-  getSeekStakingPositionCacheKey,
   isSeekAccountPositionActive,
   removeSeekStakingPositionCache,
   serializeSeekStakingMetadata,
@@ -25,14 +24,6 @@ const networkId = "1" as EthNetworkId
 const stakingContractAddress = "0x52b8969F9C1d1EFFd4f0ABeA2104dF02B65c165C"
 const address = "0xAbCd"
 const positionCacheKey = "earn:seek:position:1:0x52b8969f9c1d1effd4f0abea2104df02b65c165c:0xabcd"
-
-describe("SEEK staking cache keys", () => {
-  it("uses a per-address position key, lowercased", () => {
-    expect(getSeekStakingPositionCacheKey(networkId, stakingContractAddress, address)).toBe(
-      positionCacheKey
-    )
-  })
-})
 
 describe("SEEK staking cache DTOs", () => {
   it("round-trips metadata bigint fields through JSON-safe DTOs", () => {

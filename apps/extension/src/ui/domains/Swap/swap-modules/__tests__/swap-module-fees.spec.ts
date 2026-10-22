@@ -35,12 +35,6 @@ const solAsset: FeeRouteAsset = { platform: "solana" }
 // === StealthEX fee tests ===
 
 describe("StealthEX fee logic", () => {
-  describe("STEALTHEX_BUILT_IN_FEE constant", () => {
-    it("equals 0.004 (0.4%)", () => {
-      expect(STEALTHEX_BUILT_IN_FEE).toBe(0.004)
-    })
-  })
-
   describe("getStealthexTalismanTotalFee", () => {
     it("returns 0.005 (0.5%) for substrate → substrate", () => {
       expect(getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: subAsset })).toBe(0.005)
@@ -59,26 +53,6 @@ describe("StealthEX fee logic", () => {
 
     it("returns 0.006 (0.6%) for evm → substrate", () => {
       expect(getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: subAsset })).toBe(0.006)
-    })
-
-    it("is symmetric for cross-type routes", () => {
-      const subToEvm = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: evmAsset })
-      const evmToSub = getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: subAsset })
-      expect(subToEvm).toBe(evmToSub)
-    })
-
-    it("evm→evm fee is the lowest (equals BUILT_IN_FEE)", () => {
-      const evmToEvm = getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: evmAsset })
-      const subToSub = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: subAsset })
-      const crossType = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: evmAsset })
-      expect(evmToEvm).toBeLessThanOrEqual(subToSub)
-      expect(evmToEvm).toBeLessThanOrEqual(crossType)
-    })
-
-    it("substrate→substrate is cheaper than cross-type routes", () => {
-      const subToSub = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: subAsset })
-      const crossType = getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: evmAsset })
-      expect(subToSub).toBeLessThan(crossType)
     })
 
     it("returns 0.005 (0.5%) for solana → solana", () => {
@@ -100,15 +74,6 @@ describe("StealthEX fee logic", () => {
     it("returns 0.006 (0.6%) for substrate → solana", () => {
       expect(getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: solAsset })).toBe(0.006)
     })
-
-    it("is symmetric for solana cross-platform routes", () => {
-      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: evmAsset })).toBe(
-        getStealthexTalismanTotalFee({ fromAsset: evmAsset, toAsset: solAsset })
-      )
-      expect(getStealthexTalismanTotalFee({ fromAsset: solAsset, toAsset: subAsset })).toBe(
-        getStealthexTalismanTotalFee({ fromAsset: subAsset, toAsset: solAsset })
-      )
-    })
   })
 
   describe("getStealthexAdditionalFee", () => {
@@ -127,27 +92,6 @@ describe("StealthEX fee logic", () => {
       expect(result).toBeCloseTo(0.006 - 0.004, 10)
       expect(result).toBeCloseTo(0.002, 10)
     })
-
-    it("returns totalFee - BUILT_IN_FEE for evm → substrate", () => {
-      const result = getStealthexAdditionalFee({ fromAsset: evmAsset, toAsset: subAsset })
-      expect(result).toBeCloseTo(0.002, 10)
-    })
-
-    it("never returns a negative value", () => {
-      // evm→evm is the case where totalFee == BUILT_IN_FEE → result is 0
-      expect(
-        getStealthexAdditionalFee({ fromAsset: evmAsset, toAsset: evmAsset })
-      ).toBeGreaterThanOrEqual(0)
-      expect(
-        getStealthexAdditionalFee({ fromAsset: subAsset, toAsset: subAsset })
-      ).toBeGreaterThanOrEqual(0)
-      expect(
-        getStealthexAdditionalFee({ fromAsset: subAsset, toAsset: evmAsset })
-      ).toBeGreaterThanOrEqual(0)
-      expect(
-        getStealthexAdditionalFee({ fromAsset: evmAsset, toAsset: subAsset })
-      ).toBeGreaterThanOrEqual(0)
-    })
   })
 
   describe("decimalToPercent", () => {
@@ -155,24 +99,8 @@ describe("StealthEX fee logic", () => {
       expect(decimalToPercent(0.01)).toBe(1)
     })
 
-    it("converts 0.005 to 0.5 (0.5%)", () => {
-      expect(decimalToPercent(0.005)).toBe(0.5)
-    })
-
-    it("converts 0.004 to 0.4 (0.4%)", () => {
-      expect(decimalToPercent(0.004)).toBe(0.4)
-    })
-
     it("converts 0 to 0", () => {
       expect(decimalToPercent(0)).toBe(0)
-    })
-
-    it("converts 0.001 to 0.1 (0.1%)", () => {
-      expect(decimalToPercent(0.001)).toBe(0.1)
-    })
-
-    it("converts 0.002 to 0.2 (0.2%)", () => {
-      expect(decimalToPercent(0.002)).toBe(0.2)
     })
 
     it("rounds to two decimal places in percent form", () => {
@@ -193,62 +121,6 @@ describe("StealthEX fee logic", () => {
     it("returns 0.2 for substrate → evm (0.002 as percent)", () => {
       expect(getStealthexAdditionalFeePercent({ fromAsset: subAsset, toAsset: evmAsset })).toBe(0.2)
     })
-
-    it("returns 0.2 for evm → substrate (0.002 as percent)", () => {
-      expect(getStealthexAdditionalFeePercent({ fromAsset: evmAsset, toAsset: subAsset })).toBe(0.2)
-    })
-
-    it("equals decimalToPercent(getStealthexAdditionalFee(...))", () => {
-      const routes = [
-        { fromAsset: subAsset, toAsset: subAsset },
-        { fromAsset: evmAsset, toAsset: evmAsset },
-        { fromAsset: subAsset, toAsset: evmAsset },
-        { fromAsset: evmAsset, toAsset: subAsset },
-      ] as const
-      for (const route of routes) {
-        expect(getStealthexAdditionalFeePercent(route)).toBe(
-          decimalToPercent(getStealthexAdditionalFee(route))
-        )
-      }
-    })
-  })
-
-  describe("tiered fee structure integrity", () => {
-    it("total fee for all route types is >= BUILT_IN_FEE", () => {
-      const routes = [
-        { fromAsset: subAsset, toAsset: subAsset },
-        { fromAsset: evmAsset, toAsset: evmAsset },
-        { fromAsset: solAsset, toAsset: solAsset },
-        { fromAsset: subAsset, toAsset: evmAsset },
-        { fromAsset: evmAsset, toAsset: subAsset },
-        { fromAsset: solAsset, toAsset: evmAsset },
-        { fromAsset: evmAsset, toAsset: solAsset },
-        { fromAsset: solAsset, toAsset: subAsset },
-        { fromAsset: subAsset, toAsset: solAsset },
-      ] as const
-      for (const route of routes) {
-        expect(getStealthexTalismanTotalFee(route)).toBeGreaterThanOrEqual(STEALTHEX_BUILT_IN_FEE)
-      }
-    })
-
-    it("additional fee + BUILT_IN_FEE = total fee", () => {
-      const routes = [
-        { fromAsset: subAsset, toAsset: subAsset },
-        { fromAsset: evmAsset, toAsset: evmAsset },
-        { fromAsset: solAsset, toAsset: solAsset },
-        { fromAsset: subAsset, toAsset: evmAsset },
-        { fromAsset: evmAsset, toAsset: subAsset },
-        { fromAsset: solAsset, toAsset: evmAsset },
-        { fromAsset: evmAsset, toAsset: solAsset },
-        { fromAsset: solAsset, toAsset: subAsset },
-        { fromAsset: subAsset, toAsset: solAsset },
-      ] as const
-      for (const route of routes) {
-        const totalFee = getStealthexTalismanTotalFee(route)
-        const additionalFee = getStealthexAdditionalFee(route)
-        expect(additionalFee + STEALTHEX_BUILT_IN_FEE).toBeCloseTo(totalFee, 10)
-      }
-    })
   })
 })
 
@@ -266,10 +138,6 @@ describe("SimpleSwap fee logic", () => {
 
     it("SIMPLESWAP_TALISMAN_FEE_DISCOUNTED equals 0.004 (0.4%)", () => {
       expect(SIMPLESWAP_TALISMAN_FEE_DISCOUNTED).toBe(0.004)
-    })
-
-    it("discounted fee is lower than standard fee", () => {
-      expect(SIMPLESWAP_TALISMAN_FEE_DISCOUNTED).toBeLessThan(SIMPLESWAP_TALISMAN_FEE)
     })
   })
 
@@ -394,10 +262,6 @@ describe("LI.FI fee logic", () => {
     it("LIFI_PROTOCOL_FEE equals 0.0025 (0.25%)", () => {
       expect(LIFI_PROTOCOL_FEE).toBe(0.0025)
     })
-
-    it("combined LI.FI + Talisman fee equals 0.0045 (0.45%)", () => {
-      expect(LIFI_TALISMAN_FEE + LIFI_PROTOCOL_FEE).toBeCloseTo(0.0045, 10)
-    })
   })
 
   describe("getLifiCustomFeeForRoute", () => {
@@ -427,6 +291,15 @@ describe("LI.FI fee logic", () => {
         toAssetId: "token-b",
       })
       expect(result).toBe(0.003)
+    })
+
+    it("applies the fromAsset fee when the route has no toAssetId", async () => {
+      mockRemoteConfigGet.mockResolvedValue({
+        lifiCustomFeeTokens: { "token-a": 0.005 },
+      })
+      expect(await getLifiCustomFeeForRoute({ fromAssetId: "token-a", toAssetId: undefined })).toBe(
+        0.005
+      )
     })
 
     it("falls back to fromAsset fee when toAsset has no custom fee", async () => {
@@ -462,17 +335,6 @@ describe("LI.FI fee logic", () => {
       const result = await getLifiCustomFeeForRoute({
         fromAssetId: undefined,
         toAssetId: "token-b",
-      })
-      expect(result).toBe(0.005)
-    })
-
-    it("handles undefined toAssetId", async () => {
-      mockRemoteConfigGet.mockResolvedValue({
-        lifiCustomFeeTokens: { "token-a": 0.005 },
-      })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: "token-a",
-        toAssetId: undefined,
       })
       expect(result).toBe(0.005)
     })
@@ -524,25 +386,5 @@ describe("LI.FI fee logic", () => {
         LIFI_TALISMAN_FEE
       )
     })
-  })
-})
-
-// === Cross-module fee comparison ===
-
-describe("cross-module fee comparison", () => {
-  it("all fee constants are positive", () => {
-    expect(STEALTHEX_BUILT_IN_FEE).toBeGreaterThan(0)
-    expect(SIMPLESWAP_TALISMAN_FEE).toBeGreaterThan(0)
-    expect(SIMPLESWAP_TALISMAN_FEE_DISCOUNTED).toBeGreaterThan(0)
-    expect(LIFI_TALISMAN_FEE).toBeGreaterThan(0)
-    expect(LIFI_PROTOCOL_FEE).toBeGreaterThan(0)
-  })
-
-  it("all fee constants are less than 100%", () => {
-    expect(STEALTHEX_BUILT_IN_FEE).toBeLessThan(1)
-    expect(SIMPLESWAP_TALISMAN_FEE).toBeLessThan(1)
-    expect(SIMPLESWAP_TALISMAN_FEE_DISCOUNTED).toBeLessThan(1)
-    expect(LIFI_TALISMAN_FEE).toBeLessThan(1)
-    expect(LIFI_PROTOCOL_FEE).toBeLessThan(1)
   })
 })

@@ -30,12 +30,17 @@ export const hasRuntimeApi = (
   return api.methods.some((m) => m.name === method)
 }
 
+type ParsedMetadata = Pick<ReturnType<typeof parseMetadataRpc>, "unifiedMetadata" | "builder">
+
+const toParsedMetadata = (metadata: `0x${string}` | ParsedMetadata): ParsedMetadata =>
+  typeof metadata === "string" ? parseMetadataRpc(metadata) : metadata
+
 export const getConstantValue = <T>(
-  metadataRpc: `0x${string}`,
+  metadata: `0x${string}` | ParsedMetadata,
   pallet: string,
   constant: string
 ) => {
-  const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
+  const { unifiedMetadata, builder } = toParsedMetadata(metadata)
 
   const codec = builder.buildConstant(pallet, constant)
 
@@ -49,11 +54,11 @@ export const getConstantValue = <T>(
 }
 
 export const tryGetConstantValue = <T>(
-  metadataRpc: `0x${string}`,
+  metadata: `0x${string}` | ParsedMetadata,
   pallet: string,
   constant: string
 ) => {
-  const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
+  const { unifiedMetadata, builder } = toParsedMetadata(metadata)
 
   const encodedValue = unifiedMetadata.pallets
     .find(({ name }) => name === pallet)

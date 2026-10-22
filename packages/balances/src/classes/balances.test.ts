@@ -115,12 +115,6 @@ describe("Balances", () => {
       expect(result.count).toBe(2)
     })
 
-    it("finds multiple matches", () => {
-      const balances = new Balances([b1, b2, b3])
-      const result = balances.find({ address: "0x01" })
-      expect(result.count).toBe(2)
-    })
-
     it("returns empty Balances when no matches", () => {
       const balances = new Balances([b1, b2])
       const result = balances.find({ address: "nonexistent" })
@@ -208,27 +202,6 @@ describe("Balances", () => {
       const ref2 = balances.each
       expect(ref1).toBe(ref2)
     })
-
-    it("returns different reference on different instance", () => {
-      const b = makeBalance("0x01", "token-a")
-      const b1 = new Balances([b])
-      const b2 = new Balances([b])
-      expect(b1.each).not.toBe(b2.each)
-    })
-  })
-
-  describe("count", () => {
-    it("returns correct count", () => {
-      const balances = new Balances([
-        makeBalance("0x01", "token-a"),
-        makeBalance("0x02", "token-b"),
-      ])
-      expect(balances.count).toBe(2)
-    })
-
-    it("returns 0 for empty collection", () => {
-      expect(new Balances([]).count).toBe(0)
-    })
   })
 
   describe("iterator", () => {
@@ -239,14 +212,6 @@ describe("Balances", () => {
       const collected: Balance[] = []
       for (const b of balances) collected.push(b)
       expect(collected).toHaveLength(2)
-    })
-
-    it("supports spread", () => {
-      const balances = new Balances([
-        makeBalance("0x01", "token-a"),
-        makeBalance("0x02", "token-b"),
-      ])
-      expect([...balances]).toHaveLength(2)
     })
   })
 
@@ -341,12 +306,6 @@ describe("Balances", () => {
   })
 
   describe("sum", () => {
-    it("returns a SumBalancesFormatter", () => {
-      const balances = new Balances([makeBalance("0x01", "token-a")])
-      expect(balances.sum).toBeTruthy()
-      expect(typeof balances.sum.fiat).toBe("function")
-    })
-
     it("returns cached reference on repeated calls", () => {
       const balances = new Balances([makeBalance("0x01", "token-a")])
       const ref1 = balances.sum
@@ -398,16 +357,6 @@ describe("Balances", () => {
   })
 
   describe("hydrate()", () => {
-    it("calls hydrate on all balances", () => {
-      const balances = new Balances([
-        makeBalance("0x01", "token-a"),
-        makeBalance("0x02", "token-b"),
-      ])
-      const db: HydrateDb = { tokens: {} }
-      // Should not throw
-      balances.hydrate(db)
-    })
-
     it("invalidates caches after hydrate", () => {
       const balances = new Balances([makeBalance("0x01", "token-a")])
 

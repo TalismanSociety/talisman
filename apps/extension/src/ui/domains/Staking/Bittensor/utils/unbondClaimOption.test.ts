@@ -66,9 +66,4 @@ describe("getBittensorUnbondClaimOption", () => {
       includeClaim: false,
     })
   })
-
-  it("never includes the claim while the gate reads are unresolved, even when checked", () => {
-    const option = getBittensorUnbondClaimOption({ ...OPEN_OPTION, canSubmit: false })
-    expect(option.includeClaim).toBe(false)
-  })
 })

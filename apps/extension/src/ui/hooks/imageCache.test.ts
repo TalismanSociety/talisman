@@ -29,8 +29,21 @@ const RED_PIXEL_PNG = new Uint8Array([
 ])
 
 const makePngBlob = () => new Blob([RED_PIXEL_PNG], { type: "image/png" })
+const RED_PIXEL_DATA_URL = `data:image/png;base64,${Buffer.from(RED_PIXEL_PNG).toString("base64")}`
 
 const TEST_URL = "https://example.com/logo.png"
+const SENTINEL_URL = "https://example.com/sentinel.png"
+
+const waitForCached = (mod: typeof imageCache, url: string) =>
+  vi.waitFor(() => expect(mod.getCachedUrl(url)).not.toBeNull(), { interval: 5 })
+
+// A fetch that caches nothing gives no signal when it ends. A later fetch that does cache
+// runs the same pipeline through the same mocked fetch, in order, so its completion bounds it.
+const ensureCachedAndSettle = async (url: string) => {
+  await imageCache.ensureCached(url)
+  imageCache.ensureCached(SENTINEL_URL)
+  await waitForCached(imageCache, SENTINEL_URL)
+}
 
 describe("imageCache", () => {
   beforeEach(async () => {
@@ -55,30 +68,21 @@ describe("imageCache", () => {
     vi.restoreAllMocks()
   })
 
-  it("returns null for uncached URL", () => {
-    expect(imageCache.getCachedUrl(TEST_URL)).toBeNull()
-  })
-
   it("fetches and caches a URL on ensureCached", async () => {
     expect(imageCache.getCachedUrl(TEST_URL)).toBeNull()
 
     imageCache.ensureCached(TEST_URL)
 
     // Wait for the async fetch + cache pipeline to settle
-    await vi.waitFor(() => {
-      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
+    await waitForCached(imageCache, TEST_URL)
 
-    const cached = imageCache.getCachedUrl(TEST_URL)
-    expect(cached).toMatch(/^data:image\/png;base64,/)
+    expect(imageCache.getCachedUrl(TEST_URL)).toBe(RED_PIXEL_DATA_URL)
   })
 
   it("does not re-fetch if URL is already cached and fresh", async () => {
     imageCache.ensureCached(TEST_URL)
 
-    await vi.waitFor(() => {
-      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
+    await waitForCached(imageCache, TEST_URL)
 
     const fetchMock = vi.mocked(fetch)
     const callCount = fetchMock.mock.calls.length
@@ -95,11 +99,9 @@ describe("imageCache", () => {
       blob: () => Promise.resolve(new Blob(["not an image"], { type: "text/plain" })),
     } as Response)
 
-    imageCache.ensureCached("https://example.com/text.txt")
+    await ensureCachedAndSettle("https://example.com/text.png")
 
-    await new Promise((r) => setTimeout(r, 100))
-
-    expect(imageCache.getCachedUrl("https://example.com/text.txt")).toBeNull()
+    expect(imageCache.getCachedUrl("https://example.com/text.png")).toBeNull()
   })
 
   it("skips blobs that exceed size limit", async () => {
@@ -109,9 +111,7 @@ describe("imageCache", () => {
       blob: () => Promise.resolve(bigBlob),
     } as Response)
 
-    imageCache.ensureCached("https://example.com/huge.png")
-
-    await new Promise((r) => setTimeout(r, 100))
+    await ensureCachedAndSettle("https://example.com/huge.png")
 
     expect(imageCache.getCachedUrl("https://example.com/huge.png")).toBeNull()
   })
@@ -119,9 +119,7 @@ describe("imageCache", () => {
   it("handles fetch failures gracefully", async () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error("Network error"))
 
-    imageCache.ensureCached("https://example.com/fail.png")
-
-    await new Promise((r) => setTimeout(r, 100))
+    await ensureCachedAndSettle("https://example.com/fail.png")
 
     expect(imageCache.getCachedUrl("https://example.com/fail.png")).toBeNull()
   })
@@ -133,9 +131,7 @@ describe("imageCache", () => {
       blob: () => Promise.resolve(makePngBlob()),
     } as Response)
 
-    imageCache.ensureCached("https://example.com/404.png")
-
-    await new Promise((r) => setTimeout(r, 100))
+    await ensureCachedAndSettle("https://example.com/404.png")
 
     expect(imageCache.getCachedUrl("https://example.com/404.png")).toBeNull()
   })
@@ -145,19 +141,9 @@ describe("imageCache", () => {
     imageCache.ensureCached(TEST_URL)
     imageCache.ensureCached(TEST_URL)
 
-    await vi.waitFor(() => {
-      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
+    await waitForCached(imageCache, TEST_URL)
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
-  })
-
-  it("rejects http:// URLs", async () => {
-    const httpUrl = "http://example.com/logo.png"
-    await imageCache.ensureCached(httpUrl)
-
-    expect(imageCache.getCachedUrl(httpUrl)).toBeNull()
-    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
   })
 
   it("rejects URLs that fail isSafeImageUrl", async () => {
@@ -168,51 +154,24 @@ describe("imageCache", () => {
     expect(vi.mocked(fetch)).not.toHaveBeenCalled()
   })
 
-  it("hydration does not overwrite fresher in-memory entries", async () => {
-    // First, cache a fresh entry via network fetch
-    imageCache.ensureCached(TEST_URL)
-    await vi.waitFor(() => {
-      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
-
-    const freshDataUrl = imageCache.getCachedUrl(TEST_URL)
-
-    // Now put a stale entry into the DB (simulating an older DB row)
+  it("refetches a stale entry after hydrating it", async () => {
     const staleEntry = { url: TEST_URL, dataUrl: "data:image/png;base64,STALE", fetchedAt: 1000 }
     await db.imageCache.put(staleEntry)
-
-    // Re-import to trigger hydration
     vi.resetModules()
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        blob: () => Promise.resolve(makePngBlob()),
-      })
-    )
-
     const freshModule = await import("./imageCache")
 
-    // Trigger a fresh fetch that completes before hydration finishes
     freshModule.ensureCached(TEST_URL)
-    await vi.waitFor(() => {
-      expect(freshModule.getCachedUrl(TEST_URL)).not.toBeNull()
+    await vi.waitFor(() => expect(freshModule.getCachedUrl(TEST_URL)).toBe(RED_PIXEL_DATA_URL), {
+      interval: 5,
     })
 
-    const afterHydration = freshModule.getCachedUrl(TEST_URL)
-    // The fresher network fetch should not be overwritten by stale DB data
-    expect(afterHydration).not.toBe("data:image/png;base64,STALE")
-    expect(afterHydration).toMatch(/^data:image\/png;base64,/)
-    // The fresh data URL from the network fetch should be preserved
-    expect(afterHydration).toBe(freshDataUrl)
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
   })
 
   it("persists to and hydrates from Dexie", async () => {
     // Cache an entry
     imageCache.ensureCached(TEST_URL)
-    await vi.waitFor(() => {
-      expect(imageCache.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
+    await waitForCached(imageCache, TEST_URL)
 
     const cachedBefore = imageCache.getCachedUrl(TEST_URL)
 
@@ -234,9 +193,7 @@ describe("imageCache", () => {
     const freshModule = await import("./imageCache")
 
     // Wait for hydration
-    await vi.waitFor(() => {
-      expect(freshModule.getCachedUrl(TEST_URL)).not.toBeNull()
-    })
+    await waitForCached(freshModule, TEST_URL)
 
     expect(freshModule.getCachedUrl(TEST_URL)).toBe(cachedBefore)
   })

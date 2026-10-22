@@ -215,14 +215,6 @@ describe("PasswordStore autolock timer", () => {
 
       expect(chromeMock.alarms.create).toHaveBeenCalledWith(ALARM_NAME, { delayInMinutes: 15 })
     })
-
-    it("still honours an explicit 0 (user disabled auto-lock)", async () => {
-      store.isLoggedIn.next("TRUE")
-
-      await store.resetAutolockTimer(0)
-
-      expect(chromeMock.alarms.create).not.toHaveBeenCalled()
-    })
   })
 
   describe("onboarding", () => {

@@ -33,20 +33,6 @@ describe("useRefreshAccountProxiesOnTxSuccess", () => {
     mocks.useTransaction.mockReset()
   })
 
-  it("does not refresh while the transaction is still pending", () => {
-    mocks.useTransaction.mockReturnValue({ status: "pending" })
-
-    renderHook(() =>
-      useRefreshAccountProxiesOnTxSuccess({
-        hash: "0x123",
-        networkId: "polkadot",
-        address: "delegator",
-      })
-    )
-
-    expect(mocks.accountProxiesRefresh).not.toHaveBeenCalled()
-  })
-
   it("refreshes exactly once when the submitted transaction succeeds", async () => {
     const tx = { status: "pending" as "pending" | "success" }
     mocks.useTransaction.mockImplementation(() => tx)

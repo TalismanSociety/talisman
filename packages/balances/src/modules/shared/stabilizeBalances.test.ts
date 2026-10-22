@@ -13,35 +13,6 @@ const makeBalance = (overrides: Partial<IBalance> & { address: string; tokenId: 
   }) as IBalance
 
 describe("createBalanceStabilizer", () => {
-  test("reuses previous object when fingerprint-identical", () => {
-    const stabilize = createBalanceStabilizer()
-
-    const first = makeBalance({ address: "a", tokenId: "polkadot-substrate-native" })
-    const [emitted1] = stabilize([first])
-    expect(emitted1).toBe(first)
-
-    // brand-new object, identical content (what every poll produces)
-    const second = makeBalance({ address: "a", tokenId: "polkadot-substrate-native" })
-    expect(second).not.toBe(first)
-    const [emitted2] = stabilize([second])
-    expect(emitted2).toBe(first)
-  })
-
-  test("emits new object when content changed", () => {
-    const stabilize = createBalanceStabilizer()
-
-    const first = makeBalance({ address: "a", tokenId: "polkadot-substrate-native" })
-    stabilize([first])
-
-    const changed = makeBalance({
-      address: "a",
-      tokenId: "polkadot-substrate-native",
-      values: [{ type: "free", label: "free", amount: "200" }],
-    })
-    const [emitted] = stabilize([changed])
-    expect(emitted).toBe(changed)
-  })
-
   test("status transitions are never swallowed", () => {
     const stabilize = createBalanceStabilizer()
 

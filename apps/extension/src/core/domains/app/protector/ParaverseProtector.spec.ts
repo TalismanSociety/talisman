@@ -45,7 +45,7 @@ function setDefaultFetchResponses() {
     if (url.includes("polkadot")) {
       return new Response(
         JSON.stringify({
-          deny: ["badsite.com", "an.other-badsite.io"],
+          deny: ["badsite.com", "an.other-badsite.io", "polkadot-only-badsite.io"],
           allow: ["goodsite.com", "polkadot.js.org"],
         }),
         { status: 200, headers: { etag: "pd-etag-1" } }
@@ -188,43 +188,22 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
   expect(await isPhishingSite("https://sites.google.com/view/other-phish")).toBeTruthy()
 })
 
-it("Skips update when fetch returns 304", async () => {
-  await addException("https://badsite.com")
-  mockFetch.mockResolvedValue(new Response(null, { status: 304 }))
-  await refreshPhishingLists()
-  // badsite.com was excepted before refresh — should remain so
-  expect(await isPhishingSite("https://badsite.com")).toBeFalsy()
-})
-
-it("Rejects invalid MetaMask config gracefully", async () => {
-  mockFetch.mockImplementation(async (input) => {
-    const url = fetchInputToString(input)
-    if (url.includes("metamask")) {
-      return new Response(JSON.stringify({ broken: true }), {
-        status: 200,
-        headers: { etag: "bad-etag" },
-      })
-    }
-    return new Response(null, { status: 304 })
-  })
-  await refreshPhishingLists()
-  expect(await isPhishingSite("https://something.else")).toBeFalsy()
-})
-
-it("Rejects invalid Polkadot list gracefully", async () => {
-  mockFetch.mockImplementation(async (input) => {
-    const url = fetchInputToString(input)
-    if (url.includes("polkadot")) {
-      return new Response(JSON.stringify("not-an-object"), {
-        status: 200,
-        headers: { etag: "bad-etag" },
-      })
-    }
-    return new Response(null, { status: 304 })
-  })
-  await refreshPhishingLists()
-  expect(await isPhishingSite("https://something.else")).toBeFalsy()
-})
+it.each([
+  ["MetaMask config", "metamask", { broken: true }, "https://sites.google.com/view/other-phish"],
+  ["Polkadot list", "polkadot", "not-an-object", "https://polkadot-only-badsite.io"],
+])(
+  "Keeps the last valid %s when a refresh returns a malformed one",
+  async (_, source, body, phishingSite) => {
+    mockFetch.mockImplementation(async (input) =>
+      fetchInputToString(input).includes(source)
+        ? new Response(JSON.stringify(body), { status: 200, headers: { etag: "bad-etag" } })
+        : new Response(null, { status: 304 })
+    )
+    await refreshPhishingLists()
+    expect(await isPhishingSite(phishingSite)).toBeTruthy()
+    expect(await isPhishingSite("https://something.else")).toBeFalsy()
+  }
+)
 
 afterAll(() => {
   dispose()

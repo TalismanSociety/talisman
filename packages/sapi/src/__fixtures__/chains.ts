@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs"
 import path from "node:path"
 import { gunzipSync } from "node:zlib"
 
+import { getSapiConnector } from "../helpers/getSapiConnector"
+import type { Chain } from "../helpers/types"
 import type { SignerPayloadJSON } from "../pjsInterop"
 import { getScaleApi, type ScaleApi } from "../sapi"
 import type { JsonRpcRequestSend } from "../types"
@@ -59,6 +61,9 @@ type TestScaleApiOptions = {
   hexMetadata?: `0x${string}`
 }
 
+// parsing a metadata fixture costs ~40ms, so apis without an rpc stub are shared within a test file
+const scaleApiCache = new Map<`0x${string}`, Map<string, ScaleApi>>()
+
 export const getTestScaleApi = (
   chain: FixtureChain,
   {
@@ -66,8 +71,33 @@ export const getTestScaleApi = (
     hasCheckMetadataHash = false,
     hexMetadata = getMetadata(chain),
   }: TestScaleApiOptions = {}
-): ScaleApi =>
-  getScaleApi({ chainId: chain, send }, hexMetadata, TOKENS[chain], hasCheckMetadataHash)
+): ScaleApi => {
+  if (send !== rejectSend)
+    return getScaleApi({ chainId: chain, send }, hexMetadata, TOKENS[chain], hasCheckMetadataHash)
+
+  const byChain = scaleApiCache.get(hexMetadata) ?? new Map<string, ScaleApi>()
+  scaleApiCache.set(hexMetadata, byChain)
+  const key = `${chain}:${hasCheckMetadataHash}`
+  const cached = byChain.get(key)
+  if (cached) return cached
+
+  const api = getScaleApi(
+    { chainId: chain, send },
+    hexMetadata,
+    TOKENS[chain],
+    hasCheckMetadataHash
+  )
+  byChain.set(key, api)
+  return api
+}
+
+export const getTestChain = (
+  chain: FixtureChain,
+  { send = rejectSend, ...options }: TestScaleApiOptions = {}
+): Chain => ({
+  ...getTestScaleApi(chain, options).chain,
+  connector: getSapiConnector({ chainId: chain, send }),
+})
 
 export const getPolkadotV16Metadata = (): `0x${string}` =>
   `0x${readFileSync(path.resolve(import.meta.dirname, "../../../../.papi/scale/polkadot.scale")).toString("hex")}`

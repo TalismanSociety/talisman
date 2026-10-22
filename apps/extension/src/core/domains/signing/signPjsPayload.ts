@@ -46,6 +46,29 @@ const getHasSignatureTypePrefix = (metadata: UnifiedMetadata, lookupFn: LookupFn
   return lookupFn(signatureTypeId).type === "enum"
 }
 
+type ParsedMetadata = {
+  metadataRpc: HexString
+  txHelper: ReturnType<typeof getPjsTxHelper>
+  unifiedMetadata: UnifiedMetadata
+  hasSignatureTypePrefix: boolean
+}
+
+// decoding a metadata blob takes ~130ms, and a session signs repeatedly against the same chain
+let lastParsed: ParsedMetadata | undefined
+
+const getParsedMetadata = (metadataRpc: HexString): ParsedMetadata => {
+  if (lastParsed?.metadataRpc === metadataRpc) return lastParsed
+
+  const { unifiedMetadata, lookupFn } = parseMetadataRpc(metadataRpc)
+  lastParsed = {
+    metadataRpc,
+    txHelper: getPjsTxHelper(metadataRpc, CUSTOM_SIGNED_EXTENSIONS),
+    unifiedMetadata,
+    hasSignatureTypePrefix: getHasSignatureTypePrefix(unifiedMetadata, lookupFn),
+  }
+  return lastParsed
+}
+
 /**
  * Signs a `SignerPayloadJSON` and assembles the signed extrinsic, without polkadot-js.
  *
@@ -62,10 +85,8 @@ export const signPjsPayload = async (
     hasExtrinsicSignatureTypePrefix?: boolean
   }
 ): Promise<SignPjsPayloadResult> => {
-  const { callData, extra, additionalSigned } = getPjsTxHelper(
-    metadataRpc,
-    CUSTOM_SIGNED_EXTENSIONS
-  )(payload)
+  const { txHelper, unifiedMetadata, hasSignatureTypePrefix } = getParsedMetadata(metadataRpc)
+  const { callData, extra, additionalSigned } = txHelper(payload)
 
   // substrate signing rule: payloads over 256 bytes are blake2b-256 hashed before signing
   const fullPayload = u8aConcat(callData, extra, additionalSigned)
@@ -73,9 +94,7 @@ export const signPjsPayload = async (
 
   const rawSignature = signSubstrate(curve, secretKey, signingInput)
 
-  const { unifiedMetadata, lookupFn } = parseMetadataRpc(metadataRpc)
-  const withPrefix =
-    options?.hasExtrinsicSignatureTypePrefix ?? getHasSignatureTypePrefix(unifiedMetadata, lookupFn)
+  const withPrefix = options?.hasExtrinsicSignatureTypePrefix ?? hasSignatureTypePrefix
 
   const prefix = SIGNATURE_TYPE_PREFIX[curve]
   assert(prefix !== undefined, `Unsupported curve: ${curve}`)
@@ -119,8 +138,8 @@ export const assemblePjsTransaction = (
   payload: SignerPayloadJSON,
   signature: Uint8Array | HexString
 ): { signedTransaction: HexString; signedTransactionBytes: Uint8Array; hash: HexString } => {
-  const { callData, extra } = getPjsTxHelper(metadataRpc, CUSTOM_SIGNED_EXTENSIONS)(payload)
-  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
+  const { txHelper, unifiedMetadata } = getParsedMetadata(metadataRpc)
+  const { callData, extra } = txHelper(payload)
 
   const signatureBytes = typeof signature === "string" ? hexToU8a(signature) : signature
 

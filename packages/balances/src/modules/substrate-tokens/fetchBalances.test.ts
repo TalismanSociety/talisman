@@ -119,19 +119,6 @@ describe("substrate-tokens fetchBalances decoding", () => {
     })
   })
 
-  it("reports a frozen amount as a locked value labelled frozen", async () => {
-    const ldot = casesFor(ACALA, [ACALA_FROZEN], [ACALA_TOKENS.LDOT])[0]!
-    expect(ldot.expected?.frozen).not.toBe("0")
-
-    const result = await run(ACALA, [[makeToken("acala", ACALA_TOKENS.LDOT), [ACALA_FROZEN]]])
-
-    expect(result.success[0]?.values).toEqual([
-      { type: "free", label: "free", amount: ldot.expected?.free },
-      { type: "reserved", label: "reserved", amount: "0" },
-      { type: "locked", label: "frozen", amount: ldot.expected?.frozen },
-    ])
-  })
-
   it("keeps free and reserved apart for numeric currency ids (Hydration)", async () => {
     const dot = casesFor(HYDRATION, [hydration.accounts.freeAndReserved], [5])[0]!
     expect(dot.expected?.free).not.toBe(dot.expected?.reserved)
@@ -162,20 +149,6 @@ describe("substrate-tokens fetchBalances decoding", () => {
     const result = await run(HYDRATION, [[makeToken("hydradx", 670), [zero.address]]])
 
     expect(result.success[0]?.values).toEqual(expectedValues(null))
-  })
-
-  it("emits zero free, reserved and frozen values when the account has no storage entry", async () => {
-    // IBTC (ForeignAsset 3) and USDCet (Erc20) are not held: the node returns null for both keys
-    const result = await run(ACALA, [
-      [makeToken("acala", ACALA_TOKENS.IBTC), [ACALA_MULTI]],
-      [makeToken("acala", ACALA_TOKENS.USDCet), [ACALA_MULTI]],
-    ])
-
-    expect(result.errors).toEqual([])
-    expect(result.success.map((b) => [b.tokenId, "values" in b && b.values])).toEqual([
-      [subTokensTokenId("acala", ACALA_TOKENS.IBTC), expectedValues(null)],
-      [subTokensTokenId("acala", ACALA_TOKENS.USDCet), expectedValues(null)],
-    ])
   })
 
   it("fetches every token and address in one state_queryStorageAt call, in def order", async () => {

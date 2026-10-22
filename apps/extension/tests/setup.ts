@@ -1,11 +1,16 @@
+import { format } from "node:util"
+
 import { cloneDeep } from "lodash-es"
 import { WebSocket } from "mock-socket"
 import sinon from "sinon-chrome"
-import { vi } from "vitest"
+import { afterEach, beforeEach, vi } from "vitest"
 import type { Browser } from "webextension-polyfill"
 
 // Mock WebSocket in tests
 globalThis.WebSocket = WebSocket as unknown as typeof globalThis.WebSocket
+
+// jsdom has no Web Animations API; Headless UI transitions only ask which animations are running
+Element.prototype.getAnimations ??= () => []
 
 // Create an in-memory storage implementation that works with chrome.storage API
 function createStorageArea() {
@@ -212,13 +217,22 @@ process.env.VERSION = process.env.npm_package_version ?? "0.0.0"
 // Somehow not available in jsdom
 globalThis.structuredClone = cloneDeep
 
-// Remove useless warnings
-// biome-ignore lint/suspicious/noConsole: intentionally overriding console.warn to filter test noise
-const originalWarn = console.warn
-console.warn = (...args: unknown[]) => {
-  const msg = args[0]?.toString?.()
-  // This is a harmless runtime warning coming from the bigint-buffer or similar native addon dependency,
-  // which tries (and fails) to load a native Node.js binding, then falls back to pure JavaScript.
-  if (msg?.includes("bigint: Failed to load bindings")) return
-  originalWarn(...args)
+// A test that logs an error or a warning fails, so noise is fixed where it starts
+const consoleNoise: string[] = []
+for (const method of ["error", "warn"] as const) {
+  // biome-ignore lint/suspicious/noConsole: records what tests log so afterEach can fail on it
+  const original = console[method]
+  console[method] = (...args: unknown[]) => {
+    const message = format(...args)
+    // bigint-buffer fails to load its native binding and falls back to pure JavaScript
+    if (message.includes("bigint: Failed to load bindings")) return
+    consoleNoise.push(`console.${method}: ${message}`)
+    original(...args)
+  }
 }
+beforeEach(() => {
+  consoleNoise.length = 0
+})
+afterEach(() => {
+  if (consoleNoise.length) throw new Error(consoleNoise.splice(0).join("\n"))
+})

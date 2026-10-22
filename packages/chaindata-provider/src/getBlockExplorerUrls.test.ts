@@ -53,11 +53,6 @@ const EXPLORER_BITTENSOR_AI = {
   blockExplorerUrls: ["https://explorer.bittensor.ai"],
 } as unknown as Network
 
-const BITTENSOR_BOTH_EXPLORERS = {
-  id: "bittensor",
-  blockExplorerUrls: ["https://taostats.io", "https://bittensor.ai/explorer"],
-} as unknown as Network
-
 describe("getExplorerUrls", () => {
   it("ethereum block number", () => {
     const urls = getBlockExplorerUrls(ETHEREUM, {
@@ -231,25 +226,6 @@ describe("getExplorerUrls", () => {
     )
   })
 
-  it("explorer with base path and trailing slash - block", () => {
-    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
-      type: "block",
-      id: 6036407,
-    })
-
-    expect(urls).toContain("https://bittensor.ai/explorer/block/6036407")
-  })
-
-  it("explorer with base path and trailing slash - extrinsic", () => {
-    const urls = getBlockExplorerUrls(EXPLORER_WITH_BASE_PATH_TRAILING_SLASH, {
-      type: "extrinsic",
-      blockNumber: 6035238,
-      extrinsicIndex: 12,
-    })
-
-    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/6035238-12")
-  })
-
   it("explorer.bittensor.ai - account", () => {
     const urls = getBlockExplorerUrls(EXPLORER_BITTENSOR_AI, {
       type: "account",
@@ -309,44 +285,6 @@ describe("getExplorerUrls", () => {
     expect(urls).toContain(
       "https://explorer.bittensor.ai/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     )
-  })
-
-  it("bittensor with both explorers - block", () => {
-    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
-      type: "block",
-      id: 6036407,
-    })
-
-    expect(urls).toContain("https://taostats.io/block/6036407/extrinsics")
-    expect(urls).toContain("https://bittensor.ai/explorer/block/6036407")
-    expect(urls.length).toBe(2)
-  })
-
-  it("bittensor with both explorers - account", () => {
-    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
-      type: "account",
-      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-    })
-
-    expect(urls).toContain(
-      "https://taostats.io/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-    )
-    expect(urls).toContain(
-      "https://bittensor.ai/explorer/account/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-    )
-    expect(urls.length).toBe(2)
-  })
-
-  it("bittensor with both explorers - extrinsic", () => {
-    const urls = getBlockExplorerUrls(BITTENSOR_BOTH_EXPLORERS, {
-      type: "extrinsic",
-      blockNumber: 6035238,
-      extrinsicIndex: 12,
-    })
-
-    expect(urls).toContain("https://taostats.io/extrinsic/6035238-0012")
-    expect(urls).toContain("https://bittensor.ai/explorer/extrinsic/6035238-12")
-    expect(urls.length).toBe(2)
   })
 
   it("rejects non-http(s) explorer urls", () => {

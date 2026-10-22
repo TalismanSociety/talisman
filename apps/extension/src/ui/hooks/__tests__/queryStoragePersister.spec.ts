@@ -1,9 +1,8 @@
 import type { QueryClient } from "@tanstack/react-query"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { createQueryStoragePersister } from "../queryStoragePersister"
 
-// Mock the api module
 vi.mock("@ui/api/api", () => ({
   api: {
     queryCacheGet: vi.fn(),
@@ -12,9 +11,19 @@ vi.mock("@ui/api/api", () => ({
   },
 }))
 
-// Import the mocked api after vi.mock
 const { api } = await import("@ui/api/api")
 const mockedApi = vi.mocked(api)
+
+const context = {
+  queryKey: ["test"] as const,
+  signal: new AbortController().signal,
+  meta: undefined,
+  // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
+  client: {} as QueryClient,
+}
+
+// notifyManager.schedule runs its callback in a setTimeout(0), so one later macrotask sees it
+const flushScheduled = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe("createQueryStoragePersister", () => {
   beforeEach(() => {
@@ -23,9 +32,7 @@ describe("createQueryStoragePersister", () => {
   })
 
   afterEach(async () => {
-    // Flush any pending notifyManager.schedule callbacks to prevent test leakage
-    await new Promise((r) => setTimeout(r, 50))
-    vi.clearAllMocks()
+    await flushScheduled()
   })
 
   it("should call queryFn and persist result when no cached data exists", async () => {
@@ -34,13 +41,6 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "test-key", maxAge: 60_000 })
     const queryFn = vi.fn().mockResolvedValue({ price: 42 })
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: undefined, dataUpdatedAt: Date.now() },
       options: { staleTime: 0 },
@@ -48,10 +48,17 @@ describe("createQueryStoragePersister", () => {
     }
 
     const result = await persister(queryFn, context, query as never)
+    await flushScheduled()
 
     expect(result).toEqual({ price: 42 })
     expect(queryFn).toHaveBeenCalledWith(context)
     expect(mockedApi.queryCacheGet).toHaveBeenCalledWith("test-key")
+    expect(mockedApi.queryCacheSet).toHaveBeenCalledWith(
+      "test-key",
+      { price: 42 },
+      expect.any(Number),
+      expect.any(Number)
+    )
   })
 
   it("should return cached data without calling queryFn when cache hit and data is undefined", async () => {
@@ -61,13 +68,6 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "cached-key" })
     const queryFn = vi.fn().mockResolvedValue({ price: 100 })
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: undefined, dataUpdatedAt: 0 },
       options: { staleTime: 0 },
@@ -77,10 +77,12 @@ describe("createQueryStoragePersister", () => {
     }
 
     const result = await persister(queryFn, context, query as never)
+    await flushScheduled()
 
     expect(result).toEqual(cachedData)
     expect(queryFn).not.toHaveBeenCalled()
-    await vi.waitFor(() => expect(query.setState).toHaveBeenCalled())
+    expect(query.setState).toHaveBeenCalledWith({ dataUpdatedAt: cachedAt })
+    expect(query.fetch).toHaveBeenCalled()
     expect(mockedApi.queryCacheSet).not.toHaveBeenCalled()
   })
 
@@ -90,13 +92,6 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "has-data" })
     const queryFn = vi.fn().mockResolvedValue({ fresh: true })
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: { existing: true }, dataUpdatedAt: Date.now() },
     }
@@ -114,13 +109,6 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "error-key" })
     const queryFn = vi.fn().mockResolvedValue({ fallback: true })
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: undefined, dataUpdatedAt: 0 },
     }
@@ -129,6 +117,7 @@ describe("createQueryStoragePersister", () => {
 
     expect(result).toEqual({ fallback: true })
     expect(queryFn).toHaveBeenCalled()
+    expect(mockedApi.queryCacheRemove).toHaveBeenCalledWith("error-key")
   })
 
   it("should use default maxAge of 24 hours", async () => {
@@ -137,32 +126,19 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "default-age" })
     const queryFn = vi.fn().mockResolvedValue("data")
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: undefined, dataUpdatedAt: Date.now() - 5_000 },
     }
 
     const before = Date.now()
     await persister(queryFn, context, query as never)
-
-    await vi.waitFor(() =>
-      expect(mockedApi.queryCacheSet).toHaveBeenCalledWith(
-        "default-age",
-        "data",
-        expect.any(Number),
-        expect.any(Number)
-      )
-    )
+    await flushScheduled()
     const after = Date.now()
 
-    // purgeAt should be ~24h from when the persist happened
-    const [, , purgeAt, persistedDataUpdatedAt] = mockedApi.queryCacheSet.mock.calls[0]!
+    expect(mockedApi.queryCacheSet).toHaveBeenCalledTimes(1)
+    const [, persistedData, purgeAt, persistedDataUpdatedAt] =
+      mockedApi.queryCacheSet.mock.calls[0]!
+    expect(persistedData).toBe("data")
     expect(purgeAt).toBeGreaterThanOrEqual(before + 86_400_000)
     expect(purgeAt).toBeLessThanOrEqual(after + 86_400_000)
     expect(persistedDataUpdatedAt).toBeGreaterThanOrEqual(before)
@@ -174,20 +150,13 @@ describe("createQueryStoragePersister", () => {
 
     const persister = createQueryStoragePersister({ key: "revalidate-key", maxAge: 60_000 })
     const queryFn = vi.fn().mockResolvedValue({ fresh: true })
-    const context = {
-      queryKey: ["test"] as const,
-      signal: new AbortController().signal,
-      meta: undefined,
-      // react-query 5.100+ added `client` to QueryFunctionContext; the persister never reads it
-      client: {} as QueryClient,
-    }
     const query = {
       state: { data: { stale: true }, dataUpdatedAt: Date.now() - 60_000 },
     }
 
     const before = Date.now()
     const result = await persister(queryFn, context, query as never)
-    await vi.waitFor(() => expect(mockedApi.queryCacheSet).toHaveBeenCalled())
+    await flushScheduled()
     const after = Date.now()
 
     expect(result).toEqual({ fresh: true })

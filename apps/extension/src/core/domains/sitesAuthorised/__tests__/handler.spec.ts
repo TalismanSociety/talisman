@@ -1,10 +1,20 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest"
+import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from "vitest"
 import { getMessageSenderFn } from "../../../../../tests/core/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 import type { AuthorizedSites } from "../types"
+
+// the keyring KDF (PBKDF2, 100k iterations) runs for every secret and is tested in @talismn/crypto
+vi.mock("@talismn/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@talismn/crypto")>()
+  return {
+    ...actual,
+    pbkdf2: ((hash, entropy, salt, _iterations, length) =>
+      actual.pbkdf2(hash, entropy, salt, 1, length)) satisfies typeof actual.pbkdf2,
+  }
+})
 
 describe("Sites Authorised Handler", () => {
   let handler: Extension
@@ -97,7 +107,7 @@ describe("Sites Authorised Handler", () => {
   test("Forgetting a site with ethAddresses turns off connectAllSubstrate", async () => {
     // expect that the talisman web app is in the sites store
     const webApp = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(webApp)
+    expect(webApp).toBeDefined()
     // expect that it has connectAllSubstrate
     expect(webApp.connectAllSubstrate).toBeTruthy()
 
@@ -123,7 +133,7 @@ describe("Sites Authorised Handler", () => {
 
     // expect that connectAllSubstrate is undefined now for the web app
     const webAppAgain = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(webAppAgain)
+    expect(webAppAgain).toBeDefined()
     expect(webAppAgain.connectAllSubstrate).toBeUndefined()
   })
 
@@ -131,7 +141,7 @@ describe("Sites Authorised Handler", () => {
     // expect that the talisman web app is in the sites store
     const webApp = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
 
-    expect(webApp)
+    expect(webApp).toBeDefined()
     expect(webApp.ethAddresses).toBeUndefined()
 
     // update the addresses for that site

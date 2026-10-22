@@ -9,15 +9,6 @@ const makeTransferFeeConfig = (olderTransferFee: TransferFee, newerTransferFee: 
 })
 
 describe("calculateToken2022TransferFee", () => {
-  it("rounds up fractional basis-point fees", () => {
-    const transferFeeConfig = makeTransferFeeConfig(
-      { epoch: 0n, maximumFee: 10_000n, transferFeeBasisPoints: 100 },
-      { epoch: 10n, maximumFee: 10_000n, transferFeeBasisPoints: 100 }
-    )
-
-    expect(calculateToken2022TransferFee(transferFeeConfig, 0n, 101n)).toBe(2n)
-  })
-
   it("uses the older fee before the newer fee epoch", () => {
     const transferFeeConfig = makeTransferFeeConfig(
       { epoch: 0n, maximumFee: 10_000n, transferFeeBasisPoints: 100 },

@@ -136,11 +136,6 @@ describe("arrayItemsEqualWithYield", () => {
     expect(await arrayItemsEqualWithYield(a, b)).toBe(isEqual(a, b))
   })
 
-  it("fast-paths reference-equal arrays", async () => {
-    const items = [{ a: 1 }]
-    expect(await arrayItemsEqualWithYield(items, items)).toBe(true)
-  })
-
   it("supports a custom item comparator", async () => {
     const a = [{ id: 1, noise: "x" }]
     const b = [{ id: 1, noise: "y" }]

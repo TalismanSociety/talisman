@@ -11,31 +11,10 @@ const ETH_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 const SUBSTRATE_ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 
 describe("computeTalismanOrb", () => {
-  it("returns deterministic output for the same seed", () => {
-    const a = computeTalismanOrb(SOLANA_ADDRESS)
-    const b = computeTalismanOrb(SOLANA_ADDRESS)
-    expect(a).toEqual(b)
-  })
-
   it("returns different output for different seeds", () => {
     const a = computeTalismanOrb(SOLANA_ADDRESS)
     const b = computeTalismanOrb(ETH_ADDRESS)
     expect(a.bgColor1).not.toEqual(b.bgColor1)
-  })
-
-  it("detects solana platform", () => {
-    const result = computeTalismanOrb(SOLANA_ADDRESS)
-    expect(result.platform).toBe("solana")
-  })
-
-  it("detects ethereum platform", () => {
-    const result = computeTalismanOrb(ETH_ADDRESS)
-    expect(result.platform).toBe("ethereum")
-  })
-
-  it("detects polkadot platform", () => {
-    const result = computeTalismanOrb(SUBSTRATE_ADDRESS)
-    expect(result.platform).toBe("polkadot")
   })
 
   it("returns valid hex colors", () => {

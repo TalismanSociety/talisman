@@ -23,11 +23,6 @@ describe("getValueId", () => {
     expect(getValueId(amount)).toBe("label::type::source::")
   })
 
-  it("includes source in the id", () => {
-    const amount = makeAmount({ label: "label", type: "type", source: "source" })
-    expect(getValueId(amount)).toBe("label::type::source::")
-  })
-
   // BUG: Array.join converts undefined to "", so source=undefined and source="" produce
   // the same valueId, which can cause id collisions. Expected "label::type::undefined::"
   // but actual is "label::type::::".

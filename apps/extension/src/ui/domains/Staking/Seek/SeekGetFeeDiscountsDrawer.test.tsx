@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { settleTransitions } from "../../../../../tests/settleTransitions"
+
 import { SeekGetFeeDiscountsDrawer } from "./SeekGetFeeDiscountsDrawer"
 
 const openSwapModal = vi.hoisted(() => vi.fn())
@@ -36,7 +38,7 @@ vi.mock("./hooks/useGetSeekDiscount", () => ({
 describe("SeekGetFeeDiscountsDrawer", () => {
   afterEach(cleanup)
 
-  it("closes the parent modal before it opens the swap", () => {
+  it("closes the parent modal before it opens the swap", async () => {
     const onCloseModal = vi.fn()
     const { getByRole } = render(
       <SeekGetFeeDiscountsDrawer
@@ -54,5 +56,7 @@ describe("SeekGetFeeDiscountsDrawer", () => {
     expect(onCloseModal.mock.invocationCallOrder[0]).toBeLessThan(
       openSwapModal.mock.invocationCallOrder[0]
     )
+
+    await settleTransitions()
   })
 })

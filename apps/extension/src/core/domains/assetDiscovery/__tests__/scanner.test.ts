@@ -102,6 +102,8 @@ const settle = async () => {
   for (let i = 0; i < 15; i++) await vi.advanceTimersByTimeAsync(0)
 }
 
+const until = (check: () => Promise<void> | void) => vi.waitFor(check, { interval: 1 })
+
 let scanner: typeof import("../scanner").assetDiscoveryScanner
 let activeNetworks: typeof import("../../chaindata/store.activeNetworks").activeNetworksStore
 let activeTokens: typeof import("../../chaindata/store.activeTokens").activeTokensStore
@@ -157,7 +159,7 @@ describe("EVM asset discovery", () => {
       addresses: [ACCOUNT.address],
       withApi: false,
     })
-    await vi.waitFor(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
+    await until(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
     expect(await activeTokens.get(BITTENSOR.nativeTokenId)).toBe(true)
     expect(await scanStore.get("currentScanScope")).not.toBeNull()
     expect(startScan).toHaveBeenCalledTimes(1)
@@ -165,14 +167,14 @@ describe("EVM asset discovery", () => {
     await activeNetworks.setActive(BITTENSOR.id, false)
     await activeTokens.setActive(BITTENSOR.nativeTokenId, false)
     baseBalance.resolve(0n)
-    await vi.waitFor(async () => expect(await scanStore.get("currentScanScope")).toBeNull())
+    await until(async () => expect(await scanStore.get("currentScanScope")).toBeNull())
     await settle()
     expect(await activeNetworks.get(BITTENSOR.id)).toBe(false)
     expect(await activeTokens.get(BITTENSOR.nativeTokenId)).toBe(false)
     expect(await db.assetDiscovery.count()).toBe(0)
 
     await activeNetworks.setActive(BITTENSOR.id, true)
-    await vi.waitFor(() => expect(startScan).toHaveBeenCalledTimes(2))
+    await until(() => expect(startScan).toHaveBeenCalledTimes(2))
     expect(startScan).toHaveBeenLastCalledWith({
       networkIds: [BITTENSOR.id],
       addresses: [ACCOUNT.address],
@@ -189,7 +191,7 @@ describe("EVM asset discovery", () => {
     expect(mocks.getClient).not.toHaveBeenCalled()
 
     loadNetworks([BITTENSOR])
-    await vi.waitFor(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
+    await until(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
     await settle()
     expect(mocks.getClient).toHaveBeenCalledWith(BITTENSOR.id)
     expect(await scanStore.get("queue")).toEqual([])
@@ -202,7 +204,7 @@ describe("EVM asset discovery", () => {
     expect(mocks.getClient).not.toHaveBeenCalled()
 
     loadNetworks([BITTENSOR])
-    await vi.waitFor(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
+    await until(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
     await settle()
     expect(mocks.getClient).toHaveBeenCalledTimes(1)
   })
@@ -254,7 +256,7 @@ describe("EVM asset discovery", () => {
       balance: "1",
     })
     await vi.advanceTimersByTimeAsync(5_000)
-    await vi.waitFor(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
+    await until(async () => expect(await activeNetworks.get(BITTENSOR.id)).toBe(true))
     await settle()
     expect(await db.assetDiscovery.count()).toBe(0)
     expect(await scanStore.get("currentScanScope")).not.toBeNull()

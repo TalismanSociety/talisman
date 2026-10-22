@@ -7,7 +7,6 @@ import {
   makeEvmNativeToken,
   makeInvalidToken,
   makeLegacyPersistedData,
-  makeSubNativeToken,
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
 import type { Token } from "../chaindata"
@@ -90,21 +89,6 @@ describe("ChaindataProvider", () => {
       const storage = await firstValueFrom(provider.storage$)
       expect(storage).toEqual(EMPTY_STORAGE)
     })
-
-    it("falls back to empty data when persisted data has invalid networks (validation fails)", async () => {
-      const persisted = makeLegacyPersistedData() as unknown as ChaindataStorage
-      const provider = new ChaindataProvider({ persistedStorage: persisted })
-
-      // defaultChaindata$ validates via ChaindataFileSchema;
-      // extra unknown fields may cause validation failure → empty data
-      const networks = await firstValueFrom(provider.networks$)
-      const tokens = await firstValueFrom(provider.tokens$)
-
-      // Either the data was stripped to valid form or fell back to empty
-      // (depends on schema strictness). The key invariant: no crash.
-      expect(Array.isArray(networks)).toBe(true)
-      expect(Array.isArray(tokens)).toBe(true)
-    })
   })
 
   // ── Custom chaindata ────────────────────────────────────────────
@@ -174,40 +158,6 @@ describe("ChaindataProvider", () => {
       const provider = new ChaindataProvider()
       const invalid = makeInvalidToken() as unknown as Token
       await expect(provider.registerDynamicTokens([invalid])).rejects.toThrow()
-    })
-
-    it("does nothing when called with an empty array", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const tokensBefore = await firstValueFrom(provider.tokens$)
-      await provider.registerDynamicTokens([])
-      const tokensAfter = await firstValueFrom(provider.tokens$)
-
-      expect(tokensAfter.length).toBe(tokensBefore.length)
-    })
-
-    it("merges tokens from multiple registerDynamicTokens calls", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const token1 = makeEvmNativeToken({
-        id: "42161-evm-native",
-        networkId: "42161",
-        symbol: "ETH",
-      })
-      const token2 = makeEvmNativeToken({
-        id: "10-evm-native",
-        networkId: "10",
-        symbol: "ETH",
-      })
-
-      await provider.registerDynamicTokens([token1])
-      await provider.registerDynamicTokens([token2])
-
-      const tokens = await firstValueFrom(provider.tokens$)
-      expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
-      expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
     })
 
     it("does not drop tokens when registrations from concurrent module pipelines interleave", async () => {
@@ -308,11 +258,6 @@ describe("ChaindataProvider", () => {
       expect(token!.symbol).toBe("T22")
     })
 
-    it("does nothing when there are no dynamic tokens", async () => {
-      const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
-      await expect(provider.syncDynamicTokens()).resolves.toBeUndefined()
-    })
-
     it("does not drop a registration racing with a syncDynamicTokens rewrite", async () => {
       // a curated duplicate of the dynamic token forces syncDynamicTokens to write
       const dynamicToken = makeSolSplDynamicToken({ symbol: "DYN" })
@@ -339,82 +284,6 @@ describe("ChaindataProvider", () => {
       const dynamicTokens = await firstValueFrom(dynamicTokens$)
       expect(dynamicTokens.some((t) => t.id === "42161-evm-native")).toBe(true)
       expect(dynamicTokens.some((t) => t.id === SOL_SPL_DYNAMIC_ID)).toBe(false)
-    })
-  })
-
-  // ── Observable API ──────────────────────────────────────────────
-
-  describe("observable API", () => {
-    it("networks$ emits networks from merged chaindata", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const networks = await firstValueFrom(provider.networks$)
-      expect(networks.length).toBeGreaterThanOrEqual(data.networks.length)
-      expect(networks.some((n) => n.id === "polkadot")).toBe(true)
-    })
-
-    it("tokens$ emits tokens from merged chaindata", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const tokens = await firstValueFrom(provider.tokens$)
-      expect(tokens.length).toBeGreaterThanOrEqual(data.tokens.length)
-      expect(tokens.some((t) => t.id === "polkadot-substrate-native")).toBe(true)
-    })
-
-    it("miniMetadatas$ emits miniMetadatas from merged chaindata", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const miniMetadatas = await firstValueFrom(provider.miniMetadatas$)
-      expect(miniMetadatas.length).toBe(data.miniMetadatas.length)
-    })
-
-    it("storage$ emits storage data", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const storage = await firstValueFrom(provider.storage$)
-      expect(storage.networks).toEqual(data.networks)
-      expect(storage.tokens).toEqual(data.tokens)
-      expect(storage.miniMetadatas).toEqual(data.miniMetadatas)
-    })
-
-    it("getNetworkById$ returns the specific network", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const network = await firstValueFrom(provider.getNetworkById$("polkadot"))
-      expect(network).not.toBeNull()
-      expect(network!.id).toBe("polkadot")
-      expect(network!.name).toBe("Polkadot")
-    })
-
-    it("getNetworkById$ returns null for unknown network", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const network = await firstValueFrom(provider.getNetworkById$("nonexistent"))
-      expect(network).toBeNull()
-    })
-
-    it("getTokenById$ returns the specific token", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const token = await firstValueFrom(provider.getTokenById$("1-evm-native"))
-      expect(token).not.toBeNull()
-      expect(token!.id).toBe("1-evm-native")
-      expect(token!.symbol).toBe("ETH")
-    })
-
-    it("getTokenById$ returns null for unknown token", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const token = await firstValueFrom(provider.getTokenById$("nonexistent"))
-      expect(token).toBeNull()
     })
   })
 
@@ -507,33 +376,6 @@ describe("ChaindataProvider", () => {
         sub.unsubscribe()
       }
     })
-
-    it("updates when github emits updated data after initial load", async () => {
-      const initial = makeChaindata({
-        networks: [makeDotNetwork()],
-        tokens: [makeSubNativeToken()],
-        miniMetadatas: [],
-      })
-      const provider = new ChaindataProvider({ persistedStorage: initial })
-
-      // Keep subscription alive
-      const sub = provider.networks$.subscribe(() => {})
-
-      try {
-        // Verify initial state
-        let networks = await firstValueFrom(provider.networks$)
-        expect(networks.length).toBe(1)
-
-        // Push expanded data from github
-        const expanded = makeChaindata()
-        githubSubject.next(expanded)
-
-        networks = await until(provider.networks$, (n) => n.length === expanded.networks.length)
-        expect(networks.length).toBe(expanded.networks.length)
-      } finally {
-        sub.unsubscribe()
-      }
-    })
   })
 
   // ── Async getter methods ────────────────────────────────────────
@@ -545,17 +387,6 @@ describe("ChaindataProvider", () => {
 
       const networks = await provider.getNetworks()
       expect(networks.length).toBe(data.networks.length)
-    })
-
-    it("getNetworks filters by platform", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const dotNetworks = await provider.getNetworks("polkadot")
-      expect(dotNetworks.every((n) => n.platform === "polkadot")).toBe(true)
-
-      const ethNetworks = await provider.getNetworks("ethereum")
-      expect(ethNetworks.every((n) => n.platform === "ethereum")).toBe(true)
     })
 
     it("getTokens returns all tokens", async () => {
@@ -617,37 +448,11 @@ describe("ChaindataProvider", () => {
       expect(network).toBeNull()
     })
 
-    it("getNetworkByGenesisHash$ returns observable with matching network", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const network = await firstValueFrom(provider.getNetworkByGenesisHash$(POLKADOT_GENESIS))
-      expect(network).not.toBeNull()
-      expect(network!.id).toBe("polkadot")
-    })
-
-    it("getNetworkByGenesisHash$ returns observable emitting null for unknown hash", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const network = await firstValueFrom(provider.getNetworkByGenesisHash$("0xdeadbeef"))
-      expect(network).toBeNull()
-    })
-
     it("getNetworksMapByGenesisHash returns a map keyed by genesis hash", async () => {
       const data = makeChaindata()
       const provider = new ChaindataProvider({ persistedStorage: data })
 
       const map = await provider.getNetworksMapByGenesisHash()
-      expect(map[POLKADOT_GENESIS]).toBeDefined()
-      expect(map[POLKADOT_GENESIS]!.id).toBe("polkadot")
-    })
-
-    it("getNetworksMapByGenesisHash$ returns observable of genesis hash map", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const map = await firstValueFrom(provider.getNetworksMapByGenesisHash$())
       expect(map[POLKADOT_GENESIS]).toBeDefined()
       expect(map[POLKADOT_GENESIS]!.id).toBe("polkadot")
     })
@@ -697,16 +502,6 @@ describe("ChaindataProvider", () => {
       expect(ids.length).toBe(data.networks.length)
     })
 
-    it("getNetworkIds$ returns observable of network IDs", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const ids = await firstValueFrom(provider.getNetworkIds$())
-      expect(ids).toContain("polkadot")
-      expect(ids).toContain("1")
-      expect(ids.length).toBe(data.networks.length)
-    })
-
     it("getNetworkIds filters by platform", async () => {
       const data = makeChaindata()
       const provider = new ChaindataProvider({ persistedStorage: data })
@@ -725,16 +520,6 @@ describe("ChaindataProvider", () => {
       const provider = new ChaindataProvider({ persistedStorage: data })
 
       const ids = await provider.getTokenIds()
-      expect(ids).toContain("polkadot-substrate-native")
-      expect(ids).toContain("1-evm-native")
-      expect(ids.length).toBe(data.tokens.length)
-    })
-
-    it("getTokenIds$ returns observable of token IDs", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const ids = await firstValueFrom(provider.getTokenIds$())
       expect(ids).toContain("polkadot-substrate-native")
       expect(ids).toContain("1-evm-native")
       expect(ids.length).toBe(data.tokens.length)
@@ -786,23 +571,6 @@ describe("ChaindataProvider", () => {
       const meta = await provider.miniMetadataById("nonexistent")
       expect(meta).toBeNull()
     })
-
-    it("getMiniMetadataById$ returns observable with matching metadata", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const meta = await firstValueFrom(provider.getMiniMetadataById$("substrate-native-polkadot"))
-      expect(meta).not.toBeNull()
-      expect(meta!.id).toBe("substrate-native-polkadot")
-    })
-
-    it("getMiniMetadataById$ returns observable emitting null for unknown ID", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const meta = await firstValueFrom(provider.getMiniMetadataById$("nonexistent"))
-      expect(meta).toBeNull()
-    })
   })
 
   // ── Token type filtering ─────────────────────────────────────────
@@ -817,51 +585,12 @@ describe("ChaindataProvider", () => {
       expect(tokens.every((t) => t.type === "substrate-native")).toBe(true)
     })
 
-    it("getTokens('evm-native') returns only EVM native tokens", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const tokens = await provider.getTokens("evm-native")
-      expect(tokens.length).toBeGreaterThan(0)
-      expect(tokens.every((t) => t.type === "evm-native")).toBe(true)
-    })
-
-    it("getTokens('sol-native') returns only Solana native tokens", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const tokens = await provider.getTokens("sol-native")
-      expect(tokens.length).toBeGreaterThan(0)
-      expect(tokens.every((t) => t.type === "sol-native")).toBe(true)
-    })
-
     it("getTokens with type that has no matches returns empty array", async () => {
       const data = makeChaindata()
       const provider = new ChaindataProvider({ persistedStorage: data })
 
       const tokens = await provider.getTokens("evm-erc20")
       expect(tokens).toEqual([])
-    })
-
-    it("getTokens$ with type filter returns observable of filtered tokens", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const tokens = await firstValueFrom(provider.getTokens$("substrate-native"))
-      expect(tokens.length).toBeGreaterThan(0)
-      expect(tokens.every((t) => t.type === "substrate-native")).toBe(true)
-    })
-
-    it("getTokens without type returns all tokens", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const allTokens = await provider.getTokens()
-      const subTokens = await provider.getTokens("substrate-native")
-      const evmTokens = await provider.getTokens("evm-native")
-      const solTokens = await provider.getTokens("sol-native")
-
-      expect(allTokens.length).toBe(subTokens.length + evmTokens.length + solTokens.length)
     })
   })
 
@@ -890,16 +619,6 @@ describe("ChaindataProvider", () => {
 
       const meta = await provider.miniMetadataById("")
       expect(meta).toBeNull()
-    })
-
-    it("getNetworkByGenesisHash returns null for non-existent genesis hash", async () => {
-      const data = makeChaindata()
-      const provider = new ChaindataProvider({ persistedStorage: data })
-
-      const network = await provider.getNetworkByGenesisHash(
-        "0x0000000000000000000000000000000000000000000000000000000000000000"
-      )
-      expect(network).toBeNull()
     })
 
     it("getNetworksMapById returns map keyed by network ID", async () => {

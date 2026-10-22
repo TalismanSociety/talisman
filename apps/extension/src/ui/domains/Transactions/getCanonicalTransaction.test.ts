@@ -64,14 +64,6 @@ describe("getCanonicalTransaction", () => {
     expect(tx?.status).toBe("pending")
   })
 
-  it("returns the tx as-is when success", async () => {
-    await db.transactionsV2.put(makeEvmTx(HASH_ORIGINAL, "success"))
-
-    const tx = await getCanonicalTransaction(HASH_ORIGINAL)
-    expect(tx?.id).toBe(HASH_ORIGINAL)
-    expect(tx?.status).toBe("success")
-  })
-
   it("follows the mined speed-up when the original was replaced", async () => {
     await db.transactionsV2.put(makeEvmTx(HASH_ORIGINAL, "replaced"))
     await db.transactionsV2.put(makeEvmTx(HASH_REPLACEMENT, "success", { isReplacement: true }))

@@ -27,19 +27,8 @@ describe("calculateSMA", () => {
     expect(calculateSMA(data, 1)).toEqual([10, 20, 30])
   })
 
-  test("handles single-element input with period 1", () => {
-    expect(calculateSMA([42], 1)).toEqual([42])
-  })
-
   test("returns empty array for empty input", () => {
     expect(calculateSMA([], 5)).toEqual([])
-  })
-
-  test("matches period equal to data length", () => {
-    const data = [1, 2, 3, 4, 5]
-    const result = calculateSMA(data, 5)
-    expect(result.slice(0, 4)).toEqual([null, null, null, null])
-    expect(result[4]).toBeCloseTo(3) // (1+2+3+4+5)/5
   })
 })
 
@@ -116,12 +105,6 @@ describe("calculateBollingerBands", () => {
 // ─── calculateRSI ────────────────────────────────────────────────────────────
 
 describe("calculateRSI", () => {
-  test("first element is always null", () => {
-    const data = [44, 44.34, 44.09, 43.61, 44.33]
-    const result = calculateRSI(data, 3)
-    expect(result[0]).toBeNull()
-  })
-
   test("returns nulls for indices < period", () => {
     const data = [44, 44.34, 44.09, 43.61, 44.33, 44.83]
     const result = calculateRSI(data, 4)

@@ -55,25 +55,6 @@ const makeProduct = (components: YieldDto["rewardRate"]["components"]): YieldDto
   }) as YieldDto
 
 describe("YieldxyzProductYieldDisplay", () => {
-  it("renders plain yield text for a single reward token", () => {
-    render(
-      <YieldxyzProductYieldDisplay
-        product={makeProduct([
-          {
-            rate: 0.05,
-            rateType: "APY",
-            token: makeToken({ symbol: "TKN" }),
-            yieldSource: "staking",
-          },
-        ])}
-      />
-    )
-
-    expect(screen.getByText("5% APY")).toBeTruthy()
-    expect(screen.queryByTestId("reward-info-icon")).toBeNull()
-    expect(screen.queryByTestId("reward-breakdown")).toBeNull()
-  })
-
   it("shows a reward breakdown tooltip for multiple reward tokens", () => {
     render(
       <YieldxyzProductYieldDisplay

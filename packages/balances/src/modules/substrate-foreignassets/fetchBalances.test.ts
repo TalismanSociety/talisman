@@ -178,14 +178,6 @@ describe("substrate-foreignassets fetchBalances", () => {
     ])
   })
 
-  it("labels decoded balances with the substrate-foreignassets source", async () => {
-    const { connector } = makeConnector()
-
-    const { success } = await fetchForeign([[WETH, [wethHolder.address]]], connector)
-
-    expect(success.map(({ source }) => source)).toEqual(["substrate-foreignassets"])
-  })
-
   it.each([
     ["an unencodable address", WETH, "not-an-address"],
     ["an onChainId that is not a location", foreignToken("not-json"), wethHolder.address],

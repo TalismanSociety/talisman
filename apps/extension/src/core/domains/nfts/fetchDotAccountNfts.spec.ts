@@ -14,7 +14,6 @@ const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
   store: { hiddenNftCollectionIds: [] as string[] },
   store$: undefined as BehaviorSubject<{ hiddenNftCollectionIds: string[] }> | undefined,
-  blob: null as unknown,
 }))
 
 vi.mock("../../rpcs/chain-connector-dot", () => ({ chainConnectorDot: { send: mocks.send } }))
@@ -48,13 +47,17 @@ vi.mock("../chaindata/store.activeNetworks", () => ({
   isNetworkActive: () => true,
 }))
 
+// one slot per module instance, so a debounced write from an earlier test lands in its own store
 vi.mock("../../db/blobs", () => ({
-  getBlobStore: () => ({
-    get: async () => mocks.blob,
-    set: async (data: unknown) => {
-      mocks.blob = data
-    },
-  }),
+  getBlobStore: () => {
+    let blob: unknown = null
+    return {
+      get: async () => blob,
+      set: async (data: unknown) => {
+        blob = data
+      },
+    }
+  },
 }))
 
 vi.mock("../../libs/isWalletReady", () => ({ walletReady: Promise.resolve() }))
@@ -69,6 +72,22 @@ import { buildNftPalletStorages, getItemMetadataKey } from "./nftPalletStorage"
 const loadFetcher = async () => {
   vi.resetModules()
   return import("./fetchDotAccountNfts")
+}
+
+const FILL_IN_THROTTLE = 1_000
+
+const useFakeTimers = () =>
+  vi.useFakeTimers({
+    toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
+  })
+
+const releaseAll = async (releases: (() => void)[]) => {
+  await vi.waitFor(() => expect(releases.length).toBeGreaterThan(0))
+  while (releases.length) {
+    releases.shift()?.()
+    await vi.advanceTimersByTimeAsync(0)
+  }
+  await vi.advanceTimersByTimeAsync(FILL_IN_THROTTLE)
 }
 
 const ACCOUNT: Account = {
@@ -175,7 +194,6 @@ describe("fetchDotAccountNfts", () => {
     mocks.getMetadataDef.mockReset()
     mocks.getMetadataDef.mockResolvedValue({ metadataRpc: "pah" })
     mocks.store.hiddenNftCollectionIds = []
-    mocks.blob = null
     absentKeys.clear()
   })
 
@@ -307,9 +325,7 @@ describe("fetchDotAccountNfts", () => {
   })
 
   it("retries a failed download on the first refresh after its retry delay", async () => {
-    vi.useFakeTimers({
-      toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
-    })
+    useFakeTimers()
     try {
       const { getDotAccountNfts$ } = await loadFetcher()
       const attempts = () => fetchedUrls().filter((url) => url === NETWORK_ERROR_URL).length
@@ -359,80 +375,73 @@ describe("fetchDotAccountNfts", () => {
   })
 
   it("emits placeholders as soon as the chain is read, then fills them in with no new rpc call", async () => {
-    const { getDotAccountNfts$ } = await loadFetcher()
-    const releases: (() => void)[] = []
-    mocks.fetch.mockImplementation(
-      (url: string) => new Promise((resolve) => releases.push(() => resolve(respond(url))))
-    )
-    const emissions: QueryResult<AccountNfts>[] = []
-    const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
+    useFakeTimers()
+    try {
+      const { getDotAccountNfts$ } = await loadFetcher()
+      const releases: (() => void)[] = []
+      mocks.fetch.mockImplementation(
+        (url: string) => new Promise((resolve) => releases.push(() => resolve(respond(url))))
+      )
+      const emissions: QueryResult<AccountNfts>[] = []
+      const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
 
-    await vi.waitFor(() => expect(emissions.at(-1)?.status).toBe("loaded"))
-    const placeholders = emissions.at(-1)
-    if (placeholders?.status !== "loaded") throw new Error("expected a loaded result")
-    expect(placeholders.data.nfts).toHaveLength(15)
-    expect(nftName(placeholders.data, "2407162256")).toBe("Collection 158 #2407162256")
-    expect(nftName(placeholders.data, "313")).toBe("Collection 13 #313")
-    const rpcCalls = mocks.send.mock.calls.length
+      await vi.waitFor(() => expect(emissions.at(-1)?.status).toBe("loaded"))
+      const placeholders = emissions.at(-1)
+      if (placeholders?.status !== "loaded") throw new Error("expected a loaded result")
+      expect(placeholders.data.nfts).toHaveLength(15)
+      expect(nftName(placeholders.data, "2407162256")).toBe("Collection 158 #2407162256")
+      expect(nftName(placeholders.data, "313")).toBe("Collection 13 #313")
+      const rpcCalls = mocks.send.mock.calls.length
 
-    await vi.waitFor(() => expect(releases.length).toBeGreaterThan(0))
-    while (releases.length) {
-      releases.shift()?.()
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      await releaseAll(releases)
+      const latest = emissions.at(-1)
+      if (latest?.status !== "loaded") throw new Error("expected a loaded result")
+      expect(nftName(latest.data, "2407162256")).toBe("Chaotic #2407162256")
+      expect(nftName(latest.data, "313")).toBe("Bare CID item")
+      expect(latest.data.collections.find((c) => c.id.endsWith(":158"))?.name).toBe("Chaotic 158")
+
+      expect(mocks.send.mock.calls.length).toBe(rpcCalls)
+      expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS)
+      expect(emissions.filter((emission) => emission.status === "loading")).toHaveLength(1)
+      subscription.unsubscribe()
+    } finally {
+      vi.useRealTimers()
     }
-    await vi.waitFor(
-      () => {
-        const latest = emissions.at(-1)
-        if (latest?.status !== "loaded") throw new Error("expected a loaded result")
-        expect(nftName(latest.data, "2407162256")).toBe("Chaotic #2407162256")
-        expect(nftName(latest.data, "313")).toBe("Bare CID item")
-        expect(latest.data.collections.find((c) => c.id.endsWith(":158"))?.name).toBe("Chaotic 158")
-      },
-      { timeout: 5_000 }
-    )
-
-    expect(mocks.send.mock.calls.length).toBe(rpcCalls)
-    expect(mocks.fetch).toHaveBeenCalledTimes(DOWNLOADS)
-    expect(emissions.filter((emission) => emission.status === "loading")).toHaveLength(1)
-    subscription.unsubscribe()
   })
 
   it("flags metadata as pending until its download succeeds or fails", async () => {
-    absentKeys.add(CHAOTIC_ITEM_KEY)
-    const { getDotAccountNfts$ } = await loadFetcher()
-    const releases: (() => void)[] = []
-    mocks.fetch.mockImplementation(
-      (url: string) => new Promise((resolve) => releases.push(() => resolve(respond(url))))
-    )
-    const emissions: QueryResult<AccountNfts>[] = []
-    const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
-    const latest = () => {
-      const result = emissions.at(-1)
-      if (result?.status !== "loaded") throw new Error("expected a loaded result")
-      return result.data
-    }
-    const pendingOf = (tokenId: string) =>
-      latest().nfts.find((nft) => nft.tokenId === tokenId)?.isMetadataPending
+    useFakeTimers()
+    try {
+      absentKeys.add(CHAOTIC_ITEM_KEY)
+      const { getDotAccountNfts$ } = await loadFetcher()
+      const releases: (() => void)[] = []
+      mocks.fetch.mockImplementation(
+        (url: string) => new Promise((resolve) => releases.push(() => resolve(respond(url))))
+      )
+      const emissions: QueryResult<AccountNfts>[] = []
+      const subscription = getDotAccountNfts$(ACCOUNT).subscribe((result) => emissions.push(result))
+      const latest = () => {
+        const result = emissions.at(-1)
+        if (result?.status !== "loaded") throw new Error("expected a loaded result")
+        return result.data
+      }
+      const pendingOf = (tokenId: string) =>
+        latest().nfts.find((nft) => nft.tokenId === tokenId)?.isMetadataPending
 
-    await vi.waitFor(() => expect(emissions.at(-1)?.status).toBe("loaded"))
-    expect(pendingOf("2407162256")).toBe(false)
-    expect(pendingOf("313")).toBe(true)
-    expect(pendingOf("4235681442")).toBe(true)
-    expect(latest().collections.find((c) => c.id.endsWith(":158"))?.isMetadataPending).toBe(true)
+      await vi.waitFor(() => expect(emissions.at(-1)?.status).toBe("loaded"))
+      expect(pendingOf("2407162256")).toBe(false)
+      expect(pendingOf("313")).toBe(true)
+      expect(pendingOf("4235681442")).toBe(true)
+      expect(latest().collections.find((c) => c.id.endsWith(":158"))?.isMetadataPending).toBe(true)
 
-    await vi.waitFor(() => expect(releases.length).toBeGreaterThan(0))
-    while (releases.length) {
-      releases.shift()?.()
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      await releaseAll(releases)
+      expect(
+        [...latest().nfts, ...latest().collections].filter((nft) => nft.isMetadataPending)
+      ).toEqual([])
+      expect(fetchedUrls()).toContain(NETWORK_ERROR_URL)
+      subscription.unsubscribe()
+    } finally {
+      vi.useRealTimers()
     }
-    await vi.waitFor(
-      () =>
-        expect(
-          [...latest().nfts, ...latest().collections].filter((nft) => nft.isMetadataPending)
-        ).toEqual([]),
-      { timeout: 5_000 }
-    )
-    expect(fetchedUrls()).toContain(NETWORK_ERROR_URL)
-    subscription.unsubscribe()
   })
 })

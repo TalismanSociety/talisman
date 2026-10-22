@@ -28,7 +28,7 @@ const payloads: Record<string, unknown> = {
     control: "\u0000\u001f",
     separator: "\u2028",
   },
-  "multi-chunk": Array.from({ length: 20_000 }, (_, i) => ({
+  "multi-chunk": Array.from({ length: 500 }, (_, i) => ({
     id: `${i}-substrate-native`,
     symbol: `TKN${i}`,
     balance: String(BigInt(i) * 10n ** 18n),

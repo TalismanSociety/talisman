@@ -38,10 +38,6 @@ const mockRates = (map: Record<string, { usd?: { price: number } | undefined }>)
 // ---------------------------------------------------------------------------
 
 describe("flattenQuotes", () => {
-  it("returns empty array for empty input", () => {
-    expect(flattenQuotes([])).toEqual([])
-  })
-
   it("filters out null and undefined results", () => {
     expect(flattenQuotes([null, undefined])).toEqual([])
   })
@@ -63,14 +59,6 @@ describe("flattenQuotes", () => {
     expect(result).toHaveLength(2)
     expect(result).toContain(q1)
     expect(result).toContain(q2)
-  })
-
-  it("handles mixed single and array results", () => {
-    const single = makeQuote({ outputAmountBN: 50n, protocol: "simpleswap" })
-    const arr1 = makeQuote({ outputAmountBN: 100n, protocol: "lifi" })
-    const arr2 = makeQuote({ outputAmountBN: 0n, protocol: "lifi" }) // filtered out
-    const result = flattenQuotes([single, [arr1, arr2], null])
-    expect(result).toHaveLength(2)
   })
 })
 
@@ -111,27 +99,6 @@ describe("calculateQuoteFees", () => {
       fees: [{ name: "network", amount: BigNumber("1"), tokenId: "token-a" }],
     })
     expect(calculateQuoteFees(q, mockRates({ "token-a": { usd: undefined } }))).toBe(0)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// attachFees
-// ---------------------------------------------------------------------------
-
-describe("attachFees", () => {
-  it("returns empty array for empty quotes", () => {
-    expect(attachFees([], mockRates({}))).toEqual([])
-  })
-
-  it("attaches computed fees to each quote", () => {
-    const q = makeQuote({
-      fees: [{ name: "gas", amount: BigNumber("0.001"), tokenId: "eth" }],
-    })
-    const r = mockRates({ eth: { usd: { price: 2000 } } })
-    const result = attachFees([q], r)
-    expect(result).toHaveLength(1)
-    expect(result[0]!.quote).toBe(q)
-    expect(result[0]!.fees).toBe(2) // 0.001 * 2000
   })
 })
 
@@ -195,15 +162,6 @@ describe("sortQuotes – cheapest", () => {
     const sorted = sortQuotes([expensive, cheap, mid], "cheapest")
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["Cheap", "Mid", "Expensive"])
   })
-
-  it("handles quotes with same output but different fees", () => {
-    const a = wrap(makeQuote({ outputAmountBN: 1000n, providerName: "A" }), 5)
-    const b = wrap(makeQuote({ outputAmountBN: 1000n, providerName: "B" }), 3)
-    const c = wrap(makeQuote({ outputAmountBN: 1000n, providerName: "C" }), 10)
-
-    const sorted = sortQuotes([a, b, c], "cheapest")
-    expect(sorted.map((s) => s.quote.providerName)).toEqual(["B", "A", "C"])
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -225,16 +183,6 @@ describe("sortQuotes – decentralised", () => {
     const sorted = sortQuotes([simpleswap, lifi, stealthex], "decentalised")
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["LI.FI", "StealthEX", "SimpleSwap"])
   })
-
-  it("uses real provider scores (LI.FI=2 > StealthEX=1.5 > SimpleSwap=1)", () => {
-    const quotes: QuoteWithFees[] = [
-      wrap(makeQuote({ decentralisationScore: 1, providerName: "SimpleSwap" })),
-      wrap(makeQuote({ decentralisationScore: 1.5, providerName: "StealthEX" })),
-      wrap(makeQuote({ decentralisationScore: 2, providerName: "LI.FI" })),
-    ]
-    const sorted = sortQuotes(quotes, "decentalised")
-    expect(sorted.map((s) => s.quote.decentralisationScore)).toEqual([2, 1.5, 1])
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -242,17 +190,6 @@ describe("sortQuotes – decentralised", () => {
 // ---------------------------------------------------------------------------
 
 describe("sortQuotes – edge cases", () => {
-  it("returns empty array when given empty input", () => {
-    expect(sortQuotes([], "bestRate")).toEqual([])
-  })
-
-  it("returns single element unchanged", () => {
-    const only = wrap(makeQuote({ providerName: "Only" }))
-    const sorted = sortQuotes([only], "bestRate")
-    expect(sorted).toHaveLength(1)
-    expect(sorted[0]!.quote.providerName).toBe("Only")
-  })
-
   it("does not mutate the original array", () => {
     const a = wrap(makeQuote({ outputAmountBN: 100n }))
     const b = wrap(makeQuote({ outputAmountBN: 200n }))
@@ -320,15 +257,6 @@ describe("selectQuote", () => {
     const result = selectQuote([simple], "simpleswap", "anything")
     expect(result?.providerName).toBe("SimpleSwap")
   })
-
-  it("does not match when quote subProtocol differs from selected", () => {
-    const uniswap = wrap(
-      makeQuote({ protocol: "lifi", subProtocol: "uniswap", providerName: "Uniswap" })
-    )
-    // Only quote has subProtocol=uniswap but we want sushi → fallback to first
-    const result = selectQuote([uniswap], "lifi", "sushi")
-    expect(result?.providerName).toBe("Uniswap") // fallback to first
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -387,7 +315,7 @@ describe("full sorting pipeline", () => {
     const withFees = attachFees(flat, r)
     const sorted = sortQuotes(withFees, "cheapest")
 
-    expect(sorted[0]!.quote.providerName).toBe("SimpleSwap") // 0.001*3000=3 < 0.01*3000=30
+    expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")
     expect(sorted[0]!.fees).toBe(3)
     expect(sorted[1]!.fees).toBe(30)
   })

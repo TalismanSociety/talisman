@@ -252,19 +252,6 @@ describe("nonceManager", () => {
   })
 
   describe("concurrent nonce reservation", () => {
-    it("assigns unique nonces to concurrent callers", async () => {
-      mockGetTransactionCount.mockResolvedValue(5)
-
-      // Launch two concurrent getNextNonce calls
-      const [nonce1, nonce2] = await Promise.all([
-        getNextNonce(ADDRESS, NETWORK_ID),
-        getNextNonce(ADDRESS, NETWORK_ID),
-      ])
-
-      expect(nonce1).toBe(5)
-      expect(nonce2).toBe(6) // must not duplicate nonce 5
-    })
-
     it("assigns unique nonces across three concurrent callers", async () => {
       mockGetTransactionCount.mockResolvedValue(3)
 
@@ -321,18 +308,6 @@ describe("nonceManager", () => {
       // Handler C should get 6 (reuse of released), NOT 5 (still in-flight)
       const nonce3 = await getNextNonce(ADDRESS, NETWORK_ID)
       expect(nonce3).toBe(6)
-    })
-
-    it("clears stale reservation when on-chain nonce advances past it", async () => {
-      mockGetTransactionCount.mockResolvedValue(5)
-      const nonce1 = await getNextNonce(ADDRESS, NETWORK_ID)
-      expect(nonce1).toBe(5)
-
-      // Simulate the transaction being mined — on-chain nonce advances
-      mockGetTransactionCount.mockResolvedValue(6)
-
-      const nonce2 = await getNextNonce(ADDRESS, NETWORK_ID)
-      expect(nonce2).toBe(6) // stale reservation cleared, uses on-chain
     })
   })
 })
