@@ -139,8 +139,10 @@ describe("useSwapQuoteManager", () => {
 
     pendingQuotes[0]?.resolve([makeQuote(100n)])
 
-    await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(100n))
-    expect(result.current.isQuoteDataCurrent).toBe(true)
+    await waitFor(() => {
+      expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(100n)
+      expect(result.current.isQuoteDataCurrent).toBe(true)
+    })
 
     params = { ...params, fromAmount: 2n }
     rerender()
@@ -155,8 +157,10 @@ describe("useSwapQuoteManager", () => {
 
     pendingQuotes[1]?.resolve([makeQuote(200n)])
 
-    await waitFor(() => expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(200n))
-    expect(result.current.isQuoteDataCurrent).toBe(true)
+    await waitFor(() => {
+      expect(result.current.sortedQuotes[0]?.quote.outputAmountBN).toBe(200n)
+      expect(result.current.isQuoteDataCurrent).toBe(true)
+    })
   })
 
   it("reports quotes once per amount and token pair, not on a refresh", async () => {

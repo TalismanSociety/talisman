@@ -145,6 +145,10 @@ describe("pjs json import (polkadot-js parity fixtures)", () => {
     expect(pair.secretKey).toBeNull()
   })
 
+  it("batch file rejects a wrong password", async () => {
+    await expect(unlockMultiAccountsJson(FIXTURES.batch.json, "wrong-password")).rejects.toThrow()
+  })
+
   it("batch file with all curves", async () => {
     const inner = await unlockMultiAccountsJson(FIXTURES.batch.json, FIXTURES.password)
     expect(inner).toHaveLength(FIXTURES.batch.accounts.length)

@@ -270,6 +270,15 @@ describe("LI.FI fee logic", () => {
       expect(result).toBe(0.003)
     })
 
+    it("applies the fromAsset fee when the route has no toAssetId", async () => {
+      mockRemoteConfigGet.mockResolvedValue({
+        lifiCustomFeeTokens: { "token-a": 0.005 },
+      })
+      expect(await getLifiCustomFeeForRoute({ fromAssetId: "token-a", toAssetId: undefined })).toBe(
+        0.005
+      )
+    })
+
     it("falls back to fromAsset fee when toAsset has no custom fee", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: {
