@@ -5,6 +5,7 @@ it.each([
   "authorize.tab",
   "bytes.sign",
   "extrinsic.sign",
+  "extrinsic.create",
   "vrf.sign",
   "accounts.list",
   "accounts.subscribe",

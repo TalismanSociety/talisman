@@ -15,6 +15,7 @@ export const DAPP_METHODS = [
   "wallet_watchAsset",
   "signPayload",
   "signRaw",
+  "createTransaction",
   "signVrf",
   "signMessage",
   "signTransaction",
@@ -40,7 +41,9 @@ export const describeDappRequest = (request: ValidRequests): DappRequestKind => 
       return { method: "wallet_watchAsset", platform: "ethereum" }
     case "substrate-sign":
       return {
-        method: "genesisHash" in request.request.payload ? "signPayload" : "signRaw",
+        method:
+          request.request.method ??
+          ("genesisHash" in request.request.payload ? "signPayload" : "signRaw"),
         platform: "polkadot",
       }
     case "vrf-sign":

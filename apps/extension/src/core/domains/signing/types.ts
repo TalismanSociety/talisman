@@ -1,12 +1,23 @@
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import type { Account } from "@talismn/keyring"
+import type { HexString } from "@talismn/util"
 import type { RpcTransactionRequest } from "viem"
 import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "../../types/pjsInterop"
 import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
+import type { TxExtension } from "./txPayloadV1"
 
 // structural equivalents of the legacy @polkadot/extension-base signing request types
-export type RequestSign = { payload: SignerPayloadJSON | SignerPayloadRaw }
+export type RequestSign =
+  | { payload: SignerPayloadJSON | SignerPayloadRaw; method?: undefined }
+  | {
+      /** converted from a `createTransaction` request */
+      payload: SignerPayloadJSON
+      method: "createTransaction"
+      /** the dapp's extensions, held byte for byte to what approval encodes from `payload` */
+      extensions: TxExtension[]
+    }
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -221,6 +232,7 @@ export type EthTransactionDetails = {
 export interface SigningMessages {
   // dapp-facing, not part of the injected-web3 spec (Talisman-specific)
   "pub(vrf.sign)": [VrfSignPayload, VrfSignResponse]
+  "pub(extrinsic.create)": [TxPayloadV1, HexString]
   // signing message signatures
   "pri(signing.approveSign)": [KnownSigningRequestApprove<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]

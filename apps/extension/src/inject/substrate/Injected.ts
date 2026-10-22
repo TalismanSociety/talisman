@@ -1,6 +1,8 @@
 import type { VrfSignPayload, VrfSignResult } from "@core/domains/signing/types"
 import type { SendRequest } from "@core/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@core/types/pjsInterop"
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
+import type { HexString } from "@talismn/util"
 
 import type {
   Injected,
@@ -96,6 +98,22 @@ export class TalismanSigner {
     const result = await this.#sendRequest("pub(bytes.sign)", payload)
 
     return { ...result, id }
+  }
+
+  /**
+   * Creates the signed extrinsic for a polkadot-api `TxPayloadV1`, returned as SCALE hex ready to
+   * broadcast. polkadot-api's pjs-signer prefers it over `signPayload` when present, which lets
+   * Talisman sign transactions with extensions `SignerPayloadJSON` cannot express.
+   *
+   * Requires `signer` to be the address of a Talisman account. Rejects unless every supplied
+   * extension matches, byte for byte, what Talisman builds from its own chain metadata. Talisman
+   * may turn on CheckMetadataHash.
+   */
+  public createTransaction = (payload: TxPayloadV1): Promise<HexString> => {
+    return this.#sendRequest("pub(extrinsic.create)", {
+      ...payload,
+      context: { ...payload.context, metadata: "0x" },
+    })
   }
 
   /**

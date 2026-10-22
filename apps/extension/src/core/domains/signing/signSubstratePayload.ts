@@ -8,6 +8,14 @@ import { assemblePjsTransaction, type SignPjsPayloadResult, signPjsPayload } fro
 
 export type { SignPjsPayloadResult } from "./signPjsPayload"
 
+/** the wallet's cached metadata for the runtime the payload names */
+export const getPayloadMetadataRpc = async (payload: SignerPayloadJSON) => {
+  const metadataDef = await getMetadataDef(payload.genesisHash, parseInt(payload.specVersion, 16))
+  const metadataRpc = getMetadataRpcFromDef(metadataDef)
+  assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
+  return metadataRpc
+}
+
 /**
  * Assembles a signed extrinsic from a payload and a ready-made (prefixed) signature,
  * using the wallet's cached metadata for the target chain.
@@ -16,9 +24,7 @@ export const assembleSubstrateTransaction = async (
   payload: SignerPayloadJSON,
   signature: Uint8Array | `0x${string}`
 ) => {
-  const metadataDef = await getMetadataDef(payload.genesisHash, parseInt(payload.specVersion, 16))
-  const metadataRpc = getMetadataRpcFromDef(metadataDef)
-  assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
+  const metadataRpc = await getPayloadMetadataRpc(payload)
 
   return assemblePjsTransaction(metadataRpc, payload, signature)
 }
@@ -36,9 +42,7 @@ export const signSubstratePayload = async (
     hasExtrinsicSignatureTypePrefix?: boolean
   }
 ): Promise<SignPjsPayloadResult> => {
-  const metadataDef = await getMetadataDef(payload.genesisHash, parseInt(payload.specVersion, 16))
-  const metadataRpc = getMetadataRpcFromDef(metadataDef)
-  assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
+  const metadataRpc = await getPayloadMetadataRpc(payload)
 
   return signPjsPayload(metadataRpc, payload, secretKey, curve, options)
 }

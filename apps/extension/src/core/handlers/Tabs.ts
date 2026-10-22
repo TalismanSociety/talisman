@@ -1,7 +1,7 @@
 import { PHISHING_PAGE_REDIRECT } from "@common/constants"
 import { log } from "@common/log"
 import { isTalismanUrl } from "@core/util/isTalismanUrl"
-import { assert } from "@talismn/util"
+import { assert, type HexString, u8aToHex } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
@@ -16,6 +16,11 @@ import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { getMetadataDef } from "../domains/metadata/getMetadataDef"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
+import {
+  type ParsedTxPayloadV1,
+  parseTxPayloadV1,
+  signerPayloadFromTxPayloadV1,
+} from "../domains/signing/txPayloadV1"
 import type {
   SubstrateSignResponse,
   VrfSignPayload,
@@ -162,6 +167,27 @@ export default class Tabs extends TabsHandler {
     if (!account) throw new Error("Account not found")
 
     return requestSubstrateSign(url, { payload: request }, account, port)
+  }
+
+  private async extrinsicCreate(
+    url: string,
+    txPayload: ParsedTxPayloadV1,
+    port: Port
+  ): Promise<HexString> {
+    const account = await keyringStore.getAccount(txPayload.signer)
+    if (!account) throw new Error("Account not found")
+
+    const payload = signerPayloadFromTxPayloadV1(txPayload)
+
+    const { signedTransaction } = await requestSubstrateSign(
+      url,
+      { payload, method: "createTransaction", extensions: txPayload.extensions },
+      account,
+      port
+    )
+
+    assert(signedTransaction, "Missing signed transaction")
+    return typeof signedTransaction === "string" ? signedTransaction : u8aToHex(signedTransaction)
   }
 
   private async vrfSign(
@@ -338,6 +364,12 @@ export default class Tabs extends TabsHandler {
           (request as SignerPayloadJSON).address
         )
         return this.extrinsicSign(url, request as SignerPayloadJSON, port)
+
+      case "pub(extrinsic.create)": {
+        const txPayload = parseTxPayloadV1(request)
+        await this.stores.sites.ensureUrlAuthorized(url, false, txPayload.signer)
+        return this.extrinsicCreate(url, txPayload, port)
+      }
 
       case "pub(vrf.sign)":
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as VrfSignPayload).address)

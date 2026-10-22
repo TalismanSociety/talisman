@@ -1,5 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
-import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
+import { Blake2256, getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
+import type { TxPayloadV1 } from "@polkadot-api/tx-creator"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { base64 } from "@scure/base"
 import { verify as sr25519Verify } from "@scure/sr25519"
@@ -258,6 +259,183 @@ describe("Extension", () => {
       const addressInfo = getSs58AddressInfo(account.address)
       if (!addressInfo.isValid) throw new Error("Invalid address")
       expect(sr25519Verify(signingInput, sigBytes.subarray(1), addressInfo.publicKey)).toBe(true)
+    })
+
+    describe("createTransaction", () => {
+      const BLOCK_HASH = "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80"
+      // System.remark of 300 bytes, so the signing input goes over 256 bytes and gets hashed
+      const CALL_DATA = `0x0000b104${"61".repeat(300)}`
+      // mortality, nonce 7, no tip, metadata hash disabled
+      const EXTRA = "0x36011c0000"
+      // spec version, transaction version, genesis, mortality checkpoint, no metadata hash
+      const ADDITIONAL_SIGNED = `0x38901e001a000000${POLKADOT_GENESIS.slice(2)}${BLOCK_HASH.slice(2)}00`
+
+      const txPayload = (signer: string | null): TxPayloadV1 => ({
+        version: 1,
+        signer,
+        callData: CALL_DATA,
+        extensions: [
+          { id: "CheckSpecVersion", extra: "0x", additionalSigned: "0x38901e00" },
+          { id: "CheckTxVersion", extra: "0x", additionalSigned: "0x1a000000" },
+          { id: "CheckGenesis", extra: "0x", additionalSigned: POLKADOT_GENESIS },
+          { id: "CheckMortality", extra: "0x3601", additionalSigned: BLOCK_HASH },
+          { id: "CheckNonce", extra: "0x1c", additionalSigned: "0x" },
+          { id: "ChargeTransactionPayment", extra: "0x00", additionalSigned: "0x" },
+          { id: "CheckMetadataHash", extra: "0x00", additionalSigned: "0x00" },
+        ],
+        txExtVersion: null,
+        context: {
+          metadata: "0x6d657461",
+          token: { symbol: "DOT", decimals: 10 },
+          bestBlockHeight: 915,
+          bestBlockHash: BLOCK_HASH,
+          genesisHash: POLKADOT_GENESIS,
+        },
+      })
+
+      const withCheckGenesis = (payload: TxPayloadV1, additionalSigned: string) =>
+        payload.extensions.map((extension) =>
+          extension.id === "CheckGenesis" ? { ...extension, additionalSigned } : extension
+        )
+
+      const createTransaction = (payload: TxPayloadV1) =>
+        tabs.handle(v4(), "pub(extrinsic.create)", payload, {} as chrome.runtime.Port, DAPP_URL)
+
+      const queuedRequest = async () => {
+        await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
+        return requestStore.allRequests("substrate-sign")[0]
+      }
+
+      const expectSignedExtrinsic = (
+        transaction: Uint8Array,
+        {
+          length,
+          extra,
+          additionalSigned,
+        }: { length: string; extra: string; additionalSigned: string }
+      ) => {
+        const addressInfo = getSs58AddressInfo(account.address)
+        if (!addressInfo.isValid) throw new Error("Invalid address")
+        // compact length, signed v4, MultiAddress::Id, MultiSignature::Sr25519, extra, call
+        expect(u8aToHex(transaction.subarray(0, 4))).toBe(`${length}8400`)
+        expect(u8aToHex(transaction.subarray(4, 36))).toBe(u8aToHex(addressInfo.publicKey))
+        expect(transaction[36]).toBe(1)
+        const signature = transaction.subarray(37, 101)
+        expect(u8aToHex(transaction.subarray(101))).toBe(`${extra}${CALL_DATA.slice(2)}`)
+
+        const signingInput = Blake2256(
+          hexToU8a(`${CALL_DATA}${extra.slice(2)}${additionalSigned.slice(2)}`)
+        )
+        expect(sr25519Verify(signingInput, signature, addressInfo.publicKey)).toBe(true)
+      }
+
+      test("returns the signed extrinsic once the user approves", async () => {
+        const transactionPromise = createTransaction(txPayload(account.address))
+        const request = await queuedRequest()
+        expect(request.request.method).toBe("createTransaction")
+        await messageSender("pri(signing.approveSign)", { id: request.id })
+
+        expectSignedExtrinsic(hexToU8a(await transactionPromise), {
+          length: "0x6106", // 408 bytes
+          extra: EXTRA,
+          additionalSigned: ADDITIONAL_SIGNED,
+        })
+      })
+
+      test("returns the wallet's extrinsic when the wallet adds the metadata hash", async () => {
+        const metadataHash = `0x${"ab".repeat(32)}` as const
+        const transactionPromise = createTransaction(txPayload(account.address))
+        const request = await queuedRequest()
+        await messageSender("pri(signing.approveSign)", {
+          id: request.id,
+          payload: { ...(request.request.payload as SignerPayloadJSON), mode: 1, metadataHash },
+        })
+
+        expectSignedExtrinsic(hexToU8a(await transactionPromise), {
+          length: "0x6106",
+          extra: "0x36011c0001",
+          additionalSigned: `${ADDITIONAL_SIGNED.slice(0, -2)}01${metadataHash.slice(2)}`,
+        })
+      })
+
+      test("rejects when the user rejects", async () => {
+        const transactionPromise = createTransaction(txPayload(account.address))
+        const request = await queuedRequest()
+        await messageSender("pri(signing.cancel)", { id: request.id })
+
+        await expect(transactionPromise).rejects.toThrow("Cancelled")
+      })
+
+      test("asks the user before the chain metadata is available", async () => {
+        const unknownGenesis = `0x${"42".repeat(32)}` as const
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: withCheckGenesis(payload, unknownGenesis),
+          context: { ...payload.context, genesisHash: unknownGenesis },
+        })
+        transactionPromise.catch(() => {})
+
+        const request = await queuedRequest()
+
+        expect(request.request.payload).toMatchObject({ genesisHash: unknownGenesis })
+      })
+
+      test("rejects on approval an extension the wallet cannot reproduce", async () => {
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: withCheckGenesis(payload, BLOCK_HASH),
+        })
+        transactionPromise.catch(() => {})
+        const request = await queuedRequest()
+
+        await expect(messageSender("pri(signing.approveSign)", { id: request.id })).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+        await expect(transactionPromise).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+      })
+
+      test("returns the extrinsic a hardware wallet signed", async () => {
+        const signature = `0x01${"cd".repeat(64)}` as const
+        const transactionPromise = createTransaction(txPayload(account.address))
+        const request = await queuedRequest()
+        await messageSender("pri(signing.approveSign.hardware)", { id: request.id, signature })
+
+        const transaction = await transactionPromise
+        expect(transaction.slice(-(EXTRA.length - 2 + CALL_DATA.length - 2))).toBe(
+          `${EXTRA.slice(2)}${CALL_DATA.slice(2)}`
+        )
+        expect(transaction).toContain(signature.slice(2))
+      })
+
+      test("rejects a hardware approval when an extension does not match", async () => {
+        const payload = txPayload(account.address)
+        const transactionPromise = createTransaction({
+          ...payload,
+          extensions: withCheckGenesis(payload, BLOCK_HASH),
+        })
+        transactionPromise.catch(() => {})
+        const request = await queuedRequest()
+
+        await expect(
+          messageSender("pri(signing.approveSign.hardware)", {
+            id: request.id,
+            signature: `0x01${"cd".repeat(64)}`,
+          })
+        ).rejects.toThrow("Unsupported value for transaction extension CheckGenesis")
+        await expect(transactionPromise).rejects.toThrow(
+          "Unsupported value for transaction extension CheckGenesis"
+        )
+        expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
+      })
+
+      test("rejects a payload without a signer before asking the user", async () => {
+        await expect(createTransaction(txPayload(null))).rejects.toThrow(/Missing signer/)
+        expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
+      })
     })
   })
 
