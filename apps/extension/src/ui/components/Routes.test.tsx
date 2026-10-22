@@ -58,6 +58,7 @@ const App = ({ path }: { path: string }) => (
     </Routes>
     <Routes screen={false}>
       <Route path="portfolio/*" element={<div>toolbar</div>} />
+      <Route path="*" element={null} />
     </Routes>
   </MemoryRouter>
 )

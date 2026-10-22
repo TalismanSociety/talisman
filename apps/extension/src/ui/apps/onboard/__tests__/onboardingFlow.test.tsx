@@ -31,6 +31,8 @@ const screens = () =>
   track.mock.calls.filter(([event]) => event === "$screen").map(([, props]) => props.$screen_name)
 const flowEvents = () => trackFlowEvent.mock.calls.map(([event, props]) => ({ event, ...props }))
 
+const settlePasswordCheck = () => act(() => Promise.resolve())
+
 let onboard: ReturnType<typeof useOnboard>
 const Probe = () => {
   onboard = useOnboard()
@@ -64,6 +66,7 @@ describe("onboarding analytics", () => {
 
   it("starts on install, ends at the privacy choice under a non-mobile name", async () => {
     render(<Onboarding />)
+    await settlePasswordCheck()
     act(() => onboard.setOnboarded())
 
     expect(flowEvents().map(({ event }) => event)).toEqual([

@@ -23,6 +23,13 @@ const row = (uuid: string, sendAt: number, kind: QueuedEventRecord["kind"] = "us
   },
 })
 
+const clearAnalyticsDatabase = async () => {
+  if (!(await Dexie.exists("TalismanAnalytics"))) return
+  const db = await new Dexie("TalismanAnalytics").open()
+  await Promise.all(db.tables.map((table) => table.clear()))
+  db.close()
+}
+
 const STATE: AnalyticsState = {
   session: null,
   appliedConsent: { usage: "granted", error: "granted" },
@@ -35,7 +42,7 @@ describe.each([
   let store: AnalyticsStore
 
   beforeEach(async () => {
-    await Dexie.delete("TalismanAnalytics")
+    await clearAnalyticsDatabase()
     store = create()
   })
 

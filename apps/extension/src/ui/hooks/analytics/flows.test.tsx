@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render } from "@testing-library/react"
 import { Modal } from "@ui/components/Modal"
 import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { settleTransitions } from "../../../../tests/settleTransitions"
 
 import { reportErrorShown } from "./errorShown"
 import { flows, useFlow } from "./flows"
@@ -131,7 +132,7 @@ describe("useFlow", () => {
     expect(sent()[3]).toMatchObject({ abandon_cause: "left", last_step: "show" })
   })
 
-  it("starts nothing while inactive, and a new attempt each time it turns active", () => {
+  it("starts nothing while inactive, and a new attempt each time it turns active", async () => {
     render(<Backup initiallyOpen={false} />)
     expect(trackFlowEvent).not.toHaveBeenCalled()
 
@@ -149,9 +150,11 @@ describe("useFlow", () => {
       "step_viewed",
     ])
     expect(sent()[5]).toMatchObject({ step: "show" })
+
+    await settleTransitions()
   })
 
-  it("completes the modal it wraps: modal_closed reads completed, and no abandoned follows", () => {
+  it("completes the modal it wraps: modal_closed reads completed, and no abandoned follows", async () => {
     const { getByText } = render(<Backup />)
 
     fireEvent.click(getByText("finish"))
@@ -159,9 +162,11 @@ describe("useFlow", () => {
     expect(lifecycles()).toEqual(["started", "step_viewed", "completed"])
     expect(sent()[2]).toMatchObject({ verified: true })
     expect(closes()).toEqual(["completed"])
+
+    await settleTransitions()
   })
 
-  it("keeps a caller flow's modal open to the gesture after submitted: only completed finishes it", () => {
+  it("keeps a caller flow's modal open to the gesture after submitted: only completed finishes it", async () => {
     render(<Backup />)
 
     act(() => flows.recovery_phrase_backup.submitted())
@@ -169,9 +174,11 @@ describe("useFlow", () => {
 
     expect(lifecycles()).toEqual(["started", "step_viewed", "submitted", "abandoned"])
     expect(closes()).toEqual(["escape"])
+
+    await settleTransitions()
   })
 
-  it("leaves the modal to its gesture when a flow nested in it completes", () => {
+  it("leaves the modal to its gesture when a flow nested in it completes", async () => {
     const VaultSign = () => {
       useFlow(flows.vault_sign, { entry: "wallet", step: "scan_signature" })
       return null
@@ -187,9 +194,11 @@ describe("useFlow", () => {
     fireEvent.keyDown(window, { key: "Escape" })
 
     expect(closes()).toEqual(["escape"])
+
+    await settleTransitions()
   })
 
-  it("abandons on Escape, with modal_closed reading escape", () => {
+  it("abandons on Escape, with modal_closed reading escape", async () => {
     render(<Backup />)
     act(() => controls.setStep("show"))
 
@@ -198,6 +207,8 @@ describe("useFlow", () => {
     expect(lifecycles()).toEqual(["started", "step_viewed", "step_viewed", "abandoned"])
     expect(sent()[3]).toMatchObject({ abandon_cause: "left", last_step: "show" })
     expect(closes()).toEqual(["escape"])
+
+    await settleTransitions()
   })
 
   it("puts the running flow on error_shown, and the error on a later abandoned", () => {

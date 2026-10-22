@@ -516,7 +516,8 @@ describe("useSendFunds", () => {
     })
 
     it("switches a substrate transfer to transfer_all", () => {
-      render().current.onSendMaxClick()
+      const { current } = render()
+      act(() => current.onSendMaxClick())
 
       expect(mocks.set.mock.calls).toEqual([
         ["amount", (99n * DOT_UNIT).toString()],
@@ -530,7 +531,8 @@ describe("useSendFunds", () => {
       state.transferable = { [ETH.id]: 10n ** 18n }
       state.transaction = { platform: "ethereum", estimatedFee: "1", maxFee: "2", maxAmount: "5" }
 
-      render().current.onSendMaxClick()
+      const { current } = render()
+      act(() => current.onSendMaxClick())
 
       expect(mocks.set.mock.calls).toEqual([["amount", "5"]])
     })
