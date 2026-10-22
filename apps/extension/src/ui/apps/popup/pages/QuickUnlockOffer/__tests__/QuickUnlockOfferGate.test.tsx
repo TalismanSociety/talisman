@@ -124,6 +124,18 @@ describe("QuickUnlockOfferGate", () => {
     shows("offer")
   })
 
+  test("checks the device for quick unlock while the user types their password", async () => {
+    auth.reset("FALSE")
+    await openPage()
+    expect(screen.queryByText("login")).not.toBeNull()
+    expect(mockIsAvailable).toHaveBeenCalledTimes(1)
+
+    await login()
+
+    shows("offer")
+    expect(mockIsAvailable).toHaveBeenCalledTimes(1)
+  })
+
   test("continues to the portfolio once the user has answered", async () => {
     await openLockedThenLogin()
 

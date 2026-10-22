@@ -1,3 +1,4 @@
+import { bind } from "@react-rxjs/core"
 import { useAppState } from "@ui/state/app"
 import { useOpenedLocked } from "@ui/state/isLoggedIn"
 import { useQuickUnlockEnrolment } from "@ui/state/quickUnlock"
@@ -5,6 +6,7 @@ import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { isQuickUnlockAvailable } from "@ui/util/webauthnPrf"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
+import { defer, shareReplay } from "rxjs"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
 
@@ -23,25 +25,31 @@ const decide = (inputs: OfferInputs): Decision => {
   return inputs.available ? "offer" : "skip"
 }
 
+// slow on some platforms (Windows Hello), so it starts while the user types their password
+const quickUnlockAvailable$ = defer(isQuickUnlockAvailable).pipe(shareReplay(1))
+const [useQuickUnlockAvailable] = bind(quickUnlockAvailable$, null)
+
 /**
  * Whether this popup may offer quick unlock to a user who is about to type their password.
  * Popup windows opened for a dapp request never offer it, the user is there for the request.
  */
 export const useCanOfferQuickUnlock = () => {
   const openedLocked = useOpenedLocked()
-  return IS_EMBEDDED_POPUP && openedLocked === true
+  const canOffer = IS_EMBEDDED_POPUP && openedLocked === true
+
+  useEffect(() => {
+    if (canOffer) quickUnlockAvailable$.subscribe()
+  }, [canOffer])
+
+  return canOffer
 }
 
 export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
   const [settled, setSettled] = useState<Exclude<Decision, "pending"> | null>(null)
-  const [available, setAvailable] = useState<boolean | null>(null)
+  const available = useQuickUnlockAvailable()
   const enrolled = useQuickUnlockEnrolment()
   const isFeatureEnabled = useFeatureFlag("QUICK_UNLOCK")
   const [dismissedForGood] = useAppState("hideQuickUnlockOffer")
-
-  useEffect(() => {
-    isQuickUnlockAvailable().then(setAvailable)
-  }, [])
 
   const decision =
     settled ??
