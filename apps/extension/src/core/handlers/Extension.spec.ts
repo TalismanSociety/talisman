@@ -22,6 +22,16 @@ import Extension from "./Extension"
 import { extensionStores } from "./stores"
 import Tabs from "./Tabs"
 
+// the keyring KDF (PBKDF2, 100k iterations) runs for every secret and is tested in @talismn/crypto
+vi.mock("@talismn/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@talismn/crypto")>()
+  return {
+    ...actual,
+    pbkdf2: ((hash, entropy, salt, _iterations, length) =>
+      actual.pbkdf2(hash, entropy, salt, 1, length)) satisfies typeof actual.pbkdf2,
+  }
+})
+
 // the phishing lists are fetched over the network on first use, which every `pub(*)` message
 // would otherwise wait on
 vi.mock("../domains/app/protector", async (importOriginal) => ({
@@ -475,8 +485,7 @@ describe("Extension", () => {
     // app.talisman.xyz should already be in the authorised sites store after onboarding
     const account = await getAccount()
     const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(talismanSite?.addresses)
-    expect(talismanSite.addresses?.includes(account.address))
+    expect(talismanSite.addresses).toContain(account.address)
 
     const [newAddress] = await messageSender("pri(accounts.add.derive)", [
       {
@@ -490,10 +499,10 @@ describe("Extension", () => {
 
     const sites = await extensionStores.sites.get()
     const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]
-    expect(talismanSiteAgain.addresses?.includes(newAddress))
+    expect(talismanSiteAgain.addresses).toContain(newAddress)
 
     const otherSite = Object.values(sites).find((site) => !site.connectAllSubstrate)
-    expect(otherSite)
-    expect(otherSite?.addresses?.includes(newAddress)).toBeFalsy()
+    expect(otherSite).toBeDefined()
+    expect(otherSite?.addresses).not.toContain(newAddress)
   })
 })

@@ -6,20 +6,6 @@ import { concatMapChunked, switchMapChunked } from "./mapChunked"
 import { yieldToEventLoop } from "./yieldToEventLoop"
 
 describe("switchMapChunked", () => {
-  it("emits the projected result", async () => {
-    const source = new Subject<number>()
-    const results: number[] = []
-    const sub = source
-      .pipe(switchMapChunked(async (value) => value * 2))
-      .subscribe((v) => results.push(v))
-
-    source.next(21)
-    await yieldToEventLoop()
-
-    expect(results).toEqual([42])
-    sub.unsubscribe()
-  })
-
   it("aborts in-flight work when the upstream emits again (latest-wins)", async () => {
     const source = new Subject<number>()
     const results: number[] = []

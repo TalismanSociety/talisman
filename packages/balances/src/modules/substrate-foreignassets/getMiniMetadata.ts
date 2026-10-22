@@ -14,15 +14,16 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
   const source = MODULE_TYPE
   const chainId = networkId
 
-  const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
+  const parsed = parseMetadataRpc(metadataRpc)
+  const { unifiedMetadata } = parsed
+
+  const systemVersion = getConstantValue<{ spec_version: number }>(parsed, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
       `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
-
-  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   if (unifiedMetadata.version < 14)
     throw new Error(
@@ -35,14 +36,15 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
     chainId,
     specVersion,
     version: MINIMETADATA_VERSION,
-    data: getData(metadataRpc),
+    data: getData(parsed),
     extra: null,
   } as AnyMiniMetadata
 }
 
-const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
-  const { metadata, unifiedMetadata } = parseMetadataRpc(metadataRpc)
-
+const getData = ({
+  metadata,
+  unifiedMetadata,
+}: ReturnType<typeof parseMetadataRpc>): `0x${string}` | null => {
   // ensure the network has all the required bits
   if (!hasStorageItems(unifiedMetadata, "ForeignAssets", ["Account", "Asset", "Metadata"]))
     return null

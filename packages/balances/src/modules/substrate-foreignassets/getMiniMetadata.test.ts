@@ -16,12 +16,15 @@ const FIXTURES_DIR = path.resolve(
 const loadMetadataRpc = (name: string): `0x${string}` =>
   `0x${gunzipSync(readFileSync(path.join(FIXTURES_DIR, name))).toString("hex")}`
 
+const ASSET_HUB_METADATA = loadMetadataRpc("assethub-metadata-v15.scale.gz")
+const POLKADOT_METADATA = loadMetadataRpc("polkadot-metadata-v15.scale.gz")
+
 describe("substrate-foreignassets getMiniMetadata", () => {
   it("keeps only the ForeignAssets storage items on Asset Hub", () => {
     const miniMetadata = getMiniMetadata({
       networkId: "polkadot-asset-hub",
       specVersion: 2003001,
-      metadataRpc: loadMetadataRpc("assethub-metadata-v15.scale.gz"),
+      metadataRpc: ASSET_HUB_METADATA,
     })
 
     expect(miniMetadata).toEqual({
@@ -47,7 +50,7 @@ describe("substrate-foreignassets getMiniMetadata", () => {
     const miniMetadata = getMiniMetadata({
       networkId: "polkadot",
       specVersion: 2003000,
-      metadataRpc: loadMetadataRpc("polkadot-metadata-v15.scale.gz"),
+      metadataRpc: POLKADOT_METADATA,
     })
 
     expect(miniMetadata.data).toBeNull()
@@ -59,7 +62,7 @@ describe("substrate-foreignassets getMiniMetadata", () => {
       getMiniMetadata({
         networkId: "polkadot-asset-hub",
         specVersion: 1,
-        metadataRpc: loadMetadataRpc("assethub-metadata-v15.scale.gz"),
+        metadataRpc: ASSET_HUB_METADATA,
       })
     ).toThrow("specVersion mismatch: expected 1, metadata got 2003001")
   })

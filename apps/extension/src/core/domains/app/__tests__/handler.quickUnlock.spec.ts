@@ -6,6 +6,16 @@ import Extension from "../../../handlers/Extension"
 import { extensionStores, type GettableStoreData, getLocalStorage } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 
+// the keyring KDF (PBKDF2, 100k iterations) runs for every secret and is tested in @talismn/crypto
+vi.mock("@talismn/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@talismn/crypto")>()
+  return {
+    ...actual,
+    pbkdf2: ((hash, entropy, salt, _iterations, length) =>
+      actual.pbkdf2(hash, entropy, salt, 1, length)) satisfies typeof actual.pbkdf2,
+  }
+})
+
 vi.setConfig({ testTimeout: 20_000 })
 
 const randomPrfOutput = () => base64.encode(crypto.getRandomValues(new Uint8Array(32)))

@@ -23,13 +23,13 @@ test("Can get Authorised Site by id", async () => {
   expect(result.current.availableAddresses).toStrictEqual(Object.values(ADDRESSES))
 
   await act(async () => result.current.toggleOne(ADDRESSES.GAV))
-  waitFor(() => expect(result.current.addresses?.length).toBe(1))
+  await waitFor(() => expect(result.current.addresses?.length).toBe(1))
 
   await act(async () => result.current.toggleAll(false))
-  waitFor(() => expect(result.current.addresses?.length).toBe(0))
+  await waitFor(() => expect(result.current.addresses?.length).toBe(0))
 
   await act(async () => result.current.toggleAll(true))
-  waitFor(() => expect(result.current.addresses?.length).toBe(3))
+  await waitFor(() => expect(result.current.addresses?.length).toBe(3))
 
   rerender({ siteId: "app.stellaswap.com", providerType: "ethereum" })
   await waitFor(() => expect(result.current.addresses).toBeUndefined())
@@ -38,5 +38,5 @@ test("Can get Authorised Site by id", async () => {
 
   expect(result.current.availableAddresses).toStrictEqual([ADDRESSES.VITALIK])
   await act(async () => result.current.setEthChainId(12))
-  waitFor(() => expect(result.current.ethChainId).toBe(12))
+  await waitFor(() => expect(result.current.ethChainId).toBe(12))
 })

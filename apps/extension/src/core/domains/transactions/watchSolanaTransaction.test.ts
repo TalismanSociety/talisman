@@ -1,10 +1,11 @@
 import type { SolTransaction } from "@talismn/solana"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
 
 const SIGNATURE = "sig1"
 const NETWORK_ID = "solana-mainnet"
+const POLL_INTERVAL_MS = 2_000
 
 vi.mock("@talismn/solana", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@talismn/solana")>()),
@@ -60,9 +61,14 @@ const getTx = () => db.transactionsV2.get(SIGNATURE)
 
 describe("watchSolanaTransaction", () => {
   beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     await db.transactionsV2.clear()
     vi.clearAllMocks()
     mockGetTransaction.mockResolvedValue({ slot: 100n })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it("reports success when the first poll already returns finalized", async () => {
@@ -92,12 +98,13 @@ describe("watchSolanaTransaction", () => {
 
     await watch()
 
-    await vi.waitFor(
-      async () => {
-        expect((await getTx())?.confirmed).toBe(true)
-      },
-      { timeout: 10_000 }
-    )
+    await vi.waitFor(async () => expect((await getTx())?.status).toBe("success"))
+    expect((await getTx())?.confirmed).toBe(false)
+    expect(mockGetSignatureStatuses).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
+
+    await vi.waitFor(async () => expect((await getTx())?.confirmed).toBe(true))
     expect((await getTx())?.status).toBe("success")
     expect(mockCreateNotification).toHaveBeenCalledTimes(1)
     expect(mockWatchSwapStatus).toHaveBeenCalledTimes(1)

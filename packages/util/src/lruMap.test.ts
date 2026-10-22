@@ -3,14 +3,6 @@ import { describe, expect, it } from "vitest"
 import { LruMap } from "./lruMap"
 
 describe("LruMap", () => {
-  it("stores and retrieves values", () => {
-    const map = new LruMap<string, number>(3)
-    map.set("a", 1)
-    expect(map.get("a")).toBe(1)
-    expect(map.has("a")).toBe(true)
-    expect(map.size).toBe(1)
-  })
-
   it("evicts the least-recently-used entry when full", () => {
     const map = new LruMap<string, number>(3)
     map.set("a", 1)

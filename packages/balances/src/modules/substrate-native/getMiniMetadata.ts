@@ -16,15 +16,16 @@ export const getMiniMetadata: IBalanceModule<
   const source = MODULE_TYPE
   const chainId = networkId
 
-  const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
+  const parsed = parseMetadataRpc(metadataRpc)
+  const { metadata, unifiedMetadata } = parsed
+
+  const systemVersion = getConstantValue<{ spec_version: number }>(parsed, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
       `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
-
-  const { metadata, unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   if (unifiedMetadata.version < 14)
     throw new Error(
@@ -43,7 +44,7 @@ export const getMiniMetadata: IBalanceModule<
     }
 
   const existentialDeposit = tryGetConstantValue<bigint>(
-    metadataRpc,
+    parsed,
     "Balances",
     "ExistentialDeposit"
   )?.toString()
@@ -51,7 +52,7 @@ export const getMiniMetadata: IBalanceModule<
   // string. Convert it back to its ASCII text form (e.g. "py/nopls"), which nompoolAccountId
   // re-encodes as utf-8 to derive pool account ids.
   const nominationPoolsPalletIdHex = tryGetConstantValue<`0x${string}`>(
-    metadataRpc,
+    parsed,
     "NominationPools",
     "PalletId"
   )

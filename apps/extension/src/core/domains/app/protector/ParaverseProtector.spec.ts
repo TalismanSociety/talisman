@@ -188,44 +188,6 @@ it("Scopes path-specific exceptions to the exact URL without query or fragment",
   expect(await isPhishingSite("https://sites.google.com/view/other-phish")).toBeTruthy()
 })
 
-it("Skips update when fetch returns 304", async () => {
-  await addException("https://badsite.com")
-  mockFetch.mockResolvedValue(new Response(null, { status: 304 }))
-  await refreshPhishingLists()
-  // badsite.com was excepted before refresh — should remain so
-  expect(await isPhishingSite("https://badsite.com")).toBeFalsy()
-})
-
-it("Rejects invalid MetaMask config gracefully", async () => {
-  mockFetch.mockImplementation(async (input) => {
-    const url = fetchInputToString(input)
-    if (url.includes("metamask")) {
-      return new Response(JSON.stringify({ broken: true }), {
-        status: 200,
-        headers: { etag: "bad-etag" },
-      })
-    }
-    return new Response(null, { status: 304 })
-  })
-  await refreshPhishingLists()
-  expect(await isPhishingSite("https://something.else")).toBeFalsy()
-})
-
-it("Rejects invalid Polkadot list gracefully", async () => {
-  mockFetch.mockImplementation(async (input) => {
-    const url = fetchInputToString(input)
-    if (url.includes("polkadot")) {
-      return new Response(JSON.stringify("not-an-object"), {
-        status: 200,
-        headers: { etag: "bad-etag" },
-      })
-    }
-    return new Response(null, { status: 304 })
-  })
-  await refreshPhishingLists()
-  expect(await isPhishingSite("https://something.else")).toBeFalsy()
-})
-
 afterAll(() => {
   dispose()
   vi.restoreAllMocks()

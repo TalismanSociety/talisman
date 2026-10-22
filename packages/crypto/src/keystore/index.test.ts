@@ -1,6 +1,22 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { decryptPjsKeystore, encryptPjsKeystore } from "."
+
+// scrypt at the current params (N=2^17) takes about a second per run. The polkadot-js vectors
+// below need the real thing; the round-trip only proves the layout, so it derives at N=2^10.
+const kdf = vi.hoisted(() => ({ cheap: false }))
+vi.mock("@noble/hashes/scrypt.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@noble/hashes/scrypt.js")>()
+  return {
+    ...actual,
+    scrypt: ((password, salt, opts) =>
+      actual.scrypt(
+        password,
+        salt,
+        kdf.cheap ? { ...opts, N: 1 << 10 } : opts
+      )) satisfies typeof actual.scrypt,
+  }
+})
 
 // generated with @polkadot/util-crypto 14.0.3 jsonEncrypt:
 //   jsonEncrypt(Uint8Array 0..63, ["pkcs8","sr25519"], "talisman-test-password")
@@ -29,7 +45,17 @@ const PJS_LEGACY_PARAMS_VECTOR = {
 const SECRET = new Uint8Array(64).map((_, i) => i)
 const PASSWORD = "talisman-test-password"
 
+// salt(32) ++ N(u32 LE) ++ p(u32 LE) ++ r(u32 LE) ++ nonce(24) ++ ciphertext
+const readScryptParams = (encoded: string) => {
+  const view = new DataView(Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0)).buffer)
+  return { N: view.getUint32(32, true), p: view.getUint32(36, true), r: view.getUint32(40, true) }
+}
+
 describe("pjs keystore (polkadot-js parity)", () => {
+  afterEach(() => {
+    kdf.cheap = false
+  })
+
   it("decrypts a polkadot-js generated keystore", () => {
     expect(decryptPjsKeystore(PJS_VECTOR, PASSWORD)).toEqual(SECRET)
   })
@@ -39,7 +65,7 @@ describe("pjs keystore (polkadot-js parity)", () => {
   })
 
   it("rejects a wrong password", () => {
-    expect(() => decryptPjsKeystore(PJS_VECTOR, "wrong")).toThrow()
+    expect(() => decryptPjsKeystore(PJS_LEGACY_PARAMS_VECTOR, "wrong")).toThrow()
   })
 
   it("rejects disallowed scrypt params", () => {
@@ -54,8 +80,10 @@ describe("pjs keystore (polkadot-js parity)", () => {
   })
 
   it("round-trips encrypt + decrypt", () => {
+    kdf.cheap = true
     const keystore = encryptPjsKeystore(SECRET, ["pkcs8", "sr25519"], PASSWORD)
     expect(keystore.encoding).toEqual(PJS_VECTOR.encoding)
+    expect(readScryptParams(keystore.encoded)).toEqual(readScryptParams(PJS_VECTOR.encoded))
     expect(decryptPjsKeystore(keystore, PASSWORD)).toEqual(SECRET)
   })
 })

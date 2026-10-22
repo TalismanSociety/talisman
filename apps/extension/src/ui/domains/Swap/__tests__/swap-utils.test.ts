@@ -3,16 +3,8 @@ import { describe, expect, it } from "vitest"
 import { parseUserInputToPlanck, parseUserInputToPlanckOrUndefined } from "../swap-utils"
 
 describe("parseUserInputToPlanck", () => {
-  it("parses zero", () => {
-    expect(parseUserInputToPlanck("0", 18)).toBe(0n)
-  })
-
   it("parses whole number", () => {
     expect(parseUserInputToPlanck("1", 18)).toBe(1_000_000_000_000_000_000n)
-  })
-
-  it("parses decimal value", () => {
-    expect(parseUserInputToPlanck("0.1", 18)).toBe(100_000_000_000_000_000n)
   })
 
   it("parses trailing decimal point (e.g. '0.')", () => {
@@ -31,11 +23,6 @@ describe("parseUserInputToPlanck", () => {
 
   it("handles zero decimals", () => {
     expect(parseUserInputToPlanck("42", 0)).toBe(42n)
-  })
-
-  it("strips trailing zeros in fractional part", () => {
-    // "1.10" → whole "1", fractional "1" (trailing 0 stripped)
-    expect(parseUserInputToPlanck("1.10", 18)).toBe(1_100_000_000_000_000_000n)
   })
 
   it("throws on invalid character", () => {

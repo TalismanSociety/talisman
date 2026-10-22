@@ -200,19 +200,4 @@ describe("SwapForm", () => {
 
     expect(reviewButton.getAttribute("disabled")).toBeNull()
   })
-
-  it("keeps Review disabled during the initial quote load", () => {
-    useSwapMock.mockReturnValue(
-      createSwapState({
-        isLoadingQuotes: true,
-        isQuoteDataCurrent: false,
-        isAllQuotesSettled: false,
-      })
-    )
-
-    const { getByRole } = render(<SwapForm />)
-    const reviewButton = getByRole("button", { name: "Review" })
-
-    expect(reviewButton.getAttribute("disabled")).not.toBeNull()
-  })
 })

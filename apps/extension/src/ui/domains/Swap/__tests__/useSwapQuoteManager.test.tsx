@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderHook, waitFor } from "@testing-library/react"
+import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-library/react"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -45,6 +45,9 @@ vi.mock("../swaps.api", () => {
 })
 
 import { useSwapQuoteManager } from "../hooks/useSwapQuoteManager"
+
+// renderHook paints no DOM, so waitFor only polls: at its default 50ms each wait costs a frame
+const waitFor = (check: () => void) => waitForWithDefaultInterval(check, { interval: 5 })
 
 type Deferred<T> = {
   promise: Promise<T>

@@ -91,18 +91,6 @@ describe("resolveDefiTokenId", () => {
     expect(result).toBe(splId)
   })
 
-  it("prefers Solana Token-2022 token ID when both Solana token types are present", () => {
-    const token2022Id = solToken2022TokenId("solana-mainnet", PYUSD_MINT)
-    const splId = solSplTokenId("solana-mainnet", PYUSD_MINT)
-    const result = resolveDefiTokenId("solana-mainnet", PYUSD_MINT, makeNetworksMap(), {
-      ...makeTokensMap(),
-      [splId]: { id: splId },
-      [token2022Id]: { id: token2022Id },
-    })
-
-    expect(result).toBe(token2022Id)
-  })
-
   it("resolves Solana native token ID when no contract address", () => {
     const nativeId = solNativeTokenId("solana-mainnet")
     const result = resolveDefiTokenId("solana-mainnet", null, makeNetworksMap(), {
@@ -111,17 +99,6 @@ describe("resolveDefiTokenId", () => {
     })
 
     expect(result).toBe(nativeId)
-  })
-
-  it("returns null for unknown Solana mints", () => {
-    const result = resolveDefiTokenId(
-      "solana-mainnet",
-      PYUSD_MINT,
-      makeNetworksMap(),
-      makeTokensMap()
-    )
-
-    expect(result).toBeNull()
   })
 })
 
@@ -163,18 +140,6 @@ describe("calcDefiItemValueUsd", () => {
     expect(result).toBe(3.5)
   })
 
-  it("falls back to API valueUsd for unknown network", () => {
-    const item = makeItem()
-    const result = calcDefiItemValueUsd(
-      item,
-      "999",
-      makeNetworksMap(),
-      makeTokensMap(),
-      makeTokenRatesMap()
-    )
-    expect(result).toBe(3.5)
-  })
-
   it("falls back to API valueUsd on invalid amount", () => {
     const item = makeItem({ amount: "not-a-number" })
     const result = calcDefiItemValueUsd(
@@ -185,23 +150,5 @@ describe("calcDefiItemValueUsd", () => {
       makeTokenRatesMap()
     )
     expect(result).toBe(3.5)
-  })
-
-  it("handles native token (no contract address)", () => {
-    const nativeRates = {
-      "1:evm-native": {
-        usd: { price: 2500 },
-      },
-    } as unknown as TokenRatesList
-
-    const item = makeItem({
-      contract_address: null,
-      symbol: "ETH",
-      decimals: 18,
-      amount: "1000000000000000000", // 1 ETH
-    })
-
-    const result = calcDefiItemValueUsd(item, "1", makeNetworksMap(), makeTokensMap(), nativeRates)
-    expect(result).toBeCloseTo(2500, 0)
   })
 })

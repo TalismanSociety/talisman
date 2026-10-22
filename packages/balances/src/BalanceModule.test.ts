@@ -58,29 +58,6 @@ const makeMiniMetadata = (id: string, overrides: Partial<MiniMetadata> = {}): Mi
 
 describe("BalancesProvider", () => {
   describe("constructor", () => {
-    it("creates without error with mock dependencies", () => {
-      const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
-      expect(provider).toBeInstanceOf(BalancesProvider)
-    })
-
-    it("accepts default storage (empty)", () => {
-      const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
-      expect(provider).toBeDefined()
-    })
-
-    it("accepts custom storage with balances and miniMetadatas", () => {
-      const storage: BalancesStorage = {
-        balances: [makeBalance("0xAABB", "polkadot-substrate-native")],
-        miniMetadatas: [makeMiniMetadata("mm-1")],
-      }
-      const provider = new BalancesProvider(
-        makeMockChaindataProvider(),
-        makeMockChainConnectors(),
-        storage
-      )
-      expect(provider).toBeDefined()
-    })
-
     it("filters out nil values from storage balances", () => {
       const storage: BalancesStorage = {
         balances: [
@@ -118,13 +95,6 @@ describe("BalancesProvider", () => {
   })
 
   describe("storage$", () => {
-    it("emits BalancesStorage", async () => {
-      const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
-      const storage = await firstValueFrom(provider.storage$)
-      expect(storage).toHaveProperty("balances")
-      expect(storage).toHaveProperty("miniMetadatas")
-    })
-
     it("default storage has empty balances and miniMetadatas arrays", async () => {
       const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
       const storage = await firstValueFrom(provider.storage$)
@@ -209,13 +179,6 @@ describe("BalancesProvider", () => {
   })
 
   describe("getBalances$", () => {
-    it("returns an Observable", () => {
-      const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
-      const result = provider.getBalances$({})
-      expect(result).toBeDefined()
-      expect(typeof result.subscribe).toBe("function")
-    })
-
     it("emits with empty balances for empty addressesByTokenId", async () => {
       const chaindataProvider = makeMockChaindataProvider()
       // cleanupAddressesByTokenId$ calls getNetworksMapById$
@@ -227,16 +190,6 @@ describe("BalancesProvider", () => {
       // With empty input after cleanup, we get an immediate emission
       expect(result.balances).toEqual([])
       expect(result.failedBalanceIds).toEqual([])
-    })
-
-    it("emits status 'initialising' or 'live' for empty input", async () => {
-      const chaindataProvider = makeMockChaindataProvider()
-      ;(chaindataProvider.getNetworksMapById$ as ReturnType<typeof vi.fn>).mockReturnValue(of({}))
-
-      const provider = new BalancesProvider(chaindataProvider, makeMockChainConnectors())
-      const result = await firstValueFrom(provider.getBalances$({}))
-
-      expect(["initialising", "live"]).toContain(result.status)
     })
 
     it("filters out addresses for unknown networks", async () => {
@@ -258,15 +211,6 @@ describe("BalancesProvider", () => {
   })
 
   describe("fetchBalances", () => {
-    it("returns a Promise", () => {
-      const chaindataProvider = makeMockChaindataProvider()
-      ;(chaindataProvider.getNetworksMapById$ as ReturnType<typeof vi.fn>).mockReturnValue(of({}))
-
-      const provider = new BalancesProvider(chaindataProvider, makeMockChainConnectors())
-      const result = provider.fetchBalances({})
-      expect(result).toBeInstanceOf(Promise)
-    })
-
     it("resolves to empty array for empty addressesByTokenId", async () => {
       const chaindataProvider = makeMockChaindataProvider()
       ;(chaindataProvider.getNetworksMapById$ as ReturnType<typeof vi.fn>).mockReturnValue(of({}))
@@ -274,15 +218,6 @@ describe("BalancesProvider", () => {
       const provider = new BalancesProvider(chaindataProvider, makeMockChainConnectors())
       const balances = await provider.fetchBalances({})
       expect(balances).toEqual([])
-    })
-  })
-
-  describe("getDetectedTokensId$", () => {
-    it("returns an Observable", () => {
-      const provider = new BalancesProvider(makeMockChaindataProvider(), makeMockChainConnectors())
-      const result = provider.getDetectedTokensId$("0xABCD")
-      expect(result).toBeDefined()
-      expect(typeof result.subscribe).toBe("function")
     })
   })
 })

@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import { of } from "rxjs"
-import { beforeEach, describe, expect, test, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 const NETWORK = { id: "8453", platform: "ethereum", name: "Base" }
 const USDC_ADDRESS = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
@@ -49,17 +49,20 @@ vi.mock("@core/util/getErc20TokenInfo", () => ({
 
 import { AddTokenPage } from "../AddTokenPage"
 
-const selectNetworkAndEnterAddress = (address: string) => {
+const selectNetworkAndEnterAddress = async (address: string) => {
   render(<AddTokenPage />)
 
   fireEvent.click(screen.getByText("select network"))
   fireEvent.change(screen.getByPlaceholderText("0xdeadbeef...deadbeef"), {
     target: { value: address },
   })
+  await act(() => vi.runAllTimersAsync())
 }
 
 describe("AddTokenPage", () => {
+  afterEach(() => vi.useRealTimers())
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     vi.clearAllMocks()
     mockGetToken.mockReturnValue(null)
     mockUseTokenRiskScan.mockReturnValue({ ref: null, scan: undefined, isPending: false })
@@ -80,16 +83,15 @@ describe("AddTokenPage", () => {
       tokenId === EXISTING_TOKEN_ID ? { id: tokenId } : null
     )
 
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
 
-    expect(await screen.findByText("Token already exists")).toBeTruthy()
+    expect(screen.getByText("Token already exists")).toBeTruthy()
   })
 
   test("populates the token fields from the fetched token info", async () => {
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
 
-    const symbol = await screen.findByDisplayValue("USDC")
-    expect(symbol).toBeTruthy()
+    expect(screen.getByDisplayValue("USDC")).toBeTruthy()
     expect(screen.getByDisplayValue(6)).toBeTruthy()
     expect(screen.getByDisplayValue("USD Coin")).toBeTruthy()
     expect(screen.getByDisplayValue("usd-coin")).toBeTruthy()
@@ -98,9 +100,9 @@ describe("AddTokenPage", () => {
   test("keeps the token fields disabled and error-free while the contract address is invalid", async () => {
     mockGetErc20TokenInfo.mockRejectedValue(new Error("not an erc20 contract"))
 
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
 
-    expect(await screen.findByText("Invalid contract address")).toBeTruthy()
+    expect(screen.getByText("Invalid contract address")).toBeTruthy()
     expect(screen.queryByText(/expected string, received undefined/)).toBeNull()
     expect(screen.queryByText(/expected number, received undefined/)).toBeNull()
 
@@ -109,9 +111,9 @@ describe("AddTokenPage", () => {
   })
 
   test("enables the token fields once the token info is fetched", async () => {
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
 
-    await screen.findByDisplayValue("USDC")
+    expect(screen.getByDisplayValue("USDC")).toBeTruthy()
 
     for (const placeholder of ["TKN", "18", "(optional)", "My Custom Token"])
       expect((screen.getByPlaceholderText(placeholder) as HTMLInputElement).disabled).toBe(false)
@@ -129,10 +131,10 @@ describe("AddTokenPage", () => {
       isPending: false,
     })
 
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
-    await screen.findByDisplayValue("USDC")
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
+    expect(screen.getByDisplayValue("USDC")).toBeTruthy()
 
-    expect(await screen.findByText("Malicious")).toBeTruthy()
+    expect(screen.getByText("Malicious")).toBeTruthy()
     const save = screen.getByText("Save").closest("button") as HTMLButtonElement
     expect(save.disabled).toBe(true)
 
@@ -153,10 +155,10 @@ describe("AddTokenPage", () => {
       isPending: false,
     })
 
-    selectNetworkAndEnterAddress(USDC_ADDRESS)
-    await screen.findByDisplayValue("USDC")
+    await selectNetworkAndEnterAddress(USDC_ADDRESS)
+    expect(screen.getByDisplayValue("USDC")).toBeTruthy()
 
-    expect(await screen.findByText("Risky")).toBeTruthy()
+    expect(screen.getByText("Risky")).toBeTruthy()
     expect(screen.queryByLabelText("I acknowledge the risks")).toBeNull()
     expect((screen.getByText("Save").closest("button") as HTMLButtonElement).disabled).toBe(false)
   })

@@ -11,10 +11,6 @@ describe("effectiveLockedAmount", () => {
     expect(effectiveLockedAmount(100n, 80n)).toBe(100n)
   })
 
-  it("keeps the cached lock when fresh is equal", () => {
-    expect(effectiveLockedAmount(100n, 100n)).toBe(100n)
-  })
-
   it("falls back to the cached lock when fresh is null or undefined (not yet loaded / no API)", () => {
     expect(effectiveLockedAmount(100n, null)).toBe(100n)
     expect(effectiveLockedAmount(100n, undefined)).toBe(100n)

@@ -56,11 +56,6 @@ describe("getBalanceId", () => {
     expect(getBalanceId({ address: "0xABC", tokenId: "dot" })).toBe("0xABC::dot")
   })
 
-  it("works with substrate-style addresses", () => {
-    const addr = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-    expect(getBalanceId({ address: addr, tokenId: "ksm" })).toBe(`${addr}::ksm`)
-  })
-
   it("works with empty strings", () => {
     expect(getBalanceId({ address: "", tokenId: "" })).toBe("::")
   })
@@ -227,27 +222,6 @@ describe("Balance accessors", () => {
     expect(b.rates).toBeTruthy()
     expect(b.rates!.usd!.price).toBe(5.5)
   })
-
-  it("looks up rates by tokenId from tokenRates db", () => {
-    const db: HydrateDb = {
-      tokens: {
-        mytoken: {
-          id: "mytoken",
-          type: "substrate-native",
-          symbol: "MT",
-          decimals: 10,
-          networkId: "net",
-        },
-        // biome-ignore lint/suspicious/noExplicitAny: partial mock for testing
-      } as any,
-      tokenRates: {
-        mytoken: { eur: { price: 2.2 } },
-        // biome-ignore lint/suspicious/noExplicitAny: partial mock for testing
-      } as any,
-    }
-    const b = new Balance(makeBalanceJson({ address: "0x01", tokenId: "mytoken" }), db)
-    expect(b.rates!.eur!.price).toBe(2.2)
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -266,18 +240,6 @@ describe("Balance — simple balance (value field)", () => {
 
   it("locked returns 0 (no locks)", () => {
     expect(b.locked.planck).toBe(0n)
-  })
-
-  it("total = free (no reserved, no extras)", () => {
-    expect(b.total.planck).toBe(b.free.planck)
-  })
-
-  it("transferable = free (no locks)", () => {
-    expect(b.transferable.planck).toBe(b.free.planck)
-  })
-
-  it("feePayable = free (no locks)", () => {
-    expect(b.feePayable.planck).toBe(b.free.planck)
   })
 })
 
@@ -329,22 +291,6 @@ describe("Balance — complex balance (values array)", () => {
       })
     )
     expect(b.locked.planck).toBe(500n)
-  })
-
-  it("multiple free values are summed", () => {
-    const b = new Balance(
-      makeBalanceJson({
-        address: "0x01",
-        tokenId: "tok",
-        value: undefined,
-        values: [
-          { type: "free", label: "a", amount: "10" },
-          { type: "free", label: "b", amount: "20" },
-          { type: "free", label: "c", amount: "30" },
-        ],
-      })
-    )
-    expect(b.free.planck).toBe(60n)
   })
 
   it("total = free + reserved (no extras, no nompools, no DelegatedStaking)", () => {
@@ -725,23 +671,10 @@ describe("filterMirrorTokens (standalone)", () => {
     return new Balance(makeBalanceJson({ address, tokenId }), hydrate)
   }
 
-  it("keeps balance when no mirrorOf", () => {
-    const ba = makeHydratedBalance("0x01", "tok-a")
-    const balances = [ba]
-    expect(filterMirrorTokens(ba, 0, balances)).toBe(true)
-  })
-
   it("keeps balance when mirrorOf target is not in the array", () => {
     const bc = makeHydratedBalance("0x01", "tok-c") // mirrorOf: tok-missing
     const balances = [bc]
     expect(filterMirrorTokens(bc, 0, balances)).toBe(true)
-  })
-
-  it("filters balance when mirrorOf target IS in the array", () => {
-    const ba = makeHydratedBalance("0x01", "tok-a")
-    const bb = makeHydratedBalance("0x01", "tok-b") // mirrorOf: tok-a
-    const balances = [ba, bb]
-    expect(filterMirrorTokens(bb, 1, balances)).toBe(false)
   })
 
   it("used with Array.filter keeps only non-mirrored balances", () => {

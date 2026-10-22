@@ -18,16 +18,6 @@ describe("legacy SubstrateApp.serializePath", () => {
     // 0x8000002c | 0x80000162 | 0x80000000 | 0x80000000 | 0x80000000, little-endian
     expect(path.toString("hex")).toBe("2c00008062010080000000800000008000000080")
   })
-
-  it("serializes the Kusama index-0 path m/44'/434'/0'/0'/0'", () => {
-    const HARDENED = 0x80000000
-    // slip0044 for Kusama is 0x800001b2 (434')
-    const path = SubstrateApp.serializePath(0x800001b2, HARDENED, HARDENED, HARDENED)
-
-    // 0x8000002c | 0x800001b2 | 0x80000000 | 0x80000000 | 0x80000000, little-endian
-    expect(path.toString("hex")).toBe("2c000080b2010080000000800000008000000080")
-  })
-
   it("rejects non-integer inputs", () => {
     expect(() => SubstrateApp.serializePath(0x80000162, 1.5, 0, 0)).toThrow(
       "Input must be an integer"

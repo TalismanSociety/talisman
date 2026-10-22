@@ -1,7 +1,8 @@
 import { toHex } from "@polkadot-api/utils"
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
 import { getParityFixture, getTestScaleApi } from "../__fixtures__/chains"
+import type { SignerPayloadJSON } from "../pjsInterop"
 import { getChainInfo } from "./getChainInfo"
 import { getPayloadWithMetadataHash } from "./getPayloadWithMetadataHash"
 import type { Chain } from "./types"
@@ -18,17 +19,24 @@ const POLKADOT_EXTRA_INFO = [
   encodeString("DOT"),
 ].join("")
 
-const getPolkadot = (hasCheckMetadataHash = true) =>
-  getTestScaleApi("polkadot", { hasCheckMetadataHash }).chain
+const getPolkadot = () => getTestScaleApi("polkadot", { hasCheckMetadataHash: true }).chain
 
-const run = (chain: Chain, payload = getParityFixture("polkadot ed25519 immortal").payload) =>
+const run = (chain: Chain, payload: SignerPayloadJSON) =>
   getPayloadWithMetadataHash(chain, getChainInfo(chain), payload)
 
+const IMMORTAL_PAYLOAD = getParityFixture("polkadot ed25519 immortal").payload
+
 describe("getPayloadWithMetadataHash", () => {
+  let immortal: ReturnType<typeof run>
+
+  beforeAll(() => {
+    immortal = run(getPolkadot(), IMMORTAL_PAYLOAD)
+  })
+
   it("returns the payload untouched when the chain does not use CheckMetadataHash", () => {
     const payload = getParityFixture("polkadot ed25519 immortal").payload
 
-    const result = run(getPolkadot(false), payload)
+    const result = run({ ...getPolkadot(), hasCheckMetadataHash: false }, payload)
 
     expect(result.payload).toBe(payload)
     expect(result.txMetadata).toBeUndefined()
@@ -55,12 +63,8 @@ describe("getPayloadWithMetadataHash", () => {
   })
 
   it("enables mode 1 with the metadata hash and asks for the signed transaction", () => {
-    const payload = getParityFixture("polkadot ed25519 immortal").payload
-
-    const result = run(getPolkadot(), payload)
-
-    expect(result.payload).toEqual({
-      ...payload,
+    expect(immortal.payload).toEqual({
+      ...IMMORTAL_PAYLOAD,
       mode: 1,
       metadataHash: "0x06760163466bbdb79e6c57ef330875d17f36d0a005b0d956cc171d833df1980a",
       withSignedTransaction: true,
@@ -68,30 +72,28 @@ describe("getPayloadWithMetadataHash", () => {
   })
 
   it("hashes the token and chain info into the metadata hash", () => {
-    const chain = getPolkadot()
-
-    const dot = run(chain).payload.metadataHash
-    const twelveDecimals = run({ ...chain, token: { symbol: "DOT", decimals: 12 } }).payload
-      .metadataHash
+    const twelveDecimals = run(
+      { ...getPolkadot(), token: { symbol: "DOT", decimals: 12 } },
+      IMMORTAL_PAYLOAD
+    ).payload.metadataHash
 
     expect(twelveDecimals).toMatch(/^0x[0-9a-f]{64}$/)
-    expect(twelveDecimals).not.toBe(dot)
+    expect(twelveDecimals).not.toBe(immortal.payload.metadataHash)
   })
 
   it("returns a metadata proof ending with the chain's extra info", () => {
-    const { txMetadata } = run(getPolkadot())
+    const { txMetadata } = immortal
 
     expect(txMetadata && toHex(txMetadata).endsWith(POLKADOT_EXTRA_INFO)).toBe(true)
   })
 
   it("proves the types the extrinsic uses", () => {
-    const immortal = run(getPolkadot()).txMetadata
     const mortal = run(
       getPolkadot(),
       getParityFixture("polkadot ed25519 mortal").payload
     ).txMetadata
 
-    expect(immortal?.length).toBe(2027)
+    expect(immortal.txMetadata?.length).toBe(2027)
     expect(mortal?.length).toBe(2128)
   })
 })

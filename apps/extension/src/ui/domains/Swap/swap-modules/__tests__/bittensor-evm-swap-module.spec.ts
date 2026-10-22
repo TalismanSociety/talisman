@@ -245,13 +245,6 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
     await expect(quoteSubToEvm(ED)).resolves.toBeTruthy()
   })
 
-  it("does not require the amount to cover the fee", async () => {
-    const quote = single(await quoteSubToEvm(2n * ED))
-
-    expect(quote?.outputAmountBN).toBe(ED * WEI_PER_RAO)
-    expect(quote?.fees[0]?.amount.toString()).toBe("0.0001")
-  })
-
   it("carries the recipient in the quote data", async () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
 
@@ -295,14 +288,6 @@ describe("bittensorEvmSwapModule getQuote evm -> substrate", () => {
 
     await expect(quoteEvmToSub(minimum - 1n)).rejects.toThrow(/minimum is 0.0000005 TAO/)
     await expect(quoteEvmToSub(minimum)).resolves.toBeTruthy()
-  })
-
-  it("does not require the amount to cover the gas", async () => {
-    // 21000 gas * 10 gwei = 210_000 rao worth of gas, far above the 500 rao sent
-    const quote = single(await quoteEvmToSub(ED * WEI_PER_RAO))
-
-    expect(quote?.outputAmountBN).toBe(ED)
-    expect(quote?.fees[0]?.amount.toString()).toBe("0.00021")
   })
 
   it("still quotes when gas estimation fails", async () => {

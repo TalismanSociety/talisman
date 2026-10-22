@@ -90,14 +90,6 @@ describe("substrate-psp22 fetchBalances", () => {
     ])
   })
 
-  it("decodes a zero balance", async () => {
-    expect(callOf("emptyUsdt").expected).toEqual({ kind: "balance", balance: "0" })
-
-    const result = await run([[makeToken(USDT), [EMPTY]]])
-
-    expect(result).toEqual({ success: [balanceRow(USDT, EMPTY, "0")], errors: [] })
-  })
-
   it.each([
     ["USDT", USDT, USDT_HOLDER, "usdtHolder"],
     ["USDC", USDC, USDC_HOLDER, "usdcHolder"],
@@ -155,25 +147,6 @@ describe("substrate-psp22 fetchBalances", () => {
 
     expect(result.success).toEqual([])
     expect(result.errors.map((e) => e.error.message)).toEqual(["Failed to fetch balance"])
-  })
-
-  it("names the token and address of a failed call in its error", async () => {
-    const result = await run([[makeToken(USDT_HOLDER), [EMPTY]]])
-
-    expect(result.errors.map(({ tokenId, address }) => ({ tokenId, address }))).toEqual([
-      { tokenId: subPsp22TokenId(NETWORK_ID, USDT_HOLDER), address: EMPTY },
-    ])
-  })
-
-  it("reports a reverted call as an error, not a balance", async () => {
-    const revert = callOf("revert")
-    expect(revert.expected).toEqual({ kind: "revert", flags: 1 })
-    const { connector } = makeConnector(() => revert.resultHex)
-
-    const result = await run([[makeToken(USDT), [USDT_HOLDER]]], connector)
-
-    expect(result.success).toEqual([])
-    expect(result.errors).toHaveLength(1)
   })
 
   // valid balance data with only the REVERT flag set

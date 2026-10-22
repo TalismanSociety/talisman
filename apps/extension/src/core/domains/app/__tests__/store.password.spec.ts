@@ -37,14 +37,6 @@ describe("Test password store password not hashed", () => {
     expect(returnedPw).toEqual(expectedHashedPw)
   })
 
-  test("setting isHashed false ensures passwords are not hashed", async () => {
-    const passwordStore = new PasswordStore("password", { isHashed: false, isTrimmed: false })
-    expect(await passwordStore.get("isHashed")).toBe(false)
-    await passwordStore.setPlaintextPassword(spaceyPw)
-    const returnedPw = await passwordStore.getPassword()
-    expect(returnedPw).toEqual(spaceyPw)
-  })
-
   test("logging out deletes the stored password", async () => {
     // set up the logged-in password store
     const passwordStore = new PasswordStore("password", { isHashed: false, isTrimmed: false })

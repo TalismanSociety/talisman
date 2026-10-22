@@ -1,8 +1,13 @@
-import { generateMnemonic } from "@scure/bip39"
 import { wordlist } from "@scure/bip39/wordlists/english.js"
 import { expect, test } from "vitest"
 
 import { redactSecrets } from "./redactSecrets"
+
+// the redactor matches runs of wordlist words, so a phrase needs no valid checksum
+const randomPhrase = (words: number) =>
+  Array.from({ length: words }, () => wordlist[Math.floor(Math.random() * wordlist.length)]).join(
+    " "
+  )
 
 const tokens = (text: string) => new Set(text.toLowerCase().match(/\p{L}+/gu) ?? [])
 
@@ -13,9 +18,9 @@ const leaks = (output: string, phrase: string, template: string) => {
 }
 
 test("every valid phrase length is redacted wherever it sits in a string", () => {
-  for (const strength of [128, 160, 192, 224, 256]) {
+  for (const words of [12, 15, 18, 21, 24]) {
     for (let i = 0; i < 200; i++) {
-      const phrase = generateMnemonic(wordlist, strength)
+      const phrase = randomPhrase(words)
       const framings = [
         (p: string) => p,
         (p: string) => `Invalid mnemonic: ${p}`,
@@ -34,14 +39,14 @@ test("every valid phrase length is redacted wherever it sits in a string", () =>
 })
 
 test("only the run of wordlist words is redacted, not its lowercase neighbours", () => {
-  const phrase = generateMnemonic(wordlist, 128)
+  const phrase = randomPhrase(12)
   expect(redactSecrets(`malformed mnemonics ${phrase} discarded`)).toBe(
     "malformed mnemonics <mnemonic> discarded"
   )
 })
 
 test("eleven wordlist words are not a phrase", () => {
-  const eleven = generateMnemonic(wordlist, 128).split(" ").slice(0, 11).join(" ")
+  const eleven = randomPhrase(12).split(" ").slice(0, 11).join(" ")
   expect(redactSecrets(eleven)).toBe(eleven)
 })
 
@@ -51,7 +56,7 @@ test("words off the wordlist are never redacted as a phrase", () => {
 })
 
 test("a capitalised word breaks a phrase", () => {
-  const words = generateMnemonic(wordlist, 128).split(" ")
+  const words = randomPhrase(12).split(" ")
   const capitalised = [words[0].toUpperCase(), ...words.slice(1)].join(" ")
   expect(redactSecrets(capitalised)).toBe(capitalised)
 })

@@ -5,8 +5,18 @@ import {
   type KeypairCurve,
   mnemonicToEntropy,
 } from "@talismn/crypto"
-import { beforeAll, describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it, vi } from "vitest"
 import { Keyring } from "./Keyring"
+
+// PBKDF2 at 100k iterations costs ~50ms per secret and is encryption.test's subject, not this one's
+vi.mock("@talismn/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@talismn/crypto")>()
+  return {
+    ...actual,
+    pbkdf2: ((hash, entropy, salt, _iterations, length) =>
+      actual.pbkdf2(hash, entropy, salt, 1, length)) satisfies typeof actual.pbkdf2,
+  }
+})
 
 const MNEMONIC = {
   name: "test",

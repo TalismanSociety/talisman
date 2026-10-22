@@ -1,8 +1,8 @@
-import { act, cleanup, render, waitFor } from "@testing-library/react"
+import { act, cleanup, render } from "@testing-library/react"
 import { SETTLE_MS } from "@ui/hooks/analytics/screens"
 import { lazy, Suspense } from "react"
 import { MemoryRouter, Navigate, Route, useNavigate } from "react-router-dom"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { Routes } from "./Routes"
 
@@ -13,6 +13,10 @@ const screens = () =>
   track.mock.calls
     .filter(([event]) => event === "$screen")
     .map(([, props]) => props.$screen_name as string)
+
+const elapse = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms))
+const FRAME_MS = 16
+const nextFrame = () => elapse(FRAME_MS)
 
 let navigate: ReturnType<typeof useNavigate> = () => {}
 const Navigator = () => {
@@ -59,6 +63,18 @@ const App = ({ path }: { path: string }) => (
 )
 
 describe("<Routes> screen names", () => {
+  beforeAll(() =>
+    vi.useFakeTimers({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "requestAnimationFrame",
+        "cancelAnimationFrame",
+        "performance",
+      ],
+    })
+  )
+  afterAll(() => vi.useRealTimers())
   beforeEach(() => track.mockClear())
   afterEach(cleanup)
 
@@ -67,42 +83,51 @@ describe("<Routes> screen names", () => {
       <App path="/portfolio/tokens/DOT?account=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" />
     )
 
-    await waitFor(() => expect(screens()).toEqual(["/portfolio/tokens/:symbol"]))
+    await nextFrame()
+    expect(screens()).toEqual(["/portfolio/tokens/:symbol"])
     expect(JSON.stringify(track.mock.calls)).not.toMatch(/DOT|5Grw/)
   })
 
   it("names an index route after its parents", async () => {
     render(<App path="/accounts/add" />)
 
-    await waitFor(() => expect(screens()).toEqual(["/accounts/add"]))
+    await nextFrame()
+    expect(screens()).toEqual(["/accounts/add"])
   })
 
   it("names a catch-all screen soon, without the wait of a splat parent", async () => {
     render(<App path="/home/anything" />)
 
-    await waitFor(() => expect(screens()).toEqual(["/home"]), { timeout: 1_000 })
+    await nextFrame()
+    expect(screens()).toEqual([])
+    await elapse(SETTLE_MS.redirect)
+    expect(screens()).toEqual(["/home"])
   })
 
   it("reports where a catch-all redirect lands, not the splat it passed through", async () => {
     render(<App path="/nowhere" />)
 
-    await waitFor(() => expect(screens()).toEqual(["/portfolio/tokens"]))
-    await new Promise((resolve) => setTimeout(resolve, 400))
+    await nextFrame()
+    expect(screens()).toEqual(["/portfolio/tokens"])
+    await elapse(SETTLE_MS.descendant)
     expect(screens()).toEqual(["/portfolio/tokens"])
   })
 
   it("sends nothing when only the query changes, and the dwell of the previous screen when the pattern changes", async () => {
     render(<App path="/settings/general" />)
-    await waitFor(() => expect(screens()).toEqual(["/settings/general"]))
+    await nextFrame()
+    expect(screens()).toEqual(["/settings/general"])
 
     act(() => navigate("/settings/general?tab=other"))
+    await elapse(250)
     act(() => navigate("/portfolio/tokens"))
+    await nextFrame()
 
-    await waitFor(() => expect(screens()).toEqual(["/settings/general", "/portfolio/tokens"]))
+    expect(screens()).toEqual(["/settings/general", "/portfolio/tokens"])
     expect(track).toHaveBeenLastCalledWith("$screen", {
       $screen_name: "/portfolio/tokens",
       previous_screen_name: "/settings/general",
-      previous_dwell_ms: expect.any(Number),
+      previous_dwell_ms: FRAME_MS + 250,
     })
   })
 
@@ -128,37 +153,43 @@ describe("<Routes> screen names", () => {
       </MemoryRouter>
     )
 
-    await waitFor(() => expect(screens()).toEqual(["/earn/tokens/:symbol"]))
-    await new Promise((resolve) => setTimeout(resolve, 400))
+    await elapse(150)
+    await nextFrame()
+    expect(screens()).toEqual(["/earn/tokens/:symbol"])
+    await elapse(SETTLE_MS.descendant)
     expect(screens()).toEqual(["/earn/tokens/:symbol"])
   })
 
   it("names a catch-all screen once it has settled, and a splat left early when it was on show", async () => {
     render(<App path="/home" />)
-    await new Promise((resolve) => setTimeout(resolve, 150))
+    await elapse(150)
     act(() => navigate("/home/send"))
+    await nextFrame()
 
-    await waitFor(() => expect(screens()).toEqual(["/home", "/home/send"]))
+    expect(screens()).toEqual(["/home", "/home/send"])
     expect(track).toHaveBeenLastCalledWith("$screen", {
       $screen_name: "/home/send",
       previous_screen_name: "/home",
       previous_dwell_ms: expect.any(Number),
     })
     act(() => navigate("/home"))
-    await waitFor(() => expect(screens()).toEqual(["/home", "/home/send", "/home"]), {
-      timeout: SETTLE_MS.descendant + 500,
-    })
+    await nextFrame()
+    expect(screens()).toEqual(["/home", "/home/send"])
+    await elapse(SETTLE_MS.redirect)
+    expect(screens()).toEqual(["/home", "/home/send", "/home"])
   })
 
   it("does not name the parent of a nested screen the user leaves", async () => {
     render(<App path="/portfolio/tokens/KSM" />)
-    await waitFor(() => expect(screens()).toEqual(["/portfolio/tokens/:symbol"]))
-    await new Promise((resolve) => setTimeout(resolve, 150))
+    await nextFrame()
+    expect(screens()).toEqual(["/portfolio/tokens/:symbol"])
+    await elapse(150)
 
     act(() => navigate("/accounts/add"))
+    await nextFrame()
 
-    await waitFor(() => expect(screens()).toEqual(["/portfolio/tokens/:symbol", "/accounts/add"]))
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    expect(screens()).toEqual(["/portfolio/tokens/:symbol", "/accounts/add"])
+    await elapse(SETTLE_MS.descendant)
     expect(screens()).toEqual(["/portfolio/tokens/:symbol", "/accounts/add"])
   })
 })

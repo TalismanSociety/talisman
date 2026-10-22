@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderHook, waitFor } from "@testing-library/react"
+import { act, renderHook } from "@testing-library/react"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -19,6 +19,7 @@ import type { SwapModuleEntry } from "../swaps.api"
 
 const AMOUNT = 10n ** 18n
 const FROM = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
+const ALLOWANCE_RECHECK_MS = 3_000
 
 const selectedModule = {
   getApprovalInfo: () => ({
@@ -33,16 +34,21 @@ const selectedModule = {
 
 const selectedQuote = { protocol: "forevermoney" } as unknown as BaseQuote
 
+// a zero-delay timer created while the clock ticks is due one millisecond later
+const elapse = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms + 1))
+
 describe("useSwapErc20Approval", () => {
   let queryClient: QueryClient
 
   beforeEach(() => {
+    vi.useFakeTimers()
     readContract.mockReset()
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   })
 
   afterEach(() => {
     queryClient.clear()
+    vi.useRealTimers()
   })
 
   const render = (approvalCounter: number) =>
@@ -71,8 +77,11 @@ describe("useSwapErc20Approval", () => {
 
     const { result } = render(1)
 
-    await waitFor(() => expect(result.current.data).not.toBeNull())
-    await waitFor(() => expect(result.current.data).toBeNull(), { timeout: 5_000 })
+    await elapse(0)
+    expect(result.current.data).not.toBeNull()
+
+    await elapse(ALLOWANCE_RECHECK_MS)
+    expect(result.current.data).toBeNull()
     expect(result.current.approveTx).toBeNull()
   })
 
@@ -81,8 +90,10 @@ describe("useSwapErc20Approval", () => {
 
     const { result } = render(0)
 
-    await waitFor(() => expect(result.current.data).not.toBeNull())
-    await new Promise((r) => setTimeout(r, 3_500))
+    await elapse(0)
+    expect(result.current.data).not.toBeNull()
+
+    await elapse(ALLOWANCE_RECHECK_MS + 500)
     expect(readContract).toHaveBeenCalledTimes(1)
   })
 })

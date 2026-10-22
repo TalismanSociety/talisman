@@ -82,7 +82,7 @@ describe("YieldxyzExitStepAmount", () => {
     expect(mockGoTo).not.toHaveBeenCalled()
   })
 
-  it("hides the createAction error once the amount changes", async () => {
+  it("hides the createAction error once the amount changes, even back to the failed amount", async () => {
     mockCreateAction.mockRejectedValue(new Error("Position is locked"))
 
     const { rerender } = render(<YieldxyzExitStepAmount />)
@@ -91,22 +91,10 @@ describe("YieldxyzExitStepAmount", () => {
 
     wizard.amountOut = 2n
     rerender(<YieldxyzExitStepAmount />)
-
     expect(screen.queryByText("Position is locked")).toBeNull()
-  })
 
-  it("keeps the createAction error hidden when the failed amount is entered again", async () => {
-    mockCreateAction.mockRejectedValue(new Error("Position is locked"))
-
-    const { rerender } = render(<YieldxyzExitStepAmount />)
-    fireEvent.click(screen.getByText("Review"))
-    await screen.findByText("Position is locked")
-
-    wizard.amountOut = 2n
-    rerender(<YieldxyzExitStepAmount />)
     wizard.amountOut = 1n
     rerender(<YieldxyzExitStepAmount />)
-
     expect(screen.queryByText("Position is locked")).toBeNull()
   })
 
@@ -129,6 +117,6 @@ describe("YieldxyzExitStepAmount", () => {
     render(<YieldxyzExitStepAmount />)
     fireEvent.click(screen.getByText("Review"))
 
-    await waitFor(() => expect(mockGoTo).toHaveBeenCalledWith("confirm"))
+    await waitFor(() => expect(mockGoTo).toHaveBeenCalledWith("confirm"), { interval: 1 })
   })
 })

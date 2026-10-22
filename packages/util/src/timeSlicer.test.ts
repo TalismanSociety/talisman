@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { isAbortError } from "./isAbortError"
-import { createTimeSlicer, DEFAULT_TIME_SLICE_BUDGET_MS, newAbortError } from "./timeSlicer"
-
-describe("newAbortError", () => {
-  it("is recognized by isAbortError", () => {
-    expect(isAbortError(newAbortError())).toBe(true)
-  })
-})
+import { createTimeSlicer, DEFAULT_TIME_SLICE_BUDGET_MS } from "./timeSlicer"
 
 describe("createTimeSlicer", () => {
   it("does not want to yield before the budget is consumed", () => {

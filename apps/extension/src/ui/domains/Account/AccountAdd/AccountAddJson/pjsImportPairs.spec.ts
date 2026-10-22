@@ -22,12 +22,19 @@ import {
  * versions shipped in the wallet): for each case, `keyring.addFromSeed(...).toJson(password)`
  * produced the keystore, and the pair's address/publicKey/sign(message) are the references
  * (see tests/fixtures/pjs-import-parity.json).
+ *
+ * Decrypting one of those keystores is a full scrypt run (N=2^17, about a second), so each
+ * fixture also carries an `unencrypted` copy: the same keystore decrypted once, in the
+ * `pair.toJson()` no-password layout. The per-curve and per-address checks run on the copies.
+ * Two real keystores (current and legacy scrypt params) prove the decryption itself, and that
+ * the copies hold the keys polkadot-js wrote.
  */
 
 type SingleFixture = {
   name: string
   curve: KeypairCurve
   json: PjsKeyringPairJson
+  unencrypted: PjsKeyringPairJson
   expected: { address: string; publicKey: `0x${string}`; signature: `0x${string}` }
 }
 
@@ -54,6 +61,21 @@ const FIXTURES = JSON.parse(
 
 const MESSAGE = hexToU8a(FIXTURES.message)
 
+const getSingle = (name: string) => {
+  const fixture = FIXTURES.singles.find((single) => single.name === name)
+  if (!fixture) throw new Error(`Missing fixture ${name}`)
+  return fixture
+}
+
+const CURRENT_PARAMS = getSingle("single sr25519 (pjs toJson)")
+const LEGACY_PARAMS = getSingle("single sr25519 with legacy scrypt params (N=1<<15)")
+
+const unlockCopy = async (fixture: SingleFixture) => {
+  const pair = createPairFromJson(fixture.unencrypted)
+  await unlockPair(pair, "")
+  return pair
+}
+
 const expectSignatureParity = (
   curve: KeypairCurve,
   secretKey: Uint8Array,
@@ -74,13 +96,13 @@ const expectSignatureParity = (
 describe("pjs json import (polkadot-js parity fixtures)", () => {
   for (const fixture of FIXTURES.singles) {
     it(fixture.name, async () => {
-      const pair = createPairFromJson(fixture.json)
+      const pair = createPairFromJson(fixture.unencrypted)
 
       // address must resolve identically to the polkadot-js pair address
       expect(normalizeAddress(pair.address)).toBe(normalizeAddress(fixture.expected.address))
       expect(pair.type).toBe(fixture.curve)
 
-      await unlockPair(pair, FIXTURES.password)
+      await unlockPair(pair, "")
       expect(pair.isLocked).toBe(false)
       expect(pair.publicKey).toEqual(hexToU8a(fixture.expected.publicKey))
 
@@ -98,13 +120,30 @@ describe("pjs json import (polkadot-js parity fixtures)", () => {
       expect(roundtrip.publicKey).toEqual(pair.publicKey)
       expect(normalizeAddress(roundtrip.address)).toBe(normalizeAddress(fixture.expected.address))
     })
-
-    it(`${fixture.name} - rejects a wrong password`, async () => {
-      const pair = createPairFromJson(fixture.json)
-      await expect(unlockPair(pair, "wrong-password")).rejects.toThrow()
-      expect(pair.isLocked).toBe(true)
-    })
   }
+
+  describe("decrypts the polkadot-js keystore to the keys of its unencrypted copy", () => {
+    for (const fixture of [CURRENT_PARAMS, LEGACY_PARAMS]) {
+      it(fixture.name, async () => {
+        const pair = createPairFromJson(fixture.json)
+        expect(pair.isLocked).toBe(true)
+
+        await unlockPair(pair, FIXTURES.password)
+
+        const copy = await unlockCopy(fixture)
+        expect(pair.secretKey).toEqual(copy.secretKey)
+        expect(pair.publicKey).toEqual(copy.publicKey)
+        expect(pair.address).toBe(copy.address)
+      })
+    }
+  })
+
+  it("rejects a wrong password", async () => {
+    const pair = createPairFromJson(LEGACY_PARAMS.json)
+    await expect(unlockPair(pair, "wrong-password")).rejects.toThrow()
+    expect(pair.isLocked).toBe(true)
+    expect(pair.secretKey).toBeNull()
+  })
 
   it("batch file with all curves", async () => {
     const inner = await unlockMultiAccountsJson(FIXTURES.batch.json, FIXTURES.password)
@@ -114,14 +153,14 @@ describe("pjs json import (polkadot-js parity fixtures)", () => {
       const pair = createPairFromJson(inner[i])
       expect(normalizeAddress(pair.address)).toBe(normalizeAddress(expected.address))
       expect(pair.type).toBe(expected.curve)
-
-      await unlockPair(pair, FIXTURES.password)
-      expect(pair.publicKey).toEqual(hexToU8a(expected.publicKey))
-      expectSignatureParity(expected.curve, pair.secretKey!, pair.publicKey!, expected.signature)
+      expect(inner[i].encoding.type).toEqual(["scrypt", "xsalsa20-poly1305"])
     }
-  })
 
-  it("batch file rejects a wrong password", async () => {
-    await expect(unlockMultiAccountsJson(FIXTURES.batch.json, "wrong-password")).rejects.toThrow()
+    // the inner keystores are encrypted with the batch password
+    const [first] = FIXTURES.batch.accounts
+    const pair = createPairFromJson(inner[0])
+    await unlockPair(pair, FIXTURES.password)
+    expect(pair.publicKey).toEqual(hexToU8a(first.publicKey))
+    expectSignatureParity(first.curve, pair.secretKey!, pair.publicKey!, first.signature)
   })
 })

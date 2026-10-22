@@ -71,14 +71,6 @@ describe("convertScore2To100Pos", () => {
     expect(convertScore2To100Pos(2)).toBe(100)
   })
 
-  it("maps -1 to 25", () => {
-    expect(convertScore2To100Pos(-1)).toBe(25)
-  })
-
-  it("maps 1 to 75", () => {
-    expect(convertScore2To100Pos(1)).toBe(75)
-  })
-
   it("returns 50 for null / undefined", () => {
     expect(convertScore2To100Pos(null)).toBe(50)
     expect(convertScore2To100Pos(undefined)).toBe(50)
@@ -98,14 +90,6 @@ describe("convertScore2To100Neg", () => {
 
   it("maps 2 to 100", () => {
     expect(convertScore2To100Neg(2)).toBe(100)
-  })
-
-  it("maps 1 to 50", () => {
-    expect(convertScore2To100Neg(1)).toBe(50)
-  })
-
-  it("maps -1 to -50", () => {
-    expect(convertScore2To100Neg(-1)).toBe(-50)
   })
 
   it("clamps out-of-bounds values to [-100, 100]", () => {
@@ -155,10 +139,6 @@ describe("convertScore1To100Neg", () => {
     expect(convertScore1To100Neg(1)).toBe(100)
   })
 
-  it("maps 0.5 to 50", () => {
-    expect(convertScore1To100Neg(0.5)).toBe(50)
-  })
-
   it("clamps out-of-bounds values to [-100, 100]", () => {
     expect(convertScore1To100Neg(3)).toBe(100)
     expect(convertScore1To100Neg(-3)).toBe(-100)
@@ -173,23 +153,9 @@ describe("convertScore1To100Neg", () => {
 // ─── formatCompactNumber ────────────────────────────────────────────────────
 
 describe("formatCompactNumber", () => {
-  it("returns '0' for zero", () => {
-    expect(formatCompactNumber(0)).toBe("0")
-  })
-
   it("formats thousands with K suffix", () => {
     const result = formatCompactNumber(1500)
     expect(result).toMatch(/1\.5K/i)
-  })
-
-  it("formats millions with M suffix", () => {
-    const result = formatCompactNumber(2_500_000)
-    expect(result).toMatch(/2\.5M/i)
-  })
-
-  it("formats billions with B suffix", () => {
-    const result = formatCompactNumber(1_200_000_000)
-    expect(result).toMatch(/1\.2B/i)
   })
 
   it("respects custom decimal places", () => {

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 
 import { describe, expect, it } from "vitest"
@@ -30,15 +30,36 @@ const BUILDER = /from\s+["'](?:@common\/analytics\/exceptionReport|@posthog\/)/
 const RUNTIME_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm
 const ALIAS = /^@(core|ui|common)(\/.*)?$/
 
+const filesByBase = new Map<string, string | undefined>()
+const resolveFile = (base: string) => {
+  if (!filesByBase.has(base))
+    filesByBase.set(
+      base,
+      ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]
+        .map((suffix) => base + suffix)
+        .find((file) => statSync(file, { throwIfNoEntry: false })?.isFile())
+    )
+  return filesByBase.get(base)
+}
+
 const resolveImport = (from: string, specifier: string): string | undefined => {
   const alias = ALIAS.exec(specifier)
   const base = specifier.startsWith(".")
     ? join(dirname(from), specifier)
     : alias && join(SRC, alias[1], alias[2] ?? "")
-  if (!base) return undefined
-  return ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]
-    .map((suffix) => base + suffix)
-    .find((file) => existsSync(file) && statSync(file).isFile())
+  return base ? resolveFile(base) : undefined
+}
+
+const importsByFile = new Map<string, string[]>()
+const runtimeImports = (file: string) => {
+  let imports = importsByFile.get(file)
+  if (!imports) {
+    imports = [...readFileSync(file, "utf8").matchAll(RUNTIME_IMPORT)]
+      .map(([, specifier]) => resolveImport(file, specifier))
+      .filter((next) => next !== undefined)
+    importsByFile.set(file, imports)
+  }
+  return imports
 }
 
 const importChain = (entry: string, target: string): string[] | null => {
@@ -52,9 +73,8 @@ const importChain = (entry: string, target: string): string[] | null => {
         chain.unshift(relative(EXTENSION, at))
       return chain
     }
-    for (const [, specifier] of readFileSync(file, "utf8").matchAll(RUNTIME_IMPORT)) {
-      const next = resolveImport(file, specifier)
-      if (next && !parent.has(next)) {
+    for (const next of runtimeImports(file)) {
+      if (!parent.has(next)) {
         parent.set(next, file)
         queue.push(next)
       }

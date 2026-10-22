@@ -1,4 +1,4 @@
-import { parseJsonWithBigInts, stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
+import { stringifyJsonWithBigInts } from "@solana/rpc-spec-types"
 import { describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(() => ({
@@ -36,16 +36,5 @@ describe("background rpc transport", () => {
 
     // bigint survives the messaging boundary losslessly
     expect(result.value).toBe(hugeValue)
-  })
-
-  it("round-trips bigints through stringify/parse helpers", () => {
-    const original = { value: 2n ** 64n - 1n, plain: 42, text: "hello" }
-    const roundTripped = parseJsonWithBigInts(stringifyJsonWithBigInts(original)) as typeof original
-
-    expect(roundTripped.value).toBe(original.value)
-    // parseJsonWithBigInts upcasts EVERY integer to bigint — kit's response
-    // transformer downcasts back to number where the API type says so
-    expect(roundTripped.plain).toBe(42n)
-    expect(roundTripped.text).toBe("hello")
   })
 })

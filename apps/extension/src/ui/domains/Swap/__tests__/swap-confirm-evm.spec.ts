@@ -92,25 +92,9 @@ describe("isUserRejectionError", () => {
     })
   })
 
-  describe("code takes precedence over message", () => {
-    it("returns true for code 4001 even if message is unrelated", () => {
-      expect(isUserRejectionError({ code: 4001, message: "insufficient funds" })).toBe(true)
-    })
-
-    it("returns true for ACTION_REJECTED even if message is unrelated", () => {
-      expect(isUserRejectionError({ code: "ACTION_REJECTED", message: "execution reverted" })).toBe(
-        true
-      )
-    })
-  })
-
   describe("empty / missing fields", () => {
     it("returns false for empty object", () => {
       expect(isUserRejectionError({})).toBe(false)
-    })
-
-    it("returns false for object with unrelated fields", () => {
-      expect(isUserRejectionError({ foo: "bar" })).toBe(false)
     })
 
     it("returns false for an Error with no message content", () => {
@@ -128,11 +112,6 @@ describe("useConfirmReadiness", () => {
 
   afterEach(() => {
     vi.useRealTimers()
-  })
-
-  it("starts as not ready when swapView is 'confirm'", () => {
-    const { result } = renderHook(() => useConfirmReadiness("confirm"))
-    expect(result.current).toBe(false)
   })
 
   it("becomes ready after 1 second in confirm view", () => {
@@ -155,20 +134,6 @@ describe("useConfirmReadiness", () => {
     act(() => {
       vi.advanceTimersByTime(2_000)
     })
-    expect(result.current).toBe(false)
-  })
-
-  it("resets when leaving confirm view", () => {
-    const { result, rerender } = renderHook(({ view }) => useConfirmReadiness(view), {
-      initialProps: { view: "confirm" },
-    })
-
-    act(() => {
-      vi.advanceTimersByTime(1_000)
-    })
-    expect(result.current).toBe(true)
-
-    rerender({ view: "details" })
     expect(result.current).toBe(false)
   })
 

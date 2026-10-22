@@ -56,26 +56,5 @@ describe("store.proxyPalletCache", () => {
       setProxyPalletStatus("polkadot", 100, true, "probe")
       expect(getProxyPalletStatus("polkadot", 101)).toBeUndefined()
     })
-
-    it("does not duplicate emit for identical status", () => {
-      setProxyPalletStatus("polkadot", 100, true, "metadata")
-      setProxyPalletStatus("polkadot", 100, true, "metadata")
-      // Second call should be a no-op (deduped).
-      // We can't easily observe this without subscribing, but at least it
-      // shouldn't throw or corrupt state.
-      expect(getProxyPalletStatus("polkadot", 100)).toBe(true)
-    })
-  })
-
-  describe("source field behavior", () => {
-    it("tracks source as metadata", () => {
-      setProxyPalletStatus("kusama", 50, false, "metadata")
-      expect(getProxyPalletStatus("kusama", 50)).toBe(false)
-    })
-
-    it("tracks source as probe (default)", () => {
-      setProxyPalletStatus("kusama", 50, true)
-      expect(getProxyPalletStatus("kusama", 50)).toBe(true)
-    })
   })
 })

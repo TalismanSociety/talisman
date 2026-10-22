@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 
-import { createRpcStub, getParityFixture, getTestScaleApi } from "../__fixtures__/chains"
+import {
+  createRpcStub,
+  getParityFixture,
+  getTestChain,
+  getTestScaleApi,
+} from "../__fixtures__/chains"
+import { getFeeEstimate } from "./getFeeEstimate"
 
 // RuntimeDispatchInfo: weight { ref_time: compact 1000, proof_size: compact 0 }, class: Normal, partial_fee: u128
 const dispatchInfo = (partialFeeLe: string) => `0xa10f0000${partialFeeLe.padEnd(32, "0")}`
@@ -48,39 +54,39 @@ describe("getFeeEstimate", () => {
     ["moonbeam", moonbeam, MOONBEAM_FAKE_SIGNED],
   ] as const)("passes the full encoded length on %s", async (chain, fixture, fakeSigned) => {
     const rpc = createRpcStub(() => FEE_123456789)
-    const api = getTestScaleApi(chain, { send: rpc.send })
+    const chainWithRpc = getTestChain(chain, { send: rpc.send })
 
-    await api.getFeeEstimate(fixture.payload)
+    await getFeeEstimate(chainWithRpc, fixture.payload)
 
     expect(queryInfoArgs(rpc.calls[0]?.params).len).toBe(u32Le(byteLength(fakeSigned)))
   })
 
   it("replaces ed25519 and sr25519 signatures with the longer ecdsa one", async () => {
     const rpc = createRpcStub(() => FEE_123456789)
-    const api = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
     const ed25519 = getParityFixture("polkadot ed25519 immortal")
     const { signedTransaction } = ed25519
     // length prefix (2) + version (1) + MultiAddress::Id (1 + 32), then MultiSignature::Ed25519 (1 + 64)
     const fakeSigned = `0xe901${signedTransaction.slice(6, 74)}02${"00".repeat(65)}${signedTransaction.slice(204)}`
 
-    await api.getFeeEstimate(ed25519.payload)
+    await getFeeEstimate(chain, ed25519.payload)
 
     expect(queryInfoArgs(rpc.calls[0]?.params).extrinsic).toBe(fakeSigned)
   })
 
   it("uses a raw 65-byte signature for ethereum accounts", async () => {
     const rpc = createRpcStub(() => FEE_123456789)
-    const api = getTestScaleApi("moonbeam", { send: rpc.send })
+    const chain = getTestChain("moonbeam", { send: rpc.send })
 
-    expect(await api.getFeeEstimate(moonbeam.payload)).toBe(123_456_789n)
+    expect(await getFeeEstimate(chain, moonbeam.payload)).toBe(123_456_789n)
     expect(queryInfoArgs(rpc.calls[0]?.params).extrinsic).toBe(MOONBEAM_FAKE_SIGNED)
   })
 
   it("returns a zero fee without falling back", async () => {
     const rpc = createRpcStub(() => dispatchInfo(""))
-    const api = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
 
-    expect(await api.getFeeEstimate(polkadotEcdsa.payload)).toBe(0n)
+    expect(await getFeeEstimate(chain, polkadotEcdsa.payload)).toBe(0n)
     expect(rpc.calls).toHaveLength(1)
   })
 
@@ -89,9 +95,9 @@ describe("getFeeEstimate", () => {
       if (rpc.calls.length === 1) throw new Error("Runtime call failed")
       return FEE_123456789
     })
-    const api = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
 
-    expect(await api.getFeeEstimate(polkadotEcdsa.payload)).toBe(123_456_789n)
+    expect(await getFeeEstimate(chain, polkadotEcdsa.payload)).toBe(123_456_789n)
     expect(rpc.calls[1]).toEqual({
       method: "state_call",
       params: [
@@ -106,9 +112,9 @@ describe("getFeeEstimate", () => {
     const rpc = createRpcStub(() => {
       throw new Error("Node unavailable")
     })
-    const api = getTestScaleApi("polkadot", { send: rpc.send })
+    const chain = getTestChain("polkadot", { send: rpc.send })
 
-    await expect(api.getFeeEstimate(polkadotEcdsa.payload)).rejects.toThrow("Node unavailable")
+    await expect(getFeeEstimate(chain, polkadotEcdsa.payload)).rejects.toThrow("Node unavailable")
     expect(rpc.calls).toHaveLength(2)
   })
 })

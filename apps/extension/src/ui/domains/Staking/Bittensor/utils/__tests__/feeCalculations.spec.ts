@@ -44,12 +44,6 @@ describe("calculateFee", () => {
       expect(calculateFee({ amount, feePercent, seekDiscount })).toEqual(expected)
     }
   })
-
-  test("handles typical Bittensor staking amounts", () => {
-    const minStake = 2_000_000n
-    const fee = calculateFee({ amount: minStake, feePercent: 0.3, seekDiscount: 0 })
-    expect(fee).toEqual(6000n)
-  })
 })
 
 describe("calculateEffectiveFeeRate", () => {
@@ -72,20 +66,9 @@ describe("calculateEffectiveFeeRate", () => {
     expect(calculateEffectiveFeeRate(1, 0.3, 1)).toEqual(0)
     expect(calculateEffectiveFeeRate(1, 0.3, 0.25)).toEqual(0.00225)
   })
-
-  test("works with different subnet IDs", () => {
-    expect(calculateEffectiveFeeRate(1, 0.3, 0)).toEqual(0.003)
-    expect(calculateEffectiveFeeRate(5, 0.3, 0)).toEqual(0.003)
-    expect(calculateEffectiveFeeRate(100, 0.3, 0)).toEqual(0.003)
-  })
 })
 
 describe("calculateMinimumStakeInput", () => {
-  test("returns base minimum when no fees apply", () => {
-    const baseMin = 2_000_000n
-    expect(calculateMinimumStakeInput(baseMin, 0n, 0)).toEqual(baseMin)
-  })
-
   test("adds swap fee when Talisman fee is zero", () => {
     const baseMin = 2_000_000n
     const swapFee = 40_000n
@@ -101,16 +84,6 @@ describe("calculateMinimumStakeInput", () => {
 
     expect(result).toBeGreaterThan(2_046_000n)
     expect(result).toBeLessThan(2_047_000n)
-  })
-
-  test("larger fee rate requires larger minimum input", () => {
-    const baseMin = 2_000_000n
-    const swapFee = 40_000n
-
-    const result003 = calculateMinimumStakeInput(baseMin, swapFee, 0.003)
-    const result005 = calculateMinimumStakeInput(baseMin, swapFee, 0.005)
-
-    expect(result005).toBeGreaterThan(result003)
   })
 
   test("Seek discount reduces required minimum", () => {

@@ -66,15 +66,15 @@ describe("AccountAddSignetWizard", () => {
     ])
     accountAddExternal.mockResolvedValue([ADDRESSES.GAV, ADDRESSES.ALICE])
     const onSuccess = vi.fn()
-    const { getByRole, findByText, getAllByText } = renderWizard(onSuccess)
+    const { getByText, findByText, getAllByText } = renderWizard(onSuccess)
 
-    fireEvent.click(getByRole("button", { name: "Connect" }))
+    fireEvent.click(getByText("Connect"))
 
     await findByText("Confirm Import?")
     expect(getAllByText("Treasury")).toHaveLength(1)
     expect(getAllByText("Payroll")).toHaveLength(1)
 
-    fireEvent.click(getByRole("button", { name: "Confirm" }))
+    fireEvent.click(getByText("Confirm"))
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(ADDRESSES.GAV))
     expect(accountAddExternal).toHaveBeenCalledTimes(1)

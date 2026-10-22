@@ -6,19 +6,23 @@ import { Blake2256, blockHeader } from "@polkadot-api/substrate-bindings"
 import type { DotNetwork } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
 import { type HexString, u8aToHex } from "@talismn/util"
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { db } from "../../db"
 import { createNotification } from "../../notifications"
 import { chainConnectorDot } from "../../rpcs/chain-connector-dot"
 import type { SignerPayloadJSON } from "../../types/pjsInterop"
 import { settingsStore } from "../app/store.settings"
-import { encodeMetadataRpc } from "../metadata/helpers"
+import { getMetadataDef } from "../metadata/getMetadataDef"
 import { watchSubstrateTransaction } from "./watchSubstrateTransaction"
 import { watchSwapStatus } from "./watchSwapStatus"
 
 vi.mock("../../notifications", () => ({ createNotification: vi.fn() }))
 vi.mock("./watchSwapStatus", () => ({ watchSwapStatus: vi.fn() }))
+vi.mock("../metadata/getMetadataDef", () => ({ getMetadataDef: vi.fn() }))
+vi.mock("../metadata/helpers", () => ({
+  getMetadataRpcFromDef: (def?: { metadataRpc: string }) => def?.metadataRpc,
+}))
 
 type ParityFixture = {
   name: string
@@ -203,27 +207,19 @@ const storedTx = () => db.transactionsV2.get(FIXTURE.hash)
 
 // the watcher does not await its status callback
 const expectStoredTx = (expected: Record<string, unknown>) =>
-  vi.waitFor(async () => expect(await storedTx()).toMatchObject(expected))
+  vi.waitFor(async () => expect(await storedTx()).toMatchObject(expected), { interval: 2 })
 
 describe("watchSubstrateTransaction", () => {
-  beforeAll(async () => {
-    await db.metadata.put({
-      genesisHash: POLKADOT.genesisHash,
-      chain: "Polkadot",
-      icon: "",
-      specVersion: parseInt(FIXTURE.payload.specVersion, 16),
-      ss58Format: 0,
-      tokenDecimals: 10,
-      tokenSymbol: "DOT",
-      types: {},
-      metadataRpc: encodeMetadataRpc(METADATA_HEX) as HexString,
-    })
-  })
-
   beforeEach(async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     await db.transactionsV2.clear()
     vi.spyOn(settingsStore, "get").mockResolvedValue(true as never)
+    vi.mocked(getMetadataDef).mockImplementation(async (genesisHash, specVersion) =>
+      genesisHash === POLKADOT.genesisHash &&
+      specVersion === parseInt(FIXTURE.payload.specVersion, 16)
+        ? ({ metadataRpc: METADATA_HEX } as never)
+        : undefined
+    )
   })
 
   afterEach(() => {

@@ -33,6 +33,7 @@ vi.mock("../store.settings", () => ({
     },
   },
 }))
+vi.mock("../../analytics/errorReporting", () => ({ reportError: vi.fn() }))
 vi.mock("../../gandalf/observable", () => ({
   get gandalfAccessToken$() {
     return token$

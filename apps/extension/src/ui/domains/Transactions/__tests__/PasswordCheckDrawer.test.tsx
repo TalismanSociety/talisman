@@ -108,12 +108,6 @@ describe("PasswordCheckDrawer", () => {
     expect(screen.queryByTestId("drawer")).toBeNull()
   })
 
-  it("renders password input when open", () => {
-    render(<PasswordCheckDrawer isOpen={true} onVerified={onVerified} onDismiss={onDismiss} />)
-    expect(screen.getByTestId("drawer")).toBeTruthy()
-    expect(screen.getByTestId("password-input")).toBeTruthy()
-  })
-
   it("calls onVerified when password is correct", async () => {
     mockCheckPassword.mockResolvedValueOnce(true)
 

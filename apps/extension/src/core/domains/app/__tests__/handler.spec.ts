@@ -12,6 +12,16 @@ import {
 } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 
+// the keyring KDF (PBKDF2, 100k iterations) runs for every secret and is tested in @talismn/crypto
+vi.mock("@talismn/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@talismn/crypto")>()
+  return {
+    ...actual,
+    pbkdf2: ((hash, entropy, salt, _iterations, length) =>
+      actual.pbkdf2(hash, entropy, salt, 1, length)) satisfies typeof actual.pbkdf2,
+  }
+})
+
 vi.setConfig({ testTimeout: 20_000 })
 
 describe("App handler when password is not trimmed", () => {
@@ -136,13 +146,11 @@ describe("App handler when password is not trimmed", () => {
     const accounts = await keyringStore.getAccounts()
     const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
-    expect(account)
 
     const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
     expect(secretKey).toBeTruthy()
 
-    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(mnemonic)
+    expect(await keyringStore.getMnemonicText(mnemonicId, hashedPw)).toEqual(mnemonic)
   })
 
   test("can change password to one with spaces (not trimmed)", async () => {
@@ -166,13 +174,11 @@ describe("App handler when password is not trimmed", () => {
     const accounts = await keyringStore.getAccounts()
     const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
-    expect(account)
 
     const exported = await keyringStore.getAccountSecretKey(account.address, hashedPw)
     expect(exported).toBeTruthy()
 
-    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(mnemonic)
+    expect(await keyringStore.getMnemonicText(mnemonicId, hashedPw)).toEqual(mnemonic)
   })
 })
 
@@ -257,7 +263,7 @@ describe("App handler when password is trimmed", () => {
     const login = await messageSender("pri(app.authenticate)", {
       pass: password,
     })
-    expect(login)
+    expect(login).toBe(true)
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
   })
 
@@ -270,7 +276,7 @@ describe("App handler when password is trimmed", () => {
     const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
       pass: `  ${password}  `,
     })
-    expect(loginExtraSpaces)
+    expect(loginExtraSpaces).toBe(true)
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
   })
 
@@ -295,13 +301,11 @@ describe("App handler when password is trimmed", () => {
     const accounts = await keyringStore.getAccounts()
     const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
-    expect(account)
 
     const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
     expect(secretKey).toBeTruthy()
 
-    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(mnemonic)
+    expect(await keyringStore.getMnemonicText(mnemonicId, hashedPw)).toEqual(mnemonic)
   })
 
   test("can change password to one with spaces (trimmed)", async () => {
@@ -326,12 +330,10 @@ describe("App handler when password is trimmed", () => {
     const accounts = await keyringStore.getAccounts()
     const account = accounts.find(({ name }) => name === "Test Polkadot Account")
     assert(account, "No account")
-    expect(account)
 
     const secretKey = await keyringStore.getAccountSecretKey(account.address, hashedPw)
     expect(secretKey).toBeTruthy()
 
-    const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(mnemonic)
+    expect(await keyringStore.getMnemonicText(mnemonicId, hashedPw)).toEqual(mnemonic)
   })
 })

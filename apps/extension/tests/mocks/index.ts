@@ -18,6 +18,19 @@ vi.mock("bcryptjs", async () => {
   }
 })
 
+// the vault KDF (PBKDF2, 900k iterations) costs ~0.5s per call; decrypt reads the iterations from the vault
+vi.mock("@metamask/browser-passworder", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@metamask/browser-passworder")>()
+  return {
+    ...actual,
+    encrypt: ((password, data) =>
+      actual.encrypt(password, data, undefined, undefined, {
+        algorithm: "PBKDF2",
+        params: { iterations: 1000 },
+      })) satisfies typeof actual.encrypt,
+  }
+})
+
 vi.mock("@ui/api", () => ({ api: mockedApi }))
 
 vi.mock("react-i18next", () => ({

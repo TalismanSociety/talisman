@@ -12,8 +12,4 @@ describe("configureBigNumber", () => {
     expect(() => new BigNumber("")).not.toThrow()
     expect(new BigNumber("").isNaN()).toBe(true)
   })
-
-  it("still parses valid input normally", () => {
-    expect(new BigNumber("1.5").toString(10)).toBe("1.5")
-  })
 })

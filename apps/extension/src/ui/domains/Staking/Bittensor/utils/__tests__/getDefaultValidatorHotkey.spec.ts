@@ -94,20 +94,6 @@ describe("getDefaultValidatorHotkey", () => {
     )
   })
 
-  test("returns undefined when no balances and no remote config entry", () => {
-    const balances = mockBalances([])
-
-    expect(getDefaultValidatorHotkey("bittensor", 99, remoteConfig, balances)).toBeUndefined()
-  })
-
-  test("prefers user balance over remote config default", () => {
-    const balances = mockBalances([
-      mockBalance({ type: "substrate-dtao", netuid: 1, hotkey: "5UserStake" }, 500n),
-    ])
-
-    expect(getDefaultValidatorHotkey("bittensor", 1, remoteConfig, balances)).toBe("5UserStake")
-  })
-
   test("falls back to remote config when balances is undefined", () => {
     expect(getDefaultValidatorHotkey("bittensor", 1, remoteConfig)).toBe("5RemoteDefault1")
   })

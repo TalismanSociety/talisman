@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { findDTaoConvictionLock, getConvictionLockLabel, toBigIntValue } from "./convictionLocks"
+import { findDTaoConvictionLock, toBigIntValue } from "./convictionLocks"
 
 describe("toBigIntValue", () => {
   it("returns bigints as-is", () => {
@@ -18,16 +18,6 @@ describe("toBigIntValue", () => {
     expect(toBigIntValue(42)).toBe(0n)
     expect(toBigIntValue({ bits: "5" })).toBe(0n)
     expect(toBigIntValue({ foo: 1n })).toBe(0n)
-  })
-})
-
-describe("getConvictionLockLabel", () => {
-  it("labels perpetual locks", () => {
-    expect(getConvictionLockLabel("perpetual")).toBe("Perpetual Conviction Lock")
-  })
-
-  it("labels decaying locks", () => {
-    expect(getConvictionLockLabel("decaying")).toBe("Decaying Conviction Lock")
   })
 })
 

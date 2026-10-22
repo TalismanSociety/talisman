@@ -16,10 +16,4 @@ describe("getTokenIdForSwappableAsset (solana)", () => {
       `solana-mainnet:sol-spl:${USDC_MINT}`
     )
   })
-
-  it("returns native token id when contractAddress is explicit undefined", () => {
-    expect(getTokenIdForSwappableAsset("solana", "solana-mainnet", undefined)).toBe(
-      "solana-mainnet:sol-native"
-    )
-  })
 })

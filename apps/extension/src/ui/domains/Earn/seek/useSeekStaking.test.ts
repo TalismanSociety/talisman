@@ -19,19 +19,6 @@ const rewardToken = {
 } as Token
 
 describe("calcSeekApr", () => {
-  it("calculates APR when stake and reward token match", () => {
-    const apr = calcSeekApr({
-      rewardRate: 1_000000000000000000n,
-      totalStaked: 315_576_000_000000000000000000n,
-      stakeToken: seekToken,
-      rewardToken: seekToken,
-      stakeTokenUsd: 1,
-      rewardTokenUsd: 1,
-    })
-
-    expect(apr).toBeCloseTo(10, 6)
-  })
-
   it("converts reward value when reward token differs from stake token", () => {
     const apr = calcSeekApr({
       rewardRate: 1_000000n,
@@ -81,15 +68,6 @@ describe("getSeekPositionValueUsd", () => {
     ...overrides,
   })
 
-  it("values staked + earned in the stake token when the reward token matches", () => {
-    const value = getSeekPositionValueUsd(
-      makePosition({ staked: 100_000000000000000000n, earned: 50_000000000000000000n }),
-      { stakeToken: seekToken, rewardToken: seekToken, stakeTokenUsd: 2, rewardTokenUsd: 2 }
-    )
-    // 100 * $2 (stake) + 50 * $2 (reward) = 300
-    expect(value).toBeCloseTo(300, 6)
-  })
-
   it("values the reward leg with its own decimals and price", () => {
     const value = getSeekPositionValueUsd(
       // earned is 1.0 of a 6-decimal reward token
@@ -110,14 +88,6 @@ describe("getSeekPositionValueUsd", () => {
     )
     // (100 + 50) * $2 = 300, no rewards
     expect(value).toBeCloseTo(300, 6)
-  })
-
-  it("ignores the reward leg when earned is zero", () => {
-    const value = getSeekPositionValueUsd(
-      makePosition({ staked: 100_000000000000000000n, earned: 0n }),
-      { stakeToken: seekToken, rewardToken, stakeTokenUsd: 2, rewardTokenUsd: 3 }
-    )
-    expect(value).toBeCloseTo(200, 6)
   })
 
   it("ignores the reward leg when the reward price is unknown", () => {

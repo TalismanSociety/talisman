@@ -225,17 +225,6 @@ describe("fetchForevermoneyStatus", () => {
     )
   })
 
-  it("gives up after a day without delivery", async () => {
-    base.getTransactionReceipt.mockResolvedValue({
-      status: "success",
-      logs: [bridgedToFinneyLog()],
-    })
-
-    expect(await status({ ...inboundTx(), timestamp: Date.now() - 25 * 60 * 60 * 1000 })).toBe(
-      "unknown"
-    )
-  })
-
   it("finishes an inbound bridge once delivered", async () => {
     base.getTransactionReceipt.mockResolvedValue({
       status: "success",

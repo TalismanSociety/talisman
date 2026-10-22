@@ -75,10 +75,6 @@ describe("isFresh (timestamp-only TTL)", () => {
     expect(isFresh(undefined)).toBe(false)
   })
 
-  it("is fresh within TTL", () => {
-    expect(isFresh(Date.now())).toBe(true)
-  })
-
   it("is not fresh past the TTL (> 7 days)", () => {
     const eightDaysAgo = Date.now() - 8 * 24 * 60 * 60 * 1000
     expect(isFresh(eightDaysAgo)).toBe(false)

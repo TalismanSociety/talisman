@@ -1,17 +1,7 @@
-import { describe, expect, it, test } from "vitest"
+import { describe, expect, test } from "vitest"
 import { mnemonicsStore } from "../legacy/store.mnemonics"
 
 describe("createMnemonicsStore", () => {
-  it("should be defined", () => {
-    expect(mnemonicsStore).toBeDefined()
-  })
-
-  describe("add", () => {
-    it("should be defined", () => {
-      expect(mnemonicsStore.add).toBeDefined()
-    })
-  })
-
   test("calling add should result in the cipher being stored", async () => {
     const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
     const password = "password"
