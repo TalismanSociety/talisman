@@ -532,6 +532,32 @@ describe("findSubtensorStakeCall", () => {
 
   // --- Batch with multiple proxy calls: coldkey filtering ---
 
+  it("selects the proxy call in a batch whose coldkey matches", () => {
+    const callForColdkeyA = makeDecodedCall("Proxy", "proxy", {
+      real: COLDKEY_A,
+      call: makeDecodedCall("SubtensorModule", "add_stake", {
+        hotkey: HOTKEY_A,
+        netuid: NETUID,
+        amount_staked: 1n,
+      }),
+    })
+    const callForColdkeyB = makeDecodedCall("Proxy", "proxy", {
+      real: COLDKEY_B,
+      call: makeDecodedCall("SubtensorModule", "add_stake", {
+        hotkey: HOTKEY_A,
+        netuid: NETUID,
+        amount_staked: 2n,
+      }),
+    })
+    const batch = makeDecodedCall("Utility", "batch", {
+      calls: [callForColdkeyB, callForColdkeyA],
+    })
+
+    const result = findSubtensorStakeCall(batch, NETUID, HOTKEY_A, COLDKEY_A, "buy")
+    expect(result?.method).toBe("add_stake")
+    expect(result?.args).toMatchObject({ amount_staked: 1n })
+  })
+
   it("returns null from a batch when no proxy coldkey matches", () => {
     const callForColdkeyB = makeDecodedCall("Proxy", "proxy", {
       real: COLDKEY_B,
