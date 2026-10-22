@@ -36,6 +36,7 @@ import {
   type Observable,
   of,
   ReplaySubject,
+  retry,
   shareReplay,
   startWith,
   switchMap,
@@ -72,6 +73,10 @@ type BalancesStatus = "initialising" | "live"
  * Kept tight — a real incoming transfer above 0.1% of the position emits immediately.
  */
 const GENERIC_DRIFT_TOLERANCE_BPS = 10n
+
+/** Delay before resubscribing a substrate module stream that errored: 2s, doubling, capped at 1min */
+const substrateModuleRetryDelay = (retryCount: number) =>
+  timer(Math.min(60_000, 2_000 * 2 ** (retryCount - 1)))
 
 export type BalancesResult = {
   status: BalancesStatus
@@ -376,7 +381,15 @@ export class BalancesProvider {
               ? undefined
               : classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)
           ),
-          catchError(() => EMPTY), // don't emit, let provider mark balances stale
+          // resubscribe after an error (eg the endpoint refused state_subscribeStorage)
+          // instead of completing: a completed stream stays cached by the shared observable
+          // until the request map changes, leaving the balances frozen and the chain's
+          // socket without the subscription that holds it open between polls.
+          // Nothing is emitted while retrying, so the last results stay in place.
+          retry({
+            delay: (_error, retryCount) => substrateModuleRetryDelay(retryCount),
+            resetOnSuccess: true,
+          }),
           tap((results) => {
             // marks which module's poll/subscription just produced results, so JS-thread
             // stall reports can attribute blocked windows to the right pipeline
