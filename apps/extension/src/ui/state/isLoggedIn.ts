@@ -18,8 +18,6 @@ export const isLoggedIn$ = authStatus$.pipe(
   shareReplay(1)
 )
 
-const [_useIsLoggedIn] = bind(isLoggedIn$)
-
 // a service worker that has just woken up reports UNKNOWN until it has looked for a session to
 // restore, so only the first known status says whether the page opened locked
 const openedLocked$ = authStatus$.pipe(
