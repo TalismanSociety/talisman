@@ -1,18 +1,19 @@
 import { base64 } from "@talismn/crypto"
-import { type HexString, hexToU8a, u8aToHex } from "@talismn/util"
+import { type HexString, hexToU8a, LruMap, u8aToHex } from "@talismn/util"
 
 import type { TalismanMetadataDef } from "../substrate/types"
 
 // metadata is stored as base64 for lower storage size
 
-// a blob is ~1MB and every signature decodes the same one, so the last decode is kept
-let lastDecoded: { encoded: string; metadataRpc: HexString } | undefined
+const decodedMetadataRpcs = new LruMap<string, HexString>(20)
 
 export const decodeMetadataRpc = (encoded: string): HexString => {
-  if (lastDecoded?.encoded === encoded) return lastDecoded.metadataRpc
+  const cached = decodedMetadataRpcs.get(encoded)
+  if (cached) return cached
 
-  lastDecoded = { encoded, metadataRpc: u8aToHex(base64.decode(encoded)) }
-  return lastDecoded.metadataRpc
+  const metadataRpc = u8aToHex(base64.decode(encoded))
+  decodedMetadataRpcs.set(encoded, metadataRpc)
+  return metadataRpc
 }
 
 export const encodeMetadataRpc = (metadataRpc: `0x${string}`) =>
