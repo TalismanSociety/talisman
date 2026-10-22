@@ -63,7 +63,7 @@ import { VrfSignRequest } from "./pages/VrfSign"
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
-  const canOfferQuickUnlock = useCanOfferQuickUnlock(isLoggedIn)
+  const canOfferQuickUnlock = useCanOfferQuickUnlock()
 
   // the user locking the wallet (or the autolock timer) swaps the portfolio for the login screen
   // in a popup that is on its way out - quick unlock must not prompt on their behalf there

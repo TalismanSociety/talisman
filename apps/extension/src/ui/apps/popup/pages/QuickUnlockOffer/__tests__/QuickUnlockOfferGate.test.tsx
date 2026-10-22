@@ -1,5 +1,29 @@
+import { bind } from "@react-rxjs/core"
 import { act, fireEvent, render, screen } from "@testing-library/react"
+import type { FC } from "react"
 import { beforeEach, describe, expect, test, vi } from "vitest"
+
+type AuthStatus = "TRUE" | "FALSE" | "UNKNOWN"
+
+const auth = vi.hoisted(() => {
+  let status: AuthStatus = "UNKNOWN"
+  const listeners = new Set<(status: AuthStatus) => void>()
+  return {
+    reset: (initial: AuthStatus) => {
+      status = initial
+      listeners.clear()
+    },
+    report: (next: AuthStatus) => {
+      status = next
+      for (const listener of listeners) listener(next)
+    },
+    subscribe: (listener: (status: AuthStatus) => void) => {
+      listeners.add(listener)
+      listener(status)
+      return () => listeners.delete(listener)
+    },
+  }
+})
 
 const popup = vi.hoisted(() => ({ embedded: true }))
 const mockIsAvailable = vi.fn()
@@ -12,6 +36,8 @@ vi.mock("@ui/util/constants", () => ({
     return popup.embedded
   },
 }))
+vi.mock("@ui/api", () => ({ api: { authStatusSubscribe: auth.subscribe } }))
+vi.mock("@ui/hooks/analytics/performance", () => ({ tapLoggedIn: () => {} }))
 vi.mock("@ui/util/webauthnPrf", () => ({ isQuickUnlockAvailable: () => mockIsAvailable() }))
 vi.mock("@ui/state/quickUnlock", () => ({ useQuickUnlockEnrolment: () => mockUseEnrolment() }))
 vi.mock("@ui/state/remoteConfig", () => ({
@@ -28,27 +54,42 @@ vi.mock("../QuickUnlockOffer", () => ({
   ),
 }))
 
-import { QuickUnlockOfferGate, useCanOfferQuickUnlock } from "../QuickUnlockOfferGate"
+let Popup: FC
 
-const Popup = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
-  const canOfferQuickUnlock = useCanOfferQuickUnlock(isLoggedIn)
-  if (!isLoggedIn) return <p>login</p>
-  if (!canOfferQuickUnlock) return <p>portfolio</p>
-  return (
-    <QuickUnlockOfferGate>
-      <p>portfolio</p>
-    </QuickUnlockOfferGate>
-  )
+// the popup learns whether it opened locked once per page, so each test loads a fresh page
+const openPage = async () => {
+  vi.resetModules()
+  const { isLoggedIn$ } = await import("@ui/state/isLoggedIn")
+  const { QuickUnlockOfferGate, useCanOfferQuickUnlock } = await import("../QuickUnlockOfferGate")
+  const [useIsLoggedIn] = bind(isLoggedIn$, false)
+
+  Popup = () => {
+    const isLoggedIn = useIsLoggedIn()
+    const canOfferQuickUnlock = useCanOfferQuickUnlock()
+    if (!isLoggedIn) return <p>login</p>
+    if (!canOfferQuickUnlock) return <p>portfolio</p>
+    return (
+      <QuickUnlockOfferGate>
+        <p>portfolio</p>
+      </QuickUnlockOfferGate>
+    )
+  }
+
+  const view = render(<Popup />)
+  await settle()
+  return view
 }
 
 const flags: Record<string, unknown> = {}
 
 const settle = () => act(async () => {})
 
+const login = () => act(async () => auth.report("TRUE"))
+
 const openLockedThenLogin = async () => {
-  const view = render(<Popup isLoggedIn={false} />)
-  view.rerender(<Popup isLoggedIn />)
-  await settle()
+  auth.reset("FALSE")
+  const view = await openPage()
+  await login()
   return view
 }
 
@@ -95,7 +136,7 @@ describe("QuickUnlockOfferGate", () => {
     const view = await openLockedThenLogin()
 
     mockUseEnrolment.mockReturnValue(true)
-    view.rerender(<Popup isLoggedIn />)
+    view.rerender(<Popup />)
     shows("offer")
 
     fireEvent.click(screen.getByText("quick unlock offer"))
@@ -112,11 +153,32 @@ describe("QuickUnlockOfferGate", () => {
   })
 
   test("reads nothing in a popup that opened already unlocked", async () => {
-    render(<Popup isLoggedIn />)
-    await settle()
+    auth.reset("TRUE")
+    await openPage()
 
     shows("portfolio")
     expectNoOfferInputsRead()
+  })
+
+  test("reads nothing when a waking background restores the session", async () => {
+    auth.reset("UNKNOWN")
+    await openPage()
+    shows("nothing")
+
+    await login()
+
+    shows("portfolio")
+    expectNoOfferInputsRead()
+  })
+
+  test("offers once a waking background finds the wallet locked and the user logs in", async () => {
+    auth.reset("UNKNOWN")
+    await openPage()
+    await act(async () => auth.report("FALSE"))
+
+    await login()
+
+    shows("offer")
   })
 
   test("skips when quick unlock is already on", async () => {
@@ -133,7 +195,7 @@ describe("QuickUnlockOfferGate", () => {
     shows("portfolio")
 
     mockUseEnrolment.mockReturnValue(false)
-    view.rerender(<Popup isLoggedIn />)
+    view.rerender(<Popup />)
     await settle()
 
     shows("portfolio")
@@ -154,7 +216,7 @@ describe("QuickUnlockOfferGate", () => {
     shows("nothing")
 
     mockUseEnrolment.mockReturnValue(true)
-    view.rerender(<Popup isLoggedIn />)
+    view.rerender(<Popup />)
     shows("portfolio")
   })
 

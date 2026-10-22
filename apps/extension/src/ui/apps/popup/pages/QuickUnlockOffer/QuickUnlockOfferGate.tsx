@@ -1,4 +1,5 @@
 import { useAppState } from "@ui/state/app"
+import { useOpenedLocked } from "@ui/state/isLoggedIn"
 import { useQuickUnlockEnrolment } from "@ui/state/quickUnlock"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
@@ -26,9 +27,9 @@ const decide = (inputs: OfferInputs): Decision => {
  * Whether this popup may offer quick unlock to a user who is about to type their password.
  * Popup windows opened for a dapp request never offer it, the user is there for the request.
  */
-export const useCanOfferQuickUnlock = (isLoggedIn: boolean) => {
-  const [canOffer] = useState(IS_EMBEDDED_POPUP && !isLoggedIn)
-  return canOffer
+export const useCanOfferQuickUnlock = () => {
+  const openedLocked = useOpenedLocked()
+  return IS_EMBEDDED_POPUP && openedLocked === true
 }
 
 export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
