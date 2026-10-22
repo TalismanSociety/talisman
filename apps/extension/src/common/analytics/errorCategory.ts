@@ -55,6 +55,7 @@ const LEDGER_CATEGORIES: Readonly<Record<string, ErrorCategory | null>> = {
   InvalidApp: "ledger_wrong_app",
   GenericAppRequired: "ledger_wrong_app",
   NotFound: "ledger_device_not_found",
+  NotConnected: "ledger_device_not_found",
   Timeout: "ledger_device_not_found",
   Network: "ledger_device_not_found",
   BrowserSecurity: "ledger_device_not_found",

@@ -37,11 +37,11 @@ export const ErrorMessageDrawer: FC<{
         <p className="mt-4 text-body-secondary">
           {name === "GenericAppRequired" ? <LedgerGenericRequired /> : wrapStrong(content)}
         </p>
-        {name === "Unauthorized" && (
+        {name === "NotConnected" && (
           <p className="mt-4 text-body-secondary">
             <Trans
               t={t}
-              defaults="Please ensure that Ledger is authorized in your browser, using the Check tool in <Link>Talisman settings</Link>"
+              defaults="If it is already connected and unlocked, make sure your browser is authorised to use it with the Check tool in <Link>Talisman settings</Link>"
               components={{
                 Link: (
                   <button
