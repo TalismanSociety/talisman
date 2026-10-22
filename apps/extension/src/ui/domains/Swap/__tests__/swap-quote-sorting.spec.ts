@@ -9,7 +9,7 @@ import {
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
+import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
