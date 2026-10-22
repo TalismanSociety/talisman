@@ -11,7 +11,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { useBalancesByAddress } from "@ui/state/balances"
+import { useBalancesByAddress, useIsBalanceInitializing } from "@ui/state/balances"
+import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useNetworks } from "@ui/state/chaindata"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import { useCallback, useMemo, useState } from "react"
@@ -27,6 +28,9 @@ import {
 } from "./CopyAddressFormatPickerDrawer"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
+
+const POLKADOT_PREFIX = 0
+const POLKADOT_NETWORK_ID = "polkadot"
 
 const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   const { t } = useTranslation()
@@ -153,6 +157,7 @@ export const CopyAddressChainForm = () => {
   }, [account, chains])
 
   const balances = useBalancesByAddress(address)
+  const isBalancesInitializing = useIsBalanceInitializing()
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const SUBSTRATE_FORMAT: Omit<ChainFormat, "address"> = useMemo(
@@ -167,15 +172,38 @@ export const CopyAddressChainForm = () => {
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
 
+    const polkadotPrefixNetworkIds = new Set(
+      chains.filter((c) => c.prefix === POLKADOT_PREFIX).map((c) => c.id)
+    )
+    const fundedBalances = balances.each.filter((b) => b.total.planck > 0n)
+    const isEmptyAccount = !isBalancesInitializing && !fundedBalances.length
+    const hasFundsOnPolkadotPrefix = fundedBalances.some((b) =>
+      polkadotPrefixNetworkIds.has(b.networkId)
+    )
+    const pinnedNetworkIds = isEmptyAccount
+      ? [BITTENSOR_NETWORK_ID, POLKADOT_NETWORK_ID]
+      : [POLKADOT_NETWORK_ID]
+    const pinRank = (networkId: string) => {
+      const index = pinnedNetworkIds.indexOf(networkId)
+      return index === -1 ? pinnedNetworkIds.length : index
+    }
+
     const sortedChains = chains
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
+      .filter(
+        (c) =>
+          c.id !== POLKADOT_NETWORK_ID ||
+          isEmptyAccount ||
+          hasFundsOnPolkadotPrefix ||
+          accountChain?.id === POLKADOT_NETWORK_ID
+      )
       .filter(
         // if ledger generic account, restrict to compatible chains
         (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash
       )
       .sort((a, b) => {
-        if (a.id === "polkadot") return -1
-        if (b.id === "polkadot") return 1
+        const pinDiff = pinRank(a.id) - pinRank(b.id)
+        if (pinDiff) return pinDiff
 
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
@@ -197,7 +225,16 @@ export const CopyAddressChainForm = () => {
             : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, SUBSTRATE_FORMAT, account, balancesPerNetwork, accountChain])
+  }, [
+    address,
+    chains,
+    SUBSTRATE_FORMAT,
+    account,
+    balances,
+    isBalancesInitializing,
+    balancesPerNetwork,
+    accountChain,
+  ])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
