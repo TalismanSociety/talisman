@@ -16,10 +16,12 @@ export const hexToU8a = (hex?: string | null): Uint8Array => {
   return result
 }
 
+const HEX_BYTES = Array.from({ length: 256 }, (_, byte) => byte.toString(16).padStart(2, "0"))
+
 export const u8aToHex = (value?: Uint8Array | null): HexString => {
   if (!value?.length) return "0x"
   let hex = ""
-  for (const byte of value) hex += byte.toString(16).padStart(2, "0")
+  for (const byte of value) hex += HEX_BYTES[byte]
   return `0x${hex}`
 }
 
