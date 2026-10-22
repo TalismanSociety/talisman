@@ -11,7 +11,8 @@ vi.mock("@ui/state/app", () => ({ useAppState: () => [undefined, mockSetHideOffe
 vi.mock("@ui/components/Notifications", () => ({
   notify: (...args: unknown[]) => mockNotify(...args),
 }))
-vi.mock("@ui/api/track", () => ({ track: vi.fn(), trackFlowEvent: vi.fn() }))
+const track = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track, trackFlowEvent: vi.fn() }))
 vi.mock("@ui/theme/logos", () => ({ HandMonoLogo: () => null }))
 vi.mock("../../../Layout/PopupLayout", () => ({
   PopupLayout: ({ children }: { children: ReactNode }) => <main id="main">{children}</main>,
@@ -63,13 +64,21 @@ describe("QuickUnlockOffer", () => {
   })
 
   test("stays and explains a failure", async () => {
-    mockEnable.mockResolvedValue({ status: "failed", message: "Your device doesn't support it." })
+    mockEnable.mockResolvedValue({
+      status: "failed",
+      message: "Your device doesn't support it.",
+      category: "unsupported",
+    })
     const onAnswer = await renderOffer()
 
     fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
 
     expect(await screen.findByText("Your device doesn't support it.")).toBeDefined()
     expect(onAnswer).not.toHaveBeenCalled()
+    expect(track).toHaveBeenCalledWith("error_shown", {
+      surface: "field",
+      error_category: "unsupported",
+    })
   })
 
   test("stays silently when the user cancels the prompt", async () => {

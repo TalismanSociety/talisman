@@ -1,4 +1,6 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { api } from "@ui/api"
+import type { InlineError } from "@ui/hooks/analytics/errorShown"
 import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import {
@@ -13,7 +15,7 @@ import { useTranslation } from "react-i18next"
 export type EnableQuickUnlockResult =
   | { status: "enabled" }
   | { status: "cancelled" }
-  | { status: "failed"; message: string }
+  | ({ status: "failed" } & InlineError)
 
 export const useEnableQuickUnlock = () => {
   const { t } = useTranslation()
@@ -47,6 +49,7 @@ export const useEnableQuickUnlock = () => {
         return {
           status: "failed",
           message: err instanceof PrfEvaluationError ? mentionLeftoverPasskey(message) : message,
+          category: classifyError(err),
         }
       }
 
@@ -65,6 +68,7 @@ export const useEnableQuickUnlock = () => {
           message: mentionLeftoverPasskey(
             getQuickUnlockErrorMessage(err) ?? t("Quick unlock could not be enabled.")
           ),
+          category: classifyError(err),
         }
       }
 

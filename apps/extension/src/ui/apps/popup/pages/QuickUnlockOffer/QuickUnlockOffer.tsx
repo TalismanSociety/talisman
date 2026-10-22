@@ -4,6 +4,7 @@ import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
 import { notify } from "@ui/components/Notifications"
 import { SuspenseTracker } from "@ui/components/SuspenseTracker"
+import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useVirtualScreen } from "@ui/hooks/analytics/screens"
 import { useEnableQuickUnlock } from "@ui/hooks/useEnableQuickUnlock"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
@@ -21,7 +22,8 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
   const [, setHideOffer] = useAppState("hideQuickUnlockOffer")
   const enableQuickUnlock = useEnableQuickUnlock()
   const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<InlineError>()
+  useErrorShown({ shown: error?.message, surface: "field", category: error?.category ?? "unknown" })
   const abortRef = useRef<AbortController>(null)
 
   // opened after mount, so the drawer finds the layout it slides up from
@@ -57,7 +59,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
           onAnswer()
           break
         case "failed":
-          setError(result.message)
+          setError(result)
           break
         case "cancelled":
           break
@@ -95,7 +97,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
                 "Use Touch ID, Windows Hello or your device's screen lock instead of typing your password. Your password still works."
               )}
             </p>
-            {error && <p className="text-alert-warn text-sm">{error}</p>}
+            {error && <p className="text-alert-warn text-sm">{error.message}</p>}
           </div>
           <div className="flex w-full flex-col items-center gap-6">
             <div className="grid w-full grid-cols-2 gap-8">

@@ -1,7 +1,9 @@
+import { classifyError } from "@common/analytics/errorCategory"
 import { UserCheckIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
+import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useEnableQuickUnlock } from "@ui/hooks/useEnableQuickUnlock"
 import { useQuickUnlockErrorMessage } from "@ui/hooks/useQuickUnlockErrorMessage"
 import { useIsQuickUnlockEnrolled } from "@ui/state/quickUnlock"
@@ -16,7 +18,8 @@ export const QuickUnlockSetting = () => {
   const enrolled = useIsQuickUnlockEnrolled()
   const [available, setAvailable] = useState<boolean | null>(null)
   const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<InlineError>()
+  useErrorShown({ shown: error?.message, surface: "field", category: error?.category ?? "unknown" })
   const getQuickUnlockErrorMessage = useQuickUnlockErrorMessage()
   const enableQuickUnlock = useEnableQuickUnlock()
 
@@ -38,7 +41,7 @@ export const QuickUnlockSetting = () => {
       try {
         if (checked) {
           const result = await enableQuickUnlock(abort.signal)
-          if (result.status === "failed") setError(result.message)
+          if (result.status === "failed") setError(result)
         } else {
           // read the credential before dropping it, so we can ask the authenticator to forget it too
           const credentialInfo = await api.quickUnlockGetCredentialInfo()
@@ -46,7 +49,8 @@ export const QuickUnlockSetting = () => {
           if (credentialInfo) await signalCredentialRemoved(credentialInfo.credentialId)
         }
       } catch (err) {
-        setError(getQuickUnlockErrorMessage(err) ?? undefined)
+        const message = getQuickUnlockErrorMessage(err)
+        setError(message ? { message, category: classifyError(err) } : undefined)
       } finally {
         setProcessing(false)
       }
@@ -64,7 +68,7 @@ export const QuickUnlockSetting = () => {
       title={t("Quick unlock")}
       subtitle={
         error ? (
-          <span className="text-alert-warn">{error}</span>
+          <span className="text-alert-warn">{error.message}</span>
         ) : available ? (
           t("Use Touch ID, Windows Hello or your device's screen lock to unlock your wallet")
         ) : (
