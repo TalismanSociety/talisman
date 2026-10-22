@@ -276,6 +276,23 @@ describe("getCombinedChaindata$", () => {
   // ── Edge cases ─────────────────────────────────────────────────
 
   describe("edge cases", () => {
+    it("invalid custom chaindata falls back to empty", async () => {
+      const invalidCustom = {
+        ...makeCustomChaindata({
+          networks: [makeEthNetwork({ id: "999", nativeTokenId: "999-evm-native" })],
+          tokens: [makeEvmNativeToken({ id: "999-evm-native", networkId: "999" })],
+        }),
+        extraField: true,
+      } as CustomChaindata
+
+      const result = await combine(makeChaindata(), invalidCustom)
+
+      expect(findNetwork(result.networks, "999")).toBeUndefined()
+      expect(findToken(result.tokens, "999-evm-native")).toBeUndefined()
+      for (const network of result.networks)
+        expect((network as Network & Record<string, unknown>).__isCustom).toBe(false)
+    })
+
     it("empty default + empty custom → empty arrays", async () => {
       const emptyData: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
       const emptyCustom = makeCustomChaindata({ tokens: [] })
