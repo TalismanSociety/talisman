@@ -6,7 +6,7 @@ import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { isQuickUnlockAvailable } from "@ui/util/webauthnPrf"
 import { type ReactNode, useCallback, useEffect, useState } from "react"
-import { defer, of, shareReplay, timeout } from "rxjs"
+import { defer, shareReplay } from "rxjs"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
 import { QuickUnlockOfferBackdrop } from "./QuickUnlockOfferBackdrop"
@@ -26,14 +26,10 @@ const decide = (inputs: OfferInputs): Decision => {
   return inputs.available ? "offer" : "skip"
 }
 
-export const AVAILABILITY_CHECK_TIMEOUT_MS = 1_500
+export const OFFER_DECISION_TIMEOUT_MS = 1_500
 
-// slow on some platforms (Windows Hello), so it starts while the user types their password.
-// some broken authenticator setups never answer, and the user must not wait on them after login
-const quickUnlockAvailable$ = defer(isQuickUnlockAvailable).pipe(
-  timeout({ first: AVAILABILITY_CHECK_TIMEOUT_MS, with: () => of(false) }),
-  shareReplay(1)
-)
+// slow on some platforms (Windows Hello), so it starts while the user types their password
+const quickUnlockAvailable$ = defer(isQuickUnlockAvailable).pipe(shareReplay(1))
 const [useQuickUnlockAvailable] = bind(quickUnlockAvailable$, null)
 
 /**
@@ -57,10 +53,22 @@ export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
   const enrolled = useQuickUnlockEnrolment()
   const isFeatureEnabled = useFeatureFlag("QUICK_UNLOCK")
   const [dismissedForGood] = useAppState("hideQuickUnlockOffer")
+  const [timedOut, setTimedOut] = useState(false)
+
+  // some broken authenticator setups never answer, and the user must not wait on them after login
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), OFFER_DECISION_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [])
 
   const decision =
     settled ??
-    decide({ dismissedForGood: !!dismissedForGood, isFeatureEnabled, enrolled, available })
+    decide({
+      dismissedForGood: !!dismissedForGood,
+      isFeatureEnabled,
+      enrolled,
+      available: available ?? (timedOut ? false : null),
+    })
 
   // the first decision holds for the life of the popup. an offer stays until the user answers it,
   // as enrolling flips `enrolled` before the offer has reported the enrolment. a skip never turns

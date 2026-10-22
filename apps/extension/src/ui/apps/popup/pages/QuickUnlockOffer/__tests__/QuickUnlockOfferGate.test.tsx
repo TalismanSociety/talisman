@@ -55,7 +55,7 @@ vi.mock("../QuickUnlockOffer", () => ({
 }))
 vi.mock("../QuickUnlockOfferBackdrop", () => ({ QuickUnlockOfferBackdrop: () => <p>backdrop</p> }))
 
-import { AVAILABILITY_CHECK_TIMEOUT_MS } from "../QuickUnlockOfferGate"
+import { OFFER_DECISION_TIMEOUT_MS } from "../QuickUnlockOfferGate"
 
 let Popup: FC
 
@@ -236,13 +236,32 @@ describe("QuickUnlockOfferGate", () => {
   test("skips when the availability check never answers", async () => {
     vi.useFakeTimers()
     mockIsAvailable.mockReturnValue(new Promise(() => {}))
+    auth.reset("FALSE")
+    await openPage()
+    await act(async () => vi.advanceTimersByTime(2 * OFFER_DECISION_TIMEOUT_MS))
 
-    await openLockedThenLogin()
+    await login()
     shows("backdrop")
 
-    await act(async () => vi.advanceTimersByTime(AVAILABILITY_CHECK_TIMEOUT_MS))
+    await act(async () => vi.advanceTimersByTime(OFFER_DECISION_TIMEOUT_MS - 1))
+    shows("backdrop")
 
+    await act(async () => vi.advanceTimersByTime(1))
     shows("portfolio")
+  })
+
+  test("offers when a slow availability check answered while the user typed their password", async () => {
+    vi.useFakeTimers()
+    mockIsAvailable.mockReturnValue(
+      new Promise((resolve) => setTimeout(() => resolve(true), 2 * OFFER_DECISION_TIMEOUT_MS))
+    )
+    auth.reset("FALSE")
+    await openPage()
+
+    await act(async () => vi.advanceTimersByTime(3 * OFFER_DECISION_TIMEOUT_MS))
+    await login()
+
+    shows("offer")
   })
 
   test("waits for the enrolment instead of trusting an unknown one", async () => {
