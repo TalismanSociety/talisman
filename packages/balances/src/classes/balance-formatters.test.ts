@@ -116,6 +116,12 @@ describe("BalanceFormatter", () => {
       const f = new BalanceFormatter("1000000000000", 12, rates)
       expect(f.fiat("eur")).toBeNull()
     })
+
+    it("returns 0 when planck is zero even with rates", () => {
+      const rates = makeTokenRates(10)
+      const f = new BalanceFormatter("0", 12, rates)
+      expect(f.fiat("usd")).toBe(0)
+    })
   })
 
   describe("toJSON", () => {

@@ -295,4 +295,28 @@ describe("full sorting pipeline", () => {
     const selected = selectQuote(sorted, null, undefined)
     expect(selected?.providerName).toBe("LI.FI") // best rate wins
   })
+
+  it("cheapest sorting picks lower-fee quote even with lower output", () => {
+    const highOutputHighFee = makeQuote({
+      outputAmountBN: 1000n,
+      protocol: "lifi" as SupportedSwapProtocol,
+      providerName: "LI.FI",
+      fees: [{ name: "gas", amount: BigNumber("0.01"), tokenId: "eth" }],
+    })
+    const lowOutputLowFee = makeQuote({
+      outputAmountBN: 900n,
+      protocol: "simpleswap" as SupportedSwapProtocol,
+      providerName: "SimpleSwap",
+      fees: [{ name: "fee", amount: BigNumber("0.001"), tokenId: "eth" }],
+    })
+
+    const r = mockRates({ eth: { usd: { price: 3000 } } })
+    const flat = flattenQuotes([highOutputHighFee, lowOutputLowFee])
+    const withFees = attachFees(flat, r)
+    const sorted = sortQuotes(withFees, "cheapest")
+
+    expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")
+    expect(sorted[0]!.fees).toBe(3)
+    expect(sorted[1]!.fees).toBe(30)
+  })
 })
