@@ -13,3 +13,6 @@ const isQuickUnlockEnrolled$ = new Observable<boolean>((subscriber) => {
 
 // bound with a default value, the login screen must not suspend on it
 export const [useIsQuickUnlockEnrolled] = bind(isQuickUnlockEnrolled$, false)
+
+/** null until the background has answered, where a stale false would make the wrong call */
+export const [useQuickUnlockEnrolment] = bind<boolean | null>(isQuickUnlockEnrolled$, null)

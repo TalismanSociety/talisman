@@ -80,6 +80,9 @@ export const STEP_STATE_ELSEWHERE: Readonly<Record<string, ProviderClass>> = {
   "ui/apps/popup/pages/SendFunds/SendFundsRedirect.tsx": {
     none: "redirects into the send route: the send flow runs in SendFundsProvider",
   },
+  "ui/apps/popup/pages/QuickUnlockOffer/useQuickUnlockOffer.ts": {
+    none: "whether the quick unlock offer is undecided, on screen or answered: the setup flow runs in useEnableQuickUnlock",
+  },
   "ui/domains/Portfolio/AssetDetails/animations/monad/MonadAnimation.tsx": {
     none: "an animation frame counter",
   },
