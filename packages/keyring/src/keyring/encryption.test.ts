@@ -9,7 +9,7 @@ describe("encryption", () => {
     const encrypted = await encryptData(new TextEncoder().encode(TEST_STRING), TEST_PASSWORD)
     const decrypted = await decryptData(encrypted, TEST_PASSWORD)
 
-    expect(new TextDecoder().decode(decrypted)).toBe(TEST_STRING)
+    expect(new TextDecoder("utf-8", { ignoreBOM: true }).decode(decrypted)).toBe(TEST_STRING)
   })
 
   it("encrypt/decrypt long string", async () => {
@@ -19,7 +19,7 @@ describe("encryption", () => {
     const encrypted = await encryptData(new TextEncoder().encode(TEST_STRING), TEST_PASSWORD)
     const decrypted = await decryptData(encrypted, TEST_PASSWORD)
 
-    expect(new TextDecoder().decode(decrypted)).toBe(TEST_STRING)
+    expect(new TextDecoder("utf-8", { ignoreBOM: true }).decode(decrypted)).toBe(TEST_STRING)
   })
 
   it("breaks when decrypting garbage data", async () => {

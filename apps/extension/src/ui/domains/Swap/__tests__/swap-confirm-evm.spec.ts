@@ -92,6 +92,18 @@ describe("isUserRejectionError", () => {
     })
   })
 
+  describe("code takes precedence over message", () => {
+    it("returns true for code 4001 even if message is unrelated", () => {
+      expect(isUserRejectionError({ code: 4001, message: "insufficient funds" })).toBe(true)
+    })
+
+    it("returns true for ACTION_REJECTED even if message is unrelated", () => {
+      expect(isUserRejectionError({ code: "ACTION_REJECTED", message: "execution reverted" })).toBe(
+        true
+      )
+    })
+  })
+
   describe("empty / missing fields", () => {
     it("returns false for empty object", () => {
       expect(isUserRejectionError({})).toBe(false)

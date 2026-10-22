@@ -307,5 +307,14 @@ describe("LI.FI fee logic", () => {
       })
       expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(0)
     })
+
+    it("returns default fee when no matching tokens in custom config", async () => {
+      mockRemoteConfigGet.mockResolvedValue({
+        lifiCustomFeeTokens: { "other-token": 0.01 },
+      })
+      expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(
+        LIFI_TALISMAN_FEE
+      )
+    })
   })
 })
