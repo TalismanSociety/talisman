@@ -88,15 +88,13 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
             <FingerprintIcon />
           </div>
           <div className="flex flex-col gap-4">
-            <p className="font-bold text-white">{t("Unlock faster next time")}</p>
+            <p className="font-bold text-white">{t("Unlock Talisman faster")}</p>
             <p className="text-body-secondary text-sm">
               {t(
-                "Use Touch ID, Windows Hello or your device's screen lock instead of typing your password. Your password still works."
+                "Unlock Talisman with Touch ID, Windows Hello or your device's screen lock. Your password still works."
               )}
             </p>
-            <p className="text-body-disabled text-sm">
-              {t("You can change this anytime in Settings.")}
-            </p>
+            <p className="text-body-disabled text-sm">{t("Manage this anytime in Settings.")}</p>
             {error && <p className="text-alert-warn text-sm">{error.message}</p>}
           </div>
           <div className="grid w-full grid-cols-2 gap-8">
@@ -104,7 +102,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
               {t("No thanks")}
             </Button>
             <Button primary processing={processing} onClick={handleEnable}>
-              {t("Turn on")}
+              {t("Enable")}
             </Button>
           </div>
         </DrawerContent>
