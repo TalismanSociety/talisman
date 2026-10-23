@@ -5,7 +5,7 @@ import { useQuickUnlockEnrolment } from "@ui/state/quickUnlock"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { isQuickUnlockAvailable } from "@ui/util/webauthnPrf"
-import { type ReactNode, useCallback, useEffect, useState } from "react"
+import { type ReactNode, Suspense, useCallback, useEffect, useState } from "react"
 import { defer, shareReplay } from "rxjs"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
@@ -53,7 +53,13 @@ export const useCanOfferQuickUnlock = () => {
   return canOffer
 }
 
-export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
+export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => (
+  <Suspense fallback={<QuickUnlockOfferBackdrop />}>
+    <QuickUnlockOfferDecision>{children}</QuickUnlockOfferDecision>
+  </Suspense>
+)
+
+const QuickUnlockOfferDecision = ({ children }: { children: ReactNode }) => {
   const [settled, setSettled] = useState<Exclude<Decision, "pending"> | null>(null)
   const available = useQuickUnlockAvailable()
   const enrolled = useQuickUnlockEnrolment()
