@@ -25,7 +25,7 @@ import { QuickUnlockOffer } from "../QuickUnlockOffer"
 const renderOffer = async () => {
   const onAnswer = vi.fn()
   render(<QuickUnlockOffer onAnswer={onAnswer} />)
-  await screen.findByText("Unlock faster next time")
+  await screen.findByText("Unlock Talisman faster")
   return onAnswer
 }
 
@@ -65,7 +65,7 @@ describe("QuickUnlockOffer", () => {
     mockEnable.mockReturnValue(new Promise(() => {}))
     const onAnswer = await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Enable" }))
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
 
     expect(onAnswer).not.toHaveBeenCalled()
@@ -75,7 +75,7 @@ describe("QuickUnlockOffer", () => {
     mockEnable.mockResolvedValue({ status: "enabled" })
     const onAnswer = await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Enable" }))
 
     await waitFor(() => expect(onAnswer).toHaveBeenCalledOnce())
     expect(mockNotify).toHaveBeenCalledWith({ type: "success", title: "Quick unlock is on" })
@@ -90,7 +90,7 @@ describe("QuickUnlockOffer", () => {
     })
     const onAnswer = await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Enable" }))
 
     expect(await screen.findByText("Your device doesn't support it.")).toBeDefined()
     expect(onAnswer).not.toHaveBeenCalled()
@@ -106,20 +106,20 @@ describe("QuickUnlockOffer", () => {
     mockEnable.mockResolvedValue({ status: "cancelled" })
     const onAnswer = await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Enable" }))
     await act(async () => {})
 
     expect(mockEnable).toHaveBeenCalledOnce()
     expect(onAnswer).not.toHaveBeenCalled()
     expect(mockNotify).not.toHaveBeenCalled()
-    expect(screen.getByRole("button", { name: "Turn on" })).toBeDefined()
+    expect(screen.getByRole("button", { name: "Enable" })).toBeDefined()
   })
 
   test("abandons the passkey prompt when the popup goes away", async () => {
     mockEnable.mockReturnValue(new Promise(() => {}))
     await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Enable" }))
     const signal: AbortSignal = mockEnable.mock.calls[0][0]
     expect(signal.aborted).toBe(false)
 
