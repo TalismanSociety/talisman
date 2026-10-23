@@ -15,20 +15,20 @@ import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type BaseQuote,
+  type BuildLegParams,
+  type BuiltLeg,
   type ExchangeParams,
-  type GetTransactionParams,
   getTokenIdForSwappableAsset,
   platformFromTokenId,
   type QuoteFee,
   type QuoteParams,
+  quoteFromLegs,
   type SupportedSwapProtocol,
   type SwapExchange,
   type SwapModule,
-  type SwapModuleTransaction,
   type SwappableAssetBaseType,
   TALISMAN_FEE_NAME,
 } from "./common.swap-module"
-import type { QuoteResponse } from "./common.swap-module.ts"
 import {
   buildDepositTransaction,
   type DepositInfo,
@@ -363,11 +363,8 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
   return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
-const getQuote = async (
-  params: QuoteParams,
-  _signal: AbortSignal
-): Promise<(BaseQuote & { data?: QuoteResponse }) | null> => {
-  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
+  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
@@ -394,24 +391,35 @@ const getQuote = async (
   })
   const talismanFee = await getTalismanFee({ currencyFrom, currencyTo })
 
-  // check for error object
-  if (!output || typeof output !== "string") {
-    if (output && typeof output !== "string") {
-      return {
+  // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
+  const quote = (outputAmount: bigint, fees: QuoteFee[], error?: string) =>
+    quoteFromLegs(
+      [
+        {
+          protocol: PROTOCOL,
+          fromTokenId,
+          toTokenId,
+          signer: fromAddress,
+          recipient: toAddress,
+          inputAmount: fromAmount,
+          outputAmount,
+          fees,
+          timeInSec: 5 * 60,
+        },
+      ],
+      {
         decentralisationScore: DECENTRALISATION_SCORE,
         protocol: PROTOCOL,
-        inputAmountBN: fromAmount,
-        outputAmountBN: 0n,
-        error: output.description,
-        timeInSec: 5 * 60,
-        fees: [],
+        error,
         providerLogo: LOGO,
         providerName: PROTOCOL_NAME,
         talismanFee,
       }
-    }
-    return null
-  }
+    )
+
+  // check for error object
+  if (!output || typeof output !== "string")
+    return output && typeof output !== "string" ? quote(0n, [], output.description) : null
 
   const gasFee = fromAddress ? await estimateDepositGas(fromAsset, fromAddress) : null
   // add talisman fee
@@ -423,18 +431,7 @@ const getQuote = async (
     tokenId: fromAsset.id,
   })
 
-  return {
-    decentralisationScore: DECENTRALISATION_SCORE,
-    protocol: PROTOCOL,
-    inputAmountBN: fromAmount,
-    outputAmountBN: parseUserInputToPlanck(output, toAsset.decimals),
-    // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
-    timeInSec: 5 * 60,
-    fees,
-    providerLogo: LOGO,
-    providerName: PROTOCOL_NAME,
-    talismanFee,
-  }
+  return quote(parseUserInputToPlanck(output, toAsset.decimals), fees)
 }
 
 export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
@@ -450,7 +447,7 @@ export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
 /** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type SimpleswapExchange = Exchange
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
+const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -569,32 +566,45 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
   }
 }
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  const fromAsset = resolveAsset(params.fromTokenId)
+const buildLeg = async ({ leg, input, context, exchange }: BuildLegParams): Promise<BuiltLeg> => {
+  const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
-  const exchange = params.exchange as Exchange | undefined
-  if (!exchange?.address_from) throw new Error("Missing exchange")
+  if (exchange?.protocol !== "simpleswap" || !exchange.data.address_from)
+    throw new Error("Missing exchange")
+  if (!leg.signer) throw new Error("Missing from address")
+  if (!leg.recipient) throw new Error("Missing to address")
 
   assertDepositAmountWithinInput({
-    depositAmount: exchange.expected_amount,
-    fromAmount: params.fromAmount,
+    depositAmount: exchange.data.expected_amount,
+    fromAmount: input,
     decimals: fromAsset.decimals,
   })
 
   const deposit: DepositInfo = {
-    depositAddress: exchange.address_from,
-    depositAmount: exchange.expected_amount,
+    depositAddress: exchange.data.address_from,
+    depositAmount: exchange.data.expected_amount,
   }
 
-  return buildDepositTransaction({
-    fromAsset,
-    fromAddress: params.fromAddress,
-    deposit,
-    context: params.context,
-  })
+  return {
+    transaction: await buildDepositTransaction({
+      fromAsset,
+      fromAddress: leg.signer,
+      deposit,
+      context,
+    }),
+    fees: leg.fees,
+    expectedOutput: leg.outputAmount,
+    txInfo: {
+      type: "swap-simpleswap",
+      exchangeId: exchange.data.id,
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: leg.outputAmount.toString(),
+      to: leg.recipient,
+    },
+  }
 }
 
 export const simpleswapSwapModule: SwapModule = {
@@ -603,6 +613,6 @@ export const simpleswapSwapModule: SwapModule = {
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: createExchange,
-  getTransaction: getTransaction,
+  createExchange,
+  buildLeg,
 }

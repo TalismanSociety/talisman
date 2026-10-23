@@ -9,23 +9,45 @@ import {
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
-import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import {
+  type BaseQuote,
+  quoteFromLegs,
+  type SupportedSwapProtocol,
+} from "../swap-modules/common.swap-module"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
 // ---------------------------------------------------------------------------
 
-const makeQuote = (overrides: Partial<BaseQuote> = {}): BaseQuote => ({
-  decentralisationScore: 1,
-  protocol: "simpleswap",
-  outputAmountBN: 1000n,
-  inputAmountBN: 500n,
-  fees: [],
-  timeInSec: 60,
-  providerLogo: "",
-  providerName: "SimpleSwap",
-  ...overrides,
-})
+const makeQuote = ({
+  inputAmountBN = 500n,
+  outputAmountBN = 1000n,
+  fees = [],
+  timeInSec = 60,
+  ...presentation
+}: Partial<BaseQuote> = {}): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: presentation.protocol ?? "simpleswap",
+        fromTokenId: "from-token",
+        toTokenId: "to-token",
+        signer: null,
+        recipient: null,
+        inputAmount: inputAmountBN,
+        outputAmount: outputAmountBN,
+        fees,
+        timeInSec,
+      },
+    ],
+    {
+      decentralisationScore: 1,
+      protocol: "simpleswap",
+      providerLogo: "",
+      providerName: "SimpleSwap",
+      ...presentation,
+    }
+  )
 
 const wrap = (quote: BaseQuote, fees = 0): QuoteWithFees => ({ quote, fees })
 

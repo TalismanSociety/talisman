@@ -14,7 +14,6 @@ import { evmNativeTokenId, subNativeTokenId, type TokenId } from "@talismn/chain
 import {
   frontierH160ToSs58Mirror,
   frontierSs58ToPublicKeyHex,
-  isAddressEqual,
   isEthereumAddress,
 } from "@talismn/crypto"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
@@ -26,14 +25,17 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, zeroHash } from "viem"
 import bittensorLogo from "./bittensor-logo.svg?url"
-import type {
-  BaseQuote,
-  GetTransactionParams,
-  QuoteFee,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapModule,
-  SwapModuleTransaction,
+import {
+  type BaseQuote,
+  type BuildLegParams,
+  type BuiltLeg,
+  type QuoteFee,
+  type QuoteParams,
+  quoteFromLegs,
+  type SupportedSwapProtocol,
+  type SwapModule,
+  type SwapModuleTransaction,
+  type SwapTransactionContext,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getEvmNetwork } from "./evm-network"
@@ -72,15 +74,6 @@ const ROUTES: Route[] = BITTENSOR_EVM_PAIRS.flatMap((pair) => [
 
 const findRoute = (fromTokenId: string | null, toTokenId: string | null) =>
   ROUTES.find((route) => route.fromTokenId === fromTokenId && route.toTokenId === toTokenId)
-
-export type BittensorEvmQuoteData = {
-  direction: Direction
-  fromTokenId: TokenId
-  toTokenId: TokenId
-  toAddress: string | null
-  /** existential deposit retained by a fresh mirror account, in rao */
-  edHeldRao: bigint
-}
 
 // --- Substrate helpers (no React, usable from getQuote) ---
 
@@ -209,30 +202,42 @@ const throwMinimumError = async (tokenId: TokenId, minimum: bigint, decimals: nu
 
 const buildQuote = (
   route: Route,
-  inputAmountBN: bigint,
-  outputAmountBN: bigint,
+  signer: string | null,
+  recipient: string | null,
+  inputAmount: bigint,
+  outputAmount: bigint,
   fees: QuoteFee[],
-  data: BittensorEvmQuoteData,
   note?: string
-): BaseQuote<BittensorEvmQuoteData> => ({
-  protocol: PROTOCOL,
-  decentralisationScore: DECENTRALISATION_SCORE,
-  inputAmountBN,
-  outputAmountBN,
-  fees,
-  timeInSec: ESTIMATED_DURATION_SEC,
-  providerLogo: bittensorLogo,
-  providerName: PROTOCOL_NAME,
-  note,
-  data: { ...data, fromTokenId: route.fromTokenId, toTokenId: route.toTokenId },
-})
+): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId: route.fromTokenId,
+        toTokenId: route.toTokenId,
+        signer,
+        recipient,
+        inputAmount,
+        outputAmount,
+        fees,
+        timeInSec: ESTIMATED_DURATION_SEC,
+      },
+    ],
+    {
+      protocol: PROTOCOL,
+      decentralisationScore: DECENTRALISATION_SCORE,
+      providerLogo: bittensorLogo,
+      providerName: PROTOCOL_NAME,
+      note,
+    }
+  )
 
 const getSubToEvmQuote = async (
   route: Route,
   fromAmount: bigint,
   fromAddress: string | null,
   toAddress: string | null
-): Promise<BaseQuote<BittensorEvmQuoteData>> => {
+): Promise<BaseQuote> => {
   const { substrateNetworkId } = route.pair
 
   const mirror =
@@ -255,16 +260,11 @@ const getSubToEvmQuote = async (
 
   return buildQuote(
     route,
+    fromAddress,
+    toAddress,
     fromAmount,
     outputRao * BITTENSOR_WEI_PER_RAO,
     fees,
-    {
-      direction: "sub-to-evm",
-      fromTokenId: route.fromTokenId,
-      toTokenId: route.toTokenId,
-      toAddress,
-      edHeldRao,
-    },
     note
   )
 }
@@ -274,7 +274,7 @@ const getEvmToSubQuote = async (
   fromAmount: bigint,
   fromAddress: string | null,
   toAddress: string | null
-): Promise<BaseQuote<BittensorEvmQuoteData>> => {
+): Promise<BaseQuote> => {
   const { evmNetworkId } = route.pair
 
   const outputRao = fromAmount / BITTENSOR_WEI_PER_RAO
@@ -290,13 +290,7 @@ const getEvmToSubQuote = async (
       : null
   const fees = feeWei !== null ? [toQuoteFee(route.fromTokenId, feeWei, EVM_TAO_DECIMALS)] : []
 
-  return buildQuote(route, fromAmount, outputRao, fees, {
-    direction: "evm-to-sub",
-    fromTokenId: route.fromTokenId,
-    toTokenId: route.toTokenId,
-    toAddress,
-    edHeldRao: 0n,
-  })
+  return buildQuote(route, fromAddress, toAddress, fromAmount, outputRao, fees)
 }
 
 const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
@@ -312,39 +306,32 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
 
 // --- Transaction ---
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  const { fromTokenId, fromAddress, fromAmount, exchange, context, toAddress } = params
-
-  const data = (exchange as BaseQuote<BittensorEvmQuoteData> | undefined)?.data
-  if (!data?.toAddress || data.fromTokenId !== fromTokenId)
-    throw new Error("Please select the quote again")
-  if (toAddress && !isAddressEqual(toAddress, data.toAddress))
-    throw new Error("Please select the quote again")
-
-  const route = findRoute(data.fromTokenId, data.toTokenId)
-  if (!route || route.direction !== data.direction) throw new Error("Please select the quote again")
-
+const buildTransaction = async (
+  route: Route,
+  signer: string,
+  recipient: string,
+  input: bigint,
+  context: SwapTransactionContext
+): Promise<SwapModuleTransaction> => {
   if (route.direction === "sub-to-evm") {
     if (context.platform !== "polkadot") throw new Error("Missing substrate context")
-    if (!isEthereumAddress(data.toAddress)) throw new Error("Invalid recipient")
+    if (!isEthereumAddress(recipient)) throw new Error("Invalid recipient")
 
-    const mirror = frontierH160ToSs58Mirror(data.toAddress, BITTENSOR_SS58_PREFIX)
+    const mirror = frontierH160ToSs58Mirror(recipient, BITTENSOR_SS58_PREFIX)
     const { payload, txMetadata } = await context.sapi.getExtrinsicPayload(
       "Balances",
       context.allowReap ? "transfer_allow_death" : "transfer_keep_alive",
-      { dest: MultiAddress.Id(mirror), value: fromAmount },
-      { address: fromAddress }
+      { dest: MultiAddress.Id(mirror), value: input },
+      { address: signer }
     )
     return { platform: "polkadot", payload, txMetadata }
   }
 
   if (context.platform !== "ethereum") throw new Error("Missing EVM context")
-  if (!isEthereumAddress(fromAddress)) throw new Error("Invalid sender address")
+  if (!isEthereumAddress(signer)) throw new Error("Invalid sender address")
 
-  const value = (fromAmount / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WEI_PER_RAO
-  assertNativeValueWithinInput({ value, fromAmount, isNativeInput: true })
+  const value = (input / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WEI_PER_RAO
+  assertNativeValueWithinInput({ value, fromAmount: input, isNativeInput: true })
 
   const network = await getEvmNetwork(route.pair.evmNetworkId)
   const publicClient = getExtensionPublicClient(network)
@@ -354,14 +341,33 @@ const getTransaction = async (
     network.nativeTokenId,
     {
       chain: null,
-      account: fromAddress,
+      account: signer,
       to: BITTENSOR_BALANCE_TRANSFER_PRECOMPILE,
-      data: encodePrecompileTransfer(frontierSs58ToPublicKeyHex(data.toAddress)),
+      data: encodePrecompileTransfer(frontierSs58ToPublicKeyHex(recipient)),
       value,
     }
   )
 
   return { platform: "ethereum", transaction }
+}
+
+const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltLeg> => {
+  const route = findRoute(leg.fromTokenId, leg.toTokenId)
+  if (!route || !leg.signer || !leg.recipient) throw new Error("Please select the quote again")
+
+  return {
+    transaction: await buildTransaction(route, leg.signer, leg.recipient, input, context),
+    fees: leg.fees,
+    expectedOutput: leg.outputAmount,
+    txInfo: {
+      type: "swap-bittensor-evm",
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: leg.outputAmount.toString(),
+      to: leg.recipient,
+    },
+  }
 }
 
 export const bittensorEvmSwapModule: SwapModule = {
@@ -373,6 +379,5 @@ export const bittensorEvmSwapModule: SwapModule = {
       (route) => route.toTokenId
     ),
   getQuote,
-  createExchange: async () => null,
-  getTransaction,
+  buildLeg,
 }

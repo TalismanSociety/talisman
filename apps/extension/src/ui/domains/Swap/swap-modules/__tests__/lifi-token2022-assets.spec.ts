@@ -166,6 +166,7 @@ describe("lifi-swap-module Token-2022 assets", () => {
         fromAmount: 1000n,
         fromAddress: "11111111111111111111111111111111",
         toAddress: "11111111111111111111111111111111",
+        input: "exact",
       },
       signal
     )

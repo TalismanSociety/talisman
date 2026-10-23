@@ -16,7 +16,6 @@ import {
   FOREVERMONEY_ROUTES,
   FOREVERMONEY_SPOKE_TOKEN_POOL,
   FOREVERMONEY_WTAO,
-  type ForevermoneyDirection,
   type ForevermoneyRoute,
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
@@ -34,14 +33,13 @@ import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
 import {
   type ApprovalInfo,
   type BaseQuote,
-  type ExchangeParams,
-  type GetTransactionParams,
+  type BuildLegParams,
+  type BuiltLeg,
   type QuoteFee,
   type QuoteParams,
+  quoteFromLegs,
   type SupportedSwapProtocol,
-  type SwapExchange,
   type SwapModule,
-  type SwapModuleTransaction,
   TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
@@ -70,22 +68,6 @@ const MIN_OUTBOUND_WEI = 2n * 10n ** 15n // 0.002 TAO, the vault stakes the depo
 const INBOUND_DESTINATION_GAS_LIMIT = 3_500_000n
 const BPS_DENOMINATOR = 10_000n
 const MAX_PARTNER_FEE_BPS = 100
-
-export type ForevermoneyQuoteData = {
-  direction: ForevermoneyDirection
-  fromTokenId: TokenId
-  toTokenId: TokenId
-  toAddress: string | null
-}
-
-/** Built on the confirmation screen: fresh fee, fresh checks and the destination block the watcher starts from */
-export type ForevermoneyExchange = ForevermoneyQuoteData & {
-  toAddress: string
-  amountWei: string
-  partnerFeeWei: string
-  feeWei: string
-  destinationStartBlock: string
-}
 
 type PartnerFee = { recipient: `0x${string}`; bps: number }
 
@@ -406,7 +388,7 @@ const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmoun
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei
 
-const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuoteData> | null> => {
+const getQuote = async (params: QuoteParams): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
   const route = findForevermoneyRoute(fromTokenId, toTokenId)
@@ -444,35 +426,42 @@ const getQuote = async (params: QuoteParams): Promise<BaseQuote<ForevermoneyQuot
     if (gasFeeWei !== null) fees.push(toQuoteFee("Est. Gas Fees", feeTokenId, gasFeeWei))
   }
 
-  return {
-    protocol: PROTOCOL,
-    decentralisationScore: DECENTRALISATION_SCORE,
-    inputAmountBN: fromAmount,
-    outputAmountBN: getOutputAmount(route, amounts.amountWei),
-    fees,
-    talismanFee: amounts.partnerFee ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR) : undefined,
-    timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
-    providerLogo: forevermoneyLogo,
-    providerName: PROTOCOL_NAME,
-    notice: NOTICE,
-    maxNativeTokenGasBuffer:
-      isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
-    data: {
-      direction: route.direction,
-      fromTokenId: route.fromTokenId,
-      toTokenId: route.toTokenId,
-      toAddress,
-    },
-  }
+  return quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId: route.fromTokenId,
+        toTokenId: route.toTokenId,
+        signer: fromAddress,
+        recipient: toAddress,
+        inputAmount: fromAmount,
+        outputAmount: getOutputAmount(route, amounts.amountWei),
+        fees,
+        timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
+      },
+    ],
+    {
+      protocol: PROTOCOL,
+      decentralisationScore: DECENTRALISATION_SCORE,
+      talismanFee: amounts.partnerFee
+        ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR)
+        : undefined,
+      providerLogo: forevermoneyLogo,
+      providerName: PROTOCOL_NAME,
+      notice: NOTICE,
+      maxNativeTokenGasBuffer:
+        isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
+    }
+  )
 }
 
-// --- exchange (re-quote on the confirmation screen) ---
+// --- leg (re-quoted on the confirmation screen) ---
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
-  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
-
-  const route = findForevermoneyRoute(fromTokenId, toTokenId)
-  if (!route) return null
+/** Fresh fee, fresh checks and the destination block the delivery watcher starts from */
+const buildLeg = async ({ leg, input, context }: BuildLegParams): Promise<BuiltLeg> => {
+  const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
+  if (!route) throw new Error("Please select the quote again")
+  const { signer: fromAddress, recipient: toAddress } = leg
   if (!fromAddress || !isEthereumAddress(fromAddress)) throw new Error("Invalid sender address")
   if (!toAddress) throw new Error("Missing recipient")
   if (
@@ -481,12 +470,14 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
       : !isEthereumAddress(toAddress)
   )
     throw new Error("Invalid recipient")
+  if (context.platform !== "ethereum") throw new Error("Missing EVM context")
 
-  const [amounts, sourceClient, destinationClient] = await Promise.all([
-    getBridgeAmounts(route, fromAmount),
-    getEvmPublicClient(route.sourceNetworkId),
+  const [amounts, sourceNetwork, destinationClient] = await Promise.all([
+    getBridgeAmounts(route, input),
+    getEvmNetwork(route.sourceNetworkId),
     getEvmPublicClient(route.destinationNetworkId),
   ])
+  const sourceClient = getExtensionPublicClient(sourceNetwork)
 
   await runChecks(sourceClient, route, amounts)
 
@@ -495,98 +486,55 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
     destinationClient.getBlockNumber(),
   ])
 
-  return {
-    protocol: PROTOCOL,
-    fees: [
-      ...toTalismanFees(route, amounts),
-      toBridgeFee(evmNativeTokenId(route.sourceNetworkId), feeWei),
-    ],
-    outputAmountBN: getOutputAmount(route, amounts.amountWei),
-    data: {
-      direction: route.direction,
-      fromTokenId: route.fromTokenId,
-      toTokenId: route.toTokenId,
-      toAddress,
-      amountWei: amounts.amountWei.toString(),
-      partnerFeeWei: amounts.partnerFeeWei.toString(),
-      feeWei: feeWei.toString(),
-      destinationStartBlock: destinationStartBlock.toString(),
-    },
-  }
-}
-
-// --- transaction ---
-
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  const { fromTokenId, fromAddress, fromAmount, exchange, context, toAddress } = params
-
-  const data = exchange as ForevermoneyExchange | undefined
-  if (
-    !data?.toAddress ||
-    !data.amountWei ||
-    !data.partnerFeeWei ||
-    !data.feeWei ||
-    data.fromTokenId !== fromTokenId
-  )
-    throw new Error("Please select the quote again")
-  if (toAddress && !isAddressEqual(toAddress, data.toAddress))
-    throw new Error("Please select the quote again")
-
-  const route = findForevermoneyRoute(data.fromTokenId, data.toTokenId)
-  if (!route || route.direction !== data.direction) throw new Error("Please select the quote again")
-
-  if (context.platform !== "ethereum") throw new Error("Missing EVM context")
-  if (!isEthereumAddress(fromAddress)) throw new Error("Invalid sender address")
-
-  const feeWei = BigInt(data.feeWei)
-  const feeWithBuffer = withFeeBuffer(feeWei)
-  const amounts = await getBridgeAmounts(route, fromAmount)
-  if (
-    amounts.amountWei !== BigInt(data.amountWei) ||
-    amounts.partnerFeeWei !== BigInt(data.partnerFeeWei)
-  )
-    throw new Error("Please select the quote again")
+  // the confirm screen shows the quoted output, the bridge must not deliver less
+  const expectedOutput = getOutputAmount(route, amounts.amountWei)
+  if (expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
 
   const isOutbound = route.direction === "evm-to-spoke"
-  if (isOutbound) {
+  if (isOutbound)
     assertNativeValueWithinInput({
       value: amounts.amountWei + amounts.partnerFeeWei,
-      fromAmount,
+      fromAmount: input,
       isNativeInput: true,
     })
-    if (feeWithBuffer > withFeeBuffer(MAX_CCIP_FEE_WEI_BITTENSOR))
-      throw new Error("Bridge fee is unexpectedly high")
-    if (!isEthereumAddress(data.toAddress)) throw new Error("Invalid recipient")
-  } else if (feeWithBuffer > withFeeBuffer(MAX_CCIP_FEE_WEI_SPOKE)) {
-    throw new Error("Bridge fee is unexpectedly high")
-  }
-
-  const network = await getEvmNetwork(route.sourceNetworkId)
-  const publicClient = getExtensionPublicClient(network)
 
   const transaction = await prepareTransactionRequestWithGasCheck(
-    publicClient,
-    network.nativeTokenId,
+    sourceClient,
+    sourceNetwork.nativeTokenId,
     {
       chain: null,
       account: fromAddress,
       to: route.sourceGateway,
       data: isOutbound
-        ? encodeBridgeOut(route, data.toAddress as `0x${string}`, amounts)
-        : encodeBridgeToFinney(amounts, getDestinationPubkey(route, data.toAddress), fromAddress),
+        ? encodeBridgeOut(route, toAddress as `0x${string}`, amounts)
+        : encodeBridgeToFinney(amounts, getDestinationPubkey(route, toAddress), fromAddress),
       value: getTransactionValue(route, amounts, feeWei),
     }
   )
 
-  return { platform: "ethereum", transaction }
+  return {
+    transaction: { platform: "ethereum", transaction },
+    fees: [
+      ...toTalismanFees(route, amounts),
+      toBridgeFee(evmNativeTokenId(route.sourceNetworkId), feeWei),
+    ],
+    expectedOutput,
+    txInfo: {
+      type: "swap-forevermoney",
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: leg.outputAmount.toString(),
+      to: toAddress,
+      destinationStartBlock: destinationStartBlock.toString(),
+    },
+  }
 }
 
 // --- approval ---
 
 const getApprovalInfo = (
-  params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
+  params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
 ): ApprovalInfo => {
   const { fromTokenId, toTokenId, fromAddress, fromAmount } = params
   if (!fromTokenId || !fromAddress || !fromAmount) return null
@@ -616,7 +564,6 @@ export const forevermoneySwapModule: SwapModule = {
     ),
   ],
   getQuote,
-  createExchange,
-  getTransaction,
+  buildLeg,
   getApprovalInfo,
 }

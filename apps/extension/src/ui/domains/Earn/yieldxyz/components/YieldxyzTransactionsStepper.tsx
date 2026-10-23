@@ -1,8 +1,6 @@
 import type { TransactionDto } from "@core/domains/earn/exports"
-
+import { getSequentialStepStatus, TransactionsStepper } from "@ui/components/TransactionsStepper"
 import { type FC, useMemo } from "react"
-
-import { TransactionsStepper } from "../../shared/TransactionsStepper"
 
 export const YieldxyzTransactionsStepper: FC<{
   transactions: TransactionDto[]
@@ -14,12 +12,15 @@ export const YieldxyzTransactionsStepper: FC<{
       transactions.map((transaction, index) => ({
         key: transaction.id ?? String(index),
         label: transaction.type.replaceAll("_", " ").toLowerCase(),
-        isProcessing: transaction.status === "BROADCASTED",
+        status:
+          transaction.status === "BROADCASTED"
+            ? ("in-progress" as const)
+            : getSequentialStepStatus(index, stepIndex, transactions.length, !!isProcessing),
       })),
-    [transactions]
+    [transactions, stepIndex, isProcessing]
   )
 
   if (!transactions?.length) return null
 
-  return <TransactionsStepper steps={steps} stepIndex={stepIndex} isProcessing={isProcessing} />
+  return <TransactionsStepper steps={steps} />
 }

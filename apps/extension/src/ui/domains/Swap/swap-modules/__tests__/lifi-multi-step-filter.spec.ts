@@ -172,6 +172,7 @@ describe("lifi-swap-module multi-step route filtering", () => {
         fromAmount: 1000000000000000000n,
         fromAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
         toAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+        input: "exact",
       },
       controller.signal
     )
@@ -179,7 +180,7 @@ describe("lifi-swap-module multi-step route filtering", () => {
     // Should return exactly 1 quote (from the single-step route)
     const quotes = Array.isArray(result) ? result : result ? [result] : []
     expect(quotes).toHaveLength(1)
-    expect(quotes[0]?.data).toBe(singleStepRoute)
+    expect(quotes[0]?.legs[0].data).toBe(singleStepRoute)
   })
 
   it("returns null when all routes are multi-step", async () => {
@@ -198,6 +199,7 @@ describe("lifi-swap-module multi-step route filtering", () => {
         fromAmount: 1000000000000000000n,
         fromAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
         toAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+        input: "exact",
       },
       controller.signal
     )
@@ -224,6 +226,7 @@ describe("lifi-swap-module multi-step route filtering", () => {
         fromAmount: 1000000000000000000n,
         fromAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
         toAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+        input: "exact",
       },
       controller.signal
     )
@@ -248,6 +251,7 @@ describe("lifi-swap-module multi-step route filtering", () => {
         fromAmount: 1000000000000000000n,
         fromAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
         toAddress: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+        input: "exact",
       },
       controller.signal
     )
