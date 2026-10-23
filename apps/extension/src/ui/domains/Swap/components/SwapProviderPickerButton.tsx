@@ -1,9 +1,9 @@
+import type { BaseQuote } from "@core/domains/swaps/types"
 import { AlertCircleIcon, ChevronRightIcon } from "@talismn/icons"
 import { useToken } from "@ui/state/chaindata"
 import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwap } from "../SwapProvider"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { formatSwapExchangeRate } from "../swap-utils"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 

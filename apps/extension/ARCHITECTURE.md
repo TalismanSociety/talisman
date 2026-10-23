@@ -142,7 +142,7 @@ The UI uses react-router 7 with a `HashRouter` (`ui/index.tsx`). Popup routes ar
 
 ### Plug-in points
 
-- Swap protocol: add the id to `SupportedSwapProtocol` (`ui/domains/Swap/swap-modules/swap-protocols.ts`), write `<id>-swap-module.ts` in that folder, and add it to `swapModules` in `ui/domains/Swap/swaps.api.ts`. To put it behind a feature flag, filter it in `useSwapModules`. To track the swap status, add a `swap-<id>` transaction type and a case in `fetchSwapStatus` (`core/domains/transactions/watchSwapStatus.ts`).
+- Swap protocol: add the id to `SupportedSwapProtocol` (`core/domains/swaps/types.ts`). A module that runs only in the pages goes in `ui/domains/Swap/swap-modules/<id>-swap-module.ts`, added to `swapModules` in `ui/domains/Swap/swaps.api.ts`. A module the background also runs implements `BackgroundSwapModule` in `core/domains/swaps/modules/`, reads its realm only through `SwapEnv` (`core/domains/swaps/env.ts`), and goes in `BACKGROUND_SWAP_MODULES` (`core/domains/swaps/registry.ts`). To put it behind a feature flag, filter it in `useSwapModules`. To track the swap status, add a `swap-<id>` transaction type and a case in `fetchSwapStatus` (`core/domains/transactions/watchSwapStatus.ts`).
 - Balance module: read `packages/balances/BalancesModules.md`, copy the nearest module in `packages/balances/src/modules/`, and add the new module to `BALANCE_MODULES` in `packages/balances/src/modules/index.ts`. Add a changeset.
 
 ### UI gotchas

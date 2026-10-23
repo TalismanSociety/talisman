@@ -1,3 +1,4 @@
+import type { BaseQuote } from "@core/domains/swaps/types"
 import { planckToTokens } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
@@ -9,7 +10,6 @@ import { type FC, memo, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { formatSwapDuration, formatSwapExchangeRate } from "../swap-utils"
 
 export const SwapProviderPickerModal: FC<{

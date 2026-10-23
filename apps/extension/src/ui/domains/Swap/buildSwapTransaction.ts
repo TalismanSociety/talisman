@@ -1,10 +1,6 @@
+import type { BaseQuote, BuiltLeg, SwapTransactionContext } from "@core/domains/swaps/types"
 import { isAddressEqual } from "@talismn/crypto"
-import type {
-  BaseQuote,
-  BuiltLeg,
-  SwapModule,
-  SwapTransactionContext,
-} from "./swap-modules/common.swap-module"
+import type { SwapModule } from "./swap-modules/common.swap-module"
 
 export type BuildSwapTransactionParams = {
   module: SwapModule

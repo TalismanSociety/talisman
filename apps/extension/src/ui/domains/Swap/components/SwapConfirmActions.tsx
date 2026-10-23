@@ -4,6 +4,7 @@ import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytic
 import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
 import { log } from "@common/log"
+import type { SwapModuleTransaction, SwapTransactionContext } from "@core/domains/swaps/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { EditIcon, InfoIcon } from "@talismn/icons"
@@ -58,10 +59,6 @@ import {
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
-import type {
-  SwapModuleTransaction,
-  SwapTransactionContext,
-} from "../swap-modules/common.swap-module"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"

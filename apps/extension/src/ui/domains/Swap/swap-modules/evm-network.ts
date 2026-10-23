@@ -3,7 +3,7 @@ import { getNetworkById$, getToken$ } from "@ui/state/chaindata"
 import { firstValueFrom } from "rxjs"
 import type { PublicClient } from "viem"
 
-export const getEvmNetwork = async (evmNetworkId: string) => {
+const getEvmNetwork = async (evmNetworkId: string) => {
   const network = await firstValueFrom(getNetworkById$(evmNetworkId))
   if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
   return network

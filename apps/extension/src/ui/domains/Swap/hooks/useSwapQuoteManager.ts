@@ -6,6 +6,7 @@ import {
   tokenSymbolForAnalytics,
 } from "@common/analytics/funds"
 import { toDurationMs } from "@common/analytics/schema"
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
@@ -13,12 +14,7 @@ import { track } from "@ui/api/track"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useRef, useState } from "react"
-
-import type {
-  BaseQuote,
-  SupportedSwapProtocol,
-  SwapModule,
-} from "../swap-modules/common.swap-module"
+import type { SwapModule } from "../swap-modules/common.swap-module"
 import { useSwapModules } from "../swaps.api"
 import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
 

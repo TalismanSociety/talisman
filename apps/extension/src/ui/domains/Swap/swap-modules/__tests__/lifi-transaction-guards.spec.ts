@@ -47,7 +47,7 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
 }))
 
 // the gas check talks to a node — return the request unchanged so we can observe what was built
-vi.mock("../evm-gas-check", () => ({
+vi.mock("@core/domains/swaps/evm-gas-check", () => ({
   prepareTransactionRequestWithGasCheck: vi.fn(
     async (_client: unknown, _feeTokenId: string, request: unknown) => request
   ),
@@ -90,7 +90,7 @@ const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
-const { quoteFromLegs } = await import("../common.swap-module")
+const { quoteFromLegs } = await import("@core/domains/swaps/helpers")
 const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---

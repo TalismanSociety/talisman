@@ -1,4 +1,4 @@
-import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
+import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { AssetRegistry } from "./swap-services/token-filtering"
 
 export type SerializableAssetRegistry = {

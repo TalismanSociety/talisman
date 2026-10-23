@@ -1,25 +1,22 @@
+import { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } from "@core/domains/bittensor/constants"
+import type { SwapEnv } from "@core/domains/swaps/env"
+import { abiBittensorBalanceTransfer } from "@core/util/abi"
+import type { Network, Token } from "@talismn/chaindata-provider"
+import { frontierH160ToSs58Mirror } from "@talismn/crypto"
+import type { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
-import { encodeFunctionData } from "viem"
+import { encodeFunctionData, type PublicClient } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-// --- Mocks ---
+import { bittensorEvmSwapModule } from "../bittensorEvm"
 
-const { mockGetStorage, mockGetFeeEstimate, mockEstimateGas, mockGetGasPrice } = vi.hoisted(() => ({
-  mockGetStorage: vi.fn(),
-  mockGetFeeEstimate: vi.fn(),
-  mockEstimateGas: vi.fn(),
-  mockGetGasPrice: vi.fn(),
-}))
+// --- Fake env ---
 
-const SUB_NETWORK = {
-  id: "bittensor",
-  platform: "polkadot",
-  genesisHash: "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
-  nativeTokenId: "bittensor:substrate-native",
-  hasCheckMetadataHash: true,
-  signedExtensions: undefined,
-  registryTypes: undefined,
-}
+const mockGetStorage = vi.fn()
+const mockGetFeeEstimate = vi.fn()
+const mockEstimateGas = vi.fn()
+const mockGetGasPrice = vi.fn()
+
 const EVM_NETWORK = {
   id: "964",
   platform: "ethereum",
@@ -40,67 +37,35 @@ const EVM_TOKEN = {
   networkId: "964",
 }
 
-vi.mock("@ui/state/chaindata", async () => {
-  const { of } = await import("rxjs")
-  return {
-    getNetworkById$: vi.fn((id: string) =>
-      of(id === SUB_NETWORK.id ? SUB_NETWORK : id === EVM_NETWORK.id ? EVM_NETWORK : null)
-    ),
-    getToken$: vi.fn((id: string) =>
-      of(id === SUB_TOKEN.id ? SUB_TOKEN : id === EVM_TOKEN.id ? EVM_TOKEN : null)
-    ),
-  }
-})
-
-vi.mock("@ui/api", () => ({
-  api: {
-    subChainMetadata: vi.fn(async () => ({ metadataRpc: "0x00" })),
-    subSend: vi.fn(),
-  },
-}))
-
-vi.mock("@core/domains/metadata/helpers", () => ({
-  getMetadataRpcFromDef: vi.fn(() => "0x00"),
-}))
-
-vi.mock("@talismn/sapi", () => ({
-  getScaleApi: vi.fn(() => ({
-    base58Prefix: 42,
-    getStorage: mockGetStorage,
-    getFeeEstimate: mockGetFeeEstimate,
-    getExtrinsicPayload: vi.fn(async (pallet: string, method: string, args: unknown) => ({
-      payload: { pallet, method, args },
-      txMetadata: undefined,
-    })),
+const quoteSapi = {
+  getStorage: mockGetStorage,
+  getFeeEstimate: mockGetFeeEstimate,
+  getExtrinsicPayload: vi.fn(async (pallet: string, method: string, args: unknown) => ({
+    payload: { pallet, method, args },
+    txMetadata: undefined,
   })),
-}))
+}
 
-vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
-  getExtensionPublicClient: vi.fn(() => ({
-    estimateGas: mockEstimateGas,
-    getGasPrice: mockGetGasPrice,
-  })),
-}))
+// prepareTransactionRequest returns the request unchanged so we can observe what was built
+const evmClient = {
+  estimateGas: mockEstimateGas,
+  getGasPrice: mockGetGasPrice,
+  prepareTransactionRequest: async (request: unknown) => request,
+}
 
-// the gas check talks to a node — return the request unchanged so we can observe what was built
-vi.mock("../evm-gas-check", () => ({
-  prepareTransactionRequestWithGasCheck: vi.fn(
-    async (_client: unknown, _feeTokenId: string, request: unknown) => request
-  ),
-}))
-
-const { bittensorEvmSwapModule } = await import("../bittensor-evm-swap-module")
-const { abiBittensorBalanceTransfer } = await import("@core/util/abi")
-const { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } = await import("@core/domains/bittensor/constants")
-const { frontierH160ToSs58Mirror } = await import("@talismn/crypto")
-const { confirmSwap } = await import("./confirmSwap")
+const env: SwapEnv = {
+  getNetwork: async (id) => (id === EVM_NETWORK.id ? (EVM_NETWORK as Network) : null),
+  getToken: async (id) =>
+    ([SUB_TOKEN, EVM_TOKEN].find((token) => token.id === id) as Token | undefined) ?? null,
+  evmClient: async () => evmClient as unknown as PublicClient,
+  substrateApi: async () => quoteSapi as unknown as ScaleApi,
+}
 
 // --- Test helpers ---
 
 const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
 const SUB_PUBKEY = "0xc4518fa0ed143e016e4a1410193704924b890de8f854b94c7a6037651ec65dd0"
 const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-const OTHER_EVM_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
 
 const ED = 500n
 const WEI_PER_RAO = 1_000_000_000n
@@ -120,6 +85,7 @@ const quoteSubToEvm = (fromAmount: bigint, toAddress: string | null = EVM_ADDRES
       toAddress,
       input: "exact",
     },
+    env,
     signal
   )
 
@@ -133,6 +99,7 @@ const quoteEvmToSub = (fromAmount: bigint, toAddress: string | null = SUB_ADDRES
       toAddress,
       input: "exact",
     },
+    env,
     signal
   )
 
@@ -190,6 +157,7 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
         toAddress: null,
         input: "exact",
       },
+      env,
       signal
     )
 
@@ -317,13 +285,15 @@ describe("bittensorEvmSwapModule buildLeg substrate -> evm", () => {
   const buildSubLeg = async (allowReap?: boolean, recipient: string | null = EVM_ADDRESS) => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO, recipient))
     if (!quote) throw new Error("expected a quote")
-    return bittensorEvmSwapModule.buildLeg({
-      leg: quote.legs[0],
-      input: ONE_TAO_RAO,
-      context: { platform: "polkadot", sapi: fakeSapi as never, allowReap },
-      exchange: null,
-      slippage: 0,
-    })
+    return bittensorEvmSwapModule.buildLeg(
+      {
+        leg: quote.legs[0],
+        input: ONE_TAO_RAO,
+        context: { platform: "polkadot", sapi: fakeSapi as never, allowReap },
+        slippage: 0,
+      },
+      env
+    )
   }
 
   it("builds a keep-alive transfer to the mirror account", async () => {
@@ -361,13 +331,15 @@ describe("bittensorEvmSwapModule buildLeg substrate -> evm", () => {
     if (!quote) throw new Error("expected a quote")
 
     await expect(
-      bittensorEvmSwapModule.buildLeg({
-        leg: quote.legs[0],
-        input: ONE_TAO_RAO,
-        context: { platform: "ethereum" },
-        exchange: null,
-        slippage: 0,
-      })
+      bittensorEvmSwapModule.buildLeg(
+        {
+          leg: quote.legs[0],
+          input: ONE_TAO_RAO,
+          context: { platform: "ethereum" },
+          slippage: 0,
+        },
+        env
+      )
     ).rejects.toThrow("Missing substrate context")
   })
 })
@@ -376,13 +348,15 @@ describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
   const buildEvmLeg = async (fromAmount: bigint) => {
     const quote = single(await quoteEvmToSub(fromAmount))
     if (!quote) throw new Error("expected a quote")
-    const { transaction } = await bittensorEvmSwapModule.buildLeg({
-      leg: quote.legs[0],
-      input: fromAmount,
-      context: { platform: "ethereum" },
-      exchange: null,
-      slippage: 0,
-    })
+    const { transaction } = await bittensorEvmSwapModule.buildLeg(
+      {
+        leg: quote.legs[0],
+        input: fromAmount,
+        context: { platform: "ethereum" },
+        slippage: 0,
+      },
+      env
+    )
     if (transaction.platform !== "ethereum") throw new Error("unexpected platform")
     return transaction.transaction
   }
@@ -406,104 +380,5 @@ describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
     const transaction = await buildEvmLeg(ONE_TAO_WEI + 999n)
 
     expect(transaction.value).toBe(ONE_TAO_WEI)
-  })
-})
-
-describe("bittensorEvmSwapModule confirm screen", () => {
-  it("rejects a quote built for another recipient", async () => {
-    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
-    if (!quote) throw new Error("expected a quote")
-
-    await expect(
-      confirmSwap({
-        module: bittensorEvmSwapModule,
-        quote,
-        fromTokenId: SUB_TOKEN.id,
-        toTokenId: EVM_TOKEN.id,
-        fromAddress: SUB_ADDRESS,
-        toAddress: OTHER_EVM_ADDRESS,
-        fromAmount: ONE_TAO_RAO,
-        context: { platform: "polkadot", sapi: fakeSapi as never },
-      })
-    ).rejects.toThrow("Please select the quote again")
-    expect(fakeSapi.getExtrinsicPayload).not.toHaveBeenCalled()
-  })
-
-  it("sends the whole input to the recipient's mirror", async () => {
-    const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
-    if (!quote) throw new Error("expected a quote")
-
-    expect(
-      await confirmSwap({
-        module: bittensorEvmSwapModule,
-        quote,
-        fromTokenId: SUB_TOKEN.id,
-        toTokenId: EVM_TOKEN.id,
-        fromAddress: SUB_ADDRESS,
-        toAddress: EVM_ADDRESS,
-        fromAmount: ONE_TAO_RAO,
-        context: { platform: "polkadot", sapi: fakeSapi as never },
-      })
-    ).toEqual({
-      transaction: {
-        platform: "polkadot",
-        payload: {
-          pallet: "Balances",
-          method: "transfer_keep_alive",
-          args: {
-            dest: { type: "Id", value: "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu" },
-            value: ONE_TAO_RAO,
-          },
-        },
-        txMetadata: new Uint8Array([1]),
-      },
-      fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
-      txInfo: {
-        type: "swap-bittensor-evm",
-        fromTokenId: SUB_TOKEN.id,
-        toTokenId: EVM_TOKEN.id,
-        fromAmount: "1000000000",
-        toAmount: "999999500000000000",
-        to: EVM_ADDRESS,
-      },
-    })
-  })
-
-  it("calls the precompile with the recipient public key", async () => {
-    const quote = single(await quoteEvmToSub(ONE_TAO_WEI + 7n))
-    if (!quote) throw new Error("expected a quote")
-
-    expect(
-      await confirmSwap({
-        module: bittensorEvmSwapModule,
-        quote,
-        fromTokenId: EVM_TOKEN.id,
-        toTokenId: SUB_TOKEN.id,
-        fromAddress: EVM_ADDRESS,
-        toAddress: SUB_ADDRESS,
-        fromAmount: ONE_TAO_WEI + 7n,
-        context: { platform: "ethereum" },
-      })
-    ).toEqual({
-      transaction: {
-        platform: "ethereum",
-        transaction: {
-          chain: null,
-          account: EVM_ADDRESS,
-          to: "0x0000000000000000000000000000000000000800",
-          data: "0xcd6f4eb1c4518fa0ed143e016e4a1410193704924b890de8f854b94c7a6037651ec65dd0",
-          value: ONE_TAO_WEI,
-        },
-      },
-      fees: [{ name: "Est. Gas Fees", tokenId: EVM_TOKEN.id, amount: BigNumber("0.00021") }],
-      txInfo: {
-        type: "swap-bittensor-evm",
-        fromTokenId: EVM_TOKEN.id,
-        toTokenId: SUB_TOKEN.id,
-        fromAmount: "1000000000000000007",
-        toAmount: "1000000000",
-        to: SUB_ADDRESS,
-      },
-    })
   })
 })

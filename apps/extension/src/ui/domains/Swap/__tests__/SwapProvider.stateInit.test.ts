@@ -81,8 +81,8 @@ vi.mock("@ui/state/chaindata", () => {
 
 // ── Import after mocks ────────────────────────────────────────────
 
+import type { BaseQuote } from "@core/domains/swaps/types"
 import { useSwapContextProvider } from "../SwapProvider.internal"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
 
 // ── Tests ─────────────────────────────────────────────────────────
 

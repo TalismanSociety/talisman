@@ -49,7 +49,7 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   })),
 }))
 
-vi.mock("../evm-gas-check", () => ({
+vi.mock("@core/domains/swaps/evm-gas-check", () => ({
   prepareTransactionRequestWithGasCheck: vi.fn(
     async (_client: unknown, _feeTokenId: string, request: unknown) => request
   ),

@@ -1,10 +1,9 @@
+import type { ApprovalInfo, BaseQuote } from "@core/domains/swaps/types"
 import { useQuery } from "@tanstack/react-query"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import { encodeFunctionData, erc20Abi } from "viem"
-
-import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
 import type { SwapModuleEntry } from "../swaps.api"
 
 // an RPC node behind the approval block still reports the previous allowance
