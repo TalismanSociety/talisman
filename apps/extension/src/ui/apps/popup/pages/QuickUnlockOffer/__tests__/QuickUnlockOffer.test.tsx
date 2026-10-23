@@ -94,10 +94,12 @@ describe("QuickUnlockOffer", () => {
 
     expect(await screen.findByText("Your device doesn't support it.")).toBeDefined()
     expect(onAnswer).not.toHaveBeenCalled()
-    expect(track).toHaveBeenCalledWith("error_shown", {
-      surface: "field",
-      error_category: "unsupported",
-    })
+    await waitFor(() =>
+      expect(track).toHaveBeenCalledWith("error_shown", {
+        surface: "field",
+        error_category: "unsupported",
+      })
+    )
   })
 
   test("stays silently when the user cancels the prompt", async () => {
