@@ -1,7 +1,8 @@
-import { FingerprintIcon } from "@talismn/icons"
+import { FingerprintIcon, XIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
+import { IconButton } from "@ui/components/IconButton"
 import { notify } from "@ui/components/Notifications"
 import { type InlineError, useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useVirtualScreen } from "@ui/hooks/analytics/screens"
@@ -10,7 +11,6 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAppState } from "@ui/state/app"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-
 import { QuickUnlockOfferBackdrop } from "./QuickUnlockOfferBackdrop"
 
 export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
@@ -76,6 +76,12 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
         onDismiss={processing ? undefined : onAnswer}
       >
         <DrawerContent className="flex flex-col items-center gap-12 text-center">
+          <IconButton
+            className="absolute top-12 right-12"
+            onClick={processing ? undefined : onAnswer}
+          >
+            <XIcon />
+          </IconButton>
           <div className="flex size-28 items-center justify-center rounded-full bg-primary/10 text-primary text-xl">
             <FingerprintIcon />
           </div>
@@ -86,12 +92,13 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
                 "Use Touch ID, Windows Hello or your device's screen lock instead of typing your password. Your password still works."
               )}
             </p>
-            {error && <p className="text-alert-warn text-sm">{error.message}</p>}
-          </div>
-          <div className="flex w-full flex-col items-center gap-6">
-            <p className="text-body-disabled text-xs">
+            <p className="text-body-disabled text-sm">
               {t("You can change this anytime in Settings.")}
             </p>
+            {error && <p className="text-alert-warn text-sm">{error.message}</p>}
+          </div>
+
+          <div className="flex w-full flex-col items-center gap-6">
             <div className="grid w-full grid-cols-2 gap-8">
               <Button disabled={processing} onClick={handleDecline}>
                 {t("No thanks")}
