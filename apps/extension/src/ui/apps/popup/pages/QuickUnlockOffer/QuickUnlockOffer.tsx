@@ -1,4 +1,4 @@
-import { UserCheckIcon } from "@talismn/icons"
+import { FingerprintIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { DrawerContent } from "@ui/components/DrawerContent"
@@ -77,7 +77,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
       >
         <DrawerContent className="flex flex-col items-center gap-12 text-center">
           <div className="flex size-28 items-center justify-center rounded-full bg-primary/10 text-primary text-xl">
-            <UserCheckIcon />
+            <FingerprintIcon />
           </div>
           <div className="flex flex-col gap-4">
             <p className="font-bold text-white">{t("Unlock faster next time")}</p>
@@ -89,6 +89,9 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
             {error && <p className="text-alert-warn text-sm">{error.message}</p>}
           </div>
           <div className="flex w-full flex-col items-center gap-6">
+            <p className="text-body-disabled text-xs">
+              {t("You can change this anytime in Settings.")}
+            </p>
             <div className="grid w-full grid-cols-2 gap-8">
               <Button disabled={processing} onClick={handleDecline}>
                 {t("No thanks")}
@@ -97,9 +100,6 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
                 {t("Turn on")}
               </Button>
             </div>
-            <p className="text-body-disabled text-xs">
-              {t("You can change this anytime in Settings.")}
-            </p>
           </div>
         </DrawerContent>
       </Drawer>

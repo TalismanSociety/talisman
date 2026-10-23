@@ -1,5 +1,5 @@
 import { classifyError } from "@common/analytics/errorCategory"
-import { UserCheckIcon } from "@talismn/icons"
+import { FingerprintIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
@@ -64,7 +64,7 @@ export const QuickUnlockSetting = () => {
 
   return (
     <Setting
-      iconLeft={UserCheckIcon}
+      iconLeft={FingerprintIcon}
       title={t("Quick unlock")}
       subtitle={
         error ? (

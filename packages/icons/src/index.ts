@@ -288,7 +288,7 @@ export {
   FiZoomOut as ZoomOutIcon,
 } from "react-icons/fi"
 export { IoDiamondOutline as DiamondIcon, IoScale as ScaleIcon } from "react-icons/io5"
-export { LuArrowUpDown as ArrowUpDownIcon } from "react-icons/lu"
+export { LuArrowUpDown as ArrowUpDownIcon, LuFingerprint as FingerprintIcon } from "react-icons/lu"
 export { ReactComponent as BraveIcon } from "./icons/brave.svg"
 export { ReactComponent as CapsLockIcon } from "./icons/caps-lock.svg"
 export { ReactComponent as ChainIcon } from "./icons/chain.svg"
