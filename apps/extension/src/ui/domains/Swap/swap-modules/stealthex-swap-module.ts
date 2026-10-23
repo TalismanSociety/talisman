@@ -10,6 +10,7 @@ import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import { accounts$ } from "@ui/state/accounts"
 import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import BigNumber from "bignumber.js"
 import createClient from "openapi-fetch"
 import { firstValueFrom } from "rxjs"
@@ -69,7 +70,7 @@ const getAdditionalFeePercent = (feeProps: FeeProps) => getStealthexAdditionalFe
 
 const LOGO = stealthexLogo
 
-const api = createClient<StealthexApi>({ baseUrl: apiUrl })
+const api = createClient<StealthexApi>({ baseUrl: apiUrl, fetch: gandalfFetch })
 const stealthexSdk = {
   getAllCurrencies: async (): Promise<StealthexCurrency[]> => {
     const allCurrencies: StealthexCurrency[] = []

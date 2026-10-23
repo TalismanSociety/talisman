@@ -5,6 +5,7 @@ import { Subject } from "rxjs"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
+import { gandalfFetch } from "../gandalf/fetch"
 import { isTxInfoSwap } from "./exports"
 import { updateSwapStatus } from "./store.transactions"
 import {
@@ -174,7 +175,7 @@ async function fetchSimpleswapStatus(exchangeId: string): Promise<SwapStatus> {
 }
 
 async function fetchStealthexStatus(exchangeId: string): Promise<SwapStatus> {
-  const res = await fetch(`https://stealthex.talisman.xyz/v4/exchanges/${exchangeId}`)
+  const res = await gandalfFetch(`https://stealthex.talisman.xyz/v4/exchanges/${exchangeId}`)
   if (!res.ok) throw new Error(`StealthEX API error: ${res.status}`)
 
   const data: { status: string } = await res.json()
@@ -204,7 +205,7 @@ async function fetchLifiStatus(
   if (fromChain !== undefined) params.set("fromChain", String(fromChain))
   if (toChain !== undefined) params.set("toChain", String(toChain))
 
-  const res = await fetch(`https://lifi.talisman.xyz/v1/status?${params}`)
+  const res = await gandalfFetch(`https://lifi.talisman.xyz/v1/status?${params}`)
   if (!res.ok) throw new Error(`LiFi API error: ${res.status}`)
 
   const data: { status: string } = await res.json()
