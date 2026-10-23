@@ -1,5 +1,21 @@
 # @talismn/token-rates
 
+## 4.0.7
+
+### Patch Changes
+
+- 407bf8c: Remove redundant tests and speed up slow ones
+- Updated dependencies [2c14284]
+- Updated dependencies [6b69acf]
+- Updated dependencies [6b69acf]
+- Updated dependencies [407bf8c]
+- Updated dependencies [2fc7785]
+- Updated dependencies [407bf8c]
+- Updated dependencies [c45cff8]
+  - @talismn/chain-connectors@1.1.0
+  - @talismn/chaindata-provider@2.3.0
+  - @talismn/util@2.1.1
+
 ## 4.0.6
 
 ### Patch Changes
