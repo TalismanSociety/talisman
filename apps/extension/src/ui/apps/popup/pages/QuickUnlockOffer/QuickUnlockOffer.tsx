@@ -78,7 +78,9 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
         <DrawerContent className="flex flex-col items-center gap-12 text-center">
           <IconButton
             className="absolute top-12 right-12"
-            onClick={processing ? undefined : onAnswer}
+            aria-label={t("Close")}
+            disabled={processing}
+            onClick={onAnswer}
           >
             <XIcon />
           </IconButton>
@@ -97,16 +99,13 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
             </p>
             {error && <p className="text-alert-warn text-sm">{error.message}</p>}
           </div>
-
-          <div className="flex w-full flex-col items-center gap-6">
-            <div className="grid w-full grid-cols-2 gap-8">
-              <Button disabled={processing} onClick={handleDecline}>
-                {t("No thanks")}
-              </Button>
-              <Button primary processing={processing} onClick={handleEnable}>
-                {t("Turn on")}
-              </Button>
-            </div>
+          <div className="grid w-full grid-cols-2 gap-8">
+            <Button disabled={processing} onClick={handleDecline}>
+              {t("No thanks")}
+            </Button>
+            <Button primary processing={processing} onClick={handleEnable}>
+              {t("Turn on")}
+            </Button>
           </div>
         </DrawerContent>
       </Drawer>

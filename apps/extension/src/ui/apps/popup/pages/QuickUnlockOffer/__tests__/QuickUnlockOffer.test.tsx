@@ -52,6 +52,25 @@ describe("QuickUnlockOffer", () => {
     expect(mockSetHideOffer).not.toHaveBeenCalled()
   })
 
+  test("asks again next time when the user closes it", async () => {
+    const onAnswer = await renderOffer()
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+
+    expect(onAnswer).toHaveBeenCalledOnce()
+    expect(mockSetHideOffer).not.toHaveBeenCalled()
+  })
+
+  test("cannot be closed while the passkey prompt runs", async () => {
+    mockEnable.mockReturnValue(new Promise(() => {}))
+    const onAnswer = await renderOffer()
+
+    fireEvent.click(screen.getByRole("button", { name: "Turn on" }))
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+
+    expect(onAnswer).not.toHaveBeenCalled()
+  })
+
   test("continues to the portfolio once quick unlock is on", async () => {
     mockEnable.mockResolvedValue({ status: "enabled" })
     const onAnswer = await renderOffer()
