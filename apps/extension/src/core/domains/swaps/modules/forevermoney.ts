@@ -11,7 +11,9 @@ import {
   FOREVERMONEY_ALPHA_TOKEN,
   FOREVERMONEY_ALPHA_VAULT,
   FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID,
+  FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
   FOREVERMONEY_BITTENSOR_SELECTOR,
+  FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
   FOREVERMONEY_BITTENSOR_TOKEN_POOL,
   FOREVERMONEY_ROUTES,
   FOREVERMONEY_SPOKE_TOKEN_POOL,
@@ -20,15 +22,23 @@ import {
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
 import type { SwapEnv } from "@core/domains/swaps/env"
+import { SwapProviderUnavailableError } from "@core/domains/swaps/errors"
 import { getEvmNetwork, quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type {
   ApprovalInfo,
   ApprovalParams,
   BackgroundSwapModule,
   BaseQuote,
+  BoundLegParams,
   BuildLegParams,
   BuiltLeg,
+  LegBound,
+  LegBoundCall,
+  LegObservation,
+  NonEmpty,
+  ObserveLegParams,
   QuoteFee,
+  QuoteLeg,
   QuoteParams,
   SupportedSwapProtocol,
 } from "@core/domains/swaps/types"
@@ -41,8 +51,15 @@ import {
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
-import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
+import {
+  decodeFunctionData,
+  encodeFunctionData,
+  type Hex,
+  type PublicClient,
+  zeroAddress,
+} from "viem"
 import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
+import { observeEvmLeg } from "../observeEvm"
 import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
 
@@ -67,8 +84,26 @@ const MIN_OUTBOUND_WEI = 2n * 10n ** 15n // 0.002 TAO, the vault stakes the depo
 const INBOUND_DESTINATION_GAS_LIMIT = 3_500_000n
 const BPS_DENOMINATOR = 10_000n
 const MAX_PARTNER_FEE_BPS = 100
+// measured on Finney: 615k for bridgeOut, 743k for bridgeOutWithFee
+const BRIDGE_OUT_GAS_CEILING = 700_000n
+const BRIDGE_OUT_WITH_FEE_GAS_CEILING = 850_000n
+// the fee cap of a background-signed leg leaves room for the gas price to move after the approval
+const MAX_NETWORK_FEE_HEADROOM = 3n
+// a later leg's output floor: the user's slippage, but never under 1%, as the CCIP fee drifts
+const MIN_FLOOR_BPS = 100
+/** the source receipt must exist within this, the CCIP delivery is tracked by the swap status */
+const LEG_DEADLINE_MS = 30 * 60_000
 
 type PartnerFee = { recipient: `0x${string}`; bps: number }
+
+/** a later leg: the signer holds at most the leg's input once the previous leg lands, fees and gas fit inside it */
+type UpToLegData = { input: "upTo" }
+
+const isUpToLeg = (leg: QuoteLeg) =>
+  (leg.data as Partial<UpToLegData> | undefined)?.input === "upTo"
+
+const gasCeiling = (partnerFee: PartnerFee | null) =>
+  partnerFee ? BRIDGE_OUT_WITH_FEE_GAS_CEILING : BRIDGE_OUT_GAS_CEILING
 
 /** The gateways charge the partner fee on top of the bridged amount, so both are carved out of the input */
 type BridgeAmounts = {
@@ -302,7 +337,7 @@ const assertWithinRateLimit = async (
     args: [isOutbound ? route.spoke.selector : FOREVERMONEY_BITTENSOR_SELECTOR],
   })
   if (bucket.isEnabled && amountWei > bucket.tokens)
-    throw new Error(
+    throw new SwapProviderUnavailableError(
       `Bridge rate limit reached, at most ${planckToTokens(bucket.tokens.toString(), EVM_DECIMALS)} TAO can be bridged right now`
     )
 }
@@ -327,32 +362,72 @@ const assertVaultOpen = async (env: SwapEnv, route: ForevermoneyRoute) => {
       args: [route.spoke.selector],
     }),
   ])
-  if (isPaused) throw new Error("ForeverMoney bridge is paused")
+  if (isPaused) throw new SwapProviderUnavailableError("ForeverMoney bridge is paused")
   if (!isAddressEqual(migrationTarget, zeroAddress))
-    throw new Error("ForeverMoney vault is migrating")
-  if (!laneAllowed) throw new Error(`ForeverMoney lane to ${route.spoke.name} is closed`)
+    throw new SwapProviderUnavailableError("ForeverMoney vault is migrating")
+  if (!laneAllowed)
+    throw new SwapProviderUnavailableError(`ForeverMoney lane to ${route.spoke.name} is closed`)
+}
+
+const assertMinimum = (route: ForevermoneyRoute, { amountWei, partnerFee }: BridgeAmounts) => {
+  const minAmountWei =
+    route.direction === "evm-to-spoke" ? MIN_OUTBOUND_WEI : MIN_LIQUID_INBOUND_WEI
+  if (amountWei >= minAmountWei) return
+  const minInputWei = partnerFee
+    ? minAmountWei + getPartnerFeeWei(route, minAmountWei, partnerFee.bps)
+    : minAmountWei
+  throw new Error(
+    `${PROTOCOL_NAME} minimum is ${planckToTokens(minInputWei.toString(), EVM_DECIMALS)} TAO`
+  )
 }
 
 const runChecks = async (
   env: SwapEnv,
   sourceClient: PublicClient,
   route: ForevermoneyRoute,
-  { amountWei, partnerFee }: BridgeAmounts
+  amounts: BridgeAmounts
 ) => {
-  const minAmountWei =
-    route.direction === "evm-to-spoke" ? MIN_OUTBOUND_WEI : MIN_LIQUID_INBOUND_WEI
-  if (amountWei < minAmountWei) {
-    const minInputWei = partnerFee
-      ? minAmountWei + getPartnerFeeWei(route, minAmountWei, partnerFee.bps)
-      : minAmountWei
-    throw new Error(
-      `${PROTOCOL_NAME} minimum is ${planckToTokens(minInputWei.toString(), EVM_DECIMALS)} TAO`
-    )
-  }
+  assertMinimum(route, amounts)
   await Promise.all([
-    assertWithinRateLimit(sourceClient, route, amountWei),
+    assertWithinRateLimit(sourceClient, route, amounts.amountWei),
     assertVaultOpen(env, route),
   ])
+}
+
+type UpToFit = { amounts: BridgeAmounts; feeWei: bigint; gasReserveWei: bigint }
+
+/**
+ * Fits the bridged amount, the partner fee, the buffered CCIP fee and a gas reserve inside
+ * `available`. The fee view takes an amount and the amount depends on the fee, so the fee is read
+ * at the full amount, the amounts are fitted, and the fee is read once more at the fitted amount.
+ * Never estimates gas: the sender may hold nothing yet.
+ */
+const fitUpTo = async (
+  client: PublicClient,
+  route: ForevermoneyRoute,
+  available: bigint,
+  fromAddress: `0x${string}`,
+  toAddress: string | null,
+  feePerGasWei: bigint
+): Promise<UpToFit> => {
+  const partnerFee = await getPartnerFee(route)
+  const gasReserveWei = gasCeiling(partnerFee) * feePerGasWei
+  const fit = (feeWei: bigint) =>
+    getBridgeAmounts(route, available - withFeeBuffer(feeWei) - gasReserveWei)
+
+  const fullFee = await readCcipFeeWei(
+    client,
+    route,
+    await getBridgeAmounts(route, available),
+    fromAddress,
+    toAddress
+  )
+  let amounts = await fit(fullFee)
+  assertMinimum(route, amounts)
+  const feeWei = await readCcipFeeWei(client, route, amounts, fromAddress, toAddress)
+  if (feeWei > fullFee) amounts = await fit(feeWei)
+
+  return { amounts, feeWei, gasReserveWei }
 }
 
 const estimateGasFeeWei = async (
@@ -391,11 +466,72 @@ const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmoun
 const getOutputAmount = (route: ForevermoneyRoute, amountWei: bigint) =>
   route.direction === "spoke-to-substrate" ? amountWei / BITTENSOR_WEI_PER_RAO : amountWei
 
+const presentation = (
+  route: ForevermoneyRoute,
+  amounts: BridgeAmounts,
+  maxNativeTokenGasBuffer: string | undefined
+) => ({
+  protocol: PROTOCOL,
+  decentralisationScore: DECENTRALISATION_SCORE,
+  talismanFee: amounts.partnerFee ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR) : undefined,
+  providerLogo: forevermoneyLogo,
+  providerName: PROTOCOL_NAME,
+  notice: NOTICE,
+  maxNativeTokenGasBuffer: route.direction === "evm-to-spoke" ? maxNativeTokenGasBuffer : undefined,
+})
+
+/** quotes a later leg of a plan: the sender holds nothing yet, every cost fits inside the input */
+const getUpToQuote = async (
+  route: ForevermoneyRoute,
+  { fromAmount, fromAddress, toAddress }: QuoteParams & { fromAmount: bigint },
+  env: SwapEnv
+): Promise<BaseQuote | null> => {
+  if (route.direction !== "evm-to-spoke" || !fromAddress || !isEthereumAddress(fromAddress))
+    return null
+
+  const client = await env.evmClient(route.sourceNetworkId)
+  const { maxFeePerGas } = await client.estimateFeesPerGas()
+  const { amounts, feeWei, gasReserveWei } = await fitUpTo(
+    client,
+    route,
+    fromAmount,
+    fromAddress,
+    toAddress,
+    maxFeePerGas
+  )
+  await runChecks(env, client, route, amounts)
+
+  const feeTokenId = evmNativeTokenId(route.sourceNetworkId)
+  const data: UpToLegData = { input: "upTo" }
+  return quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId: route.fromTokenId,
+        toTokenId: route.toTokenId,
+        signer: fromAddress,
+        recipient: toAddress,
+        inputAmount: fromAmount,
+        outputAmount: amounts.amountWei,
+        fees: [
+          ...toTalismanFees(route, amounts),
+          toQuoteFee("Chainlink CCIP Fee", feeTokenId, withFeeBuffer(feeWei)),
+          toQuoteFee("Est. Gas Fees", feeTokenId, gasReserveWei),
+        ],
+        timeInSec: OUTBOUND_DURATION_SEC,
+        data,
+      },
+    ],
+    presentation(route, amounts, undefined)
+  )
+}
+
 const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
   const route = findForevermoneyRoute(fromTokenId, toTokenId)
   if (!route || !fromAmount || fromAmount <= 0n) return null
+  if (params.input === "upTo") return getUpToQuote(route, { ...params, fromAmount }, env)
 
   const isOutbound = route.direction === "evm-to-spoke"
   const [amounts, client] = await Promise.all([
@@ -443,18 +579,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
         timeInSec: isOutbound ? OUTBOUND_DURATION_SEC : INBOUND_DURATION_SEC,
       },
     ],
-    {
-      protocol: PROTOCOL,
-      decentralisationScore: DECENTRALISATION_SCORE,
-      talismanFee: amounts.partnerFee
-        ? amounts.partnerFee.bps / Number(BPS_DENOMINATOR)
-        : undefined,
-      providerLogo: forevermoneyLogo,
-      providerName: PROTOCOL_NAME,
-      notice: NOTICE,
-      maxNativeTokenGasBuffer:
-        isOutbound && feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined,
-    }
+    presentation(route, amounts, feeWei !== null ? withFeeBuffer(feeWei).toString() : undefined)
   )
 }
 
@@ -478,28 +603,37 @@ const buildLeg = async (
     throw new Error("Invalid recipient")
   if (context.platform !== "ethereum") throw new Error("Missing EVM context")
 
-  const [amounts, sourceNetwork, sourceClient, destinationClient] = await Promise.all([
-    getBridgeAmounts(route, input),
+  const [sourceNetwork, sourceClient, destinationClient] = await Promise.all([
     getEvmNetwork(env, route.sourceNetworkId),
     env.evmClient(route.sourceNetworkId),
     env.evmClient(route.destinationNetworkId),
   ])
 
+  const upTo = isUpToLeg(leg)
+  const feesPerGas = upTo ? await sourceClient.estimateFeesPerGas() : null
+  const fit = feesPerGas
+    ? await fitUpTo(sourceClient, route, input, fromAddress, toAddress, feesPerGas.maxFeePerGas)
+    : { amounts: await getBridgeAmounts(route, input), feeWei: null }
+  const { amounts } = fit
+
   await runChecks(env, sourceClient, route, amounts)
 
   const [feeWei, destinationStartBlock] = await Promise.all([
-    readCcipFeeWei(sourceClient, route, amounts, fromAddress, toAddress),
+    fit.feeWei ?? readCcipFeeWei(sourceClient, route, amounts, fromAddress, toAddress),
     destinationClient.getBlockNumber(),
   ])
 
-  // the confirm screen shows the quoted output, the bridge must not deliver less
+  // the confirm screen shows the quoted output, the bridge must not deliver less. A later leg of
+  // a plan spends what landed instead, and admission holds its output to the approved floor
   const expectedOutput = getOutputAmount(route, amounts.amountWei)
-  if (expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
+  if (!upTo && expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
 
   const isOutbound = route.direction === "evm-to-spoke"
   if (isOutbound)
     assertNativeValueWithinInput({
-      value: amounts.amountWei + amounts.partnerFeeWei,
+      value: upTo
+        ? getTransactionValue(route, amounts, feeWei)
+        : amounts.amountWei + amounts.partnerFeeWei,
       fromAmount: input,
       isNativeInput: true,
     })
@@ -515,14 +649,22 @@ const buildLeg = async (
         ? encodeBridgeOut(route, toAddress as `0x${string}`, amounts)
         : encodeBridgeToFinney(amounts, getDestinationPubkey(route, toAddress), fromAddress),
       value: getTransactionValue(route, amounts, feeWei),
+      ...(feesPerGas && {
+        gas: gasCeiling(amounts.partnerFee),
+        maxFeePerGas: feesPerGas.maxFeePerGas,
+        maxPriorityFeePerGas: feesPerGas.maxPriorityFeePerGas,
+      }),
     }
   )
 
+  const feeTokenId = evmNativeTokenId(route.sourceNetworkId)
   return {
     transaction: { platform: "ethereum", transaction },
     fees: [
       ...toTalismanFees(route, amounts),
-      toBridgeFee(evmNativeTokenId(route.sourceNetworkId), feeWei),
+      upTo
+        ? toQuoteFee("Chainlink CCIP Fee", feeTokenId, withFeeBuffer(feeWei))
+        : toBridgeFee(feeTokenId, feeWei),
     ],
     expectedOutput,
     txInfo: {
@@ -530,11 +672,85 @@ const buildLeg = async (
       fromTokenId: leg.fromTokenId,
       toTokenId: leg.toTokenId,
       fromAmount: input.toString(),
-      toAmount: leg.outputAmount.toString(),
+      toAmount: (upTo ? expectedOutput : leg.outputAmount).toString(),
       to: toAddress,
       destinationStartBlock: destinationStartBlock.toString(),
     },
   }
+}
+
+// --- plan legs signed by the background ---
+
+/**
+ * The approved calldata: bridgeOut to the recipient, or bridgeOutWithFee with the partner tuple
+ * pinned, with only the two amount words free. Each function carries its own gas ceiling.
+ */
+const boundLeg = async (
+  { leg, slippage, maxSpend }: BoundLegParams,
+  env: SwapEnv
+): Promise<LegBound | null> => {
+  const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
+  if (route?.direction !== "evm-to-spoke") return null
+  const { signer, recipient } = leg
+  if (!signer || !isEthereumAddress(signer) || !recipient || !isEthereumAddress(recipient))
+    return null
+
+  const [partnerFee, client] = await Promise.all([
+    getPartnerFee(route),
+    env.evmClient(route.sourceNetworkId),
+  ])
+  const { maxFeePerGas } = await client.estimateFeesPerGas()
+
+  const call = (fee: PartnerFee | null): LegBoundCall => ({
+    template: encodeBridgeOut(route, recipient, {
+      amountWei: 0n,
+      partnerFee: fee,
+      partnerFeeWei: 0n,
+    }),
+    amountSlots: [3, 5],
+    maxNetworkFee: (gasCeiling(fee) * maxFeePerGas * MAX_NETWORK_FEE_HEADROOM).toString(),
+  })
+  const calls: NonEmpty<LegBoundCall> = partnerFee ? [call(null), call(partnerFee)] : [call(null)]
+
+  const floorBps = BigInt(Math.max(Math.round(slippage * Number(BPS_DENOMINATOR)), MIN_FLOOR_BPS))
+  return {
+    platform: "ethereum",
+    chainId: Number(route.sourceNetworkId),
+    signer,
+    to: route.sourceGateway,
+    calls,
+    floor: ((leg.outputAmount * (BPS_DENOMINATOR - floorBps)) / BPS_DENOMINATOR).toString(),
+    maxSpend: maxSpend.toString(),
+  }
+}
+
+const decodeBridgedAmount = (route: ForevermoneyRoute, data: Hex): bigint => {
+  if (route.direction === "evm-to-spoke") {
+    const decoded = decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data })
+    if (decoded.functionName === "bridgeOut" || decoded.functionName === "bridgeOutWithFee")
+      return decoded.args[3]
+  } else {
+    const decoded = decodeFunctionData({ abi: abiForevermoneySpokeGateway, data })
+    if (
+      decoded.functionName === "bridgeToFinney" ||
+      decoded.functionName === "bridgeToFinneyWithFee"
+    )
+      return getOutputAmount(route, decoded.args[1])
+  }
+  throw new Error("Unexpected ForeverMoney call")
+}
+
+/** the leg lands on its source receipt, the CCIP delivery stays on the row's swap status */
+const observeLeg = async (
+  { leg, sent }: ObserveLegParams,
+  env: SwapEnv
+): Promise<LegObservation> => {
+  const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
+  if (!route) throw new Error("Unknown ForeverMoney route")
+  if (!leg.signer || !isEthereumAddress(leg.signer)) throw new Error("Invalid sender address")
+
+  const client = await env.evmClient(route.sourceNetworkId)
+  return observeEvmLeg(client, sent, leg.signer, ({ data }) => decodeBridgedAmount(route, data))
 }
 
 // --- approval ---
@@ -569,5 +785,17 @@ export const forevermoneySwapModule: BackgroundSwapModule = {
   ],
   getQuote,
   buildLeg,
+  legDeadlineMs: LEG_DEADLINE_MS,
+  boundLeg,
+  observeLeg,
+  entryHops: [
+    {
+      from: FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
+      hub: FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
+      via: "bittensor-evm",
+      intermediate: "owned-evm",
+      flag: "SWAPS_MULTI_HOP",
+    },
+  ],
   getApprovalInfo,
 }

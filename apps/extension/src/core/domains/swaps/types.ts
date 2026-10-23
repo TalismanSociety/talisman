@@ -1,13 +1,15 @@
+import type { FeatureFlag } from "@core/domains/app/types"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import type { TokenId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
-import type { TransactionRequest } from "viem"
+import type { Hex, TransactionRequest } from "viem"
 
 import type { SwapEnv } from "./env"
+import type { PersistedQuoteLeg, PlanSummary, SwapPlanId } from "./plans/types"
 
 export type SupportedSwapProtocol =
   | "simpleswap"
@@ -121,6 +123,91 @@ export type BuiltLeg = {
   txInfo: WalletTransactionInfo
 }
 
+/** What the chain says about a sent leg. The engine maps these answers onto the plan's state machine */
+export type LegObservation =
+  /** scanned: blocks this observation read without finding the leg, so no later one reads them again */
+  | { status: "pending"; scanned?: number[] }
+  | { status: "landed"; amount: bigint }
+  /** proven never executed: nothing moved */
+  | { status: "dropped" }
+  | { status: "failed"; reason: "reverted" | "replaced" | "indeterminate" }
+
+export type SentEvidence =
+  | {
+      platform: "ethereum"
+      /** the signed bytes when the background signed: a resend of the same bytes keeps the same hash */
+      raw?: Hex
+    }
+  | {
+      platform: "polkadot"
+      /** the mortal era: the extrinsic can only land in [birth, birth + period) */
+      era: { birth: number; period: number }
+      /** finalised blocks of the era already read without the extrinsic */
+      scanned?: number[]
+    }
+
+export type SentLeg = {
+  hash: Hex
+  nonce: number
+  sentAt: number
+  evidence: SentEvidence
+  /** the transactionsV2 row: evidence, not a verdict */
+  row: WalletTransaction | null
+}
+
+export type ObserveLegParams = {
+  leg: QuoteLeg
+  sent: SentLeg
+}
+
+export type BoundLegParams = {
+  leg: QuoteLeg
+  /** decimal, 0.005 is 0.5% */
+  slippage: number
+  /** the previous leg's quoted output: a later leg never spends, value and gas, more than the plan brought */
+  maxSpend: bigint
+}
+
+export type LegBoundCall = {
+  /** the approved calldata with every free amount slot zeroed */
+  template: Hex
+  /** 32-byte word indices after the selector that hold an amount */
+  amountSlots: number[]
+  /** gas × maxFeePerGas cap for this function, in wei */
+  maxNetworkFee: string
+}
+
+/**
+ * An approved calldata template for a leg the background signs alone. Admission parses the signed
+ * bytes and compares: everything is pinned except the amount slots, which must hold at least `floor`.
+ */
+export type LegBound = {
+  platform: "ethereum"
+  chainId: number
+  signer: Hex
+  to: Hex
+  calls: NonEmpty<LegBoundCall>
+  /** in planck of the leg's output token */
+  floor: string
+  /** in wei, the value plus gas × maxFeePerGas */
+  maxSpend: string
+}
+
+export type SwapPlanProposeRequest = {
+  id: SwapPlanId
+  legs: NonEmpty<PersistedQuoteLeg>
+  summary: PlanSummary
+  /** the nonce of the leg 0 payload the page built: admission holds the signed leg to it */
+  leg0Nonce: number
+}
+
+export interface SwapsMessages {
+  /** one proposal per id, rejected while another plan holds its intermediate. The background computes the bounds */
+  "pri(swaps.plan.propose)": [SwapPlanProposeRequest, boolean]
+  /** proposed to aborted, a paused or building plan to stopped. False once the current leg is sent */
+  "pri(swaps.plan.cancel)": [{ id: SwapPlanId }, boolean]
+}
+
 export type ApprovalInfo = {
   contractAddress: string
   amount: bigint
@@ -132,6 +219,21 @@ export type ApprovalInfo = {
 
 export type ApprovalParams = Omit<QuoteParams, "input"> & {
   quoteData: BaseQuote | BaseQuote[] | null
+}
+
+/**
+ * A route this module can finish once another module moved the funds to its source token first.
+ * ForeverMoney declares Finney TAO → 964 TAO via bittensor-evm, so a Finney TAO → Base TAO quote
+ * becomes a two-leg plan held by an owned EVM account in between.
+ */
+export type EntryHop = {
+  from: TokenId
+  /** this module's source token, the via module must route from → hub */
+  hub: TokenId
+  via: SupportedSwapProtocol
+  /** who holds the funds between the legs */
+  intermediate: "owned-evm"
+  flag: FeatureFlag
 }
 
 /** A swap module that runs in the UI and in the background: everything it reads from the realm goes through `env` */
@@ -148,6 +250,15 @@ export type BackgroundSwapModule = {
     signal: AbortSignal
   ) => Promise<BaseQuote | BaseQuote[] | null>
   buildLeg: (params: BuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
+
+  /** how long a sent leg may stay pending before the plan calls it indeterminate */
+  legDeadlineMs: number
+  /** the template admission checks before the background signs this leg alone. Null: the leg always needs the user */
+  boundLeg: (params: BoundLegParams, env: SwapEnv) => Promise<LegBound | null>
+  /** what the chain says about a sent leg, from chain evidence only */
+  observeLeg: (params: ObserveLegParams, env: SwapEnv) => Promise<LegObservation>
+
+  entryHops?: EntryHop[]
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }

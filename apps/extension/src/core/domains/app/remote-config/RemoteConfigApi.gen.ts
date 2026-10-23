@@ -328,6 +328,8 @@ export class RemoteConfigApi<
             SWAPS_FOREVERMONEY_TAO_BRIDGE: boolean;
             /** Enables the ForeverMoney TAO bridge v2 */
             SWAPS_FOREVERMONEY_TAO_BRIDGE_V2: boolean;
+            /** Enables multi-leg swap plans, starting with Finney TAO to a ForeverMoney spoke */
+            SWAPS_MULTI_HOP: boolean;
             /** Enables dapp scanning via Blockaid */
             BLOCKAID_DAPP_SCAN_V2: boolean;
             /** Enables token scanning via Blockaid */

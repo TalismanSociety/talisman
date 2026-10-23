@@ -60,6 +60,17 @@ describe("addEvmTransaction — isReplacement", () => {
     expect(tx?.isReplacement).toBe(true)
   })
 
+  it("sets isReplacement=false when the existing pending tx is this very hash", async () => {
+    await db.transactionsV2.put(makeEvmTx(5, "pending"))
+    const hash = makeEvmTx(5).hash
+
+    await addEvmTransaction(NETWORK_ID, hash, { from: ACCOUNT_A, nonce: 5 })
+
+    const tx = await getEvmTx(hash)
+    expect(tx?.isReplacement).toBe(false)
+    expect(await db.transactionsV2.count()).toBe(1)
+  })
+
   it("sets isReplacement=false when existing same-nonce tx has error status", async () => {
     await db.transactionsV2.put(makeEvmTx(5, "error"))
 

@@ -24,6 +24,10 @@ vi.mock("@ui/state/transactions", () => ({
   useTransactions: () => [],
 }))
 
+vi.mock("../swap-services/intermediateCandidates", () => ({
+  getIntermediateCandidates: async () => [],
+}))
+
 vi.mock("@ui/hooks/queryStoragePersister", () => ({
   createQueryStoragePersister: () => undefined,
   PERSIST_AGE_ONE_YEAR: 1000 * 60 * 60 * 24 * 365,

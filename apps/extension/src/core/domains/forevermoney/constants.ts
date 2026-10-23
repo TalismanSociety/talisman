@@ -74,8 +74,12 @@ export type ForevermoneyRoute = {
   destinationOffRamp: `0x${string}`
 }
 
-const BITTENSOR_SUB_TOKEN_ID = subNativeTokenId(FOREVERMONEY_BITTENSOR_SUBSTRATE_NETWORK_ID)
-const BITTENSOR_EVM_TOKEN_ID = evmNativeTokenId(FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID)
+export const FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID = subNativeTokenId(
+  FOREVERMONEY_BITTENSOR_SUBSTRATE_NETWORK_ID
+)
+export const FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID = evmNativeTokenId(
+  FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID
+)
 
 export const FOREVERMONEY_ROUTES: ForevermoneyRoute[] = FOREVERMONEY_SPOKES.flatMap((spoke) => {
   const wtaoTokenId = evmErc20TokenId(spoke.evmNetworkId, FOREVERMONEY_WTAO)
@@ -92,12 +96,20 @@ export const FOREVERMONEY_ROUTES: ForevermoneyRoute[] = FOREVERMONEY_SPOKES.flat
     destinationOffRamp: FOREVERMONEY_BITTENSOR_OFFRAMP,
   }
   return [
-    { ...inbound, direction: "spoke-to-substrate" as const, toTokenId: BITTENSOR_SUB_TOKEN_ID },
-    { ...inbound, direction: "spoke-to-evm" as const, toTokenId: BITTENSOR_EVM_TOKEN_ID },
+    {
+      ...inbound,
+      direction: "spoke-to-substrate" as const,
+      toTokenId: FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
+    },
+    {
+      ...inbound,
+      direction: "spoke-to-evm" as const,
+      toTokenId: FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
+    },
     {
       direction: "evm-to-spoke" as const,
       spoke,
-      fromTokenId: BITTENSOR_EVM_TOKEN_ID,
+      fromTokenId: FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
       toTokenId: wtaoTokenId,
       sourceNetworkId: FOREVERMONEY_BITTENSOR_EVM_NETWORK_ID,
       destinationNetworkId: spoke.evmNetworkId,

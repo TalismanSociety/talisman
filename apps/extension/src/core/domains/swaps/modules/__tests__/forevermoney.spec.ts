@@ -1,7 +1,13 @@
 import type { SwapEnv } from "@core/domains/swaps/env"
+import type { SentLeg } from "@core/domains/swaps/types"
 import type { Network } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
-import { decodeFunctionData, type PublicClient } from "viem"
+import {
+  decodeFunctionData,
+  encodeFunctionData,
+  type PublicClient,
+  serializeTransaction,
+} from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
@@ -11,12 +17,24 @@ const {
   mockEstimateGas,
   mockGetGasPrice,
   mockGetBlockNumber,
+  mockGetBlock,
+  mockEstimateFeesPerGas,
+  mockGetTransactionReceipt,
+  mockGetTransactionCount,
+  mockGetTransaction,
+  mockPrepareTransactionRequest,
   forevermoneyConfig,
 } = vi.hoisted(() => ({
   mockReadContract: vi.fn(),
   mockEstimateGas: vi.fn(),
   mockGetGasPrice: vi.fn(),
   mockGetBlockNumber: vi.fn(),
+  mockGetBlock: vi.fn(),
+  mockEstimateFeesPerGas: vi.fn(),
+  mockGetTransactionReceipt: vi.fn(),
+  mockGetTransactionCount: vi.fn(),
+  mockGetTransaction: vi.fn(),
+  mockPrepareTransactionRequest: vi.fn(),
   forevermoneyConfig: { feeRecipients: {} as Record<string, string>, feeBps: 0 },
 }))
 
@@ -73,7 +91,12 @@ const evmClient = (networkId: string) => ({
   estimateGas: mockEstimateGas,
   getGasPrice: mockGetGasPrice,
   getBlockNumber: () => mockGetBlockNumber(networkId),
-  prepareTransactionRequest: async (request: unknown) => request,
+  getBlock: mockGetBlock,
+  estimateFeesPerGas: mockEstimateFeesPerGas,
+  getTransactionReceipt: mockGetTransactionReceipt,
+  getTransactionCount: mockGetTransactionCount,
+  getTransaction: mockGetTransaction,
+  prepareTransactionRequest: mockPrepareTransactionRequest,
 })
 
 const env: SwapEnv = {
@@ -81,6 +104,12 @@ const env: SwapEnv = {
   getToken: async () => null,
   evmClient: async (networkId) => evmClient(networkId) as unknown as PublicClient,
   substrateApi: async () => {
+    throw new Error("ForeverMoney reads no substrate network")
+  },
+  substrateSend: async () => {
+    throw new Error("ForeverMoney reads no substrate network")
+  },
+  decodeExtrinsicEvents: async () => {
     throw new Error("ForeverMoney reads no substrate network")
   },
 }
@@ -224,6 +253,8 @@ beforeEach(() => {
   mockGetBlockNumber.mockImplementation(async (networkId: string) =>
     networkId === "964" ? 7_000_000n : 50_000_000n
   )
+  mockEstimateFeesPerGas.mockResolvedValue({ maxFeePerGas: 10n, maxPriorityFeePerGas: 1n })
+  mockPrepareTransactionRequest.mockImplementation(async (request: unknown) => request)
 })
 
 describe("forevermoneySwapModule assets", () => {
@@ -682,5 +713,331 @@ describe("forevermoneySwapModule partner fee", () => {
     expect(
       single(await quote(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS))?.talismanFee
     ).toBeUndefined()
+  })
+})
+
+const ALPHA_TOKEN = "0xC5b6C1632d34901239396F5E1BDe54B342900256"
+const BRIDGE_OUT_GAS_RESERVE = 700_000n * 10n
+const UPTO_OUTPUT = 998_979_999_000_000_000n
+
+const quoteUpTo = (fromAmount: bigint) =>
+  forevermoneySwapModule.getQuote(
+    {
+      fromTokenId: EVM_TAO,
+      toTokenId: BASE_WTAO,
+      fromAmount,
+      fromAddress: EVM_ADDRESS,
+      toAddress: OTHER_EVM_ADDRESS,
+      input: "upTo",
+    },
+    env,
+    signal
+  )
+
+describe("forevermoneySwapModule getQuote upTo", () => {
+  it("fits the bridged amount, the buffered fee and the gas ceiling inside the input, without estimating gas", async () => {
+    await quote(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS)
+    expect(mockEstimateGas).toHaveBeenCalledTimes(1)
+    mockEstimateGas.mockClear()
+
+    const q = single(await quoteUpTo(ONE_TAO_WEI))
+
+    expect(q?.legs).toEqual([
+      {
+        protocol: "forevermoney",
+        fromTokenId: EVM_TAO,
+        toTokenId: BASE_WTAO,
+        signer: EVM_ADDRESS,
+        recipient: OTHER_EVM_ADDRESS,
+        inputAmount: ONE_TAO_WEI,
+        outputAmount: UPTO_OUTPUT,
+        fees: [
+          { name: "Chainlink CCIP Fee", tokenId: "964:evm-native", amount: BigNumber("0.00102") },
+          { name: "Est. Gas Fees", tokenId: "964:evm-native", amount: BigNumber("0.000000000007") },
+        ],
+        timeInSec: 180,
+        data: { input: "upTo" },
+      },
+    ])
+    expect(q?.maxNativeTokenGasBuffer).toBeUndefined()
+    expect(mockEstimateGas).not.toHaveBeenCalled()
+    expect(UPTO_OUTPUT + FEE_WITH_BUFFER + BRIDGE_OUT_GAS_RESERVE <= ONE_TAO_WEI).toBe(true)
+  })
+
+  it("reserves the bridgeOutWithFee gas ceiling and carves the partner fee out", async () => {
+    Object.assign(forevermoneyConfig, { feeRecipients: { "964": PARTNER }, feeBps: 50 })
+
+    const q = single(await quoteUpTo(ONE_TAO_WEI))
+
+    expect(q?.legs[0].outputAmount).toBe(994_009_949_000_000_000n)
+    expect(q?.fees.map((f) => [f.name, f.amount.toFixed()])).toEqual([
+      ["Talisman Fee", "0.00497005"],
+      ["Chainlink CCIP Fee", "0.00102"],
+      ["Est. Gas Fees", "0.0000000000085"],
+    ])
+  })
+
+  it("rejects an input that cannot cover the fees and the minimum", async () => {
+    await expect(quoteUpTo(2n * 10n ** 15n)).rejects.toThrow("minimum is 0.002 TAO")
+  })
+
+  it("quotes nothing for an inbound direction", async () => {
+    expect(
+      await forevermoneySwapModule.getQuote(
+        {
+          fromTokenId: BASE_WTAO,
+          toTokenId: SUB_TAO,
+          fromAmount: ONE_TAO_WEI,
+          fromAddress: EVM_ADDRESS,
+          toAddress: SUB_ADDRESS,
+          input: "upTo",
+        },
+        env,
+        signal
+      )
+    ).toBeNull()
+  })
+})
+
+describe("forevermoneySwapModule buildLeg upTo", () => {
+  it("spends what landed: the fee and the gas reserve fit inside the input", async () => {
+    const q = single(await quoteUpTo(ONE_TAO_WEI))
+    if (!q) throw new Error("expected a quote")
+
+    const built = await forevermoneySwapModule.buildLeg(
+      { leg: q.legs[0], input: UPTO_OUTPUT, context: { platform: "ethereum" }, slippage: 0.005 },
+      env
+    )
+    if (built.transaction.platform !== "ethereum") throw new Error("expected an ethereum tx")
+
+    const amount = 997_959_998_000_000_000n
+    expect(built.expectedOutput).toBe(amount)
+    expect(built.transaction.transaction.value).toBe(amount + FEE_WITH_BUFFER)
+    expect(
+      decodeFunctionData({
+        abi: abiForevermoneyAlphaGateway,
+        data: built.transaction.transaction.data!,
+      })
+    ).toEqual({
+      functionName: "bridgeOut",
+      args: [BASE_SELECTOR, ALPHA_TOKEN, OTHER_EVM_ADDRESS, amount, 0n, amount],
+    })
+    expect(built.fees).toEqual([
+      { name: "Chainlink CCIP Fee", tokenId: "964:evm-native", amount: BigNumber("0.00102") },
+    ])
+    expect(built.txInfo).toMatchObject({
+      fromAmount: UPTO_OUTPUT.toString(),
+      toAmount: amount.toString(),
+    })
+  })
+  it("never spends past the input when the fees rose since the fit", async () => {
+    const q = single(await quoteUpTo(ONE_TAO_WEI))
+    if (!q) throw new Error("expected a quote")
+    mockPrepareTransactionRequest.mockImplementation(async (request: object) => ({
+      gas: 800_000n,
+      maxFeePerGas: 10_000n,
+      maxPriorityFeePerGas: 1_000n,
+      ...request,
+    }))
+
+    const built = await forevermoneySwapModule.buildLeg(
+      { leg: q.legs[0], input: UPTO_OUTPUT, context: { platform: "ethereum" }, slippage: 0.005 },
+      env
+    )
+    if (built.transaction.platform !== "ethereum") throw new Error("expected an ethereum tx")
+
+    const { value = 0n, gas = 0n, maxFeePerGas = 0n } = built.transaction.transaction
+    expect(value + gas * maxFeePerGas <= UPTO_OUTPUT).toBe(true)
+  })
+})
+
+describe("forevermoneySwapModule boundLeg", () => {
+  const bound = async (slippage: number) => {
+    const leg = await quotedLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS)
+    return forevermoneySwapModule.boundLeg({ leg, slippage, maxSpend: ONE_TAO_WEI }, env)
+  }
+
+  it("pins bridgeOut to the recipient with the two amount words free", async () => {
+    expect(await bound(0.005)).toEqual({
+      platform: "ethereum",
+      chainId: 964,
+      signer: EVM_ADDRESS,
+      to: OUTBOUND_ALPHA_GATEWAY,
+      calls: [
+        {
+          template: encodeFunctionData({
+            abi: abiForevermoneyAlphaGateway,
+            functionName: "bridgeOut",
+            args: [BASE_SELECTOR, ALPHA_TOKEN, OTHER_EVM_ADDRESS, 0n, 0n, 0n],
+          }),
+          amountSlots: [3, 5],
+          maxNetworkFee: "21000000",
+        },
+      ],
+      floor: "990000000000000000",
+      maxSpend: "1000000000000000000",
+    })
+  })
+
+  it("uses the user's slippage for the floor when it is above 1%", async () => {
+    expect((await bound(0.02))?.floor).toBe("980000000000000000")
+  })
+
+  it("also allows bridgeOutWithFee with the partner tuple pinned when a fee is configured", async () => {
+    Object.assign(forevermoneyConfig, { feeRecipients: { "964": PARTNER }, feeBps: 50 })
+
+    expect((await bound(0.005))?.calls).toEqual([
+      {
+        template: encodeFunctionData({
+          abi: abiForevermoneyAlphaGateway,
+          functionName: "bridgeOut",
+          args: [BASE_SELECTOR, ALPHA_TOKEN, OTHER_EVM_ADDRESS, 0n, 0n, 0n],
+        }),
+        amountSlots: [3, 5],
+        maxNetworkFee: "21000000",
+      },
+      {
+        template: encodeFunctionData({
+          abi: abiForevermoneyAlphaGateway,
+          functionName: "bridgeOutWithFee",
+          args: [
+            BASE_SELECTOR,
+            ALPHA_TOKEN,
+            OTHER_EVM_ADDRESS,
+            0n,
+            0n,
+            0n,
+            { recipient: PARTNER, bps: 50 },
+          ],
+        }),
+        amountSlots: [3, 5],
+        maxNetworkFee: "25500000",
+      },
+    ])
+  })
+
+  it("binds no inbound leg", async () => {
+    const leg = await quotedLeg(BASE_WTAO, SUB_TAO, ONE_TAO_WEI, SUB_ADDRESS)
+    expect(
+      await forevermoneySwapModule.boundLeg({ leg, slippage: 0.005, maxSpend: ONE_TAO_WEI }, env)
+    ).toBeNull()
+  })
+})
+
+describe("forevermoneySwapModule observeLeg", () => {
+  const TX_HASH = `0x${"dd".repeat(32)}` as const
+  const BRIDGE_DATA = encodeFunctionData({
+    abi: abiForevermoneyAlphaGateway,
+    functionName: "bridgeOut",
+    args: [BASE_SELECTOR, ALPHA_TOKEN, OTHER_EVM_ADDRESS, ONE_TAO_WEI, 0n, ONE_TAO_WEI],
+  })
+  const RAW = serializeTransaction({
+    type: "eip1559",
+    chainId: 964,
+    nonce: 12,
+    to: OUTBOUND_ALPHA_GATEWAY,
+    data: BRIDGE_DATA,
+    value: ONE_TAO_WEI + FEE_WITH_BUFFER,
+    gas: 700_000n,
+    maxFeePerGas: 10n,
+    maxPriorityFeePerGas: 1n,
+  })
+
+  const sent = (raw?: `0x${string}`): SentLeg => ({
+    hash: TX_HASH,
+    nonce: 12,
+    sentAt: 0,
+    evidence: raw ? { platform: "ethereum", raw } : { platform: "ethereum" },
+    row: null,
+  })
+
+  const observe = async (sentLeg: SentLeg) =>
+    forevermoneySwapModule.observeLeg(
+      { leg: await quotedLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS), sent: sentLeg },
+      env
+    )
+
+  const FINALISED = 6_999_990n
+  const receipt = (status: "success" | "reverted", blockNumber = FINALISED) => ({
+    status,
+    blockNumber,
+  })
+
+  beforeEach(() => {
+    mockGetBlock.mockResolvedValue({ number: FINALISED })
+  })
+
+  const noReceipt = () =>
+    mockGetTransactionReceipt.mockRejectedValue(
+      Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+    )
+
+  it("lands with the bridged amount read from the mined transaction", async () => {
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success"))
+    mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockResolvedValue({
+      input: BRIDGE_DATA,
+      value: ONE_TAO_WEI + FEE_WITH_BUFFER,
+    })
+
+    expect(await observe(sent())).toEqual({ status: "landed", amount: ONE_TAO_WEI })
+    expect(mockGetTransactionCount).toHaveBeenCalledWith({
+      address: EVM_ADDRESS,
+      blockNumber: FINALISED,
+    })
+    expect(mockGetTransaction).toHaveBeenCalledWith({ hash: TX_HASH })
+  })
+
+  it("reads the amount from the signed bytes when it has them", async () => {
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success"))
+    mockGetTransactionCount.mockResolvedValue(13)
+
+    expect(await observe(sent(RAW))).toEqual({ status: "landed", amount: ONE_TAO_WEI })
+    expect(mockGetTransaction).not.toHaveBeenCalled()
+  })
+
+  it("fails as reverted on a reverted receipt", async () => {
+    mockGetTransactionReceipt.mockResolvedValue(receipt("reverted"))
+    mockGetTransactionCount.mockResolvedValue(13)
+
+    expect(await observe(sent(RAW))).toEqual({ status: "failed", reason: "reverted" })
+  })
+
+  it("stays pending while the receipt's block is not finalised", async () => {
+    mockGetTransactionCount.mockResolvedValue(13)
+
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success", FINALISED + 1n))
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
+
+    mockGetTransactionReceipt.mockResolvedValue(receipt("reverted", FINALISED + 1n))
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
+
+    expect(mockGetBlock).toHaveBeenCalledWith({ blockTag: "finalized" })
+  })
+
+  it("is replaced when the nonce moved past the leg without a receipt", async () => {
+    noReceipt()
+    mockGetTransactionCount.mockResolvedValue(13)
+
+    expect(await observe(sent(RAW))).toEqual({ status: "failed", reason: "replaced" })
+  })
+
+  it("stays pending while only an unfinalised block consumed the nonce", async () => {
+    noReceipt()
+    mockGetTransactionCount.mockImplementation(async ({ blockNumber }: { blockNumber: bigint }) =>
+      blockNumber === FINALISED ? 12 : 13
+    )
+    mockGetTransaction.mockRejectedValue(
+      Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })
+    )
+
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
+  })
+
+  it("stays pending without a receipt while the nonce is not consumed", async () => {
+    noReceipt()
+    mockGetTransactionCount.mockResolvedValue(12)
+
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
   })
 })

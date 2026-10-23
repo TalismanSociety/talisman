@@ -14,6 +14,7 @@ import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
 import { initialiseSubstrateAssetDiscovery } from "./domains/assetDiscovery/substrate"
 import { initialiseBittensorDevnet } from "./domains/bittensor/devnet"
 import { proofOfWorkSolves$ } from "./domains/gandalf/observable"
+import { startSwapPlanExecutor } from "./domains/swaps/plans/executor"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
@@ -30,6 +31,7 @@ proofOfWorkSolves$.subscribe(({ durationMs, difficulty }) =>
     difficulty,
   })
 )
+startSwapPlanExecutor()
 
 chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 

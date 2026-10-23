@@ -7,15 +7,19 @@ import {
   BITTENSOR_WEI_PER_RAO,
   type BittensorEvmPair,
 } from "@core/domains/bittensor/constants"
-import type { SwapEnv } from "@core/domains/swaps/env"
-import { getEvmNetwork, quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { ExtrinsicEvents, SwapEnv } from "@core/domains/swaps/env"
+import { getEvmNetwork, getFinalizedHead, quoteFromLegs } from "@core/domains/swaps/helpers"
 import type {
   BackgroundSwapModule,
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
+  LegObservation,
+  ObserveLegParams,
   QuoteFee,
+  QuoteLeg,
   QuoteParams,
+  SentLeg,
   SupportedSwapProtocol,
   SwapModuleTransaction,
   SwapTransactionContext,
@@ -30,8 +34,9 @@ import {
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
-import { encodeFunctionData, zeroHash } from "viem"
+import { encodeFunctionData, type Hex, zeroHash } from "viem"
 import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
+import { observeEvmLeg } from "../observeEvm"
 import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import bittensorLogo from "./bittensor-logo.svg?url"
 
@@ -41,6 +46,8 @@ const DECENTRALISATION_SCORE = 3
 const ESTIMATED_DURATION_SEC = 12
 const TAO_DECIMALS = 9
 const EVM_TAO_DECIMALS = 18
+/** a 64-block mortal era at 12 s plus finality */
+const LEG_DEADLINE_MS = 20 * 60_000
 
 type Direction = "sub-to-evm" | "evm-to-sub"
 
@@ -50,6 +57,9 @@ type Route = {
   fromTokenId: TokenId
   toTokenId: TokenId
 }
+
+/** what a substrate to EVM leg carries from its quote to its observation */
+type SubToEvmLegData = { edHeldRao: string }
 
 const ROUTES: Route[] = BITTENSOR_EVM_PAIRS.flatMap((pair) => [
   {
@@ -180,7 +190,7 @@ const buildQuote = (
   inputAmount: bigint,
   outputAmount: bigint,
   fees: QuoteFee[],
-  note?: string
+  extra: Pick<QuoteLeg, "data"> & Pick<BaseQuote, "note"> = {}
 ): BaseQuote =>
   quoteFromLegs(
     [
@@ -194,6 +204,7 @@ const buildQuote = (
         outputAmount,
         fees,
         timeInSec: ESTIMATED_DURATION_SEC,
+        ...(extra.data === undefined ? {} : { data: extra.data }),
       },
     ],
     {
@@ -201,7 +212,7 @@ const buildQuote = (
       decentralisationScore: DECENTRALISATION_SCORE,
       providerLogo: bittensorLogo,
       providerName: PROTOCOL_NAME,
-      note,
+      note: extra.note,
     }
   )
 
@@ -233,6 +244,7 @@ const getSubToEvmQuote = async (
   const note = edHeldRao
     ? `${planckToTokens(edHeldRao.toString(), TAO_DECIMALS)} TAO stays locked in the EVM account as existential deposit`
     : undefined
+  const data: SubToEvmLegData = { edHeldRao: edHeldRao.toString() }
 
   return buildQuote(
     route,
@@ -241,7 +253,7 @@ const getSubToEvmQuote = async (
     fromAmount,
     outputRao * BITTENSOR_WEI_PER_RAO,
     fees,
-    note
+    { note, data }
   )
 }
 
@@ -354,6 +366,144 @@ const buildLeg = async (
   }
 }
 
+// --- Observation ---
+
+const edHeldRaoOf = (leg: QuoteLeg) => {
+  const data = leg.data as Partial<SubToEvmLegData> | undefined
+  return data?.edHeldRao ? BigInt(data.edHeldRao) : 0n
+}
+
+const landedFromTransfer = (leg: QuoteLeg, found: ExtrinsicEvents): LegObservation => {
+  if (!found.success) return { status: "failed", reason: "reverted" }
+  const transfer = found.events.find(
+    (event) => event.pallet === "Balances" && event.name === "Transfer"
+  )
+  const amountRao = (transfer?.value as { amount?: bigint } | undefined)?.amount
+  if (amountRao === undefined) return { status: "failed", reason: "indeterminate" }
+  return { status: "landed", amount: (amountRao - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO }
+}
+
+const getNonceAt = async (env: SwapEnv, networkId: string, address: string, blockHash: Hex) => {
+  const sapi = await env.substrateApi(networkId)
+  const account = await sapi.getStorage<{ nonce?: number } | null>(
+    "System",
+    "Account",
+    [address],
+    blockHash
+  )
+  return account?.nonce ?? 0
+}
+
+/**
+ * the finalised blocks of the era not read yet, newest first, the row's block leading when the row
+ * names one
+ */
+const candidateBlocks = (sent: SentLeg, birth: number, period: number, finalised: number) => {
+  const last = Math.min(birth + period - 1, finalised)
+  const scanned = new Set(sent.evidence.platform === "polkadot" ? sent.evidence.scanned : [])
+  const era = Array.from({ length: Math.max(0, last - birth + 1) }, (_, i) => last - i).filter(
+    (number) => !scanned.has(number)
+  )
+  const row = sent.row
+  const hint =
+    row?.status === "success" && row.platform === "polkadot" && row.blockNumber
+      ? Number(row.blockNumber)
+      : null
+  return hint !== null && era.includes(hint)
+    ? [hint, ...era.filter((number) => number !== hint)]
+    : era
+}
+
+/**
+ * complete: every block was read, so a miss proves the extrinsic is in none of them.
+ * scanned: the blocks read without the extrinsic
+ */
+type BlockScan = { found: ExtrinsicEvents | null; complete: boolean; scanned: number[] }
+
+/** an observation that runs out of time leaves the rest of the era to the next one */
+const SCAN_BUDGET_MS = 30_000
+
+const scanBlocks = async (
+  env: SwapEnv,
+  networkId: string,
+  blocks: number[],
+  extrinsicHash: Hex
+): Promise<BlockScan> => {
+  const scanUntil = Date.now() + SCAN_BUDGET_MS
+  const scanned: number[] = []
+  let firstError: unknown = null
+  let complete = true
+  for (const number of blocks) {
+    if (Date.now() >= scanUntil) {
+      complete = false
+      break
+    }
+    try {
+      const blockHash = await env.substrateSend<Hex | null>(networkId, "chain_getBlockHash", [
+        number,
+      ])
+      if (!blockHash) {
+        complete = false
+        continue
+      }
+      const found = await env.decodeExtrinsicEvents(networkId, blockHash, extrinsicHash)
+      if (found) return { found, complete: true, scanned }
+      scanned.push(number)
+    } catch (err) {
+      firstError ??= err
+      complete = false
+    }
+  }
+  if (firstError) log.warn("Failed to read a block of the era for the swap leg", { firstError })
+  return { found: null, complete, scanned }
+}
+
+/**
+ * Landed means the extrinsic sits in a finalised block with ExtrinsicSuccess. The signer's nonce at
+ * the finalised head gates the search: while it has not moved past the leg's nonce nothing executed,
+ * which is dropped once the era is dead. Once it moved, the era's finalised blocks are read for the
+ * extrinsic, and only that extrinsic proves the funds came from this leg. Once the era is dead and
+ * every block of it was read without the extrinsic, the leg is indeterminate. A block that could not
+ * be read, or a scan that ran out of time, keeps the leg pending, for the next observation or the
+ * leg deadline.
+ * The next observation reads only the blocks this one did not.
+ */
+const observeSubToEvmLeg = async (
+  env: SwapEnv,
+  route: Route,
+  { leg, sent }: ObserveLegParams
+): Promise<LegObservation> => {
+  if (sent.evidence.platform !== "polkadot" || !leg.signer) throw new Error("Not a substrate leg")
+  const { substrateNetworkId } = route.pair
+  const { birth, period } = sent.evidence.era
+
+  const head = await getFinalizedHead(env, substrateNetworkId)
+  const nextNonce = await getNonceAt(env, substrateNetworkId, leg.signer, head.hash)
+  const eraDead = head.number >= birth + period
+  if (nextNonce <= sent.nonce) return eraDead ? { status: "dropped" } : { status: "pending" }
+
+  const scan = await scanBlocks(
+    env,
+    substrateNetworkId,
+    candidateBlocks(sent, birth, period, head.number),
+    sent.hash
+  )
+  if (scan.found) return landedFromTransfer(leg, scan.found)
+  if (eraDead && scan.complete) return { status: "failed", reason: "indeterminate" }
+  return { status: "pending", scanned: scan.scanned }
+}
+
+const observeLeg = async (params: ObserveLegParams, env: SwapEnv): Promise<LegObservation> => {
+  const { leg, sent } = params
+  const route = findRoute(leg.fromTokenId, leg.toTokenId)
+  if (!route) throw new Error("Unknown Bittensor EVM route")
+  if (route.direction === "sub-to-evm") return observeSubToEvmLeg(env, route, params)
+
+  if (!leg.signer || !isEthereumAddress(leg.signer)) throw new Error("Invalid sender address")
+  const client = await env.evmClient(route.pair.evmNetworkId)
+  return observeEvmLeg(client, sent, leg.signer, ({ value }) => value / BITTENSOR_WEI_PER_RAO)
+}
+
 export const bittensorEvmSwapModule: BackgroundSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
@@ -364,4 +514,8 @@ export const bittensorEvmSwapModule: BackgroundSwapModule = {
     ),
   getQuote,
   buildLeg,
+  legDeadlineMs: LEG_DEADLINE_MS,
+  // the user signs every Bittensor EVM leg on screen
+  boundLeg: async () => null,
+  observeLeg,
 }

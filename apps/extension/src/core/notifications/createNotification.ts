@@ -2,7 +2,15 @@ import { log } from "@common/log"
 
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
-export type NotificationType = "submitted" | "success" | "error" | "not_found" | "autolocked"
+export type NotificationType =
+  | "submitted"
+  | "success"
+  | "error"
+  | "not_found"
+  | "autolocked"
+  | "swap-plan-needs-you"
+  | "swap-plan-stopped"
+  | "swap-plan-completed"
 
 const getNotificationOptions = (
   type: NotificationType,
@@ -51,6 +59,30 @@ const getNotificationOptions = (
         type: "basic",
         title: "Talisman locked",
         message: "Your wallet has been locked due to inactivity.",
+        iconUrl: "/images/tx-ok.png",
+      }
+
+    case "swap-plan-needs-you":
+      return {
+        type: "basic",
+        title: "Your swap needs you",
+        message: "Open Talisman to continue the swap.",
+        iconUrl: "/images/tx-ok.png",
+      }
+
+    case "swap-plan-stopped":
+      return {
+        type: "basic",
+        title: "Swap stopped",
+        message: "The swap could not finish. Your funds stayed on your account.",
+        iconUrl: "/images/tx-nok.png",
+      }
+
+    case "swap-plan-completed":
+      return {
+        type: "basic",
+        title: "Swap complete",
+        message: "Every step of your swap went through.",
         iconUrl: "/images/tx-ok.png",
       }
   }

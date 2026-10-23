@@ -1,3 +1,4 @@
+import type { PlanLeg, SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransactionEth } from "@core/domains/transactions/types"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -309,5 +310,102 @@ describe("nonceManager", () => {
       const nonce3 = await getNextNonce(ADDRESS, NETWORK_ID)
       expect(nonce3).toBe(6)
     })
+  })
+})
+
+describe("nonceManager with swap plans", () => {
+  const T0 = 1_700_000_000_000
+
+  const leg = (state: PlanLeg["state"], nonce?: number): PlanLeg => ({
+    quote: {
+      protocol: "forevermoney",
+      fromTokenId: `${NETWORK_ID}:evm-native`,
+      toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
+      signer: ADDRESS,
+      recipient: ADDRESS,
+      inputAmount: "1",
+      outputAmount: "1",
+      fees: [],
+      timeInSec: 1,
+    },
+    signerType: "keypair",
+    bound: null,
+    nonce,
+    state,
+  })
+
+  const SENT: PlanLeg["state"] = {
+    at: "sent",
+    hash: makeTx(7).hash,
+    sentAt: T0,
+    deadlineAt: T0 + 60_000,
+    evidence: { platform: "ethereum" },
+  }
+
+  const plan = (phase: SwapPlan["phase"], legs: [PlanLeg, ...PlanLeg[]]): SwapPlan => ({
+    id: `plan-${phase}` as SwapPlanId,
+    phase,
+    createdAt: T0,
+    updatedAt: T0,
+    signUntil: null,
+    summary: {
+      fromTokenId: `${NETWORK_ID}:evm-native`,
+      toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
+      fromAmount: "1",
+      quotedOutput: "1",
+      recipient: ADDRESS,
+      protocol: "forevermoney",
+      slippage: 0.005,
+    },
+    intermediate: ADDRESS,
+    legs,
+  })
+
+  beforeEach(async () => {
+    await db.transactionsV2.clear()
+    await db.swapPlans.clear()
+    _resetNonceState()
+    vi.clearAllMocks()
+    mockGetTransaction.mockResolvedValue({ hash: "0x" })
+  })
+
+  it.each(["success", "error", "replaced"] as const)(
+    "holds the nonce of a live plan's sent leg whose row says %s",
+    async (status) => {
+      mockGetTransactionCount.mockResolvedValue(7)
+      await db.swapPlans.put(plan("running", [leg(SENT, 7)]))
+      await db.transactionsV2.put(makeTx(7, status))
+
+      expect(await getNextNonce(ADDRESS, NETWORK_ID)).toBe(8)
+    }
+  )
+
+  it("holds the nonce of a live plan's sent leg that has no row", async () => {
+    mockGetTransactionCount.mockResolvedValue(7)
+    await db.swapPlans.put(plan("running", [leg(SENT, 7)]))
+
+    expect(await getNextNonce(ADDRESS, NETWORK_ID)).toBe(8)
+  })
+
+  it("frees the nonce once the plan is over", async () => {
+    mockGetTransactionCount.mockResolvedValue(7)
+    await db.swapPlans.put(plan("stopped", [leg(SENT, 7)]))
+    await db.transactionsV2.put(makeTx(7, "error"))
+
+    expect(await getNextNonce(ADDRESS, NETWORK_ID)).toBe(7)
+  })
+
+  it("holds no nonce for a leg not sent yet, nor for another signer or network", async () => {
+    mockGetTransactionCount.mockResolvedValue(7)
+    const otherSigner = leg(SENT, 9)
+    otherSigner.quote = {
+      ...otherSigner.quote,
+      signer: "0x2222222222222222222222222222222222222222",
+    }
+    const otherNetwork = leg(SENT, 9)
+    otherNetwork.quote = { ...otherNetwork.quote, fromTokenId: "8453:evm-native" }
+    await db.swapPlans.put(plan("running", [leg({ at: "queued" }, 9), otherSigner, otherNetwork]))
+
+    expect(await getNextNonce(ADDRESS, NETWORK_ID)).toBe(7)
   })
 })
