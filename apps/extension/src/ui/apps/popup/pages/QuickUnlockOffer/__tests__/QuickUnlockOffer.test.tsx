@@ -37,7 +37,7 @@ describe("QuickUnlockOffer", () => {
   test("never asks again once the user says no thanks", async () => {
     const onAnswer = await renderOffer()
 
-    fireEvent.click(screen.getByRole("button", { name: "Not now" }))
+    fireEvent.click(screen.getByRole("button", { name: "No thanks" }))
 
     expect(mockSetHideOffer).toHaveBeenCalledWith(true)
     expect(onAnswer).toHaveBeenCalledOnce()

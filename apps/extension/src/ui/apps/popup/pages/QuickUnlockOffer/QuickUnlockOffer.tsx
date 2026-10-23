@@ -99,7 +99,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
           </div>
           <div className="grid w-full grid-cols-2 gap-8">
             <Button disabled={processing} onClick={handleDecline}>
-              {t("Not now")}
+              {t("No thanks")}
             </Button>
             <Button primary processing={processing} onClick={handleEnable}>
               {t("Enable")}
