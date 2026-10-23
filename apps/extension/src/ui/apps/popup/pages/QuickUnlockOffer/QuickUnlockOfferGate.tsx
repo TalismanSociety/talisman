@@ -21,9 +21,15 @@ type OfferInputs = {
 }
 
 const decide = (inputs: OfferInputs): Decision => {
-  if (inputs.dismissedForGood || !inputs.isFeatureEnabled || inputs.enrolled) return "skip"
+  if (
+    inputs.dismissedForGood ||
+    !inputs.isFeatureEnabled ||
+    inputs.enrolled ||
+    inputs.available === false
+  )
+    return "skip"
   if (inputs.enrolled === null || inputs.available === null) return "pending"
-  return inputs.available ? "offer" : "skip"
+  return "offer"
 }
 
 export const OFFER_DECISION_TIMEOUT_MS = 1_500
@@ -61,14 +67,13 @@ export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
     return () => clearTimeout(timer)
   }, [])
 
-  const decision =
-    settled ??
-    decide({
-      dismissedForGood: !!dismissedForGood,
-      isFeatureEnabled,
-      enrolled,
-      available: available ?? (timedOut ? false : null),
-    })
+  const inputsDecision = decide({
+    dismissedForGood: !!dismissedForGood,
+    isFeatureEnabled,
+    enrolled,
+    available,
+  })
+  const decision = settled ?? (inputsDecision === "pending" && timedOut ? "skip" : inputsDecision)
 
   // the first decision holds for the life of the popup. an offer stays until the user answers it,
   // as enrolling flips `enrolled` before the offer has reported the enrolment. a skip never turns

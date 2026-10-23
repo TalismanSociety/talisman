@@ -275,6 +275,26 @@ describe("QuickUnlockOfferGate", () => {
     shows("portfolio")
   })
 
+  test("skips when the enrolment never answers", async () => {
+    vi.useFakeTimers()
+    mockUseEnrolment.mockReturnValue(null)
+
+    await openLockedThenLogin()
+    shows("backdrop")
+
+    await act(async () => vi.advanceTimersByTime(OFFER_DECISION_TIMEOUT_MS))
+    shows("portfolio")
+  })
+
+  test("skips without waiting for the enrolment when the device has no authenticator", async () => {
+    mockIsAvailable.mockResolvedValue(false)
+    mockUseEnrolment.mockReturnValue(null)
+
+    await openLockedThenLogin()
+
+    shows("portfolio")
+  })
+
   test("skips when the device has no authenticator for it", async () => {
     mockIsAvailable.mockResolvedValue(false)
 
