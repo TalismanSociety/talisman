@@ -1,5 +1,23 @@
 # @talismn/chain-connectors
 
+## 1.1.0
+
+### Minor Changes
+
+- 2c14284: add ChainConnectorDotPapi, which runs balances over a dapp's polkadot-api clients
+
+### Patch Changes
+
+- 2fc7785: upgrade to polkadot-api v3: `UnifiedMetadata` exposes `extrinsic.extensionsByVersion` instead of `extrinsic.signedExtensions`. `@talismn/scale` adds `getSignedExtensions` and `hasSignedExtension`. `@talismn/sapi` now requires an `rxjs` peer dependency.
+- 407bf8c: Remove redundant tests and speed up slow ones
+- Updated dependencies [6b69acf]
+- Updated dependencies [6b69acf]
+- Updated dependencies [407bf8c]
+- Updated dependencies [407bf8c]
+- Updated dependencies [c45cff8]
+  - @talismn/chaindata-provider@2.3.0
+  - @talismn/util@2.1.1
+
 ## 1.0.6
 
 ### Patch Changes
