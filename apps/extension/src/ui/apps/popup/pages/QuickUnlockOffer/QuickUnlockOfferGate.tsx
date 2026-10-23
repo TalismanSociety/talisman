@@ -5,7 +5,7 @@ import { useQuickUnlockEnrolment } from "@ui/state/quickUnlock"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { isQuickUnlockAvailable } from "@ui/util/webauthnPrf"
-import { type ReactNode, Suspense, useCallback, useEffect, useState } from "react"
+import { type ReactNode, Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react"
 import { defer, shareReplay } from "rxjs"
 
 import { QuickUnlockOffer } from "./QuickUnlockOffer"
@@ -53,44 +53,55 @@ export const useCanOfferQuickUnlock = () => {
   return canOffer
 }
 
-export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => (
-  <Suspense fallback={<QuickUnlockOfferBackdrop />}>
-    <QuickUnlockOfferDecision>{children}</QuickUnlockOfferDecision>
-  </Suspense>
-)
+type Settled = Exclude<Decision, "pending">
 
-const QuickUnlockOfferDecision = ({ children }: { children: ReactNode }) => {
-  const [settled, setSettled] = useState<Exclude<Decision, "pending"> | null>(null)
+export const QuickUnlockOfferGate = ({ children }: { children: ReactNode }) => {
+  const [settled, setSettled] = useState<Settled | null>(null)
+
+  // the first decision holds for the life of the popup. an offer stays until the user answers it,
+  // as enrolling flips `enrolled` before the offer has reported the enrolment. a skip never turns
+  // into an offer later, which would swap out whatever route the user is on by then
+  const settle = useCallback((decision: Settled) => setSettled((prev) => prev ?? decision), [])
+
+  // some inputs never answer on broken setups (authenticator probe, storage reads), and the user
+  // must not wait on them after login. the timer lives above the suspending inputs so it always runs
+  useEffect(() => {
+    const timer = setTimeout(() => settle("skip"), OFFER_DECISION_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [settle])
+
+  const answer = useCallback(() => setSettled("skip"), [])
+
+  if (settled === "skip") return children
+
+  return (
+    <Suspense fallback={<QuickUnlockOfferBackdrop />}>
+      {settled === "offer" ? (
+        <QuickUnlockOffer onAnswer={answer} />
+      ) : (
+        <QuickUnlockOfferDecision onSettle={settle} />
+      )}
+    </Suspense>
+  )
+}
+
+const QuickUnlockOfferDecision = ({ onSettle }: { onSettle: (decision: Settled) => void }) => {
   const available = useQuickUnlockAvailable()
   const enrolled = useQuickUnlockEnrolment()
   const isFeatureEnabled = useFeatureFlag("QUICK_UNLOCK")
   const [dismissedForGood] = useAppState("hideQuickUnlockOffer")
-  const [timedOut, setTimedOut] = useState(false)
 
-  // some broken authenticator setups never answer, and the user must not wait on them after login
-  useEffect(() => {
-    const timer = setTimeout(() => setTimedOut(true), OFFER_DECISION_TIMEOUT_MS)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const inputsDecision = decide({
+  const decision = decide({
     dismissedForGood: !!dismissedForGood,
     isFeatureEnabled,
     enrolled,
     available,
   })
-  const decision = settled ?? (inputsDecision === "pending" && timedOut ? "skip" : inputsDecision)
 
-  // the first decision holds for the life of the popup. an offer stays until the user answers it,
-  // as enrolling flips `enrolled` before the offer has reported the enrolment. a skip never turns
-  // into an offer later, which would swap out whatever route the user is on by then
-  useEffect(() => {
-    if (!settled && decision !== "pending") setSettled(decision)
-  }, [settled, decision])
+  // settles before paint, so a decision known at login never flashes the backdrop
+  useLayoutEffect(() => {
+    if (decision !== "pending") onSettle(decision)
+  }, [decision, onSettle])
 
-  const answer = useCallback(() => setSettled("skip"), [])
-
-  if (decision === "pending") return <QuickUnlockOfferBackdrop />
-  if (decision === "offer") return <QuickUnlockOffer onAnswer={answer} />
-  return children
+  return <QuickUnlockOfferBackdrop />
 }

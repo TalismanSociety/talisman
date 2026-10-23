@@ -233,14 +233,17 @@ describe("QuickUnlockOfferGate", () => {
     shows("backdrop")
   })
 
-  test("shows the offer backdrop while the offer settings load", async () => {
+  test("shows the offer backdrop while the offer settings load, then skips when they never do", async () => {
+    vi.useFakeTimers()
     mockUseFeatureFlag.mockImplementation(() => {
       throw new Promise(() => {})
     })
 
     await openLockedThenLogin()
-
     shows("backdrop")
+
+    await act(async () => vi.advanceTimersByTime(OFFER_DECISION_TIMEOUT_MS))
+    shows("portfolio")
   })
 
   test("skips when the availability check never answers", async () => {
