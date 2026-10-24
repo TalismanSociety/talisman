@@ -523,6 +523,7 @@ describe("admitEvmReplacement", () => {
       {
         type: "observed",
         leg: 1,
+        candidates: 1,
         observation: { status: "landed", hash: sentState(sent).hash, amount: LEG1_AMOUNT },
       },
       T0 + 3_000

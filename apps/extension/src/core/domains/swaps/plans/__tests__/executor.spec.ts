@@ -389,7 +389,7 @@ describe("swap plan executor", () => {
     await seedRunningPlan()
     await applyPlanEvent(
       PLAN_ID,
-      { type: "observed", leg: 0, observation: LEG0_LANDED },
+      { type: "observed", leg: 0, candidates: 1, observation: LEG0_LANDED },
       T0 + 10_000
     )
     clock = T0 + SIGN_WINDOW_MS + 1

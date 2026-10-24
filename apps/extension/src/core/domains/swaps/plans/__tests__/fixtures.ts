@@ -106,5 +106,6 @@ export const ADMIT_LEG0 = {
 export const LEG0_LANDED = {
   type: "observed",
   leg: 0,
+  candidates: 1,
   observation: { status: "landed", hash: LEG0_HASH, amount: LEG0_OUTPUT },
 } as const

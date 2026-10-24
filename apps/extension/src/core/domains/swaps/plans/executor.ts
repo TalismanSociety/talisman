@@ -183,7 +183,12 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
     }
     await checkpoint(`observed:${index}`)
 
-    const observed: PlanEvent = { type: "observed", leg: index, observation }
+    const observed: PlanEvent = {
+      type: "observed",
+      leg: index,
+      observation,
+      candidates: legCandidates(leg.state).length,
+    }
     if (observation.status !== "pending") return settle(id, index, observed)
     if (observation.scanned?.length) await applyAndFollow(id, observed)
     if (pastDeadline()) return settle(id, index, deadline)

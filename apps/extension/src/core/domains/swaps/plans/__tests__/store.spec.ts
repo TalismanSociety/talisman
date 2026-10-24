@@ -205,6 +205,7 @@ describe("swap plan store", () => {
         {
           type: "observed",
           leg: 0,
+          candidates: 1,
           observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         T0 + 2_000
@@ -227,7 +228,12 @@ describe("swap plan store", () => {
         applyPlanEvent(PLAN_ID, ADMIT_LEG0, T0 + 1),
         applyPlanEvent(
           PLAN_ID,
-          { type: "observed", leg: 0, observation: { status: "landed", hash: HASH0, amount: 5n } },
+          {
+            type: "observed",
+            leg: 0,
+            candidates: 1,
+            observation: { status: "landed", hash: HASH0, amount: 5n },
+          },
           T0 + 2
         ),
       ])

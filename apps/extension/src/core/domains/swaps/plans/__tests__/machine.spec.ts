@@ -206,7 +206,7 @@ describe("a sent leg", () => {
   it("stays as it is while pending", () => {
     const result = transition(
       RUNNING,
-      { type: "observed", leg: 0, observation: { status: "pending" } },
+      { type: "observed", leg: 0, candidates: 1, observation: { status: "pending" } },
       T1
     )
     expect(result.plan).toBe(RUNNING)
@@ -217,6 +217,7 @@ describe("a sent leg", () => {
     const pendingAfter = (scanned: number[]): PlanEvent => ({
       type: "observed",
       leg: 0,
+      candidates: 1,
       observation: { status: "pending", scanned },
     })
 
@@ -255,6 +256,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
+          candidates: 1,
           observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         T1
@@ -270,6 +272,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
+          candidates: 1,
           observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         now
@@ -299,6 +302,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
+          candidates: 1,
           observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         T1
@@ -329,6 +333,7 @@ describe("a sent leg", () => {
       {
         type: "observed",
         leg: 0,
+        candidates: 1,
         observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
       },
       T1
@@ -345,6 +350,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 1,
+          candidates: 1,
           observation: { status: "landed", hash: HASH1, amount: 985000000000000000n },
         },
         now
@@ -368,7 +374,11 @@ describe("a sent leg", () => {
 
   it("aborts when leg 0 is proven dropped", () => {
     expect(
-      transition(RUNNING, { type: "observed", leg: 0, observation: { status: "dropped" } }, T1)
+      transition(
+        RUNNING,
+        { type: "observed", leg: 0, candidates: 1, observation: { status: "dropped" } },
+        T1
+      )
     ).toEqual({
       plan: {
         ...RUNNING,
@@ -386,7 +396,7 @@ describe("a sent leg", () => {
   it("never lets a later leg become dropped", () => {
     const result = transition(
       LEG1_RUNNING,
-      { type: "observed", leg: 1, observation: { status: "dropped" } },
+      { type: "observed", leg: 1, candidates: 1, observation: { status: "dropped" } },
       T1 + 10_000
     )
     expect(result.plan).toBe(LEG1_RUNNING)
@@ -399,6 +409,7 @@ describe("a sent leg", () => {
       {
         type: "observed",
         leg: 0,
+        candidates: 1,
         observation: { status: "failed", reason: "reverted", hash: HASH0 },
       },
       T1
@@ -419,6 +430,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 1,
+          candidates: 1,
           observation: { status: "failed", reason: "reverted", hash: HASH1 },
         },
         now
@@ -443,7 +455,12 @@ describe("a sent leg", () => {
   it("stops, never aborts, when leg 0 is indeterminate", () => {
     const result = transition(
       RUNNING,
-      { type: "observed", leg: 0, observation: { status: "failed", reason: "indeterminate" } },
+      {
+        type: "observed",
+        leg: 0,
+        candidates: 1,
+        observation: { status: "failed", reason: "indeterminate" },
+      },
       T1
     )
     expect(result.plan.phase).toBe("stopped")
@@ -459,7 +476,12 @@ describe("a sent leg", () => {
   it("stops when a later leg is replaced", () => {
     const result = transition(
       LEG1_RUNNING,
-      { type: "observed", leg: 1, observation: { status: "failed", reason: "replaced" } },
+      {
+        type: "observed",
+        leg: 1,
+        candidates: 1,
+        observation: { status: "failed", reason: "replaced" },
+      },
       T1
     )
     expect(result.plan.phase).toBe("stopped")
@@ -497,7 +519,12 @@ describe("a sent leg", () => {
   it("ignores an observation of a leg that is not sent", () => {
     const result = transition(
       BUILDING,
-      { type: "observed", leg: 1, observation: { status: "landed", hash: HASH1, amount: 1n } },
+      {
+        type: "observed",
+        leg: 1,
+        candidates: 1,
+        observation: { status: "landed", hash: HASH1, amount: 1n },
+      },
       T1
     )
     expect(result.plan).toBe(BUILDING)
@@ -702,7 +729,12 @@ describe("replayed and stale events", () => {
   it("ignores every event on a terminal plan", () => {
     const completed = transition(
       LEG1_RUNNING,
-      { type: "observed", leg: 1, observation: { status: "landed", hash: HASH1, amount: 1n } },
+      {
+        type: "observed",
+        leg: 1,
+        candidates: 1,
+        observation: { status: "landed", hash: HASH1, amount: 1n },
+      },
       T1
     ).plan
     for (const event of [
@@ -712,6 +744,7 @@ describe("replayed and stale events", () => {
       {
         type: "observed",
         leg: 1,
+        candidates: 1,
         observation: { status: "failed", reason: "reverted", hash: HASH1 },
       } as const,
     ]) {
@@ -841,7 +874,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
     const sped = transition(LEG1_RUNNING, replaced(SPEED_UP, LEG1_DEADLINE), T1 + 1).plan
     const now = T1 + 10_000
     const observation = { status: "landed", hash: SPEED_UP.hash, amount: 5n } as const
-    const result = transition(sped, { type: "observed", leg: 1, observation }, now)
+    const result = transition(sped, { type: "observed", leg: 1, candidates: 1, observation }, now)
     expect(result.plan.phase).toBe("completed")
     expect(result.plan.legs[1].state).toEqual({
       at: "landed",
@@ -855,7 +888,11 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
     const cancelled = transition(LEG1_RUNNING, replaced(CANCEL, LEG1_DEADLINE), T1 + 1).plan
     const now = T1 + 10_000
     const observation = { status: "failed", reason: "cancelled", hash: CANCEL.hash } as const
-    const result = transition(cancelled, { type: "observed", leg: 1, observation }, now)
+    const result = transition(
+      cancelled,
+      { type: "observed", leg: 1, candidates: 1, observation },
+      now
+    )
     expect(result.plan.phase).toBe("stopped")
     expect(result.plan.legs[1].state).toEqual({
       at: "failed",
@@ -883,12 +920,34 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
       T1
     ).plan
     const observation = { status: "failed", reason: "cancelled", hash: CANCEL.hash } as const
-    const result = transition(plan, { type: "observed", leg: 0, observation }, T1 + 1)
+    const result = transition(
+      plan,
+      { type: "observed", leg: 0, candidates: 1, observation },
+      T1 + 1
+    )
     expect(result.plan.phase).toBe("aborted")
     expect(result.plan.legs.map((leg) => leg.state)).toEqual([
       { at: "failed", failure: "cancelled", hash: CANCEL.hash, failedAt: T1 + 1 },
       { at: "skipped" },
     ])
+  })
+
+  it("ignores a deadline a replacement pushed back while it was in flight", () => {
+    const later = LEG1_DEADLINE + 5_000
+    const sped = transition(LEG1_RUNNING, replaced(SPEED_UP, later), T1 + 1).plan
+    expect(transition(sped, { type: "deadline", leg: 1 }, LEG1_DEADLINE).plan).toBe(sped)
+    expect(transition(sped, { type: "deadline", leg: 1 }, later).plan.phase).toBe("stopped")
+  })
+
+  it("ignores a replaced verdict that never looked for the user's latest replacement", () => {
+    const sped = transition(LEG1_RUNNING, replaced(SPEED_UP, LEG1_DEADLINE), T1 + 1).plan
+    const observation = { status: "failed", reason: "replaced" } as const
+    expect(
+      transition(sped, { type: "observed", leg: 1, observation, candidates: 1 }, T1 + 2).plan
+    ).toBe(sped)
+    expect(
+      transition(sped, { type: "observed", leg: 1, observation, candidates: 2 }, T1 + 2).plan.phase
+    ).toBe("stopped")
   })
 
   it("names the latest transaction when its deadline passes", () => {

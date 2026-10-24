@@ -191,6 +191,10 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
       if (leg?.state.at !== "sent") return null
       const { hash } = leg.state
       const { observation } = event
+      const isInferredFromAbsence =
+        observation.status === "dropped" ||
+        (observation.status === "failed" && observation.reason === "replaced")
+      if (isInferredFromAbsence && legCandidates(leg.state).length > event.candidates) return null
 
       switch (observation.status) {
         case "pending": {
@@ -240,7 +244,7 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
 
     case "deadline": {
       const leg = legs[event.leg]
-      if (leg?.state.at !== "sent") return null
+      if (leg?.state.at !== "sent" || now < leg.state.deadlineAt) return null
       return stop(legs, event.leg, "indeterminate", now, latestCandidate(leg.state).hash)
     }
 

@@ -124,7 +124,13 @@ export type PlanEvent =
       /** the replacement's own deadline: the leg is not called indeterminate before it */
       deadlineAt: number
     }
-  | { type: "observed"; leg: number; observation: LegObservation }
+  | {
+      type: "observed"
+      leg: number
+      observation: LegObservation
+      /** how many of the leg's transactions the observation looked for */
+      candidates: number
+    }
   | { type: "deadline"; leg: number }
   | {
       type: "build-failed"
