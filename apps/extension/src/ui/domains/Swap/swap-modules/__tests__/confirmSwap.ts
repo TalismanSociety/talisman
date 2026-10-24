@@ -16,6 +16,6 @@ export type ConfirmSwapParams = {
 
 /** What the confirm screen builds for the selected quote: the transaction to sign, the fees it shows and the tx row info */
 export const confirmSwap = async ({ slippage = 0.005, ...params }: ConfirmSwapParams) => {
-  const { transaction, fees, txInfo } = await buildSwapTransaction({ ...params, slippage })
+  const { transaction, fees, txInfo } = (await buildSwapTransaction({ ...params, slippage })).leg
   return { transaction, fees, txInfo }
 }

@@ -29,9 +29,11 @@ export type LegFailure =
   | "expired"
   | "cancelled"
 
+export type AwaitingUserReason = "unlock" | "hardware"
+
 export type LegState =
   | { at: "queued" }
-  | { at: "awaiting-user"; why: "unlock" | "hardware"; since: number }
+  | { at: "awaiting-user"; why: AwaitingUserReason; since: number }
   | { at: "building"; attempt: number; nextAttemptAt: number }
   | {
       at: "sent"
@@ -99,6 +101,8 @@ export type SwapPlan = {
   /** the EVM address that holds the funds between legs */
   intermediate: string
   legs: NonEmpty<PlanLeg>
+  /** what the plan last waited on the user for: a leg's own state forgets it once the leg moves on */
+  pausedFor?: AwaitingUserReason
 }
 
 export type PlanEvent =

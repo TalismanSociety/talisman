@@ -1,14 +1,18 @@
 import { log } from "@common/log"
+import { db } from "@core/db"
+import type { SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
+import { SwapPlanProgress } from "@ui/domains/Swap/components/SwapPlanProgress"
 import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
+import { useLiveQuery } from "dexie-react-hooks"
 import { t } from "i18next"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -51,13 +55,15 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({
   }, [tx])
 
   const displayTx = tx ?? cachedTx
+  const planId = usePlanIdOf(displayTx)
 
   return (
     <Modal analyticsId="tx_history" isOpen={isOpen} onDismiss={onClose} containerId="main">
       {!!displayTx && (
-        <DialogWrapper tx={displayTx} onClose={onClose}>
+        <DialogWrapper isProgress={displayTx.status === "pending" || !!planId} onClose={onClose}>
           <ModalContent
             tx={displayTx}
+            planId={planId}
             onClose={onClose}
             onReplacementComplete={onReplacementComplete}
           />
@@ -67,8 +73,20 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({
   )
 }
 
-const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: ReactNode }> = ({
-  tx,
+/** the plan of a swap plan leg until the plan is pruned, undefined until known */
+const usePlanIdOf = (tx: WalletTransaction | undefined): SwapPlanId | null | undefined => {
+  const id = tx?.txInfo?.plan?.id
+  const found = useLiveQuery(
+    async () => ({ id, exists: !!id && !!(await db.swapPlans.get(id)) }),
+    [id]
+  )
+  if (!id) return null
+  if (found?.id !== id) return undefined
+  return found.exists ? id : null
+}
+
+const DialogWrapper: FC<{ isProgress: boolean; onClose: () => void; children: ReactNode }> = ({
+  isProgress,
   children,
   onClose,
 }) => {
@@ -77,7 +95,7 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
     <ModalDialog
       id={TX_HISTORY_MODAL_CONTAINER_ID}
       title={t("Transaction Details")}
-      className={cn("relative", tx.status === "pending" && "[&_header]:invisible")}
+      className={cn("relative", isProgress && "[&_header]:invisible")}
       onCloseClick={onClose}
     >
       {children}
@@ -87,9 +105,16 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
 
 const ModalContent: FC<{
   tx: WalletTransaction
+  planId: SwapPlanId | null | undefined
   onClose: () => void
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
-}> = ({ tx, onClose, onReplacementComplete }) => {
+}> = ({ tx, planId, onClose, onReplacementComplete }) => {
+  if (planId === undefined) return null
+  if (planId)
+    return (
+      <SwapPlanProgress id={planId} onClose={onClose} containerId={TX_HISTORY_MODAL_CONTAINER_ID} />
+    )
+
   switch (tx.status) {
     case "pending":
       return (

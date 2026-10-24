@@ -308,6 +308,7 @@ describe("a sent leg", () => {
         ...plan,
         phase: "paused",
         updatedAt: T1,
+        pausedFor: "hardware",
         legs: [
           LEG0_LANDED,
           {
@@ -580,6 +581,7 @@ describe("a building leg", () => {
       plan: {
         ...BUILDING,
         phase: "paused",
+        pausedFor: "unlock",
         legs: [LEG0_LANDED, { ...LEG1, state: { at: "awaiting-user", why: "unlock", since: T1 } }],
       },
       effects: [{ type: "notify", kind: "needs-you" }],
@@ -786,6 +788,10 @@ describe("one plan per intermediate", () => {
   it("lets a terminal plan's intermediate go", () => {
     const aborted = transition(PROPOSED, { type: "cancelled" }, T0).plan
     expect(findIntermediateConflict([aborted], { intermediate: EVM_ADDRESS })).toBe(null)
+  })
+
+  it("lets a proposed plan's intermediate go", () => {
+    expect(findIntermediateConflict([PROPOSED], { intermediate: EVM_ADDRESS })).toBe(null)
   })
 
   it("ignores a different intermediate", () => {

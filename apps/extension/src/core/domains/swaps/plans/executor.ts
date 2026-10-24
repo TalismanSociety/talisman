@@ -306,12 +306,12 @@ const coreDeps: ExecutorDeps = {
     (await firstValueFrom(
       passwordStore.isLoggedIn.pipe(filter((value) => value !== "UNKNOWN"))
     )) === "TRUE",
-  notify: async (kind) => {
+  notify: async (kind, plan) => {
     if (!(await settingsStore.get("allowNotifications"))) return
     await createNotification(
       `swap-plan-${kind}`,
       "",
-      chrome.runtime.getURL("dashboard.html#/tx-history")
+      chrome.runtime.getURL(`popup.html#/swap-plan/${plan.id}`)
     )
   },
   setAlarm: async (needed) => {

@@ -11,6 +11,7 @@ import {
   proposePlan,
   putPlan,
   sweepPlans,
+  takeProposalArrival,
 } from "../store"
 import type { PlanLeg, PlanSummary, SwapPlan, SwapPlanId } from "../types"
 
@@ -130,12 +131,37 @@ describe("swap plan store", () => {
       )
     })
 
-    it("rejects a plan while another live plan holds the intermediate", async () => {
+    it("rejects a plan while another started plan holds the intermediate", async () => {
       await proposePlan(PROPOSAL, T0)
+      await applyPlanEvent(PLAN_ID, ADMIT_LEG0, T0 + 1_000)
       await expect(
         proposePlan({ ...PROPOSAL, id: OTHER_ID, intermediate: EVM_ADDRESS.toLowerCase() }, T0)
       ).rejects.toThrow(new PlanProposalRejected("Another swap is using that account"))
       expect(await db.swapPlans.count()).toBe(1)
+    })
+
+    it("supersedes another proposed plan on the same intermediate", async () => {
+      await proposePlan(PROPOSAL, T0)
+      const other = await proposePlan({ ...PROPOSAL, id: OTHER_ID }, T0 + 2)
+      expect(other.phase).toBe("proposed")
+      expect((await db.swapPlans.get(PLAN_ID))?.phase).toBe("aborted")
+      expect(await getLivePlanIds()).toEqual(new Set([OTHER_ID]))
+    })
+
+    it("rejects a proposal that arrived before the proposed plan on its intermediate", async () => {
+      const earlier = takeProposalArrival()
+      await proposePlan({ ...PROPOSAL, id: OTHER_ID }, T0)
+      await expect(proposePlan(PROPOSAL, T0, earlier)).rejects.toThrow(
+        new PlanProposalRejected("A newer swap is using that account")
+      )
+      expect(await getLivePlanIds()).toEqual(new Set([OTHER_ID]))
+    })
+
+    it("supersedes a plan proposed before a restart, whatever the clock said then", async () => {
+      await putPlan({ ...PROPOSED, createdAt: T0 + 60_000, updatedAt: T0 + 60_000 })
+      const other = await proposePlan({ ...PROPOSAL, id: OTHER_ID }, T0)
+      expect(other.phase).toBe("proposed")
+      expect((await db.swapPlans.get(PLAN_ID))?.phase).toBe("aborted")
     })
 
     it("accepts the intermediate of a plan that is over", async () => {

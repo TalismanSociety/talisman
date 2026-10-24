@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 vi.mock("../../env.core", () => ({
   coreSwapEnv: {
     getNetwork: async (id: string) => (id === "964" ? { id, platform: "ethereum" } : null),
-    evmClient: async () => ({ getBalance: async () => 0n }),
+    evmClient: async () => ({ getBalance: async () => 0n, getTransactionCount: async () => 0 }),
     substrateApi: async () => {
       throw new Error("no substrate api in this test")
     },
@@ -191,7 +191,10 @@ const makeExecutor = ({
 
   const deps: ExecutorDeps = {
     env: {
-      evmClient: async () => ({ getBalance: async () => 2n * 10n ** 18n }),
+      evmClient: async () => ({
+        getBalance: async () => 2n * 10n ** 18n,
+        getTransactionCount: async () => 0,
+      }),
     } as unknown as SwapEnv,
     getModule: (protocol) => modules[protocol],
     sign,

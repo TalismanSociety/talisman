@@ -16,6 +16,20 @@ export type BuildSwapTransactionParams = {
   signal?: AbortSignal
 }
 
+/** the quote the first leg was built from: the plan proposes the legs of the transaction the user signs */
+export type BuiltSwap = { quote: BaseQuote; leg: BuiltLeg }
+
+export const quoteLegsKey = (quote: BaseQuote | null | undefined) =>
+  quote?.legs.map((leg) => [
+    leg.protocol,
+    leg.fromTokenId,
+    leg.toTokenId,
+    leg.signer,
+    leg.recipient,
+    leg.inputAmount.toString(),
+    leg.outputAmount.toString(),
+  ]) ?? []
+
 const isSameAddress = (address: string | null, expected: string) =>
   address === expected || (address !== null && isAddressEqual(address, expected))
 
@@ -35,7 +49,7 @@ export const buildSwapTransaction = async ({
   context,
   slippage,
   signal,
-}: BuildSwapTransactionParams): Promise<BuiltLeg> => {
+}: BuildSwapTransactionParams): Promise<BuiltSwap> => {
   const firstLeg = quote.legs[0]
   const lastLeg = quote.legs[quote.legs.length - 1]
   if (
@@ -56,7 +70,7 @@ export const buildSwapTransaction = async ({
     })) ?? null
   throwIfAborted(signal)
 
-  const built = await module.buildLeg({
+  const leg = await module.buildLeg({
     leg: firstLeg,
     input: fromAmount,
     context,
@@ -65,5 +79,5 @@ export const buildSwapTransaction = async ({
   })
   throwIfAborted(signal)
 
-  return built
+  return { quote, leg }
 }

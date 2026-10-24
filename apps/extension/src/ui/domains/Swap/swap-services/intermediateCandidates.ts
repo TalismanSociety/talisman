@@ -6,12 +6,12 @@ import { getAccountsByCategory$ } from "@ui/state/accounts"
 import { getBalances$ } from "@ui/state/balances"
 import { firstValueFrom } from "rxjs"
 
-/** the owned EVM accounts, with their hub balance and whether a live swap plan already holds them */
+/** the owned EVM accounts, with their hub balance and whether a started swap plan already holds them */
 export const getIntermediateCandidates = async (hub: TokenId): Promise<IntermediateCandidate[]> => {
   const [accounts, balances, livePlans] = await Promise.all([
     firstValueFrom(getAccountsByCategory$("owned")),
     firstValueFrom(getBalances$("owned")),
-    db.swapPlans.where("phase").anyOf("proposed", "running", "paused").toArray(),
+    db.swapPlans.where("phase").anyOf("running", "paused").toArray(),
   ])
 
   return accounts

@@ -66,6 +66,8 @@ export const TxReplaceActions: FC<TxReplaceActionsProps> = ({
     if (!tx) return true
     if (!evmNetwork || evmNetwork.preserveGasEstimate) return true
     if (tx.status !== "pending" || tx.platform !== "ethereum") return true
+    // a swap plan leg is bound to its approved nonce and calldata, a replacement would break the plan
+    if (tx.txInfo?.plan) return true
     return false
   }, [tx, evmNetwork])
 

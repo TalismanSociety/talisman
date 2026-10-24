@@ -391,7 +391,7 @@ const getNonceAt = async (env: SwapEnv, networkId: string, address: string, bloc
     [address],
     blockHash
   )
-  return account?.nonce ?? 0
+  return account ? (account.nonce ?? 0) : null
 }
 
 /**
@@ -459,13 +459,12 @@ const scanBlocks = async (
 }
 
 /**
- * Landed means the extrinsic sits in a finalised block with ExtrinsicSuccess. The signer's nonce at
- * the finalised head gates the search: while it has not moved past the leg's nonce nothing executed,
- * which is dropped once the era is dead. Once it moved, the era's finalised blocks are read for the
- * extrinsic, and only that extrinsic proves the funds came from this leg. Once the era is dead and
- * every block of it was read without the extrinsic, the leg is indeterminate. A block that could not
- * be read, or a scan that ran out of time, keeps the leg pending, for the next observation or the
- * leg deadline.
+ * Landed means the extrinsic sits in a finalised block with ExtrinsicSuccess. While the era lives,
+ * a signer nonce that has not moved past the leg's nonce means nothing executed yet. Otherwise the
+ * era's finalised blocks are read for the extrinsic, and only that extrinsic proves the funds came
+ * from this leg. Once the era is dead and every block of it was read without the extrinsic, the leg
+ * is dropped when the nonce is still unused, else indeterminate. A block that could not be read, or
+ * a scan that ran out of time, keeps the leg pending, for the next observation or the leg deadline.
  * The next observation reads only the blocks this one did not.
  */
 const observeSubToEvmLeg = async (
@@ -480,7 +479,8 @@ const observeSubToEvmLeg = async (
   const head = await getFinalizedHead(env, substrateNetworkId)
   const nextNonce = await getNonceAt(env, substrateNetworkId, leg.signer, head.hash)
   const eraDead = head.number >= birth + period
-  if (nextNonce <= sent.nonce) return eraDead ? { status: "dropped" } : { status: "pending" }
+  const nonceUnused = nextNonce !== null && nextNonce <= sent.nonce
+  if (nonceUnused && !eraDead) return { status: "pending" }
 
   const scan = await scanBlocks(
     env,
@@ -489,8 +489,8 @@ const observeSubToEvmLeg = async (
     sent.hash
   )
   if (scan.found) return landedFromTransfer(leg, scan.found)
-  if (eraDead && scan.complete) return { status: "failed", reason: "indeterminate" }
-  return { status: "pending", scanned: scan.scanned }
+  if (!eraDead || !scan.complete) return { status: "pending", scanned: scan.scanned }
+  return nonceUnused ? { status: "dropped" } : { status: "failed", reason: "indeterminate" }
 }
 
 const observeLeg = async (params: ObserveLegParams, env: SwapEnv): Promise<LegObservation> => {

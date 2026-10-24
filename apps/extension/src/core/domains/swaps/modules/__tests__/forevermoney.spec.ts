@@ -1015,11 +1015,30 @@ describe("forevermoneySwapModule observeLeg", () => {
     expect(mockGetBlock).toHaveBeenCalledWith({ blockTag: "finalized" })
   })
 
-  it("is replaced when the nonce moved past the leg without a receipt", async () => {
+  it("is replaced when the nonce moved past the leg and no node knows the hash", async () => {
     noReceipt()
     mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockRejectedValue(
+      Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })
+    )
 
     expect(await observe(sent(RAW))).toEqual({ status: "failed", reason: "replaced" })
+  })
+
+  it("never calls the leg replaced when the node fails to say whether it knows the hash", async () => {
+    noReceipt()
+    mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockRejectedValue(new Error("503 Service Unavailable"))
+
+    await expect(observe(sent(RAW))).rejects.toThrow("503 Service Unavailable")
+  })
+
+  it("stays pending when the node still knows the hash a lagging node had no receipt for", async () => {
+    noReceipt()
+    mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockResolvedValue({ hash: TX_HASH, blockNumber: 6_999_999n })
+
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
   })
 
   it("stays pending while only an unfinalised block consumed the nonce", async () => {

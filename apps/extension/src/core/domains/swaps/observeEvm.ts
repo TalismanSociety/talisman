@@ -2,11 +2,18 @@ import { type Hex, type PublicClient, parseTransaction } from "viem"
 
 import type { LegObservation, SentLeg } from "./types"
 
-const receiptOrNull = (client: PublicClient, hash: Hex) =>
-  client.getTransactionReceipt({ hash }).catch((err: unknown) => {
-    if ((err as { name?: string }).name === "TransactionReceiptNotFoundError") return null
+const nullWhen =
+  (notFoundError: string) =>
+  (err: unknown): null => {
+    if ((err as { name?: string }).name === notFoundError) return null
     throw err
-  })
+  }
+
+const receiptOrNull = (client: PublicClient, hash: Hex) =>
+  client.getTransactionReceipt({ hash }).catch(nullWhen("TransactionReceiptNotFoundError"))
+
+const transactionOrNull = (client: PublicClient, hash: Hex) =>
+  client.getTransaction({ hash }).catch(nullWhen("TransactionNotFoundError"))
 
 const transactionBody = async (client: PublicClient, sent: SentLeg) => {
   if (sent.evidence.platform === "ethereum" && sent.evidence.raw) {
@@ -18,9 +25,10 @@ const transactionBody = async (client: PublicClient, sent: SentLeg) => {
 }
 
 /**
- * A receipt in a finalised block settles an EVM leg either way. Without one, the signer's nonce
- * at the finalised block tells a replaced leg from a pending one: a nonce past the leg's was
- * consumed for good by another transaction.
+ * A receipt in a finalised block settles an EVM leg either way. Without one, a signer's nonce past
+ * the leg's at the finalised block, read before the receipt, with the hash unknown to the node,
+ * means another transaction consumed it for good. A lagging fallback node can miss a receipt another one has, so only a node that answers
+ * "not found" for the hash makes the leg replaced: any other failure is thrown for a later observation.
  */
 export const observeEvmLeg = async (
   client: PublicClient,
@@ -29,16 +37,15 @@ export const observeEvmLeg = async (
   landedAmount: (body: { data: Hex; value: bigint }) => bigint
 ): Promise<LegObservation> => {
   const finalised = (await client.getBlock({ blockTag: "finalized" })).number
-  const [receipt, nonceAfter] = await Promise.all([
-    receiptOrNull(client, sent.hash),
-    client.getTransactionCount({ address: signer, blockNumber: finalised }),
-  ])
+  const nonceAfter = await client.getTransactionCount({ address: signer, blockNumber: finalised })
+  const receipt = await receiptOrNull(client, sent.hash)
 
   if (receipt) {
     if (receipt.blockNumber > finalised) return { status: "pending" }
     if (receipt.status !== "success") return { status: "failed", reason: "reverted" }
     return { status: "landed", amount: landedAmount(await transactionBody(client, sent)) }
   }
-  if (nonceAfter > sent.nonce) return { status: "failed", reason: "replaced" }
-  return { status: "pending" }
+  if (nonceAfter <= sent.nonce) return { status: "pending" }
+  const known = await transactionOrNull(client, sent.hash)
+  return known ? { status: "pending" } : { status: "failed", reason: "replaced" }
 }

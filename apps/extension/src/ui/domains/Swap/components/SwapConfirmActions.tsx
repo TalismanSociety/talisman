@@ -49,8 +49,9 @@ import { useTokenRates } from "@ui/state/tokenRates"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { buildSwapTransaction } from "../buildSwapTransaction"
+import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
+import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
 import {
@@ -61,6 +62,7 @@ import {
 } from "../swap-errors"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
+import { SwapRouteRow } from "./SwapRoute"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -203,6 +205,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const solanaRpc = useSolanaRpc(fromToken?.platform === "solana" ? fromToken.networkId : null)
 
+  const firstLegModule = useFirstLegModule(selectedQuote, swapModule)
+
   const exchangeAndTransactionQuery = useQuery({
     queryKey: [
       "swap-exchange-transaction",
@@ -215,6 +219,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       selectedQuote?.protocol,
       selectedQuote?.subProtocol,
       selectedQuote?.outputAmountBN?.toString(),
+      quoteLegsKey(selectedQuote),
       subProtocol,
       allowReap,
       approvalCounter,
@@ -223,7 +228,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     ],
     queryFn: async ({ signal }) => {
       if (
-        !swapModule ||
+        !firstLegModule ||
         !selectedQuote ||
         !fromTokenId ||
         !toTokenId ||
@@ -240,7 +245,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           : { platform: "ethereum" }
 
       return buildSwapTransaction({
-        module: swapModule,
+        module: firstLegModule,
         quote: selectedQuote,
         fromTokenId,
         toTokenId,
@@ -253,7 +258,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       })
     },
     enabled:
-      !!swapModule &&
+      !!firstLegModule &&
       !!fromTokenId &&
       !!toTokenId &&
       !!fromAddress &&
@@ -268,8 +273,15 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     retry: false,
   })
 
-  const transaction = exchangeAndTransactionQuery.data?.transaction ?? null
-  const txInfo = exchangeAndTransactionQuery.data?.txInfo
+  const plan = useSwapPlanProposal({
+    built: exchangeAndTransactionQuery.data,
+    fromAmount,
+    toAddress,
+    slippage: toSlippageDecimal(slippagePercent),
+  })
+
+  const transaction = exchangeAndTransactionQuery.data?.leg.transaction ?? null
+  const txInfo = plan.txInfo
   const exchangeError = exchangeAndTransactionQuery.error
   // Use !data && !error (instead of TanStack's .isLoading) so we stay "loading" during the brief
   // gap between approval completing and the exchange query starting to fetch, preventing button flicker.
@@ -479,12 +491,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   // the approval only spends its own gas, additional fees are drawn by the swap transaction
   const additionalFeePlanck = useMemo(() => {
     if (needsApproval || !feeToken) return 0n
-    return getAdditionalFeePlanck(
-      exchangeAndTransactionQuery.data?.fees ?? [],
-      feeToken.id,
-      feeToken.decimals
-    )
-  }, [exchangeAndTransactionQuery.data?.fees, feeToken, needsApproval])
+    return getAdditionalFeePlanck(plan.fees ?? [], feeToken.id, feeToken.decimals)
+  }, [plan.fees, feeToken, needsApproval])
 
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
@@ -511,6 +519,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
     // 2. Exchange / transaction crafting errors
     if (exchangeError) return classifySwapError(exchangeError)
+    if (plan.proposeError) return classifySwapError(plan.proposeError)
 
     // 3. Fee estimation / simulation errors (only relevant when not in approval phase)
     if (needsApproval)
@@ -527,6 +536,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromTokenId,
     feeBalanceCheck,
     exchangeError,
+    plan.proposeError,
     needsApproval,
     approvalEthTx.errorDetails,
     swapEthTx.error,
@@ -580,6 +590,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       }),
       used_max: fromAmount === fromBalance?.transferable.planck,
       reversed,
+      leg_count: selectedQuote?.legs.length ?? 1,
     }
   }, [
     feePlanck,
@@ -629,8 +640,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       feeBalanceCheck.status === "loading" ||
       isExchangeLoading ||
       !swapTx ||
+      plan.isProposing ||
       !!swapError,
     [
+      plan.isProposing,
       fromAddress,
       isExchangeLoading,
       isInsufficientBalance,
@@ -651,6 +664,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       >
         {children}
         <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
+          {selectedQuote && selectedQuote.legs.length > 1 ? (
+            <SwapRouteRow legs={selectedQuote.legs} containerId={containerId} />
+          ) : null}
           <QuoteProvider />
           <QuoteDuration />
           <QuoteExchangeRate />
@@ -738,7 +754,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
             )}
           </div>
           <SwapOtherFees
-            fees={exchangeAndTransactionQuery.data?.fees ?? selectedQuote?.fees ?? []}
+            fees={plan.fees ?? selectedQuote?.fees ?? []}
             isLoading={isExchangeLoading}
           />
           <SimulationRow />
