@@ -2,11 +2,13 @@ import { db } from "@core/db"
 import { planSteps } from "@core/domains/swaps/plans/helpers"
 import type { SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
+import { CheckIcon, XIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
-import { ProcessAnimation } from "@ui/components/ProcessAnimation/ProcessAnimation"
+import type { ProcessAnimationStatus } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -41,6 +43,55 @@ const useLegRows = (plan: SwapPlan | null | undefined) => {
 }
 
 const NO_ACTION: SwapPlanFooterAction = { type: "none" }
+
+const SwapPlanStatusIcon: FC<{ status: ProcessAnimationStatus; className?: string }> = ({
+  status,
+  className,
+}) => {
+  switch (status) {
+    case "processing":
+      return (
+        <svg
+          viewBox="0 0 56 56"
+          fill="none"
+          strokeWidth="5"
+          className={cn("animate-spin motion-reduce:animate-none", className)}
+        >
+          <circle cx="28" cy="28" r="24" className="stroke-grey-800" />
+          <circle
+            cx="28"
+            cy="28"
+            r="24"
+            strokeLinecap="round"
+            strokeDasharray="40 200"
+            className="stroke-primary"
+          />
+        </svg>
+      )
+    case "success":
+      return (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-full bg-primary text-black",
+            className
+          )}
+        >
+          <CheckIcon className="size-14" />
+        </div>
+      )
+    case "failure":
+      return (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-full bg-alert-error text-black",
+            className
+          )}
+        >
+          <XIcon className="size-14" />
+        </div>
+      )
+  }
+}
 
 const SwapPlanAction: FC<{
   action: SwapPlanFooterAction
@@ -135,7 +186,7 @@ export const SwapPlanProgress: FC<{
       <div className="mt-6 line-clamp-2 h-20 w-full shrink-0 text-center font-light text-base text-body-secondary leading-10">
         {view?.subtitle}
       </div>
-      <ProcessAnimation
+      <SwapPlanStatusIcon
         status={view?.animStatus ?? "processing"}
         className="mt-8 size-28 shrink-0"
       />
