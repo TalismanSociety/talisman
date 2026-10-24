@@ -11,12 +11,17 @@ const isBroadcastNoise = (err: unknown) => {
   return BROADCAST_NOISE.some((noise) => message.includes(noise))
 }
 
-/** Sends signed bytes. Resending the same bytes is safe: the hash does not change */
-export const broadcastRaw = async (networkId: NetworkId, raw: Hex) => {
+/** Sends fresh signed bytes: a node that knows other bytes on their nonce refuses them as "already known" */
+export const sendRaw = async (networkId: NetworkId, raw: Hex) => {
   const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
   if (!client) throw new Error(`No client for network ${networkId}`)
+  await client.sendRawTransaction({ serializedTransaction: raw })
+}
+
+/** Sends signed bytes. Resending the same bytes is safe: the hash does not change */
+export const broadcastRaw = async (networkId: NetworkId, raw: Hex) => {
   try {
-    await client.sendRawTransaction({ serializedTransaction: raw })
+    await sendRaw(networkId, raw)
   } catch (err) {
     if (!isBroadcastNoise(err)) throw err
   }

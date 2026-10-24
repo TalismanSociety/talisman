@@ -19,7 +19,7 @@ import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { admitEvmReplacement, admitPlanEvmTx, type EvmLegTx } from "../swaps/plans/admit"
-import { broadcastRaw } from "../swaps/plans/broadcast"
+import { broadcastRaw, sendRaw } from "../swaps/plans/broadcast"
 import { swapPlanExecutor } from "../swaps/plans/executor"
 import type { SwapPlanRef } from "../swaps/plans/types"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
@@ -147,7 +147,7 @@ export class EthHandler extends ExtensionHandler {
   private broadcastPlanTx = async (tx: EvmLegTx, replaces: boolean) => {
     const hash = keccak256(tx.raw)
     try {
-      await broadcastRaw(tx.networkId, tx.raw)
+      await (replaces ? sendRaw : broadcastRaw)(tx.networkId, tx.raw)
     } catch (err) {
       if (replaces)
         throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
