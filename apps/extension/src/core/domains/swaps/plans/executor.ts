@@ -110,7 +110,7 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
         await updateTransactionStatus(hash, "error", undefined, true)
         return
       case "replaced":
-        await updateTransactionStatus(hash, "replaced")
+        await updateTransactionStatus(hash, "replaced", undefined, true)
         return
       case "dropped":
         await markPlanTransactionDropped(hash)

@@ -748,6 +748,17 @@ describe("a swap plan leg the user speeds up or cancels", () => {
     expect(tracked).toEqual([LEG0_HASH, original])
   })
 
+  it("settles a speed-up its watcher saw land in a block that was reorged out as replaced", async () => {
+    const { executor, original } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up")
+    await db.transactionsV2.update(speedUp, { status: "success", confirmed: false })
+    chain.leg1 = LEG1_LANDED
+
+    await executor.drive(PLAN_ID)
+
+    expect([await statusOf(original), await statusOf(speedUp)]).toEqual(["success", "replaced"])
+  })
+
   it("stops when the user's cancel executed, the cancel's row a success", async () => {
     const { executor, original, tracked, notified } = await leg1Sent()
     const cancel = await replaceLeg1("cancel")
