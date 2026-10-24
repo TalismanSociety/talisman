@@ -5,7 +5,7 @@ import { skipToken, useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
-import type { FC } from "react"
+import { type FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
@@ -77,13 +77,16 @@ export const SwapPlanLedgerSign: FC<{
   containerId?: string
 }> = ({ tx, onSignAttemptEnded, containerId }) => {
   const { t } = useTranslation()
+  const [rejectedSubmissions, setRejectedSubmissions] = useState(0)
 
   return (
     <TxSubmitButton
+      key={rejectedSubmissions}
       containerId={containerId}
       tx={tx}
       label={t("Sign on Ledger")}
       onSubmit={() => {}}
+      onError={() => setRejectedSubmissions((count) => count + 1)}
       onPayloadLockChange={(isLocked) => {
         if (!isLocked) onSignAttemptEnded()
       }}

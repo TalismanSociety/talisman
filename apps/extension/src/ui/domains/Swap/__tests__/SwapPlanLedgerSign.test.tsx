@@ -1,13 +1,18 @@
 import type { SwapPlan } from "@core/domains/swaps/plans/types"
 import type { BuiltLeg } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { act, render, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
+import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-const { ethGetTransactionsCount, submitted, payloadLock } = vi.hoisted(() => ({
+const { ethGetTransactionsCount, submitted, payloadLock, button } = vi.hoisted(() => ({
   ethGetTransactionsCount: vi.fn(),
   submitted: vi.fn(),
   payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
+  button: {
+    sign: undefined as (() => void) | undefined,
+    reject: undefined as ((cause: unknown) => void) | undefined,
+  },
 }))
 
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (value: string) => value }) }))
@@ -16,13 +21,18 @@ vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
   TxSubmitButton: ({
     tx,
     onPayloadLockChange,
+    onError,
   }: {
     tx?: unknown
     onPayloadLockChange?: (isLocked: boolean) => void
+    onError?: (cause: unknown) => void
   }) => {
+    const [isSigning, setIsSigning] = useState(false)
     payloadLock.current = onPayloadLockChange
+    button.sign = () => setIsSigning(true)
+    button.reject = onError
     if (tx) submitted(tx)
-    return null
+    return <button type="button" aria-busy={isSigning} />
   },
 }))
 vi.mock("../swap-modules/evm-network", () => ({
@@ -130,6 +140,18 @@ describe("SwapPlanLedgerSign", () => {
     await waitFor(() =>
       expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
     )
+  })
+
+  it("offers a fresh sign attempt once the background rejects the signed leg", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderLedgerSign()
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+
+    act(() => button.sign?.())
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
+    act(() => button.reject?.(new Error("nonce already used")))
+
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
   })
 
   it("signs the leg with the wallet's next nonce, past the transactions it still has pending", async () => {
