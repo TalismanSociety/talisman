@@ -25,13 +25,13 @@ import {
   type TransactionRequest,
   type TransactionSerialized,
 } from "viem"
-
+import { legCandidates } from "../candidates"
 import { coreSwapEnv } from "../env.core"
 import { getBackgroundSwapModule } from "../registry"
-import type { LegBound, SentEvidence } from "../types"
+import type { LegBound, LegReplacement, SentEvidence } from "../types"
 import { isAdmissible, transition } from "./machine"
 import { type AppliedEvent, enqueue, getPlan, putPlan } from "./store"
-import type { PlanLeg, SwapPlan, SwapPlanRef } from "./types"
+import type { LegState, PlanLeg, SwapPlan, SwapPlanRef } from "./types"
 
 /** the signed bytes do not match what the user approved: nothing is recorded, nothing is sent */
 export class PlanBoundViolation extends Error {
@@ -276,6 +276,126 @@ export const admitEvmLeg = async (
     },
     now
   )
+}
+
+type ReplacementViolation =
+  | "network"
+  | "chainId"
+  | "signer"
+  | "nonce"
+  | "authorizationList"
+  | "call"
+
+type SentLegState = Extract<LegState, { at: "sent" }>
+
+const sameCall = (a: ParsedTransaction, b: ParsedTransaction) =>
+  !!a.to &&
+  !!b.to &&
+  isAddressEqual(a.to, b.to) &&
+  (a.data ?? "0x").toLowerCase() === (b.data ?? "0x").toLowerCase() &&
+  (a.value ?? 0n) === (b.value ?? 0n)
+
+const isNoOp = (tx: ParsedTransaction, signer: Hex) =>
+  !!tx.to && isAddressEqual(tx.to, signer) && (tx.value ?? 0n) === 0n && (tx.data ?? "0x") === "0x"
+
+/**
+ * What a transaction on a sent leg's nonce does: the leg's call again (a speed-up), a 0-value
+ * transfer to the signer (a cancel), or anything else, which never enters the plan
+ */
+const checkReplacement = (
+  leg: PlanLeg,
+  original: ParsedTransaction,
+  networkId: NetworkId,
+  tx: ParsedTransaction,
+  signer: Hex
+): { kind: LegReplacement["kind"]; nonce: number } | { violation: ReplacementViolation } => {
+  const { nonce } = leg
+  if (networkIdFromTokenId(leg.quote.fromTokenId) !== networkId) return { violation: "network" }
+  if (tx.chainId !== original.chainId) return { violation: "chainId" }
+  if (!isAddressEqual(signer, leg.quote.signer)) return { violation: "signer" }
+  if (nonce === undefined || tx.nonce !== nonce) return { violation: "nonce" }
+  if ("authorizationList" in tx && tx.authorizationList) return { violation: "authorizationList" }
+  if (sameCall(tx, original)) return { kind: "speed-up", nonce }
+  if (isNoOp(tx, signer)) return { kind: "cancel", nonce }
+  return { violation: "call" }
+}
+
+/** every EVM leg is admitted with its signed bytes, they are what a replacement is checked against */
+const originalOf = (state: SentLegState) => {
+  if (state.evidence.platform !== "ethereum" || !state.evidence.raw)
+    throw new PlanNotAdmissible("The leg's transaction is unknown")
+  return parseTransaction(state.evidence.raw as TransactionSerialized)
+}
+
+/**
+ * Admits the user's speed-up or cancel of a sent EVM leg: the leg then waits on whichever of its
+ * transactions executes. Checked against the leg inside its queue, recorded with its row before
+ * any broadcast. Admitting the same bytes twice is a no-op, so a crash before the broadcast converges.
+ */
+export const admitEvmReplacement = async (
+  ref: SwapPlanRef,
+  { raw, networkId, unsigned, txInfo }: EvmLegTx
+): Promise<AppliedEvent> => {
+  const signer = await recoverTransactionAddress({
+    serializedTransaction: raw as TransactionSerialized,
+  })
+  const tx = parseTransaction(raw as TransactionSerialized)
+  const hash = keccak256(raw)
+
+  return enqueue(ref.id, () =>
+    db.transaction("rw", db.swapPlans, db.transactionsV2, async () => {
+      const now = Date.now()
+      const plan = await getPlan(ref.id)
+      const leg = plan?.legs[ref.leg]
+      if (!plan || !leg) throw new PlanNotAdmissible("Unknown swap plan leg")
+      if (leg.state.at !== "sent") throw new PlanNotAdmissible("The leg has no pending transaction")
+      if (legCandidates(leg.state).some((candidate) => candidate.hash === hash))
+        return { plan, effects: [] }
+
+      const check = checkReplacement(leg, originalOf(leg.state), networkId, tx, signer)
+      if ("violation" in check) throw new PlanBoundViolation(check.violation)
+
+      const module = getBackgroundSwapModule(leg.quote.protocol)
+      const result = transition(
+        plan,
+        {
+          type: "replacement-admitted",
+          leg: ref.leg,
+          replacement: { kind: check.kind, hash, raw, sentAt: now },
+          deadlineAt: now + module.legDeadlineMs,
+        },
+        now
+      )
+      if (result.plan === plan) throw new PlanNotAdmissible("The leg has no pending transaction")
+      await putPlan(result.plan)
+      await db.transactionsV2.put({
+        id: hash,
+        hash,
+        platform: "ethereum",
+        networkId,
+        account: signer,
+        nonce: check.nonce,
+        isReplacement: true,
+        payload: unsigned,
+        status: "pending",
+        confirmed: false,
+        label: "Transaction",
+        txInfo: planTxInfo(txInfo, ref),
+        timestamp: now,
+      })
+      return result
+    })
+  )
+}
+
+/** A signed EVM transaction of a plan: the leg's own while it waits for one, else the user's replacement of it */
+export const admitPlanEvmTx = async (
+  ref: SwapPlanRef,
+  tx: EvmLegTx
+): Promise<{ replaces: boolean }> => {
+  const replaces = (await getPlan(ref.id))?.legs[ref.leg]?.state.at === "sent"
+  await (replaces ? admitEvmReplacement(ref, tx) : admitEvmLeg(ref, tx))
+  return { replaces }
 }
 
 export type SubstrateLegTx = {

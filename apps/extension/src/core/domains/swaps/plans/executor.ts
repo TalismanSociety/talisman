@@ -14,6 +14,7 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { filter, firstValueFrom } from "rxjs"
 import type { Hex } from "viem"
 
+import { latestCandidate, legCandidates } from "../candidates"
 import type { SwapEnv } from "../env"
 import { coreSwapEnv } from "../env.core"
 import { getBackgroundSwapModule } from "../registry"
@@ -26,9 +27,9 @@ import type {
 } from "../types"
 import { broadcastRaw } from "./broadcast"
 import { deriveLegInput, fromPersistedLeg } from "./helpers"
-import { dueEffects, isAdmissible, isTerminalPhase, transition } from "./machine"
+import { dueEffects, isAdmissible, isTerminalPhase } from "./machine"
 import { type SignOutcome, signAndBroadcast } from "./sign"
-import { applyPlanEvent, getLivePlans, getPlan, sweepPlans } from "./store"
+import { applyPlanEvent, type BeforePut, getLivePlans, getPlan, sweepPlans } from "./store"
 import type {
   LegState,
   PlanEffect,
@@ -61,6 +62,29 @@ export type ExecutorDeps = {
 const isProviderUnavailable = (err: unknown) =>
   (err as { name?: string }).name === "SwapProviderUnavailableError"
 
+type RowOutcome = "success" | "error" | "replaced" | "dropped" | "unknown"
+
+/** the row of one transaction on a settled leg's nonce: only the one that executed takes the verdict */
+const rowOutcome = (verdict: LegState, hash: Hex): RowOutcome | null => {
+  const executed = "hash" in verdict && verdict.hash === hash
+  if (verdict.at === "landed") return executed ? "success" : "replaced"
+  if (verdict.at !== "failed") return null
+  switch (verdict.failure) {
+    case "reverted":
+      return executed ? "error" : "replaced"
+    case "cancelled":
+      return executed ? "success" : "replaced"
+    case "replaced":
+      return "replaced"
+    case "dropped":
+      return "dropped"
+    case "indeterminate":
+      return "unknown"
+    default:
+      return null
+  }
+}
+
 /**
  * Runs a plan's effects. Every write goes through the per-plan queue, every read is fresh, and a
  * drive that fails stops where it is: the next wake starts again from the stored plan.
@@ -77,18 +101,12 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
     return { hash, nonce: leg.nonce, sentAt, evidence, row }
   }
 
-  /** a restart leaves the row unknown: the leg's verdict from the chain settles it */
-  const settleRow = async (hash: Hex, verdict: LegState) => {
-    if (verdict.at === "landed") {
-      await updateTransactionStatus(hash, "success", undefined, true)
-      deps
-        .trackDelivery(hash)
-        .catch((err) => log.warn("Failed to track a swap plan leg's delivery", { err, hash }))
-      return
-    }
-    if (verdict.at !== "failed") return
-    switch (verdict.failure) {
-      case "reverted":
+  const settleRow = async (hash: Hex, outcome: RowOutcome) => {
+    switch (outcome) {
+      case "success":
+        await updateTransactionStatus(hash, "success", undefined, true)
+        return
+      case "error":
         await updateTransactionStatus(hash, "error", undefined, true)
         return
       case "replaced":
@@ -97,20 +115,38 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
       case "dropped":
         await markPlanTransactionDropped(hash)
         return
-      case "indeterminate":
+      case "unknown":
         await updateTransactionStatus(hash, "unknown")
         return
     }
   }
 
-  /** the row first, then the plan: a crash in between observes the leg again */
-  const settle = async (plan: SwapPlan, index: number, hash: Hex, event: PlanEvent) => {
-    await settleRow(hash, transition(plan, event, deps.now()).plan.legs[index].state)
-    return applyAndFollow(plan.id, event)
+  /** a restart leaves the rows unknown: the leg's verdict from the chain settles each of them */
+  const settleRows = async (before: LegState, verdict: LegState) => {
+    if (before.at !== "sent") return
+    for (const { hash } of legCandidates(before)) {
+      const outcome = rowOutcome(verdict, hash)
+      if (outcome) await settleRow(hash, outcome)
+    }
+    if (verdict.at === "landed")
+      deps
+        .trackDelivery(verdict.hash)
+        .catch((err) =>
+          log.warn("Failed to track a swap plan leg's delivery", { err, hash: verdict.hash })
+        )
   }
 
-  const applyAndFollow = async (id: SwapPlanId, event: PlanEvent) => {
-    const result = await applyPlanEvent(id, event, deps.now())
+  /**
+   * The rows first, then the plan, both on the plan's queue so no replacement is admitted in
+   * between: a crash in between observes the leg again
+   */
+  const settle = (id: SwapPlanId, index: number, event: PlanEvent) =>
+    applyAndFollow(id, event, (before, after) =>
+      settleRows(before.legs[index].state, after.legs[index].state)
+    )
+
+  const applyAndFollow = async (id: SwapPlanId, event: PlanEvent, beforePut?: BeforePut) => {
+    const result = await applyPlanEvent(id, event, deps.now(), beforePut)
     if (!result) return
     for (const effect of result.effects) await runEffect(result.plan, effect)
   }
@@ -142,18 +178,19 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
       observation = await module.observeLeg({ leg: fromPersistedLeg(leg.quote), sent }, deps.env)
     } catch (err) {
       log.warn("Failed to observe a swap plan leg", { err, id, leg: index })
-      if (pastDeadline()) return settle(plan, index, sent.hash, deadline)
+      if (pastDeadline()) return settle(id, index, deadline)
       return
     }
     await checkpoint(`observed:${index}`)
 
     const observed: PlanEvent = { type: "observed", leg: index, observation }
-    if (observation.status !== "pending") return settle(plan, index, sent.hash, observed)
+    if (observation.status !== "pending") return settle(id, index, observed)
     if (observation.scanned?.length) await applyAndFollow(id, observed)
-    if (pastDeadline()) return settle(plan, index, sent.hash, deadline)
-    if (leg.state.evidence.platform === "ethereum" && leg.state.evidence.raw)
+    if (pastDeadline()) return settle(id, index, deadline)
+    const { raw } = latestCandidate(leg.state)
+    if (raw)
       await deps
-        .broadcast(networkIdFromTokenId(leg.quote.fromTokenId), leg.state.evidence.raw)
+        .broadcast(networkIdFromTokenId(leg.quote.fromTokenId), raw)
         .catch((err) => log.debug("Swap plan leg resend failed", { err, id, leg: index }))
   }
 

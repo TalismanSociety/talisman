@@ -31,6 +31,8 @@ vi.mock("../../env.core", () => ({
 
 import {
   admitEvmLeg,
+  admitEvmReplacement,
+  admitPlanEvmTx,
   admitSubstrateLeg,
   checkBound,
   checkSubstrateLeg,
@@ -386,6 +388,161 @@ describe("admitEvmLeg", () => {
     ).rejects.toThrow(new PlanBoundViolation("signer"))
     const { plan: admitted } = await admitEvmLeg({ id: PLAN_ID, leg: 1 }, evmLegTx(await signed()))
     expect(admitted.legs[1].state.at).toBe("sent")
+  })
+})
+
+describe("admitEvmReplacement", () => {
+  const REF = { id: PLAN_ID, leg: 1 }
+  const FASTER = { maxFeePerGas: 20n, maxPriorityFeePerGas: 2n }
+  const CANCEL: TransactionSerializable = {
+    type: "eip1559",
+    chainId: 964,
+    nonce: 12,
+    to: EVM_ADDRESS,
+    value: 0n,
+    gas: 21_000n,
+    ...FASTER,
+  }
+
+  let original: Hex
+
+  const planWithLeg1Sent = async () => {
+    await planWithLeg1Building()
+    original = await signed()
+    return (await admitEvmLeg(REF, evmLegTx(original))).plan
+  }
+
+  const sentState = (plan: SwapPlan | undefined) => {
+    const state = plan?.legs[1].state
+    if (state?.at !== "sent") throw new Error("expected leg 1 sent")
+    return state
+  }
+
+  beforeEach(async () => {
+    await db.swapPlans.clear()
+    await db.transactionsV2.clear()
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(T0 + 2_000)
+    mockTransactionCount.mockReset().mockResolvedValue(12)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("keeps a speed-up of the leg's call as a candidate, with its own row", async () => {
+    await planWithLeg1Sent()
+    vi.setSystemTime(T0 + 60_000)
+    const raw = await signed(FASTER)
+    const hash = keccak256(raw)
+
+    const { plan } = await admitEvmReplacement(REF, evmLegTx(raw))
+
+    expect(sentState(plan)).toEqual({
+      at: "sent",
+      hash: keccak256(original),
+      sentAt: T0 + 2_000,
+      deadlineAt: T0 + 60_000 + 30 * 60_000,
+      evidence: {
+        platform: "ethereum",
+        raw: original,
+        replacements: [{ kind: "speed-up", hash, raw, sentAt: T0 + 60_000 }],
+      },
+    })
+    expect(await db.swapPlans.get(PLAN_ID)).toEqual(plan)
+    expect(await db.transactionsV2.get(hash)).toMatchObject({
+      nonce: 12,
+      isReplacement: true,
+      status: "pending",
+      txInfo: { ...TX_INFO, plan: REF },
+    })
+  })
+
+  it("keeps a 0-value transfer to the signer as a cancel", async () => {
+    await planWithLeg1Sent()
+    const raw = await account.signTransaction(CANCEL)
+
+    const { plan } = await admitEvmReplacement(REF, evmLegTx(raw))
+
+    expect(sentState(plan).evidence).toMatchObject({
+      replacements: [{ kind: "cancel", hash: keccak256(raw) }],
+    })
+    expect(await db.transactionsV2.count()).toBe(2)
+  })
+
+  it("admits the same bytes again without a second candidate or row", async () => {
+    await planWithLeg1Sent()
+    const raw = await signed(FASTER)
+
+    const first = await admitEvmReplacement(REF, evmLegTx(raw))
+    const again = await admitEvmReplacement(REF, evmLegTx(raw))
+
+    expect(again.plan).toEqual(first.plan)
+    expect(await db.transactionsV2.count()).toBe(2)
+  })
+
+  it.each([
+    ["call", () => signed({ ...FASTER, data: bridgeOutData(LEG1_AMOUNT, EVM_ADDRESS) })],
+    ["call", () => signed({ ...FASTER, value: LEG1_AMOUNT })],
+    ["call", () => signed({ ...FASTER, to: RECIPIENT })],
+    ["call", () => account.signTransaction({ ...CANCEL, value: 1n })],
+    ["call", () => account.signTransaction({ ...CANCEL, data: "0x00" })],
+    ["signer", () => signed(FASTER, OTHER_ACCOUNT)],
+    ["nonce", () => signed({ ...FASTER, nonce: 13 })],
+    ["chainId", () => signed({ ...FASTER, chainId: 1 })],
+  ] as const)("records nothing for a replacement that breaks the %s", async (violation, sign) => {
+    const before = await planWithLeg1Sent()
+
+    await expect(admitEvmReplacement(REF, evmLegTx(await sign()))).rejects.toThrow(
+      new PlanBoundViolation(violation)
+    )
+    expect(await db.swapPlans.get(PLAN_ID)).toEqual(before)
+    expect(await db.transactionsV2.count()).toBe(1)
+  })
+
+  it("records nothing for a replacement on another network", async () => {
+    const before = await planWithLeg1Sent()
+
+    await expect(
+      admitEvmReplacement(REF, { ...evmLegTx(await signed(FASTER)), networkId: "1" })
+    ).rejects.toThrow(new PlanBoundViolation("network"))
+    expect(await db.swapPlans.get(PLAN_ID)).toEqual(before)
+  })
+
+  it("refuses a replacement of a leg that is not sent", async () => {
+    await planWithLeg1Building()
+
+    await expect(admitEvmReplacement(REF, evmLegTx(await signed(FASTER)))).rejects.toThrow(
+      new PlanNotAdmissible("The leg has no pending transaction")
+    )
+    expect(await db.transactionsV2.count()).toBe(0)
+
+    const { plan: sent } = await admitEvmLeg(REF, evmLegTx(await signed()))
+    const landed = await applyPlanEvent(
+      PLAN_ID,
+      {
+        type: "observed",
+        leg: 1,
+        observation: { status: "landed", hash: sentState(sent).hash, amount: LEG1_AMOUNT },
+      },
+      T0 + 3_000
+    )
+    await expect(admitEvmReplacement(REF, evmLegTx(await signed(FASTER)))).rejects.toThrow(
+      new PlanNotAdmissible("The leg has no pending transaction")
+    )
+    expect(await db.swapPlans.get(PLAN_ID)).toEqual(landed?.plan)
+  })
+
+  it("routes a plan's transaction by its leg: the leg's own while due, a replacement once sent", async () => {
+    await planWithLeg1Building()
+    const own = await signed()
+    expect(await admitPlanEvmTx(REF, evmLegTx(own))).toEqual({ replaces: false })
+    expect(sentState(await getPlan(PLAN_ID)).hash).toBe(keccak256(own))
+
+    expect(await admitPlanEvmTx(REF, evmLegTx(await signed(FASTER)))).toEqual({ replaces: true })
+    expect(sentState(await getPlan(PLAN_ID)).evidence).toMatchObject({
+      replacements: [{ kind: "speed-up" }],
+    })
   })
 })
 

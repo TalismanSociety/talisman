@@ -1,4 +1,4 @@
-import type { LegBound } from "@core/domains/swaps/types"
+import type { LegBound, LegReplacement } from "@core/domains/swaps/types"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -255,7 +255,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
-          observation: { status: "landed", amount: 999999500000000000n },
+          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         T1
       )
@@ -270,7 +270,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
-          observation: { status: "landed", amount: 999999500000000000n },
+          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         now
       )
@@ -299,7 +299,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 0,
-          observation: { status: "landed", amount: 999999500000000000n },
+          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
         },
         T1
       )
@@ -326,7 +326,11 @@ describe("a sent leg", () => {
     const plan: SwapPlan = { ...RUNNING, legs: [LEG0_SENT, { ...LEG1, bound: null }] }
     const result = transition(
       plan,
-      { type: "observed", leg: 0, observation: { status: "landed", amount: 999999500000000000n } },
+      {
+        type: "observed",
+        leg: 0,
+        observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+      },
       T1
     )
     expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "hardware", since: T1 })
@@ -341,7 +345,7 @@ describe("a sent leg", () => {
         {
           type: "observed",
           leg: 1,
-          observation: { status: "landed", amount: 985000000000000000n },
+          observation: { status: "landed", hash: HASH1, amount: 985000000000000000n },
         },
         now
       )
@@ -392,7 +396,11 @@ describe("a sent leg", () => {
   it("aborts when leg 0 reverts", () => {
     const result = transition(
       RUNNING,
-      { type: "observed", leg: 0, observation: { status: "failed", reason: "reverted" } },
+      {
+        type: "observed",
+        leg: 0,
+        observation: { status: "failed", reason: "reverted", hash: HASH0 },
+      },
       T1
     )
     expect(result.plan.phase).toBe("aborted")
@@ -408,7 +416,11 @@ describe("a sent leg", () => {
     expect(
       transition(
         LEG1_RUNNING,
-        { type: "observed", leg: 1, observation: { status: "failed", reason: "reverted" } },
+        {
+          type: "observed",
+          leg: 1,
+          observation: { status: "failed", reason: "reverted", hash: HASH1 },
+        },
         now
       )
     ).toEqual({
@@ -485,7 +497,7 @@ describe("a sent leg", () => {
   it("ignores an observation of a leg that is not sent", () => {
     const result = transition(
       BUILDING,
-      { type: "observed", leg: 1, observation: { status: "landed", amount: 1n } },
+      { type: "observed", leg: 1, observation: { status: "landed", hash: HASH1, amount: 1n } },
       T1
     )
     expect(result.plan).toBe(BUILDING)
@@ -690,14 +702,18 @@ describe("replayed and stale events", () => {
   it("ignores every event on a terminal plan", () => {
     const completed = transition(
       LEG1_RUNNING,
-      { type: "observed", leg: 1, observation: { status: "landed", amount: 1n } },
+      { type: "observed", leg: 1, observation: { status: "landed", hash: HASH1, amount: 1n } },
       T1
     ).plan
     for (const event of [
       { type: "cancelled" } as const,
       { type: "unlocked" } as const,
       { type: "deadline", leg: 1 } as const,
-      { type: "observed", leg: 1, observation: { status: "failed", reason: "reverted" } } as const,
+      {
+        type: "observed",
+        leg: 1,
+        observation: { status: "failed", reason: "reverted", hash: HASH1 },
+      } as const,
     ]) {
       expect(transition(completed, event, T1 + 1).plan).toBe(completed)
     }
@@ -775,6 +791,116 @@ describe("a building leg when the sign window closes", () => {
   it("refuses its admission", () => {
     const result = transition(BUILDING, ADMIT_LEG1, T0 + SIGN_WINDOW_MS + 1)
     expect(result.plan).toBe(BUILDING)
+  })
+})
+
+describe("a sent EVM leg the user speeds up or cancels", () => {
+  const SPEED_UP = {
+    kind: "speed-up",
+    hash: `0x${"33".repeat(32)}`,
+    raw: "0x02f8bb",
+    sentAt: T1,
+  } as const
+  const CANCEL = {
+    kind: "cancel",
+    hash: `0x${"44".repeat(32)}`,
+    raw: "0x02f8cc",
+    sentAt: T1,
+  } as const
+  const replaced = (replacement: LegReplacement, deadlineAt: number, leg = 1): PlanEvent => ({
+    type: "replacement-admitted",
+    leg,
+    replacement,
+    deadlineAt,
+  })
+
+  it("keeps each replacement once and waits for the latest deadline", () => {
+    const later = LEG1_DEADLINE + 5_000
+    const result = transition(LEG1_RUNNING, replaced(SPEED_UP, later), T1 + 1)
+    expect(result.plan.legs[1].state).toEqual({
+      ...LEG1_SENT.state,
+      deadlineAt: later,
+      evidence: { platform: "ethereum", raw: RAW1, replacements: [SPEED_UP] },
+    })
+    expect(result.effects).toEqual([])
+    expect(transition(result.plan, replaced(SPEED_UP, later + 1), T1 + 2).plan).toBe(result.plan)
+
+    const withCancel = transition(result.plan, replaced(CANCEL, T1), T1 + 3).plan
+    expect(withCancel.legs[1].state).toMatchObject({
+      deadlineAt: later,
+      evidence: { replacements: [SPEED_UP, CANCEL] },
+    })
+  })
+
+  it("ignores a replacement of a leg that is not sent, or not on an EVM network", () => {
+    expect(transition(BUILDING, replaced(SPEED_UP, LEG1_DEADLINE), T1).plan).toBe(BUILDING)
+    expect(transition(RUNNING, replaced(SPEED_UP, LEG0_DEADLINE, 0), T1).plan).toBe(RUNNING)
+  })
+
+  it("lands with the speed-up that executed", () => {
+    const sped = transition(LEG1_RUNNING, replaced(SPEED_UP, LEG1_DEADLINE), T1 + 1).plan
+    const now = T1 + 10_000
+    const observation = { status: "landed", hash: SPEED_UP.hash, amount: 5n } as const
+    const result = transition(sped, { type: "observed", leg: 1, observation }, now)
+    expect(result.plan.phase).toBe("completed")
+    expect(result.plan.legs[1].state).toEqual({
+      at: "landed",
+      hash: SPEED_UP.hash,
+      amount: "5",
+      landedAt: now,
+    })
+  })
+
+  it("stops a later leg when the user's cancel executed", () => {
+    const cancelled = transition(LEG1_RUNNING, replaced(CANCEL, LEG1_DEADLINE), T1 + 1).plan
+    const now = T1 + 10_000
+    const observation = { status: "failed", reason: "cancelled", hash: CANCEL.hash } as const
+    const result = transition(cancelled, { type: "observed", leg: 1, observation }, now)
+    expect(result.plan.phase).toBe("stopped")
+    expect(result.plan.legs[1].state).toEqual({
+      at: "failed",
+      failure: "cancelled",
+      hash: CANCEL.hash,
+      failedAt: now,
+    })
+    expect(result.effects).toEqual([{ type: "notify", kind: "stopped" }])
+  })
+
+  it("aborts when the user's cancel executed on an EVM leg 0", () => {
+    const evmLeg0: PlanLeg = {
+      ...LEG0_SENT,
+      state: {
+        at: "sent",
+        hash: HASH0,
+        sentAt: T0,
+        deadlineAt: LEG0_DEADLINE,
+        evidence: { platform: "ethereum", raw: "0x02f8aa" },
+      },
+    }
+    const plan = transition(
+      { ...RUNNING, legs: [evmLeg0, LEG1] },
+      replaced(CANCEL, LEG0_DEADLINE, 0),
+      T1
+    ).plan
+    const observation = { status: "failed", reason: "cancelled", hash: CANCEL.hash } as const
+    const result = transition(plan, { type: "observed", leg: 0, observation }, T1 + 1)
+    expect(result.plan.phase).toBe("aborted")
+    expect(result.plan.legs.map((leg) => leg.state)).toEqual([
+      { at: "failed", failure: "cancelled", hash: CANCEL.hash, failedAt: T1 + 1 },
+      { at: "skipped" },
+    ])
+  })
+
+  it("names the latest transaction when its deadline passes", () => {
+    const sped = transition(LEG1_RUNNING, replaced(SPEED_UP, LEG1_DEADLINE), T1 + 1).plan
+    expect(
+      transition(sped, { type: "deadline", leg: 1 }, LEG1_DEADLINE).plan.legs[1].state
+    ).toEqual({
+      at: "failed",
+      failure: "indeterminate",
+      hash: SPEED_UP.hash,
+      failedAt: LEG1_DEADLINE,
+    })
   })
 })
 

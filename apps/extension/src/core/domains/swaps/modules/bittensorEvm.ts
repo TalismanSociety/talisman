@@ -373,14 +373,18 @@ const edHeldRaoOf = (leg: QuoteLeg) => {
   return data?.edHeldRao ? BigInt(data.edHeldRao) : 0n
 }
 
-const landedFromTransfer = (leg: QuoteLeg, found: ExtrinsicEvents): LegObservation => {
-  if (!found.success) return { status: "failed", reason: "reverted" }
+const landedFromTransfer = (leg: QuoteLeg, found: ExtrinsicEvents, hash: Hex): LegObservation => {
+  if (!found.success) return { status: "failed", reason: "reverted", hash }
   const transfer = found.events.find(
     (event) => event.pallet === "Balances" && event.name === "Transfer"
   )
   const amountRao = (transfer?.value as { amount?: bigint } | undefined)?.amount
   if (amountRao === undefined) return { status: "failed", reason: "indeterminate" }
-  return { status: "landed", amount: (amountRao - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO }
+  return {
+    status: "landed",
+    hash,
+    amount: (amountRao - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO,
+  }
 }
 
 const getNonceAt = async (env: SwapEnv, networkId: string, address: string, blockHash: Hex) => {
@@ -488,7 +492,7 @@ const observeSubToEvmLeg = async (
     candidateBlocks(sent, birth, period, head.number),
     sent.hash
   )
-  if (scan.found) return landedFromTransfer(leg, scan.found)
+  if (scan.found) return landedFromTransfer(leg, scan.found, sent.hash)
   if (!eraDead || !scan.complete) return { status: "pending", scanned: scan.scanned }
   return nonceUnused ? { status: "dropped" } : { status: "failed", reason: "indeterminate" }
 }

@@ -488,7 +488,11 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
   it("lands with the transferred amount minus the retained deposit once finalised", async () => {
     finney({ finalised: 110, nonce: 8, blocks: { 105: { success: true, events: [TRANSFER] } } })
 
-    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(await observe(sentLeg())).toEqual({
+      status: "landed",
+      hash: SENT_HASH,
+      amount: OUTPUT_WEI,
+    })
     expect(mockDecodeEvents).toHaveBeenCalledTimes(6)
   })
 
@@ -497,6 +501,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
     expect(await observe(sentLeg(successRow("105")))).toEqual({
       status: "landed",
+      hash: SENT_HASH,
       amount: OUTPUT_WEI,
     })
     expect(mockDecodeEvents).toHaveBeenCalledTimes(1)
@@ -508,6 +513,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
     expect(await observe(sentLeg(successRow("105")))).toEqual({
       status: "landed",
+      hash: SENT_HASH,
       amount: OUTPUT_WEI,
     })
     expect(mockDecodeEvents).toHaveBeenNthCalledWith(1, "bittensor", blockHashOf(105), SENT_HASH)
@@ -529,13 +535,21 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
   it("scans the era when the signer was reaped by its whole-balance transfer", async () => {
     finney({ finalised: 164, nonce: null, blocks: { 105: { success: true, events: [TRANSFER] } } })
 
-    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(await observe(sentLeg())).toEqual({
+      status: "landed",
+      hash: SENT_HASH,
+      amount: OUTPUT_WEI,
+    })
   })
 
   it("scans the era when the signer was reaped and its account created again", async () => {
     finney({ finalised: 164, nonce: 0, blocks: { 105: { success: true, events: [TRANSFER] } } })
 
-    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(await observe(sentLeg())).toEqual({
+      status: "landed",
+      hash: SENT_HASH,
+      amount: OUTPUT_WEI,
+    })
   })
 
   it("is dropped once the era is dead, the nonce still unused and the whole era read", async () => {
@@ -582,7 +596,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
     const observations = await observeUntilSettled(sentLeg())
 
-    expect(observations.at(-1)).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(observations.at(-1)).toEqual({ status: "landed", hash: SENT_HASH, amount: OUTPUT_WEI })
     expect(observations.length).toBe(20)
   })
 
@@ -633,6 +647,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     const evidence = { platform: "polkadot", era: { birth: 100, period: 64 }, scanned } as const
     expect(await observe({ ...sentLeg(), evidence })).toEqual({
       status: "landed",
+      hash: SENT_HASH,
       amount: OUTPUT_WEI,
     })
     expect(mockDecodeEvents).toHaveBeenCalledTimes(1)
@@ -641,7 +656,11 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
   it("fails as reverted on ExtrinsicFailed", async () => {
     finney({ finalised: 110, nonce: 8, blocks: { 105: { success: false, events: [] } } })
 
-    expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "reverted" })
+    expect(await observe(sentLeg())).toEqual({
+      status: "failed",
+      reason: "reverted",
+      hash: SENT_HASH,
+    })
   })
 
   it("stays pending while the era lives and its state is pruned", async () => {
@@ -662,7 +681,11 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     expect(await observe(sentLeg())).toMatchObject({ status: "pending" })
 
     finney({ finalised: 200, nonce: 8, blocks })
-    expect(await observe(sentLeg())).toEqual({ status: "landed", amount: OUTPUT_WEI })
+    expect(await observe(sentLeg())).toEqual({
+      status: "landed",
+      hash: SENT_HASH,
+      amount: OUTPUT_WEI,
+    })
   })
 
   it("stays pending when the node does not know a block of the dead era yet", async () => {
@@ -714,6 +737,10 @@ describe("bittensorEvmSwapModule observeLeg evm -> substrate", () => {
       env
     )
 
-    expect(observation).toEqual({ status: "landed", amount: ONE_TAO_RAO })
+    expect(observation).toEqual({
+      status: "landed",
+      hash: `0x${"cc".repeat(32)}`,
+      amount: ONE_TAO_RAO,
+    })
   })
 })

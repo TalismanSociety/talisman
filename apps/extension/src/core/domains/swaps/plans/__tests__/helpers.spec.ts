@@ -128,6 +128,32 @@ describe("planSteps", () => {
     }
     expect(planSteps(paused).map((step) => step.status)).toEqual(["done", "waiting-on-you"])
   })
+
+  it("follows the user's latest speed-up of a sent leg", () => {
+    const own = `0x${"aa".repeat(32)}` as const
+    const speedUp = `0x${"bb".repeat(32)}` as const
+    const sped: SwapPlan = {
+      ...plan(LEG0_OUTPUT),
+      legs: [
+        plan(LEG0_OUTPUT).legs[0],
+        {
+          ...LEG1,
+          state: {
+            at: "sent",
+            hash: own,
+            sentAt: T0,
+            deadlineAt: T0 + 1,
+            evidence: {
+              platform: "ethereum",
+              raw: "0x02",
+              replacements: [{ kind: "speed-up", hash: speedUp, raw: "0x02", sentAt: T0 }],
+            },
+          },
+        },
+      ],
+    }
+    expect(planSteps(sped)[1]).toEqual({ leg: 1, status: "in-progress", hash: speedUp })
+  })
 })
 
 describe("planCallToAction", () => {
@@ -171,6 +197,22 @@ describe("planCallToAction", () => {
         })
       )
     ).toEqual({ type: "check-activity" })
+  })
+
+  it("offers to finish from the intermediate when the user's cancel executed", () => {
+    expect(
+      planCallToAction(
+        withSecondLeg("stopped", {
+          at: "failed",
+          failure: "cancelled",
+          hash: `0x${"cc".repeat(32)}`,
+          failedAt: T0,
+        })
+      )
+    ).toEqual({
+      type: "finish",
+      offer: { fromTokenId: "964:evm-native", toTokenId: BASE_WTAO, fromAddress: EVM_ADDRESS },
+    })
   })
 
   it("sends to the activity while the plan runs", () => {
