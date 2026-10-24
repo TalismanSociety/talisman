@@ -1156,6 +1156,47 @@ describe("forevermoneySwapModule observeLeg", () => {
       })
     })
 
+    it("lands with a finalised speed-up while the node fails to answer for the leg's own transaction", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
+        if (hash === TX_HASH) throw new Error("503 Service Unavailable")
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: SPEED_UP_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("lands with a finalised speed-up over a lagging node's unfinalised receipt for the leg's own", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
+        if (hash === TX_HASH) return receipt("success", FINALISED + 1n)
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: SPEED_UP_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("waits for every receipt lookup before settling on an unfinalised receipt", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED + 1n)
+        if (hash === TX_HASH) throw new Error("503 Service Unavailable")
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      await expect(observe(replaced())).rejects.toThrow("503 Service Unavailable")
+    })
+
     it("stays pending while a node still knows one of the leg's transactions", async () => {
       minedOnly(`0x${"00".repeat(32)}`)
       knownOnly(CANCEL_HASH)

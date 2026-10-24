@@ -390,6 +390,37 @@ describe("swapPlanFooterAction", () => {
     ).toEqual({ type: "replace", tx: speedUp })
   })
 
+  it("keeps offering to speed up or cancel a sent leg whose row a restart left unknown", () => {
+    const unknown = ethRow(LEG1_HASH, { status: "unknown" })
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: { platform: "ethereum" },
+        }),
+        rows: rows(unknown),
+      })
+    ).toEqual({ type: "replace", tx: { ...unknown, status: "pending" } })
+  })
+
+  it("stops offering to speed up or cancel once the leg's transaction is mined", () => {
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: { platform: "ethereum" },
+        }),
+        rows: rows(ethRow(LEG1_HASH, { status: "success" })),
+      })
+    ).not.toEqual(expect.objectContaining({ type: "replace" }))
+  })
+
   it("offers nothing while a running plan has no trackable leg", () => {
     expect(
       swapPlanFooterAction({ plan: plan("running", LANDED_0, { at: "queued" }), rows: new Map() })

@@ -293,11 +293,13 @@ export type SwapPlanFooterAction =
   | PlanCallToAction
 
 const pendingEvmLegRow = ({ plan, rows }: Pick<SwapPlanProgressInput, "plan" | "rows">) =>
-  planSteps(plan)
-    .map(({ hash }) => (hash ? rows.get(hash) : null))
-    .find(
-      (row): row is WalletTransactionEth => row?.platform === "ethereum" && row.status === "pending"
-    )
+  planSteps(plan).flatMap(({ leg, hash }): WalletTransactionEth[] => {
+    const row = hash ? rows.get(hash) : null
+    const isUnsettled = row?.status === "pending" || row?.status === "unknown"
+    return plan.legs[leg].state.at === "sent" && row?.platform === "ethereum" && isUnsettled
+      ? [{ ...row, status: "pending" }]
+      : []
+  })[0]
 
 /** while the swap moves, the footer follows it; once it waits or ends, it offers the way forward */
 export const swapPlanFooterAction = (

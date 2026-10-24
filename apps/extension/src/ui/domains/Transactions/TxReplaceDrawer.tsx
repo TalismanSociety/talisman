@@ -265,6 +265,7 @@ const EvmDrawerContent: FC<{
           <SignHardwareEthereum
             className="mt-6"
             account={account}
+            evmNetworkId={tx.networkId}
             method="eth_sendTransaction"
             payload={transaction}
             onSigned={handleSendSigned}

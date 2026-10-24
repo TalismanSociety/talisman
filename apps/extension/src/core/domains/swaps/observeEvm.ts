@@ -25,14 +25,21 @@ const transactionBody = async (client: PublicClient, candidate: LegCandidate) =>
   return { data: input, value }
 }
 
-const findMined = async (client: PublicClient, candidates: LegCandidate[]) => {
-  const mined = await Promise.all(
-    candidates.map(async (candidate) => {
-      const receipt = await receiptOrNull(client, candidate.hash)
-      return receipt ? [{ candidate, receipt }] : []
-    })
+/** a finalised receipt settles the leg whatever the other lookups did, any other answer needs them all */
+const findMined = async (client: PublicClient, candidates: LegCandidate[], finalised: bigint) => {
+  const lookups = await Promise.allSettled(
+    candidates.map((candidate) => receiptOrNull(client, candidate.hash))
   )
-  return mined.flat()[0] ?? null
+  const mined = lookups.flatMap((lookup, index) =>
+    lookup.status === "fulfilled" && lookup.value
+      ? [{ candidate: candidates[index], receipt: lookup.value }]
+      : []
+  )
+  const settled = mined.find(({ receipt }) => receipt.blockNumber <= finalised)
+  if (settled) return settled
+  const failed = lookups.find((lookup) => lookup.status === "rejected")
+  if (failed) throw failed.reason
+  return mined[0] ?? null
 }
 
 /**
@@ -52,7 +59,7 @@ export const observeEvmLeg = async (
   const finalised = (await client.getBlock({ blockTag: "finalized" })).number
   const nonceAfter = await client.getTransactionCount({ address: signer, blockNumber: finalised })
   const candidates = legCandidates(sent)
-  const mined = await findMined(client, candidates)
+  const mined = await findMined(client, candidates, finalised)
 
   if (mined) {
     const { candidate, receipt } = mined
