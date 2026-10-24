@@ -57,17 +57,22 @@ export type SwapPlanSettledFact = { plan: SwapPlan; at: number }
 /** a plan reaching completed, stopped or aborted. Every terminal write goes through applyPlanEvent */
 export const swapPlanSettledFacts$ = new Subject<SwapPlanSettledFact>()
 
+/** writes that must land before the plan's own, run only when the event changes the plan */
+export type BeforePut = (before: SwapPlan, after: SwapPlan) => Promise<void>
+
 /** Applies an event to the stored plan on its queue. Null when the plan does not exist */
 export const applyPlanEvent = (
   id: SwapPlanId,
   event: PlanEvent,
-  now: number
+  now: number,
+  beforePut?: BeforePut
 ): Promise<AppliedEvent | null> =>
   enqueue(id, async () => {
     const plan = await db.swapPlans.get(id)
     if (!plan) return null
     const result = transition(plan, event, now)
     if (result.plan === plan) return result
+    await beforePut?.(plan, result.plan)
     await putPlan(result.plan)
     if (isTerminalPhase(result.plan.phase))
       swapPlanSettledFacts$.next({ plan: result.plan, at: now })

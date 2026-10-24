@@ -293,6 +293,26 @@ describe("swapPlanProgressView", () => {
     })
   })
 
+  it("says where the funds wait once the user cancelled a sent leg", () => {
+    const result = view(
+      plan("stopped", LANDED_0, {
+        at: "failed",
+        failure: "cancelled",
+        hash: LEG1_HASH,
+        failedAt: T0,
+      })
+    )
+
+    expect(result).toMatchObject({
+      title: "Swap stopped after step 1",
+      subtitle: "Your funds wait on your account at the end of step 1.",
+    })
+    expect(result.steps[1]).toMatchObject({
+      status: "failed",
+      detail: "Cancelled. Your funds wait on Bridge account",
+    })
+  })
+
   it("points to the activity when the stopping leg sent a transaction", () => {
     const result = view(
       plan("stopped", LANDED_0, {
@@ -331,6 +351,74 @@ describe("swapPlanFooterAction", () => {
         rows: rows(forevermoneyRow("sending")),
       })
     ).toEqual({ type: "track", url: expect.stringContaining(LEG1_HASH) })
+  })
+
+  it("offers to speed up or cancel the leg whose EVM transaction is pending", () => {
+    const pending = ethRow(LEG1_HASH, { status: "pending" })
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: { platform: "ethereum" },
+        }),
+        rows: rows(pending),
+      })
+    ).toEqual({ type: "replace", tx: pending })
+  })
+
+  it("offers to speed up or cancel the user's latest replacement of a pending leg", () => {
+    const SPEED_UP_HASH = `0x${"33".repeat(32)}` as const
+    const speedUp = ethRow(SPEED_UP_HASH, { status: "pending", isReplacement: true })
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: {
+            platform: "ethereum",
+            raw: "0x01",
+            replacements: [{ kind: "speed-up", hash: SPEED_UP_HASH, raw: "0x02", sentAt: T0 }],
+          },
+        }),
+        rows: rows(ethRow(LEG1_HASH, { status: "pending" }), speedUp),
+      })
+    ).toEqual({ type: "replace", tx: speedUp })
+  })
+
+  it("keeps offering to speed up or cancel a sent leg whose row a restart left unknown", () => {
+    const unknown = ethRow(LEG1_HASH, { status: "unknown" })
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: { platform: "ethereum" },
+        }),
+        rows: rows(unknown),
+      })
+    ).toEqual({ type: "replace", tx: { ...unknown, status: "pending" } })
+  })
+
+  it("stops offering to speed up or cancel once the leg's transaction is mined", () => {
+    expect(
+      swapPlanFooterAction({
+        plan: plan("running", LANDED_0, {
+          at: "sent",
+          hash: LEG1_HASH,
+          sentAt: T0,
+          deadlineAt: T0 + 1,
+          evidence: { platform: "ethereum" },
+        }),
+        rows: rows(ethRow(LEG1_HASH, { status: "success" })),
+      })
+    ).not.toEqual(expect.objectContaining({ type: "replace" }))
   })
 
   it("offers nothing while a running plan has no trackable leg", () => {

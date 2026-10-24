@@ -18,11 +18,13 @@ import { activeNetworksStore } from "../chaindata/store.activeNetworks"
 import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { admitEvmLeg } from "../swaps/plans/admit"
+import { admitEvmReplacement, admitPlanEvmTx, type EvmLegTx } from "../swaps/plans/admit"
+import { broadcastRaw, sendRaw } from "../swaps/plans/broadcast"
 import { swapPlanExecutor } from "../swaps/plans/executor"
+import type { SwapPlanRef } from "../swaps/plans/types"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
 import { getHumanReadableErrorMessage } from "./errors"
-import { parseTransactionRequest } from "./helpers"
+import { getTransactionSerializable, parseTransactionRequest } from "./helpers"
 import { getNextNonce, releaseReservedNonce } from "./nonceManager"
 
 export class EthHandler extends ExtensionHandler {
@@ -113,13 +115,15 @@ export class EthHandler extends ExtensionHandler {
   }) => {
     assert(evmNetworkId, "chainId is not defined")
 
+    if (txInfo?.plan) {
+      const tx = { raw: signed, networkId: evmNetworkId, unsigned, txInfo }
+      const { replaces } = await admitPlanEvmTx(txInfo.plan, tx)
+      swapPlanExecutor.driveQuietly(txInfo.plan.id)
+      return this.broadcastPlanTx(tx, replaces)
+    }
+
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
     assert(client, `Missing client for chain ${evmNetworkId}`)
-
-    if (txInfo?.plan) {
-      await admitEvmLeg(txInfo.plan, { raw: signed, networkId: evmNetworkId, unsigned, txInfo })
-      swapPlanExecutor.driveQuietly(txInfo.plan.id)
-    }
 
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
@@ -131,15 +135,53 @@ export class EthHandler extends ExtensionHandler {
 
       return hash as HexString
     } catch (err) {
-      if (!txInfo?.plan)
-        throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
-
-      // the leg is admitted: observation decides, and the executor resends the same bytes
-      const hash = keccak256(signed)
-      log.warn("Swap plan leg broadcast failed, observation decides", { err, hash })
-      watchEthereumTransaction(evmNetworkId, hash, unsigned, { notifications: true, txInfo })
-      return hash as HexString
+      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
     }
+  }
+
+  /**
+   * A swap plan's transaction is admitted before its broadcast. A leg's own then waits on
+   * observation when the broadcast fails, and the executor resends the same bytes. A speed-up or
+   * cancel the node refuses fails here, so the user knows it did not go out.
+   */
+  private broadcastPlanTx = async (tx: EvmLegTx, replaces: boolean) => {
+    const hash = keccak256(tx.raw)
+    try {
+      await (replaces ? sendRaw : broadcastRaw)(tx.networkId, tx.raw)
+    } catch (err) {
+      if (replaces)
+        throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+      log.warn("Swap plan leg broadcast failed, observation decides", { err, hash })
+    }
+    watchEthereumTransaction(tx.networkId, hash, tx.unsigned, {
+      notifications: true,
+      txInfo: tx.txInfo,
+    })
+    return hash as HexString
+  }
+
+  /** the user's speed-up or cancel of a swap plan leg: signed here, so the plan keeps its bytes to resend */
+  private signAndSendPlanReplacement = async (ref: SwapPlanRef, tx: Omit<EvmLegTx, "raw">) => {
+    const from = tx.unsigned.from
+    assert(from && isEthereumAddress(from), "Invalid ethereum address")
+
+    const result = await withSecretKey(from, async (secretKey) => {
+      const client = await chainConnectorEvm.getWalletClientForEvmNetwork(tx.networkId)
+      assert(client?.chain, `Missing client for chain ${tx.networkId}`)
+      const request = parseTransactionRequest(tx.unsigned)
+      return privateKeyToAccount(bytesToHex(secretKey)).signTransaction(
+        getTransactionSerializable(request, client.chain.id)
+      )
+    })
+    if (!result.ok) {
+      if (result.val === "Unauthorised") throw new Error("Unauthorized")
+      throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
+    }
+
+    const signed = { ...tx, raw: result.val }
+    await admitEvmReplacement(ref, signed)
+    swapPlanExecutor.driveQuietly(ref.id)
+    return this.broadcastPlanTx(signed, true)
   }
 
   private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({
@@ -149,7 +191,12 @@ export class EthHandler extends ExtensionHandler {
   }) => {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
-    assert(!txInfo?.plan, "A swap plan leg is signed by its plan")
+    if (txInfo?.plan)
+      return this.signAndSendPlanReplacement(txInfo.plan, {
+        networkId: evmNetworkId,
+        unsigned,
+        txInfo,
+      })
 
     // Explicitly assign nonce so it's recorded in Dexie via addEvmTransaction
     const tx = parseTransactionRequest(unsigned)

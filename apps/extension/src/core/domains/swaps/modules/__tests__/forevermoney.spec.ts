@@ -5,8 +5,11 @@ import BigNumber from "bignumber.js"
 import {
   decodeFunctionData,
   encodeFunctionData,
+  keccak256,
   type PublicClient,
+  parseTransaction,
   serializeTransaction,
+  type TransactionSerializable,
 } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -980,7 +983,7 @@ describe("forevermoneySwapModule observeLeg", () => {
       value: ONE_TAO_WEI + FEE_WITH_BUFFER,
     })
 
-    expect(await observe(sent())).toEqual({ status: "landed", amount: ONE_TAO_WEI })
+    expect(await observe(sent())).toEqual({ status: "landed", hash: TX_HASH, amount: ONE_TAO_WEI })
     expect(mockGetTransactionCount).toHaveBeenCalledWith({
       address: EVM_ADDRESS,
       blockNumber: FINALISED,
@@ -992,7 +995,11 @@ describe("forevermoneySwapModule observeLeg", () => {
     mockGetTransactionReceipt.mockResolvedValue(receipt("success"))
     mockGetTransactionCount.mockResolvedValue(13)
 
-    expect(await observe(sent(RAW))).toEqual({ status: "landed", amount: ONE_TAO_WEI })
+    expect(await observe(sent(RAW))).toEqual({
+      status: "landed",
+      hash: TX_HASH,
+      amount: ONE_TAO_WEI,
+    })
     expect(mockGetTransaction).not.toHaveBeenCalled()
   })
 
@@ -1000,7 +1007,11 @@ describe("forevermoneySwapModule observeLeg", () => {
     mockGetTransactionReceipt.mockResolvedValue(receipt("reverted"))
     mockGetTransactionCount.mockResolvedValue(13)
 
-    expect(await observe(sent(RAW))).toEqual({ status: "failed", reason: "reverted" })
+    expect(await observe(sent(RAW))).toEqual({
+      status: "failed",
+      reason: "reverted",
+      hash: TX_HASH,
+    })
   })
 
   it("stays pending while the receipt's block is not finalised", async () => {
@@ -1058,5 +1069,159 @@ describe("forevermoneySwapModule observeLeg", () => {
     mockGetTransactionCount.mockResolvedValue(12)
 
     expect(await observe(sent(RAW))).toEqual({ status: "pending" })
+  })
+
+  describe("with the user's speed-up and cancel on the leg's nonce", () => {
+    const SPEED_UP_RAW = serializeTransaction({
+      ...parseTransaction(RAW),
+      maxFeePerGas: 20n,
+      maxPriorityFeePerGas: 2n,
+    } as TransactionSerializable)
+    const CANCEL_RAW = serializeTransaction({
+      type: "eip1559",
+      chainId: 964,
+      nonce: 12,
+      to: EVM_ADDRESS,
+      value: 0n,
+      gas: 21_000n,
+      maxFeePerGas: 30n,
+      maxPriorityFeePerGas: 3n,
+    })
+    const SPEED_UP_HASH = keccak256(SPEED_UP_RAW)
+    const CANCEL_HASH = keccak256(CANCEL_RAW)
+
+    const replaced = (): SentLeg => ({
+      ...sent(RAW),
+      evidence: {
+        platform: "ethereum",
+        raw: RAW,
+        replacements: [
+          { kind: "speed-up", hash: SPEED_UP_HASH, raw: SPEED_UP_RAW, sentAt: 1 },
+          { kind: "cancel", hash: CANCEL_HASH, raw: CANCEL_RAW, sentAt: 2 },
+        ],
+      },
+    })
+
+    const minedOnly = (mined: `0x${string}`, status: "success" | "reverted" = "success") => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === mined) return receipt(status)
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+    }
+
+    const knownOnly = (known: `0x${string}` | null) =>
+      mockGetTransaction.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === known) return { hash, blockNumber: null }
+        throw Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })
+      })
+
+    it("lands with the speed-up that executed", async () => {
+      minedOnly(SPEED_UP_HASH)
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: SPEED_UP_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("lands with the leg's own transaction when it executed after a speed-up was sent", async () => {
+      minedOnly(TX_HASH)
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: TX_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("fails as cancelled when the user's cancel executed", async () => {
+      minedOnly(CANCEL_HASH)
+
+      expect(await observe(replaced())).toEqual({
+        status: "failed",
+        reason: "cancelled",
+        hash: CANCEL_HASH,
+      })
+    })
+
+    it("fails as reverted with the speed-up that reverted", async () => {
+      minedOnly(SPEED_UP_HASH, "reverted")
+
+      expect(await observe(replaced())).toEqual({
+        status: "failed",
+        reason: "reverted",
+        hash: SPEED_UP_HASH,
+      })
+    })
+
+    it("lands with a finalised speed-up while the node fails to answer for the leg's own transaction", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
+        if (hash === TX_HASH) throw new Error("503 Service Unavailable")
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: SPEED_UP_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("lands with a finalised speed-up over a lagging node's unfinalised receipt for the leg's own", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
+        if (hash === TX_HASH) return receipt("success", FINALISED + 1n)
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      expect(await observe(replaced())).toEqual({
+        status: "landed",
+        hash: SPEED_UP_HASH,
+        amount: ONE_TAO_WEI,
+      })
+    })
+
+    it("waits for every receipt lookup before settling on an unfinalised receipt", async () => {
+      mockGetTransactionCount.mockResolvedValue(13)
+      mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED + 1n)
+        if (hash === TX_HASH) throw new Error("503 Service Unavailable")
+        throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
+      })
+
+      await expect(observe(replaced())).rejects.toThrow("503 Service Unavailable")
+    })
+
+    it("stays pending while a node still knows one of the leg's transactions", async () => {
+      minedOnly(`0x${"00".repeat(32)}`)
+      knownOnly(CANCEL_HASH)
+
+      expect(await observe(replaced())).toEqual({ status: "pending" })
+    })
+
+    it("is replaced only when the node knows none of the leg's transactions", async () => {
+      minedOnly(`0x${"00".repeat(32)}`)
+      knownOnly(null)
+
+      expect(await observe(replaced())).toEqual({ status: "failed", reason: "replaced" })
+      expect(mockGetTransaction.mock.calls.map(([{ hash }]) => hash).sort()).toEqual(
+        [TX_HASH, SPEED_UP_HASH, CANCEL_HASH].sort()
+      )
+    })
+
+    it("never calls the leg replaced when a lagging node fails to answer for one of them", async () => {
+      minedOnly(`0x${"00".repeat(32)}`)
+      mockGetTransaction.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
+        if (hash === SPEED_UP_HASH) throw new Error("503 Service Unavailable")
+        throw Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })
+      })
+
+      await expect(observe(replaced())).rejects.toThrow("503 Service Unavailable")
+    })
   })
 })

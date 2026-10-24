@@ -126,6 +126,19 @@ describe("rows of a live swap plan", () => {
     expect(statuses.map((tx) => tx?.status)).toEqual(["pending", "error", "pending"])
   })
 
+  it("are left to the plan when a restart finds a sibling on their nonce succeeded", async () => {
+    await db.transactionsV2.bulkPut([
+      row(5, { planId: LIVE_PLAN, status: "success" }),
+      { ...row(5, { planId: LIVE_PLAN, status: "pending" }), id: "tx-5-speed-up" },
+      { ...row(5, { status: "pending" }), id: "tx-5-other" },
+    ])
+
+    await updateTransactionsRestart()
+
+    const statuses = await db.transactionsV2.bulkGet(["tx-5", "tx-5-speed-up", "tx-5-other"])
+    expect(statuses.map((tx) => tx?.status)).toEqual(["success", "unknown", "error"])
+  })
+
   it("are never called replaced by a sibling: the plan settles its own row", async () => {
     await db.transactionsV2.bulkPut([
       row(5, { planId: LIVE_PLAN, status: "pending" }),

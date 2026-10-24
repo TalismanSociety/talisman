@@ -7,6 +7,7 @@ import { type NetworkId, networkIdFromTokenId } from "@talismn/chaindata-provide
 import BigNumber from "bignumber.js"
 import type { Hex } from "viem"
 
+import { latestCandidate } from "../candidates"
 import type { QuoteLeg } from "../types"
 import type { LegState, PersistedQuoteLeg, PlanLeg, SwapPlan } from "./types"
 
@@ -75,7 +76,11 @@ const STEP_STATUS: Record<LegState["at"], PlanStepStatus> = {
   "skipped": "skipped",
 }
 
-const hashOf = (state: LegState): Hex | null => ("hash" in state ? (state.hash ?? null) : null)
+/** a sent leg is followed by its latest transaction, a landed one by the one that executed */
+const hashOf = (state: LegState): Hex | null => {
+  if (state.at === "sent") return latestCandidate(state).hash
+  return "hash" in state ? (state.hash ?? null) : null
+}
 
 export const planSteps = (plan: SwapPlan): PlanStep[] =>
   plan.legs.map((leg, index) => ({
@@ -93,10 +98,11 @@ type RecoveryOffer = {
 const stoppingLeg = (plan: SwapPlan): PlanLeg | undefined =>
   plan.phase === "stopped" ? plan.legs.find((leg) => leg.state.at === "failed") : undefined
 
-/** Only when the stopping leg sent nothing: the funds then provably wait on its signer */
+/** Only when the stopping leg sent nothing, or the user's cancel executed instead: the funds then provably wait on its signer */
 const recoveryOffer = (plan: SwapPlan): RecoveryOffer | null => {
   const leg = stoppingLeg(plan)
-  if (leg?.state.at !== "failed" || leg.state.hash) return null
+  if (leg?.state.at !== "failed") return null
+  if (leg.state.hash && leg.state.failure !== "cancelled") return null
   return {
     fromTokenId: leg.quote.fromTokenId,
     toTokenId: leg.quote.toTokenId,

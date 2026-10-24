@@ -25,7 +25,7 @@ vi.mock("@core/rpcs/chain-connector-evm", () => ({ chainConnectorEvm: {} }))
 vi.mock("@core/rpcs/chain-connector-dot", () => ({ chainConnectorDot: {} }))
 vi.mock("@core/rpcs/chain-connector-sol", () => ({ chainConnectorSol: {} }))
 
-import { admitEvmLeg } from "../admit"
+import { admitEvmLeg, admitEvmReplacement } from "../admit"
 import { createSwapPlanExecutor, type ExecutorDeps } from "../executor"
 import { isTerminalPhase, SIGN_WINDOW_MS } from "../machine"
 import type { SignOutcome } from "../sign"
@@ -52,14 +52,25 @@ import {
 const account = privateKeyToAccount(EVM_PRIVATE_KEY)
 
 const PENDING: LegObservation = { status: "pending" }
-const LEG0_LANDED: LegObservation = { status: "landed", amount: LEG0_OUTPUT }
-const LEG1_LANDED: LegObservation = { status: "landed", amount: LEG1_AMOUNT }
+const LEG0_LANDED: LegObservation = { status: "landed", hash: LEG0_HASH, amount: LEG0_OUTPUT }
+/** leg 1's own transaction executed */
+const LEG1_LANDED = (sent: SentLeg): LegObservation => ({
+  status: "landed",
+  hash: sent.hash,
+  amount: LEG1_AMOUNT,
+})
+const LEG1_REVERTED = (sent: SentLeg): LegObservation => ({
+  status: "failed",
+  reason: "reverted",
+  hash: sent.hash,
+})
 
 /** an Error is a node that fails to answer */
 type ChainAnswer = LegObservation | Error
+type Answer = ChainAnswer | ((sent: SentLeg) => ChainAnswer | Promise<ChainAnswer>)
 type Chain = {
-  leg0: ChainAnswer | ((sent: SentLeg) => Promise<ChainAnswer>)
-  leg1: ChainAnswer
+  leg0: Answer
+  leg1: Answer
   broadcasts: Hex[]
 }
 let chain: Chain
@@ -145,8 +156,11 @@ const fakeModule = (
   },
 })
 
+const answer = (given: Answer, sent: SentLeg) => (typeof given === "function" ? given(sent) : given)
+
 /** leg 1 only lands once its bytes reached the chain */
-const observeLeg1 = (sent: SentLeg) => (chain.broadcasts.includes(sent.hash) ? chain.leg1 : PENDING)
+const observeLeg1 = (sent: SentLeg) =>
+  chain.broadcasts.includes(sent.hash) ? answer(chain.leg1, sent) : PENDING
 
 class SimulatedCrash extends Error {}
 
@@ -172,9 +186,7 @@ const makeExecutor = ({
     if (crashAt === null) seen++
   }
   const modules: Record<string, BackgroundSwapModule> = {
-    "bittensor-evm": fakeModule("bittensor-evm", (sent) =>
-      typeof chain.leg0 === "function" ? chain.leg0(sent) : chain.leg0
-    ),
+    "bittensor-evm": fakeModule("bittensor-evm", (sent) => answer(chain.leg0, sent)),
     forevermoney: fakeModule("forevermoney", observeLeg1, buildLeg),
   }
 
@@ -377,7 +389,7 @@ describe("swap plan executor", () => {
     await seedRunningPlan()
     await applyPlanEvent(
       PLAN_ID,
-      { type: "observed", leg: 0, observation: LEG0_LANDED },
+      { type: "observed", leg: 0, candidates: 1, observation: LEG0_LANDED },
       T0 + 10_000
     )
     clock = T0 + SIGN_WINDOW_MS + 1
@@ -444,7 +456,7 @@ describe("swap plan executor", () => {
     chain.leg0 = (observed) =>
       observed.hash === LEG0_HASH
         ? new Promise(() => {})
-        : Promise.resolve({ status: "failed", reason: "reverted" })
+        : Promise.resolve({ status: "failed", reason: "reverted", hash: observed.hash })
 
     for (const wake of ["tick", "resumeAll"] as const) {
       await putPlan(other)
@@ -461,7 +473,7 @@ describe("swap plan executor", () => {
     const { executor, tracked } = makeExecutor()
     await executor.drive(PLAN_ID)
 
-    chain.leg1 = { status: "failed", reason: "reverted" }
+    chain.leg1 = LEG1_REVERTED
     await executor.drive(PLAN_ID)
 
     const [leg1Row] = (await db.transactionsV2.toArray()).filter(
@@ -477,7 +489,7 @@ describe("swap plan executor", () => {
     const { executor, notified, alarms } = makeExecutor()
     await executor.drive(PLAN_ID)
 
-    chain.leg1 = { status: "failed", reason: "reverted" }
+    chain.leg1 = LEG1_REVERTED
     await executor.drive(PLAN_ID)
     await executor.drive(PLAN_ID)
 
@@ -649,5 +661,180 @@ describe("swap plan executor", () => {
     clock += 30_000
     await executor.drive(PLAN_ID)
     expect((await getPlan(PLAN_ID))?.legs[1].state.at).toBe("sent")
+  })
+})
+
+describe("a swap plan leg the user speeds up or cancels", () => {
+  const REF1: SwapPlanRef = { id: PLAN_ID, leg: 1 }
+  const FASTER = { maxFeePerGas: 20n, maxPriorityFeePerGas: 2n }
+
+  beforeEach(reset)
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  /** signed as the replace drawer builds it: a speed-up keeps the call, a cancel sends nothing to the signer */
+  const signReplacement = (kind: "speed-up" | "cancel") =>
+    account.signTransaction(
+      kind === "speed-up"
+        ? { ...EVM_TX, ...FASTER, type: "eip1559", chainId: 964, nonce: 12 }
+        : {
+            ...FASTER,
+            type: "eip1559",
+            chainId: 964,
+            nonce: 12,
+            to: EVM_ADDRESS,
+            value: 0n,
+            gas: 21_000n,
+          }
+    )
+
+  const replaceLeg1 = async (kind: "speed-up" | "cancel", { broadcast = true } = {}) => {
+    const raw = await signReplacement(kind)
+    await admitEvmReplacement(REF1, {
+      raw,
+      networkId: "964",
+      unsigned: UNSIGNED,
+      txInfo: BUILT.txInfo,
+    })
+    if (broadcast) chain.broadcasts.push(keccak256(raw))
+    return keccak256(raw)
+  }
+
+  /** the transaction executes once its bytes reached the chain */
+  const executes =
+    (hash: Hex, observation: LegObservation): Answer =>
+    () =>
+      chain.broadcasts.includes(hash) ? observation : PENDING
+
+  const leg1Sent = async () => {
+    await seedRunningPlan()
+    chain.leg0 = LEG0_LANDED
+    const made = makeExecutor()
+    await made.executor.drive(PLAN_ID)
+    const state = (await getPlan(PLAN_ID))?.legs[1].state
+    if (state?.at !== "sent") throw new Error("expected leg 1 sent")
+    return { ...made, original: state.hash }
+  }
+
+  const statusOf = async (hash: Hex) => (await db.transactionsV2.get(hash))?.status
+
+  it("completes with the speed-up that executed, and settles the leg's own row as replaced", async () => {
+    const { executor, original, tracked, notified } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up")
+    chain.leg1 = executes(speedUp, { status: "landed", hash: speedUp, amount: LEG1_AMOUNT })
+
+    await executor.drive(PLAN_ID)
+
+    const plan = await getPlan(PLAN_ID)
+    expect(plan?.phase).toBe("completed")
+    expect(plan?.legs[1].state).toMatchObject({ at: "landed", hash: speedUp })
+    expect([await statusOf(speedUp), await statusOf(original)]).toEqual(["success", "replaced"])
+    expect(tracked).toEqual([LEG0_HASH, speedUp])
+    expect(notified).toEqual(["completed"])
+  })
+
+  it("completes with the leg's own transaction when it executed after a speed-up was sent", async () => {
+    const { executor, original, tracked } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up")
+    chain.leg1 = LEG1_LANDED
+
+    await executor.drive(PLAN_ID)
+
+    const plan = await getPlan(PLAN_ID)
+    expect(plan?.phase).toBe("completed")
+    expect(plan?.legs[1].state).toMatchObject({ at: "landed", hash: original })
+    expect([await statusOf(original), await statusOf(speedUp)]).toEqual(["success", "replaced"])
+    expect(tracked).toEqual([LEG0_HASH, original])
+  })
+
+  it("settles a speed-up its watcher saw land in a block that was reorged out as replaced", async () => {
+    const { executor, original } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up")
+    await db.transactionsV2.update(speedUp, { status: "success", confirmed: false })
+    chain.leg1 = LEG1_LANDED
+
+    await executor.drive(PLAN_ID)
+
+    expect([await statusOf(original), await statusOf(speedUp)]).toEqual(["success", "replaced"])
+  })
+
+  it("stops when the user's cancel executed, the cancel's row a success", async () => {
+    const { executor, original, tracked, notified } = await leg1Sent()
+    const cancel = await replaceLeg1("cancel")
+    chain.leg1 = executes(cancel, { status: "failed", reason: "cancelled", hash: cancel })
+
+    await executor.drive(PLAN_ID)
+
+    const plan = await getPlan(PLAN_ID)
+    expect(plan?.phase).toBe("stopped")
+    expect(plan?.legs[1].state).toEqual({
+      at: "failed",
+      failure: "cancelled",
+      hash: cancel,
+      failedAt: clock,
+    })
+    expect([await statusOf(cancel), await statusOf(original)]).toEqual(["success", "replaced"])
+    expect(tracked).toEqual([LEG0_HASH])
+    expect(notified).toEqual(["stopped"])
+  })
+
+  it("carries on when the leg's own transaction beat the user's cancel", async () => {
+    const { executor, original } = await leg1Sent()
+    const cancel = await replaceLeg1("cancel")
+    chain.leg1 = LEG1_LANDED
+
+    await executor.drive(PLAN_ID)
+
+    expect((await getPlan(PLAN_ID))?.phase).toBe("completed")
+    expect([await statusOf(original), await statusOf(cancel)]).toEqual(["success", "replaced"])
+  })
+
+  it("resends each of the leg's transactions while it is pending, the latest first", async () => {
+    const { executor, original } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up", { broadcast: false })
+    chain.broadcasts = []
+
+    await executor.drive(PLAN_ID)
+
+    expect(chain.broadcasts).toEqual([speedUp, original])
+  })
+
+  it("never sends a replacement it refused", async () => {
+    const { executor, original } = await leg1Sent()
+    const raw = await account.signTransaction({
+      ...EVM_TX,
+      ...FASTER,
+      type: "eip1559",
+      chainId: 964,
+      nonce: 12,
+      to: RECIPIENT,
+    })
+    await expect(
+      admitEvmReplacement(REF1, { raw, networkId: "964", unsigned: UNSIGNED, txInfo: BUILT.txInfo })
+    ).rejects.toThrow("call")
+    chain.broadcasts = []
+
+    await executor.drive(PLAN_ID)
+
+    expect(chain.broadcasts).toEqual([original])
+    expect(await db.transactionsV2.get(keccak256(raw))).toBeUndefined()
+  })
+
+  it("converges after a restart between a speed-up's admission and its broadcast", async () => {
+    const { original } = await leg1Sent()
+    const speedUp = await replaceLeg1("speed-up", { broadcast: false })
+    chain.leg1 = executes(speedUp, { status: "landed", hash: speedUp, amount: LEG1_AMOUNT })
+
+    const restarted = makeExecutor()
+    await restarted.executor.resumeAll()
+    expect(await replaceLeg1("speed-up")).toBe(speedUp)
+    await restarted.executor.resumeAll()
+
+    const plan = await getPlan(PLAN_ID)
+    expect(plan?.phase).toBe("completed")
+    expect(plan?.legs[1].state).toMatchObject({ at: "landed", hash: speedUp })
+    expect((await leg1Rows()).map((row) => row.status).sort()).toEqual(["replaced", "success"])
+    expect([await statusOf(speedUp), await statusOf(original)]).toEqual(["success", "replaced"])
   })
 })

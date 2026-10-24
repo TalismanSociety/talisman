@@ -5,6 +5,7 @@ import type { Hex } from "viem"
 import type {
   LegBound,
   LegObservation,
+  LegReplacement,
   NonEmpty,
   SentEvidence,
   SupportedSwapProtocol,
@@ -37,12 +38,14 @@ export type LegState =
   | { at: "building"; attempt: number; nextAttemptAt: number }
   | {
       at: "sent"
+      /** the leg's own transaction. The user's speed-ups and cancels of it are in its evidence */
       hash: Hex
       sentAt: number
       /** past it, a leg still pending is indeterminate */
       deadlineAt: number
       evidence: SentEvidence
     }
+  /** hash: the transaction that executed, a speed-up's when one replaced the leg's own */
   | { at: "landed"; hash: Hex; amount: string; landedAt: number }
   | { at: "failed"; failure: LegFailure; hash?: Hex; failedAt: number }
   | { at: "skipped" }
@@ -114,7 +117,20 @@ export type PlanEvent =
       deadlineAt: number
       evidence: SentEvidence
     }
-  | { type: "observed"; leg: number; observation: LegObservation }
+  | {
+      type: "replacement-admitted"
+      leg: number
+      replacement: LegReplacement
+      /** the replacement's own deadline: the leg is not called indeterminate before it */
+      deadlineAt: number
+    }
+  | {
+      type: "observed"
+      leg: number
+      observation: LegObservation
+      /** how many of the leg's transactions the observation looked for */
+      candidates: number
+    }
   | { type: "deadline"; leg: number }
   | {
       type: "build-failed"

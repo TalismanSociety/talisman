@@ -1,6 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
 import type { Hex } from "viem"
 
+import { latestCandidate, legCandidates } from "../candidates"
 import type { NonEmpty } from "../types"
 import type {
   LegFailure,
@@ -162,11 +163,38 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
       }
     }
 
+    case "replacement-admitted": {
+      const leg = legs[event.leg]
+      if (leg?.state.at !== "sent" || leg.state.evidence.platform !== "ethereum") return null
+      const { replacement } = event
+      if (legCandidates(leg.state).some((candidate) => candidate.hash === replacement.hash))
+        return null
+      const { evidence, deadlineAt } = leg.state
+      return {
+        legs: replaceLeg(legs, event.leg, {
+          ...leg,
+          state: {
+            ...leg.state,
+            deadlineAt: Math.max(deadlineAt, event.deadlineAt),
+            evidence: {
+              ...evidence,
+              replacements: [...(evidence.replacements ?? []), replacement],
+            },
+          },
+        }),
+        effects: [],
+      }
+    }
+
     case "observed": {
       const leg = legs[event.leg]
       if (leg?.state.at !== "sent") return null
       const { hash } = leg.state
       const { observation } = event
+      const isInferredFromAbsence =
+        observation.status === "dropped" ||
+        (observation.status === "failed" && observation.reason === "replaced")
+      if (isInferredFromAbsence && legCandidates(leg.state).length > event.candidates) return null
 
       switch (observation.status) {
         case "pending": {
@@ -189,7 +217,12 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
         case "landed": {
           const landed = replaceLeg(legs, event.leg, {
             ...leg,
-            state: { at: "landed", hash, amount: observation.amount.toString(), landedAt: now },
+            state: {
+              at: "landed",
+              hash: observation.hash,
+              amount: observation.amount.toString(),
+              landedAt: now,
+            },
           })
           if (event.leg === legs.length - 1)
             return { legs: landed, effects: [{ type: "notify", kind: "completed" }] }
@@ -198,15 +231,21 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
         case "dropped":
           return event.leg === 0 ? stop(legs, 0, "dropped", now, hash) : null
         case "failed":
-          return stop(legs, event.leg, observation.reason, now, hash)
+          return stop(
+            legs,
+            event.leg,
+            observation.reason,
+            now,
+            "hash" in observation ? observation.hash : latestCandidate(leg.state).hash
+          )
       }
       return null
     }
 
     case "deadline": {
       const leg = legs[event.leg]
-      if (leg?.state.at !== "sent") return null
-      return stop(legs, event.leg, "indeterminate", now, leg.state.hash)
+      if (leg?.state.at !== "sent" || now < leg.state.deadlineAt) return null
+      return stop(legs, event.leg, "indeterminate", now, latestCandidate(leg.state).hash)
     }
 
     case "build-failed": {

@@ -8,6 +8,7 @@ import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import type { ProcessAnimationStatus } from "@ui/components/ProcessAnimation/ProcessAnimation"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
 import { type FC, useCallback, useMemo } from "react"
@@ -111,6 +112,8 @@ const SwapPlanAction: FC<{
   switch (action.type) {
     case "none":
       return null
+    case "replace":
+      return <TxReplaceActions tx={action.tx} className="mt-0 h-full" containerId={containerId} />
     case "track":
       return (
         <Button primary fullWidth onClick={() => window.open(action.url, "_blank", "noopener")}>

@@ -38,7 +38,7 @@ describe("TxReplaceActions", () => {
     expect(actionsOf()?.className).not.toContain("invisible")
   })
 
-  it("hides them on a swap plan leg", () => {
+  it("offers them on a swap plan leg, whose plan adopts the replacement", () => {
     render(
       <TxReplaceActions
         tx={{
@@ -56,6 +56,6 @@ describe("TxReplaceActions", () => {
         }}
       />
     )
-    expect(actionsOf()?.className).toContain("invisible")
+    expect(actionsOf()?.className).not.toContain("invisible")
   })
 })

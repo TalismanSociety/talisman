@@ -127,16 +127,30 @@ export type BuiltLeg = {
 export type LegObservation =
   /** scanned: blocks this observation read without finding the leg, so no later one reads them again */
   | { status: "pending"; scanned?: number[] }
-  | { status: "landed"; amount: bigint }
+  /** hash: the transaction that landed, a speed-up's when one replaced the leg's own */
+  | { status: "landed"; hash: Hex; amount: bigint }
   /** proven never executed: nothing moved */
   | { status: "dropped" }
-  | { status: "failed"; reason: "reverted" | "replaced" | "indeterminate" }
+  /** hash: the transaction that executed, a cancel's when the user cancelled the leg */
+  | { status: "failed"; reason: "reverted" | "cancelled"; hash: Hex }
+  | { status: "failed"; reason: "replaced" | "indeterminate" }
+
+/** a transaction the user sent on a leg's nonce: the same call with higher fees, or a no-op */
+export type LegReplacement = {
+  kind: "speed-up" | "cancel"
+  hash: Hex
+  /** resent while the leg is pending: the same bytes keep the same hash */
+  raw: Hex
+  sentAt: number
+}
 
 export type SentEvidence =
   | {
       platform: "ethereum"
       /** the signed bytes when the background signed: a resend of the same bytes keeps the same hash */
       raw?: Hex
+      /** oldest first. Whichever transaction on the leg's nonce lands decides the leg */
+      replacements?: LegReplacement[]
     }
   | {
       platform: "polkadot"
