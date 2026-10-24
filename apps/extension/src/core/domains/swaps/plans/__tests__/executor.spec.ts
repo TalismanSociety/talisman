@@ -779,14 +779,14 @@ describe("a swap plan leg the user speeds up or cancels", () => {
     expect([await statusOf(original), await statusOf(cancel)]).toEqual(["success", "replaced"])
   })
 
-  it("resends the latest of the leg's transactions while it is pending", async () => {
-    const { executor } = await leg1Sent()
+  it("resends each of the leg's transactions while it is pending, the latest first", async () => {
+    const { executor, original } = await leg1Sent()
     const speedUp = await replaceLeg1("speed-up", { broadcast: false })
     chain.broadcasts = []
 
     await executor.drive(PLAN_ID)
 
-    expect(chain.broadcasts).toEqual([speedUp])
+    expect(chain.broadcasts).toEqual([speedUp, original])
   })
 
   it("never sends a replacement it refused", async () => {

@@ -14,7 +14,7 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { filter, firstValueFrom } from "rxjs"
 import type { Hex } from "viem"
 
-import { latestCandidate, legCandidates } from "../candidates"
+import { legCandidates } from "../candidates"
 import type { SwapEnv } from "../env"
 import { coreSwapEnv } from "../env.core"
 import { getBackgroundSwapModule } from "../registry"
@@ -187,11 +187,11 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
     if (observation.status !== "pending") return settle(id, index, observed)
     if (observation.scanned?.length) await applyAndFollow(id, observed)
     if (pastDeadline()) return settle(id, index, deadline)
-    const { raw } = latestCandidate(leg.state)
-    if (raw)
-      await deps
-        .broadcast(networkIdFromTokenId(leg.quote.fromTokenId), raw)
-        .catch((err) => log.debug("Swap plan leg resend failed", { err, id, leg: index }))
+    for (const { raw } of legCandidates(leg.state).reverse())
+      if (raw)
+        await deps
+          .broadcast(networkIdFromTokenId(leg.quote.fromTokenId), raw)
+          .catch((err) => log.debug("Swap plan leg resend failed", { err, id, leg: index }))
   }
 
   const buildAndSign = async (id: SwapPlanId, index: number) => {
