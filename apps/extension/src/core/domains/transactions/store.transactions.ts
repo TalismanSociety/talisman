@@ -289,6 +289,8 @@ export const getTransactionStatus = async (hash: string) => {
 
 export const updateTransactionsRestart = async () => {
   try {
+    const livePlanIds = await getLivePlanIds()
+
     // for all successful tx, mark the pending ones with the same nonce as failed
     for (const successfulTx of await db.transactionsV2
       .where("status")
@@ -299,6 +301,7 @@ export const updateTransactionsRestart = async () => {
         .filter(filterIsSameNetworkAndAddressTx(successfulTx))
         .filter(
           (row) =>
+            !isRowOfLivePlan(row, livePlanIds) &&
             row.platform !== "solana" &&
             successfulTx.platform !== "solana" &&
             row.nonce === successfulTx.nonce &&
@@ -312,7 +315,6 @@ export const updateTransactionsRestart = async () => {
     await db.transactionsV2.where("status").equals("pending").modify({ status: "unknown" })
 
     // keep only the last 100 transactions, plus the rows of the swap plans that are still running
-    const livePlanIds = await getLivePlanIds()
     const deleted = await db.transactionsV2
       .orderBy("timestamp")
       .reverse()
