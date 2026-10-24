@@ -94,10 +94,11 @@ const SwapPlanStatusIcon: FC<{ status: ProcessAnimationStatus; className?: strin
 const SwapPlanAction: FC<{
   action: SwapPlanFooterAction
   ledgerTx: TxSubmitButtonTransaction | undefined
+  isLedgerTxFailed: boolean
   onLedgerSignAttemptEnded: () => void
   onClose: () => void
   containerId?: string
-}> = ({ action, ledgerTx, onLedgerSignAttemptEnded, onClose, containerId }) => {
+}> = ({ action, ledgerTx, isLedgerTxFailed, onLedgerSignAttemptEnded, onClose, containerId }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openSwapModal } = useSwapModal()
@@ -123,6 +124,12 @@ const SwapPlanAction: FC<{
         </Button>
       )
     case "sign-hardware":
+      if (isLedgerTxFailed)
+        return (
+          <Button primary fullWidth onClick={onLedgerSignAttemptEnded}>
+            {t("Try again")}
+          </Button>
+        )
       return (
         <SwapPlanLedgerSign
           tx={ledgerTx}
@@ -181,7 +188,7 @@ export const SwapPlanProgress: FC<{
       <div className="mt-8 h-16 w-full shrink-0 truncate text-center font-bold text-body text-lg leading-[2rem]">
         {view?.title}
       </div>
-      <div className="mt-6 line-clamp-2 h-20 w-full shrink-0 text-center font-light text-base text-body-secondary leading-10">
+      <div className="mt-6 line-clamp-3 h-30 w-full shrink-0 text-center font-light text-base text-body-secondary leading-10">
         {view?.subtitle}
       </div>
       <SwapPlanStatusIcon
@@ -196,6 +203,7 @@ export const SwapPlanProgress: FC<{
           <SwapPlanAction
             action={action}
             ledgerTx={ledger.data}
+            isLedgerTxFailed={ledger.isError}
             onLedgerSignAttemptEnded={ledger.refetch}
             onClose={onClose}
             containerId={containerId}
