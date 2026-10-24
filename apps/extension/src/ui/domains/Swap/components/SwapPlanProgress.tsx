@@ -195,7 +195,7 @@ export const SwapPlanProgress: FC<{
         status={view?.animStatus ?? "processing"}
         className="mt-8 size-28 shrink-0"
       />
-      <div className="flex min-h-0 w-full grow flex-col justify-center py-8">
+      <div className="justify-center-safe flex min-h-0 w-full grow flex-col overflow-y-auto py-4">
         <SwapPlanStepList steps={view?.steps ?? []} />
       </div>
       <div className="flex w-full shrink-0 flex-col gap-4 pt-6">
