@@ -6,7 +6,7 @@ import {
 } from "@core/domains/swaps/plans/helpers"
 import type { SwapPlan } from "@core/domains/swaps/plans/types"
 import type { QuoteLeg } from "@core/domains/swaps/types"
-import type { WalletTransaction } from "@core/domains/transactions/types"
+import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrl,
   type Network,
@@ -136,9 +136,12 @@ const legProgress = (
     case "failed":
       return {
         status: "failed",
-        detail: leg.state.hash
-          ? t("Did not complete. Check your activity")
-          : t("Not sent. Your funds wait on {{account}}", { account }),
+        detail:
+          leg.state.failure === "cancelled"
+            ? t("Cancelled. Your funds wait on {{account}}", { account })
+            : leg.state.hash
+              ? t("Did not complete. Check your activity")
+              : t("Not sent. Your funds wait on {{account}}", { account }),
       }
     case "skipped":
       return { status: "skipped", detail: t("Skipped") }
@@ -231,7 +234,7 @@ const progressHeader = (
           ? t("Swap stopped after step {{step}}", { step: current })
           : t("Swap stopped"),
         subtitle:
-          failed?.at === "failed" && !failed.hash
+          failed?.at === "failed" && (failed.failure === "cancelled" || !failed.hash)
             ? t("Your funds wait on your account at the end of step {{step}}.", { step: current })
             : t("Step {{step}} did not complete. Check your activity for its status.", {
                 step: current + 1,
@@ -284,9 +287,17 @@ export const swapPlanProgressView = (
 }
 
 export type SwapPlanFooterAction =
+  | { type: "replace"; tx: WalletTransactionEth }
   | { type: "track"; url: string }
   | { type: "none" }
   | PlanCallToAction
+
+const pendingEvmLegRow = ({ plan, rows }: Pick<SwapPlanProgressInput, "plan" | "rows">) =>
+  planSteps(plan)
+    .map(({ hash }) => (hash ? rows.get(hash) : null))
+    .find(
+      (row): row is WalletTransactionEth => row?.platform === "ethereum" && row.status === "pending"
+    )
 
 /** while the swap moves, the footer follows it; once it waits or ends, it offers the way forward */
 export const swapPlanFooterAction = (
@@ -296,6 +307,8 @@ export const swapPlanFooterAction = (
     case "proposed":
     case "running":
     case "completed": {
+      const pending = pendingEvmLegRow(input)
+      if (pending) return { type: "replace", tx: pending }
       const row = lastLegRow(input)
       const url = row ? getSwapTrackerUrl(row.txInfo, row.id) : null
       return url ? { type: "track", url } : { type: "none" }
