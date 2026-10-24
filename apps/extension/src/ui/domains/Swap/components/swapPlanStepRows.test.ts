@@ -161,7 +161,7 @@ describe("swapPlanProgressView", () => {
     )
 
     expect(statusAndDetail(result)).toEqual([
-      { label: "Move to EVM", status: "done", detail: "Included in block #123" },
+      { label: "Move to EVM", status: "done", detail: "In block #123" },
       { label: "Bridge to Base", status: "in-progress", detail: "Sending from Bridge account" },
     ])
   })

@@ -101,7 +101,12 @@ export const SwapPlanStepList: FC<{ steps: SwapPlanStepRow[]; showStatus?: boole
             <StepDetail detail={step.detail} href={step.href} />
           </div>
           {showStatus ? (
-            <div className={cn("w-44 shrink-0 text-right text-xs", STATUS_TONE[step.status])}>
+            <div
+              className={cn(
+                "w-32 shrink-0 whitespace-nowrap text-right text-xs",
+                STATUS_TONE[step.status]
+              )}
+            >
               {statusWord(t, step.status)}
             </div>
           ) : null}

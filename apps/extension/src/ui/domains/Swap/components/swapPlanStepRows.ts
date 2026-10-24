@@ -126,7 +126,7 @@ const legProgress = (
       return {
         status: "done",
         detail: blockNumber
-          ? t("Included in block #{{blockNumber}}", { blockNumber })
+          ? t("In block #{{blockNumber}}", { blockNumber })
           : t("View on block explorer"),
       }
     }
