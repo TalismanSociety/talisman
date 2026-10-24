@@ -188,7 +188,7 @@ export const SwapPlanProgress: FC<{
       <div className="mt-8 h-16 w-full shrink-0 truncate text-center font-bold text-body text-lg leading-[2rem]">
         {view?.title}
       </div>
-      <div className="mt-6 line-clamp-3 h-30 w-full shrink-0 text-center font-light text-base text-body-secondary leading-10">
+      <div className="mt-6 line-clamp-3 h-[3.75rem] w-full shrink-0 text-center font-light text-base text-body-secondary leading-10">
         {view?.subtitle}
       </div>
       <SwapPlanStatusIcon
