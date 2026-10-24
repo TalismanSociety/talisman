@@ -23,10 +23,13 @@ import { getSwapProgressDetails, type SwapStatusDetails } from "./swapProgressSt
 
 type Translator = (key: string, options?: Record<string, unknown>) => string
 
+/** "untracked" is a delivery Talisman can no longer follow, its outcome is not known */
+export type SwapPlanStepStatus = PlanStepStatus | "untracked"
+
 export type SwapPlanStepRow = {
   key: string
   label: string
-  status: PlanStepStatus
+  status: SwapPlanStepStatus
   detail: string
   href?: string
 }
@@ -88,8 +91,8 @@ export const quoteRouteSummary = (ctx: StepRowContext, legs: readonly StepLeg[])
 
 export type SwapPlanProgressInput = {
   plan: SwapPlan
-  /** the transaction rows of the legs that have a hash, by hash */
-  rows: ReadonlyMap<string, WalletTransaction>
+  /** the transaction rows of the legs that have a hash, by hash: null once the wallet no longer holds the row */
+  rows: ReadonlyMap<string, WalletTransaction | null>
   /** why the transaction a Ledger leg waits on could not be prepared */
   ledgerError: string | null
 }
@@ -143,12 +146,10 @@ const legProgress = (
 }
 
 /** the last leg landing on its source chain only hands the funds over: the swap ends at their delivery */
-const deliveryProgress = (
-  ctx: StepRowContext,
-  plan: SwapPlan,
-  delivery: SwapStatusDetails
-): LegProgress => {
+const deliveryProgress = (ctx: StepRowContext, plan: SwapPlan, delivery: Delivery): LegProgress => {
   const network = networkOf(ctx, plan.legs[plan.legs.length - 1].quote.toTokenId)?.name ?? ""
+  if (delivery.untracked)
+    return { status: "untracked", detail: ctx.t("Check your balance on {{network}}", { network }) }
   switch (delivery.animStatus) {
     case "processing":
       return { status: "in-progress", detail: ctx.t("Arriving on {{network}}", { network }) }
@@ -158,6 +159,26 @@ const deliveryProgress = (
       return { status: "failed", detail: ctx.t("Did not complete. Check your activity") }
   }
 }
+
+type Delivery = SwapStatusDetails & { untracked: boolean }
+
+const UNTRACKED_SWAP_STATUSES: ReadonlySet<WalletTransaction["swapStatus"]> = new Set([
+  "invalid",
+  "unknown",
+])
+
+const lastLegDelivery = (t: Translator, row: WalletTransaction | null | undefined): Delivery =>
+  row === null
+    ? {
+        title: t("Swap status unknown"),
+        subtitle: t("Talisman no longer tracks this swap. Please check your balance."),
+        animStatus: "failure",
+        untracked: true,
+      }
+    : {
+        ...getSwapProgressDetails(t, row, true),
+        untracked: row?.status === "unknown" || UNTRACKED_SWAP_STATUSES.has(row?.swapStatus),
+      }
 
 type ProgressHeader = Omit<SwapPlanProgressView, "steps">
 
@@ -170,7 +191,7 @@ const inProgressHeader = (t: Translator): ProgressHeader => ({
 const progressHeader = (
   t: Translator,
   plan: SwapPlan,
-  delivery: SwapStatusDetails | null
+  delivery: Delivery | null
 ): ProgressHeader => {
   const current = plan.legs.findIndex((leg) => leg.state.at !== "landed")
 
@@ -240,9 +261,7 @@ export const swapPlanProgressView = (
   const { plan } = input
   const lastIndex = plan.legs.length - 1
   const delivery =
-    plan.legs[lastIndex].state.at === "landed"
-      ? getSwapProgressDetails(ctx.t, lastLegRow(input), true)
-      : null
+    plan.legs[lastIndex].state.at === "landed" ? lastLegDelivery(ctx.t, lastLegRow(input)) : null
 
   return {
     ...progressHeader(ctx.t, plan, delivery),

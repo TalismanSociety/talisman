@@ -1,4 +1,3 @@
-import type { PlanStepStatus } from "@core/domains/swaps/plans/helpers"
 import { CheckIcon, ExternalLinkIcon, LoaderIcon, XIcon } from "@talismn/icons"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworksMapById } from "@ui/state/chaindata"
@@ -7,7 +6,7 @@ import type { TFunction } from "i18next"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import type { StepRowContext, SwapPlanStepRow } from "./swapPlanStepRows"
+import type { StepRowContext, SwapPlanStepRow, SwapPlanStepStatus } from "./swapPlanStepRows"
 
 export const useStepRowContext = (): StepRowContext => {
   const { t } = useTranslation()
@@ -16,25 +15,27 @@ export const useStepRowContext = (): StepRowContext => {
   return useMemo(() => ({ t, accounts, networks }), [accounts, networks, t])
 }
 
-const CIRCLE_TONE: Record<PlanStepStatus, string> = {
+const CIRCLE_TONE: Record<SwapPlanStepStatus, string> = {
   "upcoming": "bg-grey-600 text-body-secondary",
   "skipped": "bg-grey-600 text-body-secondary line-through",
   "waiting-on-you": "bg-primary-500 text-black",
   "in-progress": "bg-primary-500 text-black",
   "done": "bg-primary-500 text-black",
   "failed": "bg-alert-error text-body",
+  "untracked": "bg-grey-600 text-body-secondary",
 }
 
-const STATUS_TONE: Record<PlanStepStatus, string> = {
+const STATUS_TONE: Record<SwapPlanStepStatus, string> = {
   "upcoming": "text-body-secondary",
   "skipped": "text-body-secondary",
   "waiting-on-you": "text-primary",
   "in-progress": "text-primary",
   "done": "text-body-secondary",
   "failed": "text-alert-error",
+  "untracked": "text-body-secondary",
 }
 
-const statusWord = (t: TFunction, status: PlanStepStatus) => {
+const statusWord = (t: TFunction, status: SwapPlanStepStatus) => {
   switch (status) {
     case "upcoming":
       return t("Next")
@@ -48,10 +49,12 @@ const statusWord = (t: TFunction, status: PlanStepStatus) => {
       return t("Failed")
     case "skipped":
       return t("Skipped")
+    case "untracked":
+      return t("Unknown")
   }
 }
 
-const StepCircle: FC<{ number: number; status: PlanStepStatus }> = ({ number, status }) => (
+const StepCircle: FC<{ number: number; status: SwapPlanStepStatus }> = ({ number, status }) => (
   <div
     className={cn(
       "flex size-12 shrink-0 items-center justify-center rounded-full font-bold text-xs",

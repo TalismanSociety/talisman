@@ -33,12 +33,10 @@ const useLegRows = (plan: SwapPlan | null | undefined) => {
   return useLiveQuery(
     async () => {
       const rows = await db.transactionsV2.bulkGet(hashes)
-      return new Map(
-        rows.flatMap((row): [string, WalletTransaction][] => (row ? [[row.id, row]] : []))
-      )
+      return new Map(hashes.map((hash, index) => [hash, rows[index] ?? null]))
     },
     [hashes],
-    new Map<string, WalletTransaction>()
+    new Map<string, WalletTransaction | null>()
   )
 }
 

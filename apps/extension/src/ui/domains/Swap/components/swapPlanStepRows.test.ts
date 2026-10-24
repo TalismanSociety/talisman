@@ -103,7 +103,11 @@ const rows = (...list: WalletTransactionEth[]) => new Map(list.map((row) => [row
 
 const view = (
   value: SwapPlan,
-  options: { rows?: Map<string, WalletTransactionEth>; ledgerError?: string; ledger?: boolean } = {}
+  options: {
+    rows?: Map<string, WalletTransactionEth | null>
+    ledgerError?: string
+    ledger?: boolean
+  } = {}
 ) =>
   swapPlanProgressView(ctx(options.ledger ? "ledger-ethereum" : "keypair"), {
     plan: value,
@@ -207,6 +211,36 @@ describe("swapPlanProgressView", () => {
       status: "failed",
       detail: "Did not complete. Check your activity",
     })
+  })
+
+  it("does not call a delivery the tracker lost a failure", () => {
+    const result = view(plan("completed", LANDED_0, LANDED_1), {
+      rows: rows(forevermoneyRow("unknown")),
+    })
+
+    expect(result).toMatchObject({ title: "Swap status unknown" })
+    expect(result.steps[1]).toMatchObject({
+      status: "untracked",
+      detail: "Check your balance on Base",
+    })
+  })
+
+  it("ends a completed swap whose last transaction the wallet no longer holds", () => {
+    const result = view(plan("completed", LANDED_0, LANDED_1), {
+      rows: new Map([[LEG1_HASH, null]]),
+    })
+
+    expect(result).toMatchObject({ title: "Swap status unknown", animStatus: "failure" })
+    expect(result.steps[1]).toMatchObject({
+      status: "untracked",
+      detail: "Check your balance on Base",
+    })
+  })
+
+  it("keeps a completed swap in progress while its last transaction loads", () => {
+    const result = view(plan("completed", LANDED_0, LANDED_1))
+
+    expect(result).toMatchObject({ title: "Swap in progress", animStatus: "processing" })
   })
 
   it("asks for the unlock a paused plan waits on", () => {
