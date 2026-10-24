@@ -62,6 +62,7 @@ import {
 } from "../swap-errors"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
+import { SwapRouteRow } from "./SwapRoute"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
@@ -663,6 +664,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       >
         {children}
         <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
+          {selectedQuote && selectedQuote.legs.length > 1 ? (
+            <SwapRouteRow legs={selectedQuote.legs} containerId={containerId} />
+          ) : null}
           <QuoteProvider />
           <QuoteDuration />
           <QuoteExchangeRate />

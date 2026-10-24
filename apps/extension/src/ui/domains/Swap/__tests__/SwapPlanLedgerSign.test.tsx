@@ -73,7 +73,7 @@ import {
   SUMMARY,
   T0,
 } from "@core/domains/swaps/plans/__tests__/fixtures"
-import { SwapPlanLedgerSign } from "../components/SwapPlanLedgerSign"
+import { SwapPlanLedgerSign, useHardwareLegTransaction } from "../components/SwapPlanLedgerSign"
 
 const PLAN: SwapPlan = {
   id: PLAN_ID,
@@ -101,12 +101,17 @@ const PLAN: SwapPlan = {
   ],
 }
 
+const LedgerLeg = () => {
+  const { data: tx, refetch } = useHardwareLegTransaction(PLAN, 1)
+  return <SwapPlanLedgerSign tx={tx} onSignAttemptEnded={refetch} />
+}
+
 const renderLedgerSign = () =>
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <SwapPlanLedgerSign plan={PLAN} leg={1} />
+      <LedgerLeg />
     </QueryClientProvider>
   )
 
