@@ -25,7 +25,7 @@ import { QuickUnlockOffer } from "../QuickUnlockOffer"
 const renderOffer = async () => {
   const onAnswer = vi.fn()
   render(<QuickUnlockOffer onAnswer={onAnswer} />)
-  await screen.findByText("Unlock Talisman faster")
+  await screen.findByText("Unlock Talisman Faster")
   return onAnswer
 }
 

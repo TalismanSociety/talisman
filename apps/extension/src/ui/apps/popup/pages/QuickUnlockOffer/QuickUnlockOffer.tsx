@@ -88,7 +88,7 @@ export const QuickUnlockOffer = ({ onAnswer }: { onAnswer: () => void }) => {
             <FingerprintIcon />
           </div>
           <div className="flex flex-col gap-4">
-            <p className="font-bold text-white">{t("Unlock Talisman faster")}</p>
+            <p className="font-bold text-white">{t("Unlock Talisman Faster")}</p>
             <p className="text-body-secondary text-sm">
               {t(
                 "Unlock Talisman with Touch ID, Windows Hello or your device's screen lock. Your password still works."
