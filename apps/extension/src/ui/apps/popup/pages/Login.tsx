@@ -117,7 +117,7 @@ const schema = yup
 
 const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
 
-const Background = () => {
+export const LoginScreenBackground = () => {
   const colors = useFirstAccountColors()
 
   return <LoginBackground className="absolute top-0 left-0 h-full w-full" colors={colors} />
@@ -340,7 +340,7 @@ const Login = ({
   return (
     <PopupLayout>
       <Suspense fallback={<SuspenseTracker name="Background" />}>
-        <Background />
+        <LoginScreenBackground />
         <HideBalancesToggle />
         <VersionInfo />
       </Suspense>
