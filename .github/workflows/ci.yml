@@ -343,7 +343,12 @@ jobs:
     name: "Check that changed packages have changesets in the current PR"
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev'
+    # the version bump PR opened by release_changesets consumes the changesets, so it has none left to check
+    if: >-
+      github.event_name == 'pull_request'
+      && github.event.pull_request.base.ref == 'dev'
+      && !(github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.head.ref == 'changeset-release/dev')
     permissions:
       contents: read
       pull-requests: write
