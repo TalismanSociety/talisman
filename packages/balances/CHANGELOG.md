@@ -1,5 +1,36 @@
 # @talismn/balances
 
+## 3.1.0
+
+### Minor Changes
+
+- 6b69acf: Report the EVM mirror balance of substrate accounts as withdrawable on networks with `hasFrontierMirrorWithdraw`
+
+### Patch Changes
+
+- 6b69acf: `Balance.locked` ignores `includeInTransferable` locks, and `Balance.unavailable` counts the extras included in the total, so `transferable + unavailable` equals `total`
+- 0bad9e4: read dTAO storage keys through fetchStorageKeysPaged from @talismn/sapi
+- 2fc7785: upgrade to polkadot-api v3: `UnifiedMetadata` exposes `extrinsic.extensionsByVersion` instead of `extrinsic.signedExtensions`. `@talismn/scale` adds `getSignedExtensions` and `hasSignedExtension`. `@talismn/sapi` now requires an `rxjs` peer dependency.
+- 407bf8c: Decode the runtime metadata once per getMiniMetadata call in the substrate-native, substrate-assets and substrate-foreignassets modules
+- 407bf8c: Remove redundant tests and speed up slow ones
+- Updated dependencies [2c14284]
+- Updated dependencies [6b69acf]
+- Updated dependencies [6b69acf]
+- Updated dependencies [407bf8c]
+- Updated dependencies [5429562]
+- Updated dependencies [2fc7785]
+- Updated dependencies [407bf8c]
+- Updated dependencies [0bad9e4]
+- Updated dependencies [8869cc2]
+- Updated dependencies [c45cff8]
+  - @talismn/chain-connectors@1.1.0
+  - @talismn/chaindata-provider@2.3.0
+  - @talismn/crypto@1.2.0
+  - @talismn/util@2.1.1
+  - @talismn/scale@3.0.0
+  - @talismn/sapi@3.0.0
+  - @talismn/token-rates@4.0.7
+
 ## 3.0.6
 
 ### Patch Changes

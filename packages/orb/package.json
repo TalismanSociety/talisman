@@ -1,6 +1,6 @@
 {
   "name": "@talismn/orb",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "React component and helpers to display Talisman orbs (address avatars)",
   "author": "Talisman",
   "license": "MIT",
