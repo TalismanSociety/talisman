@@ -19,6 +19,7 @@ A user sends a token from one of their accounts to an address: pick the token, t
 Preconditions:
 
 - `<sub1>` holds testTAO on Bittensor testnet, and `<sub2>` exists (see [Test accounts](./README.md#test-accounts)). testTAO is an active token: the Send picker lists active tokens only and has no toggle to enable one. Send between the wallet's own accounts. Without testTAO, skip this recipe and record the skip.
+- Bittensor Testnet is an active network. A new profile has every testnet off, and the picker then reads "No token matches your search" for `testTAO`. Turn it on in `$EXT/dashboard.html#/settings/networks-tokens/networks`: fill `Search networks` with `Bittensor` and tick the checkbox of the `Bittensor Testnet` row. On a reused profile, untick it again at cleanup if it was off.
 - The doctor passes.
 
 - **Pick the token.** `ab tab new "$EXT/popup.html#/send/token?from=<sub1 address>&to=<sub2 address>"`, `ab wait --text "Select a token"`. Testnet tokens have no fiat value and sort low in a virtualised list, so their rows may not render until you search: fill `Search by token or network name` with `testTAO`, then click the `testTAO` row. The URL moves to `#/send/amount` with `tokenId=bittensor-testnet:substrate-native`.
