@@ -503,8 +503,8 @@ jobs:
         id: changesets
         uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
-          commit-message: "chore: bump package versions"
-          pr-title: "chore: bump package versions"
+          commit-message: "⬆️ bump package versions"
+          pr-title: "⬆️ bump package versions"
 
   # When the version bump PR is merged, there are no changesets left, and this job publishes the new versions to npm
   publish_packages:
