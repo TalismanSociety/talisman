@@ -37,6 +37,10 @@ export class ChainConnectionError extends Error {
   }
 }
 
+/**
+ * Passed to subscription callbacks when the chain has been unreachable for a while. Not
+ * terminal: the subscription stays registered and is re-issued when a socket connects.
+ */
 export class StaleRpcError extends Error {
   type: "STALE_RPC_ERROR"
   chainId: string
@@ -288,8 +292,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
         for (const subscription of fresh.subscriptions) this.startSubscription(fresh, subscription)
       } catch (error) {
         log.warn(`Failed to recreate connection for ${chainId} after reset`, error)
+        // not a StaleRpcError: no connection is left to re-issue these subscriptions,
+        // so subscribers must treat this one as terminal
         for (const subscription of connection.subscriptions)
-          subscription.callback(new StaleRpcError(chainId, { cause: error }), null)
+          subscription.callback(new ChainConnectionError(chainId, { cause: error }), null)
       }
     }
   }

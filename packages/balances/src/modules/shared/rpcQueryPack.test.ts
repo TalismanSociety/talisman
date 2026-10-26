@@ -151,6 +151,45 @@ describe("getRpcQueryPack$", () => {
     expect(error).toEqual(new Error("ws error"))
     sub.unsubscribe()
   })
+
+  it("keeps the subscription through a StaleRpcError and resumes on the next snapshot", async () => {
+    const { connector, unsubscribe, emitChanges } = makeFakeConnector()
+    const queries = makeQueries(2, (i, value) => `${i}:${value}`)
+
+    const emissions: string[][] = []
+    let error: unknown
+    let completed = false
+    const sub = getRpcQueryPack$(connector, "polkadot", queries).subscribe({
+      next: (v) => emissions.push(v),
+      error: (e) => (error = e),
+      complete: () => (completed = true),
+    })
+
+    await yieldToEventLoop()
+    emitChanges([["0xkey0", "0xaa"]])
+    await drainUntil(() => emissions.length === 1)
+
+    const cb = (connector.subscribe as ReturnType<typeof vi.fn>).mock.calls[0][4] as StorageCallback
+    const stale = Object.assign(new Error("RPCs are stale/unavailable for chain polkadot"), {
+      type: "STALE_RPC_ERROR",
+    })
+    cb(stale, null)
+    await yieldToEventLoop()
+
+    expect(error).toBeUndefined()
+    expect(completed).toBe(false)
+    expect(unsubscribe).not.toHaveBeenCalled()
+
+    // the connector re-issues the subscription on reconnect: its first notification is a full snapshot
+    emitChanges([
+      ["0xkey0", "0xab"],
+      ["0xkey1", "0xbb"],
+    ])
+    await drainUntil(() => emissions.length === 2)
+    expect(emissions[1]).toEqual(["0:0xab", "1:0xbb"])
+
+    sub.unsubscribe()
+  })
 })
 
 describe("fetchRpcQueryPack", () => {
