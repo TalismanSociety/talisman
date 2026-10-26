@@ -1,5 +1,13 @@
 # @talismn/solana
 
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [6b69acf]
+- Updated dependencies [407bf8c]
+  - @talismn/crypto@1.2.0
+
 ## 1.0.4
 
 ### Patch Changes

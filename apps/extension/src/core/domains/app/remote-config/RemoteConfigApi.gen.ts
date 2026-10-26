@@ -485,7 +485,7 @@ export class RemoteConfigApi<
             defaultValidatorsBySubnet: Record<string, string>;
           };
           /**
-           * URL to send PostHog analytics events to
+           * Deprecated. URL to send PostHog analytics events to
            * @format uri
            */
           postHogUrl: string;
@@ -524,6 +524,8 @@ export class RemoteConfigApi<
             BITTENSOR_MEV_SHIELD: boolean;
             /** Enables token swaps in the mobile wallet */
             SWAPS: boolean;
+            /** Enables the Earn tab with Bittensor subnet trading (buy/sell alpha) in the mobile wallet */
+            SUBNET_TRADING: boolean;
           };
           /** Anonymous product analytics configuration for the mobile wallet. The app queues events until this section is fetched and drops everything when the user opts out in Settings. */
           analytics: {
@@ -586,9 +588,14 @@ export class RemoteConfigApi<
           };
           /** Per-platform, per-provider gating of the swaps feature: each listed provider carries App Store storefront and IP-region denylists. Region groups named in the YAML (EU, EEA) are expanded to country codes here. */
           swapAccess: {
+            /**
+             * Article listing the regions where swaps are unavailable. The app links to it from the notice on the disabled Swap screen; without it, the notice has no link.
+             * @format uri
+             */
+            availabilityUrl?: string;
             /** Swap access rules for one mobile platform */
             ios: {
-              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. Swaps are hidden entirely when no listed provider passes its region rules, as if the SWAPS feature flag were off. */
+              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. When no listed provider passes its region rules, the app shows the Swap screen disabled, with a notice that swaps are unavailable in the user's region. */
               providers: {
                 lifi?: {
                   /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
@@ -612,7 +619,7 @@ export class RemoteConfigApi<
             };
             /** Swap access rules for one mobile platform */
             android: {
-              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. Swaps are hidden entirely when no listed provider passes its region rules, as if the SWAPS feature flag were off. */
+              /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. When no listed provider passes its region rules, the app shows the Swap screen disabled, with a notice that swaps are unavailable in the user's region. */
               providers: {
                 lifi?: {
                   /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
@@ -634,6 +641,20 @@ export class RemoteConfigApi<
                 };
               };
             };
+          };
+          /** Bittensor fee overrides, featured validators and per-subnet default validators. Sourced from the shared config's bittensor section — see src/mobile-remote-config/loader.ts */
+          bittensor: {
+            /** Fee overrides for Bittensor subnet token transactions */
+            fee: {
+              /** Map from Bittensor subnet ID to custom fee amount for buy transactions. Empty/null means default fees apply */
+              buy: Record<string, number> | null;
+              /** Map from Bittensor subnet ID to custom fee amount for sell transactions. Empty/null means default fees apply */
+              sell: Record<string, number> | null;
+            };
+            /** Ordered list of validator hotkeys to feature prominently in the validator picker */
+            featuredValidators: string[];
+            /** Maps subnet netuid to a validator hotkey to use as the default for that subnet */
+            defaultValidatorsBySubnet: Record<string, string>;
           };
         },
         any

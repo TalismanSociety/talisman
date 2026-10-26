@@ -17,4 +17,4 @@ if [[ "v$current" != "$latest_tag" ]]; then
   echo "WARNING: $manifest says $current but the newest tag is ${latest_tag:-none}"
 fi
 echo
-git log --no-merges --format='%h %s' "$anchor..HEAD" | grep -v ' chore: bump package versions' || true
+git log --no-merges --format='%h %s' "$anchor..HEAD" | grep -vE ' (chore:|⬆️) bump package versions' || true
