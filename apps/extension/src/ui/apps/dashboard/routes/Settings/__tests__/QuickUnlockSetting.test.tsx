@@ -31,7 +31,8 @@ vi.mock("@ui/state/quickUnlock", () => ({
 }))
 
 const trackFlowEvent = vi.hoisted(() => vi.fn())
-vi.mock("@ui/api/track", () => ({ track: vi.fn(), trackFlowEvent }))
+const track = vi.hoisted(() => vi.fn())
+vi.mock("@ui/api/track", () => ({ track, trackFlowEvent }))
 
 vi.mock("@ui/state/remoteConfig", () => ({
   useFeatureFlag: (...args: unknown[]) => mockUseFeatureFlag(...args),
@@ -210,6 +211,35 @@ describe("QuickUnlockSetting analytics", () => {
       last_step: "enrol",
       abandon_cause: "left",
       error_category: "unknown",
+    })
+  })
+
+  test("reports the error it shows when enabling fails", async () => {
+    mockCreateCredential.mockRejectedValue(new DOMException("rp id not allowed", "SecurityError"))
+    render(<QuickUnlockSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+    await screen.findByText(/doesn't allow quick unlock/i)
+
+    expect(track).toHaveBeenCalledWith(
+      "error_shown",
+      expect.objectContaining({ surface: "field", error_category: "unsupported" })
+    )
+  })
+
+  test("reports the error it shows when turning it off fails", async () => {
+    mockUseIsEnrolled.mockReturnValue(true)
+    mockUnenroll.mockRejectedValue(
+      Object.assign(new Error("Request timed out"), { name: "TimeoutError" })
+    )
+    render(<QuickUnlockSetting />)
+
+    fireEvent.click(await screen.findByRole("checkbox"))
+    await screen.findByText("Request timed out")
+
+    expect(track).toHaveBeenCalledWith("error_shown", {
+      surface: "field",
+      error_category: "timeout",
     })
   })
 

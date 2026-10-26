@@ -1,5 +1,21 @@
 # @talismn/chaindata-provider
 
+## 2.3.0
+
+### Minor Changes
+
+- 6b69acf: Read chaindata from pub/v15
+- 6b69acf: Report the EVM mirror balance of substrate accounts as withdrawable on networks with `hasFrontierMirrorWithdraw`
+
+### Patch Changes
+
+- 5429562: generate init data
+- 407bf8c: Remove redundant tests and speed up slow ones
+- Updated dependencies [407bf8c]
+- Updated dependencies [407bf8c]
+- Updated dependencies [c45cff8]
+  - @talismn/util@2.1.1
+
 ## 2.2.0
 
 ### Minor Changes

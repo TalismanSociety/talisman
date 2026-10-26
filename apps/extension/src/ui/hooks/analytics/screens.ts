@@ -131,7 +131,12 @@ export const useScreenRegistration = (joined: JoinedPattern | null, depth: numbe
   }, [id, pattern, awaits, depth])
 }
 
-export type VirtualScreen = "/login" | "/locked" | "/migrating" | "/phishing-page-detected/:url"
+export type VirtualScreen =
+  | "/login"
+  | "/quick-unlock-offer"
+  | "/locked"
+  | "/migrating"
+  | "/phishing-page-detected/:url"
 
 export const useVirtualScreen = (name: VirtualScreen) => {
   const id = useRegistrationId()

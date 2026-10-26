@@ -36,6 +36,7 @@ export type AppStoreData = {
   hideBittensorConvictionLockInfo?: boolean
   hideBittensorRootRewardsInfo?: boolean
   hideGetStarted?: boolean
+  hideQuickUnlockOffer?: boolean
 
   // dismissed earn disclaimer
   hideEarnDisclaimer?: boolean
@@ -119,6 +120,7 @@ if (DEBUG) {
       hideBittensorRootRewardsInfo: false,
       hideGetStarted: false,
       hideEarnDisclaimer: false,
+      hideQuickUnlockOffer: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {
