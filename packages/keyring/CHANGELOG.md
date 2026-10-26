@@ -1,5 +1,14 @@
 # @talismn/keyring
 
+## 2.0.4
+
+### Patch Changes
+
+- 407bf8c: Remove redundant tests and speed up slow ones
+- Updated dependencies [6b69acf]
+- Updated dependencies [407bf8c]
+  - @talismn/crypto@1.2.0
+
 ## 2.0.3
 
 ### Patch Changes

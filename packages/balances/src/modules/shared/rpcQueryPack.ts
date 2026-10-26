@@ -3,6 +3,7 @@ import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { type ChunkedOptions, isNotNil, mapWithYield, switchMapChunked } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
+import log from "../../log"
 import type { QueryStorageResult } from "./types"
 
 export type MaybeStateKey = `0x${string}` | null
@@ -53,12 +54,27 @@ export const fetchRpcQueryPack = async <Q extends readonly RpcQueryPack<unknown>
 }
 
 /**
+ * The connector reports a chain that has been unreachable for a while with a StaleRpcError,
+ * but keeps the subscription registered and re-issues it when a socket reconnects (the
+ * first notification after that is a full snapshot again). Matched by its `type` rather
+ * than `instanceof`, so a second copy of @talismn/chain-connectors still matches.
+ */
+const isStaleRpcError = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  (error as { type?: unknown }).type === "STALE_RPC_ERROR"
+
+/**
  * Wraps the raw state_subscribeStorage subscription and emits, for every storage change
  * callback, a SNAPSHOT of the accumulated changes keyed by state key.
  *
  * A snapshot (shallow copy of string refs, cheap) is required because decoding is chunked
  * and asynchronous: a later websocket callback must not mutate the map that an in-flight
  * decode is reading.
+ *
+ * A StaleRpcError does not end the stream. Erroring would unsubscribe, and with no
+ * subscription holding the chain's socket, every later request (eg the dtao poll) would
+ * open and close a socket of its own, starting from the network's first RPC each time.
  */
 const getRawStorageUpdates$ = (
   connector: IChainConnectorDot,
@@ -77,8 +93,10 @@ const getRawStorageUpdates$ = (
       "state_storage",
       [allStateKeys],
       (error, result: QueryStorageResultContent) => {
-        if (error) subscriber.error(error)
-        else if (result) {
+        if (error) {
+          if (isStaleRpcError(error)) log.warn(`Storage subscription stale on ${networkId}`)
+          else subscriber.error(error)
+        } else if (result) {
           // update the cache
           for (const [stateKey, encodedResult] of result.changes)
             changesCache.set(stateKey, encodedResult)

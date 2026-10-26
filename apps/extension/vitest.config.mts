@@ -1,11 +1,18 @@
 import path from "node:path"
 import react from "@vitejs/plugin-react"
+import svgr from "vite-plugin-svgr"
 import { configDefaults, defineConfig } from "vitest/config"
 
 const packagesDir = path.resolve(import.meta.dirname, "../../packages")
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    svgr({
+      include: "**/*.svg",
+      svgrOptions: { exportType: "named", namedExport: "ReactComponent" },
+    }),
+  ],
   resolve: {
     alias: {
       "rxjs/internal/": "rxjs/dist/cjs/internal/",

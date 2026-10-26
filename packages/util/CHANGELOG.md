@@ -1,5 +1,13 @@
 # @talismn/util
 
+## 2.1.1
+
+### Patch Changes
+
+- 407bf8c: Speed up u8aToHex with a byte-to-hex lookup table
+- 407bf8c: Remove redundant tests and speed up slow ones
+- c45cff8: yieldToEventLoop yields at background priority through scheduler.postTask where it exists, so pending messages and IPC replies run first
+
 ## 2.1.0
 
 ### Minor Changes

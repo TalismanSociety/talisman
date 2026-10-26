@@ -29,6 +29,7 @@ export const SETTING_KEYS = [
   "hideBittensorSubnetStakeWarning",
   "hideBittensorConvictionLockInfo",
   "hideBittensorRootRewardsInfo",
+  "hideQuickUnlockOffer",
 ] as const
 export type SettingKey = (typeof SETTING_KEYS)[number]
 
@@ -95,6 +96,7 @@ const APP_FLAGS: { readonly [K in keyof AppStoreData]-?: SettingRule | NotASetti
   hideBittensorRootRewardsInfo: bool("hideBittensorRootRewardsInfo"),
   hideGetStarted: bool("hideGetStarted"),
   hideEarnDisclaimer: bool("hideEarnDisclaimer"),
+  hideQuickUnlockOffer: bool("hideQuickUnlockOffer"),
   currentMigration: "not a user choice",
 }
 

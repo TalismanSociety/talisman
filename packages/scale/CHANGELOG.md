@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 3.0.0
+
+### Major Changes
+
+- 2fc7785: upgrade to polkadot-api v3: `UnifiedMetadata` exposes `extrinsic.extensionsByVersion` instead of `extrinsic.signedExtensions`. `@talismn/scale` adds `getSignedExtensions` and `hasSignedExtension`. `@talismn/sapi` now requires an `rxjs` peer dependency.
+
 ## 2.0.2
 
 ### Patch Changes
