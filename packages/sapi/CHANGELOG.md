@@ -1,5 +1,22 @@
 # @talismn/sapi
 
+## 3.0.0
+
+### Major Changes
+
+- 2fc7785: upgrade to polkadot-api v3: `UnifiedMetadata` exposes `extrinsic.extensionsByVersion` instead of `extrinsic.signedExtensions`. `@talismn/scale` adds `getSignedExtensions` and `hasSignedExtension`. `@talismn/sapi` now requires an `rxjs` peer dependency.
+
+### Minor Changes
+
+- 0bad9e4: add fetchStorageKeysPaged and queryStorageAt to list storage keys under a prefix and read values in chunks of 500 keys, with an optional block hash and AbortSignal; getStorageValues reads through queryStorageAt, so it chunks and rejects a response without a change set
+
+### Patch Changes
+
+- 407bf8c: Remove redundant tests and speed up slow ones
+- 8869cc2: `getDecodedCallFromExtrinsic` decodes v5 general extrinsics with the extension version they declare
+- Updated dependencies [2fc7785]
+  - @talismn/scale@3.0.0
+
 ## 2.1.0
 
 ### Minor Changes

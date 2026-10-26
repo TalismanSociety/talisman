@@ -1,5 +1,15 @@
 # @talismn/crypto
 
+## 1.2.0
+
+### Minor Changes
+
+- 6b69acf: Report the EVM mirror balance of substrate accounts as withdrawable on networks with `hasFrontierMirrorWithdraw`
+
+### Patch Changes
+
+- 407bf8c: Remove redundant tests and speed up slow ones
+
 ## 1.1.1
 
 ### Patch Changes

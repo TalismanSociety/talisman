@@ -48,6 +48,10 @@ import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
 import { ManageAccountsPage } from "./pages/ManageAccounts"
 import { Portfolio } from "./pages/Portfolio"
+import {
+  QuickUnlockOfferGate,
+  useCanOfferQuickUnlock,
+} from "./pages/QuickUnlockOffer/QuickUnlockOfferGate"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SolanaSignRequest } from "./pages/Sign/solana"
@@ -59,6 +63,7 @@ import { VrfSignRequest } from "./pages/VrfSign"
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
+  const canOfferQuickUnlock = useCanOfferQuickUnlock()
 
   // the user locking the wallet (or the autolock timer) swaps the portfolio for the login screen
   // in a popup that is on its way out - quick unlock must not prompt on their behalf there
@@ -82,6 +87,16 @@ const Popup = () => {
 
   if (isMigrating) return <MigrationProgress />
 
+  if (!canOfferQuickUnlock) return <PopupRoutes />
+
+  return (
+    <QuickUnlockOfferGate>
+      <PopupRoutes />
+    </QuickUnlockOfferGate>
+  )
+}
+
+const PopupRoutes = () => {
   return (
     <FadeIn className="h-full w-full">
       <Suspense fallback={<SuspenseTracker name="Routes" />}>
