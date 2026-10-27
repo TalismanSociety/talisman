@@ -53,12 +53,8 @@ const normalizeYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosition
 walletReady.then(() => {
   subjectYieldxyzPositionsStore$
     .pipe(debounceTime(500), map(normalizeYieldxyzPositions), pairwise())
-    .subscribe(async ([prev, items]) => {
-      try {
-        if (!isEqual(prev, items)) await blobStore.set(items)
-      } catch (error) {
-        log.error("[yield.xyz] Error saving yield balances:", error)
-      }
+    .subscribe(([prev, items]) => {
+      if (!isEqual(prev, items)) blobStore.set(items)
     })
 })
 
