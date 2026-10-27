@@ -29,7 +29,7 @@ export const migrateNftsV3: Migration = {
   forward: new MigrationFunction(async () => {
     const blobStore = getBlobStore<Partial<NftStoreData>>("nfts")
     const data = await blobStore.get()
-    if (data) await blobStore.set(dropSubscanData(data))
+    if (data) await blobStore.setOrThrow(dropSubscanData(data))
   }),
   // no way back
 }
