@@ -36,6 +36,8 @@ export type KeyringStorage = {
   accounts: AccountStorage[]
 }
 
+const PASSWORD_CHECK_PHRASE = "PASSWORD_CHECK_PHRASE"
+
 export class Keyring {
   #data: KeyringStorage
 
@@ -81,7 +83,6 @@ export class Keyring {
     if (typeof password !== "string" || !password) throw new Error("password is required")
 
     const passwordHash = oneWayHash(password)
-    const PASSWORD_CHECK_PHRASE = "PASSWORD_CHECK_PHRASE"
 
     // run through same complexity as for other secrets, to make it so it s not easier to brute force passwordCheck than other secrets
     if (!this.#data.passwordCheck || reset) {
@@ -135,13 +136,29 @@ export class Keyring {
     return structuredClone(this.#data)
   }
 
+  /**
+   * Returns a copy of the keyring data with every secret re-encrypted under `jsonPassword`. This
+   * keyring is left unchanged.
+   *
+   * Throws if `password` does not match the keyring's password. A keyring with no password set
+   * has no secrets (Keyring.load rejects one that does), so there is nothing to verify `password`
+   * against and the copy gets `jsonPassword` as its password.
+   */
   public async export(password: string, jsonPassword: string): Promise<KeyringStorage> {
-    const keyring = new Keyring(structuredClone(this.#data))
+    if (typeof password !== "string" || !password) throw new Error("password is required")
+    if (typeof jsonPassword !== "string" || !jsonPassword)
+      throw new Error("jsonPassword is required")
 
-    for (const mnemonic of keyring.#data.mnemonics)
+    if (this.#data.passwordCheck) await this.checkPassword(password)
+    else if (this.#data.mnemonics.length || this.#data.accounts.some(isKeypairStorage))
+      throw new Error("Invalid password")
+
+    const data = structuredClone(this.#data)
+
+    for (const mnemonic of data.mnemonics)
       mnemonic.entropy = await changeEncryptedDataPassword(mnemonic.entropy, password, jsonPassword)
 
-    for (const account of keyring.#data.accounts)
+    for (const account of data.accounts)
       if (account.type === "keypair")
         account.secretKey = await changeEncryptedDataPassword(
           account.secretKey,
@@ -150,9 +167,9 @@ export class Keyring {
         )
 
     // reset password check
-    await keyring.checkPassword(jsonPassword, true)
+    data.passwordCheck = await createPasswordCheck(jsonPassword)
 
-    return keyring.toJson()
+    return data
   }
 
   public getMnemonics(): Mnemonic[] {
@@ -439,3 +456,8 @@ const accountFromStorage = (data: AccountStorage): Account => {
   if ("secretKey" in copy) delete copy.secretKey
   return Object.freeze(copy)
 }
+
+const isKeypairStorage = (account: AccountStorage) => account.type === "keypair"
+
+const createPasswordCheck = (password: string) =>
+  encryptData(utf8.decode(PASSWORD_CHECK_PHRASE), oneWayHash(password))
