@@ -29,8 +29,16 @@ const IDENTITY_PROBE_TIMEOUT_MS = 5_000
 /** In-flight probes, shared by every client of the network */
 const probes = new Map<string, Promise<boolean>>()
 
-/** Whether the RPC serves `chainId`; throws when it could not be asked */
-const servesChain = (networkId: string, chainId: number, url: string): Promise<boolean> => {
+/**
+ * Whether the RPC serves `chainId`, asked with `eth_chainId`; throws when it
+ * could not be asked. The verdict is kept for the process (see `rpcIdentity`),
+ * and concurrent calls for one RPC share a probe.
+ */
+export const evmRpcServesChain = (
+  networkId: string,
+  chainId: number,
+  url: string
+): Promise<boolean> => {
   const verdict = getIdentityVerdict(networkId, url)
   if (verdict) return Promise.resolve(verdict === "match")
 
@@ -68,7 +76,7 @@ const verifiedTransport =
     return {
       ...inner,
       request: (async (args, options) => {
-        if (!(await servesChain(networkId, chainId, url)))
+        if (!(await evmRpcServesChain(networkId, chainId, url)))
           throw new Error(`RPC ${url} does not serve chain ${chainId}`)
         return inner.request(args, options)
       }) as typeof inner.request,
