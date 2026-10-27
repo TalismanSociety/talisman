@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { makeChaindata, makeOrphanedNetwork } from "../__fixtures__/chaindata"
 import { CHAINDATA_PUB_FOLDER } from "../constants"
@@ -17,6 +17,12 @@ const errorResponse = (status: number, statusText = "Error") =>
   new Response(null, { status, statusText })
 
 describe("net / fetchChaindata", () => {
+  // the first import evaluates every chaindata schema, which on a busy machine can outlast a
+  // test's timeout. The timed-out test keeps running and takes the next test's fetch mock.
+  beforeAll(async () => {
+    await import("./net")
+  })
+
   beforeEach(() => {
     mockFetch.mockReset()
   })
