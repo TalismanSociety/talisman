@@ -1,7 +1,12 @@
 // Copyright 2017-2022 @polkadot/keyring authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { base64, decryptPjsKeystore } from "@talismn/crypto"
+import {
+  base64,
+  decodeUnencryptedPjsKeystore,
+  decryptPjsKeystore,
+  type PjsKeystore,
+} from "@talismn/crypto"
 import { hexToU8a, isHexString, u8aEq } from "@talismn/util"
 
 // values picked from polkadot keyring
@@ -35,16 +40,28 @@ type PjsEncryptedJson = {
   encoding: { content: string | string[]; type: string | string[]; version: string }
 }
 
-export const getSecretKeyFromPjsJson = (json: PjsEncryptedJson, password: string) => {
+const toPjsKeystore = (json: PjsEncryptedJson): PjsKeystore => ({
   // pjs also supports hex-encoded keystores - normalize to base64 for the decrypt helper
-  const encoded = isHexString(json.encoded) ? base64.encode(hexToU8a(json.encoded)) : json.encoded
-  const encoding = {
+  encoded: isHexString(json.encoded) ? base64.encode(hexToU8a(json.encoded)) : json.encoded,
+  encoding: {
     ...json.encoding,
     content: Array.isArray(json.encoding.content) ? json.encoding.content : [json.encoding.content],
     type: Array.isArray(json.encoding.type) ? json.encoding.type : [json.encoding.type],
-  }
-  const decrypted = decryptPjsKeystore({ encoded, encoding }, password)
+  },
+})
 
+/** Decrypts an encrypted pjs keystore: a successful call proves the password */
+export const getSecretKeyFromPjsJson = (json: PjsEncryptedJson, password: string) =>
+  getSecretKeyFromPkcs8(decryptPjsKeystore(toPjsKeystore(json), password))
+
+/**
+ * Reads an unencrypted (`none`) pjs keystore, such as the unlocked pairs the import UI sends.
+ * Proves nothing about any password.
+ */
+export const getSecretKeyFromUnencryptedPjsJson = (json: PjsEncryptedJson) =>
+  getSecretKeyFromPkcs8(decodeUnencryptedPjsKeystore(toPjsKeystore(json)))
+
+const getSecretKeyFromPkcs8 = (decrypted: Uint8Array) => {
   const header = decrypted.subarray(0, PKCS8_HEADER.length)
   if (!u8aEq(header, PKCS8_HEADER)) throw new Error("Invalid Pkcs8 header found in body")
 

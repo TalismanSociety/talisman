@@ -15,7 +15,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import type { PjsKeyringPairJson, PjsKeyringPairsJson } from "../../types/pjsInterop"
-import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
+import { getSecretKeyFromUnencryptedPjsJson } from "../keyring/getSecretKeyFromPjsJson"
 import { encodePjsKeyringPairJson } from "../keyring/pjsKeystore"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
@@ -53,7 +53,7 @@ export default class AccountsHandler extends ExtensionHandler {
       return {
         name: (json.meta?.name as string) || "Json Import",
         curve: json.encoding.content[1] as KeypairCurve,
-        secretKey: getSecretKeyFromPjsJson(json, ""),
+        secretKey: getSecretKeyFromUnencryptedPjsJson(json),
       }
     })
 
