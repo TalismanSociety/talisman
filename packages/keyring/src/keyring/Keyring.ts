@@ -265,6 +265,14 @@ export class Keyring {
     return mnemonicFromStorage(mnemonic)
   }
 
+  /**
+   * Removes a mnemonic. Accounts derived from it are kept: each one stores its own encrypted
+   * secret key, so it can still sign, and keeps its `mnemonicId`. The mnemonic's id is a hash of
+   * its entropy, so adding the same mnemonic again links those accounts to it again.
+   *
+   * Until then, methods that need the mnemonic itself (`getMnemonicText`, `getDerivedAddress`,
+   * `addAccountDerive` from that id, `updateMnemonic`) throw "Mnemonic not found" for that id.
+   */
   public removeMnemonic(id: string) {
     const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id === id)
     if (index === -1) throw new Error("Mnemonic not found")
