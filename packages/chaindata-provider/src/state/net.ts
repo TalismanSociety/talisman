@@ -1,3 +1,5 @@
+import { isAbortError } from "@talismn/util"
+
 import { DEFAULT_CHAINDATA_URL } from "../constants"
 import log from "../log"
 import type { ChunkedParseResult } from "./chunkedValidation"
@@ -5,7 +7,10 @@ import { validateChaindata } from "./validatedCache"
 
 // exported for tests
 export const getFallbackUrl = (url: string) => {
-  // if gitraw fails, try jsdelivr (note: jsdelivr paths use {user}/{repo}@{ref}/{path}).
+  // if gitraw is unavailable, try jsdelivr. The fallback url names the same repository, ref and
+  // path, so jsdelivr serves the same files. It caches a branch for up to 12 hours, so its copy
+  // can be older than github's, but it never comes from another repository or ref.
+  // (note: jsdelivr paths use {user}/{repo}@{ref}/{path}).
   // only the {user}/{repo} part is parsed - the ref is kept verbatim because it may contain
   // slashes (e.g. feat/foo), which jsdelivr resolves greedily, same as github
   if (url.startsWith("https://raw.githubusercontent.com/")) {
@@ -29,17 +34,40 @@ type FetchJsonOptions<T> = {
   fallbackUrl?: string | null
 }
 
+/**
+ * Statuses that mean the primary origin won't serve this client right now, whatever the file:
+ * a server error, a rate limit (raw.githubusercontent.com limits by IP, so users behind a shared
+ * NAT, VPN or CGNAT address hit it), or a 403 from a proxy or firewall that blocks github.
+ */
+const isOriginUnavailable = (status: number) => status >= 500 || status === 429 || status === 403
+
+/**
+ * The fallback is used when the primary origin is unavailable: the request fails at the network
+ * level, or the server answers with a status that `isOriginUnavailable` accepts. A 404 means the
+ * file is missing from the repository, which the fallback mirrors, and a body that is not valid
+ * JSON or fails validation is a problem with the data, not the origin: neither switches origin.
+ * The caller retries with backoff, and the persisted or bundled chaindata covers the gap
+ * meanwhile. An aborted request never falls back.
+ */
 const fetchJson = async <T>(
   url: string,
   { signal, validate, fallbackUrl }: FetchJsonOptions<T> = {}
 ): Promise<T> => {
-  const req = await fetch(url, { signal })
+  let req: Response
+  try {
+    req = await fetch(url, { signal })
+  } catch (cause) {
+    if (fallbackUrl && !isAbortError(cause) && !signal?.aborted)
+      return fetchJson(fallbackUrl, { validate, signal })
+    throw cause
+  }
 
   // uncomment the line below to test initChaindata provisioning
   // if (Date.now()) throw new Error("OMG SHE GOT A KNIFE!")
 
   if (!req.ok) {
-    if (fallbackUrl) return fetchJson(fallbackUrl, { validate, signal })
+    if (fallbackUrl && isOriginUnavailable(req.status))
+      return fetchJson(fallbackUrl, { validate, signal })
     throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
   }
 
