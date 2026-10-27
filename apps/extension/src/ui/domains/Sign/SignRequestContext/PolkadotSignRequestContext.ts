@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+import { parseSubstrateSignInMessage } from "@core/domains/signing/helpers"
 import type { SubstrateSigningRequest } from "@core/domains/signing/types"
 import type { Address } from "@core/types/base"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/pjsInterop"
@@ -14,6 +15,7 @@ import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { provideContext } from "@ui/util/provideContext"
 import { useCallback, useEffect, useMemo } from "react"
 
+import { useSignInDomainMismatch } from "../hooks/useSignInDomainMismatch"
 import { useSubstratePayloadMetadataSuspense } from "../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./useAnySigningRequest"
 
@@ -89,6 +91,12 @@ const usePolkadotSigningRequestProvider = ({
     () => modifiedPayload || signingRequest.request.payload,
     [modifiedPayload, signingRequest.request.payload]
   )
+
+  const siws = useMemo(
+    () => (isJsonPayload(payload) ? null : parseSubstrateSignInMessage(payload.data)),
+    [payload]
+  )
+  const signInDomainMismatch = useSignInDomainMismatch(siws?.domain, signingRequest.url)
 
   const [decodedCall, errorDecodingExtrinsic] = useMemo<
     [DecodedCall<unknown> | null, unknown]
@@ -206,6 +214,8 @@ const usePolkadotSigningRequestProvider = ({
     isDryRunAvailable,
     dryRun,
     dryRunIsLoading,
+    siws,
+    signInDomainMismatch,
   }
 }
 

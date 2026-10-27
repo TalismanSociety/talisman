@@ -1,7 +1,15 @@
-import { ETH_ERROR_EIP1474_INVALID_PARAMS, EthProviderRpcError } from "@common/EthProviderRpcError"
+import {
+  ETH_ERROR_EIP1474_INVALID_INPUT,
+  ETH_ERROR_EIP1474_INVALID_PARAMS,
+  EthProviderRpcError,
+} from "@common/EthProviderRpcError"
 import { normalizeAddress } from "@talismn/crypto"
+import { stringToHex } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getPublicAccounts } from "../accounts/helpers"
+import { settingsStore } from "../app/store.settings"
+import { keyringStore } from "../keyring/store"
+import { requestEthSign } from "../signing/requests"
 import { requestAuthoriseSite } from "../sitesAuthorised/requests"
 import type { AuthorizedSite } from "../sitesAuthorised/types"
 import { EthTabsHandler } from "./handler.tabs"
@@ -16,6 +24,11 @@ vi.mock("../sitesAuthorised/requests", async (importOriginal) => ({
 vi.mock("../accounts/helpers", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../accounts/helpers")>()),
   getPublicAccounts: vi.fn(),
+}))
+
+vi.mock("../signing/requests", () => ({
+  requestEthSign: vi.fn().mockResolvedValue("0xsignature"),
+  requestEthSendTransaction: vi.fn(),
 }))
 
 const URL = "https://app.uniswap.org/swap"
@@ -237,5 +250,59 @@ describe("accountsList (order, casing, filtering)", () => {
   it("returns [] for an unknown site", async () => {
     const { handler } = makeHandler(null)
     await expect(handler.accountsList(URL)).resolves.toEqual([])
+  })
+})
+
+describe("signMessage (sign-in domain)", () => {
+  const siweMessage = (domain: string) =>
+    [
+      `${domain} wants you to sign in with your Ethereum account:`,
+      ADDRESS,
+      "",
+      "Sign in.",
+      "",
+      `URI: https://${domain}/`,
+      "Version: 1",
+      "Chain ID: 1",
+      "Nonce: 12345678",
+      "Issued At: 2021-09-30T16:25:24.000Z",
+    ].join("\n")
+
+  const personalSign = (message: string) =>
+    // biome-ignore lint/suspicious/noExplicitAny: private method under test
+    (makeHandler(site()).handler as any).signMessage(
+      URL,
+      { method: "personal_sign", params: [stringToHex(message), ADDRESS] },
+      port
+    )
+
+  beforeEach(async () => {
+    vi.mocked(requestEthSign).mockClear()
+    vi.spyOn(keyringStore, "getAccount").mockResolvedValue({ address: ADDRESS } as never)
+    await settingsStore.set({ developerMode: false })
+  })
+
+  it("refuses a sign-in for another domain without creating a sign request", async () => {
+    await expect(personalSign(siweMessage("evil.com"))).rejects.toMatchObject({
+      code: ETH_ERROR_EIP1474_INVALID_INPUT,
+      message: "The domain in the sign-in message does not match the requesting site",
+    })
+    expect(requestEthSign).not.toHaveBeenCalled()
+  })
+
+  it("lets a sign-in for another domain reach the sign request in Developer Mode", async () => {
+    await settingsStore.set({ developerMode: true })
+    await expect(personalSign(siweMessage("evil.com"))).resolves.toBe("0xsignature")
+    expect(requestEthSign).toHaveBeenCalledOnce()
+  })
+
+  it("lets a sign-in for the requesting site reach the sign request", async () => {
+    await expect(personalSign(siweMessage("app.uniswap.org"))).resolves.toBe("0xsignature")
+    expect(requestEthSign).toHaveBeenCalledOnce()
+  })
+
+  it("lets a plain message reach the sign request", async () => {
+    await expect(personalSign("evil.com is not a sign-in")).resolves.toBe("0xsignature")
+    expect(requestEthSign).toHaveBeenCalledOnce()
   })
 })

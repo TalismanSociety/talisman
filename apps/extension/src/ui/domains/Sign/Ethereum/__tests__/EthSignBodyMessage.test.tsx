@@ -12,7 +12,7 @@ const fx = vi.hoisted(() => ({
   },
   nativeToken: { id: "1-evm-native", symbol: "ETH", decimals: 18 },
   erc20Token: { id: "1-evm-erc20-usdc", symbol: "USDC", decimals: 6 },
-  siweDomainMismatch: false,
+  isSignInDomainMismatch: false,
 }))
 
 vi.mock("@ui/state/chaindata", async (importOriginal) => ({
@@ -57,9 +57,12 @@ vi.mock("@talismn/icons", () => ({
 
 vi.mock("@ui/domains/Sign/SignRequestContext", () => ({
   useEthSignMessageRequest: () => ({
-    siweDomainMismatch: fx.siweDomainMismatch,
-    isSiweMismatchAcknowledged: false,
-    setIsSiweMismatchAcknowledged: () => {},
+    signInDomainMismatch: {
+      isMismatch: fx.isSignInDomainMismatch,
+      isAcknowledged: false,
+      setIsAcknowledged: () => {},
+      isBlocking: fx.isSignInDomainMismatch,
+    },
   }),
 }))
 
@@ -68,7 +71,8 @@ vi.mock("@ui/components/Drawer", () => ({
     isOpen ? <div>{children}</div> : null,
 }))
 
-import { isSiweDomainMismatch } from "@core/domains/ethereum/siwe"
+import { parseSiweMessage } from "@core/domains/ethereum/siwe"
+import { isSignInDomainMismatch } from "@core/domains/signing/helpers"
 import { stringToHex } from "viem"
 import { EthSignBodyMessage } from "../EthSignBodyMessage"
 
@@ -145,7 +149,8 @@ const renderPersonalSign = (message: string) => {
     url: SITE_URL,
     ethChainId: 1,
   } as unknown as EthSignRequest
-  fx.siweDomainMismatch = isSiweDomainMismatch(request.method, request.request, request.url)
+  const siweDomain = parseSiweMessage(request.request)?.domain
+  fx.isSignInDomainMismatch = !!siweDomain && isSignInDomainMismatch(siweDomain, SITE_URL)
   return render(
     <EthSignBodyMessage
       account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}

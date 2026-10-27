@@ -6,6 +6,8 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignInDomainMismatchAlert } from "@ui/domains/Sign/SignInDomainMismatchAlert"
+import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { ViewDetailsAddress } from "@ui/domains/Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
@@ -17,12 +19,13 @@ export type Props = {
   account: Account
   chain: DotNetwork | null | undefined
   request: SiwsMessage
-  validationError: string | null
+  isAddressMismatch: boolean
 }
 
-export const MessageSiws = ({ account, chain, request, validationError }: Props) => {
+export const MessageSiws = ({ account, chain, request, isAddressMismatch }: Props) => {
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
+  const { signInDomainMismatch } = usePolkadotSigningRequest()
 
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
@@ -48,11 +51,12 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
         <ViewDetailsButton onClick={open} />
       </div>
       <div className="grow"></div>
-      {validationError && (
+      {isAddressMismatch && (
         <SignAlertMessage type="error" errorCategory={null} className="mt-8">
-          {t("Sign in domain or address is different from website domain or signer address.")}
+          {t("Sign in address is different from signer address.")}
         </SignAlertMessage>
       )}
+      <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mt-8" />
       <Drawer
         analyticsId="siws_view_details"
         anchor="bottom"

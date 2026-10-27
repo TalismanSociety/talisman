@@ -15,7 +15,12 @@ import type { SettingsStoreData } from "../domains/app/store.settings"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { getMetadataDef } from "../domains/metadata/getMetadataDef"
+import { parseSubstrateSignInMessage } from "../domains/signing/helpers"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
+import {
+  isSignInDomainRefused,
+  SIGN_IN_DOMAIN_MISMATCH_ERROR,
+} from "../domains/signing/signInDomain"
 import {
   type ParsedTxPayloadV1,
   parseTxPayloadV1,
@@ -152,6 +157,9 @@ export default class Tabs extends TabsHandler {
 
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
+
+    if (await isSignInDomainRefused(parseSubstrateSignInMessage(request.data)?.domain, url))
+      throw new Error(SIGN_IN_DOMAIN_MISMATCH_ERROR)
 
     return requestSubstrateSign(url, { payload: request }, account, port)
   }
