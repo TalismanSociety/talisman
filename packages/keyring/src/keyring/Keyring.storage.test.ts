@@ -99,3 +99,87 @@ describe("stored keyring compatibility", () => {
     }
   })
 })
+
+describe("Keyring.load validation", () => {
+  const withAccount = (patch: Record<string, unknown>, index = 0) => {
+    const data = fixture() as unknown as { accounts: Record<string, unknown>[] }
+    data.accounts[index] = { ...data.accounts[index], ...patch }
+    return data as unknown as KeyringStorage
+  }
+  const withMnemonic = (patch: Record<string, unknown>) => {
+    const data = fixture() as unknown as { mnemonics: Record<string, unknown>[] }
+    data.mnemonics[0] = { ...data.mnemonics[0], ...patch }
+    return data as unknown as KeyringStorage
+  }
+  const load = (data: unknown) => () => Keyring.load(data as KeyringStorage)
+
+  it("rejects wrong container types", () => {
+    expect(load(null)).toThrow("Invalid data")
+    expect(load({ passwordCheck: null, mnemonics: [], accounts: "x" })).toThrow("accounts")
+    expect(load({ passwordCheck: null, mnemonics: {}, accounts: [] })).toThrow("mnemonics")
+    expect(load({ passwordCheck: 12345, mnemonics: [], accounts: [] })).toThrow("passwordCheck")
+    expect(load({ passwordCheck: 12345, mnemonics: [{ id: null }], accounts: [] })).toThrow()
+  })
+
+  it("accepts an empty keyring, with or without passwordCheck", () => {
+    expect(Keyring.load({ passwordCheck: null, mnemonics: [], accounts: [] }).hasPassword()).toBe(
+      false
+    )
+    expect(load({ mnemonics: [], accounts: [] })).not.toThrow()
+  })
+
+  it("rejects malformed mnemonics", () => {
+    expect(load(withMnemonic({ id: "" }))).toThrow("mnemonics[0].id")
+    expect(load(withMnemonic({ entropy: 42 }))).toThrow("mnemonics[0].entropy")
+    expect(load(withMnemonic({ entropy: "not base64!" }))).toThrow("mnemonics[0].entropy")
+    expect(load(withMnemonic({ confirmed: "yes" }))).toThrow("mnemonics[0].confirmed")
+
+    const duplicate = fixture()
+    duplicate.mnemonics.push(structuredClone(duplicate.mnemonics[0]!))
+    expect(load(duplicate)).toThrow("mnemonics[1].id is a duplicate")
+  })
+
+  it("rejects malformed accounts", () => {
+    expect(load(withAccount({ type: "???" }))).toThrow("accounts[0].type")
+    expect(load(withAccount({ address: undefined }))).toThrow("accounts[0].address")
+    expect(load(withAccount({ curve: "rsa" }))).toThrow("accounts[0].curve")
+    expect(load(withAccount({ secretKey: undefined }))).toThrow("accounts[0].secretKey")
+    expect(load(withAccount({ mnemonicId: 7 }))).toThrow("accounts[0].mnemonicId")
+    expect(load(withAccount({ derivationPath: null }))).toThrow("accounts[0].derivationPath")
+
+    const external = FIXTURE_STORAGE.accounts.findIndex((a) => a.type === "watch-only")
+    expect(load(withAccount({ secretKey: "AAAA" }, external))).toThrow("secretKey")
+    expect(load(withAccount({ mnemonicId: "x" }, external))).toThrow("mnemonicId")
+
+    const ledger = FIXTURE_STORAGE.accounts.findIndex((a) => a.type === "ledger-polkadot")
+    expect(load(withAccount({ curve: "sr25519" }, ledger))).toThrow(`accounts[${ledger}].curve`)
+  })
+
+  it("rejects two accounts with the same address", () => {
+    const data = fixture()
+    const ethereum = data.accounts.find((a) => a.address.startsWith("0x"))!
+    // same address in lower case: getAccount could not tell them apart
+    data.accounts.push({
+      type: "watch-only",
+      name: "Copy",
+      address: ethereum.address.toLowerCase(),
+      isPortfolio: false,
+      createdAt: 0,
+    })
+    expect(load(data)).toThrow("is a duplicate")
+  })
+
+  it("rejects secrets without a passwordCheck", () => {
+    expect(load({ ...fixture(), passwordCheck: null })).toThrow("passwordCheck is missing")
+    expect(load({ ...fixture(), mnemonics: [], passwordCheck: null })).toThrow(
+      "passwordCheck is missing"
+    )
+  })
+
+  it("does not change the data it is given", () => {
+    const data = fixture()
+    const before = structuredClone(data)
+    Keyring.load(data)
+    expect(data).toEqual(before)
+  })
+})
