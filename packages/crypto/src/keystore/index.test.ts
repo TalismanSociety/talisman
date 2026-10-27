@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { decryptPjsKeystore, encryptPjsKeystore } from "."
+import { decodeUnencryptedPjsKeystore, decryptPjsKeystore, encryptPjsKeystore } from "."
 
 // scrypt at the current params (N=2^17) takes about a second per run. The polkadot-js vectors
 // below need the real thing; the round-trip only proves the layout, so it derives at N=2^10.
@@ -88,5 +88,46 @@ describe("pjs keystore (polkadot-js parity)", () => {
       { N: 1 << 17, p: 1, r: 8, dkLen: 64 },
       { N: 1 << 17, p: 1, r: 8, dkLen: 64 },
     ])
+  })
+})
+
+describe("pjs keystore encodings", () => {
+  const UNENCRYPTED = {
+    encoded: btoa(String.fromCharCode(...SECRET)),
+    encoding: { content: ["pkcs8", "sr25519"], type: ["none"], version: "3" },
+  }
+
+  it("refuses to decrypt an unencrypted keystore, whatever the password", () => {
+    expect(() => decryptPjsKeystore(UNENCRYPTED, PASSWORD)).toThrow("Keystore is not encrypted")
+    expect(() => decryptPjsKeystore(UNENCRYPTED, "")).toThrow("Keystore is not encrypted")
+    const mixed = {
+      ...UNENCRYPTED,
+      encoding: { ...UNENCRYPTED.encoding, type: ["none", "xsalsa20-poly1305"] },
+    }
+    expect(() => decryptPjsKeystore(mixed, PASSWORD)).toThrow("Keystore is not encrypted")
+  })
+
+  it.each([[["scrypt"]], [["aes-gcm"]], [["scrypt", "xsalsa20-poly1305", "aes-gcm"]], [[]]])(
+    "rejects unknown encoding %j",
+    (type) => {
+      const keystore = { ...PJS_VECTOR, encoding: { ...PJS_VECTOR.encoding, type } }
+      expect(() => decryptPjsKeystore(keystore, PASSWORD)).toThrow("Unsupported keystore encoding")
+    }
+  )
+
+  it("rejects a truncated keystore before deriving a key", () => {
+    kdf.requested = []
+    const bytes = Uint8Array.from(atob(PJS_VECTOR.encoded), (c) => c.charCodeAt(0))
+    const truncated = { ...PJS_VECTOR, encoded: btoa(String.fromCharCode(...bytes.slice(0, 70))) }
+    expect(() => decryptPjsKeystore(truncated, PASSWORD)).toThrow("Keystore data is too short")
+    expect(kdf.requested).toEqual([])
+  })
+
+  it("reads an unencrypted keystore explicitly", () => {
+    expect(decodeUnencryptedPjsKeystore(UNENCRYPTED)).toEqual(SECRET)
+  })
+
+  it("refuses to read an encrypted keystore as unencrypted", () => {
+    expect(() => decodeUnencryptedPjsKeystore(PJS_VECTOR)).toThrow("Keystore is encrypted")
   })
 })

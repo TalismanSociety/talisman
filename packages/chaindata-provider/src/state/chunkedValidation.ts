@@ -10,7 +10,7 @@ import {
 import z from "zod/v4"
 
 import { AnyMiniMetadataSchema, NetworkSchema, TokenSchema } from "../chaindata"
-import type { Chaindata, CustomChaindata } from "./schema"
+import { type Chaindata, ChaindataFileNetworkSchema, type CustomChaindata } from "./schema"
 
 /**
  * Chunked (cooperatively time-sliced) equivalents of ChaindataFileSchema.safeParse and
@@ -111,7 +111,7 @@ export const parseChaindataFileChunked = async (
   const networks = await validateSection(
     "networks",
     shape.data.networks,
-    NetworkSchema,
+    ChaindataFileNetworkSchema,
     issues,
     slicer
   )

@@ -4,6 +4,7 @@ import {
   base64,
   checksumEthereumAddress,
   decodeSs58Address,
+  decodeUnencryptedPjsKeystore,
   encodeAddressEthereum,
   encodeAddressSs58,
 } from "@talismn/crypto"
@@ -108,10 +109,12 @@ export const unlockPair = async (pair: JsonImportPair, password: string) => {
   // pjs also supports hex-encoded keystores - normalize to base64 for the decrypt helper
   const encodedB64 = isHexString(encoded) ? base64.encode(hexToU8a(encoded)) : encoded
 
-  const decrypted = await decryptPjsKeystoreOffThread(
-    { encoded: encodedB64, encoding: normalizeEncoding(encoding) },
-    password
-  )
+  const keystore = { encoded: encodedB64, encoding: normalizeEncoding(encoding) }
+
+  // an unencrypted file (pjs `toJson()` without a password) unlocks with any password
+  const decrypted = keystore.encoding.type.includes("none")
+    ? decodeUnencryptedPjsKeystore(keystore)
+    : await decryptPjsKeystoreOffThread(keystore, password)
   const { secretKey, publicKey } = decodePkcs8(decrypted)
 
   pair.secretKey = new Uint8Array(secretKey)

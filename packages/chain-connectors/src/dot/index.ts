@@ -1,4 +1,5 @@
 export * from "./ChainConnectorDot"
 export * from "./ChainConnectorDotPapi"
 export * from "./ChainConnectorDotStub"
+export * from "./getVerifiedWsProvider"
 export * from "./IChainConnectorDot"

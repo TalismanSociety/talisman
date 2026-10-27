@@ -1,13 +1,9 @@
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
-import {
-  getWsProvider,
-  type StatusChange,
-  WsEvent,
-  type WsJsonRpcProvider,
-} from "@polkadot-api/ws-provider"
+import { type StatusChange, WsEvent, type WsJsonRpcProvider } from "@polkadot-api/ws-provider"
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 
 import log from "../log"
+import { getVerifiedWsProvider } from "./getVerifiedWsProvider"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 // errors that require an rpc fallback
@@ -84,7 +80,8 @@ type Connection = {
  * 1. ChainConnector methods all accept a `chainId` instead of an array of RPCs. RPCs are then fetched internally from chaindata.
  * 2. ChainConnector creates only one socket connection per chain (via polkadot-api's ws-provider, which handles
  *    endpoint rotation, reconnection and stale-socket detection) and ensures that all downstream requests to a chain
- *    share that connection.
+ *    share that connection. Each RPC is sent nothing until it has reported the chain's genesis hash; one of another
+ *    chain is skipped (see `chainIdentityGate`).
  * 3. Subscriptions return a callable `unsubscribe` method instead of an id, and are automatically re-established
  *    when the provider reconnects (possibly to another endpoint).
  *
@@ -392,7 +389,12 @@ export class ChainConnectorDot implements IChainConnectorDot {
     // will be assigned below - the provider config needs to reference the connection
     let connection: Connection = null as unknown as Connection
 
-    const provider = getWsProvider(rpcs, {
+    // CONNECTED waits until the RPC has reported the chain's genesis hash, so
+    // keep-alives and re-issued subscriptions only go to the right chain
+    const provider = getVerifiedWsProvider({
+      networkId: chainId,
+      rpcs,
+      genesisHash: chain.genesisHash,
       onStatusChanged: (status: StatusChange) => this.handleStatusChange(connection, status),
     })
 
