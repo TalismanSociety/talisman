@@ -34,11 +34,12 @@ export type ChaindataQueryOptions<P extends PlatformFilter = "all"> = Partial<{
   includeTestnets: boolean
 }>
 
-const ALL: Required<ChaindataQueryOptions> = {
-  platform: "all",
-  activeOnly: false,
-  includeTestnets: true,
-}
+const toQueryArgs = (options?: ChaindataQueryOptions<PlatformFilter>) =>
+  [
+    options?.platform ?? "all",
+    options?.activeOnly ?? false,
+    options?.includeTestnets ?? true,
+  ] as const
 
 const bindChaindataQuery = <T>(
   createObservable: (options: Required<ChaindataQueryOptions<PlatformFilter>>) => Observable<T>
@@ -47,10 +48,6 @@ const bindChaindataQuery = <T>(
     (platform: PlatformFilter, activeOnly: boolean, includeTestnets: boolean) =>
       createObservable({ platform, activeOnly, includeTestnets })
   )
-  const toQueryArgs = (options?: ChaindataQueryOptions<PlatformFilter>) => {
-    const { platform, activeOnly, includeTestnets } = { ...ALL, ...options }
-    return [platform || "all", !!activeOnly, !!includeTestnets] as const
-  }
   return [
     (options?: ChaindataQueryOptions<PlatformFilter>) => useQuery(...toQueryArgs(options)),
     (options?: ChaindataQueryOptions<PlatformFilter>) => getQuery$(...toQueryArgs(options)),
@@ -73,7 +70,7 @@ const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
 const filterByPlatform =
   <P extends PlatformFilter, T extends { platform: NetworkPlatform }>(platform: P) =>
   (item: T): boolean =>
-    !platform || platform === "all" || item.platform === platform
+    platform === "all" || item.platform === platform
 const filterIncludeTestnets = (includeTestnets: boolean) => (item: { isTestnet?: boolean }) =>
   includeTestnets || !item.isTestnet
 
@@ -127,15 +124,13 @@ export const [useNetworkById, getNetworkById$] = bind(
   ) => StateObservable<R | null>,
 ]
 
-const [, getNetworksMapByGenesisHash$] = bindChaindataQuery((options) =>
-  getNetworks$({ ...options, platform: "polkadot" }).pipe(
-    map((networks) => keyBy(networks, "genesisHash"))
-  )
+const [, networksMapByGenesisHash$] = bind(
+  getNetworks$({ platform: "polkadot" }).pipe(map((networks) => keyBy(networks, "genesisHash")))
 )
 
 export const [useNetworkByGenesisHash, getNetworkByGenesisHash$] = bind(
   (genesisHash: `0x${string}` | null | undefined) =>
-    getNetworksMapByGenesisHash$().pipe(
+    networksMapByGenesisHash$.pipe(
       map(
         (networksByGenesisHash): DotNetwork | null =>
           networksByGenesisHash[genesisHash ?? "#"] ?? null

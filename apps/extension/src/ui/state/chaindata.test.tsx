@@ -22,10 +22,13 @@ vi.mock("@react-rxjs/core", async (importOriginal) => {
     })
   return {
     ...actual,
-    bind: (source: unknown, ...defaultValue: []) =>
-      typeof source === "function"
-        ? actual.bind((...args: unknown[]) => countSubscriptions(source(...args)), ...defaultValue)
-        : actual.bind(source as Observable<unknown>, ...defaultValue),
+    bind: (source: unknown, ...defaultValue: unknown[]) =>
+      (actual.bind as (...args: unknown[]) => unknown)(
+        typeof source === "function"
+          ? (...args: unknown[]) => countSubscriptions(source(...args))
+          : source,
+        ...defaultValue
+      ),
   }
 })
 
@@ -69,6 +72,7 @@ describe("chaindata query hooks", () => {
       wrapper,
     })
     const subscriptionsAfterFirstRender = subscriptions.live
+    expect(subscriptionsAfterFirstRender).toBeGreaterThan(0)
 
     for (let i = 0; i < 10; i++) rerender()
 
@@ -79,6 +83,7 @@ describe("chaindata query hooks", () => {
   it("share one subscription between equivalent options", () => {
     renderHook(() => useTokens({ platform: "polkadot", activeOnly: true }), { wrapper })
     const subscriptionsAfterFirstRender = subscriptions.live
+    expect(subscriptionsAfterFirstRender).toBeGreaterThan(0)
 
     const { result } = renderHook(
       () => useTokens({ activeOnly: true, includeTestnets: true, platform: "polkadot" }),
