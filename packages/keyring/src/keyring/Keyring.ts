@@ -99,7 +99,9 @@ export class Keyring {
     } catch {
       throw new Error("Invalid password")
     }
-    if (utf8.encode(bytes) !== PASSWORD_CHECK_PHRASE) throw new Error("Invalid password")
+    const text = utf8.encode(bytes)
+    bytes.fill(0)
+    if (text !== PASSWORD_CHECK_PHRASE) throw new Error("Invalid password")
   }
 
   /**
@@ -225,18 +227,22 @@ export class Keyring {
     const passwordCheck = await this.#preparePasswordCheck(password)
 
     const entropy = mnemonicToEntropy(mnemonic)
+    let storage: MnemonicStorage
+    try {
+      // id is a hash of the entropy, helps us prevent having duplicates and allows automatic remapping of accounts/mnemonics if mnemonics are deleted then re-added
+      const id = oneWayHash(entropy)
 
-    // id is a hash of the entropy, helps us prevent having duplicates and allows automatic remapping of accounts/mnemonics if mnemonics are deleted then re-added
-    const id = oneWayHash(entropy)
+      if (this.#findMnemonic(id)) throw new Error("Mnemonic already exists")
 
-    if (this.#findMnemonic(id)) throw new Error("Mnemonic already exists")
-
-    const storage: MnemonicStorage = {
-      id,
-      name,
-      entropy: await encryptData(entropy, password),
-      confirmed,
-      createdAt: Date.now(),
+      storage = {
+        id,
+        name,
+        entropy: await encryptData(entropy, password),
+        confirmed,
+        createdAt: Date.now(),
+      }
+    } finally {
+      entropy.fill(0)
     }
 
     return this.#commit(password, passwordCheck, () => {
@@ -284,14 +290,22 @@ export class Keyring {
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
-
-    return entropyToMnemonic(entropy)
+    try {
+      // a string cannot be zeroed: the caller holds the only reference to the phrase
+      return entropyToMnemonic(entropy)
+    } finally {
+      entropy.fill(0)
+    }
   }
 
   public getExistingMnemonicId(mnemonic: string): string | null {
     const entropy = mnemonicToEntropy(mnemonic)
-    const mnemonicId = oneWayHash(entropy)
-    return this.#findMnemonic(mnemonicId) ? mnemonicId : null
+    try {
+      const mnemonicId = oneWayHash(entropy)
+      return this.#findMnemonic(mnemonicId) ? mnemonicId : null
+    } finally {
+      entropy.fill(0)
+    }
   }
 
   public getAccounts(): Account[] {
@@ -402,25 +416,34 @@ export class Keyring {
         throw new Error("Invalid derivation type")
     }
 
-    const seed = await entropyToSeed(entropy, curve)
-    const pair = deriveKeypair(seed, derivationPath, curve)
-    const address = normalizeAddress(pair.address)
+    let seed: Uint8Array | undefined
+    let secretKey: Uint8Array | undefined
+    let account: AccountStorage
+    let mnemonic: MnemonicStorage | null = null
+    try {
+      seed = await entropyToSeed(entropy, curve)
+      const pair = deriveKeypair(seed, derivationPath, curve)
+      secretKey = pair.secretKey
+      const address = normalizeAddress(pair.address)
 
-    if (this.#findAccount(address)) throw new Error("Account already exists")
+      if (this.#findAccount(address)) throw new Error("Account already exists")
 
-    const account: AccountStorage = {
-      type: "keypair",
-      curve,
-      name,
-      address,
-      secretKey: await encryptData(pair.secretKey, password),
-      mnemonicId,
-      derivationPath,
-      createdAt: Date.now(),
+      account = {
+        type: "keypair",
+        curve,
+        name,
+        address,
+        secretKey: await encryptData(secretKey, password),
+        mnemonicId,
+        derivationPath,
+        createdAt: Date.now(),
+      }
+      if (newMnemonic) mnemonic = { ...newMnemonic, entropy: await encryptData(entropy, password) }
+    } finally {
+      entropy.fill(0)
+      seed?.fill(0)
+      secretKey?.fill(0)
     }
-    const mnemonic: MnemonicStorage | null = newMnemonic
-      ? { ...newMnemonic, entropy: await encryptData(entropy, password) }
-      : null
 
     return this.#commit(password, passwordCheck, () => {
       if (this.#findAccount(account.address)) throw new Error("Account already exists")
@@ -435,6 +458,7 @@ export class Keyring {
     })
   }
 
+  /** Adds an account from a secret key. The caller keeps ownership of `secretKey`. */
   public async addAccountKeypair(
     { curve, name, secretKey }: AddAccountKeypairOptions,
     password: string
@@ -465,6 +489,10 @@ export class Keyring {
     })
   }
 
+  /**
+   * Decrypts an account's secret key. The caller owns the returned buffer and should zero it
+   * (`secretKey.fill(0)`) once it is done with it.
+   */
   public getAccountSecretKey(address: string, password: string): Promise<Uint8Array> {
     if (typeof address !== "string" || !address) throw new Error("address is required")
     if (typeof password !== "string" || !password) throw new Error("password is required")
@@ -489,10 +517,18 @@ export class Keyring {
     if (!mnemonic) throw new Error("Mnemonic not found")
 
     const entropy = await decryptData(mnemonic.entropy, password)
-    const seed = await entropyToSeed(entropy, curve)
-    const pair = deriveKeypair(seed, derivationPath, curve)
-
-    return pair.address
+    let seed: Uint8Array | undefined
+    let secretKey: Uint8Array | undefined
+    try {
+      seed = await entropyToSeed(entropy, curve)
+      const pair = deriveKeypair(seed, derivationPath, curve)
+      secretKey = pair.secretKey
+      return pair.address
+    } finally {
+      entropy.fill(0)
+      seed?.fill(0)
+      secretKey?.fill(0)
+    }
   }
 
   #findMnemonic(id: string) {
