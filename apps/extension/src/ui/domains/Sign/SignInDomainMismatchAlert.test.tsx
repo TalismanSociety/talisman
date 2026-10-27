@@ -23,7 +23,9 @@ describe("SignInDomainMismatchAlert", () => {
   it("blocks signing a foreign domain until the risk is acknowledged", () => {
     render(<SignInScreen message={signIn("app.orbinum.network")} />)
 
-    expect(screen.getByText("Sign in domain is different from website domain.")).toBeDefined()
+    expect(screen.getByText("This sign-in is for another website")).toBeDefined()
+    expect(screen.getByText("app.orbinum.network")).toBeDefined()
+    expect(screen.getByText("localhost:5600")).toBeDefined()
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(true)
 
     fireEvent.click(screen.getByRole("checkbox"))

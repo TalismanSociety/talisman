@@ -5,12 +5,10 @@ import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
-import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { SignInDomainMismatchAlert } from "../SignInDomainMismatchAlert"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
@@ -71,8 +69,6 @@ export const EthSignBodyMessageSIWE: FC<{
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
-  const { signInDomainMismatch } = useEthSignMessageRequest()
-
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
       <div className="flex w-full flex-col items-center pt-4">
@@ -97,7 +93,6 @@ export const EthSignBodyMessageSIWE: FC<{
         )}
       </div>
       <div className="grow"></div>
-      <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mt-8" />
       <Drawer
         analyticsId="eth_sign_siwe_details"
         anchor="bottom"

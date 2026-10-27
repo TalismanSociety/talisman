@@ -13,6 +13,7 @@ import { RiskAnalysisRow } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPill
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
+import { SignInDomainMismatchAlert } from "@ui/domains/Sign/SignInDomainMismatchAlert"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,6 +35,7 @@ export const EthSignMessageRequest = () => {
     network,
     isValid,
     riskAnalysis,
+    signInDomainMismatch,
   } = useEthSignMessageRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -71,6 +73,7 @@ export const EthSignMessageRequest = () => {
                 {errorMessage}
               </SignAlertMessage>
             )}
+            <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mb-6" />
             <RiskAnalysisRow className="mb-6" />
             {account && request && (
               // biome-ignore lint/complexity/noUselessFragments: legacy

@@ -51,6 +51,7 @@ vi.mock("@ui/domains/Sign/ViewDetails/ViewDetailsButton", () => ({ ViewDetailsBu
 
 vi.mock("@talismn/icons", () => ({
   UserRightIcon: () => null,
+  AlertTriangleIcon: () => null,
   InfoIcon: () => null,
   LoaderIcon: () => null,
 }))
@@ -77,6 +78,7 @@ import {
   useEthSignMessageRequest,
 } from "@ui/domains/Sign/SignRequestContext"
 import { stringToHex } from "viem"
+import { SignInDomainMismatchAlert } from "../../SignInDomainMismatchAlert"
 import { EthSignBodyMessage } from "../EthSignBodyMessage"
 
 const SIGNER = "0x1111111111111111111111111111111111111111"
@@ -117,12 +119,15 @@ const IN_ONE_HOUR = Math.floor(Date.now() / 1000) + 3600
 
 const SITE_URL = "https://example.com/login"
 
-const ApproveButton = () => {
-  const { isValid } = useEthSignMessageRequest()
+const Footer = () => {
+  const { isValid, signInDomainMismatch } = useEthSignMessageRequest()
   return (
-    <button type="button" disabled={!isValid}>
-      Approve
-    </button>
+    <>
+      <SignInDomainMismatchAlert mismatch={signInDomainMismatch} />
+      <button type="button" disabled={!isValid}>
+        Approve
+      </button>
+    </>
   )
 }
 
@@ -134,7 +139,7 @@ const renderRequest = (request: Partial<EthSignRequest>) => {
         account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}
         request={fx.request}
       />
-      <ApproveButton />
+      <Footer />
     </EthSignMessageRequestProvider>
   )
 }
@@ -167,21 +172,21 @@ describe("EthSignBodyMessage personal_sign", () => {
 
     expect(container.textContent).toContain("Sign In")
     expect(container.textContent).toContain("evil.com")
-    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expect(container.textContent).toContain("This sign-in is for another website")
   })
 
   it("treats a raw text SIWE message the same as its hex encoding", () => {
     const { container } = renderPersonalSign(siweMessage("evil.com"))
 
     expect(container.textContent).toContain("Sign In")
-    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expect(container.textContent).toContain("This sign-in is for another website")
   })
 
   it("shows no domain warning when the sign-in domain matches the site", () => {
     const { container } = renderPersonalSign(stringToHex(siweMessage("example.com")))
 
     expect(container.textContent).toContain("Sign In")
-    expect(container.textContent).not.toContain("Sign in domain is different")
+    expect(container.textContent).not.toContain("This sign-in is for another website")
   })
 
   it.each([
@@ -192,7 +197,7 @@ describe("EthSignBodyMessage personal_sign", () => {
 
     expect(container.textContent).not.toContain("Sign In")
     expect(screen.getByTestId("raw-message")).toBeDefined()
-    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expect(container.textContent).toContain("This sign-in is for another website")
     expect(approveButton().disabled).toBe(true)
 
     fireEvent.click(screen.getByRole("checkbox"))
@@ -203,7 +208,7 @@ describe("EthSignBodyMessage personal_sign", () => {
   it("shows no domain warning and blocks nothing for a plain message", () => {
     const { container } = renderPersonalSign(stringToHex("evil.com is not a sign-in"))
 
-    expect(container.textContent).not.toContain("Sign in domain is different")
+    expect(container.textContent).not.toContain("This sign-in is for another website")
     expect(approveButton().disabled).toBe(false)
   })
 
