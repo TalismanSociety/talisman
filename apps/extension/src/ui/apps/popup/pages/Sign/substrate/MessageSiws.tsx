@@ -17,10 +17,10 @@ export type Props = {
   account: Account
   chain: DotNetwork | null | undefined
   request: SiwsMessage
-  validationError: string | null
+  isAddressMismatch: boolean
 }
 
-export const MessageSiws = ({ account, chain, request, validationError }: Props) => {
+export const MessageSiws = ({ account, chain, request, isAddressMismatch }: Props) => {
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
@@ -48,9 +48,9 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
         <ViewDetailsButton onClick={open} />
       </div>
       <div className="grow"></div>
-      {validationError && (
+      {isAddressMismatch && (
         <SignAlertMessage type="error" errorCategory={null} className="mt-8">
-          {t("Sign in domain or address is different from website domain or signer address.")}
+          {t("Sign in address is different from signer address.")}
         </SignAlertMessage>
       )}
       <Drawer

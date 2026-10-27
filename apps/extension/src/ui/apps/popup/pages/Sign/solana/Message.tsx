@@ -13,10 +13,12 @@ import {
 import { AppPill } from "@ui/components/AppPill"
 import { Button } from "@ui/components/Button"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { useSignInDomainMismatch } from "@ui/domains/Sign/hooks/useSignInDomainMismatch"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
 import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignInDomainMismatchAlert } from "@ui/domains/Sign/SignInDomainMismatchAlert"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -53,14 +55,18 @@ export const SolSignMessageRequest: FC<{
     }
   }, [message])
 
+  const messageBytes = useMemo(() => base58.decode(message), [message])
+
   const signPayload = useMemo<MsgSignButtonPayloadSol>(
     () => ({
       platform: "solana",
       address: account.address,
-      message: Buffer.from(base58.decode(message)),
+      message: Buffer.from(messageBytes),
     }),
-    [account, message]
+    [account, messageBytes]
   )
+
+  const signInDomainMismatch = useSignInDomainMismatch(decodedMessage, url)
 
   const handleReject = () => rejectSolanaRequest(id)
 
@@ -94,6 +100,7 @@ export const SolSignMessageRequest: FC<{
         </div>
       </PopupContent>
       <PopupFooter>
+        <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mb-6" />
         {isAccountOfType(account, "watch-only") && (
           <SignAlertMessage className="mb-6" type="error" errorCategory="unsupported">
             {t("Cannot sign with a watch-only account.")}
@@ -113,6 +120,7 @@ export const SolSignMessageRequest: FC<{
             payload={signPayload}
             containerId="main"
             label={"Sign"}
+            disabled={signInDomainMismatch.isBlocking}
           />
         </div>
       </PopupFooter>

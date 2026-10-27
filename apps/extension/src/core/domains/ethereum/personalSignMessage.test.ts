@@ -1,10 +1,7 @@
 import { stringToHex } from "viem"
 import { describe, expect, it } from "vitest"
 
-import {
-  assertPersonalSignMessageDecodable,
-  decodePersonalSignMessage,
-} from "./personalSignMessage"
+import { decodePersonalSignMessage, decodePersonalSignMessageOrThrow } from "./personalSignMessage"
 
 describe("decodePersonalSignMessage", () => {
   it("decodes a hex payload as utf-8", () => {
@@ -24,14 +21,14 @@ describe("decodePersonalSignMessage", () => {
   })
 })
 
-describe("assertPersonalSignMessageDecodable", () => {
-  it("accepts hex and text payloads", () => {
-    expect(() => assertPersonalSignMessageDecodable(stringToHex("ok"))).not.toThrow()
-    expect(() => assertPersonalSignMessageDecodable("ok")).not.toThrow()
+describe("decodePersonalSignMessageOrThrow", () => {
+  it("decodes hex and text payloads", () => {
+    expect(decodePersonalSignMessageOrThrow(stringToHex("ok"))).toBe("ok")
+    expect(decodePersonalSignMessageOrThrow("ok")).toBe("ok")
   })
 
   it("rejects an odd-length hex payload as an invalid parameter", () => {
-    expect(() => assertPersonalSignMessageDecodable("0x616")).toThrow(
+    expect(() => decodePersonalSignMessageOrThrow("0x616")).toThrow(
       expect.objectContaining({ message: "Invalid parameter", code: -32602 })
     )
   })
