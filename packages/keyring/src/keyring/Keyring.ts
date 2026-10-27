@@ -16,7 +16,6 @@ import {
 } from "@talismn/crypto"
 
 import type { Account, Mnemonic } from "../types"
-import { isAccountExternal } from "../types"
 import type {
   AddAccountDeriveOptions,
   AddAccountExternalOptions,
@@ -28,7 +27,7 @@ import type {
 import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
 import type { AccountStorage, MnemonicStorage } from "./types"
 import { isHexString } from "./utils"
-import { assertKeyringStorage } from "./validation"
+import { assertAddAccountExternalOptions, assertKeyringStorage } from "./validation"
 
 export type KeyringStorage = {
   passwordCheck: string | null // well-known data encrypted using the password, used to ensure all secrets of the keyring are encrypted with the same password
@@ -252,12 +251,12 @@ export class Keyring {
   }
 
   public getAccount(address: string): Account | null {
-    const account = this.#data.accounts.find((s) => isAddressEqual(s.address, address))
+    const account = this.#findAccount(address)
     return account ? accountFromStorage(account) : null
   }
 
   public updateAccount(address: string, { name, isPortfolio, genesisHash }: UpdateAccountOptions) {
-    const account = this.#data.accounts.find((s) => s.address === address)
+    const account = this.#findAccount(address)
     if (!account) throw new Error("Account not found")
 
     if (name) {
@@ -280,23 +279,28 @@ export class Keyring {
   }
 
   public removeAccount(address: string) {
-    const index = this.#data.accounts.findIndex((s) => isAddressEqual(s.address, address))
-    if (index === -1) throw new Error("Account not found")
-    this.#data.accounts.splice(index, 1)
+    const account = this.#findAccount(address)
+    if (!account) throw new Error("Account not found")
+    this.#data.accounts.splice(this.#data.accounts.indexOf(account), 1)
   }
 
+  /**
+   * Adds an account whose secret is not held by the keyring. The fields of the account's type are
+   * checked when present; `secretKey` and `mnemonicId` are rejected, other fields are stored as
+   * given.
+   */
   public addAccountExternal(options: AddAccountExternalOptions): Account {
+    assertAddAccountExternalOptions(options)
+
     const address = normalizeAddress(options.address) // breaks if invalid address
 
     if (this.getAccount(address)) throw new Error("Account already exists")
 
-    const account: AccountStorage = {
+    const account = {
       ...options,
       address,
       createdAt: Date.now(),
-    }
-
-    if (!isAccountExternal(account)) throw new Error("Invalid account type")
+    } as AccountStorage
 
     this.#data.accounts.push(account)
 
@@ -410,7 +414,7 @@ export class Keyring {
     if (typeof address !== "string" || !address) throw new Error("address is required")
     if (typeof password !== "string" || !password) throw new Error("password is required")
 
-    const account = this.#data.accounts.find((a) => a.address === normalizeAddress(address))
+    const account = this.#findAccount(address)
     if (!account) throw new Error("Account not found")
     if (account.type !== "keypair") throw new Error("Secret key unavailable")
 
@@ -434,6 +438,11 @@ export class Keyring {
     const pair = deriveKeypair(seed, derivationPath, curve)
 
     return pair.address
+  }
+
+  /** Every address lookup goes through here, so all methods match addresses the same way. */
+  #findAccount(address: string) {
+    return this.#data.accounts.find((s) => isAddressEqual(s.address, address))
   }
 }
 
