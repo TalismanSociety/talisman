@@ -3,6 +3,8 @@ import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorYieldRateLabel } from "@ui/domains/Staking/Bittensor/components/BittensorYieldRateLabel"
+import { getBittensorYieldRateType } from "@ui/domains/Staking/Bittensor/utils/yieldRateType"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwapBuy } from "./SwapBuyProvider"
@@ -21,7 +23,6 @@ import {
   SwapConfirmSlippageToleranceValue,
   SwapConfirmTalismanFeeLabel,
   SwapConfirmTalismanFeeValue,
-  SwapConfirmValidatorApyLabel,
   SwapConfirmValidatorApyValue,
 } from "./SwapConfirmShared"
 
@@ -63,7 +64,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                 <SwapConfirmFieldRow label={t("Validator")}>
                   <ValidatorValue />
                 </SwapConfirmFieldRow>
-                <SwapConfirmFieldRow label={<SwapConfirmValidatorApyLabel />}>
+                <SwapConfirmFieldRow label={<ValidatorApyLabel />}>
                   <ValidatorApyValue />
                 </SwapConfirmFieldRow>
               </div>
@@ -126,6 +127,12 @@ const ValidatorValue = () => {
   const { hotkey } = useSwapBuy()
 
   return <BittensorValidatorName hotkey={hotkey} />
+}
+
+const ValidatorApyLabel = () => {
+  const { netuid } = useSwapBuy()
+
+  return <BittensorYieldRateLabel rateType={getBittensorYieldRateType(netuid)} />
 }
 
 const ValidatorApyValue = () => {

@@ -1,7 +1,5 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
-import { InfoIcon } from "@talismn/icons"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { flows } from "@ui/hooks/analytics/flows"
 import { useEffect, useMemo, useState } from "react"
@@ -15,10 +13,13 @@ import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { BittensorClaimAlert } from "../../components/BittensorClaimAlert"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
+import { BittensorYieldRateLabel } from "../../components/BittensorYieldRateLabel"
 import { ValidatorApy } from "../../components/ValidatorApy"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { useBittensorClaimWarnings } from "../../hooks/useBittensorClaimWarnings"
+import { ROOT_NETUID } from "../../utils/constants"
+import { getBittensorYieldRateType } from "../../utils/yieldRateType"
 
 export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
@@ -136,15 +137,7 @@ export const BittensorRootBondReview = () => {
         {stakeDirection === "bond" && (
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="flex items-center gap-1 whitespace-nowrap">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    {t("APY")}
-                    <InfoIcon />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
-              </Tooltip>
+              <BittensorYieldRateLabel rateType={getBittensorYieldRateType(ROOT_NETUID)} />
             </div>
             <div className="overflow-hidden text-body">
               <ValidatorApy />

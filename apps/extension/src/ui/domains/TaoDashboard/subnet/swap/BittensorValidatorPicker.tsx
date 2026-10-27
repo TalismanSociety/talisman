@@ -1,6 +1,7 @@
 import { type DotNetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { SearchInputControlled } from "@ui/components/SearchInputControlled"
+import { BittensorYieldRateLabel } from "@ui/domains/Staking/Bittensor/components/BittensorYieldRateLabel"
 import {
   ValidatorRowSkeleton,
   ValidatorRows,
@@ -14,6 +15,7 @@ import {
   sortValidatorOptions,
   type ValidatorSortValue,
 } from "@ui/domains/Staking/Bittensor/utils/validatorSorting"
+import { getBittensorYieldRateType } from "@ui/domains/Staking/Bittensor/utils/yieldRateType"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import {
@@ -38,7 +40,7 @@ export const BittensorValidatorPicker: FC<{
 }> = ({ networkId, netuid, hotkey, containerId, onSelect, onClose }) => {
   const { t } = useTranslation()
   const isRoot = netuid === ROOT_NETUID
-  const apyColumnLabel = isRoot ? t("APR [30D]") : t("APY [30D]")
+  const rateType = getBittensorYieldRateType(netuid)
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
     networkId,
     netuid
@@ -126,7 +128,9 @@ export const BittensorValidatorPicker: FC<{
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
           <div>{t("Validator")}</div>
-          <div>{apyColumnLabel}</div>
+          <BittensorYieldRateLabel rateType={rateType}>
+            {rateType === "APR" ? t("APR [30D]") : t("APY [30D]")}
+          </BittensorYieldRateLabel>
         </div>
         <ScrollContainer
           ref={scrollContainerRef}
