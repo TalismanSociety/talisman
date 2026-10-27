@@ -1,13 +1,22 @@
 import { parseMessage, type SiwsMessage } from "@talismn/siws"
 import { u8aToString, u8aUnwrapBytes } from "@talismn/util"
 
-// Matches the CAIP-122 header line on its own rather than parsing the whole message: verifiers
-// such as viem accept variants that strict parsers reject, and a variant must not escape the check.
-const SIGN_IN_HEADER =
-  /^\s*(?:[a-z][a-z0-9+.-]*:\/\/)?(.+?) wants you to sign in with your .+ account:/gim
+// Reads the domain off the first line only, as viem, @solana/wallet-standard-util and
+// @talismn/siws do, and requires nothing after the phrase so variants they accept still match.
+const SIGN_IN_FIRST_LINE = /^\s*(\S[^\n]*?) wants you to sign in with your /
+const SCHEME_PREFIX = /^[a-z][a-z0-9+.-]*:\/\//i
 
-export const getSignInDomains = (text: string): string[] =>
-  Array.from(text.matchAll(SIGN_IN_HEADER), ([, domain]) => domain.toLowerCase())
+const normaliseDomain = (domain: string) => domain.replace(SCHEME_PREFIX, "").toLowerCase()
+
+export const getSignInDomains = (text: string): string[] => {
+  const headerDomain = SIGN_IN_FIRST_LINE.exec(text)?.[1]
+  // a JSON message carries an untyped domain
+  const siwsDomain = parseSubstrateSignInMessage(text)?.domain as unknown
+  const domains = [headerDomain, siwsDomain]
+    .filter((domain) => domain !== undefined)
+    .map((domain) => normaliseDomain(String(domain)))
+  return [...new Set(domains)]
+}
 
 const getHost = (url: string) => {
   try {

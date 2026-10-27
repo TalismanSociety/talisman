@@ -316,4 +316,11 @@ describe("signMessage (sign-in domain)", () => {
     await expect(personalSign("evil.com is not a sign-in")).resolves.toBe("0xsignature")
     expect(requestEthSign).toHaveBeenCalledOnce()
   })
+
+  it("lets a message that quotes a sign-in after its first line reach the sign request", async () => {
+    await expect(
+      personalSign(`Here is what a sign-in looks like:\n\n${siweMessage("evil.com")}`)
+    ).resolves.toBe("0xsignature")
+    expect(requestEthSign).toHaveBeenCalledOnce()
+  })
 })

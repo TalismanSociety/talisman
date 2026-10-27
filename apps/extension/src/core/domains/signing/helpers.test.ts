@@ -1,3 +1,4 @@
+import { SiwsMessage } from "@talismn/siws"
 import { u8aToHex, u8aWrapBytes } from "@talismn/util"
 import { stringToHex } from "viem"
 import { describe, expect, it } from "vitest"
@@ -28,6 +29,14 @@ const siwsSubstrate = (domain: string) =>
   signInMessage(domain, "Substrate", "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
 const siwsSolana = (domain: string) =>
   signInMessage(domain, "Solana", "7S3P4HxJpyyigGzodYwHtCxZyUQe9JiBMHyRWXArAaKv")
+const siwsJson = (domain: string) =>
+  new SiwsMessage({
+    domain,
+    address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    uri: `https://${domain}`,
+    version: "1.0.0",
+    nonce: "abcdefgh12",
+  }).prepareJson()
 
 describe("getSignInDomains", () => {
   it("reads the domain of each platform's canonical header", () => {
@@ -52,14 +61,39 @@ describe("getSignInDomains", () => {
     expect(getSignInDomains(siwe("VICTIM.EXAMPLE:8443"))).toEqual(["victim.example:8443"])
   })
 
-  it("reads a header that is not on the first line", () => {
-    expect(getSignInDomains(`Welcome!\n\n${siwe("victim.example")}`)).toEqual(["victim.example"])
+  it("reads a first line that @talismn/siws accepts without the account suffix", () => {
+    const message = siwsSubstrate("victim.example")
+      .replace(" account:", "")
+      .replace("Version: 1", "Version: 1.0.0")
+    expect(parseSubstrateSignInMessage(message)?.domain).toBe("victim.example")
+    expect(getSignInDomains(message)).toEqual(["victim.example"])
   })
 
-  it("reads every header of a message", () => {
+  it.each([
+    ["a carriage return", "\r"],
+    ["a line separator", "\u2028"],
+    ["a paragraph separator", "\u2029"],
+  ])("reads a header with %s in the chain name", (_, separator) => {
+    const message = siwsSubstrate("victim.example")
+      .replace("Substrate", `Sub${separator}strate`)
+      .replace("Version: 1", "Version: 1.0.0")
+    expect(parseSubstrateSignInMessage(message)?.domain).toBe("victim.example")
+    expect(getSignInDomains(message)).toEqual(["victim.example"])
+  })
+
+  it("reads the domain of a JSON sign-in message", () => {
+    expect(getSignInDomains(siwsJson("Victim.Example"))).toEqual(["victim.example"])
+  })
+
+  it("reads a JSON sign-in message whose domain is not a string", () => {
+    const message = JSON.stringify({ ...JSON.parse(siwsJson("victim.example")), domain: 8443 })
+    expect(getSignInDomains(message)).toEqual(["8443"])
+  })
+
+  it("ignores a header quoted after the first line", () => {
+    expect(getSignInDomains(`Welcome!\n\n${siwe("victim.example")}`)).toEqual([])
     expect(getSignInDomains(`${siwe("site.example")}\n\n${siwsSolana("victim.example")}`)).toEqual([
       "site.example",
-      "victim.example",
     ])
   })
 
@@ -73,6 +107,9 @@ describe("isSignInDomainMismatch", () => {
   it("matches the site host", () => {
     expect(isSignInDomainMismatch(siwe("example.com"), "https://example.com/login")).toBe(false)
     expect(isSignInDomainMismatch(siwe("https://Example.com"), "https://example.com/")).toBe(false)
+    expect(isSignInDomainMismatch(siwsJson("https://Example.com"), "https://example.com/")).toBe(
+      false
+    )
   })
 
   it("flags a foreign domain", () => {
@@ -85,13 +122,18 @@ describe("isSignInDomainMismatch", () => {
     expect(isSignInDomainMismatch(siwe("localhost:3000"), "http://localhost:5600/")).toBe(true)
   })
 
-  it("flags a message when any of its headers names a foreign domain", () => {
+  it("flags a JSON sign-in message for a foreign domain", () => {
+    expect(isSignInDomainMismatch(siwsJson("evil.com"), "https://example.com/login")).toBe(true)
+    expect(isSignInDomainMismatch(siwsJson("example.com"), "https://example.com/login")).toBe(false)
+  })
+
+  it("does not flag a message that quotes a foreign header after the first line", () => {
     expect(
       isSignInDomainMismatch(
         `${siwe("example.com")}\n\n${siwe("evil.com")}`,
         "https://example.com/login"
       )
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it("does not flag plain text", () => {

@@ -91,4 +91,11 @@ describe("solana signMessage (sign-in domain)", () => {
     })
     expect(requestSolanaSign).toHaveBeenCalledOnce()
   })
+
+  it("lets a message that quotes a sign-in after its first line reach the sign request", async () => {
+    await expect(
+      signMessage(`Here is what a sign-in looks like:\n\n${siwsMessage("app.orbinum.network")}`)
+    ).resolves.toEqual({ signature: "signature", signedMessage: "signedMessage" })
+    expect(requestSolanaSign).toHaveBeenCalledOnce()
+  })
 })

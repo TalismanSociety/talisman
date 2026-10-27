@@ -1,5 +1,6 @@
 import type { EventName } from "@common/analytics/catalogue"
 import type { EventProperties } from "@common/analytics/schema"
+import { SiwsMessage } from "@talismn/siws"
 import { waitFor } from "@testing-library/dom"
 import { stringToHex } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -77,6 +78,15 @@ describe("Tabs bytes.sign (sign-in domain)", () => {
       "Issued At: 2024-01-01T00:00:00.000Z",
     ].join("\n")
 
+  const siwsJson = (domain: string) =>
+    new SiwsMessage({
+      domain,
+      address: ADDRESS,
+      uri: `https://${domain}`,
+      version: "1.0.0",
+      nonce: "abcdefgh12",
+    }).prepareJson()
+
   const signBytes = (message: string) =>
     new Tabs(tabStores).handle(
       "1",
@@ -108,6 +118,13 @@ describe("Tabs bytes.sign (sign-in domain)", () => {
     expect(requestSubstrateSign).not.toHaveBeenCalled()
   })
 
+  it("refuses a JSON sign-in for another domain without creating a sign request", async () => {
+    await expect(signBytes(siwsJson("evil.com"))).rejects.toThrow(
+      "The domain in the sign-in message does not match the requesting site"
+    )
+    expect(requestSubstrateSign).not.toHaveBeenCalled()
+  })
+
   it("lets a sign-in for another domain reach the sign request in Developer Mode", async () => {
     await tabStores.settings.set({ developerMode: true })
     await expect(signBytes(siwsMessage("evil.com"))).resolves.toMatchObject({
@@ -130,6 +147,13 @@ describe("Tabs bytes.sign (sign-in domain)", () => {
     expect(requestSubstrateSign).toHaveBeenCalledOnce()
   })
 
+  it("lets a message that quotes a sign-in after its first line reach the sign request", async () => {
+    await expect(
+      signBytes(`Here is what a sign-in looks like:\n\n${siwsMessage("evil.com")}`)
+    ).resolves.toMatchObject({ signature: "0xsignature" })
+    expect(requestSubstrateSign).toHaveBeenCalledOnce()
+  })
+
   describe("through extrinsic.sign with a raw payload", () => {
     const signRawAsExtrinsic = (message: string) =>
       new Tabs(tabStores).handle(
@@ -142,6 +166,13 @@ describe("Tabs bytes.sign (sign-in domain)", () => {
 
     it("refuses a sign-in for another domain without creating a sign request", async () => {
       await expect(signRawAsExtrinsic(siwsMessage("evil.com"))).rejects.toThrow(
+        "The domain in the sign-in message does not match the requesting site"
+      )
+      expect(requestSubstrateSign).not.toHaveBeenCalled()
+    })
+
+    it("refuses a JSON sign-in for another domain without creating a sign request", async () => {
+      await expect(signRawAsExtrinsic(siwsJson("evil.com"))).rejects.toThrow(
         "The domain in the sign-in message does not match the requesting site"
       )
       expect(requestSubstrateSign).not.toHaveBeenCalled()
