@@ -133,3 +133,25 @@ describe("substrate derivation path parser", () => {
     expect(await isValidDerivationPath("///password", "ecdsa")).toBe(false)
   })
 })
+
+describe("solana derivation path parser", () => {
+  const solana = (path: string) => addressFromMnemonic(ABANDON, path, "solana")
+
+  it.each(["m/abc'", "m/'", "m/0abc'", "m/ 0'", "m/0.9'", "m/0x10'", "m/-1'", "m/1e3'"])(
+    "rejects malformed index %j",
+    async (path) => {
+      await expect(solana(path)).rejects.toThrow("Invalid derivation path index")
+    }
+  )
+
+  it.each(["m/2147483648'", "m/4294967296'", `m/${"9".repeat(20)}'`])(
+    "rejects index %j at or above 2^31",
+    async (path) => {
+      await expect(solana(path)).rejects.toThrow("Derivation path index out of range")
+    }
+  )
+
+  it.each(["m/0", "m/44'/501'/0'/0", "m/"])("rejects non-hardened path %j", async (path) => {
+    await expect(solana(path)).rejects.toThrow("Only hardened derivation is supported")
+  })
+})
