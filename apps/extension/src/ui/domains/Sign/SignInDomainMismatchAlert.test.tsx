@@ -33,6 +33,7 @@ describe("SignInDomainMismatchAlert", () => {
 
   it("lets the risk be acknowledged when the sign-in names no domain", () => {
     render(<SignInScreen message={signIn("https://")} />)
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(true)
 
     fireEvent.click(screen.getByRole("checkbox"))
 
