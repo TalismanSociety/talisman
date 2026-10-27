@@ -1,5 +1,6 @@
 import {
   getWsProvider,
+  type Middleware,
   type StatusChange,
   WsEvent,
   type WsJsonRpcProvider,
@@ -13,6 +14,11 @@ export type VerifiedWsProviderOptions = {
   rpcs: readonly string[]
   /** The network's genesis hash. Without one, the RPCs are used unverified. */
   genesisHash: string | undefined
+  /**
+   * Wraps each connection above the identity check, so nothing it sends
+   * reaches an RPC that has yet to pass. Used with or without a genesis hash.
+   */
+  middleware?: Middleware
   onStatusChanged?: (status: StatusChange) => void
   /**
    * How long a socket may take to open before the provider moves to the next
@@ -40,13 +46,18 @@ export const getVerifiedWsProvider = ({
   networkId,
   rpcs,
   genesisHash,
+  middleware,
   onStatusChanged,
   timeout,
 }: VerifiedWsProviderOptions): WsJsonRpcProvider => {
-  // getWsProvider spreads its config over its defaults, so an option given as
-  // undefined would replace the default with undefined
-  const timeoutConfig = timeout !== undefined ? { timeout } : {}
-  if (!genesisHash) return getWsProvider(rpcs.concat(), { onStatusChanged, ...timeoutConfig })
+  if (!genesisHash)
+    // getWsProvider spreads its config over its defaults, so an option given as
+    // undefined replaces the default with undefined
+    return getWsProvider(rpcs.concat(), {
+      ...(middleware && { middleware }),
+      ...(onStatusChanged && { onStatusChanged }),
+      ...(timeout !== undefined && { timeout }),
+    })
 
   const candidates = rpcs.filter((rpc) => !isKnownMismatch(networkId, rpc))
   const endpoints = candidates.length ? candidates : rpcs.concat()
@@ -59,16 +70,18 @@ export const getVerifiedWsProvider = ({
     onStatusChanged?.({ type: WsEvent.CONNECTED, uri })
   }
 
+  const gate = chainIdentityGate({
+    networkId,
+    genesisHash,
+    getUri: () => connectingUri,
+    onMatch: announceConnected,
+    // the probe's clock starts before the socket opens
+    probeTimeoutMs: (timeout ?? DEFAULT_CONNECT_TIMEOUT_MS) + PROBE_ANSWER_MS,
+  })
+
   return getWsProvider(endpoints, {
-    ...timeoutConfig,
-    middleware: chainIdentityGate({
-      networkId,
-      genesisHash,
-      getUri: () => connectingUri,
-      onMatch: announceConnected,
-      // the probe's clock starts before the socket opens
-      probeTimeoutMs: (timeout ?? DEFAULT_CONNECT_TIMEOUT_MS) + PROBE_ANSWER_MS,
-    }),
+    ...(timeout !== undefined && { timeout }),
+    middleware: middleware ? (base) => middleware(gate(base)) : gate,
     onStatusChanged: (status) => {
       if (status.type === WsEvent.CONNECTING) {
         connectingUri = status.uri
