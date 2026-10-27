@@ -66,6 +66,68 @@ describe("net / fetchChaindata", () => {
     expect(result.networks).toHaveLength(3)
   })
 
+  it.each([
+    [404, "Not Found"],
+    [403, "Forbidden"],
+    [429, "Too Many Requests"],
+  ])(
+    "does not fall back to jsdelivr when the primary URL returns %i",
+    async (status, statusText) => {
+      mockFetch.mockResolvedValueOnce(errorResponse(status, statusText))
+
+      const { fetchChaindata } = await import("./net")
+
+      await expect(fetchChaindata()).rejects.toThrow(
+        `Failed to fetch from ${PRIMARY_URL}: ${status} ${statusText}`
+      )
+      expect(mockFetch).toHaveBeenCalledOnce()
+    }
+  )
+
+  it("falls back to jsdelivr CDN when the primary URL is unreachable", async () => {
+    mockFetch
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(okResponse(makeChaindata()))
+
+    const { fetchChaindata } = await import("./net")
+    const result = await fetchChaindata()
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(mockFetch).toHaveBeenNthCalledWith(2, FALLBACK_URL, { signal: undefined })
+    expect(result.networks).toHaveLength(3)
+  })
+
+  it("does not fall back to jsdelivr when the primary URL serves data that fails validation", async () => {
+    mockFetch.mockResolvedValueOnce(
+      okResponse(makeChaindata({ networks: [makeOrphanedNetwork()], tokens: [] }))
+    )
+
+    const { fetchChaindata } = await import("./net")
+
+    await expect(fetchChaindata()).rejects.toThrow(`Schema validation failed for ${PRIMARY_URL}`)
+    expect(mockFetch).toHaveBeenCalledOnce()
+  })
+
+  it("does not fall back to jsdelivr when the primary URL serves invalid JSON", async () => {
+    mockFetch.mockResolvedValueOnce(new Response("<html>", { status: 200 }))
+
+    const { fetchChaindata } = await import("./net")
+
+    await expect(fetchChaindata()).rejects.toThrow()
+    expect(mockFetch).toHaveBeenCalledOnce()
+  })
+
+  it("does not fall back to jsdelivr when the request is aborted", async () => {
+    mockFetch.mockRejectedValueOnce(
+      Object.assign(new Error("The operation was aborted"), { name: "AbortError" })
+    )
+
+    const { fetchChaindata } = await import("./net")
+
+    await expect(fetchChaindata()).rejects.toThrow("The operation was aborted")
+    expect(mockFetch).toHaveBeenCalledOnce()
+  })
+
   it("throws when both primary and fallback URLs return HTTP errors", async () => {
     mockFetch
       .mockResolvedValueOnce(errorResponse(500, "Internal Server Error"))
