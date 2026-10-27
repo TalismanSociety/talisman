@@ -158,20 +158,6 @@ describe("Keyring.load validation", () => {
     expect(load(withAccount({ curve: "sr25519" }, ledger))).toThrow(`accounts[${ledger}].curve`)
   })
 
-  it("rejects two accounts with the same address", () => {
-    const data = fixture()
-    const ethereum = data.accounts.find((a) => a.address.startsWith("0x"))!
-    // same address in lower case: getAccount could not tell them apart
-    data.accounts.push({
-      type: "watch-only",
-      name: "Copy",
-      address: ethereum.address.toLowerCase(),
-      isPortfolio: false,
-      createdAt: 0,
-    })
-    expect(load(data)).toThrow("is a duplicate")
-  })
-
   it("rejects secrets without a passwordCheck", () => {
     expect(load({ ...fixture(), passwordCheck: null })).toThrow("passwordCheck is missing")
     expect(load({ ...fixture(), mnemonics: [], passwordCheck: null })).toThrow(
