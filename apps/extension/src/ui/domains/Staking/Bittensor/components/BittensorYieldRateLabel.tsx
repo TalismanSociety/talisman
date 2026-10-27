@@ -14,7 +14,7 @@ export const useBittensorYieldRateText = (rateType: BittensorYieldRateType) => {
     },
     APY: {
       label: t("APY"),
-      description: t("Estimated Annual Percentage Yield (APY)"),
+      description: t("Last 30 days of validator rewards, annualized. Compounded."),
     },
   }
 
