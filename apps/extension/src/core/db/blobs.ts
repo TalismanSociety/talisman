@@ -1,4 +1,5 @@
 import { log } from "@common/log"
+
 import { deflateJson, inflateJson } from "./compression"
 import { db } from "./db"
 
@@ -22,7 +23,13 @@ export type DbBlobId =
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array<ArrayBuffer> }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
-  set: async (data: Data) => db.blobs.put({ id, data: await deflateJson(data) }),
+  set: async (data: Data) => {
+    try {
+      await db.blobs.put({ id, data: await deflateJson(data) })
+    } catch (err) {
+      log.error("Error saving blob data", { id, err })
+    }
+  },
   get: async () => {
     try {
       const blob = await db.blobs.get(id)

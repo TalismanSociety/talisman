@@ -30,12 +30,8 @@ const normalizeYieldxyzProviders = (items: YieldxyzProvider[]): YieldxyzProvider
 // persist to db when store is updated
 subjectYieldxyzProvidersStore$
   .pipe(debounceTime(500), map(normalizeYieldxyzProviders), pairwise())
-  .subscribe(async ([prev, items]) => {
-    try {
-      if (!isEqual(prev, items)) await blobStore.set(items)
-    } catch (error) {
-      log.error("[yield.xyz] Error saving yield providers:", error)
-    }
+  .subscribe(([prev, items]) => {
+    if (!isEqual(prev, items)) blobStore.set(items)
   })
 
 export const yieldxyzProvidersStore$ = subjectYieldxyzProvidersStore$.asObservable()
