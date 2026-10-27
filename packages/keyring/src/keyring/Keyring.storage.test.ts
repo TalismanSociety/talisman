@@ -100,6 +100,9 @@ describe("stored keyring compatibility", () => {
   })
 })
 
+const PHRASE =
+  "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
 describe("Keyring.load validation", () => {
   const withAccount = (patch: Record<string, unknown>, index = 0) => {
     const data = fixture() as unknown as { accounts: Record<string, unknown>[] }
@@ -181,5 +184,60 @@ describe("Keyring.load validation", () => {
     const before = structuredClone(data)
     Keyring.load(data)
     expect(data).toEqual(before)
+  })
+
+  it("loads a blob that carries its own password, which export re-keys to the local one", async () => {
+    const other = Keyring.create()
+    await other.initializePassword("other-password")
+    await other.addMnemonic({ name: "m", mnemonic: PHRASE, confirmed: true }, "other-password")
+
+    const imported = Keyring.load(JSON.parse(JSON.stringify(other.toJson())))
+    await expect(imported.export("local-password", "local-password")).rejects.toThrow(
+      "Invalid password"
+    )
+
+    const rekeyed = Keyring.load(await imported.export("other-password", "local-password"))
+    expect(await rekeyed.verifyPassword("local-password")).toBe(true)
+    expect(await rekeyed.verifyPassword("other-password")).toBe(false)
+  })
+})
+
+describe("Keyring.export", () => {
+  it("rejects a wrong password on a keyring with no secrets", async () => {
+    const keyring = Keyring.create()
+    await keyring.initializePassword("real-password")
+    keyring.addAccountExternal({
+      type: "watch-only",
+      name: "Watched",
+      address: "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
+      isPortfolio: true,
+    })
+
+    await expect(keyring.export("wrong-password", "new-password")).rejects.toThrow(
+      "Invalid password"
+    )
+    const exported = Keyring.load(await keyring.export("real-password", "new-password"))
+    expect(await exported.verifyPassword("new-password")).toBe(true)
+  })
+
+  it("rejects a wrong password before re-encrypting anything", async () => {
+    const keyring = Keyring.load(fixture())
+    await expect(keyring.export("wrong-password", "new-password")).rejects.toThrow(
+      "Invalid password"
+    )
+    expect(keyring.toJson()).toEqual(Keyring.load(fixture()).toJson())
+  })
+
+  it("sets the new password on a keyring that has none and no secrets", async () => {
+    // the extension sets the password lazily, so a Ledger-only wallet can have none
+    const keyring = Keyring.create()
+    const exported = Keyring.load(await keyring.export("any-password", "new-password"))
+    expect(await exported.verifyPassword("new-password")).toBe(true)
+  })
+
+  it("leaves the keyring unchanged", async () => {
+    const keyring = Keyring.load(fixture())
+    await keyring.export(FIXTURE_PASSWORD, "new-password")
+    expect(keyring.toJson()).toEqual(Keyring.load(fixture()).toJson())
   })
 })
