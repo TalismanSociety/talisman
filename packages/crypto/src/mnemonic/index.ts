@@ -26,14 +26,20 @@ const entropyToSeedSubstrate = async (entropy: Uint8Array, password?: string) =>
     32 // 32 bytes (32 * 8 == 256 bits)
   )
 
-const entropyToSeedClassic = async (entropy: Uint8Array, password?: string) =>
-  await pbkdf2(
-    "SHA-512",
-    encodeNormalized(entropyToMnemonic(entropy)),
-    mnemonicPasswordToSalt(password ?? ""),
-    2048, // 2048 iterations
-    64 // 64 bytes (64 * 8 == 512 bits)
-  )
+const entropyToSeedClassic = async (entropy: Uint8Array, password?: string) => {
+  const mnemonic = encodeNormalized(entropyToMnemonic(entropy))
+  try {
+    return await pbkdf2(
+      "SHA-512",
+      mnemonic,
+      mnemonicPasswordToSalt(password ?? ""),
+      2048, // 2048 iterations
+      64 // 64 bytes (64 * 8 == 512 bits)
+    )
+  } finally {
+    mnemonic.fill(0)
+  }
+}
 
 const mnemonicPasswordToSalt = (password: string) => encodeNormalized(`mnemonic${password}`)
 
