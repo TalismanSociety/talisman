@@ -1,5 +1,7 @@
 import { z } from "zod/v4"
 
+import { DecimalsSchema } from "../shared"
+
 export const NetworkBaseSchema = z.strictObject({
   id: z.string().nonempty(),
   isTestnet: z.boolean().optional(),
@@ -9,7 +11,7 @@ export const NetworkBaseSchema = z.strictObject({
   logo: z.string().nonempty().optional(),
   nativeTokenId: z.string().nonempty(),
   nativeCurrency: z.strictObject({
-    decimals: z.uint32(),
+    decimals: DecimalsSchema,
     symbol: z.string().nonempty(),
     name: z.string().nonempty(),
     coingeckoId: z.string().optional(),

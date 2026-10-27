@@ -746,6 +746,9 @@ importers:
 
   packages/chaindata-provider:
     dependencies:
+      '@scure/base':
+        specifier: 2.4.0
+        version: 2.4.0
       '@talismn/util':
         specifier: workspace:*
         version: link:../util
