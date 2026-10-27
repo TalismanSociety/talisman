@@ -1,3 +1,4 @@
+import { LruCache } from "../utils/lruCache"
 import {
   checksumEthereumAddress,
   decodeSs58Address,
@@ -5,13 +6,17 @@ import {
   encodeAddressSs58,
 } from "./encoding"
 
-const CACHE = new Map<string, string>()
+const CACHE = new LruCache<string>(4096, 128)
 
 // Normalize an address in a way that it can be compared to other addresses that have also been normalized
 export const normalizeAddress = (address: string) => {
   try {
-    if (!CACHE.has(address)) CACHE.set(address, normalizeAnyAddress(address))
-    return CACHE.get(address)!
+    let normalized = CACHE.get(address)
+    if (normalized === undefined) {
+      normalized = normalizeAnyAddress(address)
+      CACHE.set(address, normalized)
+    }
+    return normalized
   } catch (cause) {
     throw new Error(`Unable to normalize address: ${address}`, { cause })
   }
