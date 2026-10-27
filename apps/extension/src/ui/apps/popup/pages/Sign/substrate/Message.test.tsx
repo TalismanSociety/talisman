@@ -55,7 +55,7 @@ const siwsMessage = (domain: string) =>
     "Issued At: 2024-01-01T00:00:00.000Z",
   ].join("\n")
 
-const DOMAIN_WARNING = "This sign-in is for another website"
+const DOMAIN_WARNING = "Sign in domain is different from website domain."
 
 const renderMessage = (message: string) => {
   fx.data = stringToHex(message)
@@ -85,6 +85,6 @@ describe("PolkadotSignMessageRequest (sign-in domain)", () => {
   it("does not warn about a plain message", () => {
     const { container } = renderMessage("evil.com is not a sign-in")
 
-    expect(container.textContent).not.toContain("This sign-in is for another website")
+    expect(container.textContent).not.toContain("Sign in domain is different from website domain.")
   })
 })

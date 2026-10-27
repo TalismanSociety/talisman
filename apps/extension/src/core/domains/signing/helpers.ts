@@ -18,7 +18,7 @@ export const getSignInDomains = (text: string): string[] => {
   return [...new Set(domains)]
 }
 
-export const getHost = (url: string) => {
+const getHost = (url: string) => {
   try {
     return new URL(url).host
   } catch {
@@ -26,13 +26,12 @@ export const getHost = (url: string) => {
   }
 }
 
-export const getForeignSignInDomain = (text: string, url: string): string | undefined => {
+export const isSignInDomainMismatch = (text: string, url: string): boolean => {
+  const domains = getSignInDomains(text)
+  if (!domains.length) return false
   const host = getHost(url)
-  return getSignInDomains(text).find((domain) => domain !== host)
+  return domains.some((domain) => domain !== host)
 }
-
-export const isSignInDomainMismatch = (text: string, url: string): boolean =>
-  getForeignSignInDomain(text, url) !== undefined
 
 // the text the keyring signs: hex decoded and <Bytes> unwrapped
 export const decodeSubstrateRawMessage = (data: string): string => u8aToString(u8aUnwrapBytes(data))

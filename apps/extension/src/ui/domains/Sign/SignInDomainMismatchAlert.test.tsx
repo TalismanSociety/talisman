@@ -23,9 +23,7 @@ describe("SignInDomainMismatchAlert", () => {
   it("blocks signing a foreign domain until the risk is acknowledged", () => {
     render(<SignInScreen message={signIn("app.orbinum.network")} />)
 
-    expect(screen.getByText("This sign-in is for another website")).toBeDefined()
-    expect(screen.getByText("app.orbinum.network")).toBeDefined()
-    expect(screen.getByText("localhost:5600")).toBeDefined()
+    expect(screen.getByText("Sign in domain is different from website domain.")).toBeDefined()
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(true)
 
     fireEvent.click(screen.getByRole("checkbox"))
@@ -36,16 +34,9 @@ describe("SignInDomainMismatchAlert", () => {
   it("lets the risk be acknowledged when the sign-in names no domain", () => {
     render(<SignInScreen message={signIn("https://")} />)
 
-    expect(screen.getByText("No domain")).toBeDefined()
     fireEvent.click(screen.getByRole("checkbox"))
 
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(false)
-  })
-
-  it("reveals bidi and invisible characters in the declared domain", () => {
-    render(<SignInScreen message={signIn("evil\u202Elatot.com")} />)
-
-    expect(screen.getByText("evil\\u202Elatot.com")).toBeDefined()
   })
 
   it("shows nothing and blocks nothing for the requesting site or a plain message", () => {

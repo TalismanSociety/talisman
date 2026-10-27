@@ -51,7 +51,7 @@ vi.mock("@ui/domains/Sign/ViewDetails/ViewDetailsButton", () => ({ ViewDetailsBu
 
 vi.mock("@talismn/icons", () => ({
   UserRightIcon: () => null,
-  AlertTriangleIcon: () => null,
+  AlertCircleIcon: () => null,
   InfoIcon: () => null,
   LoaderIcon: () => null,
 }))
@@ -172,21 +172,21 @@ describe("EthSignBodyMessage personal_sign", () => {
 
     expect(container.textContent).toContain("Sign In")
     expect(container.textContent).toContain("evil.com")
-    expect(container.textContent).toContain("This sign-in is for another website")
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
   })
 
   it("treats a raw text SIWE message the same as its hex encoding", () => {
     const { container } = renderPersonalSign(siweMessage("evil.com"))
 
     expect(container.textContent).toContain("Sign In")
-    expect(container.textContent).toContain("This sign-in is for another website")
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
   })
 
   it("shows no domain warning when the sign-in domain matches the site", () => {
     const { container } = renderPersonalSign(stringToHex(siweMessage("example.com")))
 
     expect(container.textContent).toContain("Sign In")
-    expect(container.textContent).not.toContain("This sign-in is for another website")
+    expect(container.textContent).not.toContain("Sign in domain is different from website domain.")
   })
 
   it.each([
@@ -197,7 +197,7 @@ describe("EthSignBodyMessage personal_sign", () => {
 
     expect(container.textContent).not.toContain("Sign In")
     expect(screen.getByTestId("raw-message")).toBeDefined()
-    expect(container.textContent).toContain("This sign-in is for another website")
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
     expect(approveButton().disabled).toBe(true)
 
     fireEvent.click(screen.getByRole("checkbox"))
@@ -208,7 +208,7 @@ describe("EthSignBodyMessage personal_sign", () => {
   it("shows no domain warning and blocks nothing for a plain message", () => {
     const { container } = renderPersonalSign(stringToHex("evil.com is not a sign-in"))
 
-    expect(container.textContent).not.toContain("This sign-in is for another website")
+    expect(container.textContent).not.toContain("Sign in domain is different from website domain.")
     expect(approveButton().disabled).toBe(false)
   })
 
