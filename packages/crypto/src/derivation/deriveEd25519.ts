@@ -31,6 +31,7 @@ export const getPublicKeyEd25519 = (secretKey: Uint8Array) => {
   if (secretKey.length === 64) {
     const [privateComponent, publicComponent] = [secretKey.slice(0, 32), secretKey.slice(32)]
     const publicKey = ed25519.getPublicKey(privateComponent)
+    privateComponent.fill(0)
 
     // NOTE: We only accept a 64 byte secretKey when the first 32 bytes successfully produce a public key which equals the second 32 bytes of the secretKey.
     //
