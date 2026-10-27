@@ -75,17 +75,27 @@ const derivationCodec = /* @__PURE__ */ Tuple(str, Bytes(32), Bytes(32))
 const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode: Uint8Array) =>
   blake2b256(derivationCodec.enc([prefix, seed, chainCode]))
 
+/**
+ * Derives a secret key from `seed` along a hard-only path. Always returns a new buffer, never
+ * `seed` itself, so the caller can zero the seed and the key independently.
+ */
 export const deriveSubstrateSecretKey = (
   seed: Uint8Array,
   derivationPath: string,
   prefix: string
 ) => {
   const derivations = parseSubstrateDerivations(derivationPath)
-  const derive = createSubstrateDeriveFn(prefix)
+  if (derivations.some(([type]) => type === "soft"))
+    throw new Error("Soft derivations are not supported")
 
-  return derivations.reduce((seed, [type, chainCode]) => {
-    const code = createChainCode(chainCode)
-    if (type === "soft") throw new Error("Soft derivations are not supported")
-    return derive(seed, code)
-  }, seed)
+  // encode every junction before any key material exists, so a bad code throws first
+  const chainCodes = derivations.map(([_, code]) => createChainCode(code))
+  const derive = createSubstrateDeriveFn(prefix)
+  let secretKey = seed.slice()
+  for (const chainCode of chainCodes) {
+    const next = derive(secretKey, chainCode)
+    secretKey.fill(0)
+    secretKey = next
+  }
+  return secretKey
 }

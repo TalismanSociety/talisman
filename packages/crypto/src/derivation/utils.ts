@@ -50,9 +50,18 @@ export const addressFromMnemonic = async (
   curve: KeypairCurve
 ) => {
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = await entropyToSeed(entropy, curve)
-  const { address } = deriveKeypair(seed, derivationPath, curve)
-  return address
+  try {
+    const seed = await entropyToSeed(entropy, curve)
+    try {
+      const { address, secretKey } = deriveKeypair(seed, derivationPath, curve)
+      secretKey.fill(0)
+      return address
+    } finally {
+      seed.fill(0)
+    }
+  } finally {
+    entropy.fill(0)
+  }
 }
 
 export const removeHexPrefix = (secretKey: string) => {
@@ -76,6 +85,7 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => 
       if (bytes.length === 64) {
         const privateKey = bytes.slice(0, 32)
         const publicKey = bytes.slice(32, 64)
+        bytes.fill(0)
         const computedPublicKey = getPublicKeySolana(privateKey)
         if (!publicKey.every((b, i) => b === computedPublicKey[i]))
           throw new Error("Invalid Solana secret key: public key does not match")

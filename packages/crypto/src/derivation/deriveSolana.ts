@@ -23,23 +23,31 @@ const parseDerivationPath = (path: string): number[] => {
 }
 
 export const deriveSolana = (seed: Uint8Array, derivationPath: string): Keypair => {
+  const indexes = parseDerivationPath(derivationPath)
+
   // Generate master private key using SLIP-0010 (HMAC-SHA512 with "ed25519 seed")
   let I = hmac(sha512, new TextEncoder().encode("ed25519 seed"), seed)
   let secretKey = I.slice(0, 32)
   let chainCode = I.slice(32)
 
   // Iterate over the derivation path and apply hardened key derivation
-  for (const index of parseDerivationPath(derivationPath)) {
+  for (const index of indexes) {
     // HMAC-SHA512(Key = chainCode, Data = 0x00 || privateKey || index)
     const data = new Uint8Array(1 + secretKey.length + 4)
     data.set([0x00], 0)
     data.set(secretKey, 1)
     new DataView(data.buffer).setUint32(1 + secretKey.length, index, false)
 
+    I.fill(0)
     I = hmac(sha512, chainCode, data)
+    data.fill(0)
+    secretKey.fill(0)
+    chainCode.fill(0)
     secretKey = I.slice(0, 32)
     chainCode = I.slice(32)
   }
+  I.fill(0)
+  chainCode.fill(0)
 
   const publicKey = getPublicKeySolana(secretKey)
 
