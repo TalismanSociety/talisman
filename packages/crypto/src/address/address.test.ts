@@ -4,6 +4,7 @@ import { encodeAddressSolana, isOnCurveSolanaAddress } from "./encoding"
 import { detectAddressEncoding } from "./encoding/detectAddressEncoding"
 import { encodeAddressEthereum } from "./encoding/ethereum"
 import { encodeAddressSs58 } from "./encoding/ss58"
+import { normalizeAddress } from "./normalizeAddress"
 
 describe("address encoding", () => {
   it("Base58", () => {
@@ -149,5 +150,22 @@ describe("isOnCurveSolanaAddress", () => {
   it("rejects malformed addresses", () => {
     expect(isOnCurveSolanaAddress("not-an-address")).toBe(false)
     expect(isOnCurveSolanaAddress("")).toBe(false)
+  })
+})
+
+describe("address caches", () => {
+  it("returns the same result from the cache", () => {
+    const ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    const KUSAMA = "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"
+    for (let i = 0; i < 2; i++) {
+      expect(detectAddressEncoding(KUSAMA)).toBe("ss58")
+      expect(normalizeAddress(KUSAMA)).toBe(ADDRESS)
+    }
+  })
+
+  it("throws for an unknown encoding on every call", () => {
+    expect(() => detectAddressEncoding("not an address")).toThrow("Unknown address encoding")
+    expect(() => detectAddressEncoding("not an address")).toThrow("Unknown address encoding")
+    expect(() => normalizeAddress("not an address")).toThrow("Unable to normalize address")
   })
 })
