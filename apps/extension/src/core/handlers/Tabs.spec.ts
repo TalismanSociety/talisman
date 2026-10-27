@@ -129,4 +129,29 @@ describe("Tabs bytes.sign (sign-in domain)", () => {
     })
     expect(requestSubstrateSign).toHaveBeenCalledOnce()
   })
+
+  describe("through extrinsic.sign with a raw payload", () => {
+    const signRawAsExtrinsic = (message: string) =>
+      new Tabs(tabStores).handle(
+        "1",
+        "pub(extrinsic.sign)",
+        { address: ADDRESS, data: stringToHex(message), type: "bytes" } as never,
+        contentPort(),
+        SITE_URL
+      )
+
+    it("refuses a sign-in for another domain without creating a sign request", async () => {
+      await expect(signRawAsExtrinsic(siwsMessage("evil.com"))).rejects.toThrow(
+        "The domain in the sign-in message does not match the requesting site"
+      )
+      expect(requestSubstrateSign).not.toHaveBeenCalled()
+    })
+
+    it("lets a sign-in for the requesting site reach the sign request", async () => {
+      await expect(signRawAsExtrinsic(siwsMessage("app.example.com"))).resolves.toMatchObject({
+        signature: "0xsignature",
+      })
+      expect(requestSubstrateSign).toHaveBeenCalledOnce()
+    })
+  })
 })

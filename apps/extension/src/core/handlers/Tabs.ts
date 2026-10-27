@@ -51,6 +51,7 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
+import { isRawPayload } from "../util/isJsonPayload"
 import { urlToDomain } from "../util/urlToDomain"
 import type { TabStore } from "./stores"
 import { genericAsyncSubscription } from "./subscriptions"
@@ -165,13 +166,16 @@ export default class Tabs extends TabsHandler {
 
   private async extrinsicSign(
     url: string,
-    request: SignerPayloadJSON,
+    request: SignerPayloadJSON | SignerPayloadRaw,
     port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
 
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
+
+    // the popup signs a payload without a genesis hash as raw bytes, same as bytes.sign
+    if (isRawPayload(request)) await this.#assertSignInDomainAllowed(url, request)
 
     return requestSubstrateSign(url, { payload: request }, account, port)
   }
