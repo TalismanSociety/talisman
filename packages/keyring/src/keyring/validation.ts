@@ -1,4 +1,4 @@
-import { type KeypairCurve, normalizeAddress } from "@talismn/crypto"
+import type { KeypairCurve } from "@talismn/crypto"
 
 import type { AccountType, LedgerPolkadotCurve } from "../types"
 import type { AddAccountExternalOptions } from "../types/keyring"
@@ -96,8 +96,9 @@ export function assertKeyringStorage(data: unknown): asserts data is StoredKeyri
     mnemonicIds.add(mnemonic.id)
   }
 
-  // same comparison as Keyring.getAccount: addresses that cannot be normalised never match
-  const addresses = new Set<string>()
+  // Two accounts with the same address are not rejected: every method that adds an account
+  // refuses a duplicate, but each compared addresses with the normaliser of its own version, and
+  // a record that version accepted must keep loading under a later normaliser.
   let hasSecrets = data.mnemonics.length > 0
   for (const [i, account] of (data.accounts as unknown[]).entries()) {
     const at = `accounts[${i}]`
@@ -122,17 +123,6 @@ export function assertKeyringStorage(data: unknown): asserts data is StoredKeyri
       !LEDGER_POLKADOT_CURVES.includes(account.curve as LedgerPolkadotCurve)
     )
       fail(`${at}.curve`)
-
-    let normalised: string | null = null
-    try {
-      normalised = normalizeAddress(account.address)
-    } catch {
-      // not comparable, see above
-    }
-    if (normalised !== null) {
-      if (addresses.has(normalised)) fail(`${at}.address is a duplicate`)
-      addresses.add(normalised)
-    }
   }
 
   // every method that stores a secret sets passwordCheck first
