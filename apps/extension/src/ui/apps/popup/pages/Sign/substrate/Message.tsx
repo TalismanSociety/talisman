@@ -84,9 +84,7 @@ export const PolkadotSignMessageRequest = () => {
         )}
       </PopupContent>
       <PopupFooter>
-        {siws === null && (
-          <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mb-6" />
-        )}
+        <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mb-6" />
         <FooterContent />
       </PopupFooter>
     </PopupLayout>

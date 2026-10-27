@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { stringToHex } from "viem"
 import { describe, expect, it, vi } from "vitest"
@@ -29,7 +29,10 @@ vi.mock("@ui/domains/Sign/SignRequestContext", async () => {
 
 vi.mock("@ui/apps/popup/Layout/PopupLayout", () => {
   const Slot = ({ children }: { children?: ReactNode }) => <div>{children}</div>
-  return { PopupLayout: Slot, PopupHeader: Slot, PopupContent: Slot, PopupFooter: Slot }
+  const Footer = ({ children }: { children?: ReactNode }) => (
+    <div data-testid="footer">{children}</div>
+  )
+  return { PopupLayout: Slot, PopupHeader: Slot, PopupContent: Slot, PopupFooter: Footer }
 })
 vi.mock("@ui/components/AppPill", () => ({ AppPill: () => null }))
 vi.mock("@ui/domains/Account/AccountPill", () => ({ AccountPill: () => null }))
@@ -52,24 +55,31 @@ const siwsMessage = (domain: string) =>
     "Issued At: 2024-01-01T00:00:00.000Z",
   ].join("\n")
 
+const DOMAIN_WARNING = "Sign in domain is different from website domain."
+
 const renderMessage = (message: string) => {
   fx.data = stringToHex(message)
   return render(<PolkadotSignMessageRequest />)
 }
 
+const expectWarningInFooterOnly = () => {
+  expect(screen.getAllByText(DOMAIN_WARNING)).toHaveLength(1)
+  expect(within(screen.getByTestId("footer")).getByText(DOMAIN_WARNING)).toBeDefined()
+}
+
 describe("PolkadotSignMessageRequest (sign-in domain)", () => {
-  it("warns in the plain view about a sign-in for another domain the parser rejects", () => {
-    const { container } = renderMessage(`${siwsMessage("evil.com")}\n`.replace("1.0.0", "1"))
+  it("warns in the footer of the plain view about a sign-in for another domain the parser rejects", () => {
+    renderMessage(`${siwsMessage("evil.com")}\n`.replace("1.0.0", "1"))
 
     expect(screen.getByTestId("raw-message")).toBeDefined()
-    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expectWarningInFooterOnly()
   })
 
-  it("warns on the sign-in screen about a sign-in for another domain", () => {
+  it("warns in the footer of the sign-in screen about a sign-in for another domain", () => {
     const { container } = renderMessage(siwsMessage("evil.com"))
 
     expect(container.textContent).toContain("Sign In")
-    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expectWarningInFooterOnly()
   })
 
   it("does not warn about a plain message", () => {
