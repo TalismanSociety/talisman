@@ -28,6 +28,7 @@ import type {
 import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
 import type { AccountStorage, MnemonicStorage } from "./types"
 import { isHexString } from "./utils"
+import { assertKeyringStorage } from "./validation"
 
 export type KeyringStorage = {
   passwordCheck: string | null // well-known data encrypted using the password, used to ensure all secrets of the keyring are encrypted with the same password
@@ -50,16 +51,30 @@ export class Keyring {
     })
   }
 
+  /**
+   * Builds a keyring from stored data. Throws if the data is malformed. The data passed in is
+   * left unchanged.
+   *
+   * The loaded keyring trusts the blob's passwordCheck: whoever wrote the blob chose its password.
+   * To import a blob from elsewhere (a backup, another device), call
+   * `export(blobPassword, localPassword)` on it and store the result, which verifies the blob's
+   * password and re-encrypts every secret under the local one.
+   */
   public static load(data: KeyringStorage): Keyring {
-    if (!data.accounts || !data.mnemonics) throw new Error("Invalid data")
+    if (typeof data !== "object" || data === null) throw new Error("Invalid data")
+    const copy = structuredClone(data)
+    copy.passwordCheck ??= null
 
     // automatic upgrade : set default values for newly introduced properties
-    for (const account of data.accounts) {
-      // @ts-expect-error
-      if (account.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
-    }
+    if (Array.isArray(copy.accounts))
+      for (const account of copy.accounts) {
+        // @ts-expect-error
+        if (account?.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
+      }
 
-    return new Keyring(data)
+    assertKeyringStorage(copy)
+
+    return new Keyring(copy)
   }
 
   private async checkPassword(password: string, reset = false) {
