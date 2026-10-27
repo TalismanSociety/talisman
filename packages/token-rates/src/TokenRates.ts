@@ -134,10 +134,14 @@ export async function fetchTokenRates(
           ? tokenUsdRate / taoUsdRate
           : null
 
+      // the 24h changes are percents: the token's change against TAO is its USD price
+      // ratio now over 24h ago, divided by TAO's
       const tokenUsdChange24h = rates?.[effectiveUsdIndex]?.[2]
       const tokenTaoChange24h =
-        typeof taoUsdChange24h === "number" && typeof tokenUsdChange24h === "number"
-          ? (1 + tokenUsdChange24h) / (1 + taoUsdChange24h) - 1
+        typeof taoUsdChange24h === "number" &&
+        typeof tokenUsdChange24h === "number" &&
+        taoUsdChange24h > -100
+          ? ((1 + tokenUsdChange24h / 100) / (1 + taoUsdChange24h / 100) - 1) * 100
           : null
 
       // insert at the correct location (based on the index of `tao` in `currencyIds`)
