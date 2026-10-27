@@ -1,7 +1,9 @@
 import { type KeypairCurve, normalizeAddress } from "@talismn/crypto"
 
 import type { AccountType, LedgerPolkadotCurve } from "../types"
+import type { AddAccountExternalOptions } from "../types/keyring"
 import type { AccountStorage, MnemonicStorage } from "./types"
+import { isHexString } from "./utils"
 
 type StoredKeyring = {
   passwordCheck: string | null
@@ -19,6 +21,10 @@ const ACCOUNT_TYPES: readonly AccountType[] = [
   "polkadot-vault",
   "signet",
 ]
+
+const EXTERNAL_ACCOUNT_TYPES: readonly AccountType[] = ACCOUNT_TYPES.filter(
+  (type) => type !== "keypair"
+)
 
 const KEYPAIR_CURVES: readonly KeypairCurve[] = [
   "ecdsa",
@@ -51,6 +57,8 @@ const isString = (value: unknown): value is string => typeof value === "string"
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0
 const isBoolean = (value: unknown): value is boolean => typeof value === "boolean"
+const isIndex = (value: unknown): value is number =>
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0
 const isStringOrNull = (value: unknown): value is string | null =>
   value === null || typeof value === "string"
 
@@ -129,4 +137,53 @@ export function assertKeyringStorage(data: unknown): asserts data is StoredKeyri
 
   // every method that stores a secret sets passwordCheck first
   if (hasSecrets && data.passwordCheck === null) fail("passwordCheck is missing")
+}
+
+/**
+ * Checks the options of Keyring.addAccountExternal. Fields of the account's type are checked when
+ * present, fields that belong to keypair accounts are rejected, and other fields are kept.
+ */
+export function assertAddAccountExternalOptions(
+  options: unknown
+): asserts options is AddAccountExternalOptions {
+  if (!isRecord(options)) throw new Error("options are required")
+  if (!EXTERNAL_ACCOUNT_TYPES.includes(options.type as AccountType))
+    throw new Error("Invalid account type")
+  if (!isNonEmptyString(options.address)) throw new Error("address is required")
+  if (!isString(options.name)) throw new Error("name is required")
+  for (const field of KEYPAIR_ONLY_FIELDS)
+    if (options[field] !== undefined)
+      throw new Error(`${field} is not allowed on a ${options.type} account`)
+
+  const check = (field: string, valid: (value: unknown) => boolean) => {
+    if (options[field] !== undefined && !valid(options[field]))
+      throw new Error(`Invalid ${field} for a ${options.type} account`)
+  }
+
+  switch (options.type) {
+    case "contact":
+      check("genesisHash", isHexString)
+      break
+    case "watch-only":
+      check("isPortfolio", isBoolean)
+      break
+    case "ledger-polkadot":
+      check("curve", (value) => LEDGER_POLKADOT_CURVES.includes(value as LedgerPolkadotCurve))
+      check("app", isString)
+      check("accountIndex", isIndex)
+      check("addressOffset", isIndex)
+      check("genesisHash", isStringOrNull)
+      break
+    case "ledger-ethereum":
+    case "ledger-solana":
+      check("derivationPath", isString)
+      break
+    case "polkadot-vault":
+      check("genesisHash", isStringOrNull)
+      break
+    case "signet":
+      check("genesisHash", isString)
+      check("url", isString)
+      break
+  }
 }
