@@ -33,6 +33,21 @@ describe("SignInDomainMismatchAlert", () => {
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(false)
   })
 
+  it("lets the risk be acknowledged when the sign-in names no domain", () => {
+    render(<SignInScreen message={signIn("https://")} />)
+
+    expect(screen.getByText("No domain")).toBeDefined()
+    fireEvent.click(screen.getByRole("checkbox"))
+
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(false)
+  })
+
+  it("reveals bidi and invisible characters in the declared domain", () => {
+    render(<SignInScreen message={signIn("evil\u202Elatot.com")} />)
+
+    expect(screen.getByText("evil\\u202Elatot.com")).toBeDefined()
+  })
+
   it("shows nothing and blocks nothing for the requesting site or a plain message", () => {
     const { rerender } = render(<SignInScreen message={signIn("localhost:5600")} />)
     expect(screen.queryByRole("checkbox")).toBeNull()

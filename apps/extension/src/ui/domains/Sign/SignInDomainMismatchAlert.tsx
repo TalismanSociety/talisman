@@ -6,6 +6,11 @@ import { useTranslation } from "react-i18next"
 
 import type { SignInDomainMismatch } from "./hooks/useSignInDomainMismatch"
 
+const INVISIBLE_OR_BIDI = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g
+
+const revealHiddenCharacters = (domain: string) =>
+  domain.replace(INVISIBLE_OR_BIDI, (char) => `\\u${char.charCodeAt(0).toString(16).toUpperCase()}`)
+
 const DomainRow: FC<{ label: string; domain: string; isForeign?: boolean }> = ({
   label,
   domain,
@@ -13,11 +18,8 @@ const DomainRow: FC<{ label: string; domain: string; isForeign?: boolean }> = ({
 }) => (
   <>
     <dt className="text-body-secondary">{label}</dt>
-    <dd
-      className={cn("truncate font-bold", isForeign ? "text-alert-warn" : "text-body")}
-      title={domain}
-    >
-      {domain}
+    <dd className={cn("break-all font-bold", isForeign ? "text-alert-warn" : "text-body")}>
+      {revealHiddenCharacters(domain)}
     </dd>
   </>
 )
@@ -25,10 +27,13 @@ const DomainRow: FC<{ label: string; domain: string; isForeign?: boolean }> = ({
 export const SignInDomainMismatchAlert: FC<{
   mismatch: SignInDomainMismatch
   className?: string
-}> = ({ mismatch: { signInDomain, siteHost, isAcknowledged, setIsAcknowledged }, className }) => {
+}> = ({
+  mismatch: { isMismatch, signInDomain, siteHost, isAcknowledged, setIsAcknowledged },
+  className,
+}) => {
   const { t } = useTranslation()
 
-  if (!signInDomain) return null
+  if (!isMismatch) return null
 
   return (
     <div className={cn("w-full rounded-sm bg-alert-warn/10 text-left text-xs", className)}>
@@ -39,7 +44,11 @@ export const SignInDomainMismatchAlert: FC<{
             {t("This sign-in is for another website")}
           </div>
           <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-6 gap-y-1">
-            <DomainRow label={t("Signs you in to")} domain={signInDomain} isForeign />
+            <DomainRow
+              label={t("Signs you in to")}
+              domain={signInDomain || t("No domain")}
+              isForeign
+            />
             {siteHost && <DomainRow label={t("Requested by")} domain={siteHost} />}
           </dl>
         </div>
