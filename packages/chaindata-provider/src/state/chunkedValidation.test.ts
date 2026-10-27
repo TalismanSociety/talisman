@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest"
 import {
   makeChaindata,
   makeCustomChaindata,
+  makeDotNetwork,
+  makeEthNetwork,
   makeEvmNativeToken,
   makeInvalidDotNetwork,
   makeInvalidToken,
@@ -37,6 +39,15 @@ describe("parseChaindataFileChunked", () => {
     [
       "invalid network",
       makeChaindata({ networks: [...makeChaindata().networks, makeInvalidDotNetwork() as never] }),
+    ],
+    [
+      "cleartext rpcs",
+      makeChaindata({
+        networks: [
+          makeDotNetwork({ rpcs: ["ws://example.com", "wss://rpc.polkadot.io"] }),
+          makeEthNetwork({ rpcs: ["http://example.com"] }),
+        ],
+      }),
     ],
     ["legacy persisted data with extra props", makeLegacyPersistedData()],
     ["unknown token type", makeUnknownTokenTypeData()],
