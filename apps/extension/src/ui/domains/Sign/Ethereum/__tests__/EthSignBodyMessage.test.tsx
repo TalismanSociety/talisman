@@ -1,5 +1,5 @@
 import type { EthSignRequest } from "@core/domains/signing/types"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
 
@@ -12,7 +12,7 @@ const fx = vi.hoisted(() => ({
   },
   nativeToken: { id: "1-evm-native", symbol: "ETH", decimals: 18 },
   erc20Token: { id: "1-evm-erc20-usdc", symbol: "USDC", decimals: 6 },
-  isSignInDomainMismatch: false,
+  request: undefined as EthSignRequest | undefined,
 }))
 
 vi.mock("@ui/state/chaindata", async (importOriginal) => ({
@@ -55,24 +55,27 @@ vi.mock("@talismn/icons", () => ({
   LoaderIcon: () => null,
 }))
 
-vi.mock("@ui/domains/Sign/SignRequestContext", () => ({
-  useEthSignMessageRequest: () => ({
-    signInDomainMismatch: {
-      isMismatch: fx.isSignInDomainMismatch,
-      isAcknowledged: false,
-      setIsAcknowledged: () => {},
-      isBlocking: fx.isSignInDomainMismatch,
-    },
-  }),
+vi.mock("@ui/state/requests", () => ({ useRequest: () => fx.request }))
+
+vi.mock("@ui/domains/Sign/SignRequestContext/useAnySigningRequest", () => ({
+  useAnySigningRequest: () => ({}),
 }))
+
+vi.mock("@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis", () => ({
+  useEvmMessageRiskAnalysis: () => ({ review: {} }),
+}))
+
+vi.mock("@ui/hooks/useOriginFromUrl", () => ({ useOriginFromUrl: () => undefined }))
 
 vi.mock("@ui/components/Drawer", () => ({
   Drawer: ({ isOpen, children }: { isOpen?: boolean; children?: ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
 }))
 
-import { parseSiweMessage } from "@core/domains/ethereum/siwe"
-import { isSignInDomainMismatch } from "@core/domains/signing/helpers"
+import {
+  EthSignMessageRequestProvider,
+  useEthSignMessageRequest,
+} from "@ui/domains/Sign/SignRequestContext"
 import { stringToHex } from "viem"
 import { EthSignBodyMessage } from "../EthSignBodyMessage"
 
@@ -112,21 +115,32 @@ const MAX_UINT48 = (2n ** 48n - 1n).toString()
 const MAX_UINT160 = (2n ** 160n - 1n).toString()
 const IN_ONE_HOUR = Math.floor(Date.now() / 1000) + 3600
 
-const renderMessage = (typedData: unknown) =>
-  render(
-    <EthSignBodyMessage
-      account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}
-      request={
-        {
-          method: "eth_signTypedData_v4",
-          request: JSON.stringify(typedData),
-          ethChainId: 1,
-        } as unknown as EthSignRequest
-      }
-    />
-  )
-
 const SITE_URL = "https://example.com/login"
+
+const ApproveButton = () => {
+  const { isValid } = useEthSignMessageRequest()
+  return (
+    <button type="button" disabled={!isValid}>
+      Approve
+    </button>
+  )
+}
+
+const renderRequest = (request: Partial<EthSignRequest>) => {
+  fx.request = { url: SITE_URL, ethChainId: 1, ...request } as EthSignRequest
+  return render(
+    <EthSignMessageRequestProvider id={"eth-sign.1" as never}>
+      <EthSignBodyMessage
+        account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}
+        request={fx.request}
+      />
+      <ApproveButton />
+    </EthSignMessageRequestProvider>
+  )
+}
+
+const renderMessage = (typedData: unknown) =>
+  renderRequest({ method: "eth_signTypedData_v4", request: JSON.stringify(typedData) })
 
 const siweMessage = (domain: string) =>
   [
@@ -142,22 +156,10 @@ const siweMessage = (domain: string) =>
     "Issued At: 2021-09-30T16:25:24.000Z",
   ].join("\n")
 
-const renderPersonalSign = (message: string) => {
-  const request = {
-    method: "personal_sign",
-    request: message,
-    url: SITE_URL,
-    ethChainId: 1,
-  } as unknown as EthSignRequest
-  const siweDomain = parseSiweMessage(request.request)?.domain
-  fx.isSignInDomainMismatch = !!siweDomain && isSignInDomainMismatch(siweDomain, SITE_URL)
-  return render(
-    <EthSignBodyMessage
-      account={{ address: SIGNER } as Parameters<typeof EthSignBodyMessage>[0]["account"]}
-      request={request}
-    />
-  )
-}
+const renderPersonalSign = (message: string) =>
+  renderRequest({ method: "personal_sign", request: message })
+
+const approveButton = () => screen.getByRole<HTMLButtonElement>("button", { name: "Approve" })
 
 describe("EthSignBodyMessage personal_sign", () => {
   it("shows the sign-in screen and the domain warning for a hex SIWE message", () => {
@@ -180,6 +182,29 @@ describe("EthSignBodyMessage personal_sign", () => {
 
     expect(container.textContent).toContain("Sign In")
     expect(container.textContent).not.toContain("Sign in domain is different")
+  })
+
+  it.each([
+    ["a trailing newline", `${siweMessage("evil.com")}\n`],
+    ["a unicode statement", siweMessage("evil.com").replace("Sign in.", "Connexion ✓")],
+  ])("warns about a SIWE message with %s that only the plain view can render", (_, message) => {
+    const { container } = renderPersonalSign(stringToHex(message))
+
+    expect(container.textContent).not.toContain("Sign In")
+    expect(screen.getByTestId("raw-message")).toBeDefined()
+    expect(container.textContent).toContain("Sign in domain is different from website domain.")
+    expect(approveButton().disabled).toBe(true)
+
+    fireEvent.click(screen.getByRole("checkbox"))
+
+    expect(approveButton().disabled).toBe(false)
+  })
+
+  it("shows no domain warning and blocks nothing for a plain message", () => {
+    const { container } = renderPersonalSign(stringToHex("evil.com is not a sign-in"))
+
+    expect(container.textContent).not.toContain("Sign in domain is different")
+    expect(approveButton().disabled).toBe(false)
   })
 
   it("never shows the sign-in screen for an odd-length hex payload", () => {

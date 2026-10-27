@@ -11,6 +11,7 @@ import {
 import { AppPill } from "@ui/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
+import { SignInDomainMismatchAlert } from "@ui/domains/Sign/SignInDomainMismatchAlert"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useEffect, useMemo } from "react"
@@ -31,6 +32,7 @@ export const PolkadotSignMessageRequest = () => {
     account,
     chain,
     siws,
+    signInDomainMismatch,
   } = usePolkadotSigningRequest()
 
   const errorMessage = useMemo(
@@ -77,6 +79,7 @@ export const PolkadotSignMessageRequest = () => {
               </h2>
               <Message className="w-full grow" text={messageText} />
             </div>
+            <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mt-8" />
             {errorMessage && <div className="error">{errorMessage}</div>}
           </>
         )}

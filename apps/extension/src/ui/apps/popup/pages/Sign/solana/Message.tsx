@@ -1,7 +1,6 @@
 import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { isAccountOfType } from "@core/domains/keyring/exports"
 import type { SolSigningRequest } from "@core/domains/signing/types"
-import { parseSignInMessage } from "@solana/wallet-standard-util"
 import { base58 } from "@talismn/crypto"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
@@ -67,10 +66,7 @@ export const SolSignMessageRequest: FC<{
     [account, messageBytes]
   )
 
-  const signInDomainMismatch = useSignInDomainMismatch(
-    useMemo(() => parseSignInMessage(messageBytes)?.domain, [messageBytes]),
-    url
-  )
+  const signInDomainMismatch = useSignInDomainMismatch(decodedMessage, url)
 
   const handleReject = () => rejectSolanaRequest(id)
 

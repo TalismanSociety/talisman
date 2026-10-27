@@ -290,6 +290,17 @@ describe("signMessage (sign-in domain)", () => {
     expect(requestEthSign).not.toHaveBeenCalled()
   })
 
+  it.each([
+    ["a trailing newline", `${siweMessage("evil.com")}\n`],
+    ["a unicode statement", siweMessage("evil.com").replace("Sign in.", "Connexion ✓")],
+    ["a scheme prefix", siweMessage("https://Evil.com")],
+  ])("refuses a sign-in for another domain with %s", async (_, message) => {
+    await expect(personalSign(message)).rejects.toMatchObject({
+      code: ETH_ERROR_EIP1474_INVALID_INPUT,
+    })
+    expect(requestEthSign).not.toHaveBeenCalled()
+  })
+
   it("lets a sign-in for another domain reach the sign request in Developer Mode", async () => {
     await settingsStore.set({ developerMode: true })
     await expect(personalSign(siweMessage("evil.com"))).resolves.toBe("0xsignature")

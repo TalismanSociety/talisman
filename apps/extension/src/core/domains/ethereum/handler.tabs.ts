@@ -66,9 +66,8 @@ import {
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
-import { assertPersonalSignMessageDecodable } from "./personalSignMessage"
+import { decodePersonalSignMessageOrThrow } from "./personalSignMessage"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { parseSiweMessage } from "./siwe"
 import { assertTypedDataTargetsChain } from "./typedData"
 import type {
   AnyEthRequest,
@@ -539,8 +538,8 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.getSiteDetails(url, from)
 
     if (method === "personal_sign") {
-      assertPersonalSignMessageDecodable(message)
-      if (await isSignInDomainRefused(parseSiweMessage(message)?.domain, url))
+      const text = decodePersonalSignMessageOrThrow(message)
+      if (await isSignInDomainRefused(text, url))
         throw new EthProviderRpcError(
           SIGN_IN_DOMAIN_MISMATCH_ERROR,
           ETH_ERROR_EIP1474_INVALID_INPUT

@@ -4,8 +4,11 @@ import { describe, expect, it } from "vitest"
 import { useSignInDomainMismatch } from "./hooks/useSignInDomainMismatch"
 import { SignInDomainMismatchAlert } from "./SignInDomainMismatchAlert"
 
-const SignInScreen = ({ signInDomain }: { signInDomain: string | undefined }) => {
-  const mismatch = useSignInDomainMismatch(signInDomain, "http://localhost:5600/vault")
+const signIn = (domain: string) =>
+  `${domain} wants you to sign in with your Solana account:\n7S3P4HxJpyyigGzodYwHtCxZyUQe9JiBMHyRWXArAaKv`
+
+const SignInScreen = ({ message }: { message: string }) => {
+  const mismatch = useSignInDomainMismatch(message, "http://localhost:5600/vault")
   return (
     <>
       <SignInDomainMismatchAlert mismatch={mismatch} />
@@ -18,7 +21,7 @@ const SignInScreen = ({ signInDomain }: { signInDomain: string | undefined }) =>
 
 describe("SignInDomainMismatchAlert", () => {
   it("blocks signing a foreign domain until the risk is acknowledged", () => {
-    render(<SignInScreen signInDomain="app.orbinum.network" />)
+    render(<SignInScreen message={signIn("app.orbinum.network")} />)
 
     expect(screen.getByText("Sign in domain is different from website domain.")).toBeDefined()
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(true)
@@ -29,11 +32,11 @@ describe("SignInDomainMismatchAlert", () => {
   })
 
   it("shows nothing and blocks nothing for the requesting site or a plain message", () => {
-    const { rerender } = render(<SignInScreen signInDomain="localhost:5600" />)
+    const { rerender } = render(<SignInScreen message={signIn("localhost:5600")} />)
     expect(screen.queryByRole("checkbox")).toBeNull()
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(false)
 
-    rerender(<SignInScreen signInDomain={undefined} />)
+    rerender(<SignInScreen message="app.orbinum.network is not a sign-in" />)
     expect(screen.queryByRole("checkbox")).toBeNull()
     expect(screen.getByRole<HTMLButtonElement>("button", { name: "Sign" }).disabled).toBe(false)
   })

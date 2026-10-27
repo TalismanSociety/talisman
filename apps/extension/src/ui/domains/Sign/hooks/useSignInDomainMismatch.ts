@@ -2,13 +2,12 @@ import { isSignInDomainMismatch } from "@core/domains/signing/helpers"
 import { useMemo, useState } from "react"
 
 export const useSignInDomainMismatch = (
-  signInDomain: string | undefined,
+  messageText: string | null | undefined,
   url: string | undefined
 ) => {
   const isMismatch = useMemo(
-    () =>
-      signInDomain !== undefined && url !== undefined && isSignInDomainMismatch(signInDomain, url),
-    [signInDomain, url]
+    () => !!messageText && !!url && isSignInDomainMismatch(messageText, url),
+    [messageText, url]
   )
   const [isAcknowledged, setIsAcknowledged] = useState(false)
 

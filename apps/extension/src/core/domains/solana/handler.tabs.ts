@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import { parseSignInMessage } from "@solana/wallet-standard-util"
 import { base58, isSolanaAddress } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
 import {
@@ -160,7 +159,7 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
   if (isCompiledTransactionMessage(messageBytes))
     throw new Error("Refusing to sign a message that encodes a transaction")
 
-  if (await isSignInDomainRefused(parseSignInMessage(messageBytes)?.domain, url))
+  if (await isSignInDomainRefused(new TextDecoder().decode(messageBytes), url))
     throw new Error(SIGN_IN_DOMAIN_MISMATCH_ERROR)
 
   const request: SolSignRequest = {

@@ -1,5 +1,8 @@
 import { log } from "@common/log"
-import { parseSubstrateSignInMessage } from "@core/domains/signing/helpers"
+import {
+  decodeSubstrateRawMessage,
+  parseSubstrateSignInMessage,
+} from "@core/domains/signing/helpers"
 import type { SubstrateSigningRequest } from "@core/domains/signing/types"
 import type { Address } from "@core/types/base"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@core/types/pjsInterop"
@@ -92,11 +95,15 @@ const usePolkadotSigningRequestProvider = ({
     [modifiedPayload, signingRequest.request.payload]
   )
 
-  const siws = useMemo(
-    () => (isJsonPayload(payload) ? null : parseSubstrateSignInMessage(payload.data)),
+  const rawMessageText = useMemo(
+    () => (isJsonPayload(payload) ? null : decodeSubstrateRawMessage(payload.data)),
     [payload]
   )
-  const signInDomainMismatch = useSignInDomainMismatch(siws?.domain, signingRequest.url)
+  const siws = useMemo(
+    () => (rawMessageText === null ? null : parseSubstrateSignInMessage(rawMessageText)),
+    [rawMessageText]
+  )
+  const signInDomainMismatch = useSignInDomainMismatch(rawMessageText, signingRequest.url)
 
   const [decodedCall, errorDecodingExtrinsic] = useMemo<
     [DecodedCall<unknown> | null, unknown]

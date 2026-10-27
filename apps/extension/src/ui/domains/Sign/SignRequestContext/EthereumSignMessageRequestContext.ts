@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { parseSiweMessage } from "@core/domains/ethereum/siwe"
+import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
@@ -72,12 +72,11 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     [baseRequest, riskAnalysis, t]
   )
 
-  const siweDomain = useMemo(
-    () =>
-      request?.method === "personal_sign" ? parseSiweMessage(request.request)?.domain : undefined,
+  const personalSignText = useMemo(
+    () => (request?.method === "personal_sign" ? decodePersonalSignMessage(request.request) : null),
     [request]
   )
-  const signInDomainMismatch = useSignInDomainMismatch(siweDomain, request?.url)
+  const signInDomainMismatch = useSignInDomainMismatch(personalSignText, request?.url)
 
   const isValid = useMemo(() => {
     if (!request) return false

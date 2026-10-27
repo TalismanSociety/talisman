@@ -9,6 +9,7 @@ import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { decodeEvmTypedData } from "@ui/domains/Ethereum/util/decodeEvmTypedData"
 import { Message } from "@ui/domains/Sign/Message"
+import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -16,6 +17,7 @@ import { dump as convertToYaml } from "js-yaml"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SignAlertMessage } from "../SignAlertMessage"
+import { SignInDomainMismatchAlert } from "../SignInDomainMismatchAlert"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageOrder } from "./EthSignBodyMessageOrder"
 import { EthSignBodyMessagePermit } from "./EthSignBodyMessagePermit"
@@ -105,6 +107,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
     isInvalidVerifyingContract,
   } = useEthSignMessage(request)
   const ocViewDetails = useOpenClose()
+  const { signInDomainMismatch } = useEthSignMessageRequest()
 
   const evmNetwork = useNetworkById(ethChainId, "ethereum")
 
@@ -164,6 +167,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           {t("Verifying contract's address is invalid.")}
         </SignAlertMessage>
       )}
+      <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mt-8" />
       <Drawer
         analyticsId="eth_sign_message_details"
         anchor="bottom"
