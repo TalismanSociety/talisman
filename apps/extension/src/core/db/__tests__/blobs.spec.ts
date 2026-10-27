@@ -1,6 +1,8 @@
+import { Dexie } from "dexie"
+import { firstValueFrom } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { getBlobStore } from "../blobs"
+import { blobWriteErrors$, getBlobStore } from "../blobs"
 import { db } from "../db"
 
 describe("getBlobStore", () => {
@@ -27,7 +29,17 @@ describe("getBlobStore", () => {
 
   it("resolves when the write fails, so fire-and-forget callers leak no rejection", async () => {
     db.close()
+    const writeError = firstValueFrom(blobWriteErrors$)
 
     await expect(getBlobStore("chaindata").set({ tokens: ["DOT"] })).resolves.toBeUndefined()
+    expect(await writeError).toBeInstanceOf(Dexie.DatabaseClosedError)
+  })
+
+  it("rejects a failed write for callers that must know", async () => {
+    db.close()
+
+    await expect(getBlobStore("chaindata").setOrThrow({ tokens: ["DOT"] })).rejects.toBeInstanceOf(
+      Dexie.DatabaseClosedError
+    )
   })
 })
