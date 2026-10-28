@@ -172,6 +172,8 @@ export type SentLeg = {
 export type ObserveLegParams = {
   leg: QuoteLeg
   sent: SentLeg
+  /** a later leg spends what this one delivers, so the landed amount must be chain evidence of the delivery */
+  handsOver: boolean
 }
 
 export type BoundLegParams = {
@@ -276,3 +278,6 @@ export type BackgroundSwapModule = {
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
+
+/** What the plan engine needs from a module whose legs it admits and observes, whether or not it can build them */
+export type PlanLegRuntime = Pick<BackgroundSwapModule, "legDeadlineMs" | "boundLeg" | "observeLeg">

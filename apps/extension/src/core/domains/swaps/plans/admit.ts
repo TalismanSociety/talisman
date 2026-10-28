@@ -27,7 +27,7 @@ import {
 } from "viem"
 import { legCandidates } from "../candidates"
 import { coreSwapEnv } from "../env.core"
-import { getBackgroundSwapModule } from "../registry"
+import { getPlanLegRuntime } from "../registry"
 import type { LegBound, LegReplacement, SentEvidence } from "../types"
 import { isAdmissible, transition } from "./machine"
 import { type AppliedEvent, enqueue, getPlan, putPlan } from "./store"
@@ -227,7 +227,7 @@ export const admitEvmLeg = async (
   const plan = await getPlan(ref.id)
   const leg = plan?.legs[ref.leg]
   if (!plan || !leg) throw new PlanNotAdmissible("Unknown swap plan leg")
-  const module = getBackgroundSwapModule(leg.quote.protocol)
+  const runtime = getPlanLegRuntime(leg.quote.protocol)
 
   const signer = await recoverTransactionAddress({
     serializedTransaction: raw as TransactionSerialized,
@@ -270,7 +270,7 @@ export const admitEvmLeg = async (
       isNonceTaken,
       hash,
       nonce,
-      deadlineAt: now + module.legDeadlineMs,
+      deadlineAt: now + runtime.legDeadlineMs,
       evidence: { platform: "ethereum", raw },
       row,
     },
@@ -355,14 +355,14 @@ export const admitEvmReplacement = async (
       const check = checkReplacement(leg, originalOf(leg.state), networkId, tx, signer)
       if ("violation" in check) throw new PlanBoundViolation(check.violation)
 
-      const module = getBackgroundSwapModule(leg.quote.protocol)
+      const runtime = getPlanLegRuntime(leg.quote.protocol)
       const result = transition(
         plan,
         {
           type: "replacement-admitted",
           leg: ref.leg,
           replacement: { kind: check.kind, hash, raw, sentAt: now },
-          deadlineAt: now + module.legDeadlineMs,
+          deadlineAt: now + runtime.legDeadlineMs,
         },
         now
       )
@@ -415,7 +415,7 @@ export const admitSubstrateLeg = async (
   const next = plan?.legs[ref.leg + 1]
   if (!plan || !leg) throw new PlanNotAdmissible("Unknown swap plan leg")
   if (!next) throw new PlanNotAdmissible("A substrate leg must hand over to a next leg")
-  const module = getBackgroundSwapModule(leg.quote.protocol)
+  const runtime = getPlanLegRuntime(leg.quote.protocol)
 
   const sapi = await coreSwapEnv.substrateApi(networkId)
   const call = sapi.getDecodedCallFromPayload<TransferCall>({ method: payload.method })
@@ -451,7 +451,7 @@ export const admitSubstrateLeg = async (
       check,
       hash,
       nonce,
-      deadlineAt: now + module.legDeadlineMs,
+      deadlineAt: now + runtime.legDeadlineMs,
       evidence: { platform: "polkadot", era },
       row,
     },

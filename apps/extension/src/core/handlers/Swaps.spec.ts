@@ -5,10 +5,13 @@ import { keyringStore } from "../domains/keyring/store"
 import { SwapsHandler } from "../domains/swaps/handler"
 import { BOUND, LEG0, LEG1, PLAN_ID, SUMMARY, T0 } from "../domains/swaps/plans/__tests__/fixtures"
 import type { SwapPlanId } from "../domains/swaps/plans/types"
-import { getBackgroundSwapModule } from "../domains/swaps/registry"
+import { getPlanLegRuntime } from "../domains/swaps/registry"
 import { extensionStores } from "./stores"
 
-vi.mock("../domains/swaps/registry", () => ({ getBackgroundSwapModule: vi.fn() }))
+vi.mock("../domains/swaps/registry", () => ({
+  getBackgroundSwapModule: vi.fn(),
+  getPlanLegRuntime: vi.fn(),
+}))
 
 const NEWER_ID = "plan-2" as SwapPlanId
 
@@ -43,14 +46,14 @@ describe("pri(swaps.plan.propose)", () => {
       const olderBound = new Promise<LegBound>((resolve) => {
         releaseOlder = () => resolve(BOUND)
       })
-      vi.mocked(getBackgroundSwapModule)
+      vi.mocked(getPlanLegRuntime)
         .mockReturnValueOnce({} as never)
         .mockReturnValueOnce({ boundLeg: () => olderBound } as never)
         .mockReturnValueOnce({} as never)
         .mockReturnValueOnce({ boundLeg: async () => BOUND } as never)
 
       const older = propose(PLAN_ID, 7)
-      await vi.waitFor(() => expect(getBackgroundSwapModule).toHaveBeenCalledTimes(2))
+      await vi.waitFor(() => expect(getPlanLegRuntime).toHaveBeenCalledTimes(2))
       vi.setSystemTime(T0 + clockStep)
       await propose(NEWER_ID, 8)
       releaseOlder()
@@ -65,7 +68,7 @@ describe("pri(swaps.plan.propose)", () => {
   )
 
   it("never changes the legs of a proposed plan", async () => {
-    vi.mocked(getBackgroundSwapModule).mockReturnValue({ boundLeg: async () => BOUND } as never)
+    vi.mocked(getPlanLegRuntime).mockReturnValue({ boundLeg: async () => BOUND } as never)
     await propose(PLAN_ID, 7)
     await expect(propose(PLAN_ID, 8)).rejects.toThrow("The swap was already proposed")
     expect((await db.swapPlans.get(PLAN_ID))?.legs[0].nonce).toBe(7)

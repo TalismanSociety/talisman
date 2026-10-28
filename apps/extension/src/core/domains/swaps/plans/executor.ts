@@ -17,11 +17,12 @@ import type { Hex } from "viem"
 import { legCandidates } from "../candidates"
 import type { SwapEnv } from "../env"
 import { coreSwapEnv } from "../env.core"
-import { getBackgroundSwapModule } from "../registry"
+import { getBackgroundSwapModule, getPlanLegRuntime } from "../registry"
 import type {
   BackgroundSwapModule,
   BuiltLeg,
   LegObservation,
+  PlanLegRuntime,
   SentLeg,
   SupportedSwapProtocol,
 } from "../types"
@@ -45,6 +46,7 @@ export type PlanNotificationKind = "needs-you" | "stopped" | "completed"
 export type ExecutorDeps = {
   env: SwapEnv
   getModule: (protocol: SupportedSwapProtocol) => BackgroundSwapModule
+  getRuntime: (protocol: SupportedSwapProtocol) => PlanLegRuntime
   sign: (ref: SwapPlanRef, built: BuiltLeg) => Promise<SignOutcome>
   isUnlocked: () => Promise<boolean>
   notify: (kind: PlanNotificationKind, plan: SwapPlan) => Promise<void>
@@ -169,13 +171,16 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
     const sent = await sentLegOf(leg)
     if (!sent) return
 
-    const module = deps.getModule(leg.quote.protocol)
+    const runtime = deps.getRuntime(leg.quote.protocol)
     const { deadlineAt } = leg.state
     const pastDeadline = () => deps.now() >= deadlineAt
     const deadline: PlanEvent = { type: "deadline", leg: index }
     let observation: LegObservation
     try {
-      observation = await module.observeLeg({ leg: fromPersistedLeg(leg.quote), sent }, deps.env)
+      observation = await runtime.observeLeg(
+        { leg: fromPersistedLeg(leg.quote), sent, handsOver: index < plan.legs.length - 1 },
+        deps.env
+      )
     } catch (err) {
       log.warn("Failed to observe a swap plan leg", { err, id, leg: index })
       if (pastDeadline()) return settle(id, index, deadline)
@@ -343,6 +348,7 @@ const ALARM_PERIOD_MINUTES = 0.5
 const coreDeps: ExecutorDeps = {
   env: coreSwapEnv,
   getModule: getBackgroundSwapModule,
+  getRuntime: getPlanLegRuntime,
   sign: signAndBroadcast,
   isUnlocked: async () =>
     (await firstValueFrom(

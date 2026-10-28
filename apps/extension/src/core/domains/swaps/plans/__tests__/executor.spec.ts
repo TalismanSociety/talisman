@@ -209,6 +209,7 @@ const makeExecutor = ({
       }),
     } as unknown as SwapEnv,
     getModule: (protocol) => modules[protocol],
+    getRuntime: (protocol) => modules[protocol],
     sign,
     isUnlocked: typeof unlocked === "function" ? unlocked : async () => unlocked,
     notify: async (kind) => {

@@ -956,7 +956,11 @@ describe("forevermoneySwapModule observeLeg", () => {
 
   const observe = async (sentLeg: SentLeg) =>
     forevermoneySwapModule.observeLeg(
-      { leg: await quotedLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS), sent: sentLeg },
+      {
+        leg: await quotedLeg(EVM_TAO, BASE_WTAO, ONE_TAO_WEI, OTHER_EVM_ADDRESS),
+        sent: sentLeg,
+        handsOver: false,
+      },
       env
     )
 

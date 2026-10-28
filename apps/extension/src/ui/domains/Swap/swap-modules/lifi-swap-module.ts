@@ -5,6 +5,7 @@ import {
   prepareTransactionRequestWithGasCheck,
 } from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import { LIFI_API_URL } from "@core/domains/swaps/modules/lifi"
 import type {
   ApprovalInfo,
   BaseQuote,
@@ -48,7 +49,6 @@ import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-modu
 import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 
-const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
@@ -107,7 +107,7 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
 
 // LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
 // instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
-const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl })
+const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl: LIFI_API_URL })
 
 // --- Internal asset type for LI.FI (not exposed) ---
 type LifiInternalAsset = {

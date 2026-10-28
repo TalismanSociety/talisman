@@ -10,7 +10,7 @@ import { fromPersistedLeg } from "./plans/helpers"
 import { isTerminalPhase } from "./plans/machine"
 import { applyPlanEvent, proposePlan, sweepPlans, takeProposalArrival } from "./plans/store"
 import type { PlanLeg } from "./plans/types"
-import { getBackgroundSwapModule } from "./registry"
+import { getPlanLegRuntime } from "./registry"
 import type { NonEmpty } from "./types"
 
 /**
@@ -32,14 +32,14 @@ const propose: MessageHandler<"pri(swaps.plan.propose)"> = async ({
 
   const planLegs = await Promise.all(
     legs.map(async (quote, index): Promise<PlanLeg> => {
-      const module = getBackgroundSwapModule(quote.protocol)
+      const runtime = getPlanLegRuntime(quote.protocol)
       const account = await keyringStore.getAccount(quote.signer)
       if (!account || !isAccountOwned(account))
         throw new Error("A swap plan leg must be signed by one of your accounts")
       const bound =
         index === 0
           ? null
-          : await module.boundLeg(
+          : await runtime.boundLeg(
               {
                 leg: fromPersistedLeg(quote),
                 slippage: summary.slippage,

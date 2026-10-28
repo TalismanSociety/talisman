@@ -482,7 +482,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     const quote = single(await quoteSubToEvm(ONE_TAO_RAO))
     if (!quote) throw new Error("expected a quote")
     mockDecodeEvents.mockClear()
-    return bittensorEvmSwapModule.observeLeg({ leg: quote.legs[0], sent }, env)
+    return bittensorEvmSwapModule.observeLeg({ leg: quote.legs[0], sent, handsOver: true }, env)
   }
 
   it("lands with the transferred amount minus the retained deposit once finalised", async () => {
@@ -726,6 +726,7 @@ describe("bittensorEvmSwapModule observeLeg evm -> substrate", () => {
     const observation = await bittensorEvmSwapModule.observeLeg(
       {
         leg: quote.legs[0],
+        handsOver: true,
         sent: {
           hash: `0x${"cc".repeat(32)}`,
           nonce: 12,
