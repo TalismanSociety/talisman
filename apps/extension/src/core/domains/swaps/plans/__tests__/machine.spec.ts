@@ -342,6 +342,23 @@ describe("a sent leg", () => {
     expect(result.plan.phase).toBe("paused")
   })
 
+  it("hands an unbound next leg to the user even after the signing window", () => {
+    const now = T0 + SIGN_WINDOW_MS + 1
+    const plan: SwapPlan = { ...RUNNING, legs: [LEG0_SENT, { ...LEG1, bound: null }] }
+    const result = transition(
+      plan,
+      {
+        type: "observed",
+        leg: 0,
+        candidates: 1,
+        observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+      },
+      now
+    )
+    expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "hardware", since: now })
+    expect(result.plan.phase).toBe("paused")
+  })
+
   it("completes the plan when the last leg lands", () => {
     const now = T1 + 10_000
     expect(

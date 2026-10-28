@@ -102,8 +102,6 @@ const stop = (legs: Legs, index: number, failure: LegFailure, now: number, hash?
 
 /** leg `index` is next: the background builds it, or the user is asked, or the window has closed */
 const makeDue = (plan: SwapPlan, legs: Legs, index: number, now: number): Step => {
-  if (!isSignWindowOpen(plan, now)) return stop(legs, index, "expired", now)
-
   const leg = legs[index]
   if (leg.signerType !== "keypair" || leg.bound === null)
     return {
@@ -115,6 +113,7 @@ const makeDue = (plan: SwapPlan, legs: Legs, index: number, now: number): Step =
       effects: [NOTIFY_NEEDS_YOU],
     }
 
+  if (!isSignWindowOpen(plan, now)) return stop(legs, index, "expired", now)
   return {
     legs: replaceLeg(legs, index, {
       ...leg,
