@@ -75,6 +75,9 @@ const env: SwapEnv = {
   substrateApi: async () => quoteSapi as unknown as ScaleApi,
   substrateSend: (...args) => mockSubstrateSend(...args),
   decodeExtrinsicEvents: (...args) => mockDecodeEvents(...args),
+  proxyFetch: async () => {
+    throw new Error("Bittensor EVM calls no Talisman proxy")
+  },
 }
 
 // --- Test helpers ---

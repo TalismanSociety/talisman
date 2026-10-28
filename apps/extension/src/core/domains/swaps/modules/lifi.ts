@@ -77,14 +77,12 @@ const parseLifiTransfer = (body: unknown): LifiTransfer => {
   }
 }
 
-const fetchLifiTransfer = async (params: {
-  txHash: Hex
-  fromChain: string
-  toChain: string
-  bridge?: string
-}): Promise<LifiTransfer> => {
+const fetchLifiTransfer = async (
+  params: { txHash: Hex; fromChain: string; toChain: string; bridge?: string },
+  env: SwapEnv
+): Promise<LifiTransfer> => {
   const query = new URLSearchParams(params)
-  const res = await fetch(`${LIFI_API_URL}/status?${query}`)
+  const res = await env.proxyFetch(`${LIFI_API_URL}/status?${query}`)
   if (res.status === 404) return { outcome: "pending" }
   if (!res.ok) throw new Error(`LI.FI API error: ${res.status}`)
   return parseLifiTransfer(await res.json())
@@ -99,12 +97,10 @@ const observeDelivery = async (
 ): Promise<LegObservation> => {
   const fromChain = networkIdFromTokenId(leg.fromTokenId)
   const toChain = networkIdFromTokenId(leg.toTokenId)
-  const transfer = await fetchLifiTransfer({
-    txHash: sourceHash,
-    fromChain,
-    toChain,
-    bridge: toolOf(leg.data),
-  })
+  const transfer = await fetchLifiTransfer(
+    { txHash: sourceHash, fromChain, toChain, bridge: toolOf(leg.data) },
+    env
+  )
   if (transfer.outcome === "pending") return { status: "pending" }
   if (transfer.outcome === "failed") return INDETERMINATE
   const { receiving, toAddress } = transfer

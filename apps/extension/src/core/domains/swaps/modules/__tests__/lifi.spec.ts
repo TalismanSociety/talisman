@@ -68,9 +68,12 @@ const evmClient = (networkId: string) =>
     },
   }) as unknown as PublicClient
 
-const env = { evmClient: async (networkId: string) => evmClient(networkId) } as unknown as SwapEnv
-
 const fetchMock = vi.fn<typeof fetch>()
+
+const env = {
+  evmClient: async (networkId: string) => evmClient(networkId),
+  proxyFetch: fetchMock,
+} as unknown as SwapEnv
 
 const status = (body: Record<string, unknown>, httpStatus = 200) =>
   fetchMock.mockResolvedValueOnce(
@@ -93,12 +96,10 @@ const observe = (leg: QuoteLeg, handsOver = true) =>
 
 beforeEach(() => {
   receipts.clear()
-  vi.stubGlobal("fetch", fetchMock)
 })
 
 afterEach(() => {
   fetchMock.mockReset()
-  vi.unstubAllGlobals()
 })
 
 describe("lifiLegRuntime.observeLeg", () => {

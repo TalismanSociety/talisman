@@ -115,6 +115,9 @@ const env: SwapEnv = {
   decodeExtrinsicEvents: async () => {
     throw new Error("ForeverMoney reads no substrate network")
   },
+  proxyFetch: async () => {
+    throw new Error("ForeverMoney calls no Talisman proxy")
+  },
 }
 
 type ChainState = {

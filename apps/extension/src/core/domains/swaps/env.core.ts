@@ -1,3 +1,4 @@
+import { gandalfFetch } from "@core/domains/gandalf/fetch"
 import { getMetadataDef } from "@core/domains/metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import {
@@ -104,4 +105,5 @@ export const coreSwapEnv: SwapEnv = {
       })),
     }
   },
+  proxyFetch: gandalfFetch,
 }

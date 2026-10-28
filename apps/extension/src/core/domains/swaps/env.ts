@@ -28,4 +28,6 @@ export type SwapEnv = {
     blockHash: Hex,
     extrinsicHash: Hex
   ) => Promise<ExtrinsicEvents | null>
+  /** a fetch that carries the Gandalf token the Talisman API proxies require */
+  proxyFetch: typeof fetch
 }

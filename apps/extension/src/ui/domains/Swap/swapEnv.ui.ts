@@ -6,6 +6,7 @@ import type { NetworkId } from "@talismn/chaindata-provider"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
 import { getNetworkById$, getToken$ } from "@ui/state/chaindata"
+import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { firstValueFrom } from "rxjs"
 
 import type { SwapModule } from "./swap-modules/common.swap-module"
@@ -42,6 +43,7 @@ export const uiSwapEnv: SwapEnv = {
   decodeExtrinsicEvents: async () => {
     throw new Error("Swap legs are observed in the background")
   },
+  proxyFetch: gandalfFetch,
 }
 
 export const withSwapEnv = (module: BackgroundSwapModule, env: SwapEnv): SwapModule => ({
