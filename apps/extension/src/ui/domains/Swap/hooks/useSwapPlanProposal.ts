@@ -2,7 +2,12 @@ import { log } from "@common/log"
 import { db } from "@core/db"
 import { toPersistedLeg } from "@core/domains/swaps/plans/helpers"
 import type { PersistedQuoteLeg, SwapPlanId } from "@core/domains/swaps/plans/types"
-import type { BaseQuote, NonEmpty, SwapPlanProposeRequest } from "@core/domains/swaps/types"
+import type {
+  BaseQuote,
+  BuiltLeg,
+  NonEmpty,
+  SwapPlanProposeRequest,
+} from "@core/domains/swaps/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { hashKey, useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -41,6 +46,20 @@ type SwapPlanProposalParams = {
   toAddress: string | null
   /** the user's setting, decimal, 0.005 is 0.5% */
   slippage: number
+  /** the nonce the confirm screen signs an EVM first leg with, once it has prepared the transaction */
+  evmNonce: number | undefined
+}
+
+/** the nonce leg 0 is signed with, which the background pins the plan to: null until it is known */
+const leg0Nonce = (leg: BuiltLeg, evmNonce: number | undefined): number | null => {
+  switch (leg.transaction.platform) {
+    case "polkadot":
+      return Number(leg.transaction.payload.nonce)
+    case "ethereum":
+      return evmNonce ?? null
+    default:
+      return null
+  }
 }
 
 /** the user's tolerance reaches only a provider that lets the user set it, the others apply their own minimum */
@@ -58,6 +77,7 @@ export const useSwapPlanProposal = ({
   fromAmount,
   toAddress,
   slippage,
+  evmNonce,
 }: SwapPlanProposalParams) => {
   const quote = built?.quote
   const leg = built?.leg
@@ -66,8 +86,9 @@ export const useSwapPlanProposal = ({
   const provider = swapModules.find((module) => module.protocol === quote?.protocol)
 
   const content = useMemo((): Omit<SwapPlanProposeRequest, "id"> | null => {
-    if (!isMultiLeg || leg?.transaction.platform !== "polkadot" || !fromAmount || !toAddress)
-      return null
+    if (!isMultiLeg || !leg || !fromAmount || !toAddress) return null
+    const nonce = leg0Nonce(leg, evmNonce)
+    if (nonce === null) return null
     if (!quote.legs.every((leg) => leg.signer && leg.recipient)) return null
     return {
       legs: quote.legs.map(toPersistedLeg) as NonEmpty<PersistedQuoteLeg>,
@@ -81,9 +102,9 @@ export const useSwapPlanProposal = ({
         subProtocol: quote.subProtocol,
         slippage: planSlippage(provider, slippage),
       },
-      leg0Nonce: Number(leg.transaction.payload.nonce),
+      leg0Nonce: nonce,
     }
-  }, [leg, fromAmount, isMultiLeg, provider, quote, slippage, toAddress])
+  }, [evmNonce, leg, fromAmount, isMultiLeg, provider, quote, slippage, toAddress])
 
   const contentKey = content && hashKey([content])
   const planId = useMemo(() => (contentKey ? newPlanId() : null), [contentKey])

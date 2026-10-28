@@ -61,8 +61,22 @@ const builtFor = (nonce: number) =>
     txInfo: { type: "swap" },
   }) as unknown as BuiltLeg
 
-const A = { built: { quote: quoteFor(1_000n), leg: builtFor(7) } }
-const B = { built: { quote: quoteFor(2_000n), leg: builtFor(7) } }
+const evmBuilt = () =>
+  ({
+    transaction: { platform: "ethereum", transaction: {} },
+    fees: [],
+    expectedOutput: 0n,
+    txInfo: { type: "swap" },
+  }) as unknown as BuiltLeg
+
+type Props = { built: { quote: BaseQuote; leg: BuiltLeg }; evmNonce: number | undefined }
+
+const A: Props = { built: { quote: quoteFor(1_000n), leg: builtFor(7) }, evmNonce: undefined }
+const B: Props = { built: { quote: quoteFor(2_000n), leg: builtFor(7) }, evmNonce: undefined }
+const EVM = (evmNonce: number | undefined): Props => ({
+  built: { quote: quoteFor(1_000n), leg: evmBuilt() },
+  evmNonce,
+})
 
 describe("useSwapPlanProposal", () => {
   let queryClient: QueryClient
@@ -74,9 +88,9 @@ describe("useSwapPlanProposal", () => {
     swapModules.length = 0
   })
 
-  const render = (slippage = 0.005) =>
+  const render = (slippage = 0.005, initialProps: Props = A) =>
     renderHook(
-      (props: typeof A) =>
+      (props: Props) =>
         useSwapPlanProposal({
           ...props,
           fromAmount: 1_000n,
@@ -84,7 +98,7 @@ describe("useSwapPlanProposal", () => {
           slippage,
         }),
       {
-        initialProps: A,
+        initialProps,
         wrapper: ({ children }: PropsWithChildren) => (
           <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         ),
@@ -110,11 +124,30 @@ describe("useSwapPlanProposal", () => {
   it("keeps the plan of a quote that only changed identity", async () => {
     const { result, rerender } = render()
     await waitFor(() => expect(result.current.isProposing).toBe(false))
-    rerender({ built: { quote: quoteFor(1_000n), leg: builtFor(7) } })
+    rerender({ built: { quote: quoteFor(1_000n), leg: builtFor(7) }, evmNonce: undefined })
     await waitFor(() => expect(result.current.isProposing).toBe(false))
 
     expect(swapPlanPropose).toHaveBeenCalledTimes(1)
     expect(swapPlanCancel).not.toHaveBeenCalled()
+  })
+
+  it("proposes an EVM first leg with the nonce the confirm screen signs it with", async () => {
+    const { result, rerender } = render(0.005, EVM(undefined))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(swapPlanPropose).not.toHaveBeenCalled()
+    expect(result.current.txInfo?.plan).toBeUndefined()
+
+    rerender(EVM(5))
+    await waitFor(() => expect(result.current.isProposing).toBe(false))
+    expect(swapPlanPropose.mock.lastCall?.[0].leg0Nonce).toBe(5)
+    expect(result.current.txInfo?.plan).toEqual({
+      id: swapPlanPropose.mock.lastCall?.[0].id,
+      leg: 0,
+    })
+
+    rerender(EVM(6))
+    await waitFor(() => expect(swapPlanPropose).toHaveBeenCalledTimes(2))
+    expect(swapPlanPropose.mock.lastCall?.[0].leg0Nonce).toBe(6)
   })
 
   it("leaves the tolerance to a provider that does not let the user set it", async () => {

@@ -273,15 +273,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     retry: false,
   })
 
-  const plan = useSwapPlanProposal({
-    built: exchangeAndTransactionQuery.data,
-    fromAmount,
-    toAddress,
-    slippage: toSlippageDecimal(slippagePercent),
-  })
-
   const transaction = exchangeAndTransactionQuery.data?.leg.transaction ?? null
-  const txInfo = plan.txInfo
   const exchangeError = exchangeAndTransactionQuery.error
   // Use !data && !error (instead of TanStack's .isLoading) so we stay "loading" during the brief
   // gap between approval completing and the exchange query starting to fetch, preventing button flicker.
@@ -293,6 +285,15 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromToken?.networkId,
     false
   )
+
+  const plan = useSwapPlanProposal({
+    built: exchangeAndTransactionQuery.data,
+    fromAmount,
+    toAddress,
+    slippage: toSlippageDecimal(slippagePercent),
+    evmNonce: swapEthTx.transaction?.nonce,
+  })
+  const txInfo = plan.txInfo
 
   const substrateFee = useGetFeeEstimate({
     sapi,
