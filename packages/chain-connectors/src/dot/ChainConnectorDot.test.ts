@@ -3,12 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ChainConnectorDot } from "./ChainConnectorDot"
 
-const sockets = vi.hoisted(() => ({ opened: 0, destroyed: 0 }))
+const sockets = vi.hoisted(() => ({
+  opened: 0,
+  destroyed: 0,
+  timeouts: [] as (number | undefined)[],
+}))
 
 vi.mock("@polkadot-api/ws-provider", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@polkadot-api/ws-provider")>()),
-  getWsProvider: () => {
+  getWsProvider: (_endpoints: string[], config?: { timeout?: number }) => {
     sockets.opened++
+    sockets.timeouts.push(config?.timeout)
     return { switch: () => {}, getStatus: () => ({ type: 2 }) }
   },
 }))
@@ -42,6 +47,7 @@ describe("ChainConnectorDot connection reuse", () => {
   beforeEach(() => {
     sockets.opened = 0
     sockets.destroyed = 0
+    sockets.timeouts = []
     vi.useFakeTimers()
   })
   afterEach(() => {
@@ -97,5 +103,25 @@ describe("ChainConnectorDot connection reuse", () => {
     // the idle close of the reset socket doesn't fire later
     await vi.advanceTimersByTimeAsync(60_000)
     expect(sockets.destroyed).toBe(1)
+  })
+})
+
+describe("ChainConnectorDot connection timeout", () => {
+  beforeEach(() => {
+    sockets.timeouts = []
+  })
+
+  it("leaves polkadot-api's default in place unless one is given", async () => {
+    await new ChainConnectorDot(chaindata).send("bittensor", "system_health", [])
+    expect(sockets.timeouts).toEqual([undefined])
+  })
+
+  it("passes the given connection timeout to the provider", async () => {
+    await new ChainConnectorDot(chaindata, { connectionTimeout: 15_000 }).send(
+      "bittensor",
+      "system_health",
+      []
+    )
+    expect(sockets.timeouts).toEqual([15_000])
   })
 })

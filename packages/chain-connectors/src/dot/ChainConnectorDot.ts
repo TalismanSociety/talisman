@@ -86,6 +86,16 @@ type Connection = {
   idleTimeout: ReturnType<typeof setTimeout> | null
 }
 
+export type ChainConnectorDotOptions = {
+  /**
+   * How long a new socket may take to open before the provider gives up on the endpoint
+   * and tries the next one. Defaults to polkadot-api's 5 seconds. A slow device or
+   * network can take longer than that to connect while it is busy, as a phone app is
+   * at startup, and every endpoint then times out in turn.
+   */
+  connectionTimeout?: number
+}
+
 /**
  * ChainConnector provides an interface similar to a websocket JSON-RPC provider, but with three points of difference:
  *
@@ -102,12 +112,17 @@ type Connection = {
  */
 export class ChainConnectorDot implements IChainConnectorDot {
   #chaindataChainProvider: IChaindataNetworkProvider
+  #connectionTimeout: number | undefined
 
   #connections: Record<DotNetworkId, Connection> = {}
   #pendingConnections: Record<DotNetworkId, Promise<Connection>> = {}
 
-  constructor(chaindataChainProvider: IChaindataNetworkProvider) {
+  constructor(
+    chaindataChainProvider: IChaindataNetworkProvider,
+    options?: ChainConnectorDotOptions
+  ) {
     this.#chaindataChainProvider = chaindataChainProvider
+    this.#connectionTimeout = options?.connectionTimeout
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -404,6 +419,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     const provider = getWsProvider(rpcs, {
       onStatusChanged: (status: StatusChange) => this.handleStatusChange(connection, status),
+      ...(this.#connectionTimeout !== undefined && { timeout: this.#connectionTimeout }),
     })
 
     const client = createClient(provider)
