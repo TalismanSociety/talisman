@@ -21,6 +21,7 @@ import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { keyringStore } from "../keyring/store"
 import { requestSolanaSign } from "../signing/requests"
+import { isSignInDomainRefused, SIGN_IN_DOMAIN_MISMATCH_ERROR } from "../signing/signInDomain"
 import type { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
@@ -154,8 +155,12 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
 
   // software accounts sign raw message bytes with no domain separator, so a "message" that
   // encodes a transaction would yield a valid transaction signature - refuse to sign it
-  if (isCompiledTransactionMessage(base58.decode(message)))
+  const messageBytes = base58.decode(message)
+  if (isCompiledTransactionMessage(messageBytes))
     throw new Error("Refusing to sign a message that encodes a transaction")
+
+  if (await isSignInDomainRefused(new TextDecoder().decode(messageBytes), url))
+    throw new Error(SIGN_IN_DOMAIN_MISMATCH_ERROR)
 
   const request: SolSignRequest = {
     type: "message",

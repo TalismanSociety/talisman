@@ -16,7 +16,7 @@ export const MsgSignButton: FC<MsgSignButtonProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  if (!payload || disabled)
+  if (!payload)
     return <MsgSignButtonFallback label={label ?? t("Sign")} className={cn("w-full", className)} />
 
   switch (payload.platform) {
@@ -28,6 +28,7 @@ export const MsgSignButton: FC<MsgSignButtonProps> = ({
           payload={payload}
           onSubmit={onSubmit}
           className={className}
+          disabled={disabled}
         />
       )
     default:
