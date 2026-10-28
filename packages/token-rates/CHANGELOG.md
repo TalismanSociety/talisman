@@ -1,5 +1,17 @@
 # @talismn/token-rates
 
+## 4.0.8
+
+### Patch Changes
+
+- 0367860: the 24h change of a token's TAO rate is worked out from the USD changes as percents, as the coins api reports them, instead of as fractions
+- Updated dependencies [bfc3a21]
+- Updated dependencies [7bcc1a5]
+- Updated dependencies [9bbf6c8]
+- Updated dependencies [a400d62]
+  - @talismn/chain-connectors@1.1.1
+  - @talismn/chaindata-provider@2.3.1
+
 ## 4.0.7
 
 ### Patch Changes
