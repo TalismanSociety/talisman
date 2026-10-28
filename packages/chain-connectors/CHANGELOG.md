@@ -1,5 +1,15 @@
 # @talismn/chain-connectors
 
+## 1.1.1
+
+### Patch Changes
+
+- bfc3a21: substrate balance subscriptions survive a StaleRpcError and resubscribe with backoff after other errors, so the chain's socket stays held between dtao polls instead of reopening on the first RPC for every request
+- 7bcc1a5: ChainConnectorDot takes an optional `connectionTimeout`: how long a new socket may take to open before the provider moves on to the next endpoint (polkadot-api's 5 seconds by default)
+- 9bbf6c8: ChainConnectorDot keeps a chain's socket open for 30 seconds after its last user releases it, so a request followed by a subscription (balances read the runtime version, then subscribe to storage) shares one socket instead of closing the first and opening another
+- Updated dependencies [a400d62]
+  - @talismn/chaindata-provider@2.3.1
+
 ## 1.1.0
 
 ### Minor Changes
