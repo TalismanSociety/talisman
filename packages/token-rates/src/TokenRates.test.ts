@@ -214,9 +214,10 @@ describe("fetchTokenRates — TAO currency", () => {
     expect(result.tao?.tao).toEqual({ price: 1, marketCap: null, change24h: null })
   })
 
-  it("calculates TAO 24h change as (1+tokenChange)/(1+taoChange)-1", async () => {
-    const taoChange = 0.05
-    const dotChange = 0.1
+  it("calculates the TAO 24h change from the USD changes, in percent", async () => {
+    // the coins api returns 24h changes in percent: TAO +1.31%, DOT -0.95%
+    const taoChange = 1.31
+    const dotChange = -0.95
     // effectiveCoingeckoIds = ["polkadot", "bittensor"]
     const apiResponse = [
       [[8, 9e9, dotChange]], // polkadot usd (index 0)
@@ -230,8 +231,8 @@ describe("fetchTokenRates — TAO currency", () => {
     }
 
     const result = await fetchTokenRates(tokens, ["tao"], config)
-    const expected = (1 + dotChange) / (1 + taoChange) - 1
-    expect(result.dot?.tao?.change24h).toBeCloseTo(expected)
+    // (1 - 0.0095) / (1 + 0.0131) - 1 = -2.23%
+    expect(result.dot?.tao?.change24h).toBeCloseTo(-2.231, 3)
   })
 
   it("returns null TOKEN→TAO rate when taoUsdRate is 0 (division by zero)", async () => {
