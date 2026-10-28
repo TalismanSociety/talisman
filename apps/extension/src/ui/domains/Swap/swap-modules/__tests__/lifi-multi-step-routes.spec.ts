@@ -513,4 +513,27 @@ describe("LI.FI plan leg build", () => {
   it("refuses a later leg LI.FI no longer routes", async () => {
     await expect(buildSwapLeg(2_800_000_000_000_000_000_000n, [])).rejects.toThrow("No route")
   })
+
+  describe("when a fresh route spends through another contract than the one approved", () => {
+    const landed = 2_800_000_000_000_000_000_000n
+    const elsewhere = withStep(skyaiToTrump(landed.toString(), "15900000000000"), 0, (s) => ({
+      ...s,
+      estimate: { ...s.estimate, approvalAddress: BOB },
+      action: s.action,
+    }))
+
+    it("builds the route that spends through the approved contract", async () => {
+      const approved = skyaiToTrump(landed.toString(), "15700000000000")
+
+      const built = await buildSwapLeg(landed, [elsewhere, approved])
+
+      expect(built.expectedOutput).toBe(15_700_000_000_000n)
+      expect(mockGetStepTransaction.mock.calls[0][0].estimate.approvalAddress).toBe(DIAMOND)
+    })
+
+    it("refuses the leg when no fresh route spends through it", async () => {
+      await expect(buildSwapLeg(landed, [elsewhere])).rejects.toThrow("No route")
+      expect(mockGetStepTransaction).not.toHaveBeenCalled()
+    })
+  })
 })

@@ -810,10 +810,14 @@ const planLegFloor = (leg: QuoteLeg, input: bigint, slippage: number) =>
   (leg.outputAmount * input * BigInt(Math.round((1 - slippage) * 10_000))) /
   (leg.inputAmount * 10_000n)
 
+const spenderOf = (route: lifiSdk.Route | undefined) =>
+  route?.steps[0]?.estimate.approvalAddress?.toLowerCase()
+
 /**
  * Re-quotes at the user's slippage, which the quote list leaves out so editing it does not reshuffle
  * the quotes. A leg of a plan is re-quoted at what landed, as a single step, and must hold the rate
- * the user accepted: LI.FI cannot re-amount the quoted step.
+ * the user accepted: LI.FI cannot re-amount the quoted step. Its token input was approved to the
+ * quoted step's spender, so only a fresh route through that spender can use the allowance.
  */
 const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Promise<BuiltLeg> => {
   try {
@@ -836,7 +840,13 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
         slippage,
         { multiStep: false, chargesTalismanFee: !isPlanLeg || quotedRoute.stepIndex === 0 }
       )) ?? []
-    const freshLeg = (freshQuotes.find((quote) => quote.subProtocol === tool) ?? freshQuotes[0])
+    const usableQuotes =
+      isPlanLeg && parseTokenId(leg.fromTokenId).type === "evm-erc20"
+        ? freshQuotes.filter(
+            (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
+          )
+        : freshQuotes
+    const freshLeg = (usableQuotes.find((quote) => quote.subProtocol === tool) ?? usableQuotes[0])
       ?.legs[0]
     const freshRoute = freshLeg?.data as LifiLegRoute | undefined
 
