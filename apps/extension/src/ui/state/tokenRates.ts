@@ -38,6 +38,6 @@ export const [useTokenRatesMap, tokenRatesMap$] = bind(
  * price combined with the TAO rates); every other token resolves from the coingecko store —
  * both land in the same list, keyed by tokenId.
  */
-export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) =>
+export const [useTokenRates] = bind((tokenId: TokenId | null | undefined) =>
   tokenRatesMap$.pipe(map((tokenRatesMap) => (tokenId ? (tokenRatesMap[tokenId] ?? null) : null)))
 )

@@ -47,6 +47,7 @@ import { activeNetworksStore, isNetworkActive } from "../chaindata/store.activeN
 import { activeTokensStore, isTokenActive } from "../chaindata/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { requestEthSendTransaction, requestEthSign } from "../signing/requests"
+import { isSignInDomainRefused, SIGN_IN_DOMAIN_MISMATCH_ERROR } from "../signing/signInDomain"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
@@ -65,7 +66,7 @@ import {
   isValidWatchAssetRequestParam,
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
-import { assertPersonalSignMessageDecodable } from "./personalSignMessage"
+import { decodePersonalSignMessageOrThrow } from "./personalSignMessage"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { assertTypedDataTargetsChain } from "./typedData"
 import type {
@@ -536,7 +537,14 @@ export class EthTabsHandler extends TabsHandler {
     // throws if `from` is not one of the accounts connected to the site
     const site = await this.getSiteDetails(url, from)
 
-    if (method === "personal_sign") assertPersonalSignMessageDecodable(message)
+    if (method === "personal_sign") {
+      const text = decodePersonalSignMessageOrThrow(message)
+      if (await isSignInDomainRefused(text, url))
+        throw new EthProviderRpcError(
+          SIGN_IN_DOMAIN_MISMATCH_ERROR,
+          ETH_ERROR_EIP1474_INVALID_INPUT
+        )
+    }
 
     if (["eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method))
       assertTypedDataTargetsChain(message, site.ethChainId)

@@ -22,6 +22,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
+import { BittensorYieldRateLabel } from "../../components/BittensorYieldRateLabel"
 import { ValidatorApy } from "../../components/ValidatorApy"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
@@ -31,6 +32,7 @@ import {
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_PRICE_IMPACT,
 } from "../../utils/constants"
+import { getBittensorYieldRateType } from "../../utils/yieldRateType"
 import { MevShieldInfoDrawer } from "../Drawers/BittensorMevShieldInfoDrawer"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
@@ -195,15 +197,9 @@ export const BittensorSubnetBondReview = () => {
           {stakeDirection === "bond" && (
             <div className="flex items-center justify-between gap-8 py-2 text-xs">
               <div className="flex items-center gap-1 whitespace-nowrap">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      {t("APY")}
-                      <InfoIcon />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
-                </Tooltip>
+                {netuid !== null && (
+                  <BittensorYieldRateLabel rateType={getBittensorYieldRateType(netuid)} />
+                )}
               </div>
               <div className="overflow-hidden text-body">
                 <ValidatorApy />

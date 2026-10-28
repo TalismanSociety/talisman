@@ -17,6 +17,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { getBittensorYieldRateType } from "@ui/domains/Staking/Bittensor/utils/yieldRateType"
 import { shortenAddress } from "@ui/util/shortenAddress"
 import type { TFunction } from "i18next"
 import type { ReactNode } from "react"
@@ -188,7 +189,7 @@ export const toEarnPosition = ({
     ],
     totalAmountUsd: position.totalUsd,
     apr: apy,
-    rateType: apy === null ? null : "APY",
+    rateType: apy === null ? null : getBittensorYieldRateType(position.netuid),
     detailUrl: getBittensorPositionDetailUrl(position.tokenId, position.address),
     tokenIds: [position.groupTokenId],
     searchTerms: [
