@@ -27,7 +27,7 @@ Set the test accounts up once in the dev profile, by hand:
 
 1. Use a recovery phrase dedicated to testing, never the one of a personal wallet. Its accounts may hold real funds, but only amounts you accept to lose: the dev profile keeps the phrase on disk, and runs sign with these accounts.
 2. Add two accounts per type from it (`$EXT/dashboard.html#/accounts/add/derived?platform=<ethereum|polkadot|solana>`), and tell your agent which they are.
-3. For [Send funds](./send-funds.md), fund `<sub1>` with testTAO on Bittensor testnet.
+3. For [Send funds](./send-funds.md), fund `<sub1>` with testTAO on Bittensor testnet. Testnets are off in a new profile: the recipe says how to turn that network on.
 
 An agent does not create, rename or fund these accounts. When one is missing or has no balance, skip the recipes that need it and record the skip in `notes.md`.
 
@@ -51,11 +51,11 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 
 ## Features
 
-- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-10-14.
-- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-14.
-- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-14 (EVM, Substrate and Solana connect, EVM sign and reject).
-- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-14 with a testTAO transfer.
-- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-14, Solana forget included.
-- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-10-14 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
+- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-10-26.
+- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-26.
+- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-26 (EVM, Substrate and Solana connect, EVM sign and reject, Substrate `createTransaction`).
+- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-26 with a testTAO transfer.
+- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-26, Solana forget included.
+- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-10-26 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
 
 Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.

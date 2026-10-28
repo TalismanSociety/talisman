@@ -40,6 +40,7 @@ import {
 } from "@talismn/solana"
 import { isAbortError } from "@talismn/util"
 import { getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
+import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
@@ -107,7 +108,21 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
 
 // LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
 // instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
-const lifiClient = lifiSdk.createClient({ integrator: "talisman", apiUrl })
+// The Talisman proxy requires a Gandalf access token on every request. The SDK
+// builds `headers` as a plain object and spreads it again when it retries, so the
+// interceptor keeps it a plain object.
+const lifiClient = lifiSdk.createClient({
+  integrator: "talisman",
+  apiUrl,
+  requestInterceptor: async (request) => {
+    const authorization = await getGandalfAuthorization()
+    if (!authorization) return request
+    return {
+      ...request,
+      headers: { ...(request.headers as Record<string, string>), Authorization: authorization },
+    }
+  },
+})
 
 // --- Internal asset type for LI.FI (not exposed) ---
 type LifiInternalAsset = {

@@ -1,10 +1,8 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@common/constants"
 import { log } from "@common/log"
 import { PhishingDetector } from "@metamask/phishing-controller"
-import { Dexie } from "dexie"
 import { getBlobStore } from "../../../db/blobs"
 import { sessionStorage } from "../../../util/sessionStorageCompat"
-import { reportError } from "../../analytics/errorReporting"
 import { getHostName } from "../helpers"
 import { initialPhishingList } from "./initial-phishing-list"
 
@@ -208,17 +206,6 @@ async function fetchWithEtag(
   return { data, etag }
 }
 
-/** Persist a blob, swallowing DatabaseClosedError (extension shutting down). */
-function persistBlob<T>(store: ReturnType<typeof getBlobStore<T>>, data: T, label: string): void {
-  store.set(data).catch((cause) => {
-    const isDbClosed =
-      cause instanceof Dexie.DatabaseClosedError || cause.name === Dexie.errnames.DatabaseClosed
-    if (!isDbClosed) {
-      reportError(new Error(`Failed to persist ${label}`, { cause }))
-    }
-  })
-}
-
 async function refreshMetamaskList(signal?: AbortSignal) {
   try {
     const result = await fetchWithEtag(METAMASK_CONFIG_URL, etags.metamask, signal)
@@ -231,7 +218,7 @@ async function refreshMetamaskList(signal?: AbortSignal) {
 
     metamaskDetector = buildMetamaskDetector(list)
     etags.metamask = result.etag
-    persistBlob(metamaskBlobStore, { etag: result.etag, data: list }, "MetaMask phishing list")
+    metamaskBlobStore.set({ etag: result.etag, data: list })
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return
     log.error("Error refreshing MetaMask phishing list", { error })
@@ -249,11 +236,7 @@ async function refreshPolkadotList(signal?: AbortSignal) {
 
     polkadotDeny = toDenySet(result.data.deny)
     etags.polkadot = result.etag
-    persistBlob(
-      polkadotBlobStore,
-      { etag: result.etag, data: result.data },
-      "Polkadot phishing list"
-    )
+    polkadotBlobStore.set({ etag: result.etag, data: result.data })
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return
     log.error("Error refreshing Polkadot phishing list", { error })

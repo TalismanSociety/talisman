@@ -1,7 +1,9 @@
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@common/constants"
 import { log } from "@common/log"
 import { assert } from "@talismn/util"
+import { Dexie } from "dexie"
 
+import { blobWriteErrors$ } from "./db/blobs"
 import { analyticsEngine } from "./domains/analytics/engine"
 import { installErrorHandlers, reportError } from "./domains/analytics/errorReporting"
 import { startAnalyticsMechanisms } from "./domains/analytics/mechanisms"
@@ -23,6 +25,9 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 import { trackUiPort } from "./libs/uiOpenState"
 
 installErrorHandlers()
+blobWriteErrors$.subscribe((err) =>
+  reportError(err instanceof Dexie.DatabaseClosedError ? (err.inner ?? err) : err)
+)
 analyticsEngine.start()
 startAnalyticsMechanisms()
 proofOfWorkSolves$.subscribe(({ durationMs, difficulty }) =>

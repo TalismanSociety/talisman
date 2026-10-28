@@ -18,6 +18,10 @@ import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import {
+  BittensorYieldRateLabel,
+  useBittensorYieldRateText,
+} from "../../components/BittensorYieldRateLabel"
+import {
   ValidatorRowSkeleton,
   ValidatorRows,
   ValidatorSortMethodButton,
@@ -28,6 +32,7 @@ import { useCombinedBittensorValidatorsData } from "../../hooks/useCombinedBitte
 import { ROOT_NETUID } from "../../utils/constants"
 import { trackValidatorSelected } from "../../utils/trackValidatorSelected"
 import { sortValidatorOptions, type ValidatorSortValue } from "../../utils/validatorSorting"
+import { getBittensorYieldRateType } from "../../utils/yieldRateType"
 
 export const ChangeValidatorSelect = () => {
   const { t } = useTranslation()
@@ -35,6 +40,8 @@ export const ChangeValidatorSelect = () => {
     useBittensorChangeValidatorWizard()
 
   const netuid = token?.netuid ?? null
+  const rateType = netuid === null ? "APY" : getBittensorYieldRateType(netuid)
+  const { label: rateLabel } = useBittensorYieldRateText(rateType)
 
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(
     token?.networkId,
@@ -146,12 +153,16 @@ export const ChangeValidatorSelect = () => {
               autoFocus
             />
           </div>
-          <ValidatorSortMethodButton method={sortMethod} onChange={setSortMethod} />
+          <ValidatorSortMethodButton
+            method={sortMethod}
+            onChange={setSortMethod}
+            apyLabel={rateLabel}
+          />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="flex justify-between pr-12 pl-15 text-body-disabled text-sm">
             <div>{t("Validator")}</div>
-            <div>{t("APY")}</div>
+            <BittensorYieldRateLabel rateType={rateType} />
           </div>
           <ScrollContainer
             ref={scrollContainerRef}
