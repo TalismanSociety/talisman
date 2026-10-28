@@ -4,7 +4,12 @@ import type { EvmErc20Token, EvmNativeToken, Network } from "@talismn/chaindata-
 import type { Account } from "@talismn/keyring"
 import { hexToU8a } from "@talismn/util"
 import { waitFor } from "@testing-library/dom"
-import type { TransactionRequest } from "viem"
+import {
+  keccak256,
+  recoverTransactionAddress,
+  type TransactionRequest,
+  type TransactionSerialized,
+} from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -19,6 +24,8 @@ import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { keyringStore } from "../keyring/store"
 import { requestEthSendTransaction, requestEthSign } from "../signing/requests"
+import { admitEvmReplacement, admitPlanEvmTx } from "../swaps/plans/admit"
+import { broadcastRaw, sendRaw } from "../swaps/plans/broadcast"
 import { watchEthereumTransaction } from "../transactions/watchEthereumTransaction"
 import { EthHandler } from "./handler.extension"
 import { getNextNonce, releaseReservedNonce } from "./nonceManager"
@@ -26,6 +33,9 @@ import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "./types"
 
 vi.mock("../transactions/watchEthereumTransaction", () => ({ watchEthereumTransaction: vi.fn() }))
+vi.mock("../swaps/plans/admit", () => ({ admitPlanEvmTx: vi.fn(), admitEvmReplacement: vi.fn() }))
+vi.mock("../swaps/plans/broadcast", () => ({ broadcastRaw: vi.fn(), sendRaw: vi.fn() }))
+vi.mock("../swaps/plans/executor", () => ({ swapPlanExecutor: { driveQuietly: vi.fn() } }))
 vi.mock("./nonceManager", () => ({ getNextNonce: vi.fn(), releaseReservedNonce: vi.fn() }))
 vi.mock("../../libs/WindowManager", () => ({
   windowManager: { popupOpen: vi.fn(async () => 1), popupClose: vi.fn() },
@@ -345,6 +355,57 @@ describe("EthHandler", () => {
           unsigned: { ...TRANSACTION, from: undefined } as never,
         })
       ).rejects.toThrow("from is not defined")
+    })
+  })
+
+  describe("pri(eth.signing.signAndSend) for a swap plan", () => {
+    const plan = { id: "plan-1", leg: 1 }
+    const txInfo = { type: "swap-lifi", plan } as never
+    const unsigned: TransactionRequest<string> = {
+      type: "eip1559",
+      from: ADDRESS,
+      to: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      value: "1000",
+      gas: "21000",
+      nonce: 3,
+      maxFeePerGas: "20",
+      maxPriorityFeePerGas: "1",
+    }
+
+    it("signs a leg with the account's key, admits it as the leg and broadcasts it", async () => {
+      vi.mocked(admitPlanEvmTx).mockResolvedValue({ replaces: false })
+
+      const hash = await send("pri(eth.signing.signAndSend)", {
+        evmNetworkId: CHAIN_ID,
+        unsigned,
+        txInfo,
+      })
+
+      expect(admitPlanEvmTx).toHaveBeenCalledWith(
+        plan,
+        expect.objectContaining({ networkId: CHAIN_ID, unsigned, txInfo })
+      )
+      expect(admitEvmReplacement).not.toHaveBeenCalled()
+      const [, raw] = vi.mocked(broadcastRaw).mock.calls[0]
+      expect(
+        await recoverTransactionAddress({ serializedTransaction: raw as TransactionSerialized })
+      ).toBe(ADDRESS)
+      expect(hash).toBe(keccak256(raw))
+      expect(sendRaw).not.toHaveBeenCalled()
+      expect(watchEthereumTransaction).toHaveBeenCalledWith(CHAIN_ID, hash, unsigned, {
+        notifications: true,
+        txInfo,
+      })
+    })
+
+    it("sends a replacement of a sent leg through the node, so a refusal surfaces", async () => {
+      vi.mocked(admitPlanEvmTx).mockResolvedValue({ replaces: true })
+      vi.mocked(sendRaw).mockRejectedValue({ code: -32003 })
+
+      await expect(
+        send("pri(eth.signing.signAndSend)", { evmNetworkId: CHAIN_ID, unsigned, txInfo })
+      ).rejects.toThrow("Transaction rejected")
+      expect(broadcastRaw).not.toHaveBeenCalled()
     })
   })
 

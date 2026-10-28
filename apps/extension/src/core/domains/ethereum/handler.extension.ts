@@ -18,7 +18,7 @@ import { activeNetworksStore } from "../chaindata/store.activeNetworks"
 import { activeTokensStore } from "../chaindata/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { admitEvmReplacement, admitPlanEvmTx, type EvmLegTx } from "../swaps/plans/admit"
+import { admitPlanEvmTx, type EvmLegTx } from "../swaps/plans/admit"
 import { broadcastRaw, sendRaw } from "../swaps/plans/broadcast"
 import { swapPlanExecutor } from "../swaps/plans/executor"
 import type { SwapPlanRef } from "../swaps/plans/types"
@@ -160,8 +160,8 @@ export class EthHandler extends ExtensionHandler {
     return hash as HexString
   }
 
-  /** the user's speed-up or cancel of a swap plan leg: signed here, so the plan keeps its bytes to resend */
-  private signAndSendPlanReplacement = async (ref: SwapPlanRef, tx: Omit<EvmLegTx, "raw">) => {
+  /** a swap plan leg, or the user's speed-up or cancel of one: signed here, so the plan keeps its bytes to resend */
+  private signAndSendPlanTx = async (ref: SwapPlanRef, tx: Omit<EvmLegTx, "raw">) => {
     const from = tx.unsigned.from
     assert(from && isEthereumAddress(from), "Invalid ethereum address")
 
@@ -179,9 +179,9 @@ export class EthHandler extends ExtensionHandler {
     }
 
     const signed = { ...tx, raw: result.val }
-    await admitEvmReplacement(ref, signed)
+    const { replaces } = await admitPlanEvmTx(ref, signed)
     swapPlanExecutor.driveQuietly(ref.id)
-    return this.broadcastPlanTx(signed, true)
+    return this.broadcastPlanTx(signed, replaces)
   }
 
   private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({
@@ -192,7 +192,7 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
     if (txInfo?.plan)
-      return this.signAndSendPlanReplacement(txInfo.plan, {
+      return this.signAndSendPlanTx(txInfo.plan, {
         networkId: evmNetworkId,
         unsigned,
         txInfo,
