@@ -1,7 +1,7 @@
 import { stringToHex } from "viem"
 import { describe, expect, it } from "vitest"
 
-import { isSiweDomainMismatch, parseSiweMessage } from "./siwe"
+import { parseSiweMessage } from "./siwe"
 
 // minimal valid EIP-4361 message for the given domain
 const siweMessage = (domain: string) =>
@@ -19,60 +19,6 @@ const siweMessage = (domain: string) =>
   ].join("\n")
 
 const hex = (text: string) => stringToHex(text)
-
-describe("isSiweDomainMismatch", () => {
-  it("returns false when the SIWE domain matches the site hostname", () => {
-    expect(
-      isSiweDomainMismatch(
-        "personal_sign",
-        hex(siweMessage("example.com")),
-        "https://example.com/login"
-      )
-    ).toBe(false)
-  })
-
-  it("returns true when the SIWE domain differs from the site hostname", () => {
-    expect(
-      isSiweDomainMismatch(
-        "personal_sign",
-        hex(siweMessage("evil.com")),
-        "https://example.com/login"
-      )
-    ).toBe(true)
-  })
-
-  it("detects the domain of a SIWE message sent as raw text", () => {
-    expect(
-      isSiweDomainMismatch("personal_sign", siweMessage("evil.com"), "https://example.com/login")
-    ).toBe(true)
-  })
-
-  it("returns false for a non-SIWE personal_sign message", () => {
-    expect(
-      isSiweDomainMismatch("personal_sign", hex("just a plain message"), "https://example.com")
-    ).toBe(false)
-  })
-
-  it("returns false for a non personal_sign method", () => {
-    expect(
-      isSiweDomainMismatch(
-        "eth_signTypedData_v4",
-        hex(siweMessage("evil.com")),
-        "https://example.com"
-      )
-    ).toBe(false)
-  })
-
-  it("returns false when method, message or url is missing", () => {
-    expect(
-      isSiweDomainMismatch(undefined, hex(siweMessage("evil.com")), "https://example.com")
-    ).toBe(false)
-    expect(isSiweDomainMismatch("personal_sign", undefined, "https://example.com")).toBe(false)
-    expect(isSiweDomainMismatch("personal_sign", hex(siweMessage("evil.com")), undefined)).toBe(
-      false
-    )
-  })
-})
 
 describe("parseSiweMessage", () => {
   it("parses hex and raw text SIWE messages to the same domain", () => {

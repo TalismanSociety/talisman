@@ -4,15 +4,20 @@ import type { NftStoreData } from "../store"
 import type { AccountNft, NftCollection } from "../types"
 import { migrateNftsV3 } from "./migrateNftsV3"
 
-const blob = vi.hoisted(() => ({ stored: null as unknown }))
+const blob = vi.hoisted(() => ({ stored: null as unknown, writeFails: false }))
 
 vi.mock("../../../db", () => ({
-  getBlobStore: () => ({
-    get: async () => blob.stored,
-    set: async (data: unknown) => {
+  getBlobStore: () => {
+    const setOrThrow = async (data: unknown) => {
+      if (blob.writeFails) throw new Error("write failed")
       blob.stored = data
-    },
-  }),
+    }
+    return {
+      get: async () => blob.stored,
+      set: (data: unknown) => setOrThrow(data).catch(() => {}),
+      setOrThrow,
+    }
+  },
 }))
 
 const collection = (id: string): NftCollection => ({
@@ -67,6 +72,7 @@ const MIGRATED: NftStoreData = {
 describe("migrateNftsV3", () => {
   beforeEach(() => {
     blob.stored = null
+    blob.writeFails = false
   })
 
   it("rewrites subscan ids to substrate Nfts ids and drops subscan rows", async () => {
@@ -108,6 +114,13 @@ describe("migrateNftsV3", () => {
 
   it("writes nothing for a wallet without nfts", async () => {
     expect(await migrate()).toBeNull()
+  })
+
+  it("fails when the write fails, so the runner retries it", async () => {
+    blob.stored = { id: "nfts", nfts: [], collections: [] }
+    blob.writeFails = true
+
+    expect(await migrateNftsV3.forward.apply({ password: "" })).toBe(false)
   })
 
   it("leaves migrated data unchanged", async () => {

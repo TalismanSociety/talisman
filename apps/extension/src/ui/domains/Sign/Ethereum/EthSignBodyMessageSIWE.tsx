@@ -4,14 +4,11 @@ import type { EthSignRequest } from "@core/domains/signing/types"
 import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
-import { Checkbox } from "@ui/components/Checkbox"
 import { Drawer } from "@ui/components/Drawer"
-import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useNetworkById } from "@ui/state/chaindata"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
@@ -72,9 +69,6 @@ export const EthSignBodyMessageSIWE: FC<{
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
-  const { siweDomainMismatch, isSiweMismatchAcknowledged, setIsSiweMismatchAcknowledged } =
-    useEthSignMessageRequest()
-
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
       <div className="flex w-full flex-col items-center pt-4">
@@ -99,19 +93,6 @@ export const EthSignBodyMessageSIWE: FC<{
         )}
       </div>
       <div className="grow"></div>
-      {siweDomainMismatch && (
-        <SignAlertMessage type="error" errorCategory={null} className="mt-8">
-          <div className="flex flex-col gap-4">
-            <div>{t("Sign in domain is different from website domain.")}</div>
-            <Checkbox
-              checked={isSiweMismatchAcknowledged}
-              onChange={(e) => setIsSiweMismatchAcknowledged(e.target.checked)}
-            >
-              {t("I understand the risk, sign in anyway")}
-            </Checkbox>
-          </div>
-        </SignAlertMessage>
-      )}
       <Drawer
         analyticsId="eth_sign_siwe_details"
         anchor="bottom"
