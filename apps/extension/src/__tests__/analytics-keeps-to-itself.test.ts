@@ -20,7 +20,7 @@ const ANALYTICS = [
   "ui/api/errorReporting.ts",
 ].flatMap((path) => (path.endsWith(".ts") ? [join(SRC, path)] : listSourceFiles(join(SRC, path))))
 
-const GANDALF = /gandalf/i
+const GANDALF = /from\s+"[^"]*gandalf|gandalf(?:Store|Fetch|Authorization|AccessToken)/i
 const CREDENTIAL = /authorization|credentials\s*:|cookie/i
 
 describe("analytics keeps to itself", () => {

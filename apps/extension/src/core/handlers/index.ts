@@ -41,6 +41,7 @@ const IGNORED_LOG_MESSAGES: MessageTypes[] = [
   "pub(ping)",
   "pri(keepalive)",
   "pri(keepunlocked)",
+  "pri(gandalf.accessToken.get)",
   "pri(analytics.track)",
   "pri(analytics.exception)",
   "pub(talisman.rpc.byGenesisHash.subscribe)",

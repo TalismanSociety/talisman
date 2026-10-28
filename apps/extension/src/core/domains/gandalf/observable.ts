@@ -1,43 +1,88 @@
+import {
+  anchorClocks,
+  type ClockAnchor,
+  elapsedSince,
+  GANDALF_TOKEN_EXPIRY_BUFFER_MS,
+} from "@common/gandalfTokenClock"
 import { log } from "@common/log"
-import { getErrorMessage, isAbortError, type Loadable } from "@talismn/util"
-import { Observable, Subject, shareReplay, startWith, switchMap, timer } from "rxjs"
+import { getErrorMessage } from "@talismn/util"
+import { Subject } from "rxjs"
 
-import { type ProofOfWorkSolve, registerInstall, requestAccessToken } from "./client"
+import {
+  GandalfRequestError,
+  type ProofOfWorkSolve,
+  registerInstall,
+  requestAccessToken,
+} from "./client"
 import { gandalfStore } from "./store"
 
 export const proofOfWorkSolves$ = new Subject<ProofOfWorkSolve>()
 
-/** Refresh tokens every 4 minutes (tokens last 5 min, this gives 1 min buffer). */
-const REFRESH_INTERVAL_MS = 4 * 60 * 1000
+const MIN_BACKOFF_MS = 30_000
+const EXP_ROUNDED_DOWN_TO_SECOND_MS = 1_000
 
-// ── In-memory token cache ─────────────────────────────────────────────────────
+type TokenState =
+  | { kind: "none" }
+  | { kind: "token"; accessToken: string; requestedAt: ClockAnchor; ttlMs: number }
+  | { kind: "backoff"; failedAt: ClockAnchor; waitMs: number; error: Error }
 
-let cachedAccessToken: string | null = null
-let cachedExpiresAt = 0 // unix-ms of when the cached token expires
+let state: TokenState = { kind: "none" }
+let acquisition: Promise<string> | null = null
 
-/** Minimum remaining lifetime (ms) below which we consider a token stale. */
-const EXPIRY_BUFFER_MS = 60 * 1000
-
-function getCachedTokenIfValid(): string | null {
-  if (cachedAccessToken && Date.now() < cachedExpiresAt - EXPIRY_BUFFER_MS) {
-    return cachedAccessToken
-  }
-  return null
-}
+const isFresh = (requestedAt: ClockAnchor, ttlMs: number) =>
+  elapsedSince(requestedAt) < ttlMs - GANDALF_TOKEN_EXPIRY_BUFFER_MS - EXP_ROUNDED_DOWN_TO_SECOND_MS
 
 /**
- * Ensures the install is registered with Gandalf.
- * Returns stored credentials if they exist, otherwise performs one-time registration.
+ * Resolves to a Gandalf access token that stays valid for at least
+ * `GANDALF_TOKEN_EXPIRY_BUFFER_MS` after this call.
+ *
+ * Serves the cached token while it is fresh, rejects without a request while a failed
+ * acquisition is in its backoff window, and otherwise joins or starts the single in-flight
+ * acquisition, which no caller can abort.
  */
-async function ensureRegistered(
-  signal?: AbortSignal
-): Promise<{ installId: string; privateKeyHex: string }> {
+export const getAccessToken = (): Promise<string> => {
+  if (state.kind === "token" && isFresh(state.requestedAt, state.ttlMs))
+    return Promise.resolve(state.accessToken)
+  if (state.kind === "backoff" && elapsedSince(state.failedAt) < state.waitMs)
+    return Promise.reject(state.error)
+  acquisition ??= acquire().finally(() => {
+    acquisition = null
+  })
+  return acquisition
+}
+
+const acquire = async (): Promise<string> => {
+  try {
+    const { installId, privateKeyHex } = await ensureRegistered()
+    const requestedAt = anchorClocks()
+    const { accessToken, expiresIn } = await requestAccessToken(installId, privateKeyHex)
+    const ttlMs = expiresIn * 1000
+    if (!isFresh(requestedAt, ttlMs)) throw new Error("Gandalf access token was stale on arrival")
+    state = { kind: "token", accessToken, requestedAt, ttlMs }
+    return accessToken
+  } catch (cause) {
+    const error =
+      cause instanceof Error
+        ? cause
+        : new Error(getErrorMessage(cause, "Failed to obtain access token"))
+    log.error("Gandalf: failed to obtain access token", error)
+    state = { kind: "backoff", failedAt: anchorClocks(), waitMs: backoffMs(error), error }
+    throw error
+  }
+}
+
+const backoffMs = (error: Error) => {
+  const retryAfterMs = error instanceof GandalfRequestError ? (error.retryAfter ?? 0) * 1000 : 0
+  return Math.max(MIN_BACKOFF_MS, retryAfterMs)
+}
+
+async function ensureRegistered(): Promise<{ installId: string; privateKeyHex: string }> {
   const { installId, privateKeyHex } = await gandalfStore.get()
 
   if (installId && privateKeyHex) return { installId, privateKeyHex }
 
   log.debug("Gandalf: no install credentials found, registering…")
-  const credentials = await registerInstall(signal)
+  const credentials = await registerInstall()
   proofOfWorkSolves$.next(credentials.proofOfWork)
 
   // credentials may have appeared while the proof-of-work was solving (e.g. e2e fixtures
@@ -54,65 +99,3 @@ async function ensureRegistered(
   log.debug("Gandalf: registered with installId", credentials.installId)
   return credentials
 }
-
-/**
- * Observable that emits a valid Gandalf access token (JWT string).
- *
- * - On first subscribe, registers if needed (inc. PoW solve).
- * - Refreshes the token every 4 minutes, but only if there are active subscribers.
- * - Returns the cached token immediately when it's still valid.
- * - Emits `Loadable<string>` with status loading/success/error.
- */
-export const gandalfAccessToken$ = timer(0, REFRESH_INTERVAL_MS).pipe(
-  switchMap(
-    () =>
-      new Observable<Loadable<string>>((subscriber) => {
-        // If we already have a valid token, re-emit it without hitting the API
-        const cached = getCachedTokenIfValid()
-        if (cached) {
-          subscriber.next({ status: "success", data: cached })
-          subscriber.complete()
-          return
-        }
-
-        const controller = new AbortController()
-        subscriber.add(() => controller.abort())
-
-        const run = async () => {
-          try {
-            const { installId, privateKeyHex } = await ensureRegistered(controller.signal)
-            if (controller.signal.aborted) return
-
-            const { accessToken, expiresIn } = await requestAccessToken(
-              installId,
-              privateKeyHex,
-              controller.signal
-            )
-            if (controller.signal.aborted) return
-
-            // Cache for future ticks
-            cachedAccessToken = accessToken
-            cachedExpiresAt = Date.now() + expiresIn * 1000
-
-            subscriber.next({ status: "success", data: accessToken })
-            subscriber.complete()
-          } catch (error) {
-            if (isAbortError(error)) return
-
-            log.error("Gandalf: failed to obtain access token", error)
-            subscriber.next({
-              status: "error",
-              error: {
-                message: getErrorMessage(error, "Failed to obtain access token"),
-              },
-            } as Loadable<string>)
-            subscriber.complete()
-          }
-        }
-
-        run()
-      })
-  ),
-  startWith({ status: "loading" } as Loadable<string>),
-  shareReplay({ bufferSize: 1, refCount: true })
-)

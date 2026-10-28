@@ -1,5 +1,5 @@
 import { createGandalfFetch } from "@common/createGandalfFetch"
 
-import { gandalfAccessToken$ } from "./observable"
+import { getAccessToken } from "./observable"
 
-export const gandalfFetch = createGandalfFetch(gandalfAccessToken$)
+export const gandalfFetch = createGandalfFetch(getAccessToken)

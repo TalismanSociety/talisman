@@ -5,6 +5,7 @@ import {
   base64urlEncode,
   bytesToHex,
   fetchChallenge,
+  GandalfRequestError,
   hexToBytes,
   registerInstall,
   requestAccessToken,
@@ -123,19 +124,18 @@ describe("fetchChallenge", () => {
     await expect(fetchChallenge()).rejects.toThrow("Gandalf challenge request failed (500)")
   })
 
-  it("passes abort signal through", async () => {
-    const controller = new AbortController()
+  it("gives the request its own timeout signal", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ challenge: "x", difficulty: 1, expiresAt: 0 }), {
         status: 200,
       })
     )
 
-    await fetchChallenge(controller.signal)
+    await fetchChallenge()
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ signal: controller.signal })
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
   })
 })
@@ -282,5 +282,41 @@ describe("requestAccessToken", () => {
     await expect(requestAccessToken("inst-1", bytesToHex(priv))).rejects.toThrow(
       "Gandalf token request failed (401): invalid signature"
     )
+  })
+
+  const failWith = (status: number, body: unknown, headers?: HeadersInit) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status, headers }))
+    return requestAccessToken("inst-1", bytesToHex(ed25519.utils.randomSecretKey())).then(
+      () => {
+        throw new Error("expected the token request to fail")
+      },
+      (error: unknown) => error as GandalfRequestError
+    )
+  }
+
+  it("attaches the status and the Retry-After header to its error", async () => {
+    const error = await failWith(429, { message: "slow down" }, { "Retry-After": "60" })
+
+    expect(error).toBeInstanceOf(GandalfRequestError)
+    expect(error).toMatchObject({ status: 429, retryAfter: 60 })
+  })
+
+  it("falls back to the body's retryAfter when there is no header", async () => {
+    const error = await failWith(429, { message: "slow down", retryAfter: 45 })
+
+    expect(error).toMatchObject({ status: 429, retryAfter: 45 })
+  })
+
+  it("ignores a Retry-After it cannot use", async () => {
+    const error = await failWith(
+      503,
+      { retryAfter: -1 },
+      { "Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT" }
+    )
+
+    expect(error).toMatchObject({ status: 503 })
+    expect(error.retryAfter).toBeUndefined()
   })
 })
