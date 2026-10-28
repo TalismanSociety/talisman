@@ -3,9 +3,9 @@ import {
   BITTENSOR_EXISTENTIAL_DEPOSIT_RAO,
   BITTENSOR_WEI_PER_RAO,
 } from "@core/domains/bittensor/constants"
-import { type NetworkId, networkIdFromTokenId } from "@talismn/chaindata-provider"
+import { networkIdFromTokenId, parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
-import type { Hex } from "viem"
+import { erc20Abi, type Hex, type PublicClient } from "viem"
 
 import { latestCandidate } from "../candidates"
 import type { QuoteLeg } from "../types"
@@ -31,11 +31,29 @@ export const fromPersistedLeg = (leg: PersistedQuoteLeg): QuoteLeg => ({
   fees: leg.fees.map((fee) => ({ ...fee, amount: BigNumber(fee.amount) })),
 })
 
-/** Bittensor EVM reaps an account that drops under the existential deposit */
-const keepAliveWei = (networkId: NetworkId) =>
-  BITTENSOR_EVM_PAIRS.some((pair) => pair.evmNetworkId === networkId)
+/** Bittensor EVM reaps an account whose native balance drops under the existential deposit */
+const keepAliveWei = (tokenId: TokenId) =>
+  parseTokenId(tokenId).type === "evm-native" &&
+  BITTENSOR_EVM_PAIRS.some((pair) => pair.evmNetworkId === networkIdFromTokenId(tokenId))
     ? BITTENSOR_EXISTENTIAL_DEPOSIT_RAO * BITTENSOR_WEI_PER_RAO
     : 0n
+
+/** what the leg's signer holds of the token the leg spends */
+export const readLegBalance = (
+  client: PublicClient,
+  leg: Pick<PersistedQuoteLeg, "fromTokenId" | "signer">
+): Promise<bigint> => {
+  const specs = parseTokenId(leg.fromTokenId)
+  const address = leg.signer as Hex
+  return specs.type === "evm-erc20"
+    ? client.readContract({
+        address: specs.contractAddress,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [address],
+      })
+    : client.getBalance({ address })
+}
 
 /**
  * What leg `index` spends: the least of what the previous leg landed, what the signer can spend
@@ -45,7 +63,7 @@ export const deriveLegInput = (plan: SwapPlan, index: number, balance: bigint): 
   const leg = plan.legs[index]
   const previous = plan.legs[index - 1]
   const landed = previous?.state.at === "landed" ? BigInt(previous.state.amount) : 0n
-  const spendable = balance - keepAliveWei(networkIdFromTokenId(leg.quote.fromTokenId))
+  const spendable = balance - keepAliveWei(leg.quote.fromTokenId)
   return [landed, BigInt(leg.quote.inputAmount), spendable].reduce((min, value) =>
     value < min ? value : min
   )

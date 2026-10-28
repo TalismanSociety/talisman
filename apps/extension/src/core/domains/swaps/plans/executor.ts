@@ -27,7 +27,7 @@ import type {
   SupportedSwapProtocol,
 } from "../types"
 import { broadcastRaw } from "./broadcast"
-import { deriveLegInput, fromPersistedLeg } from "./helpers"
+import { deriveLegInput, fromPersistedLeg, readLegBalance } from "./helpers"
 import { dueEffects, isAdmissible, isTerminalPhase } from "./machine"
 import { type SignOutcome, signAndBroadcast } from "./sign"
 import { applyPlanEvent, type BeforePut, getLivePlans, getPlan, sweepPlans } from "./store"
@@ -216,7 +216,7 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
     let built: BuiltLeg
     try {
       const client = await deps.env.evmClient(networkId)
-      const balance = await client.getBalance({ address: leg.quote.signer as Hex })
+      const balance = await readLegBalance(client, leg.quote)
       built = await module.buildLeg(
         {
           leg: fromPersistedLeg(leg.quote),

@@ -33,6 +33,7 @@ import { applyPlanEvent, getPlan, proposePlan, putPlan } from "../store"
 import type { SwapPlan, SwapPlanRef } from "../types"
 import {
   ADMIT_LEG0,
+  ALPHA_TOKEN,
   bridgeOutData,
   CCIP_FEE_WITH_BUFFER,
   EVM_ADDRESS,
@@ -205,6 +206,7 @@ const makeExecutor = ({
     env: {
       evmClient: async () => ({
         getBalance: async () => 2n * 10n ** 18n,
+        readContract: async () => 7n,
         getTransactionCount: async () => 0,
       }),
     } as unknown as SwapEnv,
@@ -636,6 +638,36 @@ describe("swap plan executor", () => {
     })
     expect(await leg1Rows()).toEqual([])
     expect(notified).toEqual(["stopped"])
+  })
+
+  it("builds an ERC20 leg on the signer's token balance, not the native one", async () => {
+    await seedRunningPlan()
+    chain.leg0 = LEG0_LANDED
+    const inputs: bigint[] = []
+    const { executor } = makeExecutor({
+      buildLeg: async ({ input }) => {
+        inputs.push(input)
+        return BUILT
+      },
+    })
+    await executor.drive(PLAN_ID)
+    const plan = await getPlan(PLAN_ID)
+    if (!plan) throw new Error("expected a plan")
+    const leg1 = plan.legs[1]
+    await putPlan({
+      ...plan,
+      legs: [
+        plan.legs[0],
+        {
+          ...leg1,
+          quote: { ...leg1.quote, fromTokenId: `964:evm-erc20:${ALPHA_TOKEN.toLowerCase()}` },
+          state: { at: "building", attempt: 1, nextAttemptAt: clock },
+        },
+      ],
+    })
+
+    await executor.drive(PLAN_ID)
+    expect(inputs).toEqual([LEG0_OUTPUT, 7n])
   })
 
   it("backs off after a transient build failure and tries again when due", async () => {

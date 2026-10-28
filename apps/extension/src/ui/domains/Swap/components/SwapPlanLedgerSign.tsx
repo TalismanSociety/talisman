@@ -1,4 +1,4 @@
-import { deriveLegInput, fromPersistedLeg } from "@core/domains/swaps/plans/helpers"
+import { deriveLegInput, fromPersistedLeg, readLegBalance } from "@core/domains/swaps/plans/helpers"
 import type { SwapPlan } from "@core/domains/swaps/plans/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { skipToken, useQuery } from "@tanstack/react-query"
@@ -24,7 +24,7 @@ const buildHardwareLegTransaction = async (
   const signer = leg.quote.signer as Hex
   const client = await getEvmPublicClient(networkId)
   const [balance, nextNonce] = await Promise.all([
-    client.getBalance({ address: signer }),
+    readLegBalance(client, leg.quote),
     leg.nonce ?? api.ethGetTransactionsCount(signer, networkId),
   ])
   const built = await module.buildLeg({

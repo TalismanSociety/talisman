@@ -1,9 +1,17 @@
 import BigNumber from "bignumber.js"
-import { describe, expect, it } from "vitest"
+import type { PublicClient } from "viem"
+import { describe, expect, it, vi } from "vitest"
 
-import { deriveLegInput, planCallToAction, planSteps, toPersistedLeg } from "../helpers"
+import {
+  deriveLegInput,
+  planCallToAction,
+  planSteps,
+  readLegBalance,
+  toPersistedLeg,
+} from "../helpers"
 import type { LegState, SwapPlan } from "../types"
 import {
+  ALPHA_TOKEN,
   BASE_WTAO,
   EVM_ADDRESS,
   LEG0,
@@ -50,6 +58,40 @@ describe("deriveLegInput", () => {
 
   it("keeps the existential deposit on Bittensor EVM", () => {
     expect(deriveLegInput(plan(LEG0_OUTPUT), 1, LEG0_OUTPUT)).toBe(LEG0_OUTPUT - ED_WEI)
+  })
+
+  it("keeps nothing back from an ERC20 input, the deposit is native", () => {
+    const erc20Plan = plan(LEG0_OUTPUT)
+    erc20Plan.legs[1] = {
+      ...LEG1,
+      quote: { ...LEG1.quote, fromTokenId: `964:evm-erc20:${ALPHA_TOKEN.toLowerCase()}` },
+      state: { at: "building", attempt: 1, nextAttemptAt: T0 },
+    }
+    expect(deriveLegInput(erc20Plan, 1, LEG0_OUTPUT)).toBe(LEG0_OUTPUT)
+  })
+})
+
+describe("readLegBalance", () => {
+  const client = {
+    getBalance: vi.fn(async () => 5n),
+    readContract: vi.fn(async () => 3n),
+  } as unknown as PublicClient
+
+  it("reads the native balance for a native input", async () => {
+    expect(await readLegBalance(client, LEG1.quote)).toBe(5n)
+    expect(client.getBalance).toHaveBeenCalledWith({ address: EVM_ADDRESS })
+  })
+
+  it("reads balanceOf for an ERC20 input", async () => {
+    const leg = { ...LEG1.quote, fromTokenId: `964:evm-erc20:${ALPHA_TOKEN.toLowerCase()}` }
+    expect(await readLegBalance(client, leg)).toBe(3n)
+    expect(client.readContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        address: ALPHA_TOKEN.toLowerCase(),
+        functionName: "balanceOf",
+        args: [EVM_ADDRESS],
+      })
+    )
   })
 })
 
