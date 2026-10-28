@@ -244,7 +244,7 @@ vi.mock("@lifi/sdk", () => ({
   getRoutes: (_client: unknown, ...args: unknown[]) => mockLifiGetRoutes(...args),
   getStepTransaction: (_client: unknown, step: LiFiStep) => mockGetStepTransaction(step),
   getTokens: vi.fn().mockResolvedValue({
-    tokens: { "1": [USDT], "56": [TRUMP], "8453": [BASE_ETH], "42161": [ARB] },
+    tokens: { "1": [USDT], "56": [TRUMP, BNB], "8453": [BASE_ETH], "42161": [ARB] },
   }),
   getToken: vi.fn(),
   ChainType: { EVM: "EVM", SVM: "SVM" },
@@ -448,15 +448,26 @@ describe("LI.FI plan leg build", () => {
   const context = { platform: "ethereum" as const }
   const prepared = { to: DIAMOND, data: "0x", value: 0n }
 
+  type BuildOptions = {
+    slippage?: number
+    preparedToAmountMin?: string
+    quoted?: Route
+    toTokenId?: string
+    module?: typeof lifiSwapModule
+  }
+
   const buildSwapLeg = async (
     input: bigint,
     fresh: Route[],
     {
       slippage = 0.005,
       preparedToAmountMin,
-    }: { slippage?: number; preparedToAmountMin?: string } = {}
+      quoted = usdtToTrump(),
+      toTokenId = TRUMP_ID,
+      module = lifiSwapModule,
+    }: BuildOptions = {}
   ) => {
-    const [quote] = await quotesFor([usdtToTrump()])
+    const [quote] = await quotesFor([quoted], { toTokenId })
     const leg = quote.legs[1]
     mockLifiGetRoutes.mockResolvedValueOnce({
       routes: fresh,
@@ -478,7 +489,7 @@ describe("LI.FI plan leg build", () => {
       },
     }))
     mockPrepare.mockImplementation(async (_client, _native, tx) => tx)
-    return lifiSwapModule.buildLeg({
+    return module.buildLeg({
       leg,
       input,
       slippage,
@@ -534,6 +545,44 @@ describe("LI.FI plan leg build", () => {
 
   it("refuses a later leg LI.FI no longer routes", async () => {
     await expect(buildSwapLeg(2_800_000_000_000_000_000_000n, [])).rejects.toThrow("No route")
+  })
+
+  it("re-quotes a later leg into a native token on a page that never listed LI.FI's tokens", async () => {
+    const landed = 2_819_605_417_939_463_473_599n
+    const skyaiToBnb = (id: string, toAmountMin: string) =>
+      step(id, {
+        tool: "fly",
+        name: "Fly",
+        from: SKYAI,
+        to: BNB,
+        fromAmount: landed.toString(),
+        toAmount: toAmountMin,
+        toAmountMin,
+        fromAddress: ALICE,
+        toAddress: BOB,
+        gas: { amount: "477658000000000", token: BNB },
+        executionDuration: 0,
+      })
+    const usdtToBnb = route(
+      "u2b",
+      [usdtToTrump().steps[0], skyaiToBnb("u2b:1", "500000000000000000")],
+      ALICE,
+      BOB
+    )
+    vi.resetModules()
+    const { lifiSwapModule: freshPage } = await import("../lifi-swap-module")
+
+    const built = await buildSwapLeg(
+      landed,
+      [route("fresh", [skyaiToBnb("fresh:0", "500000000000000000")], ALICE, BOB)],
+      {
+        quoted: usdtToBnb,
+        toTokenId: "56:evm-native",
+        module: freshPage,
+      }
+    )
+
+    expect(built.expectedOutput).toBe(500_000_000_000_000_000n)
   })
 
   describe("when a fresh route spends through another contract than the one approved", () => {

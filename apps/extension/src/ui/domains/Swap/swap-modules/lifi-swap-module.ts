@@ -202,7 +202,9 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
   },
 })
 
+/** a native token resolves only through LI.FI's own list, which a page resuming a plan has not loaded */
 const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset | null> => {
+  await getLifiAssets()
   const cached = resolveAsset(tokenId)
   if (cached) return cached
 
@@ -221,7 +223,7 @@ const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset |
   return null
 }
 
-const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]> => {
+const getLifiAssets = async (_signal?: AbortSignal): Promise<LifiInternalAsset[]> => {
   if (!cachedAssetsPromise) {
     cachedAssetsPromise = fetchLifiAssets().catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
