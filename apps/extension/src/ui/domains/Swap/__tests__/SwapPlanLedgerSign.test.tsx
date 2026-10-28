@@ -239,6 +239,22 @@ describe("SwapPlanLedgerSign", () => {
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
   })
 
+  it("rebuilds the leg on a fresh nonce once the background rejects the signed leg", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderSign()
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    )
+
+    ethGetTransactionsCount.mockResolvedValue(9)
+    act(() => button.sign?.())
+    act(() => button.reject?.(new Error("nonce already used")))
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
+    )
+  })
+
   it("signs the leg with the wallet's next nonce, past the transactions it still has pending", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     renderSign()

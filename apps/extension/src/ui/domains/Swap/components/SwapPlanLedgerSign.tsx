@@ -208,7 +208,10 @@ export const SwapPlanLedgerSign: FC<{
       isFinalStep={request?.signs !== "approval"}
       isProcessing={isApprovalPending}
       onSubmit={handleSubmit}
-      onError={() => setRejectedSubmissions((count) => count + 1)}
+      onError={() => {
+        setRejectedSubmissions((count) => count + 1)
+        onSignAttemptEnded()
+      }}
       onPayloadLockChange={(isLocked) => {
         if (!isLocked) onSignAttemptEnded()
       }}
