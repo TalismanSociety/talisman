@@ -448,7 +448,14 @@ describe("LI.FI plan leg build", () => {
   const context = { platform: "ethereum" as const }
   const prepared = { to: DIAMOND, data: "0x", value: 0n }
 
-  const buildSwapLeg = async (input: bigint, fresh: Route[], slippage = 0.005) => {
+  const buildSwapLeg = async (
+    input: bigint,
+    fresh: Route[],
+    {
+      slippage = 0.005,
+      preparedToAmountMin,
+    }: { slippage?: number; preparedToAmountMin?: string } = {}
+  ) => {
     const [quote] = await quotesFor([usdtToTrump()])
     const leg = quote.legs[1]
     mockLifiGetRoutes.mockResolvedValueOnce({
@@ -456,6 +463,11 @@ describe("LI.FI plan leg build", () => {
       unavailableRoutes: { failed: [], filteredOut: [] },
     })
     mockGetStepTransaction.mockImplementation(async (step: LiFiStep) => ({
+      ...step,
+      estimate: {
+        ...step.estimate,
+        toAmountMin: preparedToAmountMin ?? step.estimate.toAmountMin,
+      },
       transactionRequest: {
         from: ALICE,
         to: DIAMOND,
@@ -508,6 +520,16 @@ describe("LI.FI plan leg build", () => {
       buildSwapLeg(landed, [skyaiToTrump(landed.toString(), "15000000000000")])
     ).rejects.toThrow("moved too far")
     expect(mockGetStepTransaction).not.toHaveBeenCalled()
+  })
+
+  it("refuses a later leg whose prepared transaction fell below what the user accepted", async () => {
+    const landed = 2_800_000_000_000_000_000_000n
+
+    await expect(
+      buildSwapLeg(landed, [skyaiToTrump(landed.toString(), "15700000000000")], {
+        preparedToAmountMin: "15000000000000",
+      })
+    ).rejects.toThrow("moved too far")
   })
 
   it("refuses a later leg LI.FI no longer routes", async () => {

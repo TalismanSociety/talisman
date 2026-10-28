@@ -710,7 +710,7 @@ const buildRouteTransaction = async (
   fromAddress: string,
   fromAmount: bigint,
   context: SwapTransactionContext
-): Promise<SwapModuleTransaction> => {
+): Promise<{ transaction: SwapModuleTransaction; preparedStep: lifiSdk.LiFiStep }> => {
   const fromAsset = resolveAsset(fromTokenId)
   if (!fromAsset) throw new Error("Not supported on Lifi")
 
@@ -746,7 +746,7 @@ const buildRouteTransaction = async (
       transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
     }
 
-    return { platform: "solana", transaction }
+    return { transaction: { platform: "solana", transaction }, preparedStep: stepTransaction }
   }
 
   // EVM transaction handling
@@ -802,7 +802,7 @@ const buildRouteTransaction = async (
     }
   )
 
-  return { platform: "ethereum", transaction }
+  return { transaction: { platform: "ethereum", transaction }, preparedStep: stepTransaction }
 }
 
 /** the quoted rate scaled to what the leg spends, less the slippage the user accepted */
@@ -850,19 +850,34 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
       ?.legs[0]
     const freshRoute = freshLeg?.data as LifiLegRoute | undefined
 
-    let expectedOutput = leg.outputAmount
+    const floor = planLegFloor(leg, input, slippage)
+    const assertHoldsFloor = (toAmountMin: bigint) => {
+      if (toAmountMin < floor)
+        throw new Error("The rate for this step has moved too far, please try again later")
+    }
     if (isPlanLeg) {
       if (!freshRoute) throw new Error("No route for this step right now, please try again later")
-      expectedOutput = BigInt(freshRoute.toAmountMin)
-      if (expectedOutput < planLegFloor(leg, input, slippage))
-        throw new Error("The rate for this step has moved too far, please try again later")
+      assertHoldsFloor(BigInt(freshRoute.toAmountMin))
     }
 
     const step = (freshRoute ?? quotedRoute).steps[0]
     if (!step) throw new Error("No step found in route")
 
+    const { transaction, preparedStep } = await buildRouteTransaction(
+      step,
+      leg.fromTokenId,
+      leg.signer,
+      input,
+      context
+    )
+    let expectedOutput = leg.outputAmount
+    if (isPlanLeg) {
+      expectedOutput = BigInt(preparedStep.estimate.toAmountMin)
+      assertHoldsFloor(expectedOutput)
+    }
+
     return {
-      transaction: await buildRouteTransaction(step, leg.fromTokenId, leg.signer, input, context),
+      transaction,
       fees: freshLeg?.fees ?? leg.fees,
       expectedOutput,
       txInfo: {
