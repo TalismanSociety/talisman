@@ -309,6 +309,12 @@ describe("requestAccessToken", () => {
     expect(error).toMatchObject({ status: 429, retryAfter: 45 })
   })
 
+  it("falls back to the body when the Retry-After header is blank", async () => {
+    const error = await failWith(429, { retryAfter: 60 }, { "Retry-After": " " })
+
+    expect(error).toMatchObject({ status: 429, retryAfter: 60 })
+  })
+
   it("ignores a Retry-After it cannot use", async () => {
     const error = await failWith(
       503,

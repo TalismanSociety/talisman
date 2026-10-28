@@ -20,7 +20,8 @@ const ANALYTICS = [
   "ui/api/errorReporting.ts",
 ].flatMap((path) => (path.endsWith(".ts") ? [join(SRC, path)] : listSourceFiles(join(SRC, path))))
 
-const GANDALF = /from\s+"[^"]*gandalf|gandalf(?:Store|Fetch|Authorization|AccessToken)/i
+const GANDALF = /gandalf/i
+const HOUSEKEEPING_REGISTRY_ENTRY = `"pri(gandalf.accessToken.get)": { exempt: "housekeeping" },`
 const CREDENTIAL = /authorization|credentials\s*:|cookie/i
 
 describe("analytics keeps to itself", () => {
@@ -29,7 +30,9 @@ describe("analytics keeps to itself", () => {
   })
 
   it("never touches Gandalf: not its store, its install id or its fetch", () => {
-    const offenders = ANALYTICS.filter((file) => GANDALF.test(readFileSync(file, "utf8")))
+    const offenders = ANALYTICS.filter((file) =>
+      GANDALF.test(readFileSync(file, "utf8").replace(HOUSEKEEPING_REGISTRY_ENTRY, ""))
+    )
     expect(offenders.map((file) => relative(SRC, file))).toEqual([])
   })
 

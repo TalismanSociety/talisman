@@ -1,15 +1,19 @@
 import { createGandalfAuthorization, createGandalfFetch } from "@common/createGandalfFetch"
+import { ed25519 } from "@noble/curves/ed25519.js"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { ExtensionStore } from "../../../handlers/stores"
+import { bytesToHex } from "../client"
 
 const mocks = vi.hoisted(() => ({
   store: { get: vi.fn(), set: vi.fn() },
   registerInstall: vi.fn(),
   requestAccessToken: vi.fn(),
+  uiApi: { gandalfAccessToken: vi.fn<() => Promise<string>>() },
 }))
 
 vi.mock("../store", () => ({ gandalfStore: mocks.store }))
+vi.mock("@ui/api", () => ({ api: mocks.uiApi }))
 vi.mock("../client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../client")>()),
   registerInstall: mocks.registerInstall,
@@ -26,7 +30,12 @@ type Deferred = { resolve: () => void }
 let trueOffsetMs = 0
 const trueNow = () => Date.now() + trueOffsetMs
 
-let server: { latencyMs: number; failure: Error | null; hang: Deferred[] | null }
+let server: {
+  latencyMs: number
+  failure: Error | null
+  hang: Deferred[] | null
+  skewRejection: { maxSkewMs: number; error: Error } | null
+}
 let minted: { token: string; expMs: number }[]
 let sent: { token: string; atMs: number }[]
 
@@ -43,7 +52,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-28T00:00:00.000Z"))
   vi.clearAllMocks()
   trueOffsetMs = 0
-  server = { latencyMs: 0, failure: null, hang: null }
+  server = { latencyMs: 0, failure: null, hang: null, skewRejection: null }
   minted = []
   sent = []
   mocks.store.get.mockResolvedValue({ installId: "inst-1", privateKeyHex: "aabb" })
@@ -52,6 +61,8 @@ beforeEach(() => {
     if (server.hang) await new Promise<void>((resolve) => server.hang?.push({ resolve }))
     if (server.latencyMs) await new Promise((resolve) => setTimeout(resolve, server.latencyMs))
     if (server.failure) throw server.failure
+    if (server.skewRejection && Math.abs(trueOffsetMs) > server.skewRejection.maxSkewMs)
+      throw server.skewRejection.error
     const token = `jwt-${minted.length + 1}`
     minted.push({ token, expMs: Math.floor(issuedMs / SECOND) * SECOND + TTL_S * SECOND })
     return { accessToken: token, expiresIn: TTL_S }
@@ -59,8 +70,16 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   vi.useRealTimers()
 })
+
+const releaseHungRequests = () => {
+  const hang = server.hang ?? []
+  server.hang = null
+  for (const { resolve } of hang) resolve()
+}
 
 const expOf = (token: string) => minted.find((mint) => mint.token === token)?.expMs ?? 0
 const expired = () => sent.filter((send) => send.atMs >= expOf(send.token))
@@ -193,6 +212,128 @@ describe("getAccessToken", () => {
     expect(expired()).toEqual([])
   })
 
+  it("hands the UI a different token for reads five minutes apart over the message port", async () => {
+    const { getAccessToken, GandalfHandler } = await importFresh()
+    const handler = new GandalfHandler({} as ExtensionStore)
+    mocks.uiApi.gandalfAccessToken.mockImplementation(() =>
+      handler.handle("1", "pri(gandalf.accessToken.get)", null, {} as chrome.runtime.Port)
+    )
+    const { getGandalfAuthorization } = await import("@ui/util/gandalfFetch")
+
+    await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-1")
+    await vi.advanceTimersByTimeAsync(5 * MINUTE)
+    await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-2")
+
+    expect(mocks.uiApi.gandalfAccessToken).toHaveBeenCalledTimes(2)
+    expect(mints()).toBe(2)
+    await expect(getAccessToken()).resolves.toBe("jwt-2")
+    expect(mints()).toBe(2)
+  })
+
+  it("counts freshness from request start when the reply arrives two minutes late", async () => {
+    server.hang = []
+    const { getAccessToken } = await importFresh()
+
+    const first = read(getAccessToken)
+    await vi.advanceTimersByTimeAsync(120 * SECOND)
+    releaseHungRequests()
+    await expect(first).resolves.toBe("jwt-1")
+
+    await vi.advanceTimersByTimeAsync(118 * SECOND)
+    await expect(read(getAccessToken)).resolves.toBe("jwt-1")
+    await vi.advanceTimersByTimeAsync(SECOND)
+    await expect(read(getAccessToken)).resolves.toBe("jwt-2")
+    expect(mints()).toBe(2)
+    expect(expired()).toEqual([])
+  })
+
+  it("sits in backoff while the issuer rejects a skewed clock, then recovers", async () => {
+    const { getAccessToken, GandalfRequestError } = await importFresh()
+    server.skewRejection = {
+      maxSkewMs: 240 * SECOND,
+      error: new GandalfRequestError("Gandalf token request failed (401): stale timestamp", 401),
+    }
+
+    await expect(read(getAccessToken)).resolves.toBe("jwt-1")
+    vi.setSystemTime(Date.now() - 60 * MINUTE)
+    trueOffsetMs += 60 * MINUTE
+    const results = await readEverySecond(getAccessToken, 600)
+
+    const served = results.filter((result) => result === "jwt-1")
+    const rejected = results.filter((result) => result === server.skewRejection?.error)
+    expect(served.length + rejected.length).toBe(600)
+    expect(served).toHaveLength(239)
+    expect(mints()).toBeGreaterThanOrEqual(13)
+    expect(mints()).toBeLessThanOrEqual(14)
+    expect(expired()).toEqual([])
+
+    vi.setSystemTime(Date.now() + 60 * MINUTE)
+    trueOffsetMs = 0
+    await expect(read(getAccessToken)).resolves.toBe("jwt-2")
+  })
+
+  it("does not stretch a backoff when the wall clock moves back", async () => {
+    const { getAccessToken, GandalfRequestError } = await importFresh()
+    server.failure = new GandalfRequestError("Gandalf token request failed (503)", 503)
+
+    await expect(read(getAccessToken)).resolves.toBe(server.failure)
+    await vi.advanceTimersByTimeAsync(10 * SECOND)
+    vi.setSystemTime(Date.now() - 60 * MINUTE)
+    trueOffsetMs += 60 * MINUTE
+    server.failure = null
+
+    await vi.advanceTimersByTimeAsync(19 * SECOND)
+    await expect(read(getAccessToken)).resolves.toBeInstanceOf(Error)
+    expect(mints()).toBe(1)
+    await vi.advanceTimersByTimeAsync(SECOND)
+    await expect(read(getAccessToken)).resolves.toBe("jwt-1")
+    expect(mints()).toBe(2)
+  })
+
+  it("backs off after the token request hits its own 30 second timeout", async () => {
+    const client = await vi.importActual<typeof import("../client")>("../client")
+    mocks.requestAccessToken.mockImplementation(client.requestAccessToken)
+    mocks.store.get.mockResolvedValue({
+      installId: "inst-1",
+      privateKeyHex: bytesToHex(ed25519.utils.randomSecretKey()),
+    })
+    const timeouts: { ms: number; controller: AbortController }[] = []
+    vi.spyOn(AbortSignal, "timeout").mockImplementation((ms) => {
+      const controller = new AbortController()
+      timeouts.push({ ms, controller })
+      return controller.signal
+    })
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockImplementationOnce(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) =>
+            init?.signal?.addEventListener("abort", () => reject(init.signal?.reason))
+          )
+      )
+      .mockResolvedValue(
+        new Response(JSON.stringify({ accessToken: "jwt-after-timeout", expiresIn: TTL_S }))
+      )
+    vi.stubGlobal("fetch", fetchMock)
+    const { getAccessToken } = await importFresh()
+
+    const first = read(getAccessToken)
+    await vi.advanceTimersByTimeAsync(30 * SECOND)
+    expect(timeouts.map(({ ms }) => ms)).toEqual([30_000])
+    timeouts[0].controller.abort(new DOMException("The operation timed out.", "TimeoutError"))
+    const error = await first
+    expect(error).toBeInstanceOf(Error)
+
+    await vi.advanceTimersByTimeAsync(29 * SECOND)
+    await expect(read(getAccessToken)).resolves.toBe(error)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(SECOND)
+    await expect(read(getAccessToken)).resolves.toBe("jwt-after-timeout")
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(timeouts).toHaveLength(2)
+  })
+
   it.each([
     { status: 401, retryAfter: undefined, attempts: 10 },
     { status: 403, retryAfter: undefined, attempts: 10 },
@@ -253,9 +394,7 @@ describe("getAccessToken", () => {
     for (const [, init] of fetchMock.mock.calls)
       expect(new Headers(init?.headers).has("Authorization")).toBe(false)
 
-    const hang = server.hang
-    server.hang = null
-    for (const { resolve } of hang) resolve()
+    releaseHungRequests()
     await vi.advanceTimersByTimeAsync(0)
 
     await gandalfFetch("https://api.example/resource")
@@ -271,9 +410,7 @@ describe("getAccessToken", () => {
 
     const first = read(getAccessToken)
     await vi.advanceTimersByTimeAsync(250 * SECOND)
-    const hang = server.hang
-    server.hang = null
-    for (const { resolve } of hang) resolve()
+    releaseHungRequests()
     await expect(first).resolves.toBeInstanceOf(Error)
 
     await expect(read(getAccessToken)).resolves.toBeInstanceOf(Error)

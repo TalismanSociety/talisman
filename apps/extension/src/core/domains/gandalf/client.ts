@@ -17,7 +17,8 @@ export class GandalfRequestError extends Error {
 
 const parseRetryAfterSeconds = (...candidates: unknown[]): number | undefined => {
   for (const candidate of candidates) {
-    const seconds = typeof candidate === "string" ? Number(candidate) : candidate
+    const seconds =
+      typeof candidate === "string" && candidate.trim() !== "" ? Number(candidate) : candidate
     if (typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 0) return seconds
   }
   return undefined

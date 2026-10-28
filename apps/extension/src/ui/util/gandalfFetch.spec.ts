@@ -21,35 +21,52 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   vi.useRealTimers()
 })
 
 const authorizationSent = () => new Headers(fetchSpy.mock.calls[0][1]?.headers).get("Authorization")
 
-async function fetchWithReplyAfter(wallDelayMs: number, monoDelayMs = 0) {
+async function fetchWithReplyAfter({
+  wallMs = 0,
+  monoMs = 0,
+}: {
+  wallMs?: number
+  monoMs?: number
+}) {
   const { gandalfFetch } = await import("./gandalfFetch")
   const request = gandalfFetch("https://api.example.com/data")
-  await vi.advanceTimersByTimeAsync(monoDelayMs)
-  vi.setSystemTime(Date.now() + wallDelayMs)
+  const monoBase = performance.now()
+  vi.spyOn(performance, "now").mockReturnValue(monoBase + monoMs)
+  vi.setSystemTime(Date.now() + wallMs)
   reply("jwt-ui")
   await request
 }
 
+const expectTokenDiscarded = () => {
+  expect(fetchSpy).toHaveBeenCalledTimes(1)
+  expect(authorizationSent()).toBeNull()
+  expect(mocks.gandalfAccessToken).toHaveBeenCalledTimes(1)
+}
+
 it("sends the token when the background replies promptly", async () => {
-  await fetchWithReplyAfter(200, 200)
+  await fetchWithReplyAfter({ wallMs: 200, monoMs: 200 })
   expect(authorizationSent()).toBe("Bearer jwt-ui")
 })
 
 it("sends the token when a suspended page gets its reply just under a minute late", async () => {
-  await fetchWithReplyAfter(59_900)
+  await fetchWithReplyAfter({ wallMs: 59_900 })
   expect(authorizationSent()).toBe("Bearer jwt-ui")
 })
 
-it("discards a token whose reply took a minute or more to arrive", async () => {
-  await fetchWithReplyAfter(60_000)
-  expect(fetchSpy).toHaveBeenCalledTimes(1)
-  expect(authorizationSent()).toBeNull()
-  expect(mocks.gandalfAccessToken).toHaveBeenCalledTimes(1)
+it("discards a token whose reply took a minute or more of wall time", async () => {
+  await fetchWithReplyAfter({ wallMs: 60_000 })
+  expectTokenDiscarded()
+})
+
+it("discards a token whose reply took a minute of monotonic time while the wall clock stood still", async () => {
+  await fetchWithReplyAfter({ monoMs: 60_000 })
+  expectTokenDiscarded()
 })
 
 it("exposes the authorization hook for the LI.FI SDK", async () => {
