@@ -1,10 +1,12 @@
 import { address as solAddress } from "@solana/kit"
+import { findAssociatedTokenPda } from "@solana-program/token"
+import { TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022"
 import {
   type SolToken2022Token,
   SolToken2022TokenSchema,
   solToken2022TokenId,
 } from "@talismn/chaindata-provider"
-import { isNotNil } from "@talismn/util"
+import { isNotNil, LruMap } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
@@ -21,6 +23,10 @@ const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 // Keyed by tokenId. Stores both successful metadata and known-invalid mints
 // so we don't re-fetch the same mint on every 6s poll.
 const dynamicTokenMetadataCache = new Map<string, CachedToken>()
+
+// Deriving an associated token account address hashes until it finds an off-curve point,
+// too costly to repeat for every token account on every poll.
+const associatedTokenAccountCache = new LruMap<string, string>(1024)
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -48,25 +54,18 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         )
         .send()
 
-      const balances = tokenAccounts.value
-        .map((d): IBalance | null => {
+      // an address can hold a mint in more than one token account: its balance is the sum
+      const tokenAccountHoldings = await Promise.all(
+        tokenAccounts.value.map(async (d) => {
           try {
-            const mintAddress = d.account.data.parsed.info.mint
-            const value = d.account.data.parsed.info.tokenAmount.amount ?? "0"
-            const tokenId = solToken2022TokenId(networkId, mintAddress)
-
-            // Only register mints with non-zero balance to avoid storing every
-            // airdropped/spam token an account has ever received with 0 balance.
-            if (!knownTokenIds.has(tokenId) && value !== "0") unknownMints.add(mintAddress)
-
-            return {
-              tokenId,
-              networkId,
-              address,
-              source: MODULE_TYPE,
-              status: "live",
-              value,
-            }
+            const { mint: mintAddress, state, tokenAmount } = d.account.data.parsed.info
+            const value = BigInt(tokenAmount.amount ?? "0")
+            // transfers only spend from the associated token account, see getTransferCallData
+            const isSpendable =
+              value !== 0n &&
+              state !== "frozen" &&
+              d.pubkey === (await getAssociatedTokenAccount(address, mintAddress))
+            return { mintAddress, value, isSpendable }
           } catch {
             log.warn("Failed to parse token amount", {
               address,
@@ -75,7 +74,40 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             return null
           }
         })
-        .filter(isNotNil)
+      )
+
+      const holdingsPerTokenId = new Map<string, { total: bigint; spendable: bigint }>()
+      for (const { mintAddress, value, isSpendable } of tokenAccountHoldings.filter(isNotNil)) {
+        const tokenId = solToken2022TokenId(networkId, mintAddress)
+
+        // Only register mints with non-zero balance to avoid storing every
+        // airdropped/spam token an account has ever received with 0 balance.
+        if (!knownTokenIds.has(tokenId) && value !== 0n) unknownMints.add(mintAddress)
+
+        const { total, spendable } = holdingsPerTokenId.get(tokenId) ?? { total: 0n, spendable: 0n }
+        holdingsPerTokenId.set(tokenId, {
+          total: total + value,
+          spendable: spendable + (isSpendable ? value : 0n),
+        })
+      }
+
+      const balances = [...holdingsPerTokenId].map(
+        ([tokenId, { total, spendable }]): IBalance => ({
+          tokenId,
+          networkId,
+          address,
+          source: MODULE_TYPE,
+          status: "live",
+          ...(spendable === total
+            ? { value: total.toString() }
+            : {
+                values: [
+                  { type: "free", label: "free", amount: total.toString() },
+                  { type: "locked", label: "locked", amount: (total - spendable).toString() },
+                ],
+              }),
+        })
+      )
 
       setDetectedTokenIds(
         address,
@@ -167,3 +199,17 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 }
 
 const getBalanceKey = (tokenId: string, address: string) => `${tokenId}:${address}`
+
+const getAssociatedTokenAccount = async (owner: string, mint: string) => {
+  const key = `${owner}:${mint}`
+  const cached = associatedTokenAccountCache.get(key)
+  if (cached) return cached
+
+  const [associatedTokenAccount] = await findAssociatedTokenPda({
+    mint: solAddress(mint),
+    owner: solAddress(owner),
+    tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+  })
+  associatedTokenAccountCache.set(key, associatedTokenAccount)
+  return associatedTokenAccount
+}
