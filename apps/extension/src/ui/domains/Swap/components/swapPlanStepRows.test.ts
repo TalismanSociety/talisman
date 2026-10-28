@@ -8,7 +8,7 @@ import {
   SUMMARY,
   T0,
 } from "@core/domains/swaps/plans/__tests__/fixtures"
-import type { LegState, SwapPlan } from "@core/domains/swaps/plans/types"
+import type { LegState, PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { WalletTransactionEth } from "@core/domains/transactions/types"
 import type { Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
@@ -53,7 +53,12 @@ const ctx = (intermediateType: "keypair" | "ledger-ethereum" = "keypair"): StepR
 const LANDED_0: LegState = { at: "landed", hash: LEG0_HASH, amount: "1", landedAt: T0 }
 const LANDED_1: LegState = { at: "landed", hash: LEG1_HASH, amount: "1", landedAt: T0 }
 
-const plan = (phase: SwapPlan["phase"], first: LegState, second: LegState): SwapPlan => ({
+const plan = (
+  phase: SwapPlan["phase"],
+  first: LegState,
+  second: LegState,
+  signerType: PlanLeg["signerType"] = "keypair"
+): SwapPlan => ({
   id: PLAN_ID,
   phase,
   createdAt: T0,
@@ -63,7 +68,7 @@ const plan = (phase: SwapPlan["phase"], first: LegState, second: LegState): Swap
   intermediate: EVM_ADDRESS,
   legs: [
     { ...LEG0, state: first },
-    { ...LEG1, state: second },
+    { ...LEG1, state: second, signerType },
   ],
 })
 
@@ -258,11 +263,29 @@ describe("swapPlanProgressView", () => {
 
   it("asks for the Ledger signature a hardware leg waits on", () => {
     const result = view(
-      plan("paused", LANDED_0, { at: "awaiting-user", why: "hardware", since: T0 })
+      plan(
+        "paused",
+        LANDED_0,
+        { at: "awaiting-user", why: "hardware", since: T0 },
+        "ledger-ethereum"
+      ),
+      { ledger: true }
     )
 
     expect(result.title).toBe("Sign step 2 on your Ledger")
     expect(result.steps[1].detail).toBe("Waiting for your Ledger signature")
+  })
+
+  it("asks for the signature a keypair leg waits on", () => {
+    const result = view(
+      plan("paused", LANDED_0, { at: "awaiting-user", why: "hardware", since: T0 })
+    )
+
+    expect(result).toMatchObject({
+      title: "Sign step 2",
+      subtitle: "Your swap continues once you sign step 2.",
+    })
+    expect(result.steps[1].detail).toBe("Waiting for your signature")
   })
 
   it("tells why the Ledger transaction could not be prepared", () => {
@@ -455,6 +478,11 @@ describe("quoteStepRows", () => {
         detail: "Sent automatically from Bridge account",
       },
     ])
+  })
+
+  it("has the user sign a later step no background module signs for them", () => {
+    const [, row] = quoteStepRows(ctx(), [LEG0.quote, { ...LEG1.quote, protocol: "lifi" }])
+    expect(row.detail).toBe("You sign this step from Bridge account")
   })
 
   it("labels a leg that stays on its network as a swap", () => {

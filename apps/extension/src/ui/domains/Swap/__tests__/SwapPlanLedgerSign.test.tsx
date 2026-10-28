@@ -1,65 +1,109 @@
-import type { SwapPlan } from "@core/domains/swaps/plans/types"
+import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { BuiltLeg } from "@core/domains/swaps/types"
+import type { AccountType } from "@talismn/keyring"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
+import { of } from "rxjs"
+import { encodeFunctionData, erc20Abi } from "viem"
 import { describe, expect, it, vi } from "vitest"
 
-const { ethGetTransactionsCount, submitted, payloadLock, button } = vi.hoisted(() => ({
+const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+const USDT_ID = `1:evm-erc20:${USDT.toLowerCase()}`
+const SPENDER = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE"
+const APPROVAL_HASH = `0x${"ab".repeat(32)}`
+
+const { ethGetTransactionsCount, submitted, payloadLock, button, client } = vi.hoisted(() => ({
   ethGetTransactionsCount: vi.fn(),
   submitted: vi.fn(),
   payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
   button: {
     sign: undefined as (() => void) | undefined,
+    submit: undefined as ((hash: string) => void) | undefined,
     reject: undefined as ((cause: unknown) => void) | undefined,
+  },
+  client: {
+    allowance: vi.fn<() => Promise<bigint>>(),
+    waitForTransactionReceipt: vi.fn(),
   },
 }))
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (value: string) => value }) }))
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) =>
+      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(options?.[name])),
+  }),
+}))
 vi.mock("@ui/api", () => ({ api: { ethGetTransactionsCount } }))
+vi.mock("@ui/state/chaindata", () => ({ getToken$: () => of({ symbol: "USDT" }) }))
 vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
   TxSubmitButton: ({
     tx,
+    label,
+    isProcessing,
+    onSubmit,
     onPayloadLockChange,
     onError,
   }: {
     tx?: unknown
+    label?: string
+    isProcessing?: boolean
+    onSubmit: (hash: string) => void
     onPayloadLockChange?: (isLocked: boolean) => void
     onError?: (cause: unknown) => void
   }) => {
     const [isSigning, setIsSigning] = useState(false)
     payloadLock.current = onPayloadLockChange
     button.sign = () => setIsSigning(true)
+    button.submit = onSubmit
     button.reject = onError
     if (tx) submitted(tx)
-    return <button type="button" aria-busy={isSigning} />
+    return (
+      <button type="button" aria-busy={isSigning || !!isProcessing}>
+        {label}
+      </button>
+    )
   },
 }))
 vi.mock("../swap-modules/evm-network", () => ({
   getEvmPublicClient: async () => ({
     getBalance: async () => 10n ** 21n,
     getTransactionCount: async () => 7,
+    readContract: async ({ functionName }: { functionName: string }) =>
+      functionName === "allowance" ? client.allowance() : 10n ** 21n,
+    prepareTransactionRequest: async (request: object) => ({
+      ...request,
+      gas: 50_000n,
+      maxFeePerGas: 10n,
+      maxPriorityFeePerGas: 1n,
+    }),
+    waitForTransactionReceipt: client.waitForTransactionReceipt,
   }),
 }))
+
+const builtLeg = (to: `0x${string}`, txInfo: BuiltLeg["txInfo"]): BuiltLeg => ({
+  transaction: {
+    platform: "ethereum",
+    transaction: {
+      to,
+      data: "0x",
+      value: 1n,
+      gas: 21_000n,
+      maxFeePerGas: 10n,
+      maxPriorityFeePerGas: 1n,
+    },
+  },
+  fees: [],
+  expectedOutput: 1n,
+  txInfo,
+})
+
 vi.mock("../swaps.api", () => ({
   swapModules: [
     {
       protocol: "forevermoney",
-      buildLeg: async (): Promise<BuiltLeg> => ({
-        transaction: {
-          platform: "ethereum",
-          transaction: {
-            to: GATEWAY,
-            data: "0x",
-            value: 1n,
-            gas: 21_000n,
-            maxFeePerGas: 10n,
-            maxPriorityFeePerGas: 1n,
-          },
-        },
-        fees: [],
-        expectedOutput: 1n,
-        txInfo: {
+      buildLeg: async () =>
+        builtLeg(GATEWAY, {
           type: "swap-forevermoney",
           fromTokenId: "964:evm-native",
           toTokenId: "8453:evm-native",
@@ -67,8 +111,34 @@ vi.mock("../swaps.api", () => ({
           toAmount: "1",
           to: GATEWAY,
           destinationStartBlock: "1",
-        },
+        }),
+    },
+    {
+      protocol: "lifi",
+      getApprovalInfo: ({
+        fromAmount,
+        fromAddress,
+      }: {
+        fromAmount: bigint
+        fromAddress: string
+      }) => ({
+        contractAddress: SPENDER,
+        amount: fromAmount,
+        tokenAddress: USDT,
+        chainId: 1,
+        fromAddress,
+        protocolName: "LI.FI",
       }),
+      buildLeg: async () =>
+        builtLeg(SPENDER, {
+          type: "swap-lifi",
+          protocolName: "fly",
+          fromTokenId: USDT_ID,
+          toTokenId: "8453:evm-native",
+          fromAmount: "1",
+          toAmount: "1",
+          to: RECIPIENT,
+        }),
     },
   ],
 }))
@@ -80,12 +150,13 @@ import {
   LEG0_OUTPUT,
   LEG1,
   PLAN_ID,
+  RECIPIENT,
   SUMMARY,
   T0,
 } from "@core/domains/swaps/plans/__tests__/fixtures"
 import { SwapPlanLedgerSign, useHardwareLegTransaction } from "../components/SwapPlanLedgerSign"
 
-const PLAN: SwapPlan = {
+const planWaitingOn = (leg: PlanLeg): SwapPlan => ({
   id: PLAN_ID,
   phase: "paused",
   createdAt: T0,
@@ -103,32 +174,46 @@ const PLAN: SwapPlan = {
         landedAt: T0,
       },
     },
-    {
-      ...LEG1,
-      signerType: "ledger-ethereum",
-      state: { at: "awaiting-user", why: "hardware", since: T0 },
-    },
+    { ...leg, state: { at: "awaiting-user", why: "hardware", since: T0 } },
   ],
+})
+
+const LEDGER_PLAN = planWaitingOn({ ...LEG1, signerType: "ledger-ethereum" })
+
+const LIFI_PLAN = planWaitingOn({
+  ...LEG1,
+  quote: { ...LEG1.quote, protocol: "lifi", fromTokenId: USDT_ID, data: {} },
+  bound: null,
+})
+
+const approveData = encodeFunctionData({
+  abi: erc20Abi,
+  functionName: "approve",
+  args: [SPENDER, BigInt(LEG1.quote.inputAmount)],
+})
+
+const WaitingLeg = ({ plan, signerType }: { plan: SwapPlan; signerType: AccountType }) => {
+  const { data: request, refetch } = useHardwareLegTransaction(plan, 1)
+  return (
+    <SwapPlanLedgerSign request={request} signerType={signerType} onSignAttemptEnded={refetch} />
+  )
 }
 
-const LedgerLeg = () => {
-  const { data: tx, refetch } = useHardwareLegTransaction(PLAN, 1)
-  return <SwapPlanLedgerSign tx={tx} onSignAttemptEnded={refetch} />
-}
-
-const renderLedgerSign = () =>
+const renderSign = (plan = LEDGER_PLAN, signerType: AccountType = plan.legs[1].signerType) =>
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <LedgerLeg />
+      <WaitingLeg plan={plan} signerType={signerType} />
     </QueryClientProvider>
   )
+
+const buttonLabel = () => screen.getByRole("button").textContent
 
 describe("SwapPlanLedgerSign", () => {
   it("rebuilds the leg on a fresh nonce once a sign attempt ends without the leg sent", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
-    renderLedgerSign()
+    renderSign()
     await waitFor(() =>
       expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
     )
@@ -144,7 +229,7 @@ describe("SwapPlanLedgerSign", () => {
 
   it("offers a fresh sign attempt once the background rejects the signed leg", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
-    renderLedgerSign()
+    renderSign()
     await waitFor(() => expect(submitted).toHaveBeenCalled())
 
     act(() => button.sign?.())
@@ -156,10 +241,81 @@ describe("SwapPlanLedgerSign", () => {
 
   it("signs the leg with the wallet's next nonce, past the transactions it still has pending", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
-    renderLedgerSign()
+    renderSign()
 
     await waitFor(() => expect(submitted).toHaveBeenCalled())
     expect(ethGetTransactionsCount).toHaveBeenCalledWith(EVM_ADDRESS, "964")
     expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    expect(buttonLabel()).toBe("Sign on Ledger")
+  })
+
+  it("asks a keypair signer to sign, not a Ledger", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    renderSign(LIFI_PLAN)
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: SPENDER, nonce: 8 },
+      txInfo: { type: "swap-lifi", plan: { id: PLAN_ID, leg: 1 } },
+    })
+    expect(buttonLabel()).toBe("Sign")
+  })
+
+  it("asks for the spender's allowance before the leg when it is short", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    renderSign(LIFI_PLAN)
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    const tx = submitted.mock.lastCall?.[0]
+    expect(tx).toMatchObject({
+      networkId: "1",
+      payload: { from: EVM_ADDRESS, to: USDT, data: approveData, value: 0n, nonce: 8 },
+      txInfo: {
+        type: "approve-erc20",
+        tokenId: USDT_ID,
+        contractAddress: SPENDER,
+        amount: LEG1.quote.inputAmount,
+      },
+    })
+    expect(tx.txInfo.plan).toBeUndefined()
+    expect(buttonLabel()).toBe("Approve USDT")
+  })
+
+  it("builds the leg once the approval mined", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    let mined: () => void = () => {}
+    client.waitForTransactionReceipt.mockReturnValue(
+      new Promise<void>((resolve) => {
+        mined = resolve
+      })
+    )
+    renderSign(LIFI_PLAN)
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+
+    act(() => {
+      button.submit?.(APPROVAL_HASH)
+    })
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
+    await waitFor(() =>
+      expect(client.waitForTransactionReceipt).toHaveBeenCalledWith(
+        expect.objectContaining({ hash: APPROVAL_HASH })
+      )
+    )
+
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    ethGetTransactionsCount.mockResolvedValue(9)
+    await act(async () => {
+      mined()
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: SPENDER, nonce: 9 },
+      txInfo: { plan: { id: PLAN_ID, leg: 1 } },
+    })
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
   })
 })

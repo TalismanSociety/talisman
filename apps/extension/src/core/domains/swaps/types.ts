@@ -233,8 +233,11 @@ export type ApprovalInfo = {
   protocolName: string
 } | null
 
+/** the quote whose first leg is approved: a plan leg passes itself as a one-leg quote */
+type ApprovalQuote = Pick<BaseQuote, "legs" | "subProtocol">
+
 export type ApprovalParams = Omit<QuoteParams, "input"> & {
-  quoteData: BaseQuote | BaseQuote[] | null
+  quoteData: ApprovalQuote | ApprovalQuote[] | null
 }
 
 /**

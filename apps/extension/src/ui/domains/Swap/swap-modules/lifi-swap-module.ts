@@ -8,6 +8,7 @@ import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import { LIFI_API_URL } from "@core/domains/swaps/modules/lifi"
 import type {
   ApprovalInfo,
+  ApprovalParams,
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
@@ -29,6 +30,7 @@ import {
   evmErc20TokenId,
   evmNativeTokenId,
   isTokenCustom,
+  parseTokenId,
   solNativeTokenId,
   solSplTokenId,
   solToken2022TokenId,
@@ -659,13 +661,11 @@ const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQ
   )
 
 // if approval is required, returns the contract to approve for, the amount, and token contract
-const getApprovalInfo = (
-  params: Omit<QuoteParams, "input"> & { quoteData: BaseQuote | BaseQuote[] | null }
-): ApprovalInfo => {
+const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
   const { fromTokenId, fromAddress, fromAmount, selectedSubProtocol, quoteData } = params
-  if (!fromTokenId || !fromAddress || !fromAmount) return null
-  const fromAsset = resolveAsset(fromTokenId)
-  if (!quoteData || !fromAsset?.contractAddress) return null
+  if (!fromTokenId || !fromAddress || !fromAmount || !quoteData) return null
+  const fromToken = parseTokenId(fromTokenId)
+  if (fromToken.type !== "evm-erc20") return null
 
   const quoteItem = Array.isArray(quoteData)
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
@@ -682,7 +682,7 @@ const getApprovalInfo = (
     // the route echoes back the amount we asked it to quote — approve the amount the user
     // entered instead, so an inflated echo cannot widen the allowance we grant
     amount: fromAmount,
-    tokenAddress: fromAsset.contractAddress,
+    tokenAddress: fromToken.contractAddress,
     chainId: step.action.fromChainId,
     fromAddress,
     protocolName: PROTOCOL_NAME,

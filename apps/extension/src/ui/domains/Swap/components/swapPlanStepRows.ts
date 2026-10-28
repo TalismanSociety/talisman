@@ -1,10 +1,11 @@
+import { BACKGROUND_SWAP_MODULES } from "@core/domains/swaps/exports"
 import {
   type PlanCallToAction,
   type PlanStepStatus,
   planCallToAction,
   planSteps,
 } from "@core/domains/swaps/plans/helpers"
-import type { SwapPlan } from "@core/domains/swaps/plans/types"
+import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { QuoteLeg } from "@core/domains/swaps/types"
 import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
 import {
@@ -56,6 +57,8 @@ const accountName = ({ accounts }: StepRowContext, address: string | null) =>
 const isLedger = ({ accounts }: StepRowContext, address: string | null) =>
   !!address && !!accounts[normalizeAddress(address)]?.type.startsWith("ledger-")
 
+const isLedgerSigner = (leg: PlanLeg) => leg.signerType.startsWith("ledger-")
+
 const networkOf = ({ networks }: StepRowContext, tokenId: TokenId) =>
   networks[networkIdFromTokenId(tokenId)]
 
@@ -66,13 +69,16 @@ const stepLabel = (ctx: StepRowContext, leg: StepLeg) => {
   return ctx.t("Bridge to {{network}}", { network: networkOf(ctx, leg.toTokenId)?.name ?? "" })
 }
 
-/** the first leg is the one the user signs on screen, every later one is signed by the account the funds wait on */
+const signsInBackground = (protocol: StepLeg["protocol"]) => protocol in BACKGROUND_SWAP_MODULES
+
+/** the user signs the first leg on screen, and every later leg no background module signs for them */
 const upcomingDetail = (ctx: StepRowContext, leg: StepLeg, index: number) => {
   const account = accountName(ctx, leg.signer)
   if (index === 0) return ctx.t("You sign this step from {{account}}", { account })
-  return isLedger(ctx, leg.signer)
-    ? ctx.t("Signed on your Ledger from {{account}}", { account })
-    : ctx.t("Sent automatically from {{account}}", { account })
+  if (isLedger(ctx, leg.signer)) return ctx.t("Signed on your Ledger from {{account}}", { account })
+  return signsInBackground(leg.protocol)
+    ? ctx.t("Sent automatically from {{account}}", { account })
+    : ctx.t("You sign this step from {{account}}", { account })
 }
 
 export const quoteStepRows = (ctx: StepRowContext, legs: readonly StepLeg[]): SwapPlanStepRow[] =>
@@ -93,7 +99,7 @@ export type SwapPlanProgressInput = {
   plan: SwapPlan
   /** the transaction rows of the legs that have a hash, by hash: null once the wallet no longer holds the row */
   rows: ReadonlyMap<string, WalletTransaction | null>
-  /** why the transaction a Ledger leg waits on could not be prepared */
+  /** why the transaction a user-signed leg waits on could not be prepared */
   ledgerError: string | null
 }
 
@@ -117,7 +123,10 @@ const legProgress = (
         detail:
           leg.state.why === "unlock"
             ? t("Waiting for you to unlock Talisman")
-            : (ledgerError ?? t("Waiting for your Ledger signature")),
+            : (ledgerError ??
+              (isLedgerSigner(leg)
+                ? t("Waiting for your Ledger signature")
+                : t("Waiting for your signature"))),
       }
     case "building":
       return { status: "in-progress", detail: t("Preparing") }
@@ -212,11 +221,13 @@ const progressHeader = (
       }
 
     case "paused": {
-      const waiting = plan.legs[current]?.state
+      const waiting = plan.legs[current]
       const step = current + 1
-      return waiting?.at === "awaiting-user" && waiting.why === "hardware"
+      return waiting?.state.at === "awaiting-user" && waiting.state.why === "hardware"
         ? {
-            title: t("Sign step {{step}} on your Ledger", { step }),
+            title: isLedgerSigner(waiting)
+              ? t("Sign step {{step}} on your Ledger", { step })
+              : t("Sign step {{step}}", { step }),
             subtitle: t("Your swap continues once you sign step {{step}}.", { step }),
             animStatus: "processing",
           }

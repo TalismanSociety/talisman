@@ -1,13 +1,12 @@
 import { db } from "@core/db"
 import { planSteps } from "@core/domains/swaps/plans/helpers"
-import type { SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
+import type { PlanLeg, SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { CheckIcon, XIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import type { ProcessAnimationStatus } from "@ui/components/ProcessAnimation/ProcessAnimation"
-import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { cn } from "@ui/util/cn"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -15,7 +14,11 @@ import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useSwapModal } from "../hooks/useSwapModal"
-import { SwapPlanLedgerSign, useHardwareLegTransaction } from "./SwapPlanLedgerSign"
+import {
+  type PlanLegSignRequest,
+  SwapPlanLedgerSign,
+  useHardwareLegTransaction,
+} from "./SwapPlanLedgerSign"
 import { SwapPlanStepList, useStepRowContext } from "./SwapPlanStepList"
 import {
   type SwapPlanFooterAction,
@@ -94,12 +97,21 @@ const SwapPlanStatusIcon: FC<{ status: ProcessAnimationStatus; className?: strin
 
 const SwapPlanAction: FC<{
   action: SwapPlanFooterAction
-  ledgerTx: TxSubmitButtonTransaction | undefined
-  isLedgerTxFailed: boolean
-  onLedgerSignAttemptEnded: () => void
+  signRequest: PlanLegSignRequest | undefined
+  isSignRequestFailed: boolean
+  signerType: PlanLeg["signerType"] | undefined
+  onSignAttemptEnded: () => void
   onClose: () => void
   containerId?: string
-}> = ({ action, ledgerTx, isLedgerTxFailed, onLedgerSignAttemptEnded, onClose, containerId }) => {
+}> = ({
+  action,
+  signRequest,
+  isSignRequestFailed,
+  signerType,
+  onSignAttemptEnded,
+  onClose,
+  containerId,
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openSwapModal } = useSwapModal()
@@ -127,16 +139,17 @@ const SwapPlanAction: FC<{
         </Button>
       )
     case "sign-hardware":
-      if (isLedgerTxFailed)
+      if (isSignRequestFailed)
         return (
-          <Button primary fullWidth onClick={onLedgerSignAttemptEnded}>
+          <Button primary fullWidth onClick={onSignAttemptEnded}>
             {t("Try again")}
           </Button>
         )
       return (
         <SwapPlanLedgerSign
-          tx={ledgerTx}
-          onSignAttemptEnded={onLedgerSignAttemptEnded}
+          request={signRequest}
+          signerType={signerType}
+          onSignAttemptEnded={onSignAttemptEnded}
           containerId={containerId}
         />
       )
@@ -173,12 +186,10 @@ export const SwapPlanProgress: FC<{
     () => (plan ? swapPlanFooterAction({ plan, rows }) : NO_ACTION),
     [plan, rows]
   )
-  const ledger = useHardwareLegTransaction(
-    plan,
-    action.type === "sign-hardware" ? action.leg : null
-  )
-  const ledgerError = ledger.error
-    ? getErrorMessage(ledger.error, t("Failed to prepare the transaction"))
+  const waitingLeg = action.type === "sign-hardware" ? action.leg : null
+  const signRequest = useHardwareLegTransaction(plan, waitingLeg)
+  const ledgerError = signRequest.error
+    ? getErrorMessage(signRequest.error, t("Failed to prepare the transaction"))
     : null
 
   const view = useMemo(
@@ -205,9 +216,10 @@ export const SwapPlanProgress: FC<{
         <div className="h-28 w-full">
           <SwapPlanAction
             action={action}
-            ledgerTx={ledger.data}
-            isLedgerTxFailed={ledger.isError}
-            onLedgerSignAttemptEnded={ledger.refetch}
+            signRequest={signRequest.data}
+            isSignRequestFailed={signRequest.isError}
+            signerType={waitingLeg === null ? undefined : plan?.legs[waitingLeg].signerType}
+            onSignAttemptEnded={signRequest.refetch}
             onClose={onClose}
             containerId={containerId}
           />
