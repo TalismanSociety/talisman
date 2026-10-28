@@ -195,7 +195,7 @@ describe("toBittensorStakePositions", () => {
 describe("toEarnPosition", () => {
   const rowAction = { kind: "claim" as const, label: "Claim", onClick: () => {} }
 
-  it("maps a root position to a TAO row with its APY, lock label and row action", () => {
+  it("maps a root position to a TAO row with its APR, lock label and row action", () => {
     const [position] = toBittensorStakePositions(
       makeBalances([
         balanceJson(OWNER, ROOT, [
@@ -213,7 +213,7 @@ describe("toEarnPosition", () => {
       tokenIds: [subNativeTokenId(NETWORK_ID)],
       displayTokens: [{ tokenId: subNativeTokenId(NETWORK_ID), symbol: "TAO" }],
       apr: 5,
-      rateType: "APY",
+      rateType: "APR",
       isReadOnly: false,
       subtitle: { label: "Yuma", icon: null },
       lock: { label: "Root stake is temporarily locked after staking or claiming" },
@@ -253,6 +253,17 @@ describe("toEarnPosition", () => {
         label: "Decaying Conviction Lock: 5 α of your stake on this subnet cannot be unstaked",
       },
     })
+  })
+
+  it("labels a known subnet yield as an APY", () => {
+    const [position] = toBittensorStakePositions(
+      makeBalances([balanceJson(OWNER, SUBNET, [free(10n * TAO)])]),
+      ctx
+    )
+
+    expect(
+      toEarnPosition({ position, apy: 5, rowAction: null, subtitleIcon: null, t })
+    ).toMatchObject({ apr: 5, rateType: "APY" })
   })
 
   it("marks watch-only rows as read only", () => {

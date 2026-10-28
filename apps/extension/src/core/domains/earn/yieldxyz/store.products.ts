@@ -29,12 +29,8 @@ const normalizeYieldxyzProducts = (items: YieldDto[]): YieldDto[] => {
 // persist to db when store is updated
 subjectYieldxyzProductsStore$
   .pipe(debounceTime(500), map(normalizeYieldxyzProducts), pairwise())
-  .subscribe(async ([prev, items]) => {
-    try {
-      if (!isEqual(prev, items)) await blobStore.set(items)
-    } catch (error) {
-      log.error("[yield.xyz] Error saving yield products:", error)
-    }
+  .subscribe(([prev, items]) => {
+    if (!isEqual(prev, items)) blobStore.set(items)
   })
 
 export const yieldxyzProductsStore$ = subjectYieldxyzProductsStore$

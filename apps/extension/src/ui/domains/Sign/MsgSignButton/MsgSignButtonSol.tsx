@@ -15,6 +15,7 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
   containerId,
   label,
   className,
+  disabled,
   onSubmit,
 }) => {
   const { t } = useTranslation()
@@ -44,12 +45,18 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
           payload={signerPayload}
           className={className}
           containerId={containerId}
+          disabled={disabled}
           onSigned={handleLedgerSignature}
         />
       )
     default:
       return (
-        <Button onClick={() => onSubmit()} className={cn("w-full", className)} primary>
+        <Button
+          onClick={() => onSubmit()}
+          className={cn("w-full", className)}
+          primary
+          disabled={disabled}
+        >
           {label ?? t("Sign")}
         </Button>
       )

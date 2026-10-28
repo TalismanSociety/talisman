@@ -83,4 +83,44 @@ describe("gandalfFetch", () => {
     expect(headers.get("X-Custom")).toBe("value")
     expect(headers.get("Authorization")).toBe("Bearer jwt-abc")
   })
+
+  it("keeps the headers of a Request input when there is no init", async () => {
+    mockAccessToken$.next({ status: "success", data: "jwt-req" })
+
+    const { gandalfFetch } = await import("../fetch")
+
+    const request = new Request("https://api.example.com/exchanges", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    })
+    await gandalfFetch(request)
+
+    const [input, init] = fetchSpy.mock.calls[0]
+    expect(input).toBe(request)
+    const headers = new Headers(init?.headers)
+    expect(headers.get("Content-Type")).toBe("application/json")
+    expect(headers.get("Authorization")).toBe("Bearer jwt-req")
+  })
+})
+
+describe("createGandalfAuthorization", () => {
+  it("resolves to the Bearer header value", async () => {
+    mockAccessToken$.next({ status: "success", data: "jwt-auth" })
+
+    const { createGandalfAuthorization } = await import("@common/createGandalfFetch")
+
+    await expect(createGandalfAuthorization(mockAccessToken$)()).resolves.toBe("Bearer jwt-auth")
+  })
+
+  it("resolves to undefined when the token fails", async () => {
+    mockAccessToken$.next({
+      status: "error",
+      error: { name: "Error", message: "token failed" },
+    } as Loadable<string>)
+
+    const { createGandalfAuthorization } = await import("@common/createGandalfFetch")
+
+    await expect(createGandalfAuthorization(mockAccessToken$)()).resolves.toBeUndefined()
+  })
 })

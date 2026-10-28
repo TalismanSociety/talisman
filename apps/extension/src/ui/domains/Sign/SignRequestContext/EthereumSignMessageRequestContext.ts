@@ -1,15 +1,16 @@
 import { log } from "@common/log"
-import { isSiweDomainMismatch } from "@core/domains/ethereum/siwe"
+import { decodePersonalSignMessage } from "@core/domains/ethereum/personalSignMessage"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { HexString } from "@talismn/util"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
+import { useSignInDomainMismatch } from "@ui/domains/Sign/hooks/useSignInDomainMismatch"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { useRequest } from "@ui/state/requests"
 import { provideContext } from "@ui/util/provideContext"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAnySigningRequest } from "./useAnySigningRequest"
@@ -71,19 +72,16 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     [baseRequest, riskAnalysis, t]
   )
 
-  // EIP-4361 : the sign-in domain must match the domain of the requesting site
-  const siweDomainMismatch = useMemo(
-    () => isSiweDomainMismatch(request?.method, request?.request, request?.url),
+  const personalSignText = useMemo(
+    () => (request?.method === "personal_sign" ? decodePersonalSignMessage(request.request) : null),
     [request]
   )
-
-  // user may explicitly acknowledge the mismatch to sign anyway
-  const [isSiweMismatchAcknowledged, setIsSiweMismatchAcknowledged] = useState(false)
+  const signInDomainMismatch = useSignInDomainMismatch(personalSignText, request?.url)
 
   const isValid = useMemo(() => {
     if (!request) return false
 
-    if (siweDomainMismatch && !isSiweMismatchAcknowledged) return false
+    if (signInDomainMismatch.isBlocking) return false
 
     const isTypedData = Boolean(request?.method?.startsWith("eth_signTypedData"))
     if (isTypedData) {
@@ -94,7 +92,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     }
 
     return true
-  }, [request, siweDomainMismatch, isSiweMismatchAcknowledged])
+  }, [request, signInDomainMismatch.isBlocking])
 
   return {
     ...baseRequest,
@@ -104,9 +102,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     request,
     network,
     isValid,
-    siweDomainMismatch,
-    isSiweMismatchAcknowledged,
-    setIsSiweMismatchAcknowledged,
+    signInDomainMismatch,
     riskAnalysis,
   }
 }

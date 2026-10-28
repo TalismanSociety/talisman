@@ -45,6 +45,8 @@ runner="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.c
 [ -x "$runner" ] || echo "no Docker runner on this machine: verify with unit tests and typecheck"
 ```
 
+The helpers run on the host and import `@playwright/test` from the worktree. A new worktree has no `node_modules`: run `pnpm install` in it first, else the doctor fails with `Cannot find package '@playwright/test'`.
+
 1. `"$runner" ls`. When it lists the container of this worktree, the run reuses it: write `reused: not started by this run` in `$RUN/notes.md`.
 2. `"$runner" up` starts the container, or reuses it, and returns once the container's own doctor passes.
 3. `mkdir -p .tmp/verify && "$runner" port > .tmp/verify/cdp-port`

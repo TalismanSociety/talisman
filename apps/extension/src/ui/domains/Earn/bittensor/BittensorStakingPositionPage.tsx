@@ -24,7 +24,9 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
+import { BittensorYieldRateTooltip } from "@ui/domains/Staking/Bittensor/components/BittensorYieldRateLabel"
 import { useDTaoRootStakeHoldGate } from "@ui/domains/Staking/Bittensor/hooks/dTao/useDTaoRootStakeHold"
+import { getBittensorYieldRateType } from "@ui/domains/Staking/Bittensor/utils/yieldRateType"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useBalance } from "@ui/state/balances"
 import { type FC, type ReactNode, useEffect, useMemo } from "react"
@@ -288,15 +290,20 @@ const StakedBalanceCard: FC<{ position: BittensorStakePosition; apy: number | nu
     position.kind === "root"
       ? rootStakeHold.message
       : position.lock && getBittensorLockLabel(position.lock, position.token, t)
+  const rateType = getBittensorYieldRateType(position.netuid)
 
   return (
     <BalanceCard
       label={t("Staked balance")}
       badge={
         apy !== null && (
-          <span className="shrink-0 rounded-full bg-primary/10 px-4 py-1 font-normal text-primary text-sm">
-            {t("APY {{percent}}", { percent: formatAprPercent(apy) })}
-          </span>
+          <BittensorYieldRateTooltip rateType={rateType}>
+            <span className="shrink-0 rounded-full bg-primary/10 px-4 py-1 font-normal text-primary text-sm">
+              {rateType === "APR"
+                ? t("APR {{percent}}", { percent: formatAprPercent(apy) })
+                : t("APY {{percent}}", { percent: formatAprPercent(apy) })}
+            </span>
+          </BittensorYieldRateTooltip>
         )
       }
     >

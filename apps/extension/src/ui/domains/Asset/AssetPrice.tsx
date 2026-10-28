@@ -1,57 +1,68 @@
-import { bind } from "@react-rxjs/core"
 import type { Balances } from "@talismn/balances"
 import type { TokenId } from "@talismn/chaindata-provider"
+import type { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
 import { formatPrice } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { selectedCurrency$ } from "@ui/state/settings"
-import { getTokenRates$ } from "@ui/state/tokenRates"
+import { useSelectedCurrency } from "@ui/state/settings"
+import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
-import type { FC } from "react"
-import { combineLatest, map } from "rxjs"
+import { type FC, useMemo } from "react"
 
-const [useDisplayAssetPrice] = bind(
-  (tokenId: TokenId | null | undefined, balances: Balances | null | undefined) =>
-    combineLatest([getTokenRates$(tokenId), selectedCurrency$]).pipe(
-      map(([rates, currency]) => {
-        if (!tokenId) return null
+const getDisplayAssetPrice = (
+  tokenId: TokenId | null | undefined,
+  rates: TokenRates | null,
+  currency: TokenRateCurrency,
+  balances: Balances | null | undefined
+) => {
+  if (!tokenId) return null
 
-        let rate = rates?.[currency]
+  let rate = rates?.[currency]
 
-        // some token rates aren't stored in the global token rates map (e.g. substrate-dtao tokens) and must be picked from balance object
-        if (!rate && balances) rate = balances.find({ tokenId })?.each[0]?.rates?.[currency]
+  // some token rates aren't stored in the global token rates map (e.g. substrate-dtao tokens) and must be picked from balance object
+  if (!rate && balances) rate = balances.find({ tokenId })?.each[0]?.rates?.[currency]
 
-        if (!rate) return null
+  if (!rate) return null
 
-        const compact = formatPrice(rate.price, currency, true)
+  const compact = formatPrice(rate.price, currency, true)
 
-        const full = formatPrice(rate.price, currency, false)
+  const full = formatPrice(rate.price, currency, false)
 
-        const rawChange24h = rate.change24h
-          ? new Intl.NumberFormat(undefined, {
-              minimumFractionDigits: 1,
-              style: "percent",
-              signDisplay: "always",
-            }).format(rate.change24h / 100)
-          : undefined
+  const rawChange24h = rate.change24h
+    ? new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 1,
+        style: "percent",
+        signDisplay: "always",
+      }).format(rate.change24h / 100)
+    : undefined
 
-        // we dont want a sign (which is used for color check) if change displays as +0.0% or -0.0%
-        const change24h = rawChange24h?.length
-          ? rawChange24h.slice(1) === "0.0%"
-            ? "0.0%"
-            : rawChange24h
-          : undefined
+  // we dont want a sign (which is used for color check) if change displays as +0.0% or -0.0%
+  const change24h = rawChange24h?.length
+    ? rawChange24h.slice(1) === "0.0%"
+      ? "0.0%"
+      : rawChange24h
+    : undefined
 
-        const changeClassName = getPriceChangeClassName(change24h)
+  const changeClassName = getPriceChangeClassName(change24h)
 
-        return {
-          compact,
-          full,
-          change24h,
-          changeClassName,
-        }
-      })
-    )
-)
+  return {
+    compact,
+    full,
+    change24h,
+    changeClassName,
+  }
+}
+
+const useDisplayAssetPrice = (
+  tokenId: TokenId | null | undefined,
+  balances: Balances | null | undefined
+) => {
+  const rates = useTokenRates(tokenId)
+  const currency = useSelectedCurrency()
+  return useMemo(
+    () => getDisplayAssetPrice(tokenId, rates, currency, balances),
+    [tokenId, rates, currency, balances]
+  )
+}
 
 export const AssetPrice: FC<{
   tokenId: TokenId | null | undefined
