@@ -242,6 +242,12 @@ export class ChaindataProvider implements IChaindataProvider {
     return result
   }
 
+  /** ids of the tokens in the default (curated) chaindata */
+  async #getCuratedTokenIds(): Promise<Set<TokenId>> {
+    const defaultStorage = await firstValueFrom(this.#storage$)
+    return new Set(defaultStorage.tokens.map((t) => t.id))
+  }
+
   /**
    * Registers token dynamically a runtime. used for SPL and dTAO tokens.
    * @param tokens
@@ -253,9 +259,16 @@ export class ChaindataProvider implements IChaindataProvider {
     await forEachWithYield(tokens, (t) => void TokenSchema.parse(t))
 
     await this.#enqueueDynamicTokensWrite(async () => {
+      // a balance module sees every mint an account holds, including curated mints the
+      // user hasn't enabled: registering one would shadow its curated entry (logo,
+      // coingeckoId) with the bare on-chain metadata
+      const curatedTokenIds = await this.#getCuratedTokenIds()
+      const newTokens = tokens.filter((t) => !isShadowingCuratedToken(t, curatedTokenIds))
+      if (!newTokens.length) return
+
       const currentStorage = await firstValueFrom(this.#dynamicTokens$)
       const currentById = keyBy<Token>(currentStorage, (t) => t.id)
-      const newById = keyBy<Token>(tokens, (t) => t.id)
+      const newById = keyBy<Token>(newTokens, (t) => t.id)
       const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
         a.id.localeCompare(b.id)
       )
@@ -280,18 +293,14 @@ export class ChaindataProvider implements IChaindataProvider {
       // ids present in the default (curated) chaindata — used to drop dynamic
       // duplicates so curated metadata wins (combined chaindata applies last-wins
       // by id, so leaving a dynamic entry in place would shadow the curated one).
-      const defaultStorage = await firstValueFrom(this.#storage$)
-      const defaultTokenIds = new Set(defaultStorage.tokens.map((t) => t.id))
+      const defaultTokenIds = await this.#getCuratedTokenIds()
 
       const next: Token[] = []
       let changed = false
 
       for (const token of dynamicTokens) {
         // drop dynamic tokens whose ids are now curated by default chaindata
-        if (
-          (token.type === "sol-spl" || token.type === "sol-token2022") &&
-          defaultTokenIds.has(token.id)
-        ) {
+        if (isShadowingCuratedToken(token, defaultTokenIds)) {
           changed = true
           continue
         }
@@ -486,3 +495,10 @@ const withErrorReason = async <T>(reason: string, task: () => Promise<T> | T): P
     throw new Error(reason, { cause })
   }
 }
+
+/**
+ * A dynamic Solana token whose id is also in the curated chaindata. Combined chaindata
+ * keeps the last token per id, so such an entry would replace the curated one.
+ */
+const isShadowingCuratedToken = (token: Token, curatedTokenIds: Set<TokenId>) =>
+  (token.type === "sol-spl" || token.type === "sol-token2022") && curatedTokenIds.has(token.id)
