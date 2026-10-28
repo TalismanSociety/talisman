@@ -1,6 +1,6 @@
 import type { SignerPayloadRaw } from "@core/domains/signing/types"
 import { normalizeAddress } from "@talismn/crypto"
-import { type SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
+import type { SiwsMessage } from "@talismn/siws"
 import { isAsciiPrintable, u8aToString, u8aUnwrapBytes } from "@talismn/util"
 import {
   PopupContent,
@@ -11,6 +11,7 @@ import {
 import { AppPill } from "@ui/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
+import { SignInDomainMismatchAlert } from "@ui/domains/Sign/SignInDomainMismatchAlert"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { useEffect, useMemo } from "react"
@@ -30,6 +31,8 @@ export const PolkadotSignMessageRequest = () => {
     errorCategory,
     account,
     chain,
+    siws,
+    signInDomainMismatch,
   } = usePolkadotSigningRequest()
 
   const errorMessage = useMemo(
@@ -38,7 +41,7 @@ export const PolkadotSignMessageRequest = () => {
   )
   useErrorShown({ shown: errorMessage, surface: "alert", category: errorCategory })
 
-  const bytes = (request.payload as SignerPayloadRaw).data
+  const { data: bytes, address: bytesAddress } = request.payload as SignerPayloadRaw
   const messageText = useMemo(
     () => (isAsciiPrintable(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
     [bytes]
@@ -49,7 +52,7 @@ export const PolkadotSignMessageRequest = () => {
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  const [siwsRequest, siwsValidationError] = useSiwsRequest({ url, request, account })
+  const isSiwsAddressMismatch = useIsSiwsAddressMismatch(siws, account.address, bytesAddress)
 
   return (
     <PopupLayout>
@@ -57,15 +60,15 @@ export const PolkadotSignMessageRequest = () => {
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>
-        {siwsRequest !== null && (
+        {siws !== null && (
           <MessageSiws
             account={account}
             chain={chain}
-            request={siwsRequest}
-            validationError={siwsValidationError}
+            request={siws}
+            isAddressMismatch={isSiwsAddressMismatch}
           />
         )}
-        {siwsRequest === null && account && request && (
+        {siws === null && account && request && (
           <>
             <div className="flex h-full w-full flex-col items-center text-center text-body-secondary">
               <h1 className="my-12 font-bold text-body text-md leading-9">{t("Sign Request")}</h1>
@@ -81,66 +84,31 @@ export const PolkadotSignMessageRequest = () => {
         )}
       </PopupContent>
       <PopupFooter>
+        <SignInDomainMismatchAlert mismatch={signInDomainMismatch} className="mb-6" />
         <FooterContent />
       </PopupFooter>
     </PopupLayout>
   )
 }
 
-/**
- * Given the `url`, `request`, and `account` fields of the `usePolkadotSigningRequest` for a raw message,
- * this hook will either return a [SiwsMessage] or [null], depending on whether the raw message conforms to the
- * SIWS (Sign In With Substrate) spec.
- *
- * Additionally, this hook will return [SiwsMessage, string] in the event that the raw message confirms to the
- * SIWS spec, but the domain or address in the message are incorrect.
- */
-const useSiwsRequest = ({
-  url,
-  request,
-  account,
-}: Pick<ReturnType<typeof usePolkadotSigningRequest>, "url" | "request" | "account">) =>
-  useMemo((): [SiwsMessage | null, string | null] => {
-    const siwsMessage = (() => {
-      try {
-        return siwsParseMessage((request.payload as SignerPayloadRaw)?.data)
-      } catch {
-        return null
-      }
-    })()
+const tryNormalizeAddress = (address: string) => {
+  try {
+    return normalizeAddress(address)
+  } catch {
+    return null
+  }
+}
 
-    // Not a valid SIWS message, fall back to regular raw message signing
-    if (siwsMessage === null) return [null, null]
-
-    const tryNormalizeAddress = (address: string) => {
-      try {
-        return normalizeAddress(address)
-      } catch {
-        return null
-      }
-    }
-
-    const truth = {
-      address: tryNormalizeAddress(account.address),
-      domain: new URL(url).host,
-    }
-    const check = {
-      addresses: [
-        tryNormalizeAddress((request.payload as SignerPayloadRaw).address),
-        tryNormalizeAddress(siwsMessage.address),
-      ],
-      domain: siwsMessage.domain,
-    }
-
-    const isValidAddresses =
-      truth.address && check.addresses.every((address) => truth.address === address)
-    const isValidDomain = check.domain === truth.domain
-    const isValid = isValidAddresses && isValidDomain
-
-    // A valid SIWS message, but the domain or address is invalid.
-    // We should show an error to the user.
-    if (!isValid) return [siwsMessage, "Invalid Address/Domain"]
-
-    // A valid SIWS message, and the domain and address check out.
-    return [siwsMessage, null]
-  }, [account.address, request.payload, url])
+const useIsSiwsAddressMismatch = (
+  siws: SiwsMessage | null,
+  accountAddress: string,
+  payloadAddress: string
+) =>
+  useMemo(() => {
+    if (!siws) return false
+    const signer = tryNormalizeAddress(accountAddress)
+    return (
+      !signer ||
+      [payloadAddress, siws.address].some((address) => tryNormalizeAddress(address) !== signer)
+    )
+  }, [siws, accountAddress, payloadAddress])

@@ -120,7 +120,9 @@ const Content = () => {
         <Setting
           iconLeft={ToolIcon}
           title={t("Developer mode")}
-          subtitle={t("Allow connecting to dapps with watch-only accounts")}
+          subtitle={t(
+            "Allow connecting to dapps with watch-only accounts and sign-ins for other domains"
+          )}
         >
           <Toggle checked={developerMode} onChange={(e) => setDeveloperMode(e.target.checked)} />
         </Setting>

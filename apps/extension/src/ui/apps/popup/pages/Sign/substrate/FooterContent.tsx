@@ -33,6 +33,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
     approveSignet,
     status,
     shortMetadata,
+    signInDomainMismatch,
   } = usePolkadotSigningRequest()
 
   const processing = useMemo(() => status === "PROCESSING", [status])
@@ -64,6 +65,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                   onCancel={reject}
                   containerId="main"
                   shortMetadata={shortMetadata}
+                  disabled={signInDomainMismatch.isBlocking}
                 />
               </Suspense>
             )
@@ -79,6 +81,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                   onSignature={approveQr}
                   onReject={reject}
                   containerId="main"
+                  disabled={signInDomainMismatch.isBlocking}
                 />
               </Suspense>
             )
@@ -101,7 +104,7 @@ export const FooterContent = ({ isTransaction = false }: { isTransaction?: boole
                 <Button
                   processing={processing}
                   primary
-                  disabled={account.type === "watch-only"}
+                  disabled={account.type === "watch-only" || signInDomainMismatch.isBlocking}
                   onClick={approve}
                 >
                   {t("Approve")}

@@ -92,21 +92,6 @@ export const SwapConfirmAmountInValue: FC<{
   )
 }
 
-export const SwapConfirmValidatorApyLabel: FC = () => {
-  const { t } = useTranslation()
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="flex items-center gap-1">
-          {t("APY")}
-          <InfoIcon />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
-    </Tooltip>
-  )
-}
-
 export const SwapConfirmValidatorApyValue: FC<{ hotkey?: string; netuid?: number | null }> = ({
   hotkey,
   netuid,

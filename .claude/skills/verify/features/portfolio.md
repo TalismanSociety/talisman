@@ -27,7 +27,7 @@ Preconditions:
 - **Search.** `ab find placeholder "Search" fill "TAO"`. Only matching tokens stay.
 - **Open a token.** Click a token row by its snapshot ref (for example `TAO`), without a hover first. The URL becomes `#/portfolio/tokens/TAO?account=<address>` and the page shows per-network rows for that token.
 - **Cross-check.** The same wallet in the popup: `ab tab new "$EXT/popup.html#/portfolio"` shows "Total Portfolio" and one row per account; `#/portfolio/tokens` shows the token rows. The total matches the dashboard within the rounding of the currency.
-- **Prove the numbers from a second view.** The popup `#/portfolio` total, the dashboard "All Accounts" total and the per-account sidebar values come from one in-memory computation (`ui/state/balanceTotals.ts`). The popup `#/portfolio/tokens` "Total Portfolio" sums the balances on its own, so it is an independent check. Compare the four. Do not read `chrome.storage.local` `balanceTotals`: it is a stale leftover that current code never writes (zeros and addresses that are not in the wallet).
+- **Prove the numbers from a second view.** The popup `#/portfolio` total, the dashboard "All Accounts" total and the per-account sidebar values come from one in-memory computation (`ui/state/balanceTotals.ts`). The popup `#/portfolio/tokens` "Total Portfolio" sums the balances on its own, so it is an independent check. It sums only the networks of its network filter: leave the filter on all networks. Compare the four. Do not read `chrome.storage.local` `balanceTotals`: it is a stale leftover that current code never writes (zeros and addresses that are not in the wallet).
 
 ## Gotchas
 

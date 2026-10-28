@@ -25,7 +25,7 @@ import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
 export const ValidatorSortMethodButton: FC<{
   method: ValidatorSortValue
   onChange: (method: ValidatorSortValue) => void
-  apyLabel?: string
+  apyLabel: string
 }> = ({ method, onChange, apyLabel }) => {
   const { t } = useTranslation()
 
@@ -35,7 +35,7 @@ export const ValidatorSortMethodButton: FC<{
       { label: t("Total Staked"), value: "totalStaked" },
       { label: t("Name"), value: "name" },
       { label: t("N° of Stakers"), value: "totalStakers" },
-      { label: apyLabel ?? t("APY"), value: "apr" },
+      { label: apyLabel, value: "apr" },
     ],
     [apyLabel, t]
   )

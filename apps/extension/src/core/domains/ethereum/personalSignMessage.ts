@@ -12,7 +12,9 @@ export const decodePersonalSignMessage = (message: string): string | null => {
   return new TextDecoder().decode(hexToBytes(message))
 }
 
-export const assertPersonalSignMessageDecodable = (message: string) => {
-  if (decodePersonalSignMessage(message) === null)
+export const decodePersonalSignMessageOrThrow = (message: string): string => {
+  const text = decodePersonalSignMessage(message)
+  if (text === null)
     throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
+  return text
 }

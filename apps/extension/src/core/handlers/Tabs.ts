@@ -15,7 +15,12 @@ import type { SettingsStoreData } from "../domains/app/store.settings"
 import { EthTabsHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
 import { getMetadataDef } from "../domains/metadata/getMetadataDef"
+import { decodeSubstrateRawMessage } from "../domains/signing/helpers"
 import { requestSubstrateSign, requestVrfSign } from "../domains/signing/requests"
+import {
+  isSignInDomainRefused,
+  SIGN_IN_DOMAIN_MISMATCH_ERROR,
+} from "../domains/signing/signInDomain"
 import {
   type ParsedTxPayloadV1,
   parseTxPayloadV1,
@@ -46,6 +51,7 @@ import type {
   SignerPayloadJSON,
   SignerPayloadRaw,
 } from "../types/pjsInterop"
+import { isRawPayload } from "../util/isJsonPayload"
 import { urlToDomain } from "../util/urlToDomain"
 import type { TabStore } from "./stores"
 import { genericAsyncSubscription } from "./subscriptions"
@@ -153,12 +159,14 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
+    await this.#assertSignInDomainAllowed(url, request)
+
     return requestSubstrateSign(url, { payload: request }, account, port)
   }
 
   private async extrinsicSign(
     url: string,
-    request: SignerPayloadJSON,
+    request: SignerPayloadJSON | SignerPayloadRaw,
     port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
@@ -166,7 +174,15 @@ export default class Tabs extends TabsHandler {
     const account = await keyringStore.getAccount(address)
     if (!account) throw new Error("Account not found")
 
+    // the popup signs a payload without a genesis hash as raw bytes, same as bytes.sign
+    if (isRawPayload(request)) await this.#assertSignInDomainAllowed(url, request)
+
     return requestSubstrateSign(url, { payload: request }, account, port)
+  }
+
+  async #assertSignInDomainAllowed(url: string, request: SignerPayloadRaw) {
+    if (await isSignInDomainRefused(decodeSubstrateRawMessage(request.data), url))
+      throw new Error(SIGN_IN_DOMAIN_MISMATCH_ERROR)
   }
 
   private async extrinsicCreate(
