@@ -6,6 +6,7 @@ import {
   type IntermediateCandidate,
   pickIntermediateAccount,
   withEntryHops,
+  withSingleLegQuotes,
 } from "../hops"
 
 const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
@@ -234,5 +235,38 @@ describe("withEntryHops", () => {
     const wrapped = withEntryHops(finishingModule, { ...options(true), resolve: () => undefined })
 
     expect(await wrapped.getQuote(QUOTE_PARAMS, signal)).toBe(null)
+  })
+})
+
+describe("withSingleLegQuotes", () => {
+  const twoLegQuote = quoteFromLegs([LEG0, LEG1], {
+    protocol: "lifi",
+    decentralisationScore: 2,
+    providerLogo: "lifi.svg",
+    providerName: "LI.FI",
+  })
+  const quoting = (quotes: BaseQuote | BaseQuote[] | null): HopModule => ({
+    protocol: "lifi",
+    getFromAssets: async () => [],
+    getToAssets: async () => [],
+    getQuote: async () => quotes,
+  })
+
+  it("drops the quotes that take more than one transaction", async () => {
+    const wrapped = withSingleLegQuotes(quoting([twoLegQuote, forevermoneyQuote]))
+    expect(await wrapped.getQuote(QUOTE_PARAMS, signal)).toEqual([forevermoneyQuote])
+  })
+
+  it("offers nothing when every quote takes several", async () => {
+    expect(await withSingleLegQuotes(quoting([twoLegQuote])).getQuote(QUOTE_PARAMS, signal)).toBe(
+      null
+    )
+    expect(await withSingleLegQuotes(quoting(twoLegQuote)).getQuote(QUOTE_PARAMS, signal)).toBe(
+      null
+    )
+  })
+
+  it("passes a module with no quote through", async () => {
+    expect(await withSingleLegQuotes(quoting(null)).getQuote(QUOTE_PARAMS, signal)).toBe(null)
   })
 })

@@ -2,7 +2,11 @@
 
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { BACKGROUND_SWAP_MODULES, withEntryHops } from "@core/domains/swaps/exports"
+import {
+  BACKGROUND_SWAP_MODULES,
+  withEntryHops,
+  withSingleLegQuotes,
+} from "@core/domains/swaps/exports"
 import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
@@ -42,13 +46,14 @@ export const useSwapModules = (): SwapModuleEntry[] => {
     const enabled = swapModules.filter(
       (m) => m.protocol !== "forevermoney" || isForevermoneyEnabled
     )
-    return enabled.map((m) =>
-      withEntryHops(m, {
+    return enabled.map((m) => {
+      const withHops = withEntryHops(m, {
         enabled: (flag) => flag === "SWAPS_MULTI_HOP" && isMultiHopEnabled,
         resolve: (protocol) => enabled.find((entry) => entry.protocol === protocol),
         candidates: getIntermediateCandidates,
       })
-    )
+      return isMultiHopEnabled ? withHops : withSingleLegQuotes(withHops)
+    })
   }, [isForevermoneyEnabled, isMultiHopEnabled])
 }
 

@@ -132,3 +132,16 @@ export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopO
     },
   }
 }
+
+/** Keeps only the quotes the user signs in one transaction, for a wallet without the multi-hop flag */
+export const withSingleLegQuotes = <T extends HopModule>(module: T): T => ({
+  ...module,
+  getQuote: async (params, signal) => {
+    const quotes = await module.getQuote(params, signal)
+    if (!quotes) return quotes
+    const single = (Array.isArray(quotes) ? quotes : [quotes]).filter(
+      (quote) => quote.legs.length === 1
+    )
+    return single.length ? single : null
+  },
+})
