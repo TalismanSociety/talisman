@@ -4,8 +4,8 @@ import type { WalletTransactionEth } from "@core/domains/transactions/types"
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("@ui/domains/Swap/components/SwapPlanProgress", () => ({
-  SwapPlanProgress: ({ id }: { id: string }) => <div>{`progress of ${id}`}</div>,
+vi.mock("@ui/domains/Swap/components/SwapPlanTransactions", () => ({
+  SwapPlanTransactions: ({ id }: { id: string }) => <div>{`progress of ${id}`}</div>,
 }))
 vi.mock("../TxProgress", () => ({
   TxProgress: ({ hash }: { hash: string }) => <div>{`transaction ${hash}`}</div>,

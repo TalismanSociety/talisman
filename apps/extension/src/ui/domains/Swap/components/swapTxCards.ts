@@ -332,6 +332,13 @@ export const swapPlanFooter = (
   }
 }
 
+/** the leg the user signs on screen, while the plan waits on them */
+export const planSigningLeg = (plan: SwapPlan): number | null => {
+  if (plan.phase !== "paused") return null
+  const action = planCallToAction(plan)
+  return action.type === "sign-hardware" ? action.leg : null
+}
+
 /** the user can speed up or cancel a sent EVM leg until it is mined, through its latest replacement */
 export const pendingEvmLegRow = (
   input: Pick<SwapPlanTxInput, "plan" | "rows">,

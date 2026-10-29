@@ -11,7 +11,7 @@ import { Button } from "@ui/components/Button"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import type { TxSubmitButtonTransactionEth } from "@ui/domains/Sign/TxSubmitButton/types"
 import { getToken$ } from "@ui/state/chaindata"
-import { type FC, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type Hex, type PublicClient } from "viem"
@@ -159,16 +159,12 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
     ? getErrorMessage(request.error, t("Failed to prepare the transaction"))
     : noteFor(signFailure, index)
 
-  const signing: PlanLegSigning | null =
-    index === null
-      ? null
-      : {
-          leg: index,
-          signs: request.data?.signs,
-          approvalHash: noteFor(sentApproval, index),
-          isApprovalPending,
-          failure,
-        }
+  const approvalHash = noteFor(sentApproval, index)
+  const signs = request.data?.signs
+  const signing = useMemo<PlanLegSigning | null>(
+    () => (index === null ? null : { leg: index, signs, approvalHash, isApprovalPending, failure }),
+    [approvalHash, failure, index, isApprovalPending, signs]
+  )
 
   const clearFailure = () => setSignFailure(undefined)
 

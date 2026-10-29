@@ -167,7 +167,7 @@ export const SwapTxFeeRows: FC<{
   hasError: boolean
   ethTx?: EthTransactionState
   isPriorityLocked?: boolean
-  containerId: string
+  containerId?: string
 }> = ({
   address,
   feeTokenId,

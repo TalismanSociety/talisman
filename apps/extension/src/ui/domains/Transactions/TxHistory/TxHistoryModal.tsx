@@ -7,7 +7,7 @@ import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
-import { SwapPlanProgress } from "@ui/domains/Swap/components/SwapPlanProgress"
+import { SwapPlanTransactions } from "@ui/domains/Swap/components/SwapPlanTransactions"
 import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
 import { useNetworkById } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -60,7 +60,11 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({
   return (
     <Modal analyticsId="tx_history" isOpen={isOpen} onDismiss={onClose} containerId="main">
       {!!displayTx && (
-        <DialogWrapper isProgress={displayTx.status === "pending" || !!planId} onClose={onClose}>
+        <DialogWrapper
+          isProgress={displayTx.status === "pending" && !planId}
+          isPlan={!!planId}
+          onClose={onClose}
+        >
           <ModalContent
             tx={displayTx}
             planId={planId}
@@ -85,17 +89,19 @@ const usePlanIdOf = (tx: WalletTransaction | undefined): SwapPlanId | null | und
   return found.exists ? id : null
 }
 
-const DialogWrapper: FC<{ isProgress: boolean; onClose: () => void; children: ReactNode }> = ({
-  isProgress,
-  children,
-  onClose,
-}) => {
+const DialogWrapper: FC<{
+  isProgress: boolean
+  isPlan: boolean
+  onClose: () => void
+  children: ReactNode
+}> = ({ isProgress, isPlan, children, onClose }) => {
   const { t } = useTranslation()
   return (
     <ModalDialog
       id={TX_HISTORY_MODAL_CONTAINER_ID}
       title={t("Transaction Details")}
       className={cn("relative", isProgress && "[&_header]:invisible")}
+      contentClassName={isPlan ? "relative flex flex-col overflow-hidden! p-0!" : undefined}
       onCloseClick={onClose}
     >
       {children}
@@ -112,7 +118,11 @@ const ModalContent: FC<{
   if (planId === undefined) return null
   if (planId)
     return (
-      <SwapPlanProgress id={planId} onClose={onClose} containerId={TX_HISTORY_MODAL_CONTAINER_ID} />
+      <SwapPlanTransactions
+        id={planId}
+        onClose={onClose}
+        containerId={TX_HISTORY_MODAL_CONTAINER_ID}
+      />
     )
 
   switch (tx.status) {

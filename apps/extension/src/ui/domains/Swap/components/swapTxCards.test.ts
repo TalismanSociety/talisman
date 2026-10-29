@@ -19,6 +19,7 @@ import {
   legTrackerUrl,
   type PlanLegSigning,
   pendingEvmLegRow,
+  planSigningLeg,
   type SwapPlanTxInput,
   type SwapQuoteTxInput,
   type SwapTxContext,
@@ -554,6 +555,19 @@ describe("swapPlanFooter", () => {
       type: "sign-hardware",
       leg: 1,
     })
+  })
+})
+
+describe("planSigningLeg", () => {
+  it("signs on screen the leg a paused plan waits on", () => {
+    expect(planSigningLeg(plan("paused", LANDED_0, AWAITING_HARDWARE))).toBe(1)
+  })
+
+  it("signs nothing while the plan runs or waits on the unlock", () => {
+    expect(planSigningLeg(plan("running", LANDED_0, SENT_1))).toBeNull()
+    expect(
+      planSigningLeg(plan("paused", LANDED_0, { at: "awaiting-user", why: "unlock", since: T0 }))
+    ).toBeNull()
   })
 })
 

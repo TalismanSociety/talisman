@@ -12,7 +12,7 @@ import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SwapConfirmActions } from "./SwapConfirmActions"
 
-const CONTAINER_ID = "swap-modal-confirm"
+export const SWAP_CONFIRM_CONTAINER_ID = "swap-modal-confirm"
 
 export const SwapConfirm = () => {
   const { t } = useTranslation()
@@ -41,9 +41,9 @@ export const SwapConfirm = () => {
       onBackClick={() => setSwapView("form")}
       onCloseClick={close}
       contentClassName="relative flex flex-col overflow-hidden! p-0!"
-      id={CONTAINER_ID}
+      id={SWAP_CONFIRM_CONTAINER_ID}
     >
-      <SwapConfirmActions containerId={CONTAINER_ID}>
+      <SwapConfirmActions containerId={SWAP_CONFIRM_CONTAINER_ID}>
         <div className="flex w-full flex-col gap-2 overflow-hidden pl-6">
           <TokenRow tokenId={fromToken.id} value={fromAmount} />
           <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
