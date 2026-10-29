@@ -50,6 +50,7 @@ import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
+import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
 import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -61,7 +62,7 @@ import {
   type SwapConfirmError,
 } from "../swap-errors"
 import { getSwapRouteReport } from "../swapRouteReport"
-import { getAdditionalFeePlanck, SwapOtherFees } from "./SwapOtherFees"
+import { SwapOtherFees } from "./SwapOtherFees"
 import { SwapRouteRow } from "./SwapRoute"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 

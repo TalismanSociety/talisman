@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest"
 import {
   attachFees,
   calculateQuoteFees,
+  dropUnaffordableQuotes,
   flattenQuotes,
   type QuoteWithFees,
   selectQuote,
@@ -337,5 +338,53 @@ describe("full sorting pipeline", () => {
     expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")
     expect(sorted[0]!.fees).toBe(3)
     expect(sorted[1]!.fees).toBe(30)
+  })
+})
+
+describe("dropUnaffordableQuotes", () => {
+  const additionalFee = (amount: string, tokenId = "from-token") => ({
+    amount: BigNumber(amount),
+    name: "Bridge Fee",
+    tokenId,
+    additional: true,
+  })
+  const holding = (transferable: bigint, tokenId = "from-token") => ({
+    tokenId,
+    decimals: 0,
+    transferable,
+  })
+
+  it("drops a quote whose input and fees on top exceed the native balance", () => {
+    const cheap = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("5")] }))
+    const pricey = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
+    expect(dropUnaffordableQuotes([pricey, cheap], holding(40n))).toEqual([cheap])
+  })
+
+  it("counts only the fees on top when the input is another token", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 1000n, fees: [additionalFee("5", "native")] }))
+    expect(dropUnaffordableQuotes([quote], holding(5n, "native"))).toEqual([quote])
+  })
+
+  it("ignores fees taken from the swapped amount and fees in other tokens", () => {
+    const quote = wrap(
+      makeQuote({
+        inputAmountBN: 10n,
+        fees: [
+          { amount: BigNumber("500"), name: "LIFI Fixed Fee", tokenId: "from-token" },
+          additionalFee("500", "10:evm-native"),
+        ],
+      })
+    )
+    expect(dropUnaffordableQuotes([quote], holding(10n))).toEqual([quote])
+  })
+
+  it("keeps every quote when none fits, so the confirm screen names the shortfall", () => {
+    const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
+    expect(dropUnaffordableQuotes(quotes, holding(1n))).toEqual(quotes)
+  })
+
+  it("keeps every quote while the balance is unknown", () => {
+    const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
+    expect(dropUnaffordableQuotes(quotes, null)).toEqual(quotes)
   })
 })

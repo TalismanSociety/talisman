@@ -2,6 +2,7 @@ import { quoteFromLegs } from "@core/domains/swaps/helpers"
 import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-library/react"
+import BigNumber from "bignumber.js"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { SwapModule } from "../swap-modules/common.swap-module"
@@ -10,6 +11,13 @@ const getQuoteMock = vi.fn()
 
 const track = vi.hoisted(() => vi.fn())
 vi.mock("@ui/api/track", () => ({ track }))
+
+const nativeBalance = vi.hoisted(() => ({
+  current: null as { token: { decimals: number }; transferable: { planck: bigint } } | null,
+}))
+vi.mock("@ui/hooks/useBalancesByParams", () => ({
+  useBalanceByParams: () => nativeBalance.current,
+}))
 
 vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({ "from-token": { usd: { price: 25 } } }),
@@ -22,7 +30,8 @@ vi.mock("@ui/state/chaindata", () => ({
       : tokenId === "to-token"
         ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
         : null,
-  useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
+  useNetworkById: (networkId?: string) =>
+    networkId ? { id: networkId, nativeTokenId: "from-token", __isKnown: true } : null,
 }))
 
 vi.mock("../swaps.api", () => {
@@ -61,7 +70,7 @@ const createDeferred = <T,>(): Deferred<T> => {
   return { promise, resolve }
 }
 
-const makeQuote = (outputAmountBN: bigint): BaseQuote =>
+const makeQuote = (outputAmountBN: bigint, fees: BaseQuote["fees"] = []): BaseQuote =>
   quoteFromLegs(
     [
       {
@@ -72,7 +81,7 @@ const makeQuote = (outputAmountBN: bigint): BaseQuote =>
         recipient: null,
         inputAmount: 1n,
         outputAmount: outputAmountBN,
-        fees: [],
+        fees,
         timeInSec: 30,
       },
     ],
@@ -113,6 +122,75 @@ describe("useSwapQuoteManager", () => {
 
   afterEach(() => {
     queryClient.clear()
+    nativeBalance.current = null
+  })
+
+  it("leaves out a route whose fees on top cost more than the account holds", async () => {
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 10n } }
+    const bridgeFee = { amount: BigNumber(195), name: "Bridge Fee", tokenId: "from-token" }
+    const glacis = makeQuote(300n, [{ ...bridgeFee, additional: true }])
+    const across = makeQuote(200n)
+    getQuoteMock.mockResolvedValue([glacis, across])
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    const { result } = renderHook(
+      () =>
+        useSwapQuoteManager({
+          fromTokenId: "from-token",
+          toTokenId: "to-token",
+          fromSupportMap,
+          toSupportMap,
+          fromAmount: 1n,
+          fromAddress: "0x111",
+          toAddress: "0x222",
+          selectedProtocol: null,
+          selectedSubProtocol: undefined,
+          quoteSorting: "bestRate",
+        }),
+      { wrapper }
+    )
+
+    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(1))
+    expect(result.current.sortedQuotes[0]?.quote).toBe(across)
+  })
+
+  it("keeps the confirmed route while the quote is frozen, even if the balance drops", async () => {
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 1000n } }
+    const bridgeFee = { amount: BigNumber(195), name: "Bridge Fee", tokenId: "from-token" }
+    const glacis = makeQuote(300n, [{ ...bridgeFee, additional: true }])
+    getQuoteMock.mockResolvedValue([glacis, makeQuote(200n)])
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let freezeQuote = false
+    const { result, rerender } = renderHook(
+      () =>
+        useSwapQuoteManager({
+          fromTokenId: "from-token",
+          toTokenId: "to-token",
+          fromSupportMap,
+          toSupportMap,
+          fromAmount: 1n,
+          fromAddress: "0x111",
+          toAddress: "0x222",
+          selectedProtocol: null,
+          selectedSubProtocol: undefined,
+          quoteSorting: "bestRate",
+          freezeQuote,
+        }),
+      { wrapper }
+    )
+    await waitFor(() => expect(result.current.selectedQuote).toBe(glacis))
+
+    freezeQuote = true
+    rerender()
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 10n } }
+    rerender()
+
+    expect(result.current.selectedQuote).toBe(glacis)
   })
 
   it("keeps the previous quotes available while a new amount is refetching", async () => {

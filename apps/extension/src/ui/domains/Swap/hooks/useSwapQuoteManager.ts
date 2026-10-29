@@ -11,12 +11,21 @@ import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
+import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { SwapModule } from "../swap-modules/common.swap-module"
 import { useSwapModules } from "../swaps.api"
-import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
+import {
+  attachFees,
+  dropUnaffordableQuotes,
+  flattenQuotes,
+  type NativeHolding,
+  selectQuote,
+  sortQuotes,
+} from "./quote-sorting"
 
 const areSortedQuotesEqual = (
   left: { quote: BaseQuote; fees: number }[],
@@ -81,6 +90,18 @@ export const useSwapQuoteManager = (params: {
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
   const toNetwork = useNetworkById(toToken?.networkId)
+  const nativeTokenId = fromNetwork?.nativeTokenId
+  const nativeBalance = useBalanceByParams({ address: fromAddress, tokenId: nativeTokenId })
+  const nativeDecimals = nativeBalance?.token?.decimals
+  const nativeTransferable = nativeBalance?.transferable.planck
+  const liveNativeHolding = useMemo<NativeHolding | null>(
+    () =>
+      nativeTokenId && nativeDecimals !== undefined && nativeTransferable !== undefined
+        ? { tokenId: nativeTokenId, decimals: nativeDecimals, transferable: nativeTransferable }
+        : null,
+    [nativeTokenId, nativeDecimals, nativeTransferable]
+  )
+  const nativeHolding = useLockedValue(liveNativeHolding, freezeQuote)
   const quoteReport = useMemo(
     () => ({
       from_network_id: networkIdForAnalytics(fromNetwork),
@@ -208,8 +229,8 @@ export const useSwapQuoteManager = (params: {
   const liveSortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
     const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
     const withFees = attachFees(flatQuotes, tokenRates)
-    return sortQuotes(withFees, quoteSorting)
-  }, [quotesDataKey, tokenRates, quoteSorting])
+    return sortQuotes(dropUnaffordableQuotes(withFees, nativeHolding), quoteSorting)
+  }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])
 

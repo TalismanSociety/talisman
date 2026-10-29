@@ -9,6 +9,8 @@ import type { SwapModule } from "../swap-modules/common.swap-module"
 const lifiGetQuoteMock = vi.fn()
 const simpleswapGetQuoteMock = vi.fn()
 
+vi.mock("@ui/hooks/useBalancesByParams", () => ({ useBalanceByParams: () => null }))
+
 vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({}),
 }))

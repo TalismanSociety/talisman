@@ -4,7 +4,8 @@ import { render } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { getAdditionalFeePlanck, SwapOtherFees } from "../components/SwapOtherFees"
+import { SwapOtherFees } from "../components/SwapOtherFees"
+import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

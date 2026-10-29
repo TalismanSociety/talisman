@@ -1,4 +1,4 @@
-import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
+import type { BaseQuote, QuoteFee, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 
@@ -42,6 +42,35 @@ export const calculateQuoteFees = (quote: BaseQuote, tokenRates: TokenRatesList)
  */
 export const attachFees = (quotes: BaseQuote[], tokenRates: TokenRatesList): QuoteWithFees[] =>
   quotes.map((quote) => ({ quote, fees: calculateQuoteFees(quote, tokenRates) }))
+
+export const toPlanck = (fee: QuoteFee, decimals: number) =>
+  BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
+
+/** Sum of the additional fees charged in `tokenId`, the amount the account must hold on top of gas */
+export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: string, decimals: number) =>
+  fees
+    .filter((fee) => fee.additional && fee.tokenId === tokenId)
+    .reduce((total, fee) => total + BigInt(toPlanck(fee, decimals)), 0n)
+
+export type NativeHolding = { tokenId: string; decimals: number; transferable: bigint }
+
+/**
+ * Drop the quotes the account cannot pay for: the input plus the fees charged on top of it,
+ * in the source network's native token, exceed what it holds.
+ * When no quote fits, keep them all so the confirm screen names the shortfall.
+ */
+export const dropUnaffordableQuotes = (
+  quotes: QuoteWithFees[],
+  native: NativeHolding | null
+): QuoteWithFees[] => {
+  if (!native) return quotes
+  const affordable = quotes.filter(({ quote }) => {
+    const input = quote.legs[0].fromTokenId === native.tokenId ? quote.inputAmountBN : 0n
+    const additionalFees = getAdditionalFeePlanck(quote.fees, native.tokenId, native.decimals)
+    return input + additionalFees <= native.transferable
+  })
+  return affordable.length ? affordable : quotes
+}
 
 /**
  * Sort quotes according to the chosen sorting strategy.
