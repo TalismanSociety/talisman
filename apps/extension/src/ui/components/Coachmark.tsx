@@ -125,10 +125,12 @@ export const Coachmark = ({
                 height={7}
                 className="fill-black-secondary"
               />
-              <StarsIcon className="size-16 text-primary" />
               <div className="flex flex-col gap-4">
-                <div id={titleId} className="font-semibold text-body text-sm">
-                  {title}
+                <div className="flex items-center gap-3">
+                  <StarsIcon className="size-9 shrink-0 text-primary" />
+                  <div id={titleId} className="font-semibold text-body text-sm">
+                    {title}
+                  </div>
                 </div>
                 <div className="text-body-secondary text-xs leading-[1.125rem]">{description}</div>
               </div>
