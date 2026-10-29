@@ -759,7 +759,12 @@ describe("forevermoneySwapModule getQuote upTo", () => {
         outputAmount: UPTO_OUTPUT,
         fees: [
           { name: "Chainlink CCIP Fee", tokenId: "964:evm-native", amount: BigNumber("0.00102") },
-          { name: "Est. Gas Fees", tokenId: "964:evm-native", amount: BigNumber("0.000000000007") },
+          {
+            name: "Est. Gas Fees",
+            gas: true,
+            tokenId: "964:evm-native",
+            amount: BigNumber("0.000000000007"),
+          },
         ],
         timeInSec: 180,
         data: { input: "upTo" },

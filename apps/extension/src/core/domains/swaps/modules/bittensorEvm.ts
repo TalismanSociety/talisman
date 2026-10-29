@@ -166,6 +166,7 @@ const estimateEvmFeeWei = async (
 
 const toQuoteFee = (tokenId: TokenId, planck: bigint, decimals: number): QuoteFee => ({
   name: "Est. Gas Fees",
+  gas: true,
   tokenId,
   amount: BigNumber(planckToTokens(planck.toString(), decimals)),
 })

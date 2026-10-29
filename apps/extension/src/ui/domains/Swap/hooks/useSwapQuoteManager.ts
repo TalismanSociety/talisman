@@ -23,17 +23,18 @@ import {
   dropUnaffordableQuotes,
   flattenQuotes,
   type NativeHolding,
+  type QuoteWithFees,
   selectQuote,
   sortQuotes,
 } from "./quote-sorting"
 
-const areSortedQuotesEqual = (
-  left: { quote: BaseQuote; fees: number }[],
-  right: { quote: BaseQuote; fees: number }[]
-): boolean =>
+const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): boolean =>
   left.length === right.length &&
   left.every(
-    ({ quote, fees }, index) => right[index]?.quote === quote && right[index]?.fees === fees
+    ({ quote, fees, netUsd }, index) =>
+      right[index]?.quote === quote &&
+      right[index]?.fees === fees &&
+      right[index]?.netUsd === netUsd
   )
 
 type QuoteQueryData = BaseQuote | BaseQuote[] | null
@@ -226,11 +227,11 @@ export const useSwapQuoteManager = (params: {
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
-  const liveSortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
+  const liveSortedQuotes: QuoteWithFees[] = useMemo(() => {
     const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
-    const withFees = attachFees(flatQuotes, tokenRates)
+    const withFees = attachFees(flatQuotes, tokenRates, toToken ?? null)
     return sortQuotes(dropUnaffordableQuotes(withFees, nativeHolding), quoteSorting)
-  }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding])
+  }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding, toToken])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])
 

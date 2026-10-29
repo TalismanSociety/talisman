@@ -55,6 +55,7 @@ export type PersistedQuoteFee = {
   amount: string
   tokenId: TokenId
   additional?: boolean
+  gas?: boolean
 }
 
 /** a QuoteLeg at rest: planck strings, signer and recipient known */

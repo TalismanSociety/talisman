@@ -47,7 +47,11 @@ const makeQuote = ({
     }
   )
 
-const wrap = (quote: BaseQuote, fees = 0): QuoteWithFees => ({ quote, fees })
+const wrap = (quote: BaseQuote, fees = 0, netUsd: number | null = null): QuoteWithFees => ({
+  quote,
+  fees,
+  netUsd,
+})
 
 /** Cast a partial rate map to TokenRatesList – tests only need the `usd.price` path. */
 const mockRates = (map: Record<string, { usd?: { price: number } | undefined }>): TokenRatesList =>
@@ -143,6 +147,49 @@ describe("sortQuotes – bestRate", () => {
     // Array.sort is stable in V8 – order should be preserved
     const sorted = sortQuotes([a, b], "bestRate")
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["A", "B"])
+  })
+
+  it("ranks by the USD value delivered less the fees paid on top, when the output has a rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("0.0195"), tokenId: "eth", additional: true }],
+    })
+    const stargate = makeQuote({
+      outputAmountBN: 795n,
+      providerName: "Stargate",
+      fees: [{ name: "Gas", amount: BigNumber("0.0001"), tokenId: "eth", gas: true }],
+    })
+    const across = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Across",
+      fees: [{ name: "LIFI Fixed Fee", amount: BigNumber("0.01"), tokenId: "eth" }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([glacis, stargate, across], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Across", "Stargate", "Glacis"])
+  })
+
+  it("falls back to the output amount when the output token has no rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("1"), tokenId: "eth", additional: true }],
+    })
+    const across = makeQuote({ outputAmountBN: 790n, providerName: "Across" })
+    const rates = mockRates({ eth: { usd: { price: 2300 } } })
+
+    const sorted = sortQuotes(
+      attachFees([across, glacis], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Glacis", "Across"])
   })
 
   it("handles very large bigint differences", () => {
@@ -304,7 +351,7 @@ describe("full sorting pipeline", () => {
     const flat = flattenQuotes([lowOutput, [highOutput, zeroOutput], null])
     expect(flat).toHaveLength(2) // zero output filtered out
 
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "bestRate")
 
     expect(sorted[0]!.quote.providerName).toBe("LI.FI")
@@ -332,7 +379,7 @@ describe("full sorting pipeline", () => {
 
     const r = mockRates({ eth: { usd: { price: 3000 } } })
     const flat = flattenQuotes([highOutputHighFee, lowOutputLowFee])
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "cheapest")
 
     expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")

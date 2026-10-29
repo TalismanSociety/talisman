@@ -537,6 +537,7 @@ const stepFees = async (step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
     fees.push({
       amount: BigNumber(gas.amount).times(10 ** -gas.token.decimals),
       name: "Gas",
+      gas: true,
       tokenId: await feeTokenId(gas.token),
     })
   }

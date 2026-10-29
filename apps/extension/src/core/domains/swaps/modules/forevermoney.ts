@@ -460,6 +460,11 @@ const toBridgeFee = (tokenId: TokenId, feeWei: bigint): QuoteFee => ({
   additional: true,
 })
 
+const toGasFee = (tokenId: TokenId, wei: bigint): QuoteFee => ({
+  ...toQuoteFee("Est. Gas Fees", tokenId, wei),
+  gas: true,
+})
+
 const toTalismanFees = (route: ForevermoneyRoute, { partnerFeeWei }: BridgeAmounts) =>
   partnerFeeWei > 0n ? [toQuoteFee(TALISMAN_FEE_NAME, route.fromTokenId, partnerFeeWei)] : []
 
@@ -516,7 +521,7 @@ const getUpToQuote = async (
         fees: [
           ...toTalismanFees(route, amounts),
           toQuoteFee("Chainlink CCIP Fee", feeTokenId, withFeeBuffer(feeWei)),
-          toQuoteFee("Est. Gas Fees", feeTokenId, gasReserveWei),
+          toGasFee(feeTokenId, gasReserveWei),
         ],
         timeInSec: OUTBOUND_DURATION_SEC,
         data,
@@ -562,7 +567,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
           ),
       value: getTransactionValue(route, amounts, feeWei),
     })
-    if (gasFeeWei !== null) fees.push(toQuoteFee("Est. Gas Fees", feeTokenId, gasFeeWei))
+    if (gasFeeWei !== null) fees.push(toGasFee(feeTokenId, gasFeeWei))
   }
 
   return quoteFromLegs(

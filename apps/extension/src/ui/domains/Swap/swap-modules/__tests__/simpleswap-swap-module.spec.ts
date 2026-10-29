@@ -157,7 +157,7 @@ describe("simpleswapSwapModule confirm screen", () => {
         },
       },
       fees: [
-        { name: "Est. Gas Fees", tokenId: ETH.id, amount: BigNumber("0.00021") },
+        { name: "Est. Gas Fees", gas: true, tokenId: ETH.id, amount: BigNumber("0.00021") },
         { name: "Talisman Fee", tokenId: ETH.id, amount: BigNumber("0.015") },
       ],
       txInfo: {

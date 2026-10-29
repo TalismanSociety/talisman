@@ -199,7 +199,9 @@ describe("bittensorEvmSwapModule confirm screen", () => {
         },
         txMetadata: new Uint8Array([1]),
       },
-      fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
+      fees: [
+        { name: "Est. Gas Fees", gas: true, tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") },
+      ],
       txInfo: {
         type: "swap-bittensor-evm",
         fromTokenId: SUB_TOKEN.id,
@@ -237,7 +239,9 @@ describe("bittensorEvmSwapModule confirm screen", () => {
           value: ONE_TAO_WEI,
         },
       },
-      fees: [{ name: "Est. Gas Fees", tokenId: EVM_TOKEN.id, amount: BigNumber("0.00021") }],
+      fees: [
+        { name: "Est. Gas Fees", gas: true, tokenId: EVM_TOKEN.id, amount: BigNumber("0.00021") },
+      ],
       txInfo: {
         type: "swap-bittensor-evm",
         fromTokenId: EVM_TOKEN.id,

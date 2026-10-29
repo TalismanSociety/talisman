@@ -249,7 +249,9 @@ describe("bittensorEvmSwapModule getQuote substrate -> evm", () => {
         recipient: EVM_ADDRESS,
         inputAmount: ONE_TAO_RAO,
         outputAmount: (ONE_TAO_RAO - ED) * WEI_PER_RAO,
-        fees: [{ name: "Est. Gas Fees", tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") }],
+        fees: [
+          { name: "Est. Gas Fees", gas: true, tokenId: SUB_TOKEN.id, amount: BigNumber("0.0001") },
+        ],
         timeInSec: 12,
         data: { edHeldRao: "500" },
       },

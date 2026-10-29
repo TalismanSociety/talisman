@@ -27,6 +27,8 @@ export type QuoteFee = {
    * Only fees in the source network's native token are balance-checked and allowed in the transaction value.
    */
   additional?: boolean
+  /** A network fee the user pays on top of the swap, on any leg's network */
+  gas?: boolean
 }
 
 export type NonEmpty<T> = [T, ...T[]]

@@ -78,7 +78,7 @@ export async function estimateDepositGas(
       const amount = BigNumber(gasPrice.toString())
         .times(gasLimit.toString())
         .times(10 ** -(nativeToken.decimals ?? 0))
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
+      return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
     }
 
     return null
@@ -130,7 +130,7 @@ export async function estimateDepositGas(
 
       const fee = await sapi.getFeeEstimate(payload)
       const amount = BigNumber(fee.toString()).times(10 ** -nativeToken.decimals)
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
+      return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
     } catch (err) {
       log.error(new Error("Failed to estimate substrate gas", { cause: err }))
       return null
