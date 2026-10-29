@@ -7,14 +7,18 @@ import { DismissLayerContext, useDismissOnEscape } from "@ui/hooks/useDismissOnE
 import { type OpenCloseStatus, OpenCloseStatusProvider } from "@ui/hooks/useOpenCloseStatus"
 import { cn } from "@ui/util/cn"
 import {
+  createContext,
   type FC,
   type MouseEventHandler,
   type ReactNode,
   Suspense,
+  use,
   useCallback,
   useState,
 } from "react"
 import { createPortal } from "react-dom"
+
+const IsInsideModalContext = createContext(false)
 
 type ModalProps = {
   analyticsId: string
@@ -35,6 +39,7 @@ export const Modal: FC<ModalProps> = ({
   children,
   onDismiss,
 }) => {
+  const isInsideModal = use(IsInsideModalContext)
   const [status, setStatus] = useState<OpenCloseStatus>("closed")
   const overlay = useOverlayAnalytics({ id: analyticsId, isOpen: !!isOpen })
   const dismissLayer = useDismissOnEscape(!!isOpen, overlay.dismissVia("escape", onDismiss))
@@ -56,7 +61,8 @@ export const Modal: FC<ModalProps> = ({
       <TransitionChild
         as="div"
         className={cn(
-          "top-0 left-0 z-20 h-full w-full bg-grey-900/50 backdrop-blur-xs",
+          "top-0 left-0 z-20 h-full w-full bg-grey-900/50",
+          !isInsideModal && "backdrop-blur-xs",
           containerId ? "absolute" : "fixed",
           onDismiss && "cursor-pointer"
         )}
@@ -98,7 +104,9 @@ export const Modal: FC<ModalProps> = ({
           <OverlayAnalyticsContext value={overlay.layer}>
             <OpenCloseStatusProvider status={status}>
               <DismissLayerContext value={dismissLayer}>
-                <Suspense fallback={null}>{children}</Suspense>
+                <IsInsideModalContext value>
+                  <Suspense fallback={null}>{children}</Suspense>
+                </IsInsideModalContext>
               </DismissLayerContext>
             </OpenCloseStatusProvider>
           </OverlayAnalyticsContext>
