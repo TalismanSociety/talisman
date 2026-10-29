@@ -1,6 +1,5 @@
 import { networkIdFromTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon } from "@talismn/icons"
-import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -60,7 +59,7 @@ const AddressRow: FC<{ label: ReactNode; address: string; networkId: string }> =
   </div>
 )
 
-export type SwapSummary = {
+type SwapSummary = {
   fromTokenId: TokenId
   toTokenId: TokenId
   fromAmount: bigint
@@ -102,19 +101,3 @@ export const SwapTxSummary: FC<SwapSummary> = ({
     </>
   )
 }
-
-/** the summary and cards scroll, the footer with the call to action stays put */
-export const SwapTxLayout: FC<{ footer: ReactNode; children: ReactNode }> = ({
-  footer,
-  children,
-}) => (
-  <>
-    <ScrollContainer
-      className="w-full grow"
-      innerClassName="flex flex-col items-center gap-6 px-12 pb-8 *:shrink-0"
-    >
-      {children}
-    </ScrollContainer>
-    <div className="w-full shrink-0 bg-black/40 px-12 py-8 pb-12">{footer}</div>
-  </>
-)

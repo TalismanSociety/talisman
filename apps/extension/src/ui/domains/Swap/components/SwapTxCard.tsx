@@ -9,6 +9,7 @@ import {
   ExternalLinkIcon,
   LoaderIcon,
 } from "@talismn/icons"
+import { ScrollContainer } from "@ui/components/ScrollContainer"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useAccountsMap } from "@ui/state/accounts"
@@ -249,4 +250,20 @@ export const SwapTxRow: FC<{ label: ReactNode; children?: ReactNode }> = ({ labe
     <div className="whitespace-nowrap text-body-secondary">{label}</div>
     <div className="flex min-w-0 items-center justify-end gap-2 text-body">{children}</div>
   </div>
+)
+
+/** the summary and cards scroll, the footer with the call to action stays put */
+export const SwapTxLayout: FC<{ footer: ReactNode; children: ReactNode }> = ({
+  footer,
+  children,
+}) => (
+  <>
+    <ScrollContainer
+      className="w-full grow"
+      innerClassName="flex flex-col items-center gap-6 px-12 pb-8 *:shrink-0"
+    >
+      {children}
+    </ScrollContainer>
+    <div className="w-full shrink-0 bg-black/40 px-12 py-8 pb-12">{footer}</div>
+  </>
 )

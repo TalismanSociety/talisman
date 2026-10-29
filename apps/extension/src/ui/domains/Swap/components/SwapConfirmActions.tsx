@@ -3,38 +3,18 @@ import { classifyError } from "@common/analytics/errorCategory"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
-import { log } from "@common/log"
 import type { SwapModuleTransaction, SwapTransactionContext } from "@core/domains/swaps/types"
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { BalanceFormatter } from "@talismn/balances"
-import { EditIcon, InfoIcon } from "@talismn/icons"
 import { serializeTransaction } from "@talismn/solana"
-import { getErrorMessage, isErrorOfName } from "@talismn/util"
+import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { track } from "@ui/api/track"
-import { notify } from "@ui/components/Notifications"
-import { ScrollContainer } from "@ui/components/ScrollContainer"
-import { Skeleton } from "@ui/components/Skeleton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
-import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
+import { Button } from "@ui/components/Button"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import {
-  RiskAnalysisPillButton,
-  useShowRiskAnalysisPillButton,
-} from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
-import { QuoteDuration } from "@ui/domains/Swap/components/QuoteDuration"
-import { QuoteExchangeRate } from "@ui/domains/Swap/components/QuoteExchangeRate"
-import { QuoteNote } from "@ui/domains/Swap/components/QuoteNote"
-import { QuoteProvider } from "@ui/domains/Swap/components/QuoteProvider"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { flows } from "@ui/hooks/analytics/flows"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
@@ -43,7 +23,6 @@ import { useFeeBalanceCheck } from "@ui/hooks/useFeeBalanceCheck"
 import { useGetSolanaFeeEstimate } from "@ui/hooks/useGetSolanaFeeEstimate"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { useAccountByAddress } from "@ui/state/accounts"
-import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
@@ -51,6 +30,8 @@ import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useSt
 import { useTranslation } from "react-i18next"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
+import { useLaterLegApprovals } from "../hooks/useLegApprovals"
+import { useQuoteApproval } from "../hooks/useQuoteApproval"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
 import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -63,8 +44,24 @@ import {
 } from "../swap-errors"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { SwapOtherFees } from "./SwapOtherFees"
-import { SwapRouteRow } from "./SwapRoute"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
+import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
+import {
+  SwapApprovalDetails,
+  SwapLegDetails,
+  SwapRiskRow,
+  SwapSlippageRow,
+  SwapTxFeeRows,
+  type SwapTxProvider,
+} from "./SwapTxDetails"
+import { SwapTxSubmitButton } from "./SwapTxSubmitButton"
+import {
+  activeSwapTxKey,
+  type SwapTxCardModel,
+  swapQuoteTxFacts,
+  swapTxCards,
+  withBlockingError,
+} from "./swapTxCards"
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
   containerId,
@@ -88,15 +85,12 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     isQuotePicked,
     gotoSubmitted,
     approvalCounter,
-    incrementApprovalCounter,
-    erc20Approval: { data: approvalData, loading: approvalLoading, approveTx, needsRevoke },
   } = useSwap()
 
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
 
-  const needsApproval = !approvalLoading && approvalData !== null
   const isReady = useConfirmReadiness(swapView)
   const [slippagePercent] = useSwapSlippage()
   const slippageDrawer = useOpenClose()
@@ -108,86 +102,11 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     if (swapView === "confirm") confirmEntryCounter.current++
   }, [swapView])
 
-  const publicClient = usePublicClient(approvalData?.chainId?.toString())
-  const [isApproving, setIsApproving] = useState(false)
-  const [hasSubmittedApproval, setHasSubmittedApproval] = useState(false)
-
-  const approvalTxInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!fromTokenId || !approvalData) return
-    return {
-      type: "approve-erc20",
-      tokenId: fromTokenId,
-      contractAddress: approvalData.contractAddress,
-      amount: needsRevoke ? "0" : approvalData.amount.toString(),
-    }
-  }, [approvalData, fromTokenId, needsRevoke])
-
-  const approvalEthTx = useEthTransaction(approveTx ?? undefined, fromToken?.networkId, false)
-
-  const approvalTx = useMemo<TxSubmitButtonTransaction | null>(() => {
-    if (!fromToken?.networkId || !approvalEthTx.transaction || !approvalTxInfo) return null
-    return {
-      platform: "ethereum",
-      networkId: fromToken.networkId,
-      payload: approvalEthTx.transaction,
-      txInfo: approvalTxInfo,
-    }
-  }, [approvalEthTx.transaction, approvalTxInfo, fromToken?.networkId])
-
   const protocol = swapModule?.protocol
-  const onApprovalFailed = useCallback(
-    (cause: unknown) => {
-      if (protocol) flows.swap.failed(cause, { protocol, phase: "approval" })
-    },
-    [protocol]
-  )
-
-  const onApprovalSubmitted = useCallback(
-    async (txId: string) => {
-      if (protocol)
-        track("swap_approval_submitted", {
-          protocol,
-          network_id: networkIdForAnalytics(fromNetwork),
-          is_revoke: needsRevoke,
-        })
-      if (!publicClient) {
-        log.warn("publicClient unavailable for approval receipt polling, skipping wait")
-        incrementApprovalCounter()
-        return
-      }
-
-      setHasSubmittedApproval(true)
-      setIsApproving(true)
-      try {
-        const approved = await publicClient.waitForTransactionReceipt({
-          hash: txId as `0x${string}`,
-        })
-        if (approved.status === "success") incrementApprovalCounter()
-        else throw new Error("Approval reverted")
-      } catch (cause) {
-        notify({
-          title: isErrorOfName(cause, "EstimateGasExecutionError")
-            ? t("Insufficient gas for approval")
-            : t("Approval failed"),
-          type: "error",
-          subtitle: getErrorMessage(cause, t("Unknown error")).slice(0, 100),
-          cause,
-        })
-        onApprovalFailed(cause)
-      } finally {
-        setIsApproving(false)
-      }
-    },
-    [
-      fromNetwork,
-      incrementApprovalCounter,
-      needsRevoke,
-      onApprovalFailed,
-      protocol,
-      publicClient,
-      t,
-    ]
-  )
+  const approval = useQuoteApproval()
+  const needsApproval = approval.isNeeded
+  const approvalEthTx = approval.ethTx
+  const [signFailure, setSignFailure] = useState<string>()
 
   const substrateNetwork = useNetworkById(fromToken?.networkId ?? undefined)
   const existentialDeposit = useExistentialDeposit(substrateNetwork?.nativeTokenId)
@@ -267,7 +186,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       !!fromAmount &&
       swapView === "confirm" &&
       isReady &&
-      !approvalLoading &&
+      !approval.isChecking &&
       !needsApproval &&
       (fromToken?.platform !== "polkadot" || !!sapi) &&
       (fromToken?.platform !== "solana" || !!solanaRpc),
@@ -354,16 +273,17 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   }, [fromAmount, fromBalance?.transferable.planck])
 
   const activeTransaction: SwapModuleTransaction | null = useMemo(() => {
-    if (needsApproval && approveTx) return { platform: "ethereum", transaction: approveTx }
+    if (needsApproval && approval.approveTx)
+      return { platform: "ethereum", transaction: approval.approveTx }
     return transaction
-  }, [approveTx, needsApproval, transaction])
+  }, [approval.approveTx, needsApproval, transaction])
 
   // covers the approval as well as the swap itself, as both are provider-supplied
   const riskAnalysisEth = useEvmTransactionRiskAnalysis({
     networkId: fromToken?.platform === "ethereum" ? fromToken.networkId : undefined,
     tx: activeTransaction?.platform === "ethereum" ? activeTransaction.transaction : undefined,
     disableCriticalPane: true,
-    subjectId: needsApproval && approveTx ? "approval" : "swap",
+    subjectId: needsApproval && approval.approveTx ? "approval" : "swap",
   })
 
   const serializedSolTx = useMemo(
@@ -390,22 +310,16 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const activeFeeTokenId = fromNetwork?.nativeTokenId
   const feeToken = useToken(activeFeeTokenId ?? undefined)
-  const feeTokenBalance = useBalance(fromAddress, activeFeeTokenId)
   const activeEthTx = needsApproval ? approvalEthTx : swapEthTx
 
-  const feePlanck = useMemo(() => {
+  const feePlanck = useMemo((): bigint | null => {
     if (!activeTransaction) return null
 
     switch (activeTransaction.platform) {
       case "ethereum":
-        return (
-          (needsApproval
-            ? approvalEthTx.txDetails
-            : swapEthTx.txDetails
-          )?.estimatedFee?.toString() ?? null
-        )
+        return (needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails)?.estimatedFee ?? null
       case "polkadot":
-        return substrateFee.data?.toString() ?? null
+        return substrateFee.data ?? null
       case "solana": {
         if (solanaFee.data === null || solanaFee.data === undefined) return null
         // Network fee from `getFeeForMessage` only covers signature/priority
@@ -424,7 +338,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         const ataRent = isSplToken ? 2_039_280n : 0n
         const networkPath = solanaFee.data + ataRent
         const quoteNativeBuffer = BigInt(selectedQuote?.maxNativeTokenGasBuffer ?? "0")
-        return (networkPath > quoteNativeBuffer ? networkPath : quoteNativeBuffer).toString()
+        return networkPath > quoteNativeBuffer ? networkPath : quoteNativeBuffer
       }
       default:
         return null
@@ -502,7 +416,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
     feeTokenId: activeFeeTokenId,
-    feePlanck: feePlanck === null ? null : BigInt(feePlanck) + additionalFeePlanck,
+    feePlanck: feePlanck === null ? null : feePlanck + additionalFeePlanck,
     isFeeLoading,
     fromTokenId,
     fromAmount,
@@ -628,9 +542,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const onSwapFailed = useCallback(
     (cause: unknown) => {
+      setSignFailure(getErrorMessage(cause, t("Failed to submit")))
       if (protocol) flows.swap.failed(cause, { protocol, phase: "submit" })
     },
-    [protocol]
+    [protocol, t]
   )
 
   const isDisabled = useMemo(
@@ -661,174 +576,145 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     ]
   )
 
+  const isBuildFailed = !!exchangeError && swapError?.type === "transaction-craft-error"
+  const legFailure = signFailure ?? (isBuildFailed && errorMessage ? errorMessage : undefined)
+
+  const ctx = useSwapTxContext()
+  const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
+  const approvalChecks = useMemo(() => legs.map((leg) => ({ leg, enabled: true })), [legs])
+  const laterLegApprovals = useLaterLegApprovals(approvalChecks)
+
+  const cards = legs.length
+    ? withBlockingError(
+        swapTxCards(
+          swapQuoteTxFacts(ctx, {
+            fromTokenId: legs[0].fromTokenId,
+            legCount: legs.length,
+            approval,
+            approvalsNeeded: laterLegApprovals,
+            failure: needsApproval ? undefined : legFailure,
+          })
+        ),
+        errorMessage
+      )
+    : []
+  const isApprovalActive = activeSwapTxKey(cards) === "approval-0"
+
+  const provider = useMemo<SwapTxProvider | undefined>(
+    () =>
+      selectedQuote
+        ? {
+            name: selectedQuote.providerName,
+            logo: selectedQuote.providerLogo,
+            note: selectedQuote.note,
+            notice: selectedQuote.notice,
+          }
+        : undefined,
+    [selectedQuote]
+  )
+  const providerLeg = Math.max(
+    0,
+    legs.findIndex((leg) => leg.protocol === selectedQuote?.protocol)
+  )
+  const signedCardKey = needsApproval ? "approval-0" : "leg-0"
+  const approvalNote = approval.needsRevoke
+    ? t(
+        "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+      )
+    : t("This token requires approval before it can be swapped.")
+
+  const renderBody = (card: SwapTxCardModel) => {
+    const leg = legs[card.leg]
+    const isSigned = card.key === signedCardKey
+    const feeRows = isSigned ? (
+      <SwapTxFeeRows
+        address={fromAddress}
+        feeTokenId={activeFeeTokenId}
+        feePlanck={feePlanck}
+        isLoading={isFeeLoading}
+        hasError={hasFeeError}
+        ethTx={fromToken?.platform === "ethereum" ? activeEthTx : undefined}
+        isPriorityLocked={approval.isPending}
+        containerId={containerId}
+      />
+    ) : null
+    const riskRow = isSigned ? <SwapRiskRow /> : null
+
+    if (card.kind === "approval") {
+      const firstAmount = card.leg === 0 && needsApproval ? approval.amount : undefined
+      return (
+        <SwapApprovalDetails
+          tokenId={leg.fromTokenId}
+          amount={firstAmount ?? leg.inputAmount}
+          fee={feeRows}
+          note={firstAmount === undefined ? undefined : approvalNote}
+        >
+          {riskRow}
+        </SwapApprovalDetails>
+      )
+    }
+
+    const isFirstLeg = card.leg === 0
+    return (
+      <SwapLegDetails leg={leg} provider={card.leg === providerLeg ? provider : undefined}>
+        {supportsSlippage && leg.protocol === selectedQuote?.protocol ? (
+          <SwapSlippageRow percent={slippagePercent} onEdit={slippageDrawer.open} />
+        ) : null}
+        {feeRows}
+        <SwapOtherFees
+          fees={isFirstLeg ? (exchangeAndTransactionQuery.data?.leg.fees ?? leg.fees) : leg.fees}
+          isLoading={isFirstLeg && isExchangeLoading}
+        />
+        {riskRow}
+      </SwapLegDetails>
+    )
+  }
+
+  const footer = isApprovalActive ? (
+    <SwapTxSubmitButton
+      containerId={containerId}
+      tx={approval.tx}
+      label={
+        approval.needsRevoke
+          ? t("Revoke Approval")
+          : t("Approve {{symbol}}", { symbol: fromToken?.symbol ?? "" })
+      }
+      isRetry={!!approval.failure}
+      isFinalStep={false}
+      onSubmit={approval.onSubmit}
+      onError={approval.onError}
+      disabled={
+        !isReady ||
+        !approval.tx ||
+        !!approvalEthTx.errorDetails ||
+        feeBalanceCheck.status === "insufficient" ||
+        feeBalanceCheck.status === "loading"
+      }
+      isProcessing={approval.isPending}
+    />
+  ) : isBuildFailed ? (
+    <Button color="orange" fullWidth onClick={() => exchangeAndTransactionQuery.refetch()}>
+      {t("Try again")}
+    </Button>
+  ) : (
+    <SwapTxSubmitButton
+      containerId={containerId}
+      tx={swapTx}
+      label={t("Confirm Swap")}
+      isRetry={!!signFailure}
+      onSubmit={handleSwapSubmitted}
+      onError={onSwapFailed}
+      disabled={isDisabled}
+      isProcessing={isExchangeLoading && !!approval.hash}
+    />
+  )
+
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
-      <ScrollContainer
-        className="w-full grow"
-        innerClassName="flex flex-col items-center gap-8 px-12 pb-8 *:shrink-0"
-      >
+      <SwapTxLayout footer={footer}>
         {children}
-        <div className="relative flex min-h-[2.8rem] w-full flex-col gap-2 rounded bg-grey-900 px-8 py-6">
-          {selectedQuote && selectedQuote.legs.length > 1 ? (
-            <SwapRouteRow legs={selectedQuote.legs} containerId={containerId} />
-          ) : null}
-          <QuoteProvider />
-          <QuoteDuration />
-          <QuoteExchangeRate />
-          <QuoteNote />
-          {supportsSlippage ? (
-            <div className="flex h-11 items-center justify-between gap-8">
-              <div className="whitespace-nowrap text-body-secondary text-xs">
-                {t("Slippage Tolerance")}
-              </div>
-              <button
-                type="button"
-                onClick={slippageDrawer.open}
-                className="flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-body text-xs"
-              >
-                <EditIcon />
-                <div className={slippagePercent === 0 ? "text-alert-warn" : undefined}>
-                  {slippagePercent.toFixed(2)}%
-                </div>
-              </button>
-            </div>
-          ) : null}
-          {fromToken?.platform === "ethereum" ? (
-            <div className="flex h-11 items-center justify-between gap-8">
-              <div className="text-body-secondary text-xs">{t("Priority")}</div>
-              <div>
-                {activeEthTx.transaction &&
-                activeEthTx.txDetails &&
-                activeFeeTokenId &&
-                activeEthTx.priority ? (
-                  <EthFeeSelect
-                    className="h-10"
-                    disabled={isApproving}
-                    tx={activeEthTx.transaction}
-                    tokenId={activeFeeTokenId}
-                    drawerContainerId={containerId}
-                    gasSettingsByPriority={activeEthTx.gasSettingsByPriority}
-                    priority={activeEthTx.priority}
-                    txDetails={activeEthTx.txDetails}
-                    networkUsage={activeEthTx.networkUsage}
-                    setCustomSettings={activeEthTx.setCustomSettings}
-                    onChange={activeEthTx.setPriority}
-                  />
-                ) : hasFeeError ? (
-                  <div className="text-body-secondary text-xs">-</div>
-                ) : (
-                  <Skeleton className="inline-block h-10 w-40 rounded-[1em] text-xs"></Skeleton>
-                )}
-              </div>
-            </div>
-          ) : null}
-          <div className="flex h-11 items-center justify-between gap-8">
-            <div className="whitespace-nowrap text-body-secondary text-xs">
-              {t("Estimated TX Fee")}
-              {activeFeeTokenId && (feePlanck || feeTokenBalance) ? (
-                <Tooltip placement="top">
-                  <TooltipTrigger asChild>
-                    <span className="ml-2">
-                      <InfoIcon className="inline align-text-top" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <FeeTooltip
-                      tokenId={activeFeeTokenId}
-                      estimatedFee={feePlanck ? BigInt(feePlanck) : undefined}
-                      maxFee={activeEthTx.txDetails?.maxFee}
-                      l1DataFee={activeEthTx.txDetails?.estimatedL1DataFee}
-                      balance={feeTokenBalance?.transferable.planck}
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              ) : null}
-            </div>
-            {hasFeeError ? (
-              <div className="truncate text-alert-error text-xs">{t("Failed to estimate fee")}</div>
-            ) : !isFeeLoading && feePlanck && activeFeeTokenId ? (
-              <TokensAndFiat
-                className="text-body-secondary text-xs"
-                tokensClassName="text-body"
-                fiatClassName="text-body-secondary"
-                tokenId={activeFeeTokenId}
-                planck={feePlanck}
-              />
-            ) : (
-              <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
-            )}
-          </div>
-          <SwapOtherFees fees={swapFees} isLoading={isExchangeLoading} />
-          <SimulationRow />
-        </div>
-      </ScrollContainer>
-
-      <div className="w-full shrink-0 bg-black/40 px-12 py-8 pb-12">
-        {!!errorMessage && (
-          <div
-            role="alert"
-            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-8 py-4 text-red-400 text-tiny"
-          >
-            <InfoIcon className="mt-px size-6 shrink-0" />
-            <div>{errorMessage}</div>
-          </div>
-        )}
-
-        {!errorMessage && selectedQuote?.notice && (
-          <div
-            role="note"
-            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
-          >
-            <InfoIcon className="mt-px size-6 shrink-0" />
-            <div>{selectedQuote.notice}</div>
-          </div>
-        )}
-
-        {!errorMessage && needsApproval && (
-          <div
-            role="alert"
-            className="mb-10 flex w-full items-start gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary text-tiny"
-          >
-            <InfoIcon className="mt-px size-6 shrink-0" />
-            <div>
-              {needsRevoke
-                ? t(
-                    "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
-                  )
-                : t("This token requires approval before it can be swapped.")}
-            </div>
-          </div>
-        )}
-
-        {needsApproval ? (
-          <TxSubmitButton
-            containerId={containerId}
-            tx={approvalTx}
-            label={needsRevoke ? t("Revoke Approval") : t("Approve Spend")}
-            isFinalStep={false}
-            onSubmit={onApprovalSubmitted}
-            onError={onApprovalFailed}
-            disabled={
-              !isReady ||
-              !approvalTx ||
-              !!approvalEthTx.errorDetails ||
-              feeBalanceCheck.status === "insufficient" ||
-              feeBalanceCheck.status === "loading"
-            } // cant use isDisabled here, it's always true if tx needs approval
-            isProcessing={isApproving}
-          />
-        ) : (
-          <TxSubmitButton
-            containerId={containerId}
-            tx={swapTx}
-            label={t("Confirm Swap")}
-            onSubmit={handleSwapSubmitted}
-            onError={onSwapFailed}
-            disabled={isDisabled}
-            isProcessing={isExchangeLoading && hasSubmittedApproval}
-          />
-        )}
-      </div>
+        <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
+      </SwapTxLayout>
       {supportsSlippage ? (
         <SwapSlippageDrawer
           containerId={containerId}
@@ -837,19 +723,5 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         />
       ) : null}
     </RiskAnalysisProvider>
-  )
-}
-
-const SimulationRow = () => {
-  const { t } = useTranslation()
-  const showRiskAnalysis = useShowRiskAnalysisPillButton()
-
-  if (!showRiskAnalysis) return null
-
-  return (
-    <div className="flex h-11 items-center justify-between gap-8">
-      <div className="whitespace-nowrap text-body-secondary text-xs">{t("Risk Assessment")}</div>
-      <RiskAnalysisPillButton className="h-10" size="xs" />
-    </div>
   )
 }

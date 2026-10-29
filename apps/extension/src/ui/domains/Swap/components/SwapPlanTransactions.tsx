@@ -21,14 +21,14 @@ import {
   type PlanLegSigningState,
   usePlanLegSigning,
 } from "./SwapPlanLedgerSign"
-import { SwapTxCards, useSwapTxContext } from "./SwapTxCard"
+import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
 import {
   SwapApprovalDetails,
   SwapLegDetails,
   SwapSlippageRow,
   SwapTxFeeRows,
 } from "./SwapTxDetails"
-import { SwapTxLayout, SwapTxSummary } from "./SwapTxSummary"
+import { SwapTxSummary } from "./SwapTxSummary"
 import {
   legTrackerUrl,
   pendingEvmLegRow,

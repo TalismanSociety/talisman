@@ -26,7 +26,10 @@ const tokens: Record<string, object> = {
 }
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string>) =>
+      key.replace(/{{(\w+)}}/g, (_, name: string) => options?.[name] ?? ""),
+  }),
 }))
 vi.mock("@ui/api/track", () => ({ track: vi.fn() }))
 vi.mock("@ui/components/Notifications", () => ({ notify: vi.fn() }))
@@ -80,12 +83,16 @@ vi.mock("@ui/util/solana/useSolanaRpc", () => ({ useSolanaRpc: () => undefined }
 vi.mock("@ui/hooks/useExistentialDeposit", () => ({ useExistentialDeposit: () => null }))
 vi.mock("@ui/hooks/analytics/errorShown", () => ({ useErrorShown: () => undefined }))
 vi.mock("@ui/hooks/analytics/flows", () => ({ flows: {} }))
-vi.mock("@ui/state/accounts", () => ({ useAccountByAddress: () => null }))
+vi.mock("@ui/state/accounts", () => ({
+  useAccountByAddress: () => null,
+  useAccountsMap: () => ({}),
+}))
 vi.mock("@ui/state/balances", () => ({ useBalance: () => null }))
 vi.mock("@ui/state/tokenRates", () => ({ useTokenRates: () => null }))
 vi.mock("@ui/state/chaindata", () => ({
   useToken: (id?: string) => (id ? (tokens[id] ?? null) : null),
   useNetworkById: (id?: string) => (id ? { id, nativeTokenId: ETH } : null),
+  useNetworksMapById: () => ({}),
 }))
 vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
   useFeeBalanceCheck: ({ feePlanck }: { feePlanck: bigint | null }) => {
@@ -106,13 +113,9 @@ vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
         }
   },
 }))
-vi.mock("../components/QuoteProvider", () => ({ QuoteProvider: () => null }))
-vi.mock("../components/QuoteDuration", () => ({ QuoteDuration: () => null }))
-vi.mock("../components/QuoteExchangeRate", () => ({ QuoteExchangeRate: () => null }))
-vi.mock("../components/QuoteNote", () => ({ QuoteNote: () => null }))
 vi.mock("../components/SwapOtherFees", () => ({ SwapOtherFees: () => null }))
-vi.mock("../components/SwapRoute", () => ({ SwapRouteRow: () => null }))
 vi.mock("../components/SwapSlippageDrawer", () => ({ SwapSlippageDrawer: () => null }))
+vi.mock("../hooks/useLegApprovals", () => ({ useLaterLegApprovals: () => new Set() }))
 vi.mock("../hooks/useSwapConfirmation", () => ({
   useConfirmReadiness: () => true,
   useSwapPostSubmit: () => vi.fn(),
@@ -150,6 +153,8 @@ vi.mock("../SwapProvider", () => ({
     gotoSubmitted: vi.fn(),
     approvalCounter: 0,
     incrementApprovalCounter: vi.fn(),
+    approvalHash: null,
+    setApprovalHash: vi.fn(),
     erc20Approval: {
       data: { chainId: 8453, contractAddress: USDC, amount: 1_000_000n },
       loading: false,
@@ -207,8 +212,9 @@ describe("SwapConfirmActions approval", () => {
     renderConfirmActions()
 
     expect(feeCheck.calls.at(-1)).toBe(APPROVAL_GAS + BRIDGE_FEE)
-    expect(screen.getByRole("button", { name: "Approve Spend" }).hasAttribute("disabled")).toBe(
-      true
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Insufficient ETH to pay for transaction fees"
     )
   })
 
@@ -216,8 +222,9 @@ describe("SwapConfirmActions approval", () => {
     feeCheck.available = APPROVAL_GAS + BRIDGE_FEE
     renderConfirmActions()
 
-    expect(screen.getByRole("button", { name: "Approve Spend" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(
       false
     )
+    expect(screen.queryByRole("alert")).toBeNull()
   })
 })
