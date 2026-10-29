@@ -4,6 +4,16 @@ import { z } from "zod"
 const GANDALF_URL = "https://gandalf.talisman.xyz"
 const REQUEST_TIMEOUT_MS = 30_000
 
+const SHA256_BITS = 256
+
+const challengeResponseSchema = z.object({
+  challenge: z.string().min(1),
+  difficulty: z.number().int().min(0).max(SHA256_BITS),
+  expiresAt: z.number(),
+})
+
+const registrationResponseSchema = z.object({ installId: z.string().min(1) })
+
 const accessTokenResponseSchema = z.object({
   accessToken: z.string().min(1),
   expiresIn: z.number().positive(),
@@ -96,7 +106,7 @@ export async function fetchChallenge(): Promise<{
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
   if (!res.ok) throw await toRequestError(res, "challenge request")
-  return res.json()
+  return challengeResponseSchema.parse(await res.json())
 }
 
 export type ProofOfWorkSolve = { durationMs: number; difficulty: number }
@@ -138,7 +148,7 @@ export async function registerInstall(): Promise<{
 
   if (!res.ok) throw await toRequestError(res, "registration")
 
-  const { installId } = (await res.json()) as { installId: string }
+  const { installId } = registrationResponseSchema.parse(await res.json())
   const privateKeyHex = bytesToHex(privateKey)
 
   return { installId, privateKeyHex, proofOfWork }

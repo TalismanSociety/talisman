@@ -1,5 +1,6 @@
 import { ed25519 } from "@noble/curves/ed25519.js"
 import { vi } from "vitest"
+import { ZodError } from "zod"
 
 import {
   base64urlEncode,
@@ -124,6 +125,19 @@ describe("fetchChallenge", () => {
     await expect(fetchChallenge()).rejects.toThrow("Gandalf challenge request failed (500)")
   })
 
+  it.each([
+    ["no difficulty", { challenge: "x", expiresAt: 0 }],
+    ["a fractional difficulty", { challenge: "x", difficulty: 1.5, expiresAt: 0 }],
+    ["a difficulty above the hash size", { challenge: "x", difficulty: 257, expiresAt: 0 }],
+    ["no challenge", { difficulty: 1, expiresAt: 0 }],
+  ])("rejects a successful challenge reply with %s", async (_, body) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+
+    await expect(fetchChallenge()).rejects.toThrow(ZodError)
+  })
+
   it("gives the request its own timeout signal", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ challenge: "x", difficulty: 1, expiresAt: 0 }), {
@@ -182,6 +196,19 @@ describe("registerInstall", () => {
     expect(body).toHaveProperty("pubKey.crv", "Ed25519")
     expect(body).toHaveProperty("challenge", "test-challenge")
     expect(body).toHaveProperty("solution")
+  })
+
+  it("rejects a successful registration reply without an install id", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ challenge: "c", difficulty: 1, expiresAt: 0 }), {
+          status: 200,
+        })
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }))
+
+    await expect(registerInstall()).rejects.toThrow(ZodError)
   })
 
   it("throws with server message on registration failure", async () => {
@@ -295,7 +322,7 @@ describe("requestAccessToken", () => {
 
     await expect(
       requestAccessToken("inst-1", bytesToHex(ed25519.utils.randomSecretKey()))
-    ).rejects.toThrow()
+    ).rejects.toThrow(ZodError)
   })
 
   const failWith = (status: number, body: unknown, headers?: HeadersInit) => {
