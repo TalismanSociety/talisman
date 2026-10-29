@@ -32,7 +32,6 @@ export type SwapTxStatus =
 
 export type SwapTxCardKey = `approval-${number}` | `leg-${number}`
 
-/** one transaction of a swap: a leg, or the token approval a leg needs first */
 export type SwapTxCardModel = {
   key: SwapTxCardKey
   kind: "approval" | "leg"
@@ -138,7 +137,6 @@ const networkOf = ({ networks }: SwapTxContext, tokenId: TokenId) =>
 const txExplorerUrl = (ctx: SwapTxContext, tokenId: TokenId, hash: Hex) =>
   getBlockExplorerUrl(networkOf(ctx, tokenId), { type: "transaction", id: hash }) ?? undefined
 
-/** the first leg's token approval as the confirm screen runs it */
 export type QuoteApprovalState = {
   isNeeded: boolean
   /** sent, its receipt not in yet */
@@ -151,7 +149,6 @@ export type SwapQuoteTxInput = {
   fromTokenId: TokenId
   legCount: number
   approval: QuoteApprovalState
-  /** the later legs whose spender allowance was short when read */
   approvalsNeeded: ReadonlySet<number>
   /** the first leg's swap transaction could not be built or signed */
   failure?: string
@@ -195,7 +192,6 @@ export const withBlockingError = (
   )
 }
 
-/** the leg the user signs on screen, while they sign it: what it asks for, and what went wrong */
 export type PlanLegSigning = {
   leg: number
   signs?: "leg" | "approval"
@@ -210,7 +206,6 @@ export type SwapPlanTxInput = {
   rows: ReadonlyMap<string, WalletTransaction | null>
   /** only the screen that sent leg 0's approval knows it */
   leg0ApprovalHash?: Hex
-  /** the later legs whose spender allowance was short when read */
   approvalsNeeded: ReadonlySet<number>
   signing: PlanLegSigning | null
 }
@@ -307,7 +302,6 @@ export const swapPlanTxFacts = (ctx: SwapTxContext, input: SwapPlanTxInput): Swa
 
 export type SwapPlanFooter = { type: "processing" } | { type: "close" } | PlanCallToAction
 
-/** while the swap moves nothing is asked of the user; once it waits or ends, the footer offers the way forward */
 export const swapPlanFooter = (
   plan: SwapPlan,
   cards: readonly SwapTxCardModel[]
@@ -332,7 +326,6 @@ export const swapPlanFooter = (
   }
 }
 
-/** the leg the user signs on screen, while the plan waits on them */
 export const planSigningLeg = (plan: SwapPlan): number | null => {
   if (plan.phase !== "paused") return null
   const action = planCallToAction(plan)

@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next"
 const RETRY_CLASS_NAME =
   "bg-orange-500 enabled:hover:bg-orange/90 enabled:hover:active:bg-orange disabled:bg-orange-500/50"
 
-/** after a failed attempt, the same transaction is offered again as a retry */
 export const SwapTxSubmitButton: FC<TxSubmitButtonProps & { isRetry?: boolean }> = ({
   isRetry,
   label,

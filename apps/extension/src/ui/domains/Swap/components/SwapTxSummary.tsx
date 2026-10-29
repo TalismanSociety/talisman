@@ -68,7 +68,6 @@ type SwapSummary = {
   toAddress: string
 }
 
-/** what the swap gives, what it gets, and between which accounts */
 export const SwapTxSummary: FC<SwapSummary> = ({
   fromTokenId,
   toTokenId,

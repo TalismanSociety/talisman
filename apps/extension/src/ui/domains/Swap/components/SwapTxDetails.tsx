@@ -75,10 +75,8 @@ const Notice: FC<{ children: ReactNode }> = ({ children }) => (
   </div>
 )
 
-/** what one leg swaps, through whom and at what rate: the rows the caller adds sit before the provider's notes */
 export const SwapLegDetails: FC<{
   leg: QuoteLeg
-  /** what the leg's transaction gave once it landed */
   received?: bigint
   provider?: SwapTxProvider
   children?: ReactNode
@@ -158,7 +156,6 @@ export const SwapSlippageRow: FC<{ percent: number; onEdit?: () => void }> = ({
   )
 }
 
-/** the fee of the transaction the user signs on screen, and for an EVM one the priority it pays */
 export const SwapTxFeeRows: FC<{
   address: string | null | undefined
   feeTokenId: TokenId | undefined

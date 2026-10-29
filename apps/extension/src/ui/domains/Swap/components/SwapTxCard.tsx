@@ -223,7 +223,6 @@ const SwapTxCard: FC<{
   )
 }
 
-/** one card per transaction of the swap, numbered in the order the user meets them */
 export const SwapTxCards: FC<{
   cards: readonly SwapTxCardModel[]
   legs: readonly QuoteLeg[]
@@ -252,7 +251,6 @@ export const SwapTxRow: FC<{ label: ReactNode; children?: ReactNode }> = ({ labe
   </div>
 )
 
-/** the summary and cards scroll, the footer with the call to action stays put */
 export const SwapTxLayout: FC<{ footer: ReactNode; children: ReactNode }> = ({
   footer,
   children,

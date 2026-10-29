@@ -7,7 +7,6 @@ import type { SwapModule } from "../swap-modules/common.swap-module"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
 
-/** the allowance a leg's spender needs before the leg can spend its token */
 export const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => {
   if (!leg.signer) return null
   return (

@@ -227,7 +227,6 @@ const PlanTransactions: FC<{
   )
 }
 
-/** a plan's transactions as they run, each in its own card, from any screen that opens the plan */
 export const SwapPlanTransactions: FC<{
   id: SwapPlanId
   onClose: () => void

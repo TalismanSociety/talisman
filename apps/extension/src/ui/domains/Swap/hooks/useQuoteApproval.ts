@@ -15,7 +15,6 @@ import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
 
-/** the allowance the first leg needs before it can be built: priced, sent, then waited on until it mines */
 export const useQuoteApproval = () => {
   const { t } = useTranslation()
   const {
