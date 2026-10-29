@@ -20,7 +20,7 @@ import type { SwapModule } from "../swap-modules/common.swap-module"
 import { useSwapModules } from "../swaps.api"
 import {
   attachFees,
-  dropUnaffordableQuotes,
+  attachShortfalls,
   flattenQuotes,
   type NativeHolding,
   type QuoteWithFees,
@@ -31,10 +31,11 @@ import {
 const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): boolean =>
   left.length === right.length &&
   left.every(
-    ({ quote, fees, netUsd }, index) =>
+    ({ quote, fees, netUsd, shortfall }, index) =>
       right[index]?.quote === quote &&
       right[index]?.fees === fees &&
-      right[index]?.netUsd === netUsd
+      right[index]?.netUsd === netUsd &&
+      right[index]?.shortfall?.planck === shortfall?.planck
   )
 
 type QuoteQueryData = BaseQuote | BaseQuote[] | null
@@ -230,7 +231,7 @@ export const useSwapQuoteManager = (params: {
   const liveSortedQuotes: QuoteWithFees[] = useMemo(() => {
     const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
     const withFees = attachFees(flatQuotes, tokenRates, toToken ?? null)
-    return sortQuotes(dropUnaffordableQuotes(withFees, nativeHolding), quoteSorting)
+    return sortQuotes(attachShortfalls(withFees, nativeHolding), quoteSorting)
   }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding, toToken])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])

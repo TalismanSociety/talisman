@@ -85,7 +85,10 @@ const Details = () => {
         (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
     )
     const idx = selectedIdx >= 0 ? selectedIdx : 0
-    return { displayQuote: sortedQuotes[idx], isBestRate: idx === 0 }
+    return {
+      displayQuote: sortedQuotes[idx],
+      isBestRate: idx === 0 && !sortedQuotes[idx]?.shortfall,
+    }
   }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
 
   // Extract the lowest provider minimum from error messages (e.g. "SimpleSwap minimum is 0.001 BTC")

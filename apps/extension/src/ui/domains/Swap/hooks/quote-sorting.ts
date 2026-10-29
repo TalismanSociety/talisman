@@ -4,8 +4,16 @@ import BigNumber from "bignumber.js"
 
 export type QuoteSorting = "decentalised" | "cheapest" | "fastest" | "bestRate"
 
+/** What the account lacks in the source network's native token to pay for the route */
+export type Shortfall = { tokenId: string; planck: bigint }
+
 /** `netUsd` is null when the output token or a fee paid on top has no rate */
-export type QuoteWithFees = { quote: BaseQuote; fees: number; netUsd: number | null }
+export type QuoteWithFees = {
+  quote: BaseQuote
+  fees: number
+  netUsd: number | null
+  shortfall: Shortfall | null
+}
 
 /**
  * Flatten query results into a list of valid quotes (outputAmountBN > 0).
@@ -67,6 +75,7 @@ export const attachFees = (
     quote,
     fees: calculateQuoteFees(quote, tokenRates),
     netUsd: calculateNetUsd(quote, tokenRates, toToken),
+    shortfall: null,
   }))
 
 export const toPlanck = (fee: QuoteFee, decimals: number) =>
@@ -81,29 +90,32 @@ export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: string, decima
 export type NativeHolding = { tokenId: string; decimals: number; transferable: bigint }
 
 /**
- * Drop the quotes the account cannot pay for: the input plus the fees charged on top of it,
+ * Mark the quotes the account cannot pay for: the input plus the fees charged on top of it,
  * in the source network's native token, exceed what it holds.
- * When no quote fits, keep them all so the confirm screen names the shortfall.
  */
-export const dropUnaffordableQuotes = (
+export const attachShortfalls = (
   quotes: QuoteWithFees[],
   native: NativeHolding | null
 ): QuoteWithFees[] => {
   if (!native) return quotes
-  const affordable = quotes.filter(({ quote }) => {
+  return quotes.map((entry) => {
+    const { quote } = entry
     const input = quote.legs[0].fromTokenId === native.tokenId ? quote.inputAmountBN : 0n
     const additionalFees = getAdditionalFeePlanck(quote.fees, native.tokenId, native.decimals)
-    return input + additionalFees <= native.transferable
+    const missing = input + additionalFees - native.transferable
+    return missing > 0n
+      ? { ...entry, shortfall: { tokenId: native.tokenId, planck: missing } }
+      : entry
   })
-  return affordable.length ? affordable : quotes
 }
 
 /**
- * Sort quotes according to the chosen sorting strategy.
+ * Sort quotes according to the chosen sorting strategy, the ones the account can pay for first.
  */
 export const sortQuotes = (quotes: QuoteWithFees[], sorting: QuoteSorting): QuoteWithFees[] => {
   const isEveryNetValueKnown = quotes.every(({ netUsd }) => netUsd !== null)
   return [...quotes].sort((a, b) => {
+    if (!a.shortfall !== !b.shortfall) return a.shortfall ? 1 : -1
     switch (sorting) {
       case "bestRate":
         return isEveryNetValueKnown

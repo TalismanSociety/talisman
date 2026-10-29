@@ -5,8 +5,8 @@ import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
 import {
   attachFees,
+  attachShortfalls,
   calculateQuoteFees,
-  dropUnaffordableQuotes,
   flattenQuotes,
   type QuoteWithFees,
   selectQuote,
@@ -51,6 +51,7 @@ const wrap = (quote: BaseQuote, fees = 0, netUsd: number | null = null): QuoteWi
   quote,
   fees,
   netUsd,
+  shortfall: null,
 })
 
 /** Cast a partial rate map to TokenRatesList – tests only need the `usd.price` path. */
@@ -409,7 +410,7 @@ describe("full sorting pipeline", () => {
   })
 })
 
-describe("dropUnaffordableQuotes", () => {
+describe("attachShortfalls", () => {
   const additionalFee = (amount: string, tokenId = "from-token") => ({
     amount: BigNumber(amount),
     name: "Bridge Fee",
@@ -421,16 +422,22 @@ describe("dropUnaffordableQuotes", () => {
     decimals: 0,
     transferable,
   })
+  const shortfallOf = (quote: QuoteWithFees, transferable: bigint, tokenId?: string) =>
+    attachShortfalls([quote], holding(transferable, tokenId))[0]?.shortfall
 
-  it("drops a quote whose input and fees on top exceed the native balance", () => {
-    const cheap = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("5")] }))
-    const pricey = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
-    expect(dropUnaffordableQuotes([pricey, cheap], holding(40n))).toEqual([cheap])
+  it("records what the account lacks to pay the input and the fees on top", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
+    expect(shortfallOf(quote, 40n)).toEqual({ tokenId: "from-token", planck: 165n })
+  })
+
+  it("records nothing when the account holds enough", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("5")] }))
+    expect(shortfallOf(quote, 15n)).toBeNull()
   })
 
   it("counts only the fees on top when the input is another token", () => {
     const quote = wrap(makeQuote({ inputAmountBN: 1000n, fees: [additionalFee("5", "native")] }))
-    expect(dropUnaffordableQuotes([quote], holding(5n, "native"))).toEqual([quote])
+    expect(shortfallOf(quote, 5n, "native")).toBeNull()
   })
 
   it("ignores fees taken from the swapped amount and fees in other tokens", () => {
@@ -443,16 +450,22 @@ describe("dropUnaffordableQuotes", () => {
         ],
       })
     )
-    expect(dropUnaffordableQuotes([quote], holding(10n))).toEqual([quote])
+    expect(shortfallOf(quote, 10n)).toBeNull()
   })
 
-  it("keeps every quote when none fits, so the confirm screen names the shortfall", () => {
+  it("records nothing while the balance is unknown", () => {
     const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
-    expect(dropUnaffordableQuotes(quotes, holding(1n))).toEqual(quotes)
+    expect(attachShortfalls(quotes, null)).toEqual(quotes)
   })
 
-  it("keeps every quote while the balance is unknown", () => {
-    const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
-    expect(dropUnaffordableQuotes(quotes, null)).toEqual(quotes)
+  it("sorts the routes the account cannot pay for after the ones it can", () => {
+    const glacis = {
+      ...wrap(makeQuote({ providerName: "Glacis", outputAmountBN: 3000n })),
+      shortfall: { tokenId: "from-token", planck: 1n },
+    }
+    const across = wrap(makeQuote({ providerName: "Across", outputAmountBN: 2000n }))
+    expect(sortQuotes([glacis, across], "bestRate").map(({ quote }) => quote.providerName)).toEqual(
+      ["Across", "Glacis"]
+    )
   })
 })

@@ -125,7 +125,7 @@ describe("useSwapQuoteManager", () => {
     nativeBalance.current = null
   })
 
-  it("leaves out a route whose fees on top cost more than the account holds", async () => {
+  it("lists a route whose fees on top cost more than the account holds last, with what it lacks", async () => {
     nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 10n } }
     const bridgeFee = { amount: BigNumber(195), name: "Bridge Fee", tokenId: "from-token" }
     const glacis = makeQuote(300n, [{ ...bridgeFee, additional: true }])
@@ -152,8 +152,12 @@ describe("useSwapQuoteManager", () => {
       { wrapper }
     )
 
-    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(1))
-    expect(result.current.sortedQuotes[0]?.quote).toBe(across)
+    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(2))
+    expect(result.current.sortedQuotes.map(({ quote, shortfall }) => [quote, shortfall])).toEqual([
+      [across, null],
+      [glacis, { tokenId: "from-token", planck: 186n }],
+    ])
+    expect(result.current.selectedQuote).toBe(across)
   })
 
   it("keeps the confirmed route while the quote is frozen, even if the balance drops", async () => {
