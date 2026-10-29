@@ -1,9 +1,8 @@
 import { db } from "@core/db"
 import { planSteps } from "@core/domains/swaps/plans/helpers"
-import type { PlanLeg, SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
+import type { SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { CheckIcon, XIcon } from "@talismn/icons"
-import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import type { ProcessAnimationStatus } from "@ui/components/ProcessAnimation/ProcessAnimation"
@@ -15,9 +14,9 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useSwapModal } from "../hooks/useSwapModal"
 import {
-  type PlanLegSignRequest,
-  SwapPlanLedgerSign,
-  useHardwareLegTransaction,
+  PlanLegSignButton,
+  type PlanLegSigningState,
+  usePlanLegSigning,
 } from "./SwapPlanLedgerSign"
 import { SwapPlanStepList, useStepRowContext } from "./SwapPlanStepList"
 import {
@@ -97,21 +96,10 @@ const SwapPlanStatusIcon: FC<{ status: ProcessAnimationStatus; className?: strin
 
 const SwapPlanAction: FC<{
   action: SwapPlanFooterAction
-  signRequest: PlanLegSignRequest | undefined
-  isSignRequestFailed: boolean
-  signerType: PlanLeg["signerType"] | undefined
-  onSignAttemptEnded: () => void
+  signButton: PlanLegSigningState["button"]
   onClose: () => void
   containerId?: string
-}> = ({
-  action,
-  signRequest,
-  isSignRequestFailed,
-  signerType,
-  onSignAttemptEnded,
-  onClose,
-  containerId,
-}) => {
+}> = ({ action, signButton, onClose, containerId }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { open: openSwapModal } = useSwapModal()
@@ -139,20 +127,7 @@ const SwapPlanAction: FC<{
         </Button>
       )
     case "sign-hardware":
-      if (isSignRequestFailed)
-        return (
-          <Button primary fullWidth onClick={onSignAttemptEnded}>
-            {t("Try again")}
-          </Button>
-        )
-      return (
-        <SwapPlanLedgerSign
-          request={signRequest}
-          signerType={signerType}
-          onSignAttemptEnded={onSignAttemptEnded}
-          containerId={containerId}
-        />
-      )
+      return <PlanLegSignButton button={signButton} containerId={containerId} />
     case "finish":
       return (
         <Button
@@ -187,10 +162,8 @@ export const SwapPlanProgress: FC<{
     [plan, rows]
   )
   const waitingLeg = action.type === "sign-hardware" ? action.leg : null
-  const signRequest = useHardwareLegTransaction(plan, waitingLeg)
-  const ledgerError = signRequest.error
-    ? getErrorMessage(signRequest.error, t("Failed to prepare the transaction"))
-    : null
+  const { signing, button: signButton } = usePlanLegSigning(plan, waitingLeg)
+  const ledgerError = signing?.failure ?? null
 
   const view = useMemo(
     () => (plan ? swapPlanProgressView(ctx, { plan, rows, ledgerError }) : null),
@@ -216,10 +189,7 @@ export const SwapPlanProgress: FC<{
         <div className="h-28 w-full">
           <SwapPlanAction
             action={action}
-            signRequest={signRequest.data}
-            isSignRequestFailed={signRequest.isError}
-            signerType={waitingLeg === null ? undefined : plan?.legs[waitingLeg].signerType}
-            onSignAttemptEnded={signRequest.refetch}
+            signButton={signButton}
             onClose={onClose}
             containerId={containerId}
           />

@@ -4,47 +4,33 @@ import { deriveLegInput, fromPersistedLeg, readLegBalance } from "@core/domains/
 import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { ApprovalInfo } from "@core/domains/swaps/types"
 import { evmNativeTokenId, networkIdFromTokenId } from "@talismn/chaindata-provider"
-import type { AccountType } from "@talismn/keyring"
+import { getErrorMessage } from "@talismn/util"
 import { skipToken, useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSubmitButton"
-import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { Button } from "@ui/components/Button"
+import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import type { TxSubmitButtonTransactionEth } from "@ui/domains/Sign/TxSubmitButton/types"
 import { getToken$ } from "@ui/state/chaindata"
 import { type FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type Hex, type PublicClient } from "viem"
 
-import type { SwapModule } from "../swap-modules/common.swap-module"
+import { legApproval, readAllowance } from "../hooks/useLegApprovals"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
+import { SwapTxSubmitButton } from "./SwapTxSubmitButton"
+import type { PlanLegSigning } from "./swapTxCards"
 
-/** what the user signs next for a leg: the leg itself, or first the allowance its spender needs */
-export type PlanLegSignRequest =
-  | { signs: "leg"; tx: TxSubmitButtonTransaction }
-  | { signs: "approval"; symbol: string; tx: TxSubmitButtonTransaction }
+/**
+ * What the user signs next for a leg: the leg itself, or first the allowance its spender needs.
+ * The payload carries no fee: the screen prices it, at the priority the user picks.
+ */
+type PlanLegSignRequest =
+  | { signs: "leg"; tx: TxSubmitButtonTransactionEth }
+  | { signs: "approval"; symbol: string; tx: TxSubmitButtonTransactionEth }
 
 const APPROVAL_WAIT_MS = 2 * 60_000
-
-const isLedgerSigner = (signerType: AccountType | undefined) => !!signerType?.startsWith("ledger-")
-
-const legApproval = (module: SwapModule, leg: PlanLeg) =>
-  module.getApprovalInfo?.({
-    fromTokenId: leg.quote.fromTokenId,
-    toTokenId: leg.quote.toTokenId,
-    fromAmount: BigInt(leg.quote.inputAmount),
-    fromAddress: leg.quote.signer,
-    toAddress: leg.quote.recipient,
-    quoteData: { legs: [fromPersistedLeg(leg.quote)] },
-  }) ?? null
-
-const readAllowance = (client: PublicClient, approval: NonNullable<ApprovalInfo>) =>
-  client.readContract({
-    address: approval.tokenAddress as Hex,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [approval.fromAddress as Hex, approval.contractAddress as Hex],
-  })
 
 const buildApprovalTransaction = async (
   client: PublicClient,
@@ -54,7 +40,7 @@ const buildApprovalTransaction = async (
 ): Promise<PlanLegSignRequest> => {
   const networkId = networkIdFromTokenId(leg.quote.fromTokenId)
   const signer = leg.quote.signer as Hex
-  const [token, transaction] = await Promise.all([
+  const [token, { to, data, value, gas }] = await Promise.all([
     firstValueFrom(getToken$(leg.quote.fromTokenId)),
     prepareTransactionRequestWithGasCheck(client, evmNativeTokenId(networkId), {
       chain: null,
@@ -68,24 +54,13 @@ const buildApprovalTransaction = async (
       }),
     }),
   ])
-  const { to, data, value, gas, maxFeePerGas, maxPriorityFeePerGas } = transaction
   return {
     signs: "approval",
     symbol: token?.symbol ?? "",
     tx: {
       platform: "ethereum",
       networkId,
-      payload: {
-        type: "eip1559",
-        from: signer,
-        to,
-        data,
-        value,
-        gas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        nonce,
-      },
+      payload: { from: signer, to, data, value, gas, nonce },
       txInfo: {
         type: "approve-erc20",
         tokenId: leg.quote.fromTokenId,
@@ -107,7 +82,7 @@ const buildHardwareLegTransaction = async (
   const networkId = networkIdFromTokenId(leg.quote.fromTokenId)
   const signer = leg.quote.signer as Hex
   const client = await getEvmPublicClient(networkId)
-  const approval = legApproval(module, leg)
+  const approval = legApproval(module, fromPersistedLeg(leg.quote))
   const [balance, nextNonce, allowance] = await Promise.all([
     readLegBalance(client, leg.quote),
     leg.nonce ?? api.ethGetTransactionsCount(signer, networkId),
@@ -126,23 +101,13 @@ const buildHardwareLegTransaction = async (
   if (built.transaction.platform !== "ethereum")
     throw new Error("Only an EVM leg is signed on screen")
 
-  const { to, data, value, gas, maxFeePerGas, maxPriorityFeePerGas } = built.transaction.transaction
+  const { to, data, value, gas } = built.transaction.transaction
   return {
     signs: "leg",
     tx: {
       platform: "ethereum",
       networkId,
-      payload: {
-        type: "eip1559",
-        from: signer,
-        to,
-        data,
-        value,
-        gas,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        nonce: nextNonce,
-      },
+      payload: { from: signer, to, data, value, gas, nonce: nextNonce },
       txInfo: { ...built.txInfo, plan: { id: plan.id, leg: index } },
     },
   }
@@ -154,68 +119,140 @@ const buildHardwareLegTransaction = async (
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
  */
-export const useHardwareLegTransaction = (
-  plan: SwapPlan | null | undefined,
-  index: number | null
-) =>
+const useHardwareLegTransaction = (plan: SwapPlan | null | undefined, index: number | null) =>
   useQuery({
     queryKey: ["swap-plan-hardware-leg", plan?.id, index, plan?.updatedAt],
     queryFn: plan && index !== null ? () => buildHardwareLegTransaction(plan, index) : skipToken,
     retry: false,
   })
 
-const waitForApproval = async (tx: TxSubmitButtonTransaction, hash: string) => {
-  if (tx.platform !== "ethereum") return
+const waitForApproval = async (tx: TxSubmitButtonTransactionEth, hash: Hex) => {
   try {
     const client = await getEvmPublicClient(tx.networkId)
-    await client.waitForTransactionReceipt({ hash: hash as Hex, timeout: APPROVAL_WAIT_MS })
+    await client.waitForTransactionReceipt({ hash, timeout: APPROVAL_WAIT_MS })
   } catch (cause) {
     log.warn("Could not wait for the approval to mine", { cause, hash })
   }
 }
 
-export const SwapPlanLedgerSign: FC<{
-  request: PlanLegSignRequest | undefined
-  signerType: AccountType | undefined
-  onSignAttemptEnded: () => void
-  containerId?: string
-}> = ({ request, signerType, onSignAttemptEnded, containerId }) => {
+type LegNote<T> = { leg: number; value: T }
+
+const noteFor = <T,>(note: LegNote<T> | undefined, leg: number | null) =>
+  note && note.leg === leg ? note.value : undefined
+
+/** the leg a paused plan waits on the user to sign, priced on screen with the nonce the plan pinned */
+export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: number | null) => {
   const { t } = useTranslation()
-  const [rejectedSubmissions, setRejectedSubmissions] = useState(0)
+  const request = useHardwareLegTransaction(plan, index)
+  const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId, false, true)
+  const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
+  const [signFailure, setSignFailure] = useState<LegNote<string>>()
   const [isApprovalPending, setIsApprovalPending] = useState(false)
+  const [rejectedSubmissions, setRejectedSubmissions] = useState(0)
+
+  const tx: TxSubmitButtonTransactionEth | undefined =
+    request.data && ethTx.transaction
+      ? { ...request.data.tx, payload: ethTx.transaction }
+      : undefined
+
+  const failure = request.error
+    ? getErrorMessage(request.error, t("Failed to prepare the transaction"))
+    : noteFor(signFailure, index)
+
+  const signing: PlanLegSigning | null =
+    index === null
+      ? null
+      : {
+          leg: index,
+          signs: request.data?.signs,
+          approvalHash: noteFor(sentApproval, index),
+          isApprovalPending,
+          failure,
+        }
+
+  const clearFailure = () => setSignFailure(undefined)
+
+  const onSubmit = async (hash: string) => {
+    clearFailure()
+    if (request.data?.signs !== "approval" || index === null) return
+    setSentApproval({ leg: index, value: hash as Hex })
+    setIsApprovalPending(true)
+    await waitForApproval(request.data.tx, hash as Hex)
+    await request.refetch()
+    setIsApprovalPending(false)
+  }
+
+  const onError = (cause: unknown) => {
+    setRejectedSubmissions((count) => count + 1)
+    if (index !== null)
+      setSignFailure({ leg: index, value: getErrorMessage(cause, t("Failed to submit")) })
+    request.refetch()
+  }
+
+  const onPayloadLockChange = (isLocked: boolean) => {
+    if (isLocked) clearFailure()
+    else request.refetch()
+  }
+
+  return {
+    signing,
+    ethTx: request.data ? ethTx : undefined,
+    feeTokenId: request.data ? evmNativeTokenId(request.data.tx.networkId) : undefined,
+    signerAddress: plan && index !== null ? plan.legs[index].quote.signer : undefined,
+    blockingError: ethTx.error,
+    button: {
+      request: request.data,
+      tx,
+      signerType: plan && index !== null ? plan.legs[index].signerType : undefined,
+      isBuildFailed: request.isError,
+      isRetry: !!failure,
+      isApprovalPending,
+      isBlocked: !!ethTx.error,
+      rejectedSubmissions,
+      rebuild: () => request.refetch(),
+      onSubmit,
+      onError,
+      onPayloadLockChange,
+    },
+  }
+}
+
+export type PlanLegSigningState = ReturnType<typeof usePlanLegSigning>
+
+export const PlanLegSignButton: FC<{
+  button: PlanLegSigningState["button"]
+  containerId?: string
+}> = ({ button, containerId }) => {
+  const { t } = useTranslation()
+  const { request, tx, signerType } = button
+
+  if (button.isBuildFailed)
+    return (
+      <Button color="orange" fullWidth onClick={button.rebuild}>
+        {t("Try again")}
+      </Button>
+    )
 
   const label =
     request?.signs === "approval"
       ? t("Approve {{symbol}}", { symbol: request.symbol })
-      : isLedgerSigner(signerType)
+      : signerType?.startsWith("ledger-")
         ? t("Sign on Ledger")
         : t("Sign")
 
-  const handleSubmit = async (hash: string) => {
-    if (request?.signs !== "approval") return
-    setIsApprovalPending(true)
-    await waitForApproval(request.tx, hash)
-    setIsApprovalPending(false)
-    onSignAttemptEnded()
-  }
-
   return (
-    <TxSubmitButton
-      key={rejectedSubmissions}
+    <SwapTxSubmitButton
+      key={button.rejectedSubmissions}
       containerId={containerId}
-      tx={request?.tx}
+      tx={tx}
       label={label}
+      isRetry={button.isRetry}
       isFinalStep={request?.signs !== "approval"}
-      isProcessing={isApprovalPending}
-      onSubmit={handleSubmit}
-      onError={() => {
-        setRejectedSubmissions((count) => count + 1)
-        onSignAttemptEnded()
-      }}
-      onPayloadLockChange={(isLocked) => {
-        if (!isLocked) onSignAttemptEnded()
-      }}
-      disabled={!request}
+      isProcessing={button.isApprovalPending}
+      onSubmit={button.onSubmit}
+      onError={button.onError}
+      onPayloadLockChange={button.onPayloadLockChange}
+      disabled={!tx || button.isBlocked}
     />
   )
 }

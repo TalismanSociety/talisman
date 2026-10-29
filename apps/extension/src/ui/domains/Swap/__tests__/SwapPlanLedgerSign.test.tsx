@@ -1,6 +1,5 @@
 import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { BuiltLeg } from "@core/domains/swaps/types"
-import type { AccountType } from "@talismn/keyring"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
@@ -13,20 +12,28 @@ const USDT_ID = `1:evm-erc20:${USDT.toLowerCase()}`
 const SPENDER = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE"
 const APPROVAL_HASH = `0x${"ab".repeat(32)}`
 
-const { ethGetTransactionsCount, submitted, payloadLock, button, client } = vi.hoisted(() => ({
-  ethGetTransactionsCount: vi.fn(),
-  submitted: vi.fn(),
-  payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
-  button: {
-    sign: undefined as (() => void) | undefined,
-    submit: undefined as ((hash: string) => void) | undefined,
-    reject: undefined as ((cause: unknown) => void) | undefined,
-  },
-  client: {
-    allowance: vi.fn<() => Promise<bigint>>(),
-    waitForTransactionReceipt: vi.fn(),
-  },
-}))
+const { ethGetTransactionsCount, priced, submitted, payloadLock, button, client } = vi.hoisted(
+  () => ({
+    ethGetTransactionsCount: vi.fn(),
+    priced: vi.fn(
+      (request: unknown, _networkId?: string, _isLocked?: boolean, _isReplacement?: boolean) => ({
+        transaction: request,
+        error: undefined,
+      })
+    ),
+    submitted: vi.fn(),
+    payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
+    button: {
+      sign: undefined as (() => void) | undefined,
+      submit: undefined as ((hash: string) => void) | undefined,
+      reject: undefined as ((cause: unknown) => void) | undefined,
+    },
+    client: {
+      allowance: vi.fn<() => Promise<bigint>>(),
+      waitForTransactionReceipt: vi.fn(),
+    },
+  })
+)
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -35,6 +42,7 @@ vi.mock("react-i18next", () => ({
   }),
 }))
 vi.mock("@ui/api", () => ({ api: { ethGetTransactionsCount } }))
+vi.mock("@ui/domains/Ethereum/useEthTransaction", () => ({ useEthTransaction: priced }))
 vi.mock("@ui/state/chaindata", () => ({ getToken$: () => of({ symbol: "USDT" }) }))
 vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
   TxSubmitButton: ({
@@ -154,7 +162,7 @@ import {
   SUMMARY,
   T0,
 } from "@core/domains/swaps/plans/__tests__/fixtures"
-import { SwapPlanLedgerSign, useHardwareLegTransaction } from "../components/SwapPlanLedgerSign"
+import { PlanLegSignButton, usePlanLegSigning } from "../components/SwapPlanLedgerSign"
 
 const planWaitingOn = (leg: PlanLeg): SwapPlan => ({
   id: PLAN_ID,
@@ -192,25 +200,22 @@ const approveData = encodeFunctionData({
   args: [SPENDER, BigInt(LEG1.quote.inputAmount)],
 })
 
-const WaitingLeg = ({ plan, signerType }: { plan: SwapPlan; signerType: AccountType }) => {
-  const { data: request, refetch } = useHardwareLegTransaction(plan, 1)
-  return (
-    <SwapPlanLedgerSign request={request} signerType={signerType} onSignAttemptEnded={refetch} />
-  )
-}
+const WaitingLeg = ({ plan }: { plan: SwapPlan }) => (
+  <PlanLegSignButton button={usePlanLegSigning(plan, 1).button} />
+)
 
-const renderSign = (plan = LEDGER_PLAN, signerType: AccountType = plan.legs[1].signerType) =>
+const renderSign = (plan = LEDGER_PLAN) =>
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <WaitingLeg plan={plan} signerType={signerType} />
+      <WaitingLeg plan={plan} />
     </QueryClientProvider>
   )
 
 const buttonLabel = () => screen.getByRole("button").textContent
 
-describe("SwapPlanLedgerSign", () => {
+describe("usePlanLegSigning", () => {
   it("rebuilds the leg on a fresh nonce once a sign attempt ends without the leg sent", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     renderSign()
@@ -237,6 +242,7 @@ describe("SwapPlanLedgerSign", () => {
     act(() => button.reject?.(new Error("nonce already used")))
 
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
+    expect(buttonLabel()).toBe("Try again")
   })
 
   it("rebuilds the leg on a fresh nonce once the background rejects the signed leg", async () => {
@@ -263,6 +269,21 @@ describe("SwapPlanLedgerSign", () => {
     expect(ethGetTransactionsCount).toHaveBeenCalledWith(EVM_ADDRESS, "964")
     expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
     expect(buttonLabel()).toBe("Sign on Ledger")
+  })
+
+  it("prices the leg on screen, on the nonce the plan pinned and with no fee of its own", async () => {
+    renderSign({
+      ...LEDGER_PLAN,
+      legs: [LEDGER_PLAN.legs[0], { ...LEDGER_PLAN.legs[1], nonce: 4 }],
+    })
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    const [request, networkId, , isReplacement] = priced.mock.lastCall ?? []
+    expect(request).toMatchObject({ nonce: 4 })
+    expect(request).not.toHaveProperty("maxFeePerGas")
+    expect(request).not.toHaveProperty("maxPriorityFeePerGas")
+    expect(request).not.toHaveProperty("gasPrice")
+    expect([networkId, isReplacement]).toEqual(["964", true])
   })
 
   it("asks a keypair signer to sign, not a Ledger", async () => {
