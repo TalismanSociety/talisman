@@ -328,7 +328,7 @@ export default interface MessageTypes {
     cb: (validators: Loadable<BittensorValidator[]>) => void
   ) => UnsubscribeFn
 
-  gandalfAccessToken: () => Promise<string>
+  gandalfAccessToken: () => Promise<string | null>
 
   confirmedAddressesSubscribe: (cb: (data: ConfirmedExternalAddresses) => void) => UnsubscribeFn
   addConfirmedAddress: (tokenId: string, address: string) => Promise<boolean>

@@ -19,6 +19,7 @@ import { gandalfStore } from "./store"
 export const proofOfWorkSolves$ = new Subject<ProofOfWorkSolve>()
 
 const MIN_BACKOFF_MS = 30_000
+const MAX_BACKOFF_MS = 10 * 60_000
 const EXP_ROUNDED_DOWN_TO_SECOND_MS = 1_000
 
 type TokenState =
@@ -73,7 +74,7 @@ const acquire = async (): Promise<string> => {
 
 const backoffMs = (error: Error) => {
   const retryAfterMs = error instanceof GandalfRequestError ? (error.retryAfter ?? 0) * 1000 : 0
-  return Math.max(MIN_BACKOFF_MS, retryAfterMs)
+  return Math.min(MAX_BACKOFF_MS, Math.max(MIN_BACKOFF_MS, retryAfterMs))
 }
 
 async function ensureRegistered(): Promise<{ installId: string; privateKeyHex: string }> {

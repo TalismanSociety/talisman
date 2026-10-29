@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, expect, it, type Mock, vi } from "vitest"
 
-const mocks = vi.hoisted(() => ({ gandalfAccessToken: vi.fn<() => Promise<string>>() }))
+const mocks = vi.hoisted(() => ({ gandalfAccessToken: vi.fn<() => Promise<string | null>>() }))
 
 vi.mock("@ui/api", () => ({ api: { gandalfAccessToken: mocks.gandalfAccessToken } }))
 
 let fetchSpy: Mock<typeof fetch>
-let reply: (token: string) => void
+let reply: (token: string | null) => void
 
 beforeEach(() => {
   vi.useFakeTimers()
   mocks.gandalfAccessToken.mockReset().mockImplementation(
     () =>
-      new Promise<string>((resolve) => {
+      new Promise<string | null>((resolve) => {
         reply = resolve
       })
   )
@@ -66,6 +66,14 @@ it("discards a token whose reply took a minute or more of wall time", async () =
 
 it("discards a token whose reply took a minute of monotonic time while the wall clock stood still", async () => {
   await fetchWithReplyAfter({ monoMs: 60_000 })
+  expectTokenDiscarded()
+})
+
+it("sends no header when the background has no token to give", async () => {
+  const { gandalfFetch } = await import("./gandalfFetch")
+  const request = gandalfFetch("https://api.example.com/data")
+  reply(null)
+  await request
   expectTokenDiscarded()
 })
 

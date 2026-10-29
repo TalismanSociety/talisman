@@ -10,7 +10,7 @@ export class GandalfHandler extends ExtensionHandler {
   >(_id: string, type: Type, _request: Request, _port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(gandalf.accessToken.get)":
-        return (await getAccessToken()) as Response
+        return (await getAccessToken().catch(() => null)) as Response
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

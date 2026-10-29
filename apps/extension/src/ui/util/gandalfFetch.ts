@@ -9,6 +9,7 @@ import { api } from "@ui/api"
 const getAccessToken = async (): Promise<string> => {
   const requestedAt = anchorClocks()
   const accessToken = await api.gandalfAccessToken()
+  if (accessToken === null) throw new Error("Gandalf access token is unavailable")
   if (elapsedSince(requestedAt) >= GANDALF_TOKEN_EXPIRY_BUFFER_MS)
     throw new Error("Gandalf access token reply arrived too late to be trusted")
   return accessToken

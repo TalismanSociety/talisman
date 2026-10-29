@@ -363,6 +363,20 @@ describe("getAccessToken", () => {
     }
   )
 
+  it("caps a day-long Retry-After at ten minutes", async () => {
+    const { getAccessToken, GandalfRequestError } = await importFresh()
+    server.failure = new GandalfRequestError("Gandalf token request failed (429)", 429, 86_400)
+
+    const results = await readEverySecond(getAccessToken, 10 * 60)
+
+    expect(results.every((result) => result === server.failure)).toBe(true)
+    expect(mints()).toBe(1)
+
+    server.failure = null
+    await expect(read(getAccessToken)).resolves.toBe("jwt-1")
+    expect(mints()).toBe(2)
+  })
+
   it("backs off after a registration failure", async () => {
     mocks.store.get.mockResolvedValue({ installId: null, privateKeyHex: null })
     const { getAccessToken, GandalfRequestError } = await importFresh()
@@ -435,11 +449,11 @@ describe("getAccessToken", () => {
 
     await vi.advanceTimersByTimeAsync(5 * MINUTE)
     server.failure = new GandalfRequestError("Gandalf token request failed (503)", 503)
-    const failedUi = uiRead().catch((error: unknown) => error)
+    const failedUi = uiRead()
     await vi.advanceTimersByTimeAsync(SECOND)
-    await expect(failedUi).resolves.toBe(server.failure)
+    await expect(failedUi).resolves.toBeNull()
     await expect(getAccessToken()).rejects.toBe(server.failure)
-    await expect(uiRead()).rejects.toBe(server.failure)
+    await expect(uiRead()).resolves.toBeNull()
     expect(mints()).toBe(2)
   })
 
