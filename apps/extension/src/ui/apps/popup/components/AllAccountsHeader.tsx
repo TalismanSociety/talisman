@@ -10,6 +10,7 @@ import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
@@ -70,10 +71,11 @@ const PopoutButton: FC = () => {
 }
 
 const FullscreenButton: FC = () => {
+  const { t } = useTranslation()
   const handleClick = useOpenFullscreen()
 
   return (
-    <IconButton className="p-3 text-base" onClick={handleClick}>
+    <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
       <ExpandIcon />
     </IconButton>
   )
