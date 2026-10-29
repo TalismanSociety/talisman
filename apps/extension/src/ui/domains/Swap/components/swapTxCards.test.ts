@@ -365,8 +365,17 @@ describe("swapPlanTxFacts", () => {
     })
     expect(cards[1]).toMatchObject({
       status: "failed",
-      error: "Did not complete. Check your activity",
+      error: "CCIP could not execute the delivery. Open the CCIP explorer to retry it manually.",
     })
+  })
+
+  it("tells where to claim a refunded delivery", () => {
+    const cards = planCards(plan("completed", LANDED_0, LANDED_1), {
+      rows: rows(forevermoneyRow("refunded")),
+    })
+    expect(cards[1].error).toBe(
+      "Delivery failed and your TAO is claimable by your EVM address on Bittensor EVM. Claim it on the ForeverMoney app."
+    )
   })
 
   it("does not call a delivery the tracker lost a failure", () => {

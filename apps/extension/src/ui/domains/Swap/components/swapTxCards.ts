@@ -229,9 +229,14 @@ const legRow = ({ plan, rows }: Pick<SwapPlanTxInput, "plan" | "rows">, index: n
   return hash ? rows.get(hash) : undefined
 }
 
-const legError = (ctx: SwapTxContext, leg: PlanLeg, delivery: SwapTxDelivery | undefined) => {
+const legError = (
+  ctx: SwapTxContext,
+  leg: PlanLeg,
+  delivery: SwapTxDelivery | undefined,
+  row: WalletTransaction | null | undefined
+) => {
   const { t } = ctx
-  if (delivery === "failure") return t("Did not complete. Check your activity")
+  if (delivery === "failure") return getSwapProgressDetails(t, row, true).subtitle
   if (delivery === "untracked")
     return t("Check your balance on {{network}}", {
       network: networkOf(ctx, leg.quote.toTokenId)?.name ?? "",
@@ -287,15 +292,14 @@ export const swapPlanTxFacts = (ctx: SwapTxContext, input: SwapPlanTxInput): Swa
 
   return planSteps(plan).map(({ leg: index, hash }) => {
     const leg = plan.legs[index]
-    const delivery =
-      index === lastIndex && leg.state.at === "landed"
-        ? lastLegDelivery(ctx.t, legRow(input, index))
-        : undefined
+    const isDelivering = index === lastIndex && leg.state.at === "landed"
+    const row = isDelivering ? legRow(input, index) : undefined
+    const delivery = isDelivering ? lastLegDelivery(ctx.t, row) : undefined
     const facts: SwapTxLegFacts = {
       at: leg.state.at,
       hash: hash ?? undefined,
       href: hash ? txExplorerUrl(ctx, leg.quote.fromTokenId, hash) : undefined,
-      error: legError(ctx, leg, delivery),
+      error: legError(ctx, leg, delivery, row),
       delivery,
       approval: approvalFacts(ctx, input, index),
     }
