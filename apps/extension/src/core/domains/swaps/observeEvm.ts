@@ -25,8 +25,19 @@ const transactionBody = async (client: PublicClient, candidate: LegCandidate) =>
   return { data: input, value }
 }
 
-/** a finalised receipt settles the leg whatever the other lookups did, any other answer needs them all */
-const findMined = async (client: PublicClient, candidates: LegCandidate[], finalised: bigint) => {
+/**
+ * On rollups `finalized` trails the tip by twenty minutes where `safe` trails it by a few. A node
+ * that has no `safe` head falls back to its finalised one.
+ */
+export const safeBlockNumber = async (client: PublicClient) => {
+  const block = await client
+    .getBlock({ blockTag: "safe" })
+    .catch(() => client.getBlock({ blockTag: "finalized" }))
+  return block.number
+}
+
+/** a receipt in a safe block settles the leg whatever the other lookups did, any other answer needs them all */
+const findMined = async (client: PublicClient, candidates: LegCandidate[], safe: bigint) => {
   const lookups = await Promise.allSettled(
     candidates.map((candidate) => receiptOrNull(client, candidate.hash))
   )
@@ -35,7 +46,7 @@ const findMined = async (client: PublicClient, candidates: LegCandidate[], final
       ? [{ candidate: candidates[index], receipt: lookup.value }]
       : []
   )
-  const settled = mined.find(({ receipt }) => receipt.blockNumber <= finalised)
+  const settled = mined.find(({ receipt }) => receipt.blockNumber <= safe)
   if (settled) return settled
   const failed = lookups.find((lookup) => lookup.status === "rejected")
   if (failed) throw failed.reason
@@ -44,8 +55,8 @@ const findMined = async (client: PublicClient, candidates: LegCandidate[], final
 
 /**
  * The leg's own transaction and the user's speed-ups and cancels share its nonce, so at most one
- * of them executes. A receipt in a finalised block settles the leg by whichever one it belongs to.
- * Without one, a signer's nonce past the leg's at the finalised block, read before the receipts,
+ * of them executes. A receipt in a safe block settles the leg by whichever one it belongs to.
+ * Without one, a signer's nonce past the leg's at the safe block, read before the receipts,
  * with every hash unknown to the node, means another transaction consumed it for good. A lagging
  * fallback node can miss a receipt another one has, so only a node that answers "not found" for
  * every hash makes the leg replaced: any other failure is thrown for a later observation.
@@ -56,14 +67,14 @@ export const observeEvmLeg = async (
   signer: Hex,
   landedAmount: (body: { data: Hex; value: bigint }) => bigint
 ): Promise<LegObservation> => {
-  const finalised = (await client.getBlock({ blockTag: "finalized" })).number
-  const nonceAfter = await client.getTransactionCount({ address: signer, blockNumber: finalised })
+  const safe = await safeBlockNumber(client)
+  const nonceAfter = await client.getTransactionCount({ address: signer, blockNumber: safe })
   const candidates = legCandidates(sent)
-  const mined = await findMined(client, candidates, finalised)
+  const mined = await findMined(client, candidates, safe)
 
   if (mined) {
     const { candidate, receipt } = mined
-    if (receipt.blockNumber > finalised) return { status: "pending" }
+    if (receipt.blockNumber > safe) return { status: "pending" }
     if (receipt.status !== "success")
       return { status: "failed", reason: "reverted", hash: candidate.hash }
     if (candidate.kind === "cancel")

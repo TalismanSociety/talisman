@@ -967,14 +967,14 @@ describe("forevermoneySwapModule observeLeg", () => {
       env
     )
 
-  const FINALISED = 6_999_990n
-  const receipt = (status: "success" | "reverted", blockNumber = FINALISED) => ({
+  const SAFE = 6_999_990n
+  const receipt = (status: "success" | "reverted", blockNumber = SAFE) => ({
     status,
     blockNumber,
   })
 
   beforeEach(() => {
-    mockGetBlock.mockResolvedValue({ number: FINALISED })
+    mockGetBlock.mockResolvedValue({ number: SAFE })
   })
 
   const noReceipt = () =>
@@ -993,7 +993,7 @@ describe("forevermoneySwapModule observeLeg", () => {
     expect(await observe(sent())).toEqual({ status: "landed", hash: TX_HASH, amount: ONE_TAO_WEI })
     expect(mockGetTransactionCount).toHaveBeenCalledWith({
       address: EVM_ADDRESS,
-      blockNumber: FINALISED,
+      blockNumber: SAFE,
     })
     expect(mockGetTransaction).toHaveBeenCalledWith({ hash: TX_HASH })
   })
@@ -1021,16 +1021,35 @@ describe("forevermoneySwapModule observeLeg", () => {
     })
   })
 
-  it("stays pending while the receipt's block is not finalised", async () => {
+  it("stays pending while the receipt's block is not safe yet", async () => {
     mockGetTransactionCount.mockResolvedValue(13)
 
-    mockGetTransactionReceipt.mockResolvedValue(receipt("success", FINALISED + 1n))
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success", SAFE + 1n))
     expect(await observe(sent(RAW))).toEqual({ status: "pending" })
 
-    mockGetTransactionReceipt.mockResolvedValue(receipt("reverted", FINALISED + 1n))
+    mockGetTransactionReceipt.mockResolvedValue(receipt("reverted", SAFE + 1n))
     expect(await observe(sent(RAW))).toEqual({ status: "pending" })
 
-    expect(mockGetBlock).toHaveBeenCalledWith({ blockTag: "finalized" })
+    expect(mockGetBlock).toHaveBeenCalledWith({ blockTag: "safe" })
+  })
+
+  it("settles on the finalised block when the node has no safe block", async () => {
+    mockGetBlock.mockImplementation(async ({ blockTag }: { blockTag: string }) => {
+      if (blockTag === "safe") throw new Error("invalid block tag")
+      return { number: SAFE - 10n }
+    })
+    mockGetTransactionCount.mockResolvedValue(13)
+    mockGetTransaction.mockResolvedValue({ input: BRIDGE_DATA, value: ONE_TAO_WEI })
+
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success"))
+    expect(await observe(sent(RAW))).toEqual({ status: "pending" })
+
+    mockGetTransactionReceipt.mockResolvedValue(receipt("success", SAFE - 10n))
+    expect(await observe(sent(RAW))).toEqual({
+      status: "landed",
+      hash: TX_HASH,
+      amount: ONE_TAO_WEI,
+    })
   })
 
   it("is replaced when the nonce moved past the leg and no node knows the hash", async () => {
@@ -1059,10 +1078,10 @@ describe("forevermoneySwapModule observeLeg", () => {
     expect(await observe(sent(RAW))).toEqual({ status: "pending" })
   })
 
-  it("stays pending while only an unfinalised block consumed the nonce", async () => {
+  it("stays pending while only a block past the safe one consumed the nonce", async () => {
     noReceipt()
     mockGetTransactionCount.mockImplementation(async ({ blockNumber }: { blockNumber: bigint }) =>
-      blockNumber === FINALISED ? 12 : 13
+      blockNumber === SAFE ? 12 : 13
     )
     mockGetTransaction.mockRejectedValue(
       Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })
@@ -1163,10 +1182,10 @@ describe("forevermoneySwapModule observeLeg", () => {
       })
     })
 
-    it("lands with a finalised speed-up while the node fails to answer for the leg's own transaction", async () => {
+    it("lands with a safe speed-up while the node fails to answer for the leg's own transaction", async () => {
       mockGetTransactionCount.mockResolvedValue(13)
       mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
-        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
+        if (hash === SPEED_UP_HASH) return receipt("success", SAFE - 1n)
         if (hash === TX_HASH) throw new Error("503 Service Unavailable")
         throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
       })
@@ -1178,11 +1197,11 @@ describe("forevermoneySwapModule observeLeg", () => {
       })
     })
 
-    it("lands with a finalised speed-up over a lagging node's unfinalised receipt for the leg's own", async () => {
+    it("lands with a safe speed-up over a lagging node's unsafe receipt for the leg's own", async () => {
       mockGetTransactionCount.mockResolvedValue(13)
       mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
-        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED - 1n)
-        if (hash === TX_HASH) return receipt("success", FINALISED + 1n)
+        if (hash === SPEED_UP_HASH) return receipt("success", SAFE - 1n)
+        if (hash === TX_HASH) return receipt("success", SAFE + 1n)
         throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
       })
 
@@ -1193,10 +1212,10 @@ describe("forevermoneySwapModule observeLeg", () => {
       })
     })
 
-    it("waits for every receipt lookup before settling on an unfinalised receipt", async () => {
+    it("waits for every receipt lookup before settling on a receipt past the safe block", async () => {
       mockGetTransactionCount.mockResolvedValue(13)
       mockGetTransactionReceipt.mockImplementation(async ({ hash }: { hash: `0x${string}` }) => {
-        if (hash === SPEED_UP_HASH) return receipt("success", FINALISED + 1n)
+        if (hash === SPEED_UP_HASH) return receipt("success", SAFE + 1n)
         if (hash === TX_HASH) throw new Error("503 Service Unavailable")
         throw Object.assign(new Error("not found"), { name: "TransactionReceiptNotFoundError" })
       })
