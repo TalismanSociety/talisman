@@ -27,7 +27,7 @@ const Page = () => (
   <Coachmark
     id="popup_fullscreen_moved"
     title="Expand has moved here"
-    description="Open Talisman in a full tab from the top right."
+    description="Expand to open Talisman in a full tab."
   >
     <button type="button">Fullscreen</button>
   </Coachmark>

@@ -81,10 +81,8 @@ const FullscreenButton: FC = () => {
       title={t("Expand has moved here")}
       description={
         IS_EMBEDDED_POPUP
-          ? t(
-              "Open Talisman in a full tab from the top right, or use the adjacent icon for a separate window."
-            )
-          : t("Open Talisman in a full tab from the top right.")
+          ? t("Expand to open Talisman in a full tab, or pop it out into its own window.")
+          : t("Expand to open Talisman in a full tab.")
       }
     >
       <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
