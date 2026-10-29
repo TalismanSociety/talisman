@@ -2,7 +2,7 @@ import { log } from "@common/log"
 import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/exports"
 import { deriveLegInput, fromPersistedLeg, readLegBalance } from "@core/domains/swaps/plans/helpers"
 import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
-import type { ApprovalInfo } from "@core/domains/swaps/types"
+import type { ApprovalInfo, QuoteLeg } from "@core/domains/swaps/types"
 import { evmNativeTokenId, networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import { skipToken, useQuery } from "@tanstack/react-query"
@@ -27,7 +27,12 @@ import type { PlanLegSigning } from "./swapTxCards"
  * The payload carries no fee: the screen prices it, at the priority the user picks.
  */
 type PlanLegSignRequest =
-  | { signs: "leg"; tx: TxSubmitButtonTransactionEth }
+  | {
+      signs: "leg"
+      tx: TxSubmitButtonTransactionEth
+      /** the leg as built on what the previous leg landed, not as quoted */
+      built: Pick<QuoteLeg, "inputAmount" | "outputAmount" | "fees">
+    }
   | { signs: "approval"; symbol: string; tx: TxSubmitButtonTransactionEth }
 
 const APPROVAL_WAIT_MS = 2 * 60_000
@@ -91,9 +96,10 @@ const buildHardwareLegTransaction = async (
   if (approval && allowance !== null && allowance < approval.amount)
     return buildApprovalTransaction(client, leg, approval, nextNonce)
 
+  const input = deriveLegInput(plan, index, balance)
   const built = await module.buildLeg({
     leg: fromPersistedLeg(leg.quote),
-    input: deriveLegInput(plan, index, balance),
+    input,
     context: { platform: "ethereum" },
     exchange: null,
     slippage: plan.summary.slippage,
@@ -110,6 +116,7 @@ const buildHardwareLegTransaction = async (
       payload: { from: signer, to, data, value, gas, nonce: nextNonce },
       txInfo: { ...built.txInfo, plan: { id: plan.id, leg: index } },
     },
+    built: { inputAmount: input, outputAmount: built.expectedOutput, fees: built.fees },
   }
 }
 
@@ -210,6 +217,7 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   return {
     signing,
     ethTx: request.data ? ethTx : undefined,
+    built: request.data?.signs === "leg" ? request.data.built : undefined,
     feeTokenId: request.data ? evmNativeTokenId(request.data.tx.networkId) : undefined,
     signerAddress: plan && index !== null ? plan.legs[index].quote.signer : undefined,
     blockingError: ethTx.error,
@@ -243,6 +251,13 @@ export const PlanLegSignButton: FC<{
     return (
       <Button color="orange" fullWidth onClick={button.rebuild}>
         {t("Try again")}
+      </Button>
+    )
+
+  if (!request)
+    return (
+      <Button primary fullWidth processing>
+        {t("Processing")}
       </Button>
     )
 

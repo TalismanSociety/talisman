@@ -173,7 +173,7 @@ import {
 } from "@core/domains/swaps/plans/__tests__/fixtures"
 import { PlanLegSignButton, usePlanLegSigning } from "../components/SwapPlanLedgerSign"
 
-const planWaitingOn = (leg: PlanLeg): SwapPlan => ({
+const planWaitingOn = (leg: PlanLeg, landed = LEG0_OUTPUT): SwapPlan => ({
   id: PLAN_ID,
   phase: "paused",
   createdAt: T0,
@@ -187,7 +187,7 @@ const planWaitingOn = (leg: PlanLeg): SwapPlan => ({
       state: {
         at: "landed",
         hash: `0x${"11".repeat(32)}`,
-        amount: LEG0_OUTPUT.toString(),
+        amount: landed.toString(),
         landedAt: T0,
       },
     },
@@ -224,7 +224,29 @@ const renderSign = (plan = LEDGER_PLAN) =>
 
 const buttonLabel = () => screen.getByRole("button").textContent
 
+const BuiltAmounts = ({ plan }: { plan: SwapPlan }) => {
+  const { built } = usePlanLegSigning(plan, 1)
+  return <output>{built ? `${built.inputAmount} -> ${built.outputAmount}` : "building"}</output>
+}
+
 describe("usePlanLegSigning", () => {
+  it("shows a processing button until it knows what the user signs", () => {
+    ethGetTransactionsCount.mockReturnValue(new Promise(() => {}))
+    renderSign()
+    expect(buttonLabel()).toBe("Processing")
+  })
+
+  it("describes the leg by what the previous leg landed, not by its quote", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    const landed = LEG0_OUTPUT - 5n
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <BuiltAmounts plan={planWaitingOn({ ...LEG1, signerType: "ledger-ethereum" }, landed)} />
+      </QueryClientProvider>
+    )
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe(`${landed} -> 1`))
+  })
+
   it("rebuilds the leg on a fresh nonce once a sign attempt ends without the leg sent", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     renderSign()

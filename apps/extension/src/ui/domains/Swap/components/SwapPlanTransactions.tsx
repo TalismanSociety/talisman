@@ -164,9 +164,10 @@ const PlanTransactions: FC<{
   const lastIndex = plan.legs.length - 1
 
   const renderBody = (card: SwapTxCardModel) => {
-    const leg = legs[card.leg]
     const signs = card.kind === "approval" ? "approval" : "leg"
     const isSigned = signing?.leg === card.leg && signing.signs === signs && !!legSigning.ethTx
+    const leg =
+      isSigned && legSigning.built ? { ...legs[card.leg], ...legSigning.built } : legs[card.leg]
     const feeRows = isSigned ? (
       <SwapTxFeeRows
         address={leg.signer}
