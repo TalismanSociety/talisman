@@ -204,8 +204,8 @@ export type SwapPlanTxInput = {
   plan: SwapPlan
   /** the transaction rows of the legs that have a hash, by hash: null once the wallet no longer holds the row */
   rows: ReadonlyMap<string, WalletTransaction | null>
-  /** only the screen that sent leg 0's approval knows it */
-  leg0ApprovalHash?: Hex
+  /** the plan does not keep approvals: only a screen that saw one sent knows its hash */
+  approvalHashes: Readonly<Partial<Record<number, Hex>>>
   approvalsNeeded: ReadonlySet<number>
   signing: PlanLegSigning | null
 }
@@ -251,7 +251,7 @@ const approvalFacts = (
   input: SwapPlanTxInput,
   index: number
 ): SwapTxApprovalFacts | undefined => {
-  const { plan, leg0ApprovalHash, approvalsNeeded, signing } = input
+  const { plan, approvalHashes, approvalsNeeded, signing } = input
   const tokenId = plan.legs[index].quote.fromTokenId
   const sent = (at: "sent" | "landed", hash: Hex): SwapTxApprovalFacts => ({
     at,
@@ -259,9 +259,12 @@ const approvalFacts = (
     href: txExplorerUrl(ctx, tokenId, hash),
   })
 
-  if (index === 0) return leg0ApprovalHash ? sent("landed", leg0ApprovalHash) : undefined
   const isNeeded = approvalsNeeded.has(index)
-  if (signing?.leg !== index) return isNeeded ? { at: "needed" } : undefined
+  const sentHash = approvalHashes[index]
+  if (signing?.leg !== index) {
+    if (sentHash) return sent("landed", sentHash)
+    return isNeeded ? { at: "needed" } : undefined
+  }
 
   if (signing.approvalHash && signing.isApprovalPending) return sent("sent", signing.approvalHash)
   if (signing.signs === "approval") return { at: "needed" }

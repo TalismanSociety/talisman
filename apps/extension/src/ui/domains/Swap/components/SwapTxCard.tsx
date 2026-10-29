@@ -192,12 +192,12 @@ const SwapTxCard: FC<{
 
   return (
     <section className="flex w-full flex-col gap-6 rounded bg-grey-900 py-8 pr-6 pl-8">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={toggle}
           aria-expanded={isExpanded}
-          className="flex min-w-0 grow items-center gap-4 text-left font-bold text-body text-sm"
+          className="flex min-w-0 grow items-center gap-3 text-left font-bold text-body text-sm"
         >
           <Badge number={number} status={card.status} />
           <CardTitle card={card} leg={leg} />

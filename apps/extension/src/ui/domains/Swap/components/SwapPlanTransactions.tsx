@@ -7,7 +7,7 @@ import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useLiveQuery } from "dexie-react-hooks"
-import { type FC, useCallback, useMemo } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import type { Hex } from "viem"
@@ -31,6 +31,7 @@ import {
 import { SwapTxSummary } from "./SwapTxSummary"
 import {
   legTrackerUrl,
+  type PlanLegSigning,
   pendingEvmLegRow,
   planSigningLeg,
   type SwapPlanFooter,
@@ -57,6 +58,16 @@ const useLegRows = (plan: SwapPlan | null | undefined) => {
     },
     [hashes],
     new Map<string, WalletTransaction | null>()
+  )
+}
+
+const useApprovalHashes = (leg0ApprovalHash: Hex | undefined, signing: PlanLegSigning | null) => {
+  const [seen, setSeen] = useState<Readonly<Partial<Record<number, Hex>>>>({})
+  if (signing?.approvalHash && seen[signing.leg] !== signing.approvalHash)
+    setSeen({ ...seen, [signing.leg]: signing.approvalHash })
+  return useMemo(
+    () => (leg0ApprovalHash ? { ...seen, 0: leg0ApprovalHash } : seen),
+    [leg0ApprovalHash, seen]
   )
 }
 
@@ -141,9 +152,10 @@ const PlanTransactions: FC<{
   const approvalsNeeded = useLaterLegApprovals(approvalChecks)
 
   const { signing, blockingError } = legSigning
+  const approvalHashes = useApprovalHashes(leg0ApprovalHash, signing)
   const input = useMemo<SwapPlanTxInput>(
-    () => ({ plan, rows, leg0ApprovalHash, approvalsNeeded, signing }),
-    [approvalsNeeded, leg0ApprovalHash, plan, rows, signing]
+    () => ({ plan, rows, approvalHashes, approvalsNeeded, signing }),
+    [approvalHashes, approvalsNeeded, plan, rows, signing]
   )
   const cards = useMemo(
     () => withBlockingError(swapTxCards(swapPlanTxFacts(ctx, input)), blockingError),

@@ -125,6 +125,7 @@ const planCards = (value: SwapPlan, input: Partial<Omit<SwapPlanTxInput, "plan">
       plan: value,
       rows: new Map(),
       approvalsNeeded: new Set(),
+      approvalHashes: {},
       signing: null,
       ...input,
     })
@@ -433,7 +434,9 @@ describe("swapPlanTxFacts", () => {
   })
 
   it("shows the first leg's approval completed when the screen that sent it knows it", () => {
-    const cards = planCards(plan("running", LANDED_0, SENT_1), { leg0ApprovalHash: APPROVAL_HASH })
+    const cards = planCards(plan("running", LANDED_0, SENT_1), {
+      approvalHashes: { 0: APPROVAL_HASH },
+    })
 
     expect(cards[0]).toMatchObject({ key: "approval-0", status: "done", hash: APPROVAL_HASH })
     expect(cards[0].href).toContain(APPROVAL_HASH)
@@ -461,6 +464,17 @@ describe("swapPlanTxFacts", () => {
       })
       expect(statuses(cards)).toMatchObject({ "approval-1": "ready", "leg-1": "upcoming" })
       expect(activeSwapTxKey(cards)).toBe("approval-1")
+    })
+
+    it("keeps its link once its leg moved on", () => {
+      const cards = planCards(plan("running", LANDED_0, SENT_1), {
+        approvalsNeeded: new Set([1]),
+        approvalHashes: { 1: APPROVAL_HASH },
+      })
+      expect(cards.find((card) => card.key === "approval-1")).toMatchObject({
+        status: "done",
+        hash: APPROVAL_HASH,
+      })
     })
 
     it("shows up when the leg asks for an approval nobody predicted", () => {
