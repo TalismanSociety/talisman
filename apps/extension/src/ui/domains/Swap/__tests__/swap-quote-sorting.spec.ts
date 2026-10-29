@@ -192,6 +192,27 @@ describe("sortQuotes – bestRate", () => {
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["Glacis", "Across"])
   })
 
+  it("falls back to the output amount when a fee paid on top has no rate", () => {
+    const unpricedFee = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Unpriced fee",
+      fees: [{ name: "Gas", amount: BigNumber("1"), tokenId: "unpriced", gas: true }],
+    })
+    const pricedFee = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Priced fee",
+      fees: [{ name: "Gas", amount: BigNumber("0.0005"), tokenId: "eth", gas: true }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([unpricedFee, pricedFee], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Priced fee", "Unpriced fee"])
+  })
+
   it("handles very large bigint differences", () => {
     const small = wrap(makeQuote({ outputAmountBN: 1n }))
     const huge = wrap(makeQuote({ outputAmountBN: 10n ** 30n }))

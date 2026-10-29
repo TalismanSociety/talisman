@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js"
 
 export type QuoteSorting = "decentalised" | "cheapest" | "fastest" | "bestRate"
 
-/** `netUsd` is null when the output token has no rate */
+/** `netUsd` is null when the output token or a fee paid on top has no rate */
 export type QuoteWithFees = { quote: BaseQuote; fees: number; netUsd: number | null }
 
 /**
@@ -48,9 +48,10 @@ const calculateNetUsd = (
   toToken: { id: string; decimals: number } | null
 ): number | null => {
   const rate = toToken ? tokenRates[toToken.id]?.usd?.price : undefined
-  if (!toToken || !rate) return null
-  const output = BigNumber(quote.outputAmountBN.toString()).shiftedBy(-toToken.decimals).times(rate)
   const paidOnTop = quote.fees.filter((fee) => fee.additional || fee.gas)
+  if (!toToken || !rate || paidOnTop.some((fee) => !tokenRates[fee.tokenId]?.usd?.price))
+    return null
+  const output = BigNumber(quote.outputAmountBN.toString()).shiftedBy(-toToken.decimals).times(rate)
   return output.minus(sumUsd(paidOnTop, tokenRates)).toNumber()
 }
 
@@ -100,12 +101,13 @@ export const dropUnaffordableQuotes = (
 /**
  * Sort quotes according to the chosen sorting strategy.
  */
-export const sortQuotes = (quotes: QuoteWithFees[], sorting: QuoteSorting): QuoteWithFees[] =>
-  [...quotes].sort((a, b) => {
+export const sortQuotes = (quotes: QuoteWithFees[], sorting: QuoteSorting): QuoteWithFees[] => {
+  const isEveryNetValueKnown = quotes.every(({ netUsd }) => netUsd !== null)
+  return [...quotes].sort((a, b) => {
     switch (sorting) {
       case "bestRate":
-        return a.netUsd !== null && b.netUsd !== null
-          ? b.netUsd - a.netUsd
+        return isEveryNetValueKnown
+          ? (b.netUsd ?? 0) - (a.netUsd ?? 0)
           : +(b.quote.outputAmountBN - a.quote.outputAmountBN).toString()
       case "fastest":
         return a.quote.timeInSec - b.quote.timeInSec
@@ -117,6 +119,7 @@ export const sortQuotes = (quotes: QuoteWithFees[], sorting: QuoteSorting): Quot
         return 0
     }
   })
+}
 
 /**
  * Select the best quote: prefer the user's chosen protocol, fall back to the top-sorted quote.

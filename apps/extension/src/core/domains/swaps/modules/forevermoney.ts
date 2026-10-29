@@ -521,7 +521,7 @@ const getUpToQuote = async (
         fees: [
           ...toTalismanFees(route, amounts),
           toQuoteFee("Chainlink CCIP Fee", feeTokenId, withFeeBuffer(feeWei)),
-          toGasFee(feeTokenId, gasReserveWei),
+          toQuoteFee("Est. Gas Fees", feeTokenId, gasReserveWei),
         ],
         timeInSec: OUTBOUND_DURATION_SEC,
         data,
