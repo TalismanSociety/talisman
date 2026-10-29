@@ -1,6 +1,6 @@
 import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { getAccessToken } from "./observable"
+import { getAccessToken } from "./accessToken"
 
 export class GandalfHandler extends ExtensionHandler {
   public async handle<

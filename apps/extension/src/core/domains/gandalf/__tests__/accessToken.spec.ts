@@ -41,10 +41,10 @@ let sent: { token: string; atMs: number }[]
 
 async function importFresh() {
   vi.resetModules()
-  const observable = await import("../observable")
+  const accessToken = await import("../accessToken")
   const client = await import("../client")
   const { GandalfHandler } = await import("../handler")
-  return { ...observable, GandalfRequestError: client.GandalfRequestError, GandalfHandler }
+  return { ...accessToken, GandalfRequestError: client.GandalfRequestError, GandalfHandler }
 }
 
 beforeEach(() => {

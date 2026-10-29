@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vite
 
 const mocks = vi.hoisted(() => ({ getAccessToken: vi.fn<() => Promise<string>>() }))
 
-vi.mock("../observable", () => ({ getAccessToken: mocks.getAccessToken }))
+vi.mock("../accessToken", () => ({ getAccessToken: mocks.getAccessToken }))
 vi.mock("@common/log", () => ({ log: { debug: vi.fn(), error: vi.fn(), warn: vi.fn() } }))
 
 let fetchSpy: Mock<typeof fetch>
