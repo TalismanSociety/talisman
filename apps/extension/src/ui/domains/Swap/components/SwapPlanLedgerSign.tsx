@@ -17,6 +17,7 @@ import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type Hex, type PublicClient } from "viem"
 
 import { legApproval, readAllowance } from "../hooks/useLegApprovals"
+import { withPricing } from "../hooks/useSentTxFee"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
 import { SwapTxSubmitButton } from "./SwapTxSubmitButton"
@@ -176,6 +177,7 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
       ? {
           ...request.data.tx,
           payload: { ...ethTx.transaction, nonce: request.data.tx.payload.nonce },
+          txInfo: request.data.tx.txInfo && withPricing(request.data.tx.txInfo, ethTx),
         }
       : undefined
 

@@ -5,6 +5,7 @@ import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
 import type { SwapModuleTransaction, SwapTransactionContext } from "@core/domains/swaps/types"
 import { BalanceFormatter } from "@talismn/balances"
+import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
 import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -32,6 +33,7 @@ import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
+import { withPricing } from "../hooks/useSentTxFee"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
 import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -53,6 +55,7 @@ import {
   SwapSlippageRow,
   SwapTxFeeRows,
   type SwapTxProvider,
+  SwapTxSentFeeRows,
 } from "./SwapTxDetails"
 import { SwapTxSubmitButton } from "./SwapTxSubmitButton"
 import {
@@ -237,7 +240,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           platform: "ethereum",
           networkId: fromToken.networkId,
           payload: swapEthTx.transaction,
-          txInfo,
+          txInfo: withPricing(txInfo, {
+            priority: swapEthTx.priority,
+            txDetails: swapEthTx.txDetails,
+          }),
         }
       case "polkadot":
         return {
@@ -257,7 +263,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       default:
         return null
     }
-  }, [fromToken?.networkId, swapEthTx.transaction, transaction, txInfo])
+  }, [
+    fromToken?.networkId,
+    swapEthTx.priority,
+    swapEthTx.transaction,
+    swapEthTx.txDetails,
+    transaction,
+    txInfo,
+  ])
 
   const onSwapSubmitted = useSwapPostSubmit({
     fromNetworkId: fromToken?.networkId,
@@ -626,7 +639,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const renderBody = (card: SwapTxCardModel) => {
     const leg = legs[card.leg]
     const isSigned = card.key === signedCardKey
-    const feeRows = isSigned ? (
+    const feeRows = card.hash ? (
+      <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
+    ) : isSigned ? (
       <SwapTxFeeRows
         address={fromAddress}
         feeTokenId={activeFeeTokenId}

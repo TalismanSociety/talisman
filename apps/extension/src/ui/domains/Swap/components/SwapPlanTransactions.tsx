@@ -2,6 +2,7 @@ import { db } from "@core/db"
 import { fromPersistedLeg, planSteps } from "@core/domains/swaps/plans/helpers"
 import type { SwapPlan, SwapPlanId } from "@core/domains/swaps/plans/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
+import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
@@ -27,6 +28,7 @@ import {
   SwapLegDetails,
   SwapSlippageRow,
   SwapTxFeeRows,
+  SwapTxSentFeeRows,
 } from "./SwapTxDetails"
 import { SwapTxSummary } from "./SwapTxSummary"
 import {
@@ -162,13 +164,16 @@ const PlanTransactions: FC<{
     [blockingError, ctx, input]
   )
   const lastIndex = plan.legs.length - 1
+  const providerLeg = plan.legs.findIndex((leg) => leg.quote.protocol === plan.summary.protocol)
 
   const renderBody = (card: SwapTxCardModel) => {
     const signs = card.kind === "approval" ? "approval" : "leg"
     const isSigned = signing?.leg === card.leg && signing.signs === signs && !!legSigning.ethTx
     const leg =
       isSigned && legSigning.built ? { ...legs[card.leg], ...legSigning.built } : legs[card.leg]
-    const feeRows = isSigned ? (
+    const feeRows = card.hash ? (
+      <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
+    ) : isSigned ? (
       <SwapTxFeeRows
         address={leg.signer}
         feeTokenId={legSigning.feeTokenId}
@@ -191,6 +196,7 @@ const PlanTransactions: FC<{
     return (
       <SwapLegDetails
         leg={leg}
+        provider={card.leg === providerLeg ? plan.summary.provider : undefined}
         received={state.at === "landed" && card.leg < lastIndex ? BigInt(state.amount) : undefined}
       >
         {leg.protocol === plan.summary.protocol && supportsSlippage(leg.protocol) ? (

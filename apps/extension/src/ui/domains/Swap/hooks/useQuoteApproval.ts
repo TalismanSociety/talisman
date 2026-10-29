@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
+import { withPricing } from "./useSentTxFee"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()
@@ -52,9 +53,9 @@ export const useQuoteApproval = () => {
       platform: "ethereum",
       networkId: fromToken.networkId,
       payload: ethTx.transaction,
-      txInfo,
+      txInfo: withPricing(txInfo, { priority: ethTx.priority, txDetails: ethTx.txDetails }),
     }
-  }, [ethTx.transaction, txInfo, fromToken?.networkId])
+  }, [ethTx.transaction, ethTx.priority, ethTx.txDetails, txInfo, fromToken?.networkId])
 
   const protocol = selectedModule?.protocol
   const reportFailure = useCallback(

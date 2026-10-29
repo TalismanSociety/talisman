@@ -90,6 +90,7 @@ export type PlanSummary = {
   recipient: string
   protocol: SupportedSwapProtocol
   subProtocol?: string
+  provider?: { name: string; logo: string }
   /** decimal, 0.005 is 0.5% */
   slippage: number
 }

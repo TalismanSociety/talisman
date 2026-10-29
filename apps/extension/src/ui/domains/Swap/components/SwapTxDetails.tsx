@@ -1,10 +1,11 @@
 import type { QuoteLeg } from "@core/domains/swaps/types"
-import type { TokenId } from "@talismn/chaindata-provider"
+import { type EthNetworkId, evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
+import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import type { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import {
@@ -12,10 +13,12 @@ import {
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { useBalance } from "@ui/state/balances"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { Hex } from "viem"
 
+import { useSentTxFee } from "../hooks/useSentTxFee"
 import { formatSwapDuration, formatSwapExchangeRate } from "../swap-utils"
 import { SwapTxRow } from "./SwapTxCard"
 
@@ -238,6 +241,41 @@ export const SwapTxFeeRows: FC<{
       </SwapTxRow>
     </>
   )
+}
+
+const SentEthTxFeeRows: FC<{ hash: Hex; networkId: EthNetworkId }> = ({ hash, networkId }) => {
+  const { t } = useTranslation()
+  const options = useFeePriorityOptionsUI()
+  const { priority, estimatedFee, paidFee, isLoading } = useSentTxFee(hash, networkId)
+  const planck = paidFee ?? estimatedFee
+
+  return (
+    <>
+      {priority ? (
+        <SwapTxRow label={t("Priority")}>
+          <img src={options[priority].icon} alt="" className="w-10" />
+          <span>{options[priority].label}</span>
+        </SwapTxRow>
+      ) : null}
+      <SwapTxRow label={paidFee === undefined ? t("Estimated TX Fee") : t("TX Fee")}>
+        {planck !== undefined ? (
+          <Amount tokenId={evmNativeTokenId(networkId)} planck={planck} />
+        ) : isLoading ? (
+          <Skeleton>0.0000 TKN ($0.00)</Skeleton>
+        ) : (
+          <span className="text-body-secondary">-</span>
+        )}
+      </SwapTxRow>
+    </>
+  )
+}
+
+/** a sent transaction keeps the priority it was sent at and shows what it costs */
+export const SwapTxSentFeeRows: FC<{ hash: Hex; networkId: string }> = ({ hash, networkId }) => {
+  const network = useNetworkById(networkId)
+  return network?.platform === "ethereum" ? (
+    <SentEthTxFeeRows hash={hash} networkId={network.id} />
+  ) : null
 }
 
 export const SwapRiskRow = () => {

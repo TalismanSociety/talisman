@@ -100,6 +100,7 @@ export const useSwapPlanProposal = ({
         recipient: toAddress,
         protocol: quote.protocol,
         subProtocol: quote.subProtocol,
+        provider: { name: quote.providerName, logo: quote.providerLogo },
         slippage: planSlippage(provider, slippage),
       },
       leg0Nonce: nonce,

@@ -2,7 +2,7 @@ import type { Address } from "@talismn/balances"
 import type { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn/chaindata-provider"
 import type { TransactionRequest } from "viem"
 
-import type { SignerPayloadJSON } from "../signing/types"
+import type { EthPriorityOptionName, SignerPayloadJSON } from "../signing/types"
 import type { SwapPlanRef } from "../swaps/plans/types"
 
 // unknown for substrate txs from dapps
@@ -55,7 +55,11 @@ export type WalletTransactionTransferInfo = {
 /** a transaction that is one leg of a multi-leg swap plan carries the plan's ref */
 type PlanLegInfo = { plan?: SwapPlanRef }
 
+/** what the user chose to pay, for a transaction priced on screen */
+type PricingInfo = { pricing?: { priority: EthPriorityOptionName; estimatedFee: string } }
+
 export type WalletTransactionInfo = PlanLegInfo &
+  PricingInfo &
   (
     | { type: "transfer"; tokenId: TokenId; value: string; to: Address }
     | { type: "approve-erc20"; tokenId: TokenId; contractAddress: string; amount: string }
