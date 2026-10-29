@@ -490,11 +490,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
+  // the swap is only built once approved, so until then the quote tells what it will charge
+  const swapFees = plan.fees ?? selectedQuote?.fees ?? []
+
   // the swap draws the additional fees, so an approval is only worth paying for if they are covered too
   const additionalFeePlanck = useMemo(() => {
     if (!feeToken) return 0n
-    return getAdditionalFeePlanck(plan.fees ?? [], feeToken.id, feeToken.decimals)
-  }, [plan.fees, feeToken])
+    return getAdditionalFeePlanck(swapFees, feeToken.id, feeToken.decimals)
+  }, [swapFees, feeToken])
 
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,
@@ -755,10 +758,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
               <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
             )}
           </div>
-          <SwapOtherFees
-            fees={plan.fees ?? selectedQuote?.fees ?? []}
-            isLoading={isExchangeLoading}
-          />
+          <SwapOtherFees fees={swapFees} isLoading={isExchangeLoading} />
           <SimulationRow />
         </div>
       </ScrollContainer>
