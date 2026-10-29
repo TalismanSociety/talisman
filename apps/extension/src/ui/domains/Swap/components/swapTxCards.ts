@@ -135,7 +135,7 @@ const accountName = ({ accounts }: SwapTxContext, address: string) =>
 const networkOf = ({ networks }: SwapTxContext, tokenId: TokenId) =>
   networks[networkIdFromTokenId(tokenId)]
 
-export const txExplorerUrl = (ctx: SwapTxContext, tokenId: TokenId, hash: Hex) =>
+const txExplorerUrl = (ctx: SwapTxContext, tokenId: TokenId, hash: Hex) =>
   getBlockExplorerUrl(networkOf(ctx, tokenId), { type: "transaction", id: hash }) ?? undefined
 
 /** the first leg's token approval as the confirm screen runs it */
