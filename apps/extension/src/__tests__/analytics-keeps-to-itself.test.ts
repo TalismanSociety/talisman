@@ -22,11 +22,14 @@ const ANALYTICS = [
 ].flatMap((path) => (path.endsWith(".ts") ? [join(SRC, path)] : listSourceFiles(join(SRC, path))))
 
 const GANDALF = /gandalf/i
-const QUOTED_OBJECT_KEY = /(?<=(?:^|[{,])\s*)(?:"[^"\n]*"|'[^'\n]*')(?=[ \t]*:)/gm
+const MESSAGE_COVERAGE = join(SRC, "core/domains/analytics/messageCoverage.ts")
+const GANDALF_MESSAGE_COVERAGE_KEY = `"pri(gandalf.accessToken.get)":`
 const CREDENTIAL = /authorization|credentials\s*:|cookie/i
 
-const touchesGandalf = (code: string) =>
-  GANDALF.test(stripComments(code).replace(QUOTED_OBJECT_KEY, ""))
+const touchesGandalf = (file: string, code: string) =>
+  GANDALF.test(
+    stripComments(file === MESSAGE_COVERAGE ? code.replace(GANDALF_MESSAGE_COVERAGE_KEY, "") : code)
+  )
 
 describe("analytics keeps to itself", () => {
   it("finds the analytics source", () => {
@@ -34,27 +37,32 @@ describe("analytics keeps to itself", () => {
   })
 
   it("never touches Gandalf: not its store, its install id or its fetch", () => {
-    const offenders = ANALYTICS.filter((file) => touchesGandalf(readFileSync(file, "utf8")))
+    const offenders = ANALYTICS.filter((file) => touchesGandalf(file, readFileSync(file, "utf8")))
     expect(offenders.map((file) => relative(SRC, file))).toEqual([])
   })
 
+  const ANALYTICS_FILE = "core/domains/analytics/transport.ts"
+  const COVERAGE_FILE = relative(SRC, MESSAGE_COVERAGE)
+  const COVERAGE_ENTRY = `{\n  "pri(gandalf.accessToken.get)": { exempt: "housekeeping" },\n}`
+
   it.each([
-    `import { gandalfStore } from "@core/domains/gandalf/store"`,
-    "await import(`@core/domains/gandalf/accessToken`)",
-    `getGandalfAuthorization()`,
-    `sendMessage("pri(gandalf.accessToken.get)")`,
-    `sendMessage(on ? "pri(gandalf.accessToken.get)" : "pri(keepalive)")`,
-    `sendMessage(on ?\n  "pri(gandalf.accessToken.get)"\n  : "pri(keepalive)")`,
-  ])("sees Gandalf in %j", (code) => {
-    expect(touchesGandalf(code)).toBe(true)
+    [ANALYTICS_FILE, `import { gandalfStore } from "@core/domains/gandalf/store"`],
+    [ANALYTICS_FILE, "await import(`@core/domains/gandalf/accessToken`)"],
+    [ANALYTICS_FILE, `getGandalfAuthorization()`],
+    [ANALYTICS_FILE, `sendMessage(on ? "pri(gandalf.accessToken.get)" : "pri(keepalive)")`],
+    [ANALYTICS_FILE, `track("event", { "gandalf_token": token })`],
+    [ANALYTICS_FILE, COVERAGE_ENTRY],
+    [COVERAGE_FILE, `{ "@core/domains/gandalf/store": true }`],
+    [COVERAGE_FILE, `${COVERAGE_ENTRY}\nsendMessage("pri(gandalf.accessToken.get)")`],
+  ])("sees Gandalf in %s: %j", (file, code) => {
+    expect(touchesGandalf(join(SRC, file), code)).toBe(true)
   })
 
   it.each([
-    `// gandalf`,
-    `const coverage = {\n  "pri(gandalf.accessToken.get)": { exempt: "housekeeping" },\n}`,
-    `const coverage = { 'pri(keepalive)': 1, "pri(gandalf.accessToken.get)": 2 }`,
-  ])("lets a message coverage key or a comment through: %j", (code) => {
-    expect(touchesGandalf(code)).toBe(false)
+    [ANALYTICS_FILE, `// gandalf`],
+    [COVERAGE_FILE, COVERAGE_ENTRY],
+  ])("lets through, in %s: %j", (file, code) => {
+    expect(touchesGandalf(join(SRC, file), code)).toBe(false)
   })
 
   it("sends no credential with a batch", () => {
