@@ -171,19 +171,21 @@ const PlanTransactions: FC<{
     const isSigned = signing?.leg === card.leg && signing.signs === signs && !!legSigning.ethTx
     const leg =
       isSigned && legSigning.built ? { ...legs[card.leg], ...legSigning.built } : legs[card.leg]
-    const feeRows = card.hash ? (
-      <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
-    ) : isSigned ? (
-      <SwapTxFeeRows
-        address={leg.signer}
-        feeTokenId={legSigning.feeTokenId}
-        feePlanck={legSigning.ethTx?.txDetails?.estimatedFee ?? null}
-        isLoading={!!legSigning.ethTx?.isLoading}
-        hasError={!!legSigning.ethTx?.error && !legSigning.ethTx.txDetails}
-        ethTx={legSigning.ethTx}
-        containerId={containerId}
-      />
-    ) : null
+    const isRetried = isSigned && card.status === "failed"
+    const feeRows =
+      card.hash && !isRetried ? (
+        <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
+      ) : isSigned ? (
+        <SwapTxFeeRows
+          address={leg.signer}
+          feeTokenId={legSigning.feeTokenId}
+          feePlanck={legSigning.ethTx?.txDetails?.estimatedFee ?? null}
+          isLoading={!!legSigning.ethTx?.isLoading}
+          hasError={!!legSigning.ethTx?.error && !legSigning.ethTx.txDetails}
+          ethTx={legSigning.ethTx}
+          containerId={containerId}
+        />
+      ) : null
 
     if (card.kind === "approval")
       return (

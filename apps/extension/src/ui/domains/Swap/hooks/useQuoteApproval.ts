@@ -6,6 +6,7 @@ import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { withPricing } from "@ui/domains/Ethereum/withPricing"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 import { flows } from "@ui/hooks/analytics/flows"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
@@ -14,7 +15,6 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
-import { withPricing } from "./useSentTxFee"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()

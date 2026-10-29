@@ -12,8 +12,9 @@ const USDC = "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
 const APPROVAL_GAS = 100_000_000_000_000n
 const BRIDGE_FEE = 2_000_000_000_000_000n
 
-const { swap, feeCheck } = vi.hoisted(() => ({
+const { swap, feeCheck, sentApproval } = vi.hoisted(() => ({
   swap: { selectedQuote: null as BaseQuote | null },
+  sentApproval: { current: null as { hash: string; isPending: boolean; failure?: string } | null },
   feeCheck: {
     available: 0n,
     calls: [] as Array<bigint | null>,
@@ -115,6 +116,12 @@ vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
 }))
 vi.mock("../components/SwapOtherFees", () => ({ SwapOtherFees: () => null }))
 vi.mock("../components/SwapSlippageDrawer", () => ({ SwapSlippageDrawer: () => null }))
+vi.mock("../hooks/useQuoteApproval", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../hooks/useQuoteApproval")>()
+  return {
+    useQuoteApproval: () => ({ ...actual.useQuoteApproval(), ...sentApproval.current }),
+  }
+})
 vi.mock("../hooks/useLegApprovals", () => ({ useLaterLegApprovals: () => new Set() }))
 vi.mock("../hooks/useSwapConfirmation", () => ({
   useConfirmReadiness: () => true,
@@ -205,6 +212,7 @@ describe("SwapConfirmActions approval", () => {
   beforeEach(() => {
     swap.selectedQuote = quoteWithBridgeFee
     feeCheck.calls = []
+    sentApproval.current = null
   })
 
   it("asks for the swap's additional fees before the approval is paid for", () => {
@@ -226,5 +234,21 @@ describe("SwapConfirmActions approval", () => {
       false
     )
     expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("prices a retry of a reverted approval afresh, not as the transaction that reverted", () => {
+    feeCheck.available = APPROVAL_GAS + BRIDGE_FEE
+    sentApproval.current = { hash: "0xaa", isPending: false, failure: "Approval reverted" }
+    renderConfirmActions()
+
+    expect(screen.getByText("Estimated TX Fee")).toBeTruthy()
+  })
+
+  it("shows a pending approval as it was sent", () => {
+    feeCheck.available = APPROVAL_GAS + BRIDGE_FEE
+    sentApproval.current = { hash: "0xaa", isPending: true }
+    renderConfirmActions()
+
+    expect(screen.queryByText("Estimated TX Fee")).toBeNull()
   })
 })

@@ -11,6 +11,7 @@ import { getErrorMessage } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { withPricing } from "@ui/domains/Ethereum/withPricing"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
@@ -33,7 +34,6 @@ import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
-import { withPricing } from "../hooks/useSentTxFee"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
 import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
@@ -639,20 +639,22 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const renderBody = (card: SwapTxCardModel) => {
     const leg = legs[card.leg]
     const isSigned = card.key === signedCardKey
-    const feeRows = card.hash ? (
-      <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
-    ) : isSigned ? (
-      <SwapTxFeeRows
-        address={fromAddress}
-        feeTokenId={activeFeeTokenId}
-        feePlanck={feePlanck}
-        isLoading={isFeeLoading}
-        hasError={hasFeeError}
-        ethTx={fromToken?.platform === "ethereum" ? activeEthTx : undefined}
-        isPriorityLocked={approval.isPending}
-        containerId={containerId}
-      />
-    ) : null
+    const isRetried = isSigned && card.status === "failed"
+    const feeRows =
+      card.hash && !isRetried ? (
+        <SwapTxSentFeeRows hash={card.hash} networkId={networkIdFromTokenId(leg.fromTokenId)} />
+      ) : isSigned ? (
+        <SwapTxFeeRows
+          address={fromAddress}
+          feeTokenId={activeFeeTokenId}
+          feePlanck={feePlanck}
+          isLoading={isFeeLoading}
+          hasError={hasFeeError}
+          ethTx={fromToken?.platform === "ethereum" ? activeEthTx : undefined}
+          isPriorityLocked={approval.isPending}
+          containerId={containerId}
+        />
+      ) : null
     const riskRow = isSigned ? <SwapRiskRow /> : null
 
     if (card.kind === "approval") {
