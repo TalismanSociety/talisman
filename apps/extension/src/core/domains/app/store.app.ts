@@ -2,6 +2,7 @@ import { DEBUG, IS_FIREFOX } from "@common/constants"
 import { gt } from "semver"
 
 import { StorageProvider } from "../../libs/Store"
+import { type CoachmarkId, getChangeAnnouncementCoachmarks } from "./coachmarks"
 import { TalismanNotOnboardedError } from "./errors"
 
 type ONBOARDED_TRUE = "TRUE"
@@ -37,6 +38,7 @@ export type AppStoreData = {
   hideBittensorRootRewardsInfo?: boolean
   hideGetStarted?: boolean
   hideQuickUnlockOffer?: boolean
+  dismissedCoachmarks?: CoachmarkId[]
 
   // dismissed earn disclaimer
   hideEarnDisclaimer?: boolean
@@ -78,7 +80,8 @@ class AppStore extends StorageProvider<AppStoreData> {
   async init() {
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
-    if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
+    if ((await this.get("onboarded")) === UNKNOWN)
+      await this.set({ onboarded: FALSE, dismissedCoachmarks: getChangeAnnouncementCoachmarks() })
   }
 
   async getIsOnboarded() {
@@ -121,6 +124,7 @@ if (DEBUG) {
       hideGetStarted: false,
       hideEarnDisclaimer: false,
       hideQuickUnlockOffer: false,
+      dismissedCoachmarks: [],
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

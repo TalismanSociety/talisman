@@ -3,6 +3,7 @@ import { ChevronRightIcon, ExpandIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { Coachmark } from "@ui/components/Coachmark"
 import { IconButton } from "@ui/components/IconButton"
 import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
@@ -75,8 +76,20 @@ const FullscreenButton: FC = () => {
   const handleClick = useOpenFullscreen()
 
   return (
-    <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
-      <ExpandIcon />
-    </IconButton>
+    <Coachmark
+      id="popup_fullscreen_moved"
+      title={t("Expand has moved here")}
+      description={
+        IS_EMBEDDED_POPUP
+          ? t(
+              "Open Talisman in a full tab from the top right, or use the adjacent icon for a separate window."
+            )
+          : t("Open Talisman in a full tab from the top right.")
+      }
+    >
+      <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
+        <ExpandIcon />
+      </IconButton>
+    </Coachmark>
   )
 }
