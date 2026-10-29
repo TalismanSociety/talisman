@@ -1,6 +1,53 @@
 import { ed25519 } from "@noble/curves/ed25519.js"
+import { z } from "zod"
 
 const GANDALF_URL = "https://gandalf.talisman.xyz"
+const REQUEST_TIMEOUT_MS = 30_000
+
+const SHA256_BITS = 256
+
+const challengeResponseSchema = z.object({
+  challenge: z.string().min(1),
+  difficulty: z.number().int().min(0).max(SHA256_BITS),
+  expiresAt: z.number(),
+})
+
+const registrationResponseSchema = z.object({ installId: z.string().min(1) })
+
+const accessTokenResponseSchema = z.object({
+  accessToken: z.string().min(1),
+  expiresIn: z.number().positive(),
+})
+
+export class GandalfRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    /** Seconds the server asks us to wait before trying again, when it says. */
+    readonly retryAfter?: number
+  ) {
+    super(message)
+    this.name = "GandalfRequestError"
+  }
+}
+
+const parseRetryAfterSeconds = (...candidates: unknown[]): number | undefined => {
+  for (const candidate of candidates) {
+    const seconds =
+      typeof candidate === "string" && candidate.trim() !== "" ? Number(candidate) : candidate
+    if (typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 0) return seconds
+  }
+  return undefined
+}
+
+const toRequestError = async (res: Response, request: string): Promise<GandalfRequestError> => {
+  const body = (await res.json().catch(() => ({}))) as { message?: string; retryAfter?: unknown }
+  return new GandalfRequestError(
+    `Gandalf ${request} failed (${res.status}): ${body?.message ?? "unknown"}`,
+    res.status,
+    parseRetryAfterSeconds(res.headers.get("Retry-After"), body?.retryAfter)
+  )
+}
 
 export function base64urlEncode(bytes: Uint8Array): string {
   let binary = ""
@@ -26,18 +73,12 @@ export function bytesToHex(bytes: Uint8Array): string {
 
 // ── PoW solver ────────────────────────────────────────────────────────────────
 
-export async function solveProofOfWork(
-  challenge: string,
-  difficulty: number,
-  signal?: AbortSignal
-): Promise<string> {
+export async function solveProofOfWork(challenge: string, difficulty: number): Promise<string> {
   for (let i = 0; ; i++) {
-    signal?.throwIfAborted()
     const solution = i.toString()
     const input = new TextEncoder().encode(challenge + solution)
     const hash = await crypto.subtle.digest("SHA-256", input)
     const bytes = new Uint8Array(hash)
-    signal?.throwIfAborted()
 
     let zeroBits = 0
     for (const byte of bytes) {
@@ -55,23 +96,28 @@ export async function solveProofOfWork(
 
 // ── Gandalf API calls ─────────────────────────────────────────────────────────
 
-export async function fetchChallenge(
-  signal?: AbortSignal
-): Promise<{ challenge: string; difficulty: number; expiresAt: number }> {
-  const res = await fetch(`${GANDALF_URL}/v1/challenge`, { method: "POST", signal })
-  if (!res.ok) throw new Error(`Gandalf challenge request failed (${res.status})`)
-  return res.json()
+export async function fetchChallenge(): Promise<{
+  challenge: string
+  difficulty: number
+  expiresAt: number
+}> {
+  const res = await fetch(`${GANDALF_URL}/v1/challenge`, {
+    method: "POST",
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  })
+  if (!res.ok) throw await toRequestError(res, "challenge request")
+  return challengeResponseSchema.parse(await res.json())
 }
 
 export type ProofOfWorkSolve = { durationMs: number; difficulty: number }
 
 /**
  * One-time registration: generates an Ed25519 keypair, solves a PoW challenge,
- * and registers with Gandalf.
+ * and registers with Gandalf. Each HTTP call has its own timeout; the PoW solve has none.
  *
  * @returns The install credentials (installId + privateKeyHex) and how long the PoW took.
  */
-export async function registerInstall(signal?: AbortSignal): Promise<{
+export async function registerInstall(): Promise<{
   installId: string
   privateKeyHex: string
   proofOfWork: ProofOfWorkSolve
@@ -87,9 +133,9 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
   }
 
   // Fetch and solve PoW challenge
-  const { challenge, difficulty } = await fetchChallenge(signal)
+  const { challenge, difficulty } = await fetchChallenge()
   const solveStartedAt = performance.now()
-  const solution = await solveProofOfWork(challenge, difficulty, signal)
+  const solution = await solveProofOfWork(challenge, difficulty)
   const proofOfWork = { durationMs: Math.round(performance.now() - solveStartedAt), difficulty }
 
   // Register
@@ -97,15 +143,12 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pubKey: pubKeyJWK, challenge, solution }),
-    signal,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(`Gandalf registration failed (${res.status}): ${body?.message ?? "unknown"}`)
-  }
+  if (!res.ok) throw await toRequestError(res, "registration")
 
-  const { installId } = (await res.json()) as { installId: string }
+  const { installId } = registrationResponseSchema.parse(await res.json())
   const privateKeyHex = bytesToHex(privateKey)
 
   return { installId, privateKeyHex, proofOfWork }
@@ -116,8 +159,7 @@ export async function registerInstall(signal?: AbortSignal): Promise<{
  */
 export async function requestAccessToken(
   installId: string,
-  privateKeyHex: string,
-  signal?: AbortSignal
+  privateKeyHex: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
   const timestamp = Math.floor(Date.now() / 1000).toString()
   const nonce = crypto.randomUUID()
@@ -132,13 +174,10 @@ export async function requestAccessToken(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ installId, timestamp, nonce, signature }),
-    signal,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(`Gandalf token request failed (${res.status}): ${body?.message ?? "unknown"}`)
-  }
+  if (!res.ok) throw await toRequestError(res, "token request")
 
-  return (await res.json()) as { accessToken: string; expiresIn: number }
+  return accessTokenResponseSchema.parse(await res.json())
 }

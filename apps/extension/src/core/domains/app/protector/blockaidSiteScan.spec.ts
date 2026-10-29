@@ -11,7 +11,6 @@ let config$ = new BehaviorSubject<{ featureFlags: { BLOCKAID_DAPP_SCAN_V2: boole
   featureFlags: { BLOCKAID_DAPP_SCAN_V2: true },
 })
 let settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
-let token$ = new BehaviorSubject({ status: "success", data: "test-token" })
 
 vi.mock("../../../db/blobs", () => ({
   getBlobStore: (id: string) => ({
@@ -34,10 +33,8 @@ vi.mock("../store.settings", () => ({
   },
 }))
 vi.mock("../../analytics/errorReporting", () => ({ reportError: vi.fn() }))
-vi.mock("../../gandalf/observable", () => ({
-  get gandalfAccessToken$() {
-    return token$
-  },
+vi.mock("../../gandalf/accessToken", () => ({
+  getAccessToken: async () => "test-token",
 }))
 
 const response = (changes = {}) =>
@@ -59,7 +56,6 @@ beforeEach(async () => {
     featureFlags: { BLOCKAID_DAPP_SCAN_V2: true },
   })
   settings$ = new BehaviorSubject<{ autoDappScan?: boolean }>({ autoDappScan: true })
-  token$ = new BehaviorSubject({ status: "success", data: "test-token" })
   await chrome.storage.session.clear()
   vi.spyOn(chrome.storage.local, "set")
   mocks.blobs.clear()
@@ -95,7 +91,6 @@ afterEach(() => {
   protector.dispose()
   config$.complete()
   settings$.complete()
-  token$.complete()
   vi.clearAllTimers()
   vi.useRealTimers()
   vi.unstubAllGlobals()
