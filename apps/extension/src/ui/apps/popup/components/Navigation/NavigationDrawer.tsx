@@ -6,20 +6,17 @@ import {
   KeyIcon,
   LockIcon,
   PlusIcon,
-  RepeatIcon,
   SendIcon,
   SettingsIcon,
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
-import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { Nav, NavItem } from "@ui/components/Nav"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
@@ -53,13 +50,6 @@ export const NavigationDrawer: FC = () => {
     await api.sendFundsOpen({ entry: "nav_menu" })
     window.close()
   }, [])
-
-  const { open: openSwapModal } = useSwapModal()
-  const handleSwapClick = useCallback(async () => {
-    openSwapModal({ entry: "nav_menu" })
-    await sleep(150)
-    close()
-  }, [openSwapModal, close])
 
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
@@ -115,9 +105,6 @@ export const NavigationDrawer: FC = () => {
                 {t("Send Funds")}
               </NavItem>
             )}
-            <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
-              {t("Swap")}
-            </NavItem>
             {!!showBuySell && (
               <NavItem icon={<CreditCardIcon />} onClick={handleBuySellClick}>
                 {t("Buy/Sell")}
