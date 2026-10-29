@@ -51,8 +51,8 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
         disabled={disabled}
       />
       <div className="absolute top-3 right-3 flex">
-        {IS_EMBEDDED_POPUP && <PopoutButton />}
         <FullscreenButton />
+        {IS_EMBEDDED_POPUP && <PopoutButton />}
       </div>
     </div>
   )
