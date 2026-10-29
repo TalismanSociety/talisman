@@ -138,6 +138,63 @@ const networkOf = ({ networks }: SwapTxContext, tokenId: TokenId) =>
 export const txExplorerUrl = (ctx: SwapTxContext, tokenId: TokenId, hash: Hex) =>
   getBlockExplorerUrl(networkOf(ctx, tokenId), { type: "transaction", id: hash }) ?? undefined
 
+/** the first leg's token approval as the confirm screen runs it */
+export type QuoteApprovalState = {
+  isNeeded: boolean
+  /** sent, its receipt not in yet */
+  isPending: boolean
+  hash?: Hex
+  failure?: string
+}
+
+export type SwapQuoteTxInput = {
+  fromTokenId: TokenId
+  legCount: number
+  approval: QuoteApprovalState
+  /** the later legs whose spender allowance was short when read */
+  approvalsNeeded: ReadonlySet<number>
+  /** the first leg's swap transaction could not be built or signed */
+  failure?: string
+}
+
+const quoteApprovalFacts = (
+  ctx: SwapTxContext,
+  { fromTokenId, approval }: SwapQuoteTxInput
+): SwapTxApprovalFacts | undefined => {
+  const { isNeeded, isPending, hash, failure } = approval
+  const sent = hash ? { hash, href: txExplorerUrl(ctx, fromTokenId, hash) } : {}
+  if (failure) return { at: "failed", error: failure, ...sent }
+  if (isPending && hash) return { at: "sent", ...sent }
+  if (isNeeded) return { at: "needed" }
+  return hash ? { at: "landed", ...sent } : undefined
+}
+
+/** before the plan exists the first leg waits on the user and every later leg is queued */
+export const swapQuoteTxFacts = (ctx: SwapTxContext, input: SwapQuoteTxInput): SwapTxLegFacts[] =>
+  Array.from({ length: input.legCount }, (_, index): SwapTxLegFacts => {
+    if (index > 0)
+      return {
+        at: "queued",
+        approval: input.approvalsNeeded.has(index) ? { at: "needed" } : undefined,
+      }
+    return {
+      at: input.failure ? "failed" : "awaiting-user",
+      error: input.failure,
+      approval: quoteApprovalFacts(ctx, input),
+    }
+  })
+
+/** an error that keeps the user from going on belongs to the card they are on */
+export const withBlockingError = (
+  cards: readonly SwapTxCardModel[],
+  error: string | null | undefined
+): SwapTxCardModel[] => {
+  const activeKey = activeSwapTxKey(cards)
+  return cards.map((card) =>
+    error && card.key === activeKey && !card.error ? { ...card, error } : card
+  )
+}
+
 /** the leg the user signs on screen, while they sign it: what it asks for, and what went wrong */
 export type PlanLegSigning = {
   leg: number

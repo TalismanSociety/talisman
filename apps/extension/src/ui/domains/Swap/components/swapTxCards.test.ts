@@ -20,11 +20,14 @@ import {
   type PlanLegSigning,
   pendingEvmLegRow,
   type SwapPlanTxInput,
+  type SwapQuoteTxInput,
   type SwapTxContext,
   type SwapTxLegFacts,
   swapPlanFooter,
   swapPlanTxFacts,
+  swapQuoteTxFacts,
   swapTxCards,
+  withBlockingError,
 } from "./swapTxCards"
 
 const t = (key: string, options?: Record<string, unknown>) =>
@@ -189,6 +192,112 @@ describe("swapTxCards", () => {
   it("has no active card once every transaction is done", () => {
     const cards = swapTxCards([{ at: "landed" }, { at: "landed", delivery: "success" }])
     expect(activeSwapTxKey(cards)).toBeNull()
+  })
+})
+
+describe("swapQuoteTxFacts", () => {
+  const quoteCards = (input: Partial<SwapQuoteTxInput> = {}) =>
+    swapTxCards(
+      swapQuoteTxFacts(ctx, {
+        fromTokenId: LEG0.quote.fromTokenId,
+        legCount: 2,
+        approval: { isNeeded: false, isPending: false },
+        approvalsNeeded: new Set(),
+        ...input,
+      })
+    )
+
+  it("starts on the first leg and queues the others", () => {
+    const cards = quoteCards()
+
+    expect(statuses(cards)).toEqual({ "leg-0": "ready", "leg-1": "upcoming" })
+    expect(activeSwapTxKey(cards)).toBe("leg-0")
+  })
+
+  it("starts on the approval the first leg needs", () => {
+    const cards = quoteCards({ approval: { isNeeded: true, isPending: false } })
+
+    expect(statuses(cards)).toEqual({
+      "approval-0": "ready",
+      "leg-0": "upcoming",
+      "leg-1": "upcoming",
+    })
+  })
+
+  it("submits the approval until its receipt is in, with a link to it", () => {
+    const cards = quoteCards({
+      approval: { isNeeded: true, isPending: true, hash: APPROVAL_HASH },
+    })
+
+    expect(cards[0]).toMatchObject({ status: "signing", hash: APPROVAL_HASH })
+    expect(cards[0].href).toContain(APPROVAL_HASH)
+    expect(activeSwapTxKey(cards)).toBe("approval-0")
+  })
+
+  it("completes the approval once it landed and moves on to the leg", () => {
+    const cards = quoteCards({
+      approval: { isNeeded: false, isPending: false, hash: APPROVAL_HASH },
+    })
+
+    expect(statuses(cards)).toMatchObject({ "approval-0": "done", "leg-0": "ready" })
+    expect(activeSwapTxKey(cards)).toBe("leg-0")
+  })
+
+  it("asks for the approval again after the revoke it needed first landed", () => {
+    const cards = quoteCards({
+      approval: { isNeeded: true, isPending: false, hash: APPROVAL_HASH },
+    })
+
+    expect(statuses(cards)).toMatchObject({ "approval-0": "ready", "leg-0": "upcoming" })
+  })
+
+  it("fails the approval with its error, until it is tried again", () => {
+    const cards = quoteCards({
+      approval: { isNeeded: true, isPending: false, failure: "Approval failed" },
+    })
+
+    expect(cards[0]).toMatchObject({ status: "failed", error: "Approval failed" })
+    expect(activeSwapTxKey(cards)).toBe("approval-0")
+  })
+
+  it("fails the first leg when its transaction could not be built or signed", () => {
+    const cards = quoteCards({ failure: "Rejected" })
+
+    expect(cards[0]).toMatchObject({ key: "leg-0", status: "failed", error: "Rejected" })
+    expect(activeSwapTxKey(cards)).toBe("leg-0")
+  })
+
+  it("shows the approval a later leg needs before that leg", () => {
+    const cards = quoteCards({ approvalsNeeded: new Set([1]) })
+
+    expect(statuses(cards)).toEqual({
+      "leg-0": "ready",
+      "approval-1": "upcoming",
+      "leg-1": "upcoming",
+    })
+  })
+})
+
+describe("withBlockingError", () => {
+  const cards = swapTxCards([{ at: "awaiting-user", approval: { at: "needed" } }])
+
+  it("puts the error on the card the user is on", () => {
+    expect(withBlockingError(cards, "Insufficient ETH balance").map(({ error }) => error)).toEqual([
+      "Insufficient ETH balance",
+      undefined,
+    ])
+  })
+
+  it("keeps the card's own error", () => {
+    const failed = swapTxCards([
+      { at: "awaiting-user", approval: { at: "failed", error: "Reverted" } },
+    ])
+
+    expect(withBlockingError(failed, "Insufficient ETH balance")[0].error).toBe("Reverted")
+  })
+
+  it("leaves the cards alone without an error", () => {
+    expect(withBlockingError(cards, null)).toEqual(cards)
   })
 })
 
