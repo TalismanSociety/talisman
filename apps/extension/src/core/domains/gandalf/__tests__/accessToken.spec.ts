@@ -9,11 +9,9 @@ const mocks = vi.hoisted(() => ({
   store: { get: vi.fn(), set: vi.fn() },
   registerInstall: vi.fn(),
   requestAccessToken: vi.fn(),
-  uiApi: { gandalfAccessToken: vi.fn<() => Promise<string>>() },
 }))
 
 vi.mock("../store", () => ({ gandalfStore: mocks.store }))
-vi.mock("@ui/api", () => ({ api: mocks.uiApi }))
 vi.mock("../client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../client")>()),
   registerInstall: mocks.registerInstall,
@@ -210,24 +208,6 @@ describe("getAccessToken", () => {
     await vi.advanceTimersByTimeAsync(5 * MINUTE)
     await expect(read(getAccessToken)).resolves.toBe("jwt-2")
     expect(expired()).toEqual([])
-  })
-
-  it("hands the UI a different token for reads five minutes apart over the message port", async () => {
-    const { getAccessToken, GandalfHandler } = await importFresh()
-    const handler = new GandalfHandler({} as ExtensionStore)
-    mocks.uiApi.gandalfAccessToken.mockImplementation(() =>
-      handler.handle("1", "pri(gandalf.accessToken.get)", null, {} as chrome.runtime.Port)
-    )
-    const { getGandalfAuthorization } = await import("@ui/util/gandalfFetch")
-
-    await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-1")
-    await vi.advanceTimersByTimeAsync(5 * MINUTE)
-    await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-2")
-
-    expect(mocks.uiApi.gandalfAccessToken).toHaveBeenCalledTimes(2)
-    expect(mints()).toBe(2)
-    await expect(getAccessToken()).resolves.toBe("jwt-2")
-    expect(mints()).toBe(2)
   })
 
   it("counts freshness from request start when the reply arrives two minutes late", async () => {

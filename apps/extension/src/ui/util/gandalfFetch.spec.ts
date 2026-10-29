@@ -83,3 +83,12 @@ it("exposes the authorization hook for the LI.FI SDK", async () => {
   reply("jwt-lifi")
   await expect(authorization).resolves.toBe("Bearer jwt-lifi")
 })
+
+it("asks the background for a token on every request instead of keeping one", async () => {
+  mocks.gandalfAccessToken.mockResolvedValueOnce("jwt-1").mockResolvedValueOnce("jwt-2")
+  const { getGandalfAuthorization } = await import("./gandalfFetch")
+
+  await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-1")
+  await expect(getGandalfAuthorization()).resolves.toBe("Bearer jwt-2")
+  expect(mocks.gandalfAccessToken).toHaveBeenCalledTimes(2)
+})
