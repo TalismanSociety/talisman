@@ -140,11 +140,25 @@ type LegNote<T> = { leg: number; value: T }
 const noteFor = <T,>(note: LegNote<T> | undefined, leg: number | null) =>
   note && note.leg === leg ? note.value : undefined
 
-/** the leg a paused plan waits on the user to sign, priced on screen with the nonce the plan pinned */
+/** an approval's gas limit or priority must not carry over to the leg it unlocks */
+const useFreshPricingPer = (
+  signed: string | undefined,
+  { setCustomSettings, setPriority }: ReturnType<typeof useEthTransaction>
+) => {
+  const [pricedFor, setPricedFor] = useState(signed)
+  if (signed && signed !== pricedFor) {
+    setPricedFor(signed)
+    setCustomSettings(undefined)
+    setPriority(undefined)
+  }
+}
+
+/** the leg a paused plan waits on the user to sign, priced on screen and signed on the nonce it was built with */
 export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: number | null) => {
   const { t } = useTranslation()
   const request = useHardwareLegTransaction(plan, index)
-  const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId, false, true)
+  const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
+  useFreshPricingPer(request.data ? `${index}:${request.data.signs}` : undefined, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
   const [signFailure, setSignFailure] = useState<LegNote<string>>()
   const [isApprovalPending, setIsApprovalPending] = useState(false)
@@ -152,7 +166,10 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
 
   const tx: TxSubmitButtonTransactionEth | undefined =
     request.data && ethTx.transaction
-      ? { ...request.data.tx, payload: ethTx.transaction }
+      ? {
+          ...request.data.tx,
+          payload: { ...ethTx.transaction, nonce: request.data.tx.payload.nonce },
+        }
       : undefined
 
   const failure = request.error

@@ -12,28 +12,37 @@ const USDT_ID = `1:evm-erc20:${USDT.toLowerCase()}`
 const SPENDER = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE"
 const APPROVAL_HASH = `0x${"ab".repeat(32)}`
 
-const { ethGetTransactionsCount, priced, submitted, payloadLock, button, client } = vi.hoisted(
-  () => ({
-    ethGetTransactionsCount: vi.fn(),
-    priced: vi.fn(
-      (request: unknown, _networkId?: string, _isLocked?: boolean, _isReplacement?: boolean) => ({
-        transaction: request,
-        error: undefined,
-      })
-    ),
-    submitted: vi.fn(),
-    payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
-    button: {
-      sign: undefined as (() => void) | undefined,
-      submit: undefined as ((hash: string) => void) | undefined,
-      reject: undefined as ((cause: unknown) => void) | undefined,
-    },
-    client: {
-      allowance: vi.fn<() => Promise<bigint>>(),
-      waitForTransactionReceipt: vi.fn(),
-    },
+const { ethGetTransactionsCount, priced, pricing, submitted, payloadLock, button, client } =
+  vi.hoisted(() => {
+    const pricing = { setCustomSettings: vi.fn(), setPriority: vi.fn() }
+    return {
+      ethGetTransactionsCount: vi.fn(),
+      pricing,
+      priced: vi.fn(
+        (
+          request: object | undefined,
+          _networkId?: string,
+          _isLocked?: boolean,
+          _isReplacement?: boolean
+        ) => ({
+          transaction: request && { ...request, nonce: 99 },
+          error: undefined,
+          ...pricing,
+        })
+      ),
+      submitted: vi.fn(),
+      payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
+      button: {
+        sign: undefined as (() => void) | undefined,
+        submit: undefined as ((hash: string) => void) | undefined,
+        reject: undefined as ((cause: unknown) => void) | undefined,
+      },
+      client: {
+        allowance: vi.fn<() => Promise<bigint>>(),
+        waitForTransactionReceipt: vi.fn(),
+      },
+    }
   })
-)
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -271,7 +280,7 @@ describe("usePlanLegSigning", () => {
     expect(buttonLabel()).toBe("Sign on Ledger")
   })
 
-  it("prices the leg on screen, on the nonce the plan pinned and with no fee of its own", async () => {
+  it("prices the leg on screen with no fee of its own and signs it on the nonce the plan pinned", async () => {
     renderSign({
       ...LEDGER_PLAN,
       legs: [LEDGER_PLAN.legs[0], { ...LEDGER_PLAN.legs[1], nonce: 4 }],
@@ -283,7 +292,9 @@ describe("usePlanLegSigning", () => {
     expect(request).not.toHaveProperty("maxFeePerGas")
     expect(request).not.toHaveProperty("maxPriorityFeePerGas")
     expect(request).not.toHaveProperty("gasPrice")
-    expect([networkId, isReplacement]).toEqual(["964", true])
+    expect(networkId).toBe("964")
+    expect(isReplacement).toBeUndefined()
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 4 } })
   })
 
   it("asks a keypair signer to sign, not a Ledger", async () => {
@@ -320,7 +331,7 @@ describe("usePlanLegSigning", () => {
     expect(buttonLabel()).toBe("Approve USDT")
   })
 
-  it("builds the leg once the approval mined", async () => {
+  it("builds the leg once the approval mined, priced afresh", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     client.allowance.mockResolvedValue(0n)
     let mined: () => void = () => {}
@@ -331,6 +342,8 @@ describe("usePlanLegSigning", () => {
     )
     renderSign(LIFI_PLAN)
     await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+    pricing.setCustomSettings.mockClear()
+    pricing.setPriority.mockClear()
 
     act(() => {
       button.submit?.(APPROVAL_HASH)
@@ -354,5 +367,7 @@ describe("usePlanLegSigning", () => {
       txInfo: { plan: { id: PLAN_ID, leg: 1 } },
     })
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
+    expect(pricing.setCustomSettings).toHaveBeenCalledWith(undefined)
+    expect(pricing.setPriority).toHaveBeenCalledWith(undefined)
   })
 })
