@@ -284,6 +284,20 @@ describe("requestAccessToken", () => {
     )
   })
 
+  it.each([
+    ["no access token", { expiresIn: 300 }],
+    ["an empty access token", { accessToken: "", expiresIn: 300 }],
+    ["no expiry", { accessToken: "jwt" }],
+  ])("rejects a successful reply with %s", async (_, body) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+
+    await expect(
+      requestAccessToken("inst-1", bytesToHex(ed25519.utils.randomSecretKey()))
+    ).rejects.toThrow()
+  })
+
   const failWith = (status: number, body: unknown, headers?: HeadersInit) => {
     globalThis.fetch = vi
       .fn()

@@ -1,7 +1,13 @@
 import { ed25519 } from "@noble/curves/ed25519.js"
+import { z } from "zod"
 
 const GANDALF_URL = "https://gandalf.talisman.xyz"
 const REQUEST_TIMEOUT_MS = 30_000
+
+const accessTokenResponseSchema = z.object({
+  accessToken: z.string().min(1),
+  expiresIn: z.number().positive(),
+})
 
 export class GandalfRequestError extends Error {
   constructor(
@@ -163,5 +169,5 @@ export async function requestAccessToken(
 
   if (!res.ok) throw await toRequestError(res, "token request")
 
-  return (await res.json()) as { accessToken: string; expiresIn: number }
+  return accessTokenResponseSchema.parse(await res.json())
 }
