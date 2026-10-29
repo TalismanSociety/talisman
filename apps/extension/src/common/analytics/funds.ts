@@ -21,7 +21,7 @@ export const SEND_ENTRIES = [
 ] as const
 export type SendEntry = (typeof SEND_ENTRIES)[number]
 
-export const SWAP_ENTRIES = ["dashboard", "nav_menu", "get_started", "seek"] as const
+export const SWAP_ENTRIES = ["dashboard", "bottom_nav", "get_started", "seek"] as const
 export type SwapEntry = (typeof SWAP_ENTRIES)[number]
 
 export const BUY_ENTRIES = [

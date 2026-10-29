@@ -97,6 +97,7 @@ const APP_FLAGS: { readonly [K in keyof AppStoreData]-?: SettingRule | NotASetti
   hideGetStarted: bool("hideGetStarted"),
   hideEarnDisclaimer: bool("hideEarnDisclaimer"),
   hideQuickUnlockOffer: bool("hideQuickUnlockOffer"),
+  dismissedCoachmarks: "a list, not one value",
   currentMigration: "not a user choice",
 }
 
