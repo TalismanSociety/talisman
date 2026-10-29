@@ -8,6 +8,7 @@ import {
   attachShortfalls,
   calculateQuoteFees,
   flattenQuotes,
+  isSelectionAvailable,
   type QuoteWithFees,
   selectQuote,
   sortQuotes,
@@ -467,5 +468,30 @@ describe("attachShortfalls", () => {
     expect(sortQuotes([glacis, across], "bestRate").map(({ quote }) => quote.providerName)).toEqual(
       ["Across", "Glacis"]
     )
+  })
+})
+
+describe("isSelectionAvailable", () => {
+  const short = (quote: BaseQuote): QuoteWithFees => ({
+    ...wrap(quote),
+    shortfall: { tokenId: "from-token", planck: 1n },
+  })
+  const across = makeQuote({ protocol: "lifi", subProtocol: "across" })
+  const glacis = makeQuote({ protocol: "lifi", subProtocol: "glacis" })
+
+  it("keeps a route the account can pay for", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "across")).toBe(true)
+  })
+
+  it("drops a route the account can no longer pay for when another one fits", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "glacis")).toBe(false)
+  })
+
+  it("keeps a route the account cannot pay for when none fits, so the confirm screen names the shortfall", () => {
+    expect(isSelectionAvailable([short(across), short(glacis)], "lifi", "glacis")).toBe(true)
+  })
+
+  it("drops a route that is no longer quoted", () => {
+    expect(isSelectionAvailable([wrap(across)], "lifi", "glacis")).toBe(false)
   })
 })

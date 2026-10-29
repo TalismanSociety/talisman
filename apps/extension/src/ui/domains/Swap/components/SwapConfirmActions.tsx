@@ -490,11 +490,11 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
-  // the approval only spends its own gas, additional fees are drawn by the swap transaction
+  // the swap draws the additional fees, so an approval is only worth paying for if they are covered too
   const additionalFeePlanck = useMemo(() => {
-    if (needsApproval || !feeToken) return 0n
+    if (!feeToken) return 0n
     return getAdditionalFeePlanck(plan.fees ?? [], feeToken.id, feeToken.decimals)
-  }, [plan.fees, feeToken, needsApproval])
+  }, [plan.fees, feeToken])
 
   const feeBalanceCheck = useFeeBalanceCheck({
     fromAddress,

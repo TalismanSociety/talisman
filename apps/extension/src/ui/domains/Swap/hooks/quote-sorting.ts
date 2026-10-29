@@ -151,3 +151,21 @@ export const selectQuote = (
 
   return (match ?? sortedQuotes[0])?.quote ?? null
 }
+
+/**
+ * Whether the selected route can stay selected: it is still quoted, and the account can pay for it
+ * unless it can pay for none.
+ */
+export const isSelectionAvailable = (
+  sortedQuotes: QuoteWithFees[],
+  selectedProtocol: SupportedSwapProtocol | null,
+  selectedSubProtocol: string | undefined
+): boolean => {
+  const isEveryQuoteShort = !!sortedQuotes[0]?.shortfall
+  return sortedQuotes.some(
+    ({ quote, shortfall }) =>
+      quote.protocol === selectedProtocol &&
+      (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true) &&
+      (!shortfall || isEveryQuoteShort)
+  )
+}
