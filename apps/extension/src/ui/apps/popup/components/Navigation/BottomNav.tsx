@@ -1,18 +1,18 @@
 import {
   CloseIcon,
-  ExpandIcon,
   HistoryIcon,
   MenuIcon,
+  RepeatIcon,
   TalismanHandIcon,
   TrendingUpIcon,
 } from "@talismn/icons"
-import { api } from "@ui/api"
+import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useMatch, useNavigate } from "react-router-dom"
+import { useMatch, useNavigate } from "react-router-dom"
 
 import {
   QuickSettingsModal,
@@ -22,7 +22,6 @@ import {
 
 export const BottomNav = () => {
   const navigate = useNavigate()
-  const location = useLocation()
   const { open } = usePopupNavOpenClose()
   const { close: closeQuickSettings, isOpen: isQuickSettingsOpen } = useQuickSettingsOpenClose()
 
@@ -41,12 +40,11 @@ export const BottomNav = () => {
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
-  const handleExpandClick = useCallback(() => {
-    // assume paths are the same in dashboard
-    // portfolio pages supports account/folder query string arguments to stay in sync with popup
-    api.dashboardOpen(`${location.pathname}${location.search}`)
-    window.close()
-  }, [location.pathname, location.search])
+  const { open: openSwapModal } = useSwapModal()
+  const handleSwapClick = useCallback(() => {
+    openSwapModal({ entry: "bottom_nav" })
+    closeQuickSettings()
+  }, [closeQuickSettings, openSwapModal])
 
   const handleMoreClick = useCallback(() => {
     open()
@@ -80,13 +78,13 @@ export const BottomNav = () => {
             onClick={handleEarnClick}
             route="/earn/*"
           />
+          <NavButton label={t("Swap")} icon={RepeatIcon} onClick={handleSwapClick} />
           <NavButton
             label={t("History")}
             icon={HistoryIcon}
             onClick={handleTxHistoryClick}
             route="/tx-history"
           />
-          <NavButton label={t("Fullscreen")} icon={ExpandIcon} onClick={handleExpandClick} />
           {isQuickSettingsOpen ? (
             <NavButton
               label={t("Close")}

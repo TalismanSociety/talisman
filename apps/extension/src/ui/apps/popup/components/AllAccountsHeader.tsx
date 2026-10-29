@@ -1,11 +1,12 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
+import { ChevronRightIcon, ExpandIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { IconButton } from "@ui/components/IconButton"
 import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
+import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
@@ -47,7 +48,10 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
         mouseOver={isHovered}
         disabled={disabled}
       />
-      {IS_EMBEDDED_POPUP && <PopoutButton />}
+      <div className="absolute top-3 right-3 flex">
+        {IS_EMBEDDED_POPUP && <PopoutButton />}
+        <FullscreenButton />
+      </div>
     </div>
   )
 }
@@ -59,8 +63,18 @@ const PopoutButton: FC = () => {
   }, [])
 
   return (
-    <IconButton className="absolute top-3 right-3 p-3 text-base" onClick={handleClick}>
+    <IconButton className="p-3 text-base" onClick={handleClick}>
       <PopoutIcon />
+    </IconButton>
+  )
+}
+
+const FullscreenButton: FC = () => {
+  const handleClick = useOpenFullscreen()
+
+  return (
+    <IconButton className="p-3 text-base" onClick={handleClick}>
+      <ExpandIcon />
     </IconButton>
   )
 }

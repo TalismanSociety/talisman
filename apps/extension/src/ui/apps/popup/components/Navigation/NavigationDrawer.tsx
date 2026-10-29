@@ -1,6 +1,7 @@
 import {
   AlertCircleIcon,
   CreditCardIcon,
+  ExpandIcon,
   GlobeIcon,
   KeyIcon,
   LockIcon,
@@ -20,6 +21,7 @@ import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -74,6 +76,8 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [])
+
+  const handleFullscreenClick = useOpenFullscreen()
 
   const showBuySell = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
@@ -133,6 +137,9 @@ export const NavigationDrawer: FC = () => {
             </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
+            </NavItem>
+            <NavItem icon={<ExpandIcon />} onClick={handleFullscreenClick}>
+              {t("Fullscreen")}
             </NavItem>
           </Nav>
         </div>
