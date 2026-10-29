@@ -29,6 +29,7 @@ import {
   useCallback,
   useId,
   useRef,
+  useState,
 } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -43,13 +44,14 @@ const trackAnchorRect: Middleware = {
 
 const useCoachmark = (id: CoachmarkId) => {
   const [dismissed, setDismissed] = useAppState("dismissedCoachmarks")
+  const [isClosed, setIsClosed] = useState(false)
 
-  const dismiss = useCallback(
-    () => setDismissed((prev) => (prev?.includes(id) ? prev : [...(prev ?? []), id])),
-    [id, setDismissed]
-  )
+  const dismiss = useCallback(() => {
+    setIsClosed(true)
+    setDismissed((prev) => (prev?.includes(id) ? prev : [...(prev ?? []), id]))
+  }, [id, setDismissed])
 
-  return { isOpen: !dismissed?.includes(id), dismiss }
+  return { isOpen: !isClosed && !dismissed?.includes(id), dismiss }
 }
 
 type CoachmarkProps = {
@@ -107,7 +109,7 @@ export const Coachmark = ({
           <FloatingOverlay lockScroll className="z-50">
             {isPositioned && anchorRect && <Spotlight rect={anchorRect} />}
           </FloatingOverlay>
-          <FloatingFocusManager context={context} initialFocus={refs.floating} returnFocus={false}>
+          <FloatingFocusManager context={context} initialFocus={refs.floating}>
             <div
               ref={refs.setFloating}
               style={floatingStyles}

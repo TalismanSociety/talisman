@@ -5,13 +5,16 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 
 const storage = vi.hoisted(() => ({ dismissedCoachmarks: undefined as CoachmarkId[] | undefined }))
 const track = vi.hoisted(() => vi.fn())
+const STORAGE_WRITE_MS = 20
+const settle = () => new Promise((resolve) => setTimeout(resolve, STORAGE_WRITE_MS * 2))
 
 vi.mock("@ui/api/track", () => ({ track, trackFlowEvent: vi.fn() }))
 vi.mock("@ui/state/app", () => ({
   useAppState: () => {
     const [value, setValue] = useState(storage.dismissedCoachmarks)
-    const set = (next: SetStateAction<CoachmarkId[] | undefined>) => {
+    const set = async (next: SetStateAction<CoachmarkId[] | undefined>) => {
       storage.dismissedCoachmarks = typeof next === "function" ? next(value) : next
+      await new Promise((resolve) => setTimeout(resolve, STORAGE_WRITE_MS))
       setValue(storage.dismissedCoachmarks)
     }
     return [value, set] as const
@@ -48,7 +51,10 @@ describe("Coachmark", () => {
 
     expect(coachmark()).not.toBeNull()
 
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Got it" })))
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Got it" }))
+      await settle()
+    })
 
     expect(coachmark()).toBeNull()
     expect(storage.dismissedCoachmarks).toEqual(["popup_fullscreen_moved"])
@@ -61,12 +67,16 @@ describe("Coachmark", () => {
     expect(coachmark()).toBeNull()
   })
 
-  test("escape dismisses it for good", async () => {
+  test("escape dismisses it for good and hands focus back to its anchor", async () => {
     render(<Page />)
 
-    await act(async () => fireEvent.keyDown(document.body, { key: "Escape" }))
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: "Escape" })
+      await settle()
+    })
 
     expect(coachmark()).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Fullscreen" }))
     expect(storage.dismissedCoachmarks).toEqual(["popup_fullscreen_moved"])
     expect(modalClosed()).toEqual([
       { modal_id: "coachmark_popup_fullscreen_moved", dismiss: "escape" },
