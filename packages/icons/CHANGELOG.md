@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 1.1.1
+
+### Patch Changes
+
+- 226d793: `ExpandIcon` points to all four corners
+
 ## 1.1.0
 
 ### Minor Changes
