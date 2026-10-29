@@ -1,3 +1,6 @@
+import { log } from "@common/log"
+import { getErrorMessage } from "@talismn/util"
+
 const CALLER_WAIT_MS = 10_000
 
 const waitForToken = (getToken: () => Promise<string>) =>
@@ -23,7 +26,8 @@ export const createGandalfAuthorization =
   (getToken: () => Promise<string>) => async (): Promise<string | undefined> => {
     try {
       return `Bearer ${await waitForToken(getToken)}`
-    } catch {
+    } catch (err) {
+      log.debug("Gandalf: no access token for this request", getErrorMessage(err))
       return undefined
     }
   }
