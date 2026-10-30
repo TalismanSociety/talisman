@@ -198,10 +198,12 @@ describe("planCallToAction", () => {
     ).toEqual({ type: "unlock" })
   })
 
-  it("asks to sign the hardware leg that waits", () => {
+  it("asks to sign the leg that waits for a signature", () => {
     expect(
-      planCallToAction(withSecondLeg("paused", { at: "awaiting-user", why: "hardware", since: T0 }))
-    ).toEqual({ type: "sign-hardware", leg: 1 })
+      planCallToAction(
+        withSecondLeg("paused", { at: "awaiting-user", why: "signature", since: T0 })
+      )
+    ).toEqual({ type: "sign", leg: 1 })
   })
 
   it("offers to finish from the intermediate when the stopping leg sent nothing", () => {

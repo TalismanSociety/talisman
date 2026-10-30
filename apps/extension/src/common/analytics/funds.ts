@@ -106,7 +106,7 @@ export const SWAP_PLAN_STOP_REASONS = [
   "cancelled",
 ] as const
 export type SwapPlanStopReason = (typeof SWAP_PLAN_STOP_REASONS)[number]
-export const SWAP_PLAN_PAUSES = ["unlock", "hardware"] as const
+export const SWAP_PLAN_PAUSES = ["unlock", "signature"] as const
 
 export const FEE_PRIORITIES = ["low", "medium", "high", "recommended", "custom"] as const
 export const GAS_TYPES = ["eip1559", "legacy"] as const

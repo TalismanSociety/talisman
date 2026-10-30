@@ -316,7 +316,7 @@ export const properties = {
   ),
   paused_for: p.enum(
     SWAP_PLAN_PAUSES,
-    "What the swap plan waited on the user for. unlock: the wallet was locked when a later leg was due. hardware: a later leg is signed on a Ledger. Absent when it never waited."
+    "What the swap plan waited on the user for. unlock: the wallet was locked when a later leg was due. signature: a later leg must be signed on screen, by a Ledger or by an account the background does not sign for. Absent when it never waited."
   ),
   stage: p.slug("The step the user left the swap on: mobile's name for last_step."),
   prefill_from_token: p.bool("The swap opened with the token to swap from already picked."),

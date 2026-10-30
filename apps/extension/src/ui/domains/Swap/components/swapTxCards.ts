@@ -336,7 +336,7 @@ export const swapPlanFooter = (
 export const planSigningLeg = (plan: SwapPlan): number | null => {
   if (plan.phase !== "paused") return null
   const action = planCallToAction(plan)
-  return action.type === "sign-hardware" ? action.leg : null
+  return action.type === "sign" ? action.leg : null
 }
 
 /** the user can speed up or cancel a sent EVM leg until it is mined, through its latest replacement */

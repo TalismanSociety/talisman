@@ -190,7 +190,7 @@ const planWaitingOn = (leg: PlanLeg, landed = LEG0_OUTPUT): SwapPlan => ({
         landedAt: T0,
       },
     },
-    { ...leg, state: { at: "awaiting-user", why: "hardware", since: T0 } },
+    { ...leg, state: { at: "awaiting-user", why: "signature", since: T0 } },
   ],
 })
 

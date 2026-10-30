@@ -99,7 +99,7 @@ const recoveryOffer = (plan: SwapPlan): RecoveryOffer | null => {
 
 export type PlanCallToAction =
   | { type: "unlock" }
-  | { type: "sign-hardware"; leg: number }
+  | { type: "sign"; leg: number }
   | { type: "finish"; offer: RecoveryOffer }
   | { type: "check-activity" }
 
@@ -107,9 +107,7 @@ export const planCallToAction = (plan: SwapPlan): PlanCallToAction => {
   const waiting = plan.legs.findIndex((leg) => leg.state.at === "awaiting-user")
   const waitingState = plan.legs[waiting]?.state
   if (waitingState?.at === "awaiting-user")
-    return waitingState.why === "unlock"
-      ? { type: "unlock" }
-      : { type: "sign-hardware", leg: waiting }
+    return waitingState.why === "unlock" ? { type: "unlock" } : { type: "sign", leg: waiting }
 
   const offer = recoveryOffer(plan)
   if (offer) return { type: "finish", offer }

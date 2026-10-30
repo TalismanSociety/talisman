@@ -110,7 +110,7 @@ const PlanFooter: FC<{
           {t("Unlock")}
         </Button>
       )
-    case "sign-hardware":
+    case "sign":
       return <PlanLegSignButton button={signButton} containerId={containerId} />
     case "finish":
       return (

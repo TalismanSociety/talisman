@@ -56,14 +56,14 @@ export const derivePhase = (legs: Legs): PlanPhase => {
 const isSignWindowOpen = (plan: SwapPlan, now: number) =>
   plan.signUntil === null || now <= plan.signUntil
 
-/** the background signs a building leg only inside the sign window, the user signs a hardware one */
+/** the background signs a building leg only inside the sign window, the user signs one that waits for a signature */
 export const isAdmissible = (plan: SwapPlan, index: number, now: number): boolean => {
   const leg = plan.legs[index]
   if (!leg || isTerminalPhase(plan.phase)) return false
   if (index === 0) return leg.state.at === "queued"
   return (
     (leg.state.at === "building" && isSignWindowOpen(plan, now)) ||
-    (leg.state.at === "awaiting-user" && leg.state.why === "hardware")
+    (leg.state.at === "awaiting-user" && leg.state.why === "signature")
   )
 }
 
@@ -126,9 +126,9 @@ const makeDue = (plan: SwapPlan, legs: Legs, index: number, now: number): Step =
     return {
       legs: replaceLeg(legs, index, {
         ...leg,
-        state: { at: "awaiting-user", why: "hardware", since: now },
+        state: { at: "awaiting-user", why: "signature", since: now },
       }),
-      patch: { pausedFor: "hardware" },
+      patch: { pausedFor: "signature" },
       effects: [NOTIFY_NEEDS_YOU],
     }
 

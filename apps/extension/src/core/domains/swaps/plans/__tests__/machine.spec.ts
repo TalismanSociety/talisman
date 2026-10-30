@@ -72,9 +72,9 @@ const BUILDING: SwapPlan = {
   ...withLeg1(RUNNING, { ...LEG1, state: { at: "building", attempt: 1, nextAttemptAt: T1 } }, T1),
 }
 
-const HARDWARE: SwapPlan = {
+const AWAITING_SIGNATURE: SwapPlan = {
   ...BUILDING,
-  legs: [LEG0_LANDED, { ...LEG1, state: { at: "awaiting-user", why: "hardware", since: T1 } }],
+  legs: [LEG0_LANDED, { ...LEG1, state: { at: "awaiting-user", why: "signature", since: T1 } }],
 }
 
 const LEG1_SENT: PlanLeg = {
@@ -259,13 +259,13 @@ describe("a sent leg", () => {
         ...plan,
         phase: "paused",
         updatedAt: T1,
-        pausedFor: "hardware",
+        pausedFor: "signature",
         legs: [
           LEG0_LANDED,
           {
             ...LEG1,
             signerType: "ledger-ethereum",
-            state: { at: "awaiting-user", why: "hardware", since: T1 },
+            state: { at: "awaiting-user", why: "signature", since: T1 },
           },
         ],
       },
@@ -285,7 +285,7 @@ describe("a sent leg", () => {
       },
       T1
     )
-    expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "hardware", since: T1 })
+    expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "signature", since: T1 })
     expect(result.plan.phase).toBe("paused")
   })
 
@@ -302,7 +302,7 @@ describe("a sent leg", () => {
       },
       now
     )
-    expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "hardware", since: now })
+    expect(result.plan.legs[1].state).toEqual({ at: "awaiting-user", why: "signature", since: now })
     expect(result.plan.phase).toBe("paused")
   })
 
@@ -621,7 +621,7 @@ describe("a paused plan", () => {
     phase: "paused",
     legs: [LEG0_LANDED, { ...LEG1, state: { at: "awaiting-user", why: "unlock", since: T1 } }],
   }
-  const PAUSED_HARDWARE: SwapPlan = {
+  const PAUSED_FOR_SIGNATURE: SwapPlan = {
     ...BUILDING,
     phase: "paused",
     legs: [
@@ -629,7 +629,7 @@ describe("a paused plan", () => {
       {
         ...LEG1,
         signerType: "ledger-ethereum",
-        state: { at: "awaiting-user", why: "hardware", since: T1 },
+        state: { at: "awaiting-user", why: "signature", since: T1 },
       },
     ],
   }
@@ -656,18 +656,18 @@ describe("a paused plan", () => {
   })
 
   it("ignores an unlock when nothing waits for it", () => {
-    const result = transition(PAUSED_HARDWARE, { type: "unlocked" }, T1)
-    expect(result.plan).toBe(PAUSED_HARDWARE)
+    const result = transition(PAUSED_FOR_SIGNATURE, { type: "unlocked" }, T1)
+    expect(result.plan).toBe(PAUSED_FOR_SIGNATURE)
   })
 
-  it("is sent once the hardware leg is admitted", () => {
-    const result = transition(PAUSED_HARDWARE, ADMIT_LEG1, T1)
+  it("is sent once the leg that waits for a signature is admitted", () => {
+    const result = transition(PAUSED_FOR_SIGNATURE, ADMIT_LEG1, T1)
     expect(result.plan.phase).toBe("running")
     expect(result.plan.legs[1]).toEqual({ ...LEG1_SENT, signerType: "ledger-ethereum" })
   })
 
   it("stops when cancelled while waiting", () => {
-    const result = transition(PAUSED_HARDWARE, { type: "cancelled" }, T1)
+    const result = transition(PAUSED_FOR_SIGNATURE, { type: "cancelled" }, T1)
     expect(result.plan.phase).toBe("stopped")
     expect(result.plan.legs[1].state).toEqual({ at: "failed", failure: "cancelled", failedAt: T1 })
   })
@@ -743,13 +743,13 @@ describe("isAdmissible", () => {
     expect(isAdmissible(RUNNING, 0, T0)).toBe(false)
   })
 
-  it("admits a later leg only while it is building or waits for hardware", () => {
+  it("admits a later leg only while it is building or waits for a signature", () => {
     expect(isAdmissible(RUNNING, 1, T1)).toBe(false)
     expect(isAdmissible(BUILDING, 1, T1)).toBe(true)
     expect(isAdmissible(transition(BUILDING, { type: "locked", leg: 1 }, T1).plan, 1, T1)).toBe(
       false
     )
-    expect(isAdmissible(HARDWARE, 1, T1)).toBe(true)
+    expect(isAdmissible(AWAITING_SIGNATURE, 1, T1)).toBe(true)
     expect(isAdmissible(LEG1_RUNNING, 1, T1)).toBe(false)
   })
 
@@ -759,8 +759,8 @@ describe("isAdmissible", () => {
     expect(isAdmissible(BUILDING, 1, signUntil + 1)).toBe(false)
   })
 
-  it("lets the user sign a hardware leg after the sign window", () => {
-    expect(isAdmissible(HARDWARE, 1, T0 + SIGN_WINDOW_MS + 1)).toBe(true)
+  it("lets the user sign a leg that waits for a signature after the sign window", () => {
+    expect(isAdmissible(AWAITING_SIGNATURE, 1, T0 + SIGN_WINDOW_MS + 1)).toBe(true)
   })
 })
 

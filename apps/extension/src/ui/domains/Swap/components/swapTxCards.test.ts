@@ -69,7 +69,7 @@ const SENT_1: LegState = {
   deadlineAt: T0 + 1,
   evidence: { platform: "ethereum" },
 }
-const AWAITING_HARDWARE: LegState = { at: "awaiting-user", why: "hardware", since: T0 }
+const AWAITING_SIGNATURE: LegState = { at: "awaiting-user", why: "signature", since: T0 }
 
 const plan = (phase: SwapPlan["phase"], first: LegState, second: LegState): SwapPlan => ({
   id: PLAN_ID,
@@ -430,7 +430,7 @@ describe("swapPlanTxFacts", () => {
   })
 
   describe("a later leg's approval", () => {
-    const waiting = plan("paused", LANDED_0, AWAITING_HARDWARE)
+    const waiting = plan("paused", LANDED_0, AWAITING_SIGNATURE)
     const signing = (fields: Partial<PlanLegSigning> = {}): PlanLegSigning => ({
       leg: 1,
       isApprovalPending: false,
@@ -512,7 +512,7 @@ describe("swapPlanTxFacts", () => {
   })
 
   it("fails the leg whose signature the user rejected", () => {
-    const cards = planCards(plan("paused", LANDED_0, AWAITING_HARDWARE), {
+    const cards = planCards(plan("paused", LANDED_0, AWAITING_SIGNATURE), {
       signing: { leg: 1, signs: "leg", isApprovalPending: false, failure: "Rejected" },
     })
     expect(cards[1]).toMatchObject({ status: "failed", error: "Rejected" })
@@ -552,8 +552,8 @@ describe("swapPlanFooter", () => {
   })
 
   it("asks to sign a leg the user signs on screen", () => {
-    expect(footer(plan("paused", LANDED_0, AWAITING_HARDWARE))).toEqual({
-      type: "sign-hardware",
+    expect(footer(plan("paused", LANDED_0, AWAITING_SIGNATURE))).toEqual({
+      type: "sign",
       leg: 1,
     })
   })
@@ -561,7 +561,7 @@ describe("swapPlanFooter", () => {
 
 describe("planSigningLeg", () => {
   it("signs on screen the leg a paused plan waits on", () => {
-    expect(planSigningLeg(plan("paused", LANDED_0, AWAITING_HARDWARE))).toBe(1)
+    expect(planSigningLeg(plan("paused", LANDED_0, AWAITING_SIGNATURE))).toBe(1)
   })
 
   it("signs nothing while the plan runs or waits on the unlock", () => {

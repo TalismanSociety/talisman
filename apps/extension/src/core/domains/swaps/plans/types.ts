@@ -30,7 +30,7 @@ export type LegFailure =
   | "expired"
   | "cancelled"
 
-export type AwaitingUserReason = "unlock" | "hardware"
+export type AwaitingUserReason = "unlock" | "signature"
 
 export type LegState =
   | { at: "queued" }

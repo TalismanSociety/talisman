@@ -75,7 +75,7 @@ const buildApprovalTransaction = async (
   }
 }
 
-const buildHardwareLegTransaction = async (
+const buildOnScreenLegTransaction = async (
   plan: SwapPlan,
   index: number
 ): Promise<PlanLegSignRequest> => {
@@ -125,10 +125,10 @@ const buildHardwareLegTransaction = async (
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
  */
-const useHardwareLegTransaction = (plan: SwapPlan | null | undefined, index: number | null) =>
+const useOnScreenLegTransaction = (plan: SwapPlan | null | undefined, index: number | null) =>
   useQuery({
-    queryKey: ["swap-plan-hardware-leg", plan?.id, index, plan?.updatedAt],
-    queryFn: plan && index !== null ? () => buildHardwareLegTransaction(plan, index) : skipToken,
+    queryKey: ["swap-plan-on-screen-leg", plan?.id, index, plan?.updatedAt],
+    queryFn: plan && index !== null ? () => buildOnScreenLegTransaction(plan, index) : skipToken,
     retry: false,
   })
 
@@ -165,7 +165,7 @@ const useFreshPricingPer = (
 /** the leg a paused plan waits on the user to sign, priced on screen and signed on the nonce it was built with */
 export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: number | null) => {
   const { t } = useTranslation()
-  const request = useHardwareLegTransaction(plan, index)
+  const request = useOnScreenLegTransaction(plan, index)
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
