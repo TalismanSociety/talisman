@@ -1,6 +1,7 @@
 import { db } from "@core/db"
 import type { BuiltLeg } from "@core/domains/swaps/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
+import { sessionStorage } from "@core/util/sessionStorageCompat"
 import { Err, Ok } from "ts-results"
 import { hexToBytes, keccak256, parseTransaction } from "viem"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -277,6 +278,28 @@ describe("signAndBroadcast", () => {
     expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "stale" })
     expect(mockWithSecretKey).not.toHaveBeenCalled()
     expect(mockReleaseReservedNonce).toHaveBeenCalledWith(EVM_ADDRESS, "964", 12)
+  })
+
+  it("never reaches the key for a plan this browser session did not propose", async () => {
+    await planWithLeg1Building(12)
+    await sessionStorage.clear()
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockWithSecretKey).not.toHaveBeenCalled()
+    expect(mockSendRawTransaction).not.toHaveBeenCalled()
+  })
+
+  it("never reaches the key for a plan changed in the database", async () => {
+    await planWithLeg1Building(12)
+    const plan = (await getPlan(PLAN_ID)) as SwapPlan
+    const leg1 = plan.legs[1]
+    await putPlan({
+      ...plan,
+      legs: [plan.legs[0], { ...leg1, quote: { ...leg1.quote, recipient: EVM_ADDRESS } }],
+    })
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockWithSecretKey).not.toHaveBeenCalled()
   })
 
   it("is stale when the leg stopped waiting for a transaction", async () => {

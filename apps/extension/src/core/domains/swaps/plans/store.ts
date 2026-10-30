@@ -12,6 +12,7 @@ import {
   sharesIntermediate,
   transition,
 } from "./machine"
+import { sealPlan } from "./seal"
 import type {
   PlanEffect,
   PlanEvent,
@@ -140,7 +141,10 @@ export const proposePlan = (
       arrivals.set(plan.id, arrival)
       return plan
     })
-  )
+  ).then(async (plan) => {
+    await sealPlan(plan)
+    return plan
+  })
 
 /** Expires the proposed plans nobody signed, and prunes the terminal plans past their retention */
 export const sweepPlans = async (now: number) => {

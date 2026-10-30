@@ -170,6 +170,7 @@ type ExecutorOptions = {
   unlocked?: boolean | (() => Promise<boolean>)
   buildLeg?: BackgroundSwapModule["buildLeg"]
   delivery?: () => Promise<void>
+  sign?: ExecutorDeps["sign"]
 }
 
 const makeExecutor = ({
@@ -177,6 +178,7 @@ const makeExecutor = ({
   unlocked = true,
   buildLeg,
   delivery = async () => {},
+  sign: signOverride,
 }: ExecutorOptions = {}) => {
   let seen = 0
   const notified: string[] = []
@@ -212,7 +214,7 @@ const makeExecutor = ({
     } as unknown as SwapEnv,
     getModule: (protocol) => modules[protocol],
     getRuntime: (protocol) => modules[protocol],
-    sign,
+    sign: signOverride ?? sign,
     isUnlocked: typeof unlocked === "function" ? unlocked : async () => unlocked,
     notify: async (kind) => {
       notified.push(kind)
@@ -652,6 +654,19 @@ describe("swap plan executor", () => {
     const plan = await getPlan(PLAN_ID)
     expect(plan?.phase).toBe("paused")
     expect(plan?.pausedFor).toBe("signature")
+    expect(plan?.legs[1].state).toEqual({ at: "awaiting-user", why: "signature", since: clock })
+    expect(await leg1Rows()).toEqual([])
+    expect(notified).toEqual(["needs-you"])
+  })
+
+  it("hands the leg to the user when this browser session did not propose the plan", async () => {
+    await seedRunningPlan()
+    chain.leg0 = LEG0_LANDED
+    const { executor, notified } = makeExecutor({ sign: async () => ({ type: "unsealed" }) })
+
+    await executor.drive(PLAN_ID)
+
+    const plan = await getPlan(PLAN_ID)
     expect(plan?.legs[1].state).toEqual({ at: "awaiting-user", why: "signature", since: clock })
     expect(await leg1Rows()).toEqual([])
     expect(notified).toEqual(["needs-you"])

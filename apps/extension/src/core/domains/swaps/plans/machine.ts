@@ -55,7 +55,7 @@ export const derivePhase = (legs: Legs): PlanPhase => {
 }
 
 const isSignWindowOpen = (plan: SwapPlan, now: number) =>
-  plan.signUntil === null || now <= plan.signUntil
+  plan.signUntil !== null && now <= plan.signUntil
 
 /** the background signs a building leg only inside the sign window, the user signs one that waits for a signature */
 export const isAdmissible = (plan: SwapPlan, index: number, now: number): boolean => {

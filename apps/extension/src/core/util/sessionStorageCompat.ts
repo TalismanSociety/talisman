@@ -5,6 +5,7 @@ interface SessionStorageData {
   phishingExceptions?: { hosts: string[]; urls: string[] }
   analyticsLastLockReason?: string
   analyticsFlowLinks?: FlowLinkRecord[]
+  [swapPlanSeal: `swapPlanSeal:${string}`]: string | undefined
 }
 
 abstract class TalismanSessionStorage {

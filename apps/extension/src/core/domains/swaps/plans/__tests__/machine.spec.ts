@@ -757,6 +757,7 @@ describe("isAdmissible", () => {
     const signUntil = T0 + SIGN_WINDOW_MS
     expect(isAdmissible(BUILDING, 1, signUntil)).toBe(true)
     expect(isAdmissible(BUILDING, 1, signUntil + 1)).toBe(false)
+    expect(isAdmissible({ ...BUILDING, signUntil: null }, 1, T1)).toBe(false)
   })
 
   it("lets the user sign a leg that waits for a signature after the sign window", () => {

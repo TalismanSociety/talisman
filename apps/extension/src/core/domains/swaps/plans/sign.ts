@@ -21,6 +21,7 @@ import type { BuiltLeg } from "../types"
 import { admitEvmLeg } from "./admit"
 import { broadcastRaw } from "./broadcast"
 import { isAdmissible } from "./machine"
+import { isPlanSealed } from "./seal"
 import { getPlan } from "./store"
 import type { SwapPlanRef } from "./types"
 
@@ -30,6 +31,8 @@ export type SignOutcome =
   | { type: "out-of-bounds"; violation: string }
   /** the leg stopped waiting for a transaction while this one was being built */
   | { type: "stale" }
+  /** this browser session did not propose the plan as it stands: the user signs the leg */
+  | { type: "unsealed" }
   | { type: "failed"; error: unknown }
 
 const isUnlocked = async () =>
@@ -76,8 +79,10 @@ const getDuePlan = async ({ id, leg }: SwapPlanRef) => {
 export const signAndBroadcast = async (ref: SwapPlanRef, built: BuiltLeg): Promise<SignOutcome> => {
   if (!(await isUnlocked())) return { type: "locked" }
 
-  const leg = (await getDuePlan(ref))?.legs[ref.leg]
-  if (!leg) return { type: "stale" }
+  const plan = await getDuePlan(ref)
+  const leg = plan?.legs[ref.leg]
+  if (!plan || !leg) return { type: "stale" }
+  if (!(await isPlanSealed(plan))) return { type: "unsealed" }
   if (built.transaction.platform !== "ethereum")
     return { type: "failed", error: new Error("Only EVM legs are signed in the background") }
   const signer = leg.quote.signer

@@ -250,6 +250,8 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
         return
       case "locked":
         return pauseForUnlock(id, index)
+      case "unsealed":
+        return applyAndFollow(id, { type: "paused", leg: index, why: "signature" })
       case "out-of-bounds":
         log.warn("A swap plan leg broke its bound", {
           id,
