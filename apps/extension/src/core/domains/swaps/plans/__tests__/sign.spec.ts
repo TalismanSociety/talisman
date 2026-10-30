@@ -305,6 +305,14 @@ describe("signAndBroadcast", () => {
     expect(mockWithSecretKey).not.toHaveBeenCalled()
   })
 
+  it("never reaches the key for a plan changed in the database to hold a bigint", async () => {
+    await planWithLeg1Building(12)
+    await changeLeg1((leg) => ({ ...leg, quote: { ...leg.quote, data: { input: "upTo", n: 1n } } }))
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockWithSecretKey).not.toHaveBeenCalled()
+  })
+
   it("never reaches the key for a plan changed in the database while it took a nonce", async () => {
     await planWithLeg1Building()
     mockGetNextNonce.mockImplementation(async () => {

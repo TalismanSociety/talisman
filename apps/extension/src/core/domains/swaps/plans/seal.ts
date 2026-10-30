@@ -38,5 +38,12 @@ export type PlanSeal = string | undefined
 /** read up front, so the plan can be checked against it inside a Dexie transaction */
 export const readPlanSeal = (id: SwapPlanId): Promise<PlanSeal> => sessionStorage.get(sealKey(id))
 
-export const isSealedBy = (plan: Sealed, seal: PlanSeal) =>
-  seal !== undefined && digest(plan) === seal
+/** a plan whose content JSON cannot hold, such as a bigint, is not the one this session sealed */
+export const isSealedBy = (plan: Sealed, seal: PlanSeal) => {
+  if (seal === undefined) return false
+  try {
+    return digest(plan) === seal
+  } catch {
+    return false
+  }
+}
