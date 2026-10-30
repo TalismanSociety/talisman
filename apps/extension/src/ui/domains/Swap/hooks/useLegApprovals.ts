@@ -1,11 +1,11 @@
 import type { ApprovalInfo, QuoteLeg } from "@core/domains/swaps/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { skipToken, type UseQueryResult, useQueries } from "@tanstack/react-query"
-import { erc20Abi, type Hex, type PublicClient } from "viem"
 
 import type { SwapModule } from "../swap-modules/common.swap-module"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
+import { readAllowanceStep } from "./erc20Approval"
 
 export const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => {
   if (!leg.signer) return null
@@ -21,14 +21,6 @@ export const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => 
   )
 }
 
-export const readAllowance = (client: PublicClient, approval: NonNullable<ApprovalInfo>) =>
-  client.readContract({
-    address: approval.tokenAddress as Hex,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [approval.fromAddress as Hex, approval.contractAddress as Hex],
-  })
-
 const approvalOf = (leg: QuoteLeg) => {
   const module = swapModules.find((candidate) => candidate.protocol === leg.protocol)
   return module ? legApproval(module, leg) : null
@@ -36,7 +28,7 @@ const approvalOf = (leg: QuoteLeg) => {
 
 const isAllowanceShort = async (leg: QuoteLeg, approval: NonNullable<ApprovalInfo>) => {
   const client = await getEvmPublicClient(networkIdFromTokenId(leg.fromTokenId))
-  return (await readAllowance(client, approval)) < approval.amount
+  return (await readAllowanceStep(client, approval)) !== "none"
 }
 
 export type LegApprovalCheck = { leg: QuoteLeg; enabled: boolean }

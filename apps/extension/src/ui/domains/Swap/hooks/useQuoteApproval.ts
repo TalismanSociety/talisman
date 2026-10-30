@@ -1,6 +1,5 @@
 import { networkIdForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
-import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { getErrorMessage, isErrorOfName } from "@talismn/util"
 import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
@@ -15,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
+import { approveRequest } from "./erc20Approval"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()
@@ -24,7 +24,7 @@ export const useQuoteApproval = () => {
     incrementApprovalCounter,
     approvalHash,
     setApprovalHash,
-    erc20Approval: { data, loading, approveTx, needsRevoke },
+    erc20Approval: { data, loading, needsRevoke },
   } = useSwap()
   const fromToken = useToken(fromTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
@@ -33,29 +33,24 @@ export const useQuoteApproval = () => {
   const [failure, setFailure] = useState<string>()
 
   const isNeeded = !loading && data !== null
-  const amount = data ? (needsRevoke ? 0n : data.amount) : undefined
+  const approve = useMemo(() => {
+    if (!data || !fromTokenId) return undefined
+    const { amount, call, txInfo } = approveRequest(fromTokenId, data, data.step)
+    return { amount, txInfo, tx: { chain: null, from: data.fromAddress as Hex, ...call } }
+  }, [data, fromTokenId])
+  const approveTx = approve?.tx
 
-  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (!fromTokenId || !data || amount === undefined) return
-    return {
-      type: "approve-erc20",
-      tokenId: fromTokenId,
-      contractAddress: data.contractAddress,
-      amount: amount.toString(),
-    }
-  }, [amount, data, fromTokenId])
-
-  const ethTx = useEthTransaction(approveTx ?? undefined, fromToken?.networkId, false)
+  const ethTx = useEthTransaction(approveTx, fromToken?.networkId, false)
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
-    if (!fromToken?.networkId || !ethTx.transaction || !txInfo) return null
+    if (!fromToken?.networkId || !ethTx.transaction || !approve) return null
     return {
       platform: "ethereum",
       networkId: fromToken.networkId,
       payload: ethTx.transaction,
-      txInfo: withPricing(txInfo, { priority: ethTx.priority, txDetails: ethTx.txDetails }),
+      txInfo: withPricing(approve.txInfo, { priority: ethTx.priority, txDetails: ethTx.txDetails }),
     }
-  }, [ethTx.transaction, ethTx.priority, ethTx.txDetails, txInfo, fromToken?.networkId])
+  }, [ethTx.transaction, ethTx.priority, ethTx.txDetails, approve, fromToken?.networkId])
 
   const protocol = selectedModule?.protocol
   const reportFailure = useCallback(
@@ -131,7 +126,7 @@ export const useQuoteApproval = () => {
     /** a failure only matters while the allowance is still short */
     failure: isNeeded ? failure : undefined,
     /** what the approval sets the allowance to: zero when an existing one must be revoked first */
-    amount,
+    amount: approve?.amount,
     needsRevoke,
     approveTx,
     ethTx,

@@ -15,9 +15,10 @@ import { getToken$ } from "@ui/state/chaindata"
 import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
-import { encodeFunctionData, erc20Abi, type Hex, type PublicClient } from "viem"
+import type { Hex, PublicClient } from "viem"
 
-import { legApproval, readAllowance } from "../hooks/useLegApprovals"
+import { type AllowanceStep, approveRequest, readAllowanceStep } from "../hooks/erc20Approval"
+import { legApproval } from "../hooks/useLegApprovals"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
 import { SwapTxSubmitButton } from "./SwapTxSubmitButton"
@@ -34,7 +35,12 @@ type PlanLegSignRequest =
       /** the leg as built on what the previous leg landed, not as quoted */
       built: Pick<QuoteLeg, "inputAmount" | "outputAmount" | "fees">
     }
-  | { signs: "approval"; symbol: string; tx: TxSubmitButtonTransactionEth }
+  | {
+      signs: "approval"
+      step: Exclude<AllowanceStep, "none">
+      symbol: string
+      tx: TxSubmitButtonTransactionEth
+    }
 
 const APPROVAL_WAIT_MS = 2 * 60_000
 
@@ -42,37 +48,29 @@ const buildApprovalTransaction = async (
   client: PublicClient,
   leg: PlanLeg,
   approval: NonNullable<ApprovalInfo>,
+  step: Exclude<AllowanceStep, "none">,
   nonce: number
 ): Promise<PlanLegSignRequest> => {
   const networkId = networkIdFromTokenId(leg.quote.fromTokenId)
   const signer = leg.quote.signer as Hex
+  const { call, txInfo } = approveRequest(leg.quote.fromTokenId, approval, step)
   const [token, { to, data, value, gas }] = await Promise.all([
     firstValueFrom(getToken$(leg.quote.fromTokenId)),
     prepareTransactionRequestWithGasCheck(client, evmNativeTokenId(networkId), {
       chain: null,
       account: signer,
-      to: approval.tokenAddress as Hex,
-      value: 0n,
-      data: encodeFunctionData({
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [approval.contractAddress as Hex, approval.amount],
-      }),
+      ...call,
     }),
   ])
   return {
     signs: "approval",
+    step,
     symbol: token?.symbol ?? "",
     tx: {
       platform: "ethereum",
       networkId,
       payload: { from: signer, to, data, value, gas, nonce },
-      txInfo: {
-        type: "approve-erc20",
-        tokenId: leg.quote.fromTokenId,
-        contractAddress: approval.contractAddress,
-        amount: approval.amount.toString(),
-      },
+      txInfo,
     },
   }
 }
@@ -89,13 +87,13 @@ const buildHardwareLegTransaction = async (
   const signer = leg.quote.signer as Hex
   const client = await getEvmPublicClient(networkId)
   const approval = legApproval(module, fromPersistedLeg(leg.quote))
-  const [balance, nextNonce, allowance] = await Promise.all([
+  const [balance, nextNonce, allowanceStep] = await Promise.all([
     readLegBalance(client, leg.quote),
     leg.nonce ?? api.ethGetTransactionsCount(signer, networkId),
-    approval ? readAllowance(client, approval) : null,
+    approval ? readAllowanceStep(client, approval) : ("none" as const),
   ])
-  if (approval && allowance !== null && allowance < approval.amount)
-    return buildApprovalTransaction(client, leg, approval, nextNonce)
+  if (approval && allowanceStep !== "none")
+    return buildApprovalTransaction(client, leg, approval, allowanceStep, nextNonce)
 
   const input = deriveLegInput(plan, index, balance)
   const built = await module.buildLeg({
@@ -143,12 +141,15 @@ const waitForApproval = async (tx: TxSubmitButtonTransactionEth, hash: Hex) => {
   }
 }
 
+const signedStep = (request: PlanLegSignRequest) =>
+  request.signs === "approval" ? request.step : request.signs
+
 type LegNote<T> = { leg: number; value: T }
 
 const noteFor = <T,>(note: LegNote<T> | undefined, leg: number | null) =>
   note && note.leg === leg ? note.value : undefined
 
-/** an approval's gas limit or priority must not carry over to the leg it unlocks */
+/** an approval's gas limit or priority must not carry over to the approval or leg after it */
 const useFreshPricingPer = (
   signed: string | undefined,
   { setCustomSettings, setPriority }: ReturnType<typeof useEthTransaction>
@@ -166,7 +167,7 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   const { t } = useTranslation()
   const request = useHardwareLegTransaction(plan, index)
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
-  useFreshPricingPer(request.data ? `${index}:${request.data.signs}` : undefined, ethTx)
+  useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
   const [signFailure, setSignFailure] = useState<LegNote<string>>()
   const [isApprovalPending, setIsApprovalPending] = useState(false)

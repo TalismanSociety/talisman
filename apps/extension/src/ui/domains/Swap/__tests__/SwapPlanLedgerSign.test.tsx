@@ -203,11 +203,8 @@ const LIFI_PLAN = planWaitingOn({
   bound: null,
 })
 
-const approveData = encodeFunctionData({
-  abi: erc20Abi,
-  functionName: "approve",
-  args: [SPENDER, BigInt(LEG1.quote.inputAmount)],
-})
+const approveData = (amount: bigint) =>
+  encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [SPENDER, amount] })
 
 const WaitingLeg = ({ plan }: { plan: SwapPlan }) => (
   <PlanLegSignButton button={usePlanLegSigning(plan, 1).button} />
@@ -341,7 +338,13 @@ describe("usePlanLegSigning", () => {
     const tx = submitted.mock.lastCall?.[0]
     expect(tx).toMatchObject({
       networkId: "1",
-      payload: { from: EVM_ADDRESS, to: USDT, data: approveData, value: 0n, nonce: 8 },
+      payload: {
+        from: EVM_ADDRESS,
+        to: USDT,
+        data: approveData(BigInt(LEG1.quote.inputAmount)),
+        value: 0n,
+        nonce: 8,
+      },
       txInfo: {
         type: "approve-erc20",
         tokenId: USDT_ID,
@@ -350,6 +353,38 @@ describe("usePlanLegSigning", () => {
       },
     })
     expect(tx.txInfo.plan).toBeUndefined()
+    expect(buttonLabel()).toBe("Approve USDT")
+  })
+
+  it("revokes a short non-zero allowance before it approves the amount the leg needs", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(50n)
+    client.waitForTransactionReceipt.mockResolvedValue(undefined)
+    renderSign({
+      ...LIFI_PLAN,
+      legs: [
+        LIFI_PLAN.legs[0],
+        { ...LIFI_PLAN.legs[1], quote: { ...LIFI_PLAN.legs[1].quote, inputAmount: "100" } },
+      ],
+    })
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: USDT, data: approveData(0n) },
+      txInfo: { type: "approve-erc20", amount: "0" },
+    })
+
+    client.allowance.mockResolvedValue(0n)
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({
+        payload: { to: USDT, data: approveData(100n) },
+        txInfo: { type: "approve-erc20", amount: "100" },
+      })
+    )
     expect(buttonLabel()).toBe("Approve USDT")
   })
 

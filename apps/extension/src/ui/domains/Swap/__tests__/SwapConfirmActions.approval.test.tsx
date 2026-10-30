@@ -163,9 +163,15 @@ vi.mock("../SwapProvider", () => ({
     approvalHash: null,
     setApprovalHash: vi.fn(),
     erc20Approval: {
-      data: { chainId: 8453, contractAddress: USDC, amount: 1_000_000n },
+      data: {
+        chainId: 8453,
+        tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        contractAddress: "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+        fromAddress: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
+        amount: 1_000_000n,
+        step: "approve",
+      },
       loading: false,
-      approveTx: { to: USDC, data: "0x" },
       needsRevoke: false,
     },
   }),

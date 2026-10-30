@@ -3,24 +3,15 @@ import { useQuery } from "@tanstack/react-query"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
-import { encodeFunctionData, erc20Abi } from "viem"
 import type { SwapModuleEntry } from "../swaps.api"
+import { readAllowanceStep } from "./erc20Approval"
 
 // an RPC node behind the approval block still reports the previous allowance
 const ALLOWANCE_RECHECK_MS = 3_000
 
 /**
- * Manages ERC20 approval state for the selected swap module.
- * Returns approval data (if approval is needed), loading state, and the prepared approval tx.
- *
- * Some ERC20 tokens (notably USDT on Ethereum mainnet) implement a non-standard `approve()`
- * that reverts when changing a non-zero allowance to a different non-zero value — a safety
- * measure against front-running attacks.
- *
- * When we detect a non-zero but insufficient existing allowance (`needsRevoke`), we first
- * build an `approve(spender, 0)` transaction. After that revoke tx confirms and the
- * `approvalCounter` increments, the allowance re-query finds 0 and we fall through to the
- * normal `approve(spender, amount)` flow automatically.
+ * The allowance the selected module's spender still needs for the first leg, with the step that grants it.
+ * A revoke is read again once it confirms and the `approvalCounter` increments, and the real approval follows.
  */
 export const useSwapErc20Approval = (params: {
   selectedModule: SwapModuleEntry | undefined
@@ -92,65 +83,22 @@ export const useSwapErc20Approval = (params: {
       const client = getExtensionPublicClient(network)
       if (!client) return null
 
-      const allowance = await client.readContract({
-        abi: erc20Abi,
-        address: approvalInfo.tokenAddress as `0x${string}`,
-        functionName: "allowance",
-        args: [
-          approvalInfo.fromAddress as `0x${string}`,
-          approvalInfo.contractAddress as `0x${string}`,
-        ],
-      })
-
-      if (allowance >= approvalInfo.amount) return null
-
-      // Track whether there's a non-zero but insufficient allowance.
-      // Some tokens (e.g. USDT) revert on approve() when current allowance is non-zero,
-      // requiring a reset to zero first. We surface this to the UI.
-      return { ...approvalInfo, existingAllowance: allowance }
+      const step = await readAllowanceStep(client, approvalInfo)
+      return step === "none" ? null : { ...approvalInfo, step }
     },
     enabled: !!approvalInfo,
     refetchInterval: (query) =>
       params.approvalCounter > 0 && query.state.data ? ALLOWANCE_RECHECK_MS : false,
   })
 
-  // When there's a non-zero but insufficient allowance, some tokens (e.g. USDT) require
-  // resetting to zero before setting a new value. We handle this by first building a revoke
-  // tx (approve to 0). After it confirms, the allowance query re-runs, finds 0, and the
-  // normal approve flow kicks in automatically.
-  // Note: ideally we would check that a normal approve() would revert before forcing the user to go through a revoke first
-  const needsRevoke = useMemo(
-    () => (allowanceQuery.data?.existingAllowance ?? 0n) > 0n,
-    [allowanceQuery.data]
-  )
-
-  // Prepare approval tx
-  const approveTx = useMemo(() => {
-    const approval = allowanceQuery.data
-    if (!approval) return null
-
-    const data = encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [approval.contractAddress as `0x${string}`, needsRevoke ? 0n : approval.amount],
-    })
-
-    return {
-      chain: null,
-      to: approval.tokenAddress as `0x${string}`,
-      from: fromAddress as `0x${string}`,
-      data,
-      value: 0n,
-    }
-  }, [allowanceQuery.data, fromAddress, needsRevoke])
+  const needsRevoke = allowanceQuery.data?.step === "revoke"
 
   return useMemo(
     () => ({
       data: allowanceQuery.data ?? null,
       loading: allowanceQuery.isLoading,
-      approveTx,
       needsRevoke,
     }),
-    [allowanceQuery.data, allowanceQuery.isLoading, approveTx, needsRevoke]
+    [allowanceQuery.data, allowanceQuery.isLoading, needsRevoke]
   )
 }
