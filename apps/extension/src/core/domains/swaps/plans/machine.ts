@@ -4,6 +4,7 @@ import type { Hex } from "viem"
 import { latestCandidate, legCandidates } from "../candidates"
 import type { NonEmpty } from "../types"
 import type {
+  AwaitingUserReason,
   LegFailure,
   PlanEffect,
   PlanEvent,
@@ -119,18 +120,20 @@ const stop = (legs: Legs, index: number, failure: LegFailure, now: number, hash?
   effects: [NOTIFY_STOPPED],
 })
 
+const awaitUser = (legs: Legs, index: number, why: AwaitingUserReason, now: number): Step => ({
+  legs: replaceLeg(legs, index, {
+    ...legs[index],
+    state: { at: "awaiting-user", why, since: now },
+  }),
+  patch: { pausedFor: why },
+  effects: [NOTIFY_NEEDS_YOU],
+})
+
 /** leg `index` is next: the background builds it, or the user is asked, or the window has closed */
 const makeDue = (plan: SwapPlan, legs: Legs, index: number, now: number): Step => {
   const leg = legs[index]
   if (leg.signerType !== "keypair" || leg.bound === null)
-    return {
-      legs: replaceLeg(legs, index, {
-        ...leg,
-        state: { at: "awaiting-user", why: "signature", since: now },
-      }),
-      patch: { pausedFor: "signature" },
-      effects: [NOTIFY_NEEDS_YOU],
-    }
+    return awaitUser(legs, index, "signature", now)
 
   if (!isSignWindowOpen(plan, now)) return stop(legs, index, "expired", now)
   return {
@@ -287,18 +290,9 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
       }
     }
 
-    case "locked": {
-      const leg = legs[event.leg]
-      if (leg?.state.at !== "building") return null
-      return {
-        legs: replaceLeg(legs, event.leg, {
-          ...leg,
-          state: { at: "awaiting-user", why: "unlock", since: now },
-        }),
-        patch: { pausedFor: "unlock" },
-        effects: [NOTIFY_NEEDS_YOU],
-      }
-    }
+    case "paused":
+      if (legs[event.leg]?.state.at !== "building") return null
+      return awaitUser(legs, event.leg, event.why, now)
 
     case "unlocked": {
       const index = legs.findIndex(

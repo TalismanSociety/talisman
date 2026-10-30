@@ -122,7 +122,7 @@ export type BuiltLeg = {
   /** fees read when the leg was built, the confirm screen shows them instead of the quote's */
   fees: QuoteFee[]
   expectedOutput: bigint
-  /** the least output the user accepted for this leg, scaled to what it spends. Set only when `expectedOutput` is below it */
+  /** the least output the user accepted for this leg. Set only when `expectedOutput` is below it: the user signs it on screen, seeing the drop */
   acceptedOutput?: bigint
   txInfo: WalletTransactionInfo
 }

@@ -158,7 +158,11 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
    * so this resumes it. A second "unlocked" leaves the plan as it is.
    */
   const pauseForUnlock = async (id: SwapPlanId, index: number) => {
-    const paused = await applyPlanEvent(id, { type: "locked", leg: index }, deps.now())
+    const paused = await applyPlanEvent(
+      id,
+      { type: "paused", leg: index, why: "unlock" },
+      deps.now()
+    )
     if (await deps.isUnlocked()) return applyAndFollow(id, { type: "unlocked" })
     if (!paused) return
     for (const effect of paused.effects) await runEffect(paused.plan, effect)
@@ -235,6 +239,8 @@ export const createSwapPlanExecutor = (deps: ExecutorDeps) => {
       })
     }
     await checkpoint(`built:${index}`)
+    if (built.acceptedOutput !== undefined)
+      return applyAndFollow(id, { type: "paused", leg: index, why: "signature" })
 
     const outcome = await deps.sign({ id, leg: index }, built)
     await checkpoint(`signed:${index}`)

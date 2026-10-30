@@ -94,6 +94,10 @@ export const checkBound = (
   return null
 }
 
+/** a leg the user signs on screen shows its output, so a rate drop since the plan started is theirs to accept */
+const signedBound = (bound: LegBound, leg: PlanLeg): LegBound =>
+  leg.state.at === "awaiting-user" ? { ...bound, floor: "0" } : bound
+
 const checkUnbound = (leg: PlanLeg, signer: Hex): BoundViolation | null =>
   isAddressEqual(signer, leg.quote.signer) ? null : "signer"
 
@@ -205,7 +209,7 @@ export const admitEvmLeg = async (
   const check = (current: SwapPlan) => {
     const currentLeg = current.legs[ref.leg]
     return currentLeg.bound
-      ? checkBound(currentLeg.bound, tx, signer)
+      ? checkBound(signedBound(currentLeg.bound, currentLeg), tx, signer)
       : checkUnbound(currentLeg, signer)
   }
   const violation = check(plan)

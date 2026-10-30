@@ -135,7 +135,8 @@ export type PlanEvent =
       leg: number
       failure: "transient" | "out-of-bounds" | "provider-unavailable"
     }
-  | { type: "locked"; leg: number }
+  /** a building leg waits for the user: the wallet locked, or its rate dropped below the floor */
+  | { type: "paused"; leg: number; why: AwaitingUserReason }
   | { type: "unlocked" }
   | { type: "cancelled" }
   | { type: "expired" }

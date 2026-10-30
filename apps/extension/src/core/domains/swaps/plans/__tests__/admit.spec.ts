@@ -316,6 +316,26 @@ describe("admitEvmLeg", () => {
     expect(await db.transactionsV2.count()).toBe(0)
   })
 
+  it("admits an amount under the floor once the user signs the leg on screen, every other pin still held", async () => {
+    await planWithLeg1Building()
+    const ref = { id: PLAN_ID, leg: 1 }
+    const underFloor = { data: bridgeOutData(BigInt(BOUND.floor) - 1n) }
+    await expect(admitEvmLeg(ref, evmLegTx(await signed(underFloor)))).rejects.toThrow(
+      new PlanBoundViolation("floor")
+    )
+
+    await applyPlanEvent(PLAN_ID, { type: "paused", leg: 1, why: "signature" }, T0 + 1_500)
+
+    await expect(
+      admitEvmLeg(
+        ref,
+        evmLegTx(await signed({ ...underFloor, value: BigInt(BOUND.maxSpend) + 1n }))
+      )
+    ).rejects.toThrow(new PlanBoundViolation("spend"))
+    const { plan } = await admitEvmLeg(ref, evmLegTx(await signed(underFloor)))
+    expect(plan.legs[1].state.at).toBe("sent")
+  })
+
   it("holds the leg to its pinned nonce", async () => {
     const plan = await planWithLeg1Building()
     await putPlan({ ...plan, legs: [plan.legs[0], { ...plan.legs[1], nonce: 11 }] })

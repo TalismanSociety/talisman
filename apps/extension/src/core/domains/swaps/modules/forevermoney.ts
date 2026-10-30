@@ -592,7 +592,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
 
 /** Fresh fee, fresh checks and the destination block the delivery watcher starts from */
 const buildLeg = async (
-  { leg, input, context }: BuildLegParams,
+  { leg, input, context, slippage }: BuildLegParams,
   env: SwapEnv
 ): Promise<BuiltLeg> => {
   const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
@@ -629,9 +629,10 @@ const buildLeg = async (
   ])
 
   // the confirm screen shows the quoted output, the bridge must not deliver less. A later leg of
-  // a plan spends what landed instead, and admission holds its output to the approved floor
+  // a plan spends what landed instead: below its floor, the user signs it seeing the drop
   const expectedOutput = getOutputAmount(route, amounts.amountWei)
   if (!upTo && expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
+  const acceptedOutput = upTo ? legFloor(leg, slippage) : expectedOutput
 
   const isOutbound = route.direction === "evm-to-spoke"
   if (isOutbound)
@@ -672,6 +673,7 @@ const buildLeg = async (
         : toBridgeFee(feeTokenId, feeWei),
     ],
     expectedOutput,
+    ...(expectedOutput < acceptedOutput && { acceptedOutput }),
     txInfo: {
       type: "swap-forevermoney",
       fromTokenId: leg.fromTokenId,
@@ -685,6 +687,11 @@ const buildLeg = async (
 }
 
 // --- plan legs signed by the background ---
+
+const legFloor = (leg: QuoteLeg, slippage: number) => {
+  const floorBps = BigInt(Math.max(Math.round(slippage * Number(BPS_DENOMINATOR)), MIN_FLOOR_BPS))
+  return (leg.outputAmount * (BPS_DENOMINATOR - floorBps)) / BPS_DENOMINATOR
+}
 
 /**
  * The approved calldata: bridgeOut to the recipient, or bridgeOutWithFee with the partner tuple
@@ -717,14 +724,13 @@ const boundLeg = async (
   })
   const calls: NonEmpty<LegBoundCall> = partnerFee ? [call(null), call(partnerFee)] : [call(null)]
 
-  const floorBps = BigInt(Math.max(Math.round(slippage * Number(BPS_DENOMINATOR)), MIN_FLOOR_BPS))
   return {
     platform: "ethereum",
     chainId: Number(route.sourceNetworkId),
     signer,
     to: route.sourceGateway,
     calls,
-    floor: ((leg.outputAmount * (BPS_DENOMINATOR - floorBps)) / BPS_DENOMINATOR).toString(),
+    floor: legFloor(leg, slippage).toString(),
     maxSpend: maxSpend.toString(),
   }
 }

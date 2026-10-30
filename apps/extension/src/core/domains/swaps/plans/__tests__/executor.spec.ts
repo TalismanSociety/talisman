@@ -640,6 +640,23 @@ describe("swap plan executor", () => {
     expect(notified).toEqual(["stopped"])
   })
 
+  it("hands a leg whose rate fell under its floor to the user, unsigned", async () => {
+    await seedRunningPlan()
+    chain.leg0 = LEG0_LANDED
+    const { executor, notified } = makeExecutor({
+      buildLeg: async () => ({ ...BUILT, acceptedOutput: BUILT.expectedOutput + 1n }),
+    })
+
+    await executor.drive(PLAN_ID)
+
+    const plan = await getPlan(PLAN_ID)
+    expect(plan?.phase).toBe("paused")
+    expect(plan?.pausedFor).toBe("signature")
+    expect(plan?.legs[1].state).toEqual({ at: "awaiting-user", why: "signature", since: clock })
+    expect(await leg1Rows()).toEqual([])
+    expect(notified).toEqual(["needs-you"])
+  })
+
   it("builds an ERC20 leg on the signer's token balance, not the native one", async () => {
     await seedRunningPlan()
     chain.leg0 = LEG0_LANDED

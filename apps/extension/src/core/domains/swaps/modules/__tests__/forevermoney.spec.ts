@@ -832,7 +832,27 @@ describe("forevermoneySwapModule buildLeg upTo", () => {
       fromAmount: UPTO_OUTPUT.toString(),
       toAmount: amount.toString(),
     })
+    expect(built.acceptedOutput).toBeUndefined()
   })
+
+  it("builds a leg whose output fell under its floor, with the floor the user accepted", async () => {
+    const q = single(await quoteUpTo(ONE_TAO_WEI))
+    if (!q) throw new Error("expected a quote")
+
+    const built = await forevermoneySwapModule.buildLeg(
+      {
+        leg: q.legs[0],
+        input: (UPTO_OUTPUT * 9n) / 10n,
+        context: { platform: "ethereum" },
+        slippage: 0.005,
+      },
+      env
+    )
+
+    expect(built.expectedOutput < (UPTO_OUTPUT * 99n) / 100n).toBe(true)
+    expect(built.acceptedOutput).toBe((UPTO_OUTPUT * 99n) / 100n)
+  })
+
   it("never spends past the input when the fees rose since the fit", async () => {
     const q = single(await quoteUpTo(ONE_TAO_WEI))
     if (!q) throw new Error("expected a quote")

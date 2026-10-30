@@ -580,7 +580,7 @@ describe("a building leg", () => {
   })
 
   it("waits for the unlock when the wallet is locked", () => {
-    expect(transition(BUILDING, { type: "locked", leg: 1 }, T1)).toEqual({
+    expect(transition(BUILDING, { type: "paused", leg: 1, why: "unlock" }, T1)).toEqual({
       plan: {
         ...BUILDING,
         phase: "paused",
@@ -729,7 +729,7 @@ describe("dueEffects", () => {
   })
 
   it("has nothing to do for a paused or terminal plan", () => {
-    const paused = transition(BUILDING, { type: "locked", leg: 1 }, T1).plan
+    const paused = transition(BUILDING, { type: "paused", leg: 1, why: "unlock" }, T1).plan
     const aborted = transition(PROPOSED, { type: "cancelled" }, T0).plan
     expect(dueEffects(paused, T1)).toEqual([])
     expect(dueEffects(aborted, T1)).toEqual([])
@@ -746,9 +746,9 @@ describe("isAdmissible", () => {
   it("admits a later leg only while it is building or waits for a signature", () => {
     expect(isAdmissible(RUNNING, 1, T1)).toBe(false)
     expect(isAdmissible(BUILDING, 1, T1)).toBe(true)
-    expect(isAdmissible(transition(BUILDING, { type: "locked", leg: 1 }, T1).plan, 1, T1)).toBe(
-      false
-    )
+    expect(
+      isAdmissible(transition(BUILDING, { type: "paused", leg: 1, why: "unlock" }, T1).plan, 1, T1)
+    ).toBe(false)
     expect(isAdmissible(AWAITING_SIGNATURE, 1, T1)).toBe(true)
     expect(isAdmissible(LEG1_RUNNING, 1, T1)).toBe(false)
   })
