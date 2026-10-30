@@ -357,7 +357,6 @@ describe("nonceManager with swap plans", () => {
       protocol: "forevermoney",
       slippage: 0.005,
     },
-    intermediate: ADDRESS,
     legs,
   })
 

@@ -30,7 +30,6 @@ const plan = (id: SwapPlanId, phase: SwapPlan["phase"]): SwapPlan => ({
     protocol: "forevermoney",
     slippage: 0.005,
   },
-  intermediate: ACCOUNT,
   legs: [
     {
       quote: {

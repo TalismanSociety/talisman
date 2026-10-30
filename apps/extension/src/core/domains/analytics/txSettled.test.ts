@@ -269,7 +269,6 @@ describe("a swap plan settles its flow once, on the plan", () => {
     updatedAt: 1_000,
     signUntil: 10_000,
     summary: SUMMARY,
-    intermediate: LEG1.quote.signer,
     legs: [LANDED_LEG0, second],
   })
 
