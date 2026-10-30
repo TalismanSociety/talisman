@@ -187,10 +187,24 @@ const PlanTransactions: FC<{
         />
       ) : null
 
-    if (card.kind === "approval")
+    if (card.kind === "approval") {
+      const request = isSigned ? legSigning.button.request : undefined
+      const isRevoke = request?.signs === "approval" && request.step === "revoke"
       return (
-        <SwapApprovalDetails tokenId={leg.fromTokenId} amount={leg.inputAmount} fee={feeRows} />
+        <SwapApprovalDetails
+          tokenId={leg.fromTokenId}
+          amount={leg.inputAmount}
+          fee={feeRows}
+          note={
+            isRevoke
+              ? t(
+                  "This token requires the existing approval to be revoked before a new one can be set. You will need to approve again after revoking."
+                )
+              : undefined
+          }
+        />
       )
+    }
 
     const state = plan.legs[card.leg].state
     const pendingRow = pendingEvmLegRow(input, card.leg)
