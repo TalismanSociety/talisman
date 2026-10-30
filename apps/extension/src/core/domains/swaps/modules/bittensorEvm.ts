@@ -14,12 +14,14 @@ import type {
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
+  CheckSubstrateCallParams,
   LegObservation,
   ObserveLegParams,
   QuoteFee,
   QuoteLeg,
   QuoteParams,
   SentLeg,
+  SubstrateCallViolation,
   SupportedSwapProtocol,
   SwapModuleTransaction,
   SwapTransactionContext,
@@ -32,6 +34,7 @@ import {
   frontierSs58ToPublicKeyHex,
   isEthereumAddress,
 } from "@talismn/crypto"
+import type { DecodedCall } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type Hex, zeroHash } from "viem"
@@ -367,6 +370,29 @@ const buildLeg = async (
   }
 }
 
+// --- Admission ---
+
+type TransferCall = DecodedCall<{ dest?: { type?: string; value?: string }; value?: bigint }>
+
+const TRANSFER_CALLS = ["transfer_keep_alive", "transfer_allow_death"]
+
+/** a plain transfer of the approved amount to the next signer's mirror */
+const checkSubstrateCall = ({
+  leg,
+  next,
+  call,
+}: CheckSubstrateCallParams): SubstrateCallViolation | null => {
+  const { pallet, method, args }: TransferCall = call
+  if (pallet !== "Balances" || !TRANSFER_CALLS.includes(method)) return "call"
+  if (args.dest?.type !== "Id" || !args.dest.value || !next || !isEthereumAddress(next.signer))
+    return "dest"
+  const mirror = frontierH160ToSs58Mirror(next.signer, BITTENSOR_SS58_PREFIX)
+  if (frontierSs58ToPublicKeyHex(args.dest.value) !== frontierSs58ToPublicKeyHex(mirror))
+    return "dest"
+  if (args.value !== BigInt(leg.inputAmount)) return "value"
+  return null
+}
+
 // --- Observation ---
 
 const edHeldRaoOf = (leg: QuoteLeg) => {
@@ -523,4 +549,5 @@ export const bittensorEvmSwapModule: BackgroundSwapModule = {
   // the user signs every Bittensor EVM leg on screen
   boundLeg: async () => null,
   observeLeg,
+  checkSubstrateCall,
 }

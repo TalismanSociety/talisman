@@ -3,7 +3,7 @@ import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import type { TokenId } from "@talismn/chaindata-provider"
-import type { ScaleApi } from "@talismn/sapi"
+import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
 import type { Hex, TransactionRequest } from "viem"
@@ -278,11 +278,25 @@ export type BackgroundSwapModule = {
   boundLeg: (params: BoundLegParams, env: SwapEnv) => Promise<LegBound | null>
   /** what the chain says about a sent leg, from chain evidence only */
   observeLeg: (params: ObserveLegParams, env: SwapEnv) => Promise<LegObservation>
+  /** the decoded call of a signed substrate leg against the plan. Without it, none of the module's substrate legs is admitted */
+  checkSubstrateCall?: (params: CheckSubstrateCallParams) => SubstrateCallViolation | null
 
   entryHops?: EntryHop[]
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
 
+export type SubstrateCallViolation = "call" | "dest" | "value"
+
+export type CheckSubstrateCallParams = {
+  leg: PersistedQuoteLeg
+  /** the leg the funds go to next, undefined on the last leg */
+  next: PersistedQuoteLeg | undefined
+  call: DecodedCall
+}
+
 /** What the plan engine needs from a module whose legs it admits and observes, whether or not it can build them */
-export type PlanLegRuntime = Pick<BackgroundSwapModule, "legDeadlineMs" | "boundLeg" | "observeLeg">
+export type PlanLegRuntime = Pick<
+  BackgroundSwapModule,
+  "legDeadlineMs" | "boundLeg" | "observeLeg" | "checkSubstrateCall"
+>

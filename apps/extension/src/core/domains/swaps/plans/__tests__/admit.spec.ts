@@ -572,48 +572,16 @@ const TRANSFER_CALL = {
 }
 
 describe("checkSubstrateLeg", () => {
-  it("accepts a transfer of the approved amount to the next signer's mirror", () => {
-    expect(checkSubstrateLeg(LEG0, LEG1, "bittensor", PAYLOAD, TRANSFER_CALL)).toBe(null)
-    expect(
-      checkSubstrateLeg(LEG0, LEG1, "bittensor", PAYLOAD, {
-        ...TRANSFER_CALL,
-        method: "transfer_allow_death",
-      })
-    ).toBe(null)
+  it("accepts the leg's signer and nonce on its network", () => {
+    expect(checkSubstrateLeg(LEG0, "bittensor", PAYLOAD)).toBe(null)
   })
 
   it.each([
-    ["another network", { networkId: "bittensor-testnet" }, "network"],
-    ["another signer", { payload: { ...PAYLOAD, address: MIRROR } }, "signer"],
-    ["another nonce", { payload: { ...PAYLOAD, nonce: toPjsHex(8, 4) } }, "nonce"],
-    ["another pallet", { call: { ...TRANSFER_CALL, pallet: "System" } }, "call"],
-    ["another call", { call: { ...TRANSFER_CALL, method: "transfer_all" } }, "call"],
-    [
-      "another destination",
-      {
-        call: {
-          ...TRANSFER_CALL,
-          args: { ...TRANSFER_CALL.args, dest: { type: "Id", value: SUB_ADDRESS } },
-        },
-      },
-      "dest",
-    ],
-    [
-      "another amount",
-      { call: { ...TRANSFER_CALL, args: { ...TRANSFER_CALL.args, value: 999_999_999n } } },
-      "value",
-    ],
-  ])("rejects %s", (_name, overrides, violation) => {
-    const {
-      networkId = "bittensor",
-      payload = PAYLOAD,
-      call = TRANSFER_CALL,
-    } = overrides as {
-      networkId?: string
-      payload?: SignerPayloadJSON
-      call?: typeof TRANSFER_CALL
-    }
-    expect(checkSubstrateLeg(LEG0, LEG1, networkId, payload, call)).toBe(violation)
+    ["another network", "bittensor-testnet", PAYLOAD, "network"],
+    ["another signer", "bittensor", { ...PAYLOAD, address: MIRROR }, "signer"],
+    ["another nonce", "bittensor", { ...PAYLOAD, nonce: toPjsHex(8, 4) }, "nonce"],
+  ])("rejects %s", (_name, networkId, payload, violation) => {
+    expect(checkSubstrateLeg(LEG0, networkId, payload as SignerPayloadJSON)).toBe(violation)
   })
 })
 
@@ -705,6 +673,19 @@ describe("admitSubstrateLeg", () => {
       )
     ).rejects.toThrow(new PlanBoundViolation("value"))
     expect((await db.swapPlans.get(PLAN_ID))?.phase).toBe("proposed")
+    expect(await db.transactionsV2.count()).toBe(0)
+  })
+
+  it("refuses a substrate leg of a module that checks no substrate call", async () => {
+    const lifiLeg0 = { ...LEG0, quote: { ...LEG0.quote, protocol: "lifi" as const } }
+    await proposePlan({ ...PROPOSAL, legs: [lifiLeg0, LEG1] }, T0 - 1_000)
+
+    await expect(
+      admitSubstrateLeg(
+        { id: PLAN_ID, leg: 0 },
+        { networkId: "bittensor", payload: PAYLOAD, hash: HASH, txInfo: TX_INFO0 }
+      )
+    ).rejects.toThrow(PlanNotAdmissible)
     expect(await db.transactionsV2.count()).toBe(0)
   })
 

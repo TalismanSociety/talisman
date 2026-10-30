@@ -1,5 +1,4 @@
 import { db } from "@core/db"
-import { BITTENSOR_SS58_PREFIX } from "@core/domains/bittensor/constants"
 import { isNonceHeldLocally } from "@core/domains/ethereum/nonceManager"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type {
@@ -9,13 +8,7 @@ import type {
   WalletTransactionInfo,
 } from "@core/domains/transactions/types"
 import { type NetworkId, networkIdFromTokenId } from "@talismn/chaindata-provider"
-import {
-  frontierH160ToSs58Mirror,
-  frontierSs58ToPublicKeyHex,
-  isAddressEqual,
-  isEthereumAddress,
-} from "@talismn/crypto"
-import type { DecodedCall } from "@talismn/sapi"
+import { isAddressEqual } from "@talismn/crypto"
 import { hexToU8a } from "@talismn/util"
 import {
   type Hex,
@@ -28,7 +21,7 @@ import {
 import { legCandidates } from "../candidates"
 import { coreSwapEnv } from "../env.core"
 import { getPlanLegRuntime } from "../registry"
-import type { LegBound, LegReplacement, SentEvidence } from "../types"
+import type { LegBound, LegReplacement, SentEvidence, SubstrateCallViolation } from "../types"
 import { isAdmissible, transition } from "./machine"
 import { type AppliedEvent, enqueue, getPlan, putPlan } from "./store"
 import type { LegState, PlanLeg, SwapPlan, SwapPlanRef } from "./types"
@@ -104,41 +97,17 @@ export const checkBound = (
 const checkUnbound = (leg: PlanLeg, signer: Hex): BoundViolation | null =>
   isAddressEqual(signer, leg.quote.signer) ? null : "signer"
 
-export type SubstrateLegViolation =
-  | "network"
-  | "signer"
-  | "nonce"
-  | "call"
-  | "dest"
-  | "value"
-  | "era"
+export type SubstrateLegViolation = "network" | "signer" | "nonce" | SubstrateCallViolation | "era"
 
-type TransferCall = DecodedCall<{ dest?: { type?: string; value?: string }; value?: bigint }>
-
-const TRANSFER_CALLS = ["transfer_keep_alive", "transfer_allow_death"]
-
-/** The signed payload against the plan: a plain transfer of the approved amount to the next signer's mirror */
+/** The signed payload against the leg: its network, signer and nonce. The leg's module checks the call */
 export const checkSubstrateLeg = (
   leg: PlanLeg,
-  next: PlanLeg,
   networkId: NetworkId,
-  payload: SignerPayloadJSON,
-  call: TransferCall
+  payload: SignerPayloadJSON
 ): SubstrateLegViolation | null => {
   if (networkIdFromTokenId(leg.quote.fromTokenId) !== networkId) return "network"
   if (!isAddressEqual(payload.address, leg.quote.signer)) return "signer"
   if (leg.nonce !== undefined && Number(payload.nonce) !== leg.nonce) return "nonce"
-  if (call.pallet !== "Balances" || !TRANSFER_CALLS.includes(call.method)) return "call"
-  if (
-    call.args.dest?.type !== "Id" ||
-    !call.args.dest.value ||
-    !isEthereumAddress(next.quote.signer)
-  )
-    return "dest"
-  const mirror = frontierH160ToSs58Mirror(next.quote.signer, BITTENSOR_SS58_PREFIX)
-  if (frontierSs58ToPublicKeyHex(call.args.dest.value) !== frontierSs58ToPublicKeyHex(mirror))
-    return "dest"
-  if (call.args.value !== BigInt(leg.quote.inputAmount)) return "value"
   return null
 }
 
@@ -412,17 +381,24 @@ export const admitSubstrateLeg = async (
 ): Promise<AppliedEvent> => {
   const plan = await getPlan(ref.id)
   const leg = plan?.legs[ref.leg]
-  const next = plan?.legs[ref.leg + 1]
   if (!plan || !leg) throw new PlanNotAdmissible("Unknown swap plan leg")
-  if (!next) throw new PlanNotAdmissible("A substrate leg must hand over to a next leg")
   const runtime = getPlanLegRuntime(leg.quote.protocol)
+  const { checkSubstrateCall } = runtime
+  if (!checkSubstrateCall)
+    throw new PlanNotAdmissible(`${leg.quote.protocol} has no substrate legs`)
 
   const sapi = await coreSwapEnv.substrateApi(networkId)
-  const call = sapi.getDecodedCallFromPayload<TransferCall>({ method: payload.method })
+  const call = sapi.getDecodedCallFromPayload({ method: payload.method })
   const check = (current: SwapPlan) => {
-    const [currentLeg, currentNext] = [current.legs[ref.leg], current.legs[ref.leg + 1]]
-    if (!currentNext) return "dest"
-    return checkSubstrateLeg(currentLeg, currentNext, networkId, payload, call)
+    const currentLeg = current.legs[ref.leg]
+    return (
+      checkSubstrateLeg(currentLeg, networkId, payload) ??
+      checkSubstrateCall({
+        leg: currentLeg.quote,
+        next: current.legs[ref.leg + 1]?.quote,
+        call,
+      })
+    )
   }
   const violation = check(plan)
   if (violation) throw new PlanBoundViolation(violation)

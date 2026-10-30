@@ -1,5 +1,6 @@
 import { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } from "@core/domains/bittensor/constants"
 import type { ExtrinsicEvents, SwapEnv } from "@core/domains/swaps/env"
+import type { PersistedQuoteLeg } from "@core/domains/swaps/plans/types"
 import type { LegObservation, SentLeg } from "@core/domains/swaps/types"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { abiBittensorBalanceTransfer } from "@core/util/abi"
@@ -402,6 +403,82 @@ describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
     const transaction = await buildEvmLeg(ONE_TAO_WEI + 999n)
 
     expect(transaction.value).toBe(ONE_TAO_WEI)
+  })
+})
+
+describe("bittensorEvmSwapModule checkSubstrateCall", () => {
+  const OTHER_EVM_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
+  const LEG: PersistedQuoteLeg = {
+    protocol: "bittensor-evm",
+    fromTokenId: SUB_TOKEN.id,
+    toTokenId: EVM_TOKEN.id,
+    signer: SUB_ADDRESS,
+    recipient: EVM_ADDRESS,
+    inputAmount: ONE_TAO_RAO.toString(),
+    outputAmount: (ONE_TAO_WEI - ED * WEI_PER_RAO).toString(),
+    fees: [],
+    timeInSec: 12,
+  }
+  const NEXT: PersistedQuoteLeg = {
+    ...LEG,
+    protocol: "forevermoney",
+    fromTokenId: EVM_TOKEN.id,
+    toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
+    signer: EVM_ADDRESS,
+    recipient: OTHER_EVM_ADDRESS,
+  }
+  const TRANSFER = {
+    pallet: "Balances",
+    method: "transfer_keep_alive",
+    args: {
+      dest: { type: "Id", value: frontierH160ToSs58Mirror(EVM_ADDRESS, 42) },
+      value: ONE_TAO_RAO,
+    },
+  }
+  const check = (call: typeof TRANSFER, next = NEXT) =>
+    bittensorEvmSwapModule.checkSubstrateCall?.({ leg: LEG, next, call })
+
+  it("accepts a transfer of the approved amount to the next signer's mirror", () => {
+    expect(check(TRANSFER)).toBe(null)
+    expect(check({ ...TRANSFER, method: "transfer_allow_death" })).toBe(null)
+  })
+
+  it.each([
+    ["another pallet", { ...TRANSFER, pallet: "System" }, "call"],
+    ["another call", { ...TRANSFER, method: "transfer_all" }, "call"],
+    [
+      "another destination",
+      {
+        ...TRANSFER,
+        args: {
+          ...TRANSFER.args,
+          dest: { type: "Id", value: frontierH160ToSs58Mirror(OTHER_EVM_ADDRESS, 42) },
+        },
+      },
+      "dest",
+    ],
+    [
+      "a destination that is not an account id",
+      { ...TRANSFER, args: { ...TRANSFER.args, dest: { ...TRANSFER.args.dest, type: "Index" } } },
+      "dest",
+    ],
+    [
+      "another amount",
+      { ...TRANSFER, args: { ...TRANSFER.args, value: ONE_TAO_RAO - 1n } },
+      "value",
+    ],
+  ])("rejects %s", (_name, call, violation) => {
+    expect(check(call)).toBe(violation)
+  })
+
+  it("rejects a transfer that hands over to no next leg", () => {
+    expect(
+      bittensorEvmSwapModule.checkSubstrateCall?.({ leg: LEG, next: undefined, call: TRANSFER })
+    ).toBe("dest")
+  })
+
+  it("rejects a next leg signed by a substrate account", () => {
+    expect(check(TRANSFER, { ...NEXT, signer: SUB_ADDRESS })).toBe("dest")
   })
 })
 
