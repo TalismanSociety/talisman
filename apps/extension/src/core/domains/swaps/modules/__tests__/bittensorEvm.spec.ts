@@ -21,7 +21,7 @@ const mockGetGasPrice = vi.fn()
 const mockSubstrateSend = vi.fn()
 const mockDecodeEvents = vi.fn()
 const mockGetBalance = vi.fn()
-const mockGetBlock = vi.fn()
+const mockGetBlockNumber = vi.fn()
 const mockGetTransactionReceipt = vi.fn()
 const mockGetTransactionCount = vi.fn()
 const mockGetTransaction = vi.fn()
@@ -60,7 +60,7 @@ const evmClient = {
   estimateGas: mockEstimateGas,
   getGasPrice: mockGetGasPrice,
   getBalance: mockGetBalance,
-  getBlock: mockGetBlock,
+  getBlockNumber: mockGetBlockNumber,
   getTransactionReceipt: mockGetTransactionReceipt,
   getTransactionCount: mockGetTransactionCount,
   getTransaction: mockGetTransaction,
@@ -721,7 +721,7 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
 describe("bittensorEvmSwapModule observeLeg evm -> substrate", () => {
   it("lands with the value in rao on a successful receipt", async () => {
-    mockGetBlock.mockResolvedValue({ number: 490n })
+    mockGetBlockNumber.mockResolvedValue(491n)
     mockGetTransactionReceipt.mockResolvedValue({ status: "success", blockNumber: 490n })
     mockGetTransactionCount.mockResolvedValue(13)
     mockGetTransaction.mockResolvedValue({ input: "0x", value: ONE_TAO_WEI })

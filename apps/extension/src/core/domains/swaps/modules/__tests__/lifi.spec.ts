@@ -11,7 +11,7 @@ const SKYAI = "0x92aa03137385F18539301349dcfC9EbC923fFb10"
 const TRUMP = "0x4EA98c1999575aaadfb38237Dd015c5E773F75a2"
 const SOURCE_HASH: Hex = `0x${"aa".repeat(32)}`
 const RECEIVING_HASH: Hex = `0x${"bb".repeat(32)}`
-const SAFE = 1_000n
+const CONFIRMED = 1_000n
 
 const BRIDGE_LEG: QuoteLeg = {
   protocol: "lifi",
@@ -50,14 +50,14 @@ const transfer = (token: Hex, from: Hex, to: Hex, value: bigint) => ({
 
 const receipt = (
   logs: ReturnType<typeof transfer>[],
-  { status = "success", blockNumber = SAFE }: { status?: string; blockNumber?: bigint } = {}
+  { status = "success", blockNumber = CONFIRMED }: { status?: string; blockNumber?: bigint } = {}
 ) => ({ status, blockNumber, logs })
 
 const receipts = new Map<string, ReturnType<typeof receipt>>()
 
 const evmClient = (networkId: string) =>
   ({
-    getBlock: async () => ({ number: SAFE }),
+    getBlockNumber: async () => CONFIRMED + 1n,
     getTransactionCount: async () => 6,
     getTransaction: async () => ({ input: "0x", value: 0n }),
     getTransactionReceipt: async ({ hash }: { hash: Hex }) => {
@@ -122,7 +122,7 @@ describe("lifiLegRuntime.observeLeg", () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it("lands a bridge step on the safe receiving receipt /status points at", async () => {
+  it("lands a bridge step on the confirmed receiving receipt /status points at", async () => {
     receipts.set(`1:${SOURCE_HASH}`, receipt([]))
     receipts.set(`56:${RECEIVING_HASH}`, receipt([transfer(SKYAI, BOB, ALICE, 880n)]))
     status(delivered())
@@ -164,11 +164,11 @@ describe("lifiLegRuntime.observeLeg", () => {
     expect(await observe(BRIDGE_LEG)).toEqual({ status: "failed", reason: "indeterminate" })
   })
 
-  it("waits for the receiving receipt to reach a safe block", async () => {
+  it("waits for a second block to confirm the receiving receipt", async () => {
     receipts.set(`1:${SOURCE_HASH}`, receipt([]))
     receipts.set(
       `56:${RECEIVING_HASH}`,
-      receipt([transfer(SKYAI, BOB, ALICE, 880n)], { blockNumber: SAFE + 1n })
+      receipt([transfer(SKYAI, BOB, ALICE, 880n)], { blockNumber: CONFIRMED + 1n })
     )
     status(delivered())
     expect(await observe(BRIDGE_LEG)).toEqual({ status: "pending" })

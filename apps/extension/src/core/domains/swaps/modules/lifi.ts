@@ -3,7 +3,7 @@ import { isEthereumAddress } from "@talismn/crypto"
 import { erc20Abi, type Hex, isAddressEqual, isHex, type Log, parseEventLogs } from "viem"
 
 import type { SwapEnv } from "../env"
-import { observeEvmLeg, safeBlockNumber } from "../observeEvm"
+import { confirmedBlockNumber, observeEvmLeg } from "../observeEvm"
 import type { LegObservation, ObserveLegParams, PlanLegRuntime, QuoteLeg } from "../types"
 
 export const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
@@ -112,14 +112,14 @@ const observeDelivery = async (
     return INDETERMINATE
 
   const destination = await env.evmClient(toChain)
-  const safe = await safeBlockNumber(destination)
+  const confirmed = await confirmedBlockNumber(destination)
   const receipt = await destination
     .getTransactionReceipt({ hash: receiving.txHash })
     .catch((err) => {
       if ((err as { name?: string }).name === "TransactionReceiptNotFoundError") return null
       throw err
     })
-  if (!receipt || receipt.blockNumber > safe) return { status: "pending" }
+  if (!receipt || receipt.blockNumber > confirmed) return { status: "pending" }
   if (receipt.status !== "success") return INDETERMINATE
   return landedWith(sourceHash, netReceived(receipt.logs, token, recipient))
 }
@@ -127,7 +127,7 @@ const observeDelivery = async (
 /**
  * The source receipt settles the leg. When a later leg spends the output, the landed amount is what
  * the delivered token's Transfer events say the recipient received: in the source receipt for a
- * same-chain step, in the safe receiving receipt `/status` points at for a bridge.
+ * same-chain step, in the confirmed receiving receipt `/status` points at for a bridge.
  */
 const observeLeg = async (
   { leg, sent, handsOver }: ObserveLegParams,
