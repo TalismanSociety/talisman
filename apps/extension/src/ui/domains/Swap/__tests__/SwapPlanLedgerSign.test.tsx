@@ -373,6 +373,7 @@ describe("usePlanLegSigning", () => {
       payload: { to: USDT, data: approveData(0n) },
       txInfo: { type: "approve-erc20", amount: "0" },
     })
+    expect(buttonLabel()).toBe("Revoke Approval")
 
     client.allowance.mockResolvedValue(0n)
     await act(async () => {

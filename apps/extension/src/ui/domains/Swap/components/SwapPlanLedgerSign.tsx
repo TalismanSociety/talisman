@@ -263,8 +263,10 @@ export const PlanLegSignButton: FC<{
     )
 
   const label =
-    request?.signs === "approval"
-      ? t("Approve {{symbol}}", { symbol: request.symbol })
+    request.signs === "approval"
+      ? request.step === "revoke"
+        ? t("Revoke Approval")
+        : t("Approve {{symbol}}", { symbol: request.symbol })
       : signerType?.startsWith("ledger-")
         ? t("Sign on Ledger")
         : t("Sign")
