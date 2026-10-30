@@ -543,6 +543,40 @@ describe("LI.FI plan leg build", () => {
     ).rejects.toThrow("moved too far")
   })
 
+  describe("holds the quoted rate less the user's slippage, taken once", () => {
+    const quotedInput = 2_819_605_417_939_463_473_599n
+    const landed = 2_800_000_000_000_000_000_000n
+    const floors = [
+      { at: "the quoted input", input: quotedInput, floor: 15_783_907_332_122n },
+      { at: "a smaller landed input", input: landed, floor: 15_674_157_897_681n },
+    ]
+
+    it.each(floors)("accepts a fresh minimum exactly at the floor, at $at", async (case_) => {
+      const fresh = skyaiToTrump(case_.input.toString(), case_.floor.toString())
+
+      const built = await buildSwapLeg(case_.input, [fresh])
+
+      expect(built.expectedOutput).toBe(case_.floor)
+    })
+
+    it.each(floors)("refuses a fresh minimum one planck below the floor, at $at", async (case_) => {
+      const fresh = skyaiToTrump(case_.input.toString(), (case_.floor - 1n).toString())
+
+      await expect(buildSwapLeg(case_.input, [fresh])).rejects.toThrow("moved too far")
+    })
+
+    it.each(floors)(
+      "refuses a prepared minimum one planck below the floor, at $at",
+      async (case_) => {
+        const fresh = skyaiToTrump(case_.input.toString(), case_.floor.toString())
+
+        await expect(
+          buildSwapLeg(case_.input, [fresh], { preparedToAmountMin: (case_.floor - 1n).toString() })
+        ).rejects.toThrow("moved too far")
+      }
+    )
+  })
+
   it("refuses a later leg LI.FI no longer routes", async () => {
     await expect(buildSwapLeg(2_800_000_000_000_000_000_000n, [])).rejects.toThrow("No route")
   })

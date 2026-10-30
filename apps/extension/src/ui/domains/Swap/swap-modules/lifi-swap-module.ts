@@ -808,10 +808,14 @@ const buildRouteTransaction = async (
   return { transaction: { platform: "ethereum", transaction }, preparedStep: stepTransaction }
 }
 
-/** the quoted rate scaled to what the leg spends, less the slippage the user accepted */
-const planLegFloor = (leg: QuoteLeg, input: bigint, slippage: number) =>
-  (leg.outputAmount * input * BigInt(Math.round((1 - slippage) * 10_000))) /
-  (leg.inputAmount * 10_000n)
+/**
+ * The quoted rate scaled to what the leg spends, less the slippage the user accepted.
+ * The rate is the step's estimate, not `leg.outputAmount`: that is its `toAmountMin`, which already
+ * has the quote's slippage taken off.
+ */
+const planLegFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =>
+  (BigInt(quoted.toAmount) * input * BigInt(Math.round((1 - slippage) * 10_000))) /
+  (BigInt(quoted.fromAmount) * 10_000n)
 
 const spenderOf = (route: lifiSdk.Route | undefined) =>
   route?.steps[0]?.estimate.approvalAddress?.toLowerCase()
@@ -853,7 +857,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
       ?.legs[0]
     const freshRoute = freshLeg?.data as LifiLegRoute | undefined
 
-    const floor = planLegFloor(leg, input, slippage)
+    const floor = planLegFloor(quotedRoute, input, slippage)
     const assertHoldsFloor = (toAmountMin: bigint) => {
       if (toAmountMin < floor)
         throw new Error("The rate for this step has moved too far, please try again later")
