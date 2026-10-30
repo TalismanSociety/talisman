@@ -26,6 +26,7 @@ import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
 import {
   SwapApprovalDetails,
   SwapLegDetails,
+  SwapRateDropNotice,
   SwapSlippageRow,
   SwapTxFeeRows,
   SwapTxSentFeeRows,
@@ -171,6 +172,7 @@ const PlanTransactions: FC<{
     const isSigned = signing?.leg === card.leg && signing.signs === signs && !!legSigning.ethTx
     const leg =
       isSigned && legSigning.built ? { ...legs[card.leg], ...legSigning.built } : legs[card.leg]
+    const acceptedOutput = isSigned ? legSigning.built?.acceptedOutput : undefined
     const isRetried = isSigned && card.status === "failed"
     const feeRows =
       card.hash && !isRetried ? (
@@ -233,6 +235,13 @@ const PlanTransactions: FC<{
             {t("Track swap progress")}
             <ExternalLinkIcon />
           </a>
+        ) : null}
+        {acceptedOutput !== undefined && leg.outputAmount < acceptedOutput ? (
+          <SwapRateDropNotice
+            tokenId={leg.toTokenId}
+            amount={leg.outputAmount}
+            accepted={acceptedOutput}
+          />
         ) : null}
       </SwapLegDetails>
     )

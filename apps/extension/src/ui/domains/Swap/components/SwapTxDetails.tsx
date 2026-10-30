@@ -1,6 +1,7 @@
 import type { QuoteLeg } from "@core/domains/swaps/types"
 import { type EthNetworkId, evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { EditIcon, InfoIcon } from "@talismn/icons"
+import { formatDecimals, planckToTokens } from "@talismn/util"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -108,6 +109,28 @@ export const SwapLegDetails: FC<{
       {provider?.note ? <div className="text-body-secondary text-xs">{provider.note}</div> : null}
       {provider?.notice ? <Notice>{provider.notice}</Notice> : null}
     </>
+  )
+}
+
+const formatTokens = (planck: bigint, { decimals, symbol }: { decimals: number; symbol: string }) =>
+  `${formatDecimals(planckToTokens(planck.toString(), decimals))} ${symbol}`
+
+export const SwapRateDropNotice: FC<{ tokenId: TokenId; amount: bigint; accepted: bigint }> = ({
+  tokenId,
+  amount,
+  accepted,
+}) => {
+  const { t } = useTranslation()
+  const token = useToken(tokenId)
+  if (!token) return null
+
+  return (
+    <Notice>
+      {t(
+        "The rate for this step dropped since the swap started. You will receive at least {{amount}} instead of {{accepted}}.",
+        { amount: formatTokens(amount, token), accepted: formatTokens(accepted, token) }
+      )}
+    </Notice>
   )
 }
 

@@ -822,9 +822,10 @@ const spenderOf = (route: lifiSdk.Route | undefined) =>
 
 /**
  * Re-quotes at the user's slippage, which the quote list leaves out so editing it does not reshuffle
- * the quotes. A leg of a plan is re-quoted at what landed, as a single step, and must hold the rate
- * the user accepted: LI.FI cannot re-amount the quoted step. Its token input was approved to the
- * quoted step's spender, so only a fresh route through that spender can use the allowance.
+ * the quotes. A leg of a plan is re-quoted at what landed, as a single step: LI.FI cannot re-amount the
+ * quoted step. A worse rate refuses the first leg, before the plan starts, but not a later one, which the
+ * user signs on screen: the build reports the output they accepted instead. Its token input was
+ * approved to the quoted step's spender, so only a fresh route through that spender can use the allowance.
  */
 const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Promise<BuiltLeg> => {
   try {
@@ -857,15 +858,8 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
       ?.legs[0]
     const freshRoute = freshLeg?.data as LifiLegRoute | undefined
 
-    const floor = planLegFloor(quotedRoute, input, slippage)
-    const assertHoldsFloor = (toAmountMin: bigint) => {
-      if (toAmountMin < floor)
-        throw new Error("The rate for this step has moved too far, please try again later")
-    }
-    if (isPlanLeg) {
-      if (!freshRoute) throw new Error("No route for this step right now, please try again later")
-      assertHoldsFloor(BigInt(freshRoute.toAmountMin))
-    }
+    if (isPlanLeg && !freshRoute)
+      throw new Error("No route for this step right now, please try again later")
 
     const step = (freshRoute ?? quotedRoute).steps[0]
     if (!step) throw new Error("No step found in route")
@@ -877,16 +871,16 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
       input,
       context
     )
-    let expectedOutput = leg.outputAmount
-    if (isPlanLeg) {
-      expectedOutput = BigInt(preparedStep.estimate.toAmountMin)
-      assertHoldsFloor(expectedOutput)
-    }
+    const expectedOutput = isPlanLeg ? BigInt(preparedStep.estimate.toAmountMin) : leg.outputAmount
+    const acceptedOutput = isPlanLeg ? planLegFloor(quotedRoute, input, slippage) : expectedOutput
+    if (expectedOutput < acceptedOutput && quotedRoute.stepIndex === 0)
+      throw new Error("The rate has moved too far, please select the quote again")
 
     return {
       transaction,
       fees: freshLeg?.fees ?? leg.fees,
       expectedOutput,
+      ...(expectedOutput < acceptedOutput && { acceptedOutput }),
       txInfo: {
         type: "swap-lifi",
         protocolName: tool,

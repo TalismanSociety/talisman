@@ -454,6 +454,7 @@ describe("LI.FI plan leg build", () => {
     quoted?: Route
     toTokenId?: string
     module?: typeof lifiSwapModule
+    legIndex?: number
   }
 
   const buildSwapLeg = async (
@@ -465,10 +466,11 @@ describe("LI.FI plan leg build", () => {
       quoted = usdtToTrump(),
       toTokenId = TRUMP_ID,
       module = lifiSwapModule,
+      legIndex = 1,
     }: BuildOptions = {}
   ) => {
     const [quote] = await quotesFor([quoted], { toTokenId })
-    const leg = quote.legs[1]
+    const leg = quote.legs[legIndex]
     mockLifiGetRoutes.mockResolvedValueOnce({
       routes: fresh,
       unavailableRoutes: { failed: [], filteredOut: [] },
@@ -513,6 +515,7 @@ describe("LI.FI plan leg build", () => {
       options: { integrator: "talisman", fee: 0, slippage: 0.005 },
     })
     expect(built.expectedOutput).toBe(15_700_000_000_000n)
+    expect(built).not.toHaveProperty("acceptedOutput")
     expect(built.fees.map((fee) => fee.name)).toEqual(["Gas"])
     expect(built.txInfo).toMatchObject({
       type: "swap-lifi",
@@ -524,26 +527,7 @@ describe("LI.FI plan leg build", () => {
     expect(mockPrepare).toHaveBeenCalledWith({}, "56:evm-native", expect.objectContaining(prepared))
   })
 
-  it("refuses a later leg whose fresh rate fell below what the user accepted", async () => {
-    const landed = 2_800_000_000_000_000_000_000n
-
-    await expect(
-      buildSwapLeg(landed, [skyaiToTrump(landed.toString(), "15000000000000")])
-    ).rejects.toThrow("moved too far")
-    expect(mockGetStepTransaction).not.toHaveBeenCalled()
-  })
-
-  it("refuses a later leg whose prepared transaction fell below what the user accepted", async () => {
-    const landed = 2_800_000_000_000_000_000_000n
-
-    await expect(
-      buildSwapLeg(landed, [skyaiToTrump(landed.toString(), "15700000000000")], {
-        preparedToAmountMin: "15000000000000",
-      })
-    ).rejects.toThrow("moved too far")
-  })
-
-  describe("holds the quoted rate less the user's slippage, taken once", () => {
+  describe("reports the quoted rate less the user's slippage, taken once, when the leg falls below it", () => {
     const quotedInput = 2_819_605_417_939_463_473_599n
     const landed = 2_800_000_000_000_000_000_000n
     const floors = [
@@ -551,29 +535,56 @@ describe("LI.FI plan leg build", () => {
       { at: "a smaller landed input", input: landed, floor: 15_674_157_897_681n },
     ]
 
-    it.each(floors)("accepts a fresh minimum exactly at the floor, at $at", async (case_) => {
+    it.each(floors)("reports nothing at the floor, at $at", async (case_) => {
       const fresh = skyaiToTrump(case_.input.toString(), case_.floor.toString())
 
       const built = await buildSwapLeg(case_.input, [fresh])
 
       expect(built.expectedOutput).toBe(case_.floor)
+      expect(built).not.toHaveProperty("acceptedOutput")
     })
 
-    it.each(floors)("refuses a fresh minimum one planck below the floor, at $at", async (case_) => {
+    it.each(floors)("builds a fresh minimum one planck below the floor, at $at", async (case_) => {
       const fresh = skyaiToTrump(case_.input.toString(), (case_.floor - 1n).toString())
 
-      await expect(buildSwapLeg(case_.input, [fresh])).rejects.toThrow("moved too far")
+      const built = await buildSwapLeg(case_.input, [fresh])
+
+      expect(built.expectedOutput).toBe(case_.floor - 1n)
+      expect(built.acceptedOutput).toBe(case_.floor)
     })
 
     it.each(floors)(
-      "refuses a prepared minimum one planck below the floor, at $at",
+      "builds a prepared minimum one planck below the floor, at $at",
       async (case_) => {
         const fresh = skyaiToTrump(case_.input.toString(), case_.floor.toString())
 
-        await expect(
-          buildSwapLeg(case_.input, [fresh], { preparedToAmountMin: (case_.floor - 1n).toString() })
-        ).rejects.toThrow("moved too far")
+        const built = await buildSwapLeg(case_.input, [fresh], {
+          preparedToAmountMin: (case_.floor - 1n).toString(),
+        })
+
+        expect(built.expectedOutput).toBe(case_.floor - 1n)
+        expect(built.acceptedOutput).toBe(case_.floor)
       }
+    )
+  })
+
+  it("refuses the first leg of a plan below the floor, before the plan starts", async () => {
+    const quoted = usdtToTrump().steps[0]
+    const floor = 2_805_507_390_849_766_156_231n
+    const fresh = route(
+      "fresh",
+      [
+        {
+          ...quoted,
+          estimate: { ...quoted.estimate, toAmountMin: (floor - 1n).toString() },
+        } as LiFiStep,
+      ],
+      ALICE,
+      ALICE
+    )
+
+    await expect(buildSwapLeg(100_000_000n, [fresh], { legIndex: 0 })).rejects.toThrow(
+      "moved too far"
     )
   })
 

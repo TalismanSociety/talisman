@@ -5,7 +5,7 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
 import { of } from "rxjs"
 import { encodeFunctionData, erc20Abi } from "viem"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 const USDT_ID = `1:evm-erc20:${USDT.toLowerCase()}`
@@ -44,6 +44,8 @@ const { ethGetTransactionsCount, priced, pricing, submitted, payloadLock, button
     }
   })
 
+const { lifiBuildLeg } = vi.hoisted(() => ({ lifiBuildLeg: vi.fn() }))
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) =>
@@ -51,8 +53,12 @@ vi.mock("react-i18next", () => ({
   }),
 }))
 vi.mock("@ui/api", () => ({ api: { ethGetTransactionsCount } }))
+vi.mock("@ui/state/balances", () => ({ useBalance: () => undefined }))
 vi.mock("@ui/domains/Ethereum/useEthTransaction", () => ({ useEthTransaction: priced }))
-vi.mock("@ui/state/chaindata", () => ({ getToken$: () => of({ symbol: "USDT" }) }))
+vi.mock("@ui/state/chaindata", () => ({
+  getToken$: () => of({ symbol: "USDT" }),
+  useToken: () => ({ symbol: "ETH", decimals: 18 }),
+}))
 vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
   TxSubmitButton: ({
     tx,
@@ -61,9 +67,11 @@ vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
     onSubmit,
     onPayloadLockChange,
     onError,
+    disabled,
   }: {
     tx?: unknown
     label?: string
+    disabled?: boolean
     isProcessing?: boolean
     onSubmit: (hash: string) => void
     onPayloadLockChange?: (isLocked: boolean) => void
@@ -76,7 +84,7 @@ vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
     button.reject = onError
     if (tx) submitted(tx)
     return (
-      <button type="button" aria-busy={isSigning || !!isProcessing}>
+      <button type="button" aria-busy={isSigning || !!isProcessing} disabled={disabled}>
         {label}
       </button>
     )
@@ -146,16 +154,7 @@ vi.mock("../swaps.api", () => ({
         fromAddress,
         protocolName: "LI.FI",
       }),
-      buildLeg: async () =>
-        builtLeg(SPENDER, {
-          type: "swap-lifi",
-          protocolName: "fly",
-          fromTokenId: USDT_ID,
-          toTokenId: "8453:evm-native",
-          fromAmount: "1",
-          toAmount: "1",
-          to: RECIPIENT,
-        }),
+      buildLeg: lifiBuildLeg,
     },
   ],
 }))
@@ -172,6 +171,18 @@ import {
   T0,
 } from "@core/domains/swaps/plans/__tests__/fixtures"
 import { PlanLegSignButton, usePlanLegSigning } from "../components/SwapPlanLedgerSign"
+import { SwapRateDropNotice } from "../components/SwapTxDetails"
+
+const lifiBuilt = (): BuiltLeg =>
+  builtLeg(SPENDER, {
+    type: "swap-lifi",
+    protocolName: "fly",
+    fromTokenId: USDT_ID,
+    toTokenId: "8453:evm-native",
+    fromAmount: "1",
+    toAmount: "1",
+    to: RECIPIENT,
+  })
 
 const planWaitingOn = (leg: PlanLeg, landed = LEG0_OUTPUT): SwapPlan => ({
   id: PLAN_ID,
@@ -225,7 +236,25 @@ const BuiltAmounts = ({ plan }: { plan: SwapPlan }) => {
   return <output>{built ? `${built.inputAmount} -> ${built.outputAmount}` : "building"}</output>
 }
 
+const RateDropLeg = ({ plan }: { plan: SwapPlan }) => {
+  const { built, button } = usePlanLegSigning(plan, 1)
+  return (
+    <>
+      {built?.acceptedOutput !== undefined ? (
+        <SwapRateDropNotice
+          tokenId={plan.legs[1].quote.toTokenId}
+          amount={built.outputAmount}
+          accepted={built.acceptedOutput}
+        />
+      ) : null}
+      <PlanLegSignButton button={button} />
+    </>
+  )
+}
+
 describe("usePlanLegSigning", () => {
+  beforeEach(() => lifiBuildLeg.mockImplementation(async () => lifiBuilt()))
+
   it("shows a processing button until it knows what the user signs", () => {
     ethGetTransactionsCount.mockReturnValue(new Promise(() => {}))
     renderSign()
@@ -426,5 +455,28 @@ describe("usePlanLegSigning", () => {
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
     expect(pricing.setCustomSettings).toHaveBeenCalledWith(undefined)
     expect(pricing.setPriority).toHaveBeenCalledWith(undefined)
+  })
+
+  it("warns of a rate that dropped since the swap started and still lets the user sign", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    lifiBuildLeg.mockImplementation(async () => ({
+      ...lifiBuilt(),
+      expectedOutput: 1_500_000_000_000_000_000n,
+      acceptedOutput: 2_000_000_000_000_000_000n,
+    }))
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RateDropLeg plan={LIFI_PLAN} />
+      </QueryClientProvider>
+    )
+
+    await waitFor(() =>
+      expect(screen.getByRole("note").textContent).toBe(
+        "The rate for this step dropped since the swap started. You will receive at least 1.5 ETH instead of 2 ETH."
+      )
+    )
+    expect(buttonLabel()).toBe("Sign")
+    expect(screen.getByRole("button").hasAttribute("disabled")).toBe(false)
   })
 })

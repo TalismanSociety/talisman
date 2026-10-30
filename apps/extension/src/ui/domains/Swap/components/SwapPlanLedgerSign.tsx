@@ -2,7 +2,7 @@ import { log } from "@common/log"
 import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/exports"
 import { deriveLegInput, fromPersistedLeg, readLegBalance } from "@core/domains/swaps/plans/helpers"
 import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
-import type { ApprovalInfo, QuoteLeg } from "@core/domains/swaps/types"
+import type { ApprovalInfo, BuiltLeg, QuoteLeg } from "@core/domains/swaps/types"
 import { evmNativeTokenId, networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import { skipToken, useQuery } from "@tanstack/react-query"
@@ -33,7 +33,8 @@ type PlanLegSignRequest =
       signs: "leg"
       tx: TxSubmitButtonTransactionEth
       /** the leg as built on what the previous leg landed, not as quoted */
-      built: Pick<QuoteLeg, "inputAmount" | "outputAmount" | "fees">
+      built: Pick<QuoteLeg, "inputAmount" | "outputAmount" | "fees"> &
+        Pick<BuiltLeg, "acceptedOutput">
     }
   | {
       signs: "approval"
@@ -115,7 +116,12 @@ const buildOnScreenLegTransaction = async (
       payload: { from: signer, to, data, value, gas, nonce: nextNonce },
       txInfo: { ...built.txInfo, plan: { id: plan.id, leg: index } },
     },
-    built: { inputAmount: input, outputAmount: built.expectedOutput, fees: built.fees },
+    built: {
+      inputAmount: input,
+      outputAmount: built.expectedOutput,
+      fees: built.fees,
+      acceptedOutput: built.acceptedOutput,
+    },
   }
 }
 
