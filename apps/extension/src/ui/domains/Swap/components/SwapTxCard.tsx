@@ -15,7 +15,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworksMapById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
-import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -33,14 +33,16 @@ export const useSwapTxContext = (): SwapTxContext => {
   return useMemo(() => ({ t, accounts, networks }), [accounts, networks, t])
 }
 
-/** the card that becomes active opens and the others close, the user can still open any of them */
+/** the card that becomes active opens and scrolls into view, the others close, the user can still open any of them */
 const useExpandedCards = (activeKey: SwapTxCardKey | null) => {
   const [expanded, setExpanded] = useState<ReadonlySet<SwapTxCardKey>>(
     () => new Set(activeKey ? [activeKey] : [])
   )
   const [expandedFor, setExpandedFor] = useState(activeKey)
+  const [scrollTarget, setScrollTarget] = useState<SwapTxCardKey | null>(null)
   if (activeKey !== expandedFor) {
     setExpandedFor(activeKey)
+    setScrollTarget(activeKey)
     if (activeKey) setExpanded(new Set([activeKey]))
   }
 
@@ -54,7 +56,7 @@ const useExpandedCards = (activeKey: SwapTxCardKey | null) => {
     []
   )
 
-  return [expanded, toggle] as const
+  return { expanded, toggle, scrollTarget }
 }
 
 type BadgeTone = "idle" | "active" | "done"
@@ -184,14 +186,23 @@ const SwapTxCard: FC<{
   leg: QuoteLeg
   number: number
   isExpanded: boolean
+  isScrollTarget: boolean
   onToggle: (key: SwapTxCardKey) => void
   children: ReactNode
-}> = ({ card, leg, number, isExpanded, onToggle, children }) => {
+}> = ({ card, leg, number, isExpanded, isScrollTarget, onToggle, children }) => {
   const { t } = useTranslation()
   const toggle = () => onToggle(card.key)
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (isScrollTarget) ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [isScrollTarget])
 
   return (
-    <section className="flex w-full flex-col gap-6 rounded bg-grey-900 py-8 pr-6 pl-8">
+    <section
+      ref={ref}
+      className="flex w-full scroll-my-8 flex-col gap-6 rounded bg-grey-900 py-8 pr-6 pl-8"
+    >
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -228,7 +239,7 @@ export const SwapTxCards: FC<{
   legs: readonly QuoteLeg[]
   renderBody: (card: SwapTxCardModel) => ReactNode
 }> = ({ cards, legs, renderBody }) => {
-  const [expanded, toggle] = useExpandedCards(activeSwapTxKey(cards))
+  const { expanded, toggle, scrollTarget } = useExpandedCards(activeSwapTxKey(cards))
 
   return cards.map((card, index) => (
     <SwapTxCard
@@ -237,6 +248,7 @@ export const SwapTxCards: FC<{
       leg={legs[card.leg]}
       number={index + 1}
       isExpanded={expanded.has(card.key)}
+      isScrollTarget={card.key === scrollTarget}
       onToggle={toggle}
     >
       {renderBody(card)}
