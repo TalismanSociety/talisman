@@ -2,11 +2,6 @@ import type { EthNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon } from "@talismn/icons"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
-import {
-  getSequentialStepStatus,
-  TransactionsStepper,
-  type TransactionsStepperStep,
-} from "@ui/components/TransactionsStepper"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import {
@@ -14,6 +9,10 @@ import {
   FormFieldSetRow,
   FormFieldSetSeparator,
 } from "@ui/domains/Earn/shared/FormFieldSet"
+import {
+  TransactionsStepper,
+  type TransactionsStepperStep,
+} from "@ui/domains/Earn/shared/TransactionsStepper"
 import type { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import type { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
@@ -68,19 +67,17 @@ export const SeekStakeConfirm: FC<{
 }) => {
   const { t } = useTranslation()
 
+  const steps = useMemo<TransactionsStepperStep[]>(
+    () =>
+      hasApprovalStep
+        ? [
+            { key: "approve", label: t("Approve") },
+            { key: "stake", label: t("Stake") },
+          ]
+        : [{ key: "stake", label: t("Stake") }],
+    [hasApprovalStep, t]
+  )
   const stepIndex = hasApprovalStep && !isApproval ? 1 : 0
-  const steps = useMemo<TransactionsStepperStep[]>(() => {
-    const labels = hasApprovalStep
-      ? [
-          { key: "approve", label: t("Approve") },
-          { key: "stake", label: t("Stake") },
-        ]
-      : [{ key: "stake", label: t("Stake") }]
-    return labels.map((step, index) => ({
-      ...step,
-      status: getSequentialStepStatus(index, stepIndex, labels.length, isProcessing),
-    }))
-  }, [hasApprovalStep, isProcessing, stepIndex, t])
 
   return (
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={SEEK_STAKING_MODAL_CONTAINER_ID}>
@@ -98,7 +95,7 @@ export const SeekStakeConfirm: FC<{
               : t("Approve transaction")}
           </div>
           <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
-            <TransactionsStepper steps={steps} />
+            <TransactionsStepper steps={steps} stepIndex={stepIndex} isProcessing={isProcessing} />
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
