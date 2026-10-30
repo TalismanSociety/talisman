@@ -805,6 +805,7 @@ describe("a swap plan leg the user speeds up or cancels", () => {
       at: "failed",
       failure: "cancelled",
       hash: cancel,
+      sentHash: original,
       failedAt: clock,
     })
     expect([await statusOf(cancel), await statusOf(original)]).toEqual(["success", "replaced"])

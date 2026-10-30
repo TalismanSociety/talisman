@@ -98,12 +98,12 @@ const planStatusOf = (failure: LegFailure | undefined): SettledStatus => {
 }
 
 /**
- * Settles the swap flow of a plan, linked through its first leg's transaction. A plan whose first
- * leg was never signed has no flow to settle.
+ * Settles the swap flow of a plan, linked through its first leg's own transaction even when a
+ * speed-up or cancel of it executed. A plan whose first leg was never signed has no flow to settle.
  */
 export const trackSwapPlanSettled = async ({ plan, at }: SwapPlanSettledFact) => {
   const first = plan.legs[0].state
-  const transactionId = "hash" in first ? first.hash : undefined
+  const transactionId = ("sentHash" in first && first.sentHash) || ("hash" in first && first.hash)
   if (!transactionId) return
 
   const stoppedAt = plan.legs.findIndex((leg) => leg.state.at === "failed")

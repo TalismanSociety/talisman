@@ -896,6 +896,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
     expect(result.plan.legs[1].state).toEqual({
       at: "landed",
       hash: SPEED_UP.hash,
+      sentHash: HASH1,
       amount: "5",
       landedAt: now,
     })
@@ -915,6 +916,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
       at: "failed",
       failure: "cancelled",
       hash: CANCEL.hash,
+      sentHash: HASH1,
       failedAt: now,
     })
     expect(result.effects).toEqual([{ type: "notify", kind: "stopped" }])
@@ -944,7 +946,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
     )
     expect(result.plan.phase).toBe("aborted")
     expect(result.plan.legs.map((leg) => leg.state)).toEqual([
-      { at: "failed", failure: "cancelled", hash: CANCEL.hash, failedAt: T1 + 1 },
+      { at: "failed", failure: "cancelled", hash: CANCEL.hash, sentHash: HASH0, failedAt: T1 + 1 },
       { at: "skipped" },
     ])
   })
@@ -975,6 +977,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
       at: "failed",
       failure: "indeterminate",
       hash: SPEED_UP.hash,
+      sentHash: HASH1,
       failedAt: LEG1_DEADLINE,
     })
   })

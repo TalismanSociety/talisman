@@ -325,6 +325,34 @@ describe("a swap plan settles its flow once, on the plan", () => {
     )
   })
 
+  it("completes the flow linked to the first leg's own transaction when a speed-up of it executed", async () => {
+    const landedLeg1 = {
+      ...LEG1,
+      state: { at: "landed", hash: `0x${"22".repeat(32)}`, amount: "1", landedAt: 3_000 },
+    } as const
+    const spedUpLeg0 = {
+      ...LEG0,
+      state: {
+        at: "landed",
+        hash: `0x${"33".repeat(32)}`,
+        sentHash: LEG0_HASH,
+        amount: "1",
+        landedAt: 2_000,
+      },
+    } as const
+
+    await trackSwapPlanSettled({
+      plan: { ...plan("completed", landedLeg1), legs: [spedUpLeg0, landedLeg1] },
+      at: 3_000,
+    })
+
+    expect(settled).toHaveBeenCalledWith(
+      LEG0_HASH,
+      expect.objectContaining({ status: "success" }),
+      expect.any(Number)
+    )
+  })
+
   it("names the leg and the reason a plan stopped at", async () => {
     await trackSwapPlanSettled({
       plan: plan("stopped", {

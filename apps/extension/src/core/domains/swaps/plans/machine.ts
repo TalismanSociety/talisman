@@ -87,9 +87,13 @@ const failLeg = (legs: Legs, index: number, failure: LegFailure, now: number, ha
     if (i === index)
       return {
         ...leg,
-        state: hash
-          ? { at: "failed" as const, failure, hash, failedAt: now }
-          : { at: "failed" as const, failure, failedAt: now },
+        state: {
+          at: "failed" as const,
+          failure,
+          ...(hash && { hash }),
+          ...(leg.state.at === "sent" && hash !== leg.state.hash && { sentHash: leg.state.hash }),
+          failedAt: now,
+        },
       }
     if (i > index) return { ...leg, state: { at: "skipped" as const } }
     return leg
@@ -219,6 +223,7 @@ const step = (plan: SwapPlan, event: PlanEvent, now: number): Step | null => {
             state: {
               at: "landed",
               hash: observation.hash,
+              ...(observation.hash !== leg.state.hash && { sentHash: leg.state.hash }),
               amount: observation.amount.toString(),
               landedAt: now,
             },

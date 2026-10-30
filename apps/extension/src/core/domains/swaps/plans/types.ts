@@ -45,9 +45,12 @@ export type LegState =
       deadlineAt: number
       evidence: SentEvidence
     }
-  /** hash: the transaction that executed, a speed-up's when one replaced the leg's own */
-  | { at: "landed"; hash: Hex; amount: string; landedAt: number }
-  | { at: "failed"; failure: LegFailure; hash?: Hex; failedAt: number }
+  /**
+   * hash: the transaction that executed, a speed-up's when one replaced the leg's own.
+   * sentHash: the leg's own transaction, only when another one on its nonce executed
+   */
+  | { at: "landed"; hash: Hex; sentHash?: Hex; amount: string; landedAt: number }
+  | { at: "failed"; failure: LegFailure; hash?: Hex; sentHash?: Hex; failedAt: number }
   | { at: "skipped" }
 
 export type PersistedQuoteFee = {
