@@ -1,4 +1,4 @@
-import type { LegBound, LegReplacement } from "@core/domains/swaps/types"
+import type { LegReplacement } from "@core/domains/swaps/types"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -9,76 +9,24 @@ import {
   SIGN_WINDOW_MS,
   transition,
 } from "../machine"
-import type { PlanEvent, PlanLeg, SwapPlan, SwapPlanId } from "../types"
+import type { PlanEvent, PlanLeg, SwapPlan } from "../types"
+import {
+  EVM_ADDRESS,
+  LEG0,
+  LEG0_HASH,
+  LEG1,
+  PLAN_ID,
+  RECIPIENT,
+  SUB_ADDRESS,
+  SUMMARY,
+  T0,
+} from "./fixtures"
 
-const PLAN_ID = "plan-1" as SwapPlanId
-const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
-const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-const RECIPIENT = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
-const GATEWAY = "0xd5Fa238aa4177f6c1341491969d9cBeec94EEd69"
-const HASH0 = `0x${"11".repeat(32)}` as const
 const HASH1 = `0x${"22".repeat(32)}` as const
 const RAW1 = "0x02f8aa" as const
-const T0 = 1_700_000_000_000
 const T1 = T0 + 60_000
 const LEG0_DEADLINE = T0 + 20 * 60_000
 const LEG1_DEADLINE = T1 + 30 * 60_000
-
-const BOUND: LegBound = {
-  platform: "ethereum",
-  chainId: 964,
-  signer: EVM_ADDRESS,
-  to: GATEWAY,
-  calls: [{ template: "0x12345678", amountSlots: [3, 5], maxNetworkFee: "2100000000000000" }],
-  floor: "980100000000000000",
-  maxSpend: "999999500000000000",
-}
-
-const LEG0: PlanLeg = {
-  quote: {
-    protocol: "bittensor-evm",
-    fromTokenId: "bittensor:substrate-native",
-    toTokenId: "964:evm-native",
-    signer: SUB_ADDRESS,
-    recipient: EVM_ADDRESS,
-    inputAmount: "1000000000",
-    outputAmount: "999999500000000000",
-    fees: [],
-    timeInSec: 12,
-  },
-  signerType: "keypair",
-  bound: null,
-  nonce: 7,
-  state: { at: "queued" },
-}
-
-const LEG1: PlanLeg = {
-  quote: {
-    protocol: "forevermoney",
-    fromTokenId: "964:evm-native",
-    toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
-    signer: EVM_ADDRESS,
-    recipient: RECIPIENT,
-    inputAmount: "999999500000000000",
-    outputAmount: "990000000000000000",
-    fees: [],
-    timeInSec: 180,
-  },
-  signerType: "keypair",
-  bound: BOUND,
-  state: { at: "queued" },
-}
-
-const SUMMARY: SwapPlan["summary"] = {
-  fromTokenId: LEG0.quote.fromTokenId,
-  toTokenId: LEG1.quote.toTokenId,
-  fromAmount: "1000000000",
-  quotedOutput: "990000000000000000",
-  recipient: RECIPIENT,
-  protocol: "forevermoney",
-  subProtocol: "via-bittensor-evm",
-  slippage: 0.005,
-}
 
 const PROPOSED: SwapPlan = {
   id: PLAN_ID,
@@ -94,7 +42,7 @@ const LEG0_SENT: PlanLeg = {
   ...LEG0,
   state: {
     at: "sent",
-    hash: HASH0,
+    hash: LEG0_HASH,
     sentAt: T0,
     deadlineAt: LEG0_DEADLINE,
     evidence: { platform: "polkadot", era: { birth: 100, period: 64 } },
@@ -111,7 +59,7 @@ const RUNNING: SwapPlan = {
 
 const LEG0_LANDED: PlanLeg = {
   ...LEG0,
-  state: { at: "landed", hash: HASH0, amount: "999999500000000000", landedAt: T1 },
+  state: { at: "landed", hash: LEG0_HASH, amount: "999999500000000000", landedAt: T1 },
 }
 
 const withLeg1 = (plan: SwapPlan, leg1: PlanLeg, updatedAt: number): SwapPlan => ({
@@ -160,7 +108,7 @@ describe("a proposed plan", () => {
         {
           type: "admitted",
           leg: 0,
-          hash: HASH0,
+          hash: LEG0_HASH,
           nonce: 7,
           deadlineAt: LEG0_DEADLINE,
           evidence: { platform: "polkadot", era: { birth: 100, period: 64 } },
@@ -256,7 +204,7 @@ describe("a sent leg", () => {
           type: "observed",
           leg: 0,
           candidates: 1,
-          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+          observation: { status: "landed", hash: LEG0_HASH, amount: 999999500000000000n },
         },
         T1
       )
@@ -272,7 +220,7 @@ describe("a sent leg", () => {
           type: "observed",
           leg: 0,
           candidates: 1,
-          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+          observation: { status: "landed", hash: LEG0_HASH, amount: 999999500000000000n },
         },
         now
       )
@@ -302,7 +250,7 @@ describe("a sent leg", () => {
           type: "observed",
           leg: 0,
           candidates: 1,
-          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+          observation: { status: "landed", hash: LEG0_HASH, amount: 999999500000000000n },
         },
         T1
       )
@@ -333,7 +281,7 @@ describe("a sent leg", () => {
         type: "observed",
         leg: 0,
         candidates: 1,
-        observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+        observation: { status: "landed", hash: LEG0_HASH, amount: 999999500000000000n },
       },
       T1
     )
@@ -350,7 +298,7 @@ describe("a sent leg", () => {
         type: "observed",
         leg: 0,
         candidates: 1,
-        observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
+        observation: { status: "landed", hash: LEG0_HASH, amount: 999999500000000000n },
       },
       now
     )
@@ -401,7 +349,7 @@ describe("a sent leg", () => {
         phase: "aborted",
         updatedAt: T1,
         legs: [
-          { ...LEG0, state: { at: "failed", failure: "dropped", hash: HASH0, failedAt: T1 } },
+          { ...LEG0, state: { at: "failed", failure: "dropped", hash: LEG0_HASH, failedAt: T1 } },
           { ...LEG1, state: { at: "skipped" } },
         ],
       },
@@ -426,13 +374,13 @@ describe("a sent leg", () => {
         type: "observed",
         leg: 0,
         candidates: 1,
-        observation: { status: "failed", reason: "reverted", hash: HASH0 },
+        observation: { status: "failed", reason: "reverted", hash: LEG0_HASH },
       },
       T1
     )
     expect(result.plan.phase).toBe("aborted")
     expect(result.plan.legs).toEqual([
-      { ...LEG0, state: { at: "failed", failure: "reverted", hash: HASH0, failedAt: T1 } },
+      { ...LEG0, state: { at: "failed", failure: "reverted", hash: LEG0_HASH, failedAt: T1 } },
       { ...LEG1, state: { at: "skipped" } },
     ])
     expect(result.effects).toEqual([{ type: "notify", kind: "stopped" }])
@@ -483,7 +431,7 @@ describe("a sent leg", () => {
     expect(result.plan.legs[0].state).toEqual({
       at: "failed",
       failure: "indeterminate",
-      hash: HASH0,
+      hash: LEG0_HASH,
       failedAt: T1,
     })
     expect(result.plan.legs[1].state).toEqual({ at: "skipped" })
@@ -926,7 +874,7 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
       ...LEG0_SENT,
       state: {
         at: "sent",
-        hash: HASH0,
+        hash: LEG0_HASH,
         sentAt: T0,
         deadlineAt: LEG0_DEADLINE,
         evidence: { platform: "ethereum", raw: "0x02f8aa" },
@@ -945,7 +893,13 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
     )
     expect(result.plan.phase).toBe("aborted")
     expect(result.plan.legs.map((leg) => leg.state)).toEqual([
-      { at: "failed", failure: "cancelled", hash: CANCEL.hash, sentHash: HASH0, failedAt: T1 + 1 },
+      {
+        at: "failed",
+        failure: "cancelled",
+        hash: CANCEL.hash,
+        sentHash: LEG0_HASH,
+        failedAt: T1 + 1,
+      },
       { at: "skipped" },
     ])
   })

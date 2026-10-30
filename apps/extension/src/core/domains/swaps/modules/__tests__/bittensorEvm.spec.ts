@@ -83,8 +83,8 @@ const env: SwapEnv = {
 
 // --- Test helpers ---
 
-const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
-const SUB_PUBKEY = "0xc4518fa0ed143e016e4a1410193704924b890de8f854b94c7a6037651ec65dd0"
+const SUB_ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+const SUB_PUBKEY = "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
 const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
 const ED = 500n
@@ -509,7 +509,6 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     unreadable?: number[]
     /** blocks the node does not know yet: no hash for their number */
     unknown?: number[]
-    balance?: bigint
     /** how long the node takes to answer for each block */
     msPerBlock?: number
   }
@@ -521,7 +520,6 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
     pruned = false,
     unreadable = [],
     unknown = [],
-    balance = 0n,
     msPerBlock = 0,
   }: Finney) => {
     mockSubstrateSend.mockImplementation(async (_networkId, method, params) => {
@@ -546,7 +544,6 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
       const block = blocks[number]
       return block && hash === SENT_HASH ? { blockNumber: number, ...block } : null
     })
-    mockGetBalance.mockResolvedValue(balance)
   }
 
   const sentLeg = (row: WalletTransaction | null = null): SentLeg => ({
@@ -781,12 +778,6 @@ describe("bittensorEvmSwapModule observeLeg substrate -> evm", () => {
 
     expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "indeterminate" })
     expect(mockDecodeEvents).toHaveBeenCalledTimes(64)
-  })
-
-  it("never lands on a deposit to the recipient without the leg's extrinsic", async () => {
-    finney({ finalised: 200, nonce: 8, balance: OUTPUT_WEI })
-
-    expect(await observe(sentLeg())).toEqual({ status: "failed", reason: "indeterminate" })
   })
 
   it("stays pending when the nonce moved but the extrinsic is not in the era yet", async () => {

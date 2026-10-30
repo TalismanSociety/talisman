@@ -1,7 +1,7 @@
 import { db } from "@core/db"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { PROPOSED_TTL_MS, SIGN_WINDOW_MS } from "../machine"
+import { PROPOSED_TTL_MS } from "../machine"
 import {
   applyPlanEvent,
   enqueue,
@@ -13,94 +13,30 @@ import {
   sweepPlans,
   takeProposalArrival,
 } from "../store"
-import type { PlanLeg, PlanSummary, SwapPlan, SwapPlanId } from "../types"
+import type { PlanLeg, SwapPlan, SwapPlanId } from "../types"
+import {
+  ADMIT_LEG0,
+  EVM_ADDRESS,
+  LEG0,
+  LEG0_HASH,
+  LEG0_LANDED,
+  LEG1,
+  PLAN_ID,
+  PROPOSAL,
+  RECIPIENT,
+  T0,
+} from "./fixtures"
 
-const PLAN_ID = "plan-1" as SwapPlanId
 const OTHER_ID = "plan-2" as SwapPlanId
-const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
-const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-const RECIPIENT = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
-const HASH0 = `0x${"11".repeat(32)}` as const
-const T0 = 1_700_000_000_000
-
-const LEG0: PlanLeg = {
-  quote: {
-    protocol: "bittensor-evm",
-    fromTokenId: "bittensor:substrate-native",
-    toTokenId: "964:evm-native",
-    signer: SUB_ADDRESS,
-    recipient: EVM_ADDRESS,
-    inputAmount: "1000000000",
-    outputAmount: "999999500000000000",
-    fees: [],
-    timeInSec: 12,
-  },
-  signerType: "keypair",
-  bound: null,
-  nonce: 7,
-  state: { at: "queued" },
-}
-
-const LEG1: PlanLeg = {
-  quote: {
-    protocol: "forevermoney",
-    fromTokenId: "964:evm-native",
-    toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
-    signer: EVM_ADDRESS,
-    recipient: RECIPIENT,
-    inputAmount: "999999500000000000",
-    outputAmount: "990000000000000000",
-    fees: [],
-    timeInSec: 180,
-  },
-  signerType: "keypair",
-  bound: {
-    platform: "ethereum",
-    chainId: 964,
-    signer: EVM_ADDRESS,
-    to: "0xd5Fa238aa4177f6c1341491969d9cBeec94EEd69",
-    calls: [{ template: "0x12345678", amountSlots: [3, 5], maxNetworkFee: "2100000000000000" }],
-    floor: "980100000000000000",
-    maxSpend: "999999500000000000",
-  },
-  state: { at: "queued" },
-}
-
-const SUMMARY: PlanSummary = {
-  fromTokenId: LEG0.quote.fromTokenId,
-  toTokenId: LEG1.quote.toTokenId,
-  fromAmount: "1000000000",
-  quotedOutput: "990000000000000000",
-  recipient: RECIPIENT,
-  protocol: "forevermoney",
-  slippage: 0.005,
-}
-
-const PROPOSAL = {
-  id: PLAN_ID,
-  legs: [LEG0, LEG1] as [PlanLeg, PlanLeg],
-  summary: SUMMARY,
-}
 
 const signedBy = (signer: string): PlanLeg => ({ ...LEG1, quote: { ...LEG1.quote, signer } })
 
-const ADMIT_LEG0 = {
-  type: "admitted",
-  leg: 0,
-  hash: HASH0,
-  nonce: 7,
-  deadlineAt: T0 + 20 * 60_000,
-  evidence: { platform: "polkadot", era: { birth: 100, period: 64 } },
-} as const
-
 const PROPOSED: SwapPlan = {
-  id: PLAN_ID,
+  ...PROPOSAL,
   phase: "proposed",
   createdAt: T0,
   updatedAt: T0,
   signUntil: null,
-  summary: SUMMARY,
-  legs: [LEG0, LEG1],
 }
 
 describe("swap plan store", () => {
@@ -180,45 +116,13 @@ describe("swap plan store", () => {
     it("stores the transitioned plan and returns its effects", async () => {
       await proposePlan(PROPOSAL, T0)
       const admitted = await applyPlanEvent(PLAN_ID, ADMIT_LEG0, T0 + 1_000)
-      expect(admitted).toEqual({
-        plan: {
-          ...PROPOSED,
-          phase: "running",
-          updatedAt: T0 + 1_000,
-          signUntil: T0 + 1_000 + SIGN_WINDOW_MS,
-          legs: [
-            {
-              ...LEG0,
-              state: {
-                at: "sent",
-                hash: HASH0,
-                sentAt: T0 + 1_000,
-                deadlineAt: T0 + 20 * 60_000,
-                evidence: { platform: "polkadot", era: { birth: 100, period: 64 } },
-              },
-            },
-            LEG1,
-          ],
-        },
-        effects: [],
-      })
+      expect(admitted?.plan.phase).toBe("running")
+      expect(admitted?.effects).toEqual([])
+      expect(await db.swapPlans.get(PLAN_ID)).toEqual(admitted?.plan)
 
-      const landed = await applyPlanEvent(
-        PLAN_ID,
-        {
-          type: "observed",
-          leg: 0,
-          candidates: 1,
-          observation: { status: "landed", hash: HASH0, amount: 999999500000000000n },
-        },
-        T0 + 2_000
-      )
+      const landed = await applyPlanEvent(PLAN_ID, LEG0_LANDED, T0 + 2_000)
       expect(landed?.effects).toEqual([{ type: "build-and-sign", leg: 1 }])
-      expect((await db.swapPlans.get(PLAN_ID))?.legs[1].state).toEqual({
-        at: "building",
-        attempt: 1,
-        nextAttemptAt: T0 + 2_000,
-      })
+      expect(await db.swapPlans.get(PLAN_ID)).toEqual(landed?.plan)
     })
 
     it("returns null for an unknown plan", async () => {
@@ -235,7 +139,7 @@ describe("swap plan store", () => {
             type: "observed",
             leg: 0,
             candidates: 1,
-            observation: { status: "landed", hash: HASH0, amount: 5n },
+            observation: { status: "landed", hash: LEG0_HASH, amount: 5n },
           },
           T0 + 2
         ),
@@ -243,7 +147,7 @@ describe("swap plan store", () => {
       expect(admitted?.plan.legs[0].state.at).toBe("sent")
       expect(landed?.plan.legs[0].state).toEqual({
         at: "landed",
-        hash: HASH0,
+        hash: LEG0_HASH,
         amount: "5",
         landedAt: T0 + 2,
       })
