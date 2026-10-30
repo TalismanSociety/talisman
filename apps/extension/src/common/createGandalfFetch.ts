@@ -1,20 +1,17 @@
-import type { Loadable } from "@talismn/util"
-import { filter, firstValueFrom, type Observable, timeout } from "rxjs"
+import { log } from "@common/log"
+import { getErrorMessage } from "@talismn/util"
 
-const getAccessToken = (accessToken$: Observable<Loadable<string>>) =>
-  firstValueFrom(
-    accessToken$.pipe(
-      filter((loadable) => loadable.status !== "loading"),
-      timeout({
-        each: 10_000,
-        with: () => {
-          throw new Error("Timed out waiting for access token")
-        },
-      })
+const CALLER_WAIT_MS = 10_000
+
+const waitForToken = (getToken: () => Promise<string>) =>
+  new Promise<string>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("Timed out waiting for access token")),
+      CALLER_WAIT_MS
     )
-  ).then((loadable) => {
-    if (loadable.status === "success") return loadable.data ?? ""
-    throw new Error(loadable.error?.message ?? "Failed to obtain access token")
+    getToken()
+      .then(resolve, reject)
+      .finally(() => clearTimeout(timer))
   })
 
 /**
@@ -22,14 +19,15 @@ const getAccessToken = (accessToken$: Observable<Loadable<string>>) =>
  * Gandalf access token, or `undefined` when no token could be obtained.
  *
  * For clients that take a request hook instead of a `fetch` (e.g. the LI.FI SDK's
- * `requestInterceptor`). The first call waits up to 10s for the token (registration
- * + PoW). Later calls resolve from the shared replay.
+ * `requestInterceptor`). Each call waits up to 10s for `getToken`; the wait only gives up
+ * on this caller, the token acquisition behind `getToken` carries on for the next one.
  */
 export const createGandalfAuthorization =
-  (accessToken$: Observable<Loadable<string>>) => async (): Promise<string | undefined> => {
+  (getToken: () => Promise<string>) => async (): Promise<string | undefined> => {
     try {
-      return `Bearer ${await getAccessToken(accessToken$)}`
-    } catch {
+      return `Bearer ${await waitForToken(getToken)}`
+    } catch (err) {
+      log.debug("Gandalf: no access token for this request", getErrorMessage(err))
       return undefined
     }
   }
@@ -45,8 +43,8 @@ export const createGandalfAuthorization =
  * Without a token the request goes out without an Authorization header, so the
  * server can respond with 401.
  */
-export const createGandalfFetch = (accessToken$: Observable<Loadable<string>>): typeof fetch => {
-  const getAuthorization = createGandalfAuthorization(accessToken$)
+export const createGandalfFetch = (getToken: () => Promise<string>): typeof fetch => {
+  const getAuthorization = createGandalfAuthorization(getToken)
 
   return async (input, init) => {
     const authorization = await getAuthorization()

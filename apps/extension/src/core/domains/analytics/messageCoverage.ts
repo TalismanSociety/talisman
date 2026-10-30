@@ -122,6 +122,7 @@ export const MESSAGE_COVERAGE = {
   "pri(earn.yieldxyz.positions.refresh)": "read",
   "pri(keepalive)": { exempt: "housekeeping" },
   "pri(keepunlocked)": { exempt: "housekeeping" },
+  "pri(gandalf.accessToken.get)": { exempt: "housekeeping" },
   "pri(chaindata.networks.upsert)": { event: "custom_network_saved" },
   "pri(chaindata.networks.remove)": { event: "custom_network_deleted" },
   "pri(chaindata.tokens.upsert)": { event: ["custom_token_added", "custom_token_edited"] },

@@ -19,6 +19,12 @@ const BAD_RPC_ERRORS: Record<string, string> = {
 
 const RESPONSE_TIMEOUT = 30_000 // max wait for an rpc response (including connection time)
 const KEEP_ALIVE_INTERVAL = 20_000 // periodic system_health to keep idle sockets alive (ws-provider kills quiet sockets after its 40s heartbeat)
+/**
+ * How long a connection stays open once its last user releases it. A one-off request is
+ * often followed by more traffic to the same chain (balances read the runtime version,
+ * then subscribe to storage), which then reuses the socket instead of opening a new one.
+ */
+const IDLE_CLOSE_DELAY = 30_000
 
 /** in-flight requests reject with DestroyedError when a connection is torn down - expected, not worth logging */
 const isDestroyedError = (error: unknown): boolean =>
@@ -76,6 +82,18 @@ type Connection = {
   wasConnected: boolean
   keepAliveInterval: ReturnType<typeof setInterval> | null
   staleTimeout: ReturnType<typeof setTimeout> | null
+  /** closes the connection once it has had no users for IDLE_CLOSE_DELAY */
+  idleTimeout: ReturnType<typeof setTimeout> | null
+}
+
+export type ChainConnectorDotOptions = {
+  /**
+   * How long a new socket may take to open before the provider gives up on the endpoint
+   * and tries the next one. Defaults to polkadot-api's 5 seconds. A slow device or
+   * network can take longer than that to connect while it is busy, as a phone app is
+   * at startup, and every endpoint then times out in turn.
+   */
+  connectionTimeout?: number
 }
 
 /**
@@ -94,12 +112,17 @@ type Connection = {
  */
 export class ChainConnectorDot implements IChainConnectorDot {
   #chaindataChainProvider: IChaindataNetworkProvider
+  #connectionTimeout: number | undefined
 
   #connections: Record<DotNetworkId, Connection> = {}
   #pendingConnections: Record<DotNetworkId, Promise<Connection>> = {}
 
-  constructor(chaindataChainProvider: IChaindataNetworkProvider) {
+  constructor(
+    chaindataChainProvider: IChaindataNetworkProvider,
+    options?: ChainConnectorDotOptions
+  ) {
     this.#chaindataChainProvider = chaindataChainProvider
+    this.#connectionTimeout = options?.connectionTimeout
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: legacy
@@ -250,12 +273,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
       subscription.cancelRequest?.()
       subscription.stopFollow?.()
 
-      // the connection may have been replaced by a reset() since we subscribed
+      // the connection may have been replaced by a reset() since we subscribed. It stays
+      // open for a while after its last user leaves, so unsubscribe on the server even then
       const current = this.#connections[chainId]
-      // if we are the last user the connection is about to be destroyed: skip the
-      // unsubscribe call, server-side subscriptions die with the socket anyway
-      const isLastUser = !!current && current.users.size === 1 && current.users.has(socketUserId)
-      if (subscription.serverSubId !== null && current && !isLastUser)
+      if (subscription.serverSubId !== null && current)
         try {
           current.client.request(unsubscribeMethod, [subscription.serverSubId]).catch((error) => {
             if (!isDestroyedError(error)) log.warn(`Failed to unsubscribe from ${chainId}`, error)
@@ -376,6 +397,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
       connection = await this.#pendingConnections[chainId]
     }
 
+    if (connection.idleTimeout) {
+      clearTimeout(connection.idleTimeout)
+      connection.idleTimeout = null
+    }
     const socketUserId = this.getExclusiveRandomId([...connection.users])
     connection.users.add(socketUserId)
 
@@ -394,6 +419,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     const provider = getWsProvider(rpcs, {
       onStatusChanged: (status: StatusChange) => this.handleStatusChange(connection, status),
+      ...(this.#connectionTimeout !== undefined && { timeout: this.#connectionTimeout }),
     })
 
     const client = createClient(provider)
@@ -407,6 +433,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       wasConnected: false,
       keepAliveInterval: null,
       staleTimeout: null,
+      idleTimeout: null,
     }
 
     return connection
@@ -469,17 +496,23 @@ export class ChainConnectorDot implements IChainConnectorDot {
     if (!connection) return
 
     connection.users.delete(socketUserId)
-    if (connection.users.size > 0) return
+    if (connection.users.size > 0 || connection.idleTimeout) return
 
-    this.destroyConnection(connection)
-    delete this.#connections[chainId]
+    connection.idleTimeout = setTimeout(() => {
+      connection.idleTimeout = null
+      if (connection.users.size > 0 || this.#connections[chainId] !== connection) return
+      this.destroyConnection(connection)
+      delete this.#connections[chainId]
+    }, IDLE_CLOSE_DELAY)
   }
 
   private destroyConnection(connection: Connection): void {
     if (connection.keepAliveInterval) clearInterval(connection.keepAliveInterval)
     if (connection.staleTimeout) clearTimeout(connection.staleTimeout)
+    if (connection.idleTimeout) clearTimeout(connection.idleTimeout)
     connection.keepAliveInterval = null
     connection.staleTimeout = null
+    connection.idleTimeout = null
 
     // detach subscriptions before destroying the client so their callbacks don't receive a DestroyedError
     for (const subscription of connection.subscriptions) {

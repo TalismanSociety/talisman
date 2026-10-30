@@ -1,10 +1,12 @@
 import { ed25519 } from "@noble/curves/ed25519.js"
 import { vi } from "vitest"
+import { ZodError } from "zod"
 
 import {
   base64urlEncode,
   bytesToHex,
   fetchChallenge,
+  GandalfRequestError,
   hexToBytes,
   registerInstall,
   requestAccessToken,
@@ -123,19 +125,31 @@ describe("fetchChallenge", () => {
     await expect(fetchChallenge()).rejects.toThrow("Gandalf challenge request failed (500)")
   })
 
-  it("passes abort signal through", async () => {
-    const controller = new AbortController()
+  it.each([
+    ["no difficulty", { challenge: "x", expiresAt: 0 }],
+    ["a fractional difficulty", { challenge: "x", difficulty: 1.5, expiresAt: 0 }],
+    ["a difficulty above the hash size", { challenge: "x", difficulty: 257, expiresAt: 0 }],
+    ["no challenge", { difficulty: 1, expiresAt: 0 }],
+  ])("rejects a successful challenge reply with %s", async (_, body) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+
+    await expect(fetchChallenge()).rejects.toThrow(ZodError)
+  })
+
+  it("gives the request its own timeout signal", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ challenge: "x", difficulty: 1, expiresAt: 0 }), {
         status: 200,
       })
     )
 
-    await fetchChallenge(controller.signal)
+    await fetchChallenge()
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ signal: controller.signal })
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
   })
 })
@@ -182,6 +196,19 @@ describe("registerInstall", () => {
     expect(body).toHaveProperty("pubKey.crv", "Ed25519")
     expect(body).toHaveProperty("challenge", "test-challenge")
     expect(body).toHaveProperty("solution")
+  })
+
+  it("rejects a successful registration reply without an install id", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ challenge: "c", difficulty: 1, expiresAt: 0 }), {
+          status: 200,
+        })
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }))
+
+    await expect(registerInstall()).rejects.toThrow(ZodError)
   })
 
   it("throws with server message on registration failure", async () => {
@@ -282,5 +309,61 @@ describe("requestAccessToken", () => {
     await expect(requestAccessToken("inst-1", bytesToHex(priv))).rejects.toThrow(
       "Gandalf token request failed (401): invalid signature"
     )
+  })
+
+  it.each([
+    ["no access token", { expiresIn: 300 }],
+    ["an empty access token", { accessToken: "", expiresIn: 300 }],
+    ["no expiry", { accessToken: "jwt" }],
+  ])("rejects a successful reply with %s", async (_, body) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+
+    await expect(
+      requestAccessToken("inst-1", bytesToHex(ed25519.utils.randomSecretKey()))
+    ).rejects.toThrow(ZodError)
+  })
+
+  const failWith = (status: number, body: unknown, headers?: HeadersInit) => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status, headers }))
+    return requestAccessToken("inst-1", bytesToHex(ed25519.utils.randomSecretKey())).then(
+      () => {
+        throw new Error("expected the token request to fail")
+      },
+      (error: unknown) => error as GandalfRequestError
+    )
+  }
+
+  it("attaches the status and the Retry-After header to its error", async () => {
+    const error = await failWith(429, { message: "slow down" }, { "Retry-After": "60" })
+
+    expect(error).toBeInstanceOf(GandalfRequestError)
+    expect(error).toMatchObject({ status: 429, retryAfter: 60 })
+  })
+
+  it("falls back to the body's retryAfter when there is no header", async () => {
+    const error = await failWith(429, { message: "slow down", retryAfter: 45 })
+
+    expect(error).toMatchObject({ status: 429, retryAfter: 45 })
+  })
+
+  it("falls back to the body when the Retry-After header is blank", async () => {
+    const error = await failWith(429, { retryAfter: 60 }, { "Retry-After": " " })
+
+    expect(error).toMatchObject({ status: 429, retryAfter: 60 })
+  })
+
+  it("ignores a Retry-After it cannot use", async () => {
+    const error = await failWith(
+      503,
+      { retryAfter: -1 },
+      { "Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT" }
+    )
+
+    expect(error).toMatchObject({ status: 503 })
+    expect(error.retryAfter).toBeUndefined()
   })
 })

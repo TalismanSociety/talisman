@@ -1,25 +1,24 @@
 import {
   AlertCircleIcon,
   CreditCardIcon,
+  ExpandIcon,
   GlobeIcon,
   KeyIcon,
   LockIcon,
   PlusIcon,
-  RepeatIcon,
   SendIcon,
   SettingsIcon,
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
-import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { Drawer } from "@ui/components/Drawer"
 import { IconButton } from "@ui/components/IconButton"
 import { Nav, NavItem } from "@ui/components/Nav"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
-import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -52,13 +51,6 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const { open: openSwapModal } = useSwapModal()
-  const handleSwapClick = useCallback(async () => {
-    openSwapModal({ entry: "nav_menu" })
-    await sleep(150)
-    close()
-  }, [openSwapModal, close])
-
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
     api.dashboardOpen("/settings/mnemonics")
@@ -74,6 +66,8 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [])
+
+  const handleFullscreenClick = useOpenFullscreen()
 
   const showBuySell = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
@@ -111,9 +105,6 @@ export const NavigationDrawer: FC = () => {
                 {t("Send Funds")}
               </NavItem>
             )}
-            <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
-              {t("Swap")}
-            </NavItem>
             {!!showBuySell && (
               <NavItem icon={<CreditCardIcon />} onClick={handleBuySellClick}>
                 {t("Buy/Sell")}
@@ -133,6 +124,9 @@ export const NavigationDrawer: FC = () => {
             </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
+            </NavItem>
+            <NavItem icon={<ExpandIcon />} onClick={handleFullscreenClick}>
+              {t("Fullscreen")}
             </NavItem>
           </Nav>
         </div>

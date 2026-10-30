@@ -1,5 +1,14 @@
 # @talismn/on-chain-id
 
+## 1.0.8
+
+### Patch Changes
+
+- Updated dependencies [bfc3a21]
+- Updated dependencies [7bcc1a5]
+- Updated dependencies [9bbf6c8]
+  - @talismn/chain-connectors@1.1.1
+
 ## 1.0.7
 
 ### Patch Changes

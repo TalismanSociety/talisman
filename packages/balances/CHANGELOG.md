@@ -1,5 +1,20 @@
 # @talismn/balances
 
+## 3.1.1
+
+### Patch Changes
+
+- bfc3a21: substrate balance subscriptions survive a StaleRpcError and resubscribe with backoff after other errors, so the chain's socket stays held between dtao polls instead of reopening on the first RPC for every request
+- 99beb29: Sum every token account an address holds of a Token-2022 mint, and lock what is outside its associated token account
+- Updated dependencies [bfc3a21]
+- Updated dependencies [7bcc1a5]
+- Updated dependencies [9bbf6c8]
+- Updated dependencies [a400d62]
+- Updated dependencies [0367860]
+  - @talismn/chain-connectors@1.1.1
+  - @talismn/chaindata-provider@2.3.1
+  - @talismn/token-rates@4.0.8
+
 ## 3.1.0
 
 ### Minor Changes

@@ -1,14 +1,17 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { ChevronRightIcon, PopoutIcon } from "@talismn/icons"
+import { ChevronRightIcon, ExpandIcon, PopoutIcon } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { Coachmark } from "@ui/components/Coachmark"
 import { IconButton } from "@ui/components/IconButton"
 import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
+import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { cn } from "@ui/util/cn"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { type FC, useCallback, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
@@ -47,7 +50,10 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
         mouseOver={isHovered}
         disabled={disabled}
       />
-      {IS_EMBEDDED_POPUP && <PopoutButton />}
+      <div className="absolute top-3 right-3 flex">
+        <FullscreenButton />
+        {IS_EMBEDDED_POPUP && <PopoutButton />}
+      </div>
     </div>
   )
 }
@@ -59,8 +65,29 @@ const PopoutButton: FC = () => {
   }, [])
 
   return (
-    <IconButton className="absolute top-3 right-3 p-3 text-base" onClick={handleClick}>
+    <IconButton className="p-3 text-base" onClick={handleClick}>
       <PopoutIcon />
     </IconButton>
+  )
+}
+
+const FullscreenButton: FC = () => {
+  const { t } = useTranslation()
+  const handleClick = useOpenFullscreen()
+
+  return (
+    <Coachmark
+      id="popup_fullscreen_moved"
+      title={t("Expand has moved here")}
+      description={
+        IS_EMBEDDED_POPUP
+          ? t("Expand to open Talisman in a full tab, or pop it out into its own window.")
+          : t("Expand to open Talisman in a full tab.")
+      }
+    >
+      <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
+        <ExpandIcon />
+      </IconButton>
+    </Coachmark>
   )
 }

@@ -186,6 +186,34 @@ describe("ChaindataProvider", () => {
       expect(tokens.some((t) => t.id === "42161-evm-native")).toBe(true)
       expect(tokens.some((t) => t.id === "10-evm-native")).toBe(true)
     })
+
+    it("does not let a solana token shadow its curated entry", async () => {
+      const mintAddress = "So11111111111111111111111111111111111111112"
+      const id = `solana-sol-token2022-${mintAddress}`
+      const token = {
+        id,
+        networkId: "solana",
+        type: "sol-token2022",
+        platform: "solana",
+        decimals: 9,
+        mintAddress,
+      }
+      const curatedToken = { ...token, symbol: "CUR", logo: "https://example.com/cur.svg" } as Token
+      const onChainToken = { ...token, symbol: "CHAIN", isDefault: true } as Token
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+      const provider = new ChaindataProvider({
+        persistedStorage: makeChaindata({ tokens: [...makeChaindata().tokens, curatedToken] }),
+        dynamicTokens$,
+      })
+
+      await provider.registerDynamicTokens([onChainToken])
+
+      expect(await firstValueFrom(dynamicTokens$)).toEqual([])
+      const combined = await firstValueFrom(provider.getTokenById$(id))
+      expect(combined?.symbol).toBe("CUR")
+      expect(combined?.logo).toBe("https://example.com/cur.svg")
+    })
   })
 
   describe("syncDynamicTokens", () => {

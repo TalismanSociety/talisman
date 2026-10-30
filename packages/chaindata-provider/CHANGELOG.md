@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 2.3.1
+
+### Patch Changes
+
+- a400d62: registerDynamicTokens ignores Solana tokens that are already in the curated chaindata
+
 ## 2.3.0
 
 ### Minor Changes
