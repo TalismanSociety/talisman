@@ -1,9 +1,5 @@
-import {
-  BITTENSOR_EVM_PAIRS,
-  BITTENSOR_EXISTENTIAL_DEPOSIT_RAO,
-  BITTENSOR_WEI_PER_RAO,
-} from "@core/domains/bittensor/constants"
-import { networkIdFromTokenId, parseTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { getBittensorEvmReservedWei } from "@core/domains/bittensor/constants"
+import { parseTokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { erc20Abi, type Hex, type PublicClient } from "viem"
 
@@ -31,39 +27,33 @@ export const fromPersistedLeg = (leg: PersistedQuoteLeg): QuoteLeg => ({
   fees: leg.fees.map((fee) => ({ ...fee, amount: BigNumber(fee.amount) })),
 })
 
-/** Bittensor EVM reaps an account whose native balance drops under the existential deposit */
-const keepAliveWei = (tokenId: TokenId) =>
-  parseTokenId(tokenId).type === "evm-native" &&
-  BITTENSOR_EVM_PAIRS.some((pair) => pair.evmNetworkId === networkIdFromTokenId(tokenId))
-    ? BITTENSOR_EXISTENTIAL_DEPOSIT_RAO * BITTENSOR_WEI_PER_RAO
-    : 0n
-
-/** what the leg's signer holds of the token the leg spends */
-export const readLegBalance = (
+/** what the leg's signer can spend of the token the leg spends: its balance less what the chain reserves */
+export const readLegBalance = async (
   client: PublicClient,
   leg: Pick<PersistedQuoteLeg, "fromTokenId" | "signer">
 ): Promise<bigint> => {
   const specs = parseTokenId(leg.fromTokenId)
   const address = leg.signer as Hex
-  return specs.type === "evm-erc20"
-    ? client.readContract({
-        address: specs.contractAddress,
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [address],
-      })
-    : client.getBalance({ address })
+  const balance =
+    specs.type === "evm-erc20"
+      ? await client.readContract({
+          address: specs.contractAddress,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [address],
+        })
+      : await client.getBalance({ address })
+  return balance - getBittensorEvmReservedWei(leg.fromTokenId)
 }
 
 /**
- * What leg `index` spends: the least of what the previous leg landed, what the signer can spend
- * and what was quoted. Funds already on the intermediate are never swept into the plan.
+ * What leg `index` spends: the least of what the previous leg landed, what was quoted and what
+ * the signer can spend. Funds already on the intermediate are never swept into the plan.
  */
-export const deriveLegInput = (plan: SwapPlan, index: number, balance: bigint): bigint => {
+export const deriveLegInput = (plan: SwapPlan, index: number, spendable: bigint): bigint => {
   const leg = plan.legs[index]
   const previous = plan.legs[index - 1]
   const landed = previous?.state.at === "landed" ? BigInt(previous.state.amount) : 0n
-  const spendable = balance - keepAliveWei(leg.quote.fromTokenId)
   return [landed, BigInt(leg.quote.inputAmount), spendable].reduce((min, value) =>
     value < min ? value : min
   )

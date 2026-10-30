@@ -1,3 +1,5 @@
+import { networkIdFromTokenId, parseTokenId, type TokenId } from "@talismn/chaindata-provider"
+
 export const BITTENSOR_NETWORK_ID = "bittensor"
 export const BITTENSOR_TESTNET_NETWORK_ID = "bittensor-testnet"
 export const BITTENSOR_DEVNET_NETWORK_ID = "bittensor-devnet"
@@ -51,3 +53,10 @@ export const getBittensorEvmPairByEvmNetworkId = (
   evmNetworkId: string | null | undefined
 ): BittensorEvmPair | undefined =>
   BITTENSOR_EVM_PAIRS.find((pair) => pair.evmNetworkId === evmNetworkId)
+
+/** Bittensor EVM reaps an account whose native balance drops under the existential deposit */
+export const getBittensorEvmReservedWei = (tokenId: TokenId): bigint =>
+  parseTokenId(tokenId).type === "evm-native" &&
+  getBittensorEvmPairByEvmNetworkId(networkIdFromTokenId(tokenId))
+    ? BITTENSOR_EXISTENTIAL_DEPOSIT_RAO * BITTENSOR_WEI_PER_RAO
+    : 0n

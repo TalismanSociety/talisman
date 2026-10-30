@@ -55,33 +55,33 @@ describe("deriveLegInput", () => {
     expect(deriveLegInput(plan(LEG0_OUTPUT + 1n), 1, 5n * 10n ** 18n)).toBe(LEG0_OUTPUT)
   })
 
-  it("keeps the existential deposit on Bittensor EVM", () => {
-    expect(deriveLegInput(plan(LEG0_OUTPUT), 1, LEG0_OUTPUT)).toBe(LEG0_OUTPUT - ED_WEI)
-  })
-
-  it("keeps nothing back from an ERC20 input, the deposit is native", () => {
-    const erc20Plan = plan(LEG0_OUTPUT)
-    erc20Plan.legs[1] = {
-      ...LEG1,
-      quote: { ...LEG1.quote, fromTokenId: `964:evm-erc20:${ALPHA_TOKEN.toLowerCase()}` },
-      state: { at: "building", attempt: 1, nextAttemptAt: T0 },
-    }
-    expect(deriveLegInput(erc20Plan, 1, LEG0_OUTPUT)).toBe(LEG0_OUTPUT)
+  it("never spends above what the signer can spend", () => {
+    expect(deriveLegInput(plan(LEG0_OUTPUT), 1, LEG0_OUTPUT - ED_WEI)).toBe(LEG0_OUTPUT - ED_WEI)
   })
 })
 
 describe("readLegBalance", () => {
+  const NATIVE_BALANCE = 5n * 10n ** 18n
   const client = {
-    getBalance: vi.fn(async () => 5n),
+    getBalance: vi.fn(async () => NATIVE_BALANCE),
     readContract: vi.fn(async () => 3n),
   } as unknown as PublicClient
 
-  it("reads the native balance for a native input", async () => {
-    expect(await readLegBalance(client, LEG1.quote)).toBe(5n)
-    expect(client.getBalance).toHaveBeenCalledWith({ address: EVM_ADDRESS })
+  it.each(["964", "945"])(
+    "keeps the existential deposit back on Bittensor EVM %s",
+    async (networkId) => {
+      const leg = { ...LEG1.quote, fromTokenId: `${networkId}:evm-native` }
+      expect(await readLegBalance(client, leg)).toBe(NATIVE_BALANCE - ED_WEI)
+      expect(client.getBalance).toHaveBeenCalledWith({ address: EVM_ADDRESS })
+    }
+  )
+
+  it("keeps nothing back on another network", async () => {
+    const leg = { ...LEG1.quote, fromTokenId: "8453:evm-native" }
+    expect(await readLegBalance(client, leg)).toBe(NATIVE_BALANCE)
   })
 
-  it("reads balanceOf for an ERC20 input", async () => {
+  it("reads balanceOf for an ERC20 input and keeps nothing back, the deposit is native", async () => {
     const leg = { ...LEG1.quote, fromTokenId: `964:evm-erc20:${ALPHA_TOKEN.toLowerCase()}` }
     expect(await readLegBalance(client, leg)).toBe(3n)
     expect(client.readContract).toHaveBeenCalledWith(
