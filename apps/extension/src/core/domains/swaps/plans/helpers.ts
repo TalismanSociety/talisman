@@ -59,29 +59,9 @@ export const deriveLegInput = (plan: SwapPlan, index: number, spendable: bigint)
   )
 }
 
-/** the stepper's statuses, named here so the pages can map a plan without a core-to-ui import */
-export type PlanStepStatus =
-  | "upcoming"
-  | "waiting-on-you"
-  | "in-progress"
-  | "done"
-  | "failed"
-  | "skipped"
-
-export type PlanStep = {
+type PlanStep = {
   leg: number
-  status: PlanStepStatus
   hash: Hex | null
-}
-
-const STEP_STATUS: Record<LegState["at"], PlanStepStatus> = {
-  "queued": "upcoming",
-  "awaiting-user": "waiting-on-you",
-  "building": "in-progress",
-  "sent": "in-progress",
-  "landed": "done",
-  "failed": "failed",
-  "skipped": "skipped",
 }
 
 /** a sent leg is followed by its latest transaction, a landed one by the one that executed */
@@ -93,7 +73,6 @@ const hashOf = (state: LegState): Hex | null => {
 export const planSteps = (plan: SwapPlan): PlanStep[] =>
   plan.legs.map((leg, index) => ({
     leg: index,
-    status: STEP_STATUS[leg.state.at],
     hash: hashOf(leg.state),
   }))
 

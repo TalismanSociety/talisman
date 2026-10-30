@@ -133,14 +133,14 @@ describe("toPersistedLeg", () => {
 })
 
 describe("planSteps", () => {
-  it("shows a landed first leg done and the building second leg in progress", () => {
+  it("follows a landed leg by its transaction, a building one by none", () => {
     expect(planSteps(plan(LEG0_OUTPUT))).toEqual([
-      { leg: 0, status: "done", hash: LEG0_HASH },
-      { leg: 1, status: "in-progress", hash: null },
+      { leg: 0, hash: LEG0_HASH },
+      { leg: 1, hash: null },
     ])
   })
 
-  it("shows the stopping leg failed and the legs after it skipped", () => {
+  it("follows a failed leg by its transaction, a skipped one by none", () => {
     const stopped: SwapPlan = {
       ...plan(LEG0_OUTPUT),
       phase: "stopped",
@@ -153,21 +153,9 @@ describe("planSteps", () => {
       ],
     }
     expect(planSteps(stopped)).toEqual([
-      { leg: 0, status: "failed", hash: LEG0_HASH },
-      { leg: 1, status: "skipped", hash: null },
+      { leg: 0, hash: LEG0_HASH },
+      { leg: 1, hash: null },
     ])
-  })
-
-  it("asks the user for a leg waiting on them", () => {
-    const paused: SwapPlan = {
-      ...plan(LEG0_OUTPUT),
-      phase: "paused",
-      legs: [
-        plan(LEG0_OUTPUT).legs[0],
-        { ...LEG1, state: { at: "awaiting-user", why: "unlock", since: T0 } },
-      ],
-    }
-    expect(planSteps(paused).map((step) => step.status)).toEqual(["done", "waiting-on-you"])
   })
 
   it("follows the user's latest speed-up of a sent leg", () => {
@@ -193,7 +181,7 @@ describe("planSteps", () => {
         },
       ],
     }
-    expect(planSteps(sped)[1]).toEqual({ leg: 1, status: "in-progress", hash: speedUp })
+    expect(planSteps(sped)[1]).toEqual({ leg: 1, hash: speedUp })
   })
 })
 
