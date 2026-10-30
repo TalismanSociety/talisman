@@ -10,27 +10,19 @@ const DEFAULT_REMOTE_CONFIG = remoteConfigDefault as RemoteConfigStoreData
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 
-/** every write of a fetched config goes through here, so a dev tweak survives the reset of an extension reload */
-const fetchConfig = async () => {
-  const config = await fetchRemoteConfig()
-
-  if (DEBUG && config) {
-    // tweak config for testing purposes
-    config.featureFlags.SWAPS_MULTI_HOP = true
-  }
-
-  return config
-}
-
 class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
   // call this only once, and only from background script
   async init() {
     const updateConfig = async () => {
       try {
-        const config = await fetchConfig()
+        const config = await fetchRemoteConfig()
 
         // safety measure, most likely always an object
         if (!config) return
+
+        if (DEBUG) {
+          // tweak config for testing purposes
+        }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.replace(config)
@@ -50,7 +42,7 @@ class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
   async reset() {
     try {
       // prioritize fresh remote config
-      const config = await fetchConfig()
+      const config = await fetchRemoteConfig()
       await this.replace(config)
     } catch {
       try {
@@ -72,7 +64,7 @@ if (DEBUG) {
   const hostObj = globalThis as any
 
   hostObj.refreshRemoteConfig = async () => {
-    const config = await fetchConfig()
+    const config = await fetchRemoteConfig()
     await remoteConfigStore.replace(config)
     log.log("[remoteConfig] refreshed", config)
     return config
