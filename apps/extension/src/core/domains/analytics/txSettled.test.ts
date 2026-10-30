@@ -278,7 +278,7 @@ describe("a swap plan settles its flow once, on the plan", () => {
       txInfo: {
         type: "swap-forevermoney",
         fromTokenId: "964:evm-native",
-        toTokenId: SUMMARY.toTokenId,
+        toTokenId: LEG1.quote.toTokenId,
         fromAmount: "1",
         toAmount: "1",
         to: ACCOUNT,

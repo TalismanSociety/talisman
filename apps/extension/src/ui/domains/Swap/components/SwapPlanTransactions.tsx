@@ -165,6 +165,8 @@ const PlanTransactions: FC<{
     [blockingError, ctx, input]
   )
   const lastIndex = plan.legs.length - 1
+  const first = plan.legs[0].quote
+  const last = plan.legs[lastIndex].quote
   const providerLeg = plan.legs.findIndex((leg) => leg.quote.protocol === plan.summary.protocol)
 
   const renderBody = (card: SwapTxCardModel) => {
@@ -259,12 +261,12 @@ const PlanTransactions: FC<{
       }
     >
       <SwapTxSummary
-        fromTokenId={plan.summary.fromTokenId}
-        toTokenId={plan.summary.toTokenId}
-        fromAmount={BigInt(plan.summary.fromAmount)}
-        toAmount={BigInt(plan.summary.quotedOutput)}
-        fromAddress={plan.legs[0].quote.signer}
-        toAddress={plan.summary.recipient}
+        fromTokenId={first.fromTokenId}
+        toTokenId={last.toTokenId}
+        fromAmount={BigInt(first.inputAmount)}
+        toAmount={BigInt(last.outputAmount)}
+        fromAddress={first.signer}
+        toAddress={last.recipient}
       />
       <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
     </SwapTxLayout>

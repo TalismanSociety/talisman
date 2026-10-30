@@ -75,11 +75,6 @@ export const LEG1: PlanLeg = {
 }
 
 export const SUMMARY: PlanSummary = {
-  fromTokenId: LEG0.quote.fromTokenId,
-  toTokenId: LEG1.quote.toTokenId,
-  fromAmount: "1000000000",
-  quotedOutput: LEG1_AMOUNT.toString(),
-  recipient: RECIPIENT,
   protocol: "forevermoney",
   subProtocol: "via-bittensor-evm",
   slippage: 0.005,

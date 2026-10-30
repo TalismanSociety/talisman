@@ -119,8 +119,8 @@ export const trackSwapPlanSettled = async ({ plan, at }: SwapPlanSettledFact) =>
       properties: {
         protocol: plan.summary.protocol,
         cross_chain:
-          networkIdFromTokenId(plan.summary.fromTokenId) !==
-          networkIdFromTokenId(plan.summary.toTokenId),
+          networkIdFromTokenId(plan.legs[0].quote.fromTokenId) !==
+          networkIdFromTokenId(plan.legs[plan.legs.length - 1].quote.toTokenId),
         plan_outcome: plan.phase,
         ...(failure && { stopped_at_leg: stoppedAt + 1, stop_reason: STOP_REASON[failure] }),
         ...(plan.pausedFor && { paused_for: plan.pausedFor }),

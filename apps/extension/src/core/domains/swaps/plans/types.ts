@@ -86,11 +86,6 @@ export type PlanLeg = {
 }
 
 export type PlanSummary = {
-  fromTokenId: TokenId
-  toTokenId: TokenId
-  fromAmount: string
-  quotedOutput: string
-  recipient: string
   protocol: SupportedSwapProtocol
   subProtocol?: string
   provider?: { name: string; logo: string }

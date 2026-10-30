@@ -349,11 +349,6 @@ describe("nonceManager with swap plans", () => {
     updatedAt: T0,
     signUntil: null,
     summary: {
-      fromTokenId: `${NETWORK_ID}:evm-native`,
-      toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
-      fromAmount: "1",
-      quotedOutput: "1",
-      recipient: ADDRESS,
       protocol: "forevermoney",
       slippage: 0.005,
     },

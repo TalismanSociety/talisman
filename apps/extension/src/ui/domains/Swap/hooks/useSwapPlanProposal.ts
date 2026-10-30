@@ -93,11 +93,6 @@ export const useSwapPlanProposal = ({
     return {
       legs: quote.legs.map(toPersistedLeg) as NonEmpty<PersistedQuoteLeg>,
       summary: {
-        fromTokenId: quote.legs[0].fromTokenId,
-        toTokenId: quote.legs[quote.legs.length - 1].toTokenId,
-        fromAmount: fromAmount.toString(),
-        quotedOutput: quote.outputAmountBN.toString(),
-        recipient: toAddress,
         protocol: quote.protocol,
         subProtocol: quote.subProtocol,
         provider: { name: quote.providerName, logo: quote.providerLogo },

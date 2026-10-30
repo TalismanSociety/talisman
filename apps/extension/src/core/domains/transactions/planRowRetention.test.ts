@@ -22,11 +22,6 @@ const plan = (id: SwapPlanId, phase: SwapPlan["phase"]): SwapPlan => ({
   updatedAt: T0,
   signUntil: null,
   summary: {
-    fromTokenId: "bittensor:substrate-native",
-    toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
-    fromAmount: "1",
-    quotedOutput: "1",
-    recipient: ACCOUNT,
     protocol: "forevermoney",
     slippage: 0.005,
   },
