@@ -80,8 +80,9 @@ const PROPOSAL = {
   id: PLAN_ID,
   legs: [LEG0, LEG1] as [PlanLeg, PlanLeg],
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
 }
+
+const signedBy = (signer: string): PlanLeg => ({ ...LEG1, quote: { ...LEG1.quote, signer } })
 
 const ADMIT_LEG0 = {
   type: "admitted",
@@ -99,7 +100,6 @@ const PROPOSED: SwapPlan = {
   updatedAt: T0,
   signUntil: null,
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
   legs: [LEG0, LEG1],
 }
 
@@ -135,7 +135,10 @@ describe("swap plan store", () => {
       await proposePlan(PROPOSAL, T0)
       await applyPlanEvent(PLAN_ID, ADMIT_LEG0, T0 + 1_000)
       await expect(
-        proposePlan({ ...PROPOSAL, id: OTHER_ID, intermediate: EVM_ADDRESS.toLowerCase() }, T0)
+        proposePlan(
+          { ...PROPOSAL, id: OTHER_ID, legs: [LEG0, signedBy(EVM_ADDRESS.toLowerCase())] },
+          T0
+        )
       ).rejects.toThrow(new PlanProposalRejected("Another swap is using that account"))
       expect(await db.swapPlans.count()).toBe(1)
     })
@@ -282,7 +285,10 @@ describe("swap plan store", () => {
   describe("sweepPlans", () => {
     it("expires a proposed plan nobody signed and keeps a fresh one", async () => {
       await proposePlan(PROPOSAL, T0)
-      await proposePlan({ ...PROPOSAL, id: OTHER_ID, intermediate: RECIPIENT }, T0 + 60_000)
+      await proposePlan(
+        { ...PROPOSAL, id: OTHER_ID, legs: [LEG0, signedBy(RECIPIENT)] },
+        T0 + 60_000
+      )
       await sweepPlans(T0 + PROPOSED_TTL_MS)
       expect((await db.swapPlans.get(PLAN_ID))?.phase).toBe("aborted")
       expect((await db.swapPlans.get(PLAN_ID))?.legs[0].state).toEqual({

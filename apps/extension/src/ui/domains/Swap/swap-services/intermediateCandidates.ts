@@ -1,5 +1,6 @@
 import { db } from "@core/db"
 import type { IntermediateCandidate } from "@core/domains/swaps/hops"
+import { planIntermediates } from "@core/domains/swaps/plans/machine"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { getAccountsByCategory$ } from "@ui/state/accounts"
@@ -22,6 +23,8 @@ export const getIntermediateCandidates = async (hub: TokenId): Promise<Intermedi
       hubBalance:
         balances.find({ address: account.address, tokenId: hub }).each[0]?.transferable?.planck ??
         0n,
-      busy: livePlans.some((plan) => isAddressEqual(plan.intermediate, account.address)),
+      busy: livePlans.some((plan) =>
+        planIntermediates(plan).some((address) => isAddressEqual(address, account.address))
+      ),
     }))
 }

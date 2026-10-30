@@ -220,7 +220,7 @@ export type SwapPlanProposeRequest = {
 }
 
 export interface SwapsMessages {
-  /** one proposal per id, rejected while a started or newer plan holds its intermediate. The background computes the bounds */
+  /** one proposal per id, rejected while a started or newer plan holds one of its intermediates. The background computes the bounds */
   "pri(swaps.plan.propose)": [SwapPlanProposeRequest, boolean]
   /** proposed to aborted, a paused or building plan to stopped. False once the current leg is sent */
   "pri(swaps.plan.cancel)": [{ id: SwapPlanId }, boolean]

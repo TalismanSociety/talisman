@@ -32,7 +32,6 @@ const plan = (landed: bigint): SwapPlan => ({
   updatedAt: T0,
   signUntil: T0 + 1,
   summary: SUMMARY,
-  intermediate: LEG1.quote.signer,
   legs: [
     {
       ...LEG0,

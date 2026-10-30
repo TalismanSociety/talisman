@@ -67,17 +67,32 @@ export const isAdmissible = (plan: SwapPlan, index: number, now: number): boolea
   )
 }
 
-/** a proposed plan has sent nothing: a newer proposal on its intermediate supersedes it */
+/** the accounts that hold the plan's funds between legs: the signers of every leg after the first */
+export const planIntermediates = ({ legs }: Pick<SwapPlan, "legs">): string[] =>
+  legs
+    .slice(1)
+    .map((leg) => leg.quote.signer)
+    .filter(
+      (signer, index, signers) =>
+        signers.findIndex((other) => isAddressEqual(other, signer)) === index
+    )
+
+export const sharesIntermediate = (a: Pick<SwapPlan, "legs">, b: Pick<SwapPlan, "legs">) => {
+  const held = planIntermediates(b)
+  return planIntermediates(a).some((address) =>
+    held.some((other) => isAddressEqual(address, other))
+  )
+}
+
+/** a proposed plan has sent nothing: a newer proposal on its intermediates supersedes it */
 const holdsIntermediate = (plan: SwapPlan) => plan.phase === "running" || plan.phase === "paused"
 
-/** the id of a started plan that already holds `intermediate`, null when it is free */
+/** the id of a started plan that already holds one of the proposal's intermediates, null when they are free */
 export const findIntermediateConflict = (
   plans: readonly SwapPlan[],
-  proposal: { intermediate: string }
+  proposal: Pick<SwapPlan, "legs">
 ): SwapPlanId | null =>
-  plans.find(
-    (plan) => holdsIntermediate(plan) && isAddressEqual(plan.intermediate, proposal.intermediate)
-  )?.id ?? null
+  plans.find((plan) => holdsIntermediate(plan) && sharesIntermediate(plan, proposal))?.id ?? null
 
 const replaceLeg = (legs: Legs, index: number, leg: PlanLeg): Legs =>
   legs.map((current, i) => (i === index ? leg : current)) as Legs

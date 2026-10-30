@@ -106,8 +106,6 @@ export type SwapPlan = {
   /** leg 0 admitted plus the signing window; null while proposed */
   signUntil: number | null
   summary: PlanSummary
-  /** the EVM address that holds the funds between legs */
-  intermediate: string
   legs: NonEmpty<PlanLeg>
   /** what the plan last waited on the user for: a leg's own state forgets it once the leg moves on */
   pausedFor?: AwaitingUserReason

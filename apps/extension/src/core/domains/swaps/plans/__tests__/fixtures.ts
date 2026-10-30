@@ -89,7 +89,6 @@ export const PROPOSAL = {
   id: PLAN_ID,
   legs: [LEG0, LEG1] as [PlanLeg, PlanLeg],
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
 }
 
 export const LEG0_HASH = `0x${"11".repeat(32)}` as const

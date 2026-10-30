@@ -1,7 +1,6 @@
 import { db } from "@core/db"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
 import { Subject } from "rxjs"
 
 import type { NonEmpty } from "../types"
@@ -10,6 +9,7 @@ import {
   findIntermediateConflict,
   isTerminalPhase,
   PROPOSED_TTL_MS,
+  sharesIntermediate,
   transition,
 } from "./machine"
 import type {
@@ -83,7 +83,6 @@ export type PlanProposal = {
   id: SwapPlanId
   legs: NonEmpty<PlanLeg>
   summary: PlanSummary
-  intermediate: string
 }
 
 export class PlanProposalRejected extends Error {
@@ -101,8 +100,8 @@ export const takeProposalArrival = () => ++lastArrival as ProposalArrival
 
 /**
  * Creates the plan. Its legs never change, so leg 0's signature names the legs the user approved.
- * Rejected while another started plan holds the same intermediate account, and once a proposal
- * that arrived later took it. The proposed plans that arrived earlier on that account are cancelled.
+ * Rejected while another started plan holds one of its intermediate accounts, and once a proposal
+ * that arrived later took one. The proposed plans that arrived earlier on those accounts are cancelled.
  */
 export const proposePlan = (
   proposal: PlanProposal,
@@ -119,8 +118,7 @@ export const proposePlan = (
         throw new PlanProposalRejected("Another swap is using that account")
 
       const proposed = live.filter(
-        (plan) =>
-          plan.phase === "proposed" && isAddressEqual(plan.intermediate, proposal.intermediate)
+        (plan) => plan.phase === "proposed" && sharesIntermediate(plan, proposal)
       )
       if (proposed.some((plan) => (arrivals.get(plan.id) ?? 0) > arrival))
         throw new PlanProposalRejected("A newer swap is using that account")
@@ -136,7 +134,6 @@ export const proposePlan = (
         updatedAt: now,
         signUntil: null,
         summary: proposal.summary,
-        intermediate: proposal.intermediate,
         legs: proposal.legs,
       }
       await putPlan(plan)

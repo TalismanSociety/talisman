@@ -87,7 +87,6 @@ const PROPOSED: SwapPlan = {
   updatedAt: T0 - 1_000,
   signUntil: null,
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
   legs: [LEG0, LEG1],
 }
 
@@ -984,22 +983,35 @@ describe("a sent EVM leg the user speeds up or cancels", () => {
 })
 
 describe("one plan per intermediate", () => {
+  const signedBy = (signer: string): PlanLeg => ({ ...LEG1, quote: { ...LEG1.quote, signer } })
+
   it("rejects a proposal while another plan holds the intermediate", () => {
-    expect(findIntermediateConflict([RUNNING], { intermediate: EVM_ADDRESS.toLowerCase() })).toBe(
-      PLAN_ID
-    )
+    expect(
+      findIntermediateConflict([RUNNING], { legs: [LEG0, signedBy(EVM_ADDRESS.toLowerCase())] })
+    ).toBe(PLAN_ID)
+  })
+
+  it("rejects a proposal on any account a plan holds between its legs", () => {
+    const threeLegs: SwapPlan = { ...RUNNING, legs: [LEG0_SENT, signedBy(RECIPIENT), LEG1] }
+    expect(findIntermediateConflict([threeLegs], { legs: [LEG0, LEG1] })).toBe(PLAN_ID)
   })
 
   it("lets a terminal plan's intermediate go", () => {
     const aborted = transition(PROPOSED, { type: "cancelled" }, T0).plan
-    expect(findIntermediateConflict([aborted], { intermediate: EVM_ADDRESS })).toBe(null)
+    expect(findIntermediateConflict([aborted], PROPOSED)).toBe(null)
   })
 
   it("lets a proposed plan's intermediate go", () => {
-    expect(findIntermediateConflict([PROPOSED], { intermediate: EVM_ADDRESS })).toBe(null)
+    expect(findIntermediateConflict([PROPOSED], PROPOSED)).toBe(null)
   })
 
   it("ignores a different intermediate", () => {
-    expect(findIntermediateConflict([RUNNING], { intermediate: RECIPIENT })).toBe(null)
+    expect(findIntermediateConflict([RUNNING], { legs: [LEG0, signedBy(RECIPIENT)] })).toBe(null)
+  })
+
+  it("ignores the account that signs leg 0", () => {
+    expect(findIntermediateConflict([RUNNING], { legs: [LEG0_SENT, signedBy(SUB_ADDRESS)] })).toBe(
+      null
+    )
   })
 })

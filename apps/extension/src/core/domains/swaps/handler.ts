@@ -59,11 +59,7 @@ const propose: MessageHandler<"pri(swaps.plan.propose)"> = async ({
 
   const now = Date.now()
   await sweepPlans(now)
-  await proposePlan(
-    { id, legs: planLegs as NonEmpty<PlanLeg>, summary, intermediate: legs[1].signer },
-    now,
-    arrival
-  )
+  await proposePlan({ id, legs: planLegs as NonEmpty<PlanLeg>, summary }, now, arrival)
   return true
 }
 
