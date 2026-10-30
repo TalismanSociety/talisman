@@ -33,16 +33,21 @@ export const useSwapTxContext = (): SwapTxContext => {
   return useMemo(() => ({ t, accounts, networks }), [accounts, networks, t])
 }
 
-/** the card that becomes active opens and scrolls into view, the others close, the user can still open any of them */
-const useExpandedCards = (activeKey: SwapTxCardKey | null) => {
+/**
+ * The card that becomes active opens and the others close, the user can still open any of them.
+ * It scrolls into view only when the card before it is done, not when a late allowance read adds it.
+ */
+const useExpandedCards = (cards: readonly SwapTxCardModel[]) => {
+  const activeKey = activeSwapTxKey(cards)
   const [expanded, setExpanded] = useState<ReadonlySet<SwapTxCardKey>>(
     () => new Set(activeKey ? [activeKey] : [])
   )
   const [expandedFor, setExpandedFor] = useState(activeKey)
   const [scrollTarget, setScrollTarget] = useState<SwapTxCardKey | null>(null)
   if (activeKey !== expandedFor) {
+    const hasAdvanced = cards.some((card) => card.key === expandedFor && card.status === "done")
     setExpandedFor(activeKey)
-    setScrollTarget(activeKey)
+    setScrollTarget(hasAdvanced ? activeKey : null)
     if (activeKey) setExpanded(new Set([activeKey]))
   }
 
@@ -239,7 +244,7 @@ export const SwapTxCards: FC<{
   legs: readonly QuoteLeg[]
   renderBody: (card: SwapTxCardModel) => ReactNode
 }> = ({ cards, legs, renderBody }) => {
-  const { expanded, toggle, scrollTarget } = useExpandedCards(activeSwapTxKey(cards))
+  const { expanded, toggle, scrollTarget } = useExpandedCards(cards)
 
   return cards.map((card, index) => (
     <SwapTxCard

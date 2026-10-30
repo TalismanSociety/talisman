@@ -43,6 +43,15 @@ describe("SwapTxCards", () => {
     expect(scrolled.mock.calls[0][0]).toContain("body leg-0")
   })
 
+  it("stays put when a late allowance read puts an approval before the open transaction", () => {
+    const swapOnly: SwapTxCardModel[] = [{ key: "leg-0", kind: "leg", leg: 0, status: "ready" }]
+    const { rerender } = render(renderCards(swapOnly))
+    rerender(renderCards(cards("ready", "upcoming")))
+
+    expect(screen.getByText("body approval-0")).toBeTruthy()
+    expect(scrolled).not.toHaveBeenCalled()
+  })
+
   it("stays put while the same transaction moves through its states", () => {
     const { rerender } = render(renderCards(cards("ready", "upcoming")))
     rerender(renderCards(cards("signing", "upcoming")))
