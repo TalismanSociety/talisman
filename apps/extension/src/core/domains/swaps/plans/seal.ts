@@ -1,5 +1,5 @@
 import { sessionStorage } from "@core/util/sessionStorageCompat"
-import { bytesToHex } from "viem"
+import { keccak256, stringToBytes } from "viem"
 
 import type { SwapPlan, SwapPlanId } from "./types"
 
@@ -11,18 +11,18 @@ const sortedKeys = (_key: string, value: unknown) =>
     : value
 
 /** everything a later leg is built and admitted from: its quote, signer and bound, and the slippage */
-const digest = async ({ legs, summary }: Sealed) => {
-  const content = JSON.stringify(
-    {
-      legs: legs.map(({ quote, signerType, bound }) => ({ quote, signerType, bound })),
-      slippage: summary.slippage,
-    },
-    sortedKeys
+const digest = ({ legs, summary }: Sealed) =>
+  keccak256(
+    stringToBytes(
+      JSON.stringify(
+        {
+          legs: legs.map(({ quote, signerType, bound }) => ({ quote, signerType, bound })),
+          slippage: summary.slippage,
+        },
+        sortedKeys
+      )
+    )
   )
-  return bytesToHex(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content)))
-  )
-}
 
 const sealKey = (id: SwapPlanId) => `swapPlanSeal:${id}` as const
 
@@ -31,8 +31,12 @@ const sealKey = (id: SwapPlanId) => `swapPlanSeal:${id}` as const
  * a leg on its own only for a plan this browser session proposed: a plan that anything else wrote
  * into the database, or changed there, waits for the user
  */
-export const sealPlan = async (plan: Sealed) =>
-  sessionStorage.set({ [sealKey(plan.id)]: await digest(plan) })
+export const sealPlan = (plan: Sealed) => sessionStorage.set({ [sealKey(plan.id)]: digest(plan) })
 
-export const isPlanSealed = async (plan: Sealed) =>
-  (await sessionStorage.get(sealKey(plan.id))) === (await digest(plan))
+export type PlanSeal = string | undefined
+
+/** read up front, so the plan can be checked against it inside a Dexie transaction */
+export const readPlanSeal = (id: SwapPlanId): Promise<PlanSeal> => sessionStorage.get(sealKey(id))
+
+export const isSealedBy = (plan: Sealed, seal: PlanSeal) =>
+  seal !== undefined && digest(plan) === seal

@@ -31,6 +31,11 @@ export class PlanBoundViolation extends Error {
   readonly name = "PlanBoundViolation"
 }
 
+/** the plan as it stands is not the one this browser session proposed: the user signs the leg */
+class PlanUnsealed extends Error {
+  readonly name = "PlanUnsealed"
+}
+
 /** the plan has no such leg waiting for a transaction */
 export class PlanNotAdmissible extends Error {
   readonly name = "PlanNotAdmissible"
@@ -135,6 +140,8 @@ type Admission = {
   check: (plan: SwapPlan) => BoundViolation | SubstrateLegViolation | null
   /** another transaction took the nonce the leg was signed on, which the plan does not pin */
   isNonceTaken?: () => Promise<boolean>
+  /** set when the background signed the leg on its own */
+  isSealed?: (plan: SwapPlan) => boolean
   hash: Hex
   nonce: number
   deadlineAt: number
@@ -158,6 +165,8 @@ const admit = (ref: SwapPlanRef, admission: Admission, now: number): Promise<App
         throw new PlanNotAdmissible("The leg already has a transaction")
       }
       if (!isAdmissible(plan, ref.leg, now)) throw new PlanNotAdmissible("The leg is not due")
+      if (admission.isSealed && !admission.isSealed(plan))
+        throw new PlanUnsealed("The swap changed since it was proposed")
       if (leg.nonce !== undefined && leg.nonce !== admission.nonce)
         throw new PlanBoundViolation("nonce")
       if (leg.nonce === undefined && (await admission.isNonceTaken?.()))
@@ -165,7 +174,7 @@ const admit = (ref: SwapPlanRef, admission: Admission, now: number): Promise<App
       const violation = admission.check(plan)
       if (violation) throw new PlanBoundViolation(violation)
 
-      const { check: _, isNonceTaken: __, ...admitted } = admission
+      const { check: _, isNonceTaken: __, isSealed: ___, ...admitted } = admission
       const result = transition(plan, { type: "admitted", leg: ref.leg, ...admitted }, now)
       await putPlan(result.plan)
       await db.transactionsV2.put(admission.row)
@@ -195,7 +204,8 @@ export type EvmLegTx = {
 /** Admits a signed EVM leg: the bytes are parsed and checked against the leg's bound first */
 export const admitEvmLeg = async (
   ref: SwapPlanRef,
-  { raw, networkId, unsigned, txInfo }: EvmLegTx
+  { raw, networkId, unsigned, txInfo }: EvmLegTx,
+  isSealed?: Admission["isSealed"]
 ): Promise<AppliedEvent> => {
   const plan = await getPlan(ref.id)
   const leg = plan?.legs[ref.leg]
@@ -241,6 +251,7 @@ export const admitEvmLeg = async (
     {
       check,
       isNonceTaken,
+      isSealed,
       hash,
       nonce,
       deadlineAt: now + runtime.legDeadlineMs,

@@ -21,9 +21,9 @@ import type { BuiltLeg } from "../types"
 import { admitEvmLeg } from "./admit"
 import { broadcastRaw } from "./broadcast"
 import { isAdmissible } from "./machine"
-import { isPlanSealed } from "./seal"
+import { isSealedBy, readPlanSeal } from "./seal"
 import { getPlan } from "./store"
-import type { SwapPlanRef } from "./types"
+import type { SwapPlan, SwapPlanRef } from "./types"
 
 export type SignOutcome =
   | { type: "sent"; hash: Hex }
@@ -79,10 +79,12 @@ const getDuePlan = async ({ id, leg }: SwapPlanRef) => {
 export const signAndBroadcast = async (ref: SwapPlanRef, built: BuiltLeg): Promise<SignOutcome> => {
   if (!(await isUnlocked())) return { type: "locked" }
 
+  const seal = await readPlanSeal(ref.id)
+  const isSealed = (plan: SwapPlan) => isSealedBy(plan, seal)
   const plan = await getDuePlan(ref)
   const leg = plan?.legs[ref.leg]
   if (!plan || !leg) return { type: "stale" }
-  if (!(await isPlanSealed(plan))) return { type: "unsealed" }
+  if (!isSealed(plan)) return { type: "unsealed" }
   if (built.transaction.platform !== "ethereum")
     return { type: "failed", error: new Error("Only EVM legs are signed in the background") }
   const signer = leg.quote.signer
@@ -101,9 +103,14 @@ export const signAndBroadcast = async (ref: SwapPlanRef, built: BuiltLeg): Promi
     release()
     return { type: "failed", error: new Error("The built transaction has no EIP-1559 fees") }
   }
-  if (!(await getDuePlan(ref))) {
+  const due = await getDuePlan(ref)
+  if (!due) {
     release()
     return { type: "stale" }
+  }
+  if (!isSealed(due)) {
+    release()
+    return { type: "unsealed" }
   }
 
   const signed = await withSecretKey(signer, (secretKey) =>
@@ -132,13 +139,14 @@ export const signAndBroadcast = async (ref: SwapPlanRef, built: BuiltLeg): Promi
   const txInfo = { ...built.txInfo, plan: ref }
 
   try {
-    await admitEvmLeg(ref, { raw, networkId, unsigned, txInfo })
+    await admitEvmLeg(ref, { raw, networkId, unsigned, txInfo }, isSealed)
   } catch (err) {
     release()
     const name = (err as { name?: string }).name
     if (name === "PlanBoundViolation")
       return { type: "out-of-bounds", violation: getErrorMessage(err) }
     if (name === "PlanNotAdmissible") return { type: "stale" }
+    if (name === "PlanUnsealed") return { type: "unsealed" }
     return { type: "failed", error: err }
   }
   release()

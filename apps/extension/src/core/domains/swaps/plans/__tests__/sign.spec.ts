@@ -108,6 +108,15 @@ const planWithLeg1Building = async (nonce?: number) => {
     await putPlan({ ...plan, legs: [plan.legs[0], { ...plan.legs[1], nonce }] })
 }
 
+const changeLeg1Recipient = async () => {
+  const plan = (await getPlan(PLAN_ID)) as SwapPlan
+  const leg1 = plan.legs[1]
+  await putPlan({
+    ...plan,
+    legs: [plan.legs[0], { ...leg1, quote: { ...leg1.quote, recipient: EVM_ADDRESS } }],
+  })
+}
+
 const sentRaw = () =>
   mockSendRawTransaction.mock.calls[0]?.[0]?.serializedTransaction as `0x${string}`
 
@@ -291,15 +300,37 @@ describe("signAndBroadcast", () => {
 
   it("never reaches the key for a plan changed in the database", async () => {
     await planWithLeg1Building(12)
-    const plan = (await getPlan(PLAN_ID)) as SwapPlan
-    const leg1 = plan.legs[1]
-    await putPlan({
-      ...plan,
-      legs: [plan.legs[0], { ...leg1, quote: { ...leg1.quote, recipient: EVM_ADDRESS } }],
+    await changeLeg1Recipient()
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockWithSecretKey).not.toHaveBeenCalled()
+  })
+
+  it("never reaches the key for a plan changed in the database while it took a nonce", async () => {
+    await planWithLeg1Building()
+    mockGetNextNonce.mockImplementation(async () => {
+      await changeLeg1Recipient()
+      return 12
     })
 
     expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
     expect(mockWithSecretKey).not.toHaveBeenCalled()
+    expect(mockReleaseReservedNonce).toHaveBeenCalledWith(EVM_ADDRESS, "964", 12)
+  })
+
+  it("admits nothing for a plan changed in the database while it signed", async () => {
+    await planWithLeg1Building(12)
+    mockWithSecretKey.mockImplementation(
+      async (_address: string, cb: (key: Uint8Array, curve: string) => Promise<unknown>) => {
+        await changeLeg1Recipient()
+        return Ok(await cb(hexToBytes(EVM_PRIVATE_KEY), "secp256k1"))
+      }
+    )
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockSendRawTransaction).not.toHaveBeenCalled()
+    expect((await getPlan(PLAN_ID))?.legs[1].state.at).toBe("building")
+    expect(await db.transactionsV2.count()).toBe(0)
   })
 
   it("is stale when the leg stopped waiting for a transaction", async () => {
