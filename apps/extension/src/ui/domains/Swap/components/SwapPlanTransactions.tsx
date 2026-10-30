@@ -6,6 +6,8 @@ import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useLiveQuery } from "dexie-react-hooks"
 import { type FC, useCallback, useMemo, useState } from "react"
@@ -27,6 +29,7 @@ import {
   SwapApprovalDetails,
   SwapLegDetails,
   SwapRateDropNotice,
+  SwapRiskRow,
   SwapSlippageRow,
   SwapTxFeeRows,
   SwapTxSentFeeRows,
@@ -155,6 +158,13 @@ const PlanTransactions: FC<{
   const approvalsNeeded = useLaterLegApprovals(approvalChecks)
 
   const { signing, blockingError } = legSigning
+  const signRequest = legSigning.button.request
+  const riskAnalysis = useEvmTransactionRiskAnalysis({
+    networkId: signRequest?.tx.networkId,
+    tx: signRequest?.tx.payload,
+    disableCriticalPane: true,
+    subjectId: signing ? `${signing.leg}:${signing.signs}` : undefined,
+  })
   const approvalHashes = useApprovalHashes(leg0ApprovalHash, signing)
   const input = useMemo<SwapPlanTxInput>(
     () => ({ plan, rows, approvalHashes, approvalsNeeded, signing }),
@@ -190,6 +200,7 @@ const PlanTransactions: FC<{
           containerId={containerId}
         />
       ) : null
+    const riskRow = isSigned ? <SwapRiskRow /> : null
 
     if (card.kind === "approval") {
       const request = isSigned ? legSigning.button.request : undefined
@@ -206,7 +217,9 @@ const PlanTransactions: FC<{
                 )
               : undefined
           }
-        />
+        >
+          {riskRow}
+        </SwapApprovalDetails>
       )
     }
 
@@ -238,6 +251,7 @@ const PlanTransactions: FC<{
             <ExternalLinkIcon />
           </a>
         ) : null}
+        {riskRow}
         {acceptedOutput !== undefined && leg.outputAmount < acceptedOutput ? (
           <SwapRateDropNotice
             tokenId={leg.toTokenId}
@@ -250,26 +264,28 @@ const PlanTransactions: FC<{
   }
 
   return (
-    <SwapTxLayout
-      footer={
-        <PlanFooter
-          footer={swapPlanFooter(plan, cards)}
-          signButton={legSigning.button}
-          onClose={onClose}
-          containerId={containerId}
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
+      <SwapTxLayout
+        footer={
+          <PlanFooter
+            footer={swapPlanFooter(plan, cards)}
+            signButton={legSigning.button}
+            onClose={onClose}
+            containerId={containerId}
+          />
+        }
+      >
+        <SwapTxSummary
+          fromTokenId={first.fromTokenId}
+          toTokenId={last.toTokenId}
+          fromAmount={BigInt(first.inputAmount)}
+          toAmount={BigInt(last.outputAmount)}
+          fromAddress={first.signer}
+          toAddress={last.recipient}
         />
-      }
-    >
-      <SwapTxSummary
-        fromTokenId={first.fromTokenId}
-        toTokenId={last.toTokenId}
-        fromAmount={BigInt(first.inputAmount)}
-        toAmount={BigInt(last.outputAmount)}
-        fromAddress={first.signer}
-        toAddress={last.recipient}
-      />
-      <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
-    </SwapTxLayout>
+        <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
+      </SwapTxLayout>
+    </RiskAnalysisProvider>
   )
 }
 
