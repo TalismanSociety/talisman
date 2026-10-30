@@ -36,6 +36,10 @@ class PlanUnsealed extends Error {
   readonly name = "PlanUnsealed"
 }
 
+const assertSealed = (plan: SwapPlan, isSealed: Admission["isSealed"]) => {
+  if (isSealed && !isSealed(plan)) throw new PlanUnsealed("The swap changed since it was proposed")
+}
+
 /** the plan has no such leg waiting for a transaction */
 export class PlanNotAdmissible extends Error {
   readonly name = "PlanNotAdmissible"
@@ -165,8 +169,7 @@ const admit = (ref: SwapPlanRef, admission: Admission, now: number): Promise<App
         throw new PlanNotAdmissible("The leg already has a transaction")
       }
       if (!isAdmissible(plan, ref.leg, now)) throw new PlanNotAdmissible("The leg is not due")
-      if (admission.isSealed && !admission.isSealed(plan))
-        throw new PlanUnsealed("The swap changed since it was proposed")
+      assertSealed(plan, admission.isSealed)
       if (leg.nonce !== undefined && leg.nonce !== admission.nonce)
         throw new PlanBoundViolation("nonce")
       if (leg.nonce === undefined && (await admission.isNonceTaken?.()))
@@ -210,6 +213,7 @@ export const admitEvmLeg = async (
   const plan = await getPlan(ref.id)
   const leg = plan?.legs[ref.leg]
   if (!plan || !leg) throw new PlanNotAdmissible("Unknown swap plan leg")
+  assertSealed(plan, isSealed)
   const runtime = getPlanLegRuntime(leg.quote.protocol)
 
   const signer = await recoverTransactionAddress({

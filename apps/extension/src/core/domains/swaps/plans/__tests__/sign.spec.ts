@@ -108,14 +108,13 @@ const planWithLeg1Building = async (nonce?: number) => {
     await putPlan({ ...plan, legs: [plan.legs[0], { ...plan.legs[1], nonce }] })
 }
 
-const changeLeg1Recipient = async () => {
+const changeLeg1 = async (change: (leg: SwapPlan["legs"][number]) => SwapPlan["legs"][number]) => {
   const plan = (await getPlan(PLAN_ID)) as SwapPlan
-  const leg1 = plan.legs[1]
-  await putPlan({
-    ...plan,
-    legs: [plan.legs[0], { ...leg1, quote: { ...leg1.quote, recipient: EVM_ADDRESS } }],
-  })
+  await putPlan({ ...plan, legs: [plan.legs[0], change(plan.legs[1])] })
 }
+
+const changeLeg1Recipient = () =>
+  changeLeg1((leg) => ({ ...leg, quote: { ...leg.quote, recipient: EVM_ADDRESS } }))
 
 const sentRaw = () =>
   mockSendRawTransaction.mock.calls[0]?.[0]?.serializedTransaction as `0x${string}`
@@ -331,6 +330,19 @@ describe("signAndBroadcast", () => {
     expect(mockSendRawTransaction).not.toHaveBeenCalled()
     expect((await getPlan(PLAN_ID))?.legs[1].state.at).toBe("building")
     expect(await db.transactionsV2.count()).toBe(0)
+  })
+
+  it("hands the leg to the user, not out of bounds, for a bound changed while it signed", async () => {
+    await planWithLeg1Building(12)
+    mockWithSecretKey.mockImplementation(
+      async (_address: string, cb: (key: Uint8Array, curve: string) => Promise<unknown>) => {
+        await changeLeg1((leg) => ({ ...leg, bound: { ...BOUND, to: EVM_ADDRESS } }))
+        return Ok(await cb(hexToBytes(EVM_PRIVATE_KEY), "secp256k1"))
+      }
+    )
+
+    expect(await signAndBroadcast(REF, BUILT)).toEqual({ type: "unsealed" })
+    expect(mockSendRawTransaction).not.toHaveBeenCalled()
   })
 
   it("is stale when the leg stopped waiting for a transaction", async () => {
