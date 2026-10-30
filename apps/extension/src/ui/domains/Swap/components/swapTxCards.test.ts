@@ -78,7 +78,6 @@ const plan = (phase: SwapPlan["phase"], first: LegState, second: LegState): Swap
   updatedAt: T0,
   signUntil: T0 + 1,
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
   legs: [
     { ...LEG0, state: first },
     { ...LEG1, state: second },

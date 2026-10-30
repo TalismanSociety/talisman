@@ -180,7 +180,6 @@ const planWaitingOn = (leg: PlanLeg, landed = LEG0_OUTPUT): SwapPlan => ({
   updatedAt: T0,
   signUntil: null,
   summary: SUMMARY,
-  intermediate: EVM_ADDRESS,
   legs: [
     {
       ...LEG0,
