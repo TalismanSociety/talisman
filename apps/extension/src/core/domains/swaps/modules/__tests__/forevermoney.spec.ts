@@ -986,7 +986,7 @@ describe("forevermoneySwapModule observeLeg", () => {
     expect(await observe(sent())).toEqual({ status: "landed", hash: TX_HASH, amount: ONE_TAO_WEI })
     expect(mockGetTransactionCount).toHaveBeenCalledWith({
       address: EVM_ADDRESS,
-      blockNumber: CONFIRMED,
+      blockTag: "finalized",
     })
     expect(mockGetTransaction).toHaveBeenCalledWith({ hash: TX_HASH })
   })
@@ -1066,10 +1066,10 @@ describe("forevermoneySwapModule observeLeg", () => {
     expect(await observe(sent(RAW))).toEqual({ status: "pending" })
   })
 
-  it("stays pending while only a block past the confirmed one consumed the nonce", async () => {
+  it("stays pending while only a block past the finalised one consumed the nonce", async () => {
     noReceipt()
-    mockGetTransactionCount.mockImplementation(async ({ blockNumber }: { blockNumber: bigint }) =>
-      blockNumber === CONFIRMED ? 12 : 13
+    mockGetTransactionCount.mockImplementation(async ({ blockTag }: { blockTag?: string }) =>
+      blockTag === "finalized" ? 12 : 13
     )
     mockGetTransaction.mockRejectedValue(
       Object.assign(new Error("not found"), { name: "TransactionNotFoundError" })

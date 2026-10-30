@@ -49,7 +49,7 @@ const findMined = async (client: PublicClient, candidates: LegCandidate[], confi
 /**
  * The leg's own transaction and the user's speed-ups and cancels share its nonce, so at most one
  * of them executes. A confirmed receipt settles the leg by whichever one it belongs to.
- * Without one, a signer's nonce past the leg's at the confirmed block, read before the receipts,
+ * Without one, a signer's nonce past the leg's at the finalised block, read before the receipts,
  * with every hash unknown to the node, means another transaction consumed it for good. A lagging
  * fallback node can miss a receipt another one has, so only a node that answers "not found" for
  * every hash makes the leg replaced: any other failure is thrown for a later observation.
@@ -61,7 +61,7 @@ export const observeEvmLeg = async (
   landedAmount: (body: { data: Hex; value: bigint }) => bigint
 ): Promise<LegObservation> => {
   const confirmed = await confirmedBlockNumber(client)
-  const nonceAfter = await client.getTransactionCount({ address: signer, blockNumber: confirmed })
+  const nonceAfter = await client.getTransactionCount({ address: signer, blockTag: "finalized" })
   const candidates = legCandidates(sent)
   const mined = await findMined(client, candidates, confirmed)
 
