@@ -174,7 +174,7 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   const [rejectedSubmissions, setRejectedSubmissions] = useState(0)
 
   const tx: TxSubmitButtonTransactionEth | undefined =
-    request.data && ethTx.transaction
+    request.data && ethTx.transaction && !ethTx.error
       ? {
           ...request.data.tx,
           payload: { ...ethTx.transaction, nonce: request.data.tx.payload.nonce },
@@ -222,7 +222,6 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
     ethTx: request.data ? ethTx : undefined,
     built: request.data?.signs === "leg" ? request.data.built : undefined,
     feeTokenId: request.data ? evmNativeTokenId(request.data.tx.networkId) : undefined,
-    signerAddress: plan && index !== null ? plan.legs[index].quote.signer : undefined,
     blockingError: ethTx.error,
     button: {
       request: request.data,
@@ -231,7 +230,6 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
       isBuildFailed: request.isError,
       isRetry: !!failure,
       isApprovalPending,
-      isBlocked: !!ethTx.error,
       rejectedSubmissions,
       rebuild: () => request.refetch(),
       onSubmit,
@@ -283,7 +281,7 @@ export const PlanLegSignButton: FC<{
       onSubmit={button.onSubmit}
       onError={button.onError}
       onPayloadLockChange={button.onPayloadLockChange}
-      disabled={!tx || button.isBlocked}
+      disabled={!tx}
     />
   )
 }
