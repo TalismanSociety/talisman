@@ -51,7 +51,7 @@
     "QUICK_UNLOCK": true,
     "SWAPS_FOREVERMONEY_TAO_BRIDGE": false,
     "SWAPS_FOREVERMONEY_TAO_BRIDGE_V2": true,
-    "SWAPS_MULTI_HOP": false,
+    "SWAPS_MULTI_HOP": true,
     "BLOCKAID_DAPP_SCAN_V2": true,
     "BLOCKAID_TOKEN_SCAN": true
   },
