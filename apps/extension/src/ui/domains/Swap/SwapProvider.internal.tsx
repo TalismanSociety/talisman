@@ -1,3 +1,4 @@
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
 import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
@@ -5,11 +6,12 @@ import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import type { Hex } from "viem"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
-import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import type { SwapView } from "./swap-modules/common.swap-module"
 import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
 
@@ -118,6 +120,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
+  const [approvalHash, setApprovalHash] = useState<Hex | null>(null)
 
   // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
   const [acknowledgedTokenVerdicts, setAcknowledgedTokenVerdicts] = useState<
@@ -141,6 +144,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
+    setApprovalHash(null)
     setAcknowledgedTokenVerdicts(new Map())
     resetFromAddressManuallySet()
     setSubmittedTxHash(null)
@@ -316,6 +320,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     approvalCounter,
     setApprovalCounter,
     incrementApprovalCounter,
+    approvalHash,
+    setApprovalHash,
 
     sortedQuotes,
     selectedQuote,

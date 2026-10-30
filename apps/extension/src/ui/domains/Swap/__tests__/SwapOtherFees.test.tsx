@@ -1,9 +1,11 @@
+import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type { QuoteFee } from "@core/domains/swaps/types"
 import { render } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { getAdditionalFeePlanck, SwapOtherFees } from "../components/SwapOtherFees"
-import { type QuoteFee, TALISMAN_FEE_NAME } from "../swap-modules/common.swap-module"
+import { SwapOtherFees } from "../components/SwapOtherFees"
+import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

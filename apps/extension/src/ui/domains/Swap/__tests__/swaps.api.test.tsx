@@ -24,6 +24,10 @@ vi.mock("@ui/state/transactions", () => ({
   useTransactions: () => [],
 }))
 
+vi.mock("../swap-services/intermediateCandidates", () => ({
+  getIntermediateCandidates: async () => [],
+}))
+
 vi.mock("@ui/hooks/queryStoragePersister", () => ({
   createQueryStoragePersister: () => undefined,
   PERSIST_AGE_ONE_YEAR: 1000 * 60 * 60 * 24 * 365,
@@ -56,7 +60,7 @@ vi.mock("../swap-modules/stealthex-swap-module", () => ({
   },
 }))
 
-vi.mock("../swap-modules/forevermoney-swap-module", () => ({
+vi.mock("@core/domains/swaps/modules/forevermoney", () => ({
   forevermoneySwapModule: {
     protocol: "forevermoney",
     getFromAssets: (signal: AbortSignal) => getFromAssetsMock("forevermoney", signal),

@@ -1,6 +1,12 @@
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/exports"
+import type {
+  QuoteFee,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "@core/domains/swaps/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import type { Instruction } from "@solana/kit"
 import { createNoopSigner, address as solAddress } from "@solana/kit"
@@ -21,8 +27,6 @@ import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
-import type { QuoteFee, SwapModuleTransaction, SwapTransactionContext } from "./common.swap-module"
-import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { findEvmPublicClient } from "./evm-network"
 
 /**
@@ -74,7 +78,7 @@ export async function estimateDepositGas(
       const amount = BigNumber(gasPrice.toString())
         .times(gasLimit.toString())
         .times(10 ** -(nativeToken.decimals ?? 0))
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
+      return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
     }
 
     return null
@@ -126,7 +130,7 @@ export async function estimateDepositGas(
 
       const fee = await sapi.getFeeEstimate(payload)
       const amount = BigNumber(fee.toString()).times(10 ** -nativeToken.decimals)
-      return { name: "Est. Gas Fees", tokenId: nativeToken.id, amount }
+      return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
     } catch (err) {
       log.error(new Error("Failed to estimate substrate gas", { cause: err }))
       return null
@@ -298,34 +302,33 @@ export async function buildDepositTransaction(params: {
   fromAddress: string
   deposit: DepositInfo
   context: SwapTransactionContext
-}): Promise<SwapModuleTransaction | null> {
+}): Promise<SwapModuleTransaction> {
   const { fromAsset, context } = params
 
   switch (fromAsset.platform) {
     case "ethereum": {
       const transaction = await buildEvmDepositTransaction(params)
-      return transaction ? { platform: "ethereum", transaction } : null
+      if (!transaction) throw new Error("Failed to build deposit transaction")
+      return { platform: "ethereum", transaction }
     }
     case "polkadot": {
-      if (context.platform !== "polkadot") return null
+      if (context.platform !== "polkadot") throw new Error("Missing substrate context")
       const payload = await buildSubstrateDepositPayload({
         ...params,
         sapi: context.sapi,
         allowReap: context.allowReap,
       })
-      return payload
-        ? { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
-        : null
+      if (!payload) throw new Error("Failed to build deposit transaction")
+      return { platform: "polkadot", payload: payload.payload, txMetadata: payload.txMetadata }
     }
     case "solana": {
-      if (context.platform !== "solana") return null
+      if (context.platform !== "solana") throw new Error("Missing solana context")
       const transaction = await buildSolanaDepositTransaction({
         ...params,
         rpc: context.rpc,
       })
-      return transaction ? { platform: "solana", transaction } : null
+      if (!transaction) throw new Error("Failed to build deposit transaction")
+      return { platform: "solana", transaction }
     }
-    default:
-      return null
   }
 }

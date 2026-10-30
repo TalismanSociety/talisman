@@ -2,18 +2,23 @@
 
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import {
+  BACKGROUND_SWAP_MODULES,
+  withEntryHops,
+  withSingleLegQuotes,
+} from "@core/domains/swaps/exports"
+import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
-import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
-import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
-import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
+import { getIntermediateCandidates } from "./swap-services/intermediateCandidates"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
+import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -28,22 +33,28 @@ export const swapModules = [
   simpleswapSwapModule,
   stealthexSwapModule,
   lifiSwapModule,
-  bittensorEvmSwapModule,
-  forevermoneySwapModule,
+  ...Object.values(BACKGROUND_SWAP_MODULES).map((module) => withSwapEnv(module, uiSwapEnv)),
 ]
 
 export type SwapModuleEntry = (typeof swapModules)[number]
 
 export const useSwapModules = (): SwapModuleEntry[] => {
   const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE_V2")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
 
-  return useMemo(
-    () =>
-      swapModules.filter(
-        (m) => m.protocol !== forevermoneySwapModule.protocol || isForevermoneyEnabled
-      ),
-    [isForevermoneyEnabled]
-  )
+  return useMemo(() => {
+    const enabled = swapModules.filter(
+      (m) => m.protocol !== "forevermoney" || isForevermoneyEnabled
+    )
+    return enabled.map((m) => {
+      const withHops = withEntryHops(m, {
+        enabled: (flag) => flag === "SWAPS_MULTI_HOP" && isMultiHopEnabled,
+        resolve: (protocol) => enabled.find((entry) => entry.protocol === protocol),
+        candidates: getIntermediateCandidates,
+      })
+      return isMultiHopEnabled ? withHops : withSingleLegQuotes(withHops)
+    })
+  }, [isForevermoneyEnabled, isMultiHopEnabled])
 }
 
 // ─── Asset-fetching helpers ─────────────────────────────────────────
@@ -79,7 +90,9 @@ export const useSwapAssets = (fromTokenId: string | null) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
   const swapModules = useSwapModules()
-  const protocolsKey = swapModules.map((m) => m.protocol).join(",")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
+  // the entry hops add sources and targets to their module: a cached registry without them hides the routes
+  const protocolsKey = `${swapModules.map((m) => m.protocol).join(",")}${isMultiHopEnabled ? "+hops" : ""}`
 
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets-v3", tokensCount, protocolsKey],

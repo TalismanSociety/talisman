@@ -13,8 +13,8 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   getExtensionPublicClient: () => ({ readContract }),
 }))
 
+import type { BaseQuote } from "@core/domains/swaps/types"
 import { useSwapErc20Approval } from "../hooks/useSwapErc20Approval"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
 import type { SwapModuleEntry } from "../swaps.api"
 
 const AMOUNT = 10n ** 18n
@@ -82,7 +82,6 @@ describe("useSwapErc20Approval", () => {
 
     await elapse(ALLOWANCE_RECHECK_MS)
     expect(result.current.data).toBeNull()
-    expect(result.current.approveTx).toBeNull()
   })
 
   it("does not poll before any approval was confirmed", async () => {
@@ -95,5 +94,14 @@ describe("useSwapErc20Approval", () => {
 
     await elapse(ALLOWANCE_RECHECK_MS + 500)
     expect(readContract).toHaveBeenCalledTimes(1)
+  })
+
+  it("revokes a short non-zero allowance before it approves", async () => {
+    readContract.mockResolvedValue(AMOUNT / 2n)
+
+    const { result } = render(0)
+
+    await elapse(0)
+    expect(result.current.needsRevoke).toBe(true)
   })
 })

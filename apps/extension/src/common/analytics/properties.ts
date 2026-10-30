@@ -8,11 +8,15 @@ import { FORM_STATES } from "./formState"
 import {
   FEE_PRIORITIES,
   GAS_TYPES,
+  MAX_SWAP_PLAN_LEGS,
   RAMP_DIRECTIONS,
   RAMP_PROVIDERS,
   RECIPIENT_SOURCES,
   REPLACE_TYPES,
   SWAP_OUTCOMES,
+  SWAP_PLAN_OUTCOMES,
+  SWAP_PLAN_PAUSES,
+  SWAP_PLAN_STOP_REASONS,
   SWAP_PROTOCOLS,
   SWAP_SIDES,
   SWAP_TOKEN_TABS,
@@ -293,6 +297,26 @@ export const properties = {
   swap_status: p.enum(
     SWAP_OUTCOMES,
     "The exchange's final status, when the wallet watched one. unknown: the wallet stopped watching without one. Absent when the transaction itself did not succeed."
+  ),
+  leg_count: p.int(
+    "The transactions the swap takes. 1: a single transaction. More: a plan, the wallet sends each later leg once the previous one lands.",
+    { min: 1, max: MAX_SWAP_PLAN_LEGS }
+  ),
+  plan_outcome: p.enum(
+    SWAP_PLAN_OUTCOMES,
+    "How a swap of more than one transaction ended. completed: every leg landed. stopped: a later leg could not run and the funds wait on the user's own account. aborted: the first leg never moved the funds."
+  ),
+  stopped_at_leg: p.int("The leg the swap plan stopped at, counted from 1.", {
+    min: 1,
+    max: MAX_SWAP_PLAN_LEGS,
+  }),
+  stop_reason: p.enum(
+    SWAP_PLAN_STOP_REASONS,
+    "Why the swap plan stopped. dropped: the chain never saw the first leg. reverted: the leg failed on chain. replaced: another transaction took the leg's nonce. indeterminate: the wallet could not tell if the leg landed in time. out_of_bounds: the rebuilt leg broke what the user approved. provider_unavailable: the provider was paused or closed. build_failed: the leg could not be built after its retries. expired: the signing window closed. cancelled: the user cancelled."
+  ),
+  paused_for: p.enum(
+    SWAP_PLAN_PAUSES,
+    "What the swap plan waited on the user for. unlock: the wallet was locked when a later leg was due. signature: a later leg must be signed on screen, by a Ledger or by an account the background does not sign for. Absent when it never waited."
   ),
   stage: p.slug("The step the user left the swap on: mobile's name for last_step."),
   prefill_from_token: p.bool("The swap opened with the token to swap from already picked."),

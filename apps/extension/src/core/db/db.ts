@@ -2,6 +2,7 @@ import { Dexie } from "dexie"
 
 import type { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import type { TalismanMetadataDef } from "../domains/substrate/types"
+import type { SwapPlan, SwapPlanId } from "../domains/swaps/plans/types"
 import type { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import type { DbBlobId, DbBlobItem } from "./blobs"
 import type { ImageCacheEntry } from "./imageCache"
@@ -18,6 +19,7 @@ class TalismanDatabase extends Dexie {
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
   queryCache!: Dexie.Table<QueryCacheItem, string>
   imageCache!: Dexie.Table<ImageCacheEntry, string>
+  swapPlans!: Dexie.Table<SwapPlan, SwapPlanId>
 
   constructor() {
     super("Talisman")
@@ -75,6 +77,11 @@ class TalismanDatabase extends Dexie {
     // was persisted. The table is a cache of chain-fetched metadata, it refills itself from RPC.
     this.version(15).upgrade((tx) => {
       tx.table("metadata").clear()
+    })
+
+    // v16: multi-leg swap plans, driven by the background executor
+    this.version(16).stores({
+      swapPlans: "id, phase, updatedAt",
     })
   }
 }

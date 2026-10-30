@@ -6,29 +6,36 @@ import {
   tokenSymbolForAnalytics,
 } from "@common/analytics/funds"
 import { toDurationMs } from "@common/analytics/schema"
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
+import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useRef, useState } from "react"
-
-import type {
-  BaseQuote,
-  SupportedSwapProtocol,
-  SwapModule,
-} from "../swap-modules/common.swap-module"
+import type { SwapModule } from "../swap-modules/common.swap-module"
 import { useSwapModules } from "../swaps.api"
-import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
+import {
+  attachFees,
+  attachShortfalls,
+  flattenQuotes,
+  type NativeHolding,
+  type QuoteWithFees,
+  selectQuote,
+  sortQuotes,
+} from "./quote-sorting"
 
-const areSortedQuotesEqual = (
-  left: { quote: BaseQuote; fees: number }[],
-  right: { quote: BaseQuote; fees: number }[]
-): boolean =>
+const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): boolean =>
   left.length === right.length &&
   left.every(
-    ({ quote, fees }, index) => right[index]?.quote === quote && right[index]?.fees === fees
+    ({ quote, fees, netUsd, shortfall }, index) =>
+      right[index]?.quote === quote &&
+      right[index]?.fees === fees &&
+      right[index]?.netUsd === netUsd &&
+      right[index]?.shortfall?.planck === shortfall?.planck
   )
 
 type QuoteQueryData = BaseQuote | BaseQuote[] | null
@@ -85,6 +92,18 @@ export const useSwapQuoteManager = (params: {
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
   const toNetwork = useNetworkById(toToken?.networkId)
+  const nativeTokenId = fromNetwork?.nativeTokenId
+  const nativeBalance = useBalanceByParams({ address: fromAddress, tokenId: nativeTokenId })
+  const nativeDecimals = nativeBalance?.token?.decimals
+  const nativeTransferable = nativeBalance?.transferable.planck
+  const liveNativeHolding = useMemo<NativeHolding | null>(
+    () =>
+      nativeTokenId && nativeDecimals !== undefined && nativeTransferable !== undefined
+        ? { tokenId: nativeTokenId, decimals: nativeDecimals, transferable: nativeTransferable }
+        : null,
+    [nativeTokenId, nativeDecimals, nativeTransferable]
+  )
+  const nativeHolding = useLockedValue(liveNativeHolding, freezeQuote)
   const quoteReport = useMemo(
     () => ({
       from_network_id: networkIdForAnalytics(fromNetwork),
@@ -151,6 +170,7 @@ export const useSwapQuoteManager = (params: {
             fromAddress,
             toAddress,
             selectedSubProtocol,
+            input: "exact",
           },
           signal
         ),
@@ -208,11 +228,11 @@ export const useSwapQuoteManager = (params: {
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
-  const liveSortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
+  const liveSortedQuotes: QuoteWithFees[] = useMemo(() => {
     const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
-    const withFees = attachFees(flatQuotes, tokenRates)
-    return sortQuotes(withFees, quoteSorting)
-  }, [quotesDataKey, tokenRates, quoteSorting])
+    const withFees = attachFees(flatQuotes, tokenRates, toToken ?? null)
+    return sortQuotes(attachShortfalls(withFees, nativeHolding), quoteSorting)
+  }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding, toToken])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])
 

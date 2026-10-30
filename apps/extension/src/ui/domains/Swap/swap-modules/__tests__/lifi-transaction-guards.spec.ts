@@ -1,5 +1,6 @@
 import { log } from "@common/log"
 import type { Route } from "@lifi/types"
+import BigNumber from "bignumber.js"
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
@@ -46,7 +47,7 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
 }))
 
 // the gas check talks to a node — return the request unchanged so we can observe what was built
-vi.mock("../evm-gas-check", () => ({
+vi.mock("@core/domains/swaps/evm-gas-check", () => ({
   prepareTransactionRequestWithGasCheck: vi.fn(
     async (_client: unknown, _feeTokenId: string, request: unknown) => request
   ),
@@ -89,6 +90,8 @@ const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
 const { lifiSwapModule } = await import("../lifi-swap-module")
+const { quoteFromLegs } = await import("@core/domains/swaps/helpers")
+const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---
 
@@ -152,17 +155,30 @@ const makeRoute = (fromAmount: bigint, feeCosts: FeeCost[] = []): Route =>
     ],
   }) as unknown as Route
 
-const makeQuote = (fromAmount: bigint, feeCosts: FeeCost[] = []) => ({
-  protocol: "lifi" as const,
-  decentralisationScore: 2,
-  outputAmountBN: 950_000_000_000_000_000n,
-  inputAmountBN: fromAmount,
-  fees: [],
-  timeInSec: 30,
-  providerLogo: "",
-  providerName: "LI.FI",
-  data: makeRoute(fromAmount, feeCosts),
-})
+const makeQuote = (fromAmount: bigint, feeCosts: FeeCost[] = [], fromTokenId = NATIVE_TOKEN_ID) =>
+  quoteFromLegs(
+    [
+      {
+        protocol: "lifi",
+        fromTokenId,
+        toTokenId: NATIVE_TOKEN_ID,
+        signer: FROM_ADDRESS,
+        recipient: FROM_ADDRESS,
+        inputAmount: fromAmount,
+        outputAmount: 950_000_000_000_000_000n,
+        fees: [],
+        timeInSec: 30,
+        data: makeRoute(fromAmount, feeCosts),
+      },
+    ],
+    { protocol: "lifi", decentralisationScore: 2, providerLogo: "", providerName: "LI.FI" }
+  )
+
+const givenRoutes = (routes: Route[]) =>
+  vi.mocked(lifiSdk.getRoutes).mockResolvedValue({
+    routes,
+    unavailableRoutes: { failed: [], filteredOut: [] },
+  } as unknown as Awaited<ReturnType<typeof lifiSdk.getRoutes>>)
 
 /** Set what the provider returns from `getStepTransaction`. */
 const givenProviderTransaction = (txRequest: Record<string, unknown>) =>
@@ -178,18 +194,20 @@ const givenProviderTransaction = (txRequest: Record<string, unknown>) =>
     },
   })
 
-const getTransaction = (
+const buildLeg = (
   fromTokenId = NATIVE_TOKEN_ID,
   fromAmount = ONE_ETH,
   feeCosts: FeeCost[] = []
-) =>
-  lifiSwapModule.getTransaction({
-    fromTokenId,
-    fromAddress: FROM_ADDRESS,
-    fromAmount,
-    exchange: makeQuote(fromAmount, feeCosts),
+) => {
+  givenRoutes([makeRoute(fromAmount, feeCosts)])
+  return lifiSwapModule.buildLeg({
+    leg: makeQuote(fromAmount, feeCosts, fromTokenId).legs[0],
+    input: fromAmount,
     context: { platform: "ethereum" },
+    exchange: null,
+    slippage: 0.005,
   })
+}
 
 /** The module logs the provider error before it rethrows it. */
 const expectRejection = async (transaction: Promise<unknown>, message: string) => {
@@ -203,10 +221,7 @@ const expectRejection = async (transaction: Promise<unknown>, message: string) =
 }
 
 const getQuote = (feeCosts: FeeCost[]) => {
-  vi.mocked(lifiSdk.getRoutes).mockResolvedValue({
-    routes: [makeRoute(ONE_ETH, feeCosts)],
-    unavailableRoutes: { failed: [], filteredOut: [] },
-  } as unknown as Awaited<ReturnType<typeof lifiSdk.getRoutes>>)
+  givenRoutes([makeRoute(ONE_ETH, feeCosts)])
   return lifiSwapModule.getQuote(
     {
       fromTokenId: NATIVE_TOKEN_ID,
@@ -214,17 +229,20 @@ const getQuote = (feeCosts: FeeCost[]) => {
       fromAmount: ONE_ETH,
       fromAddress: FROM_ADDRESS,
       toAddress: FROM_ADDRESS,
+      input: "exact",
     },
     new AbortController().signal
   )
 }
+
+const single = <T>(quote: T | T[] | null) => (Array.isArray(quote) ? quote[0] : quote)
 
 /** The module resolves assets from a cache populated by `getFromAssets`. */
 const seedAssetCache = () => lifiSwapModule.getFromAssets(new AbortController().signal)
 
 // --- Tests ---
 
-describe("lifi getTransaction — provider transaction guards", () => {
+describe("lifi buildLeg — provider transaction guards", () => {
   beforeEach(() => logError.mockClear())
   afterAll(() => logError.mockRestore())
 
@@ -232,33 +250,33 @@ describe("lifi getTransaction — provider transaction guards", () => {
     await seedAssetCache()
     givenProviderTransaction({ value: `0x${ONE_ETH.toString(16)}` })
 
-    const result = await getTransaction()
+    const { transaction } = await buildLeg()
 
-    expect(result?.platform).toBe("ethereum")
-    expect(result?.platform === "ethereum" && result.transaction.to).toBe(ROUTER_ADDRESS)
+    expect(transaction.platform).toBe("ethereum")
+    expect(transaction.platform === "ethereum" && transaction.transaction.to).toBe(ROUTER_ADDRESS)
   })
 
   it("accepts an erc20 swap carrying no native value", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: "0x0" })
 
-    const result = await getTransaction(ERC20_TOKEN_ID, ONE_USDC)
+    const result = await buildLeg(ERC20_TOKEN_ID, ONE_USDC)
 
-    expect(result?.platform).toBe("ethereum")
+    expect(result.transaction.platform).toBe("ethereum")
   })
 
   it("rejects a native value above the amount the user entered", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: `0x${(ONE_ETH + 1n).toString(16)}` })
 
-    await expectRejection(getTransaction(), "Unexpected transaction amount")
+    await expectRejection(buildLeg(), "Unexpected transaction amount")
   })
 
   it("rejects a native value carried by an erc20 swap", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: `0x${ONE_ETH.toString(16)}` })
 
-    await expectRejection(getTransaction(ERC20_TOKEN_ID, ONE_USDC), "Unexpected transaction amount")
+    await expectRejection(buildLeg(ERC20_TOKEN_ID, ONE_USDC), "Unexpected transaction amount")
   })
 
   describe("fees charged on top of the input", () => {
@@ -268,9 +286,9 @@ describe("lifi getTransaction — provider transaction guards", () => {
       await seedAssetCache()
       givenProviderTransaction({ value: `0x${(ONE_ETH + BRIDGE_FEE).toString(16)}` })
 
-      const result = await getTransaction(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false)])
+      const result = await buildLeg(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false)])
 
-      expect(result?.platform).toBe("ethereum")
+      expect(result.transaction.platform).toBe("ethereum")
     })
 
     it("rejects a native value above the entered amount plus the bridge fee", async () => {
@@ -278,7 +296,7 @@ describe("lifi getTransaction — provider transaction guards", () => {
       givenProviderTransaction({ value: `0x${(ONE_ETH + BRIDGE_FEE + 1n).toString(16)}` })
 
       await expectRejection(
-        getTransaction(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false)]),
+        buildLeg(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false)]),
         "Unexpected transaction amount"
       )
     })
@@ -287,9 +305,9 @@ describe("lifi getTransaction — provider transaction guards", () => {
       await seedAssetCache()
       givenProviderTransaction({ value: `0x${BRIDGE_FEE.toString(16)}` })
 
-      const result = await getTransaction(ERC20_TOKEN_ID, ONE_USDC, [nativeFee(BRIDGE_FEE, false)])
+      const result = await buildLeg(ERC20_TOKEN_ID, ONE_USDC, [nativeFee(BRIDGE_FEE, false)])
 
-      expect(result?.platform).toBe("ethereum")
+      expect(result.transaction.platform).toBe("ethereum")
     })
 
     it("ignores an included fee", async () => {
@@ -297,7 +315,7 @@ describe("lifi getTransaction — provider transaction guards", () => {
       givenProviderTransaction({ value: `0x${(ONE_ETH + BRIDGE_FEE).toString(16)}` })
 
       await expectRejection(
-        getTransaction(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, true)]),
+        buildLeg(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, true)]),
         "Unexpected transaction amount"
       )
     })
@@ -307,7 +325,7 @@ describe("lifi getTransaction — provider transaction guards", () => {
       givenProviderTransaction({ value: `0x${(ONE_ETH + BRIDGE_FEE).toString(16)}` })
 
       await expectRejection(
-        getTransaction(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false, 137)]),
+        buildLeg(NATIVE_TOKEN_ID, ONE_ETH, [nativeFee(BRIDGE_FEE, false, 137)]),
         "Unexpected transaction amount"
       )
     })
@@ -317,21 +335,21 @@ describe("lifi getTransaction — provider transaction guards", () => {
     await seedAssetCache()
     givenProviderTransaction({ value: "0x0", to: ERC20_ADDRESS })
 
-    await expectRejection(getTransaction(ERC20_TOKEN_ID, ONE_USDC), "Unexpected transaction target")
+    await expectRejection(buildLeg(ERC20_TOKEN_ID, ONE_USDC), "Unexpected transaction target")
   })
 
   it("rejects a transaction for a different chain", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: "0x0", chainId: 137 })
 
-    await expectRejection(getTransaction(), "Unexpected chain")
+    await expectRejection(buildLeg(), "Unexpected chain")
   })
 
   it("rejects a transaction for a different sender", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: "0x0", from: "0x0000000000000000000000000000000000000bad" })
 
-    await expectRejection(getTransaction(), "Invalid sender address")
+    await expectRejection(buildLeg(), "Invalid sender address")
   })
 })
 
@@ -367,6 +385,64 @@ describe("lifi getQuote — additional fees", () => {
       ["Bridge Fee", true],
       ["Protocol Fee", false],
       ["Talisman Fee", undefined],
+    ])
+  })
+})
+
+describe("lifi confirm screen", () => {
+  it("builds the step of a fresh route at the user's slippage", async () => {
+    await seedAssetCache()
+    const quote = single(await getQuote([nativeFee(1_000n, false)]))
+    if (!quote) throw new Error("expected a quote")
+    givenRoutes([makeRoute(ONE_ETH, [nativeFee(2_000n, false)])])
+    givenProviderTransaction({ value: `0x${(ONE_ETH + 2_000n).toString(16)}` })
+
+    expect(
+      await confirmSwap({
+        module: lifiSwapModule,
+        quote,
+        fromTokenId: NATIVE_TOKEN_ID,
+        toTokenId: NATIVE_TOKEN_ID,
+        fromAddress: FROM_ADDRESS,
+        toAddress: FROM_ADDRESS,
+        fromAmount: ONE_ETH,
+        context: { platform: "ethereum" },
+        slippage: 0.005,
+      })
+    ).toEqual({
+      transaction: {
+        platform: "ethereum",
+        transaction: {
+          chain: null,
+          to: ROUTER_ADDRESS,
+          value: ONE_ETH + 2_000n,
+          data: "0x1234",
+          gasLimit: "0x5208",
+          account: FROM_ADDRESS,
+        },
+      },
+      fees: [
+        {
+          name: "Bridge Fee",
+          tokenId: NATIVE_TOKEN_ID,
+          amount: BigNumber("0.000000000000002"),
+          additional: true,
+        },
+        { name: "Talisman Fee", tokenId: NATIVE_TOKEN_ID, amount: BigNumber("0.0045") },
+      ],
+      txInfo: {
+        type: "swap-lifi",
+        protocolName: "1inch",
+        fromTokenId: NATIVE_TOKEN_ID,
+        toTokenId: NATIVE_TOKEN_ID,
+        fromAmount: "1000000000000000000",
+        toAmount: "940000000000000000",
+        to: FROM_ADDRESS,
+      },
+    })
+    expect(vi.mocked(lifiSdk.getRoutes).mock.lastCall?.[1].options?.slippage).toBe(0.005)
+    expect(mockGetStepTransaction.mock.lastCall?.[0].estimate.feeCosts).toEqual([
+      nativeFee(2_000n, false),
     ])
   })
 })

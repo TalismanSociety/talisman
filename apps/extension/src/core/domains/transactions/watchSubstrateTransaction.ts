@@ -1,12 +1,11 @@
 import { log } from "@common/log"
-import { compactNumber, Twox128 } from "@polkadot-api/substrate-bindings"
+import { compactNumber } from "@polkadot-api/substrate-bindings"
 import {
   type DotNetwork,
   type DotNetworkId,
   getBlockExplorerUrl,
 } from "@talismn/chaindata-provider"
 import { blake2b256 } from "@talismn/crypto"
-import { parseMetadataRpc } from "@talismn/scale"
 import type { HexString } from "@talismn/util"
 import { assert, hexToU8a, u8aConcat, u8aToHex } from "@talismn/util"
 import { Err, Ok, type Result } from "ts-results"
@@ -18,6 +17,11 @@ import { settingsStore } from "../app/store.settings"
 import { getMetadataDef } from "../metadata/getMetadataDef"
 import { getMetadataRpcFromDef } from "../metadata/helpers"
 import { assembleSubstrateTransaction } from "../signing/signSubstratePayload"
+import {
+  buildSystemEventsDecoder,
+  type DecodeSystemEvents,
+  findExtrinsicEvents,
+} from "./extrinsicEvents"
 import {
   addSubstrateTransaction,
   getTransactionStatus,
@@ -50,18 +54,6 @@ type JsonHeader = {
   stateRoot: HexString
   extrinsicsRoot: HexString
   digest?: { logs?: HexString[] }
-}
-
-/** decoded System.Events record (papi dynamic-builder shape) */
-type SystemEventRecord = {
-  phase?: { type: string; value?: number }
-  event?: { type: string; value?: { type: string } }
-}
-
-type DecodeSystemEvents = (scaleHex: HexString) => SystemEventRecord[]
-
-const getStorageKeyHash = (...names: string[]) => {
-  return `0x${names.map((name) => u8aToHex(Twox128(new TextEncoder().encode(name))).slice(2)).join("")}`
 }
 
 /**
@@ -115,37 +107,18 @@ const getExtrinsincResult = async (
   extrinsicHash: string
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
-    const blockData = await chainConnectorDot.send<{
-      block: { header: JsonHeader; extrinsics: HexString[] }
-    }>(chainId, "chain_getBlock", [blockHash])
-
-    const eventsStorageKey = getStorageKeyHash("System", "Events")
-    const response = await chainConnectorDot.send<
-      { changes: [string, HexString | null][] }[] | null
-    >(chainId, "state_queryStorageAt", [[eventsStorageKey], blockHash])
-
-    const eventsFrame = response?.[0]?.changes[0][1]
-    const events = eventsFrame ? decodeSystemEvents(eventsFrame) : []
-
-    const blockNumber = parseInt(blockData.block.header.number, 16)
-
-    for (const [txIndex, extrinsic] of blockData.block.extrinsics.entries()) {
-      if (u8aToHex(blake2b256(hexToU8a(extrinsic))) !== extrinsicHash) continue
-
-      const relevantEvent = events.find(
-        (record) =>
-          record.phase?.type === "ApplyExtrinsic" &&
-          Number(record.phase.value) === txIndex &&
-          record.event?.type === "System" &&
-          ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(record.event.value?.type ?? "")
-      )
-      if (relevantEvent)
-        return Ok({
-          result: relevantEvent.event?.value?.type === "ExtrinsicSuccess" ? "success" : "error",
-          blockNumber,
-          extIndex: txIndex,
-        })
-    }
+    const found = await findExtrinsicEvents(
+      chainId,
+      () => decodeSystemEvents,
+      blockHash,
+      extrinsicHash
+    )
+    if (found)
+      return Ok({
+        result: found.success ? "success" : "error",
+        blockNumber: found.blockNumber,
+        extIndex: found.extrinsicIndex,
+      })
   } catch (error) {
     // errors commonly arise here due to misconfigured metadata
     log.error(error)
@@ -331,10 +304,7 @@ export const watchSubstrateTransaction = async (
     const metadataRpc = getMetadataRpcFromDef(metadataDef)
     assert(metadataRpc, `Unable to find metadata for chain ${payload.genesisHash}`)
 
-    const { builder } = parseMetadataRpc(metadataRpc)
-    const eventsCodec = builder.buildStorage("System", "Events").value
-    const decodeSystemEvents: DecodeSystemEvents = (scaleHex) =>
-      eventsCodec.dec(scaleHex) as SystemEventRecord[]
+    const decodeSystemEvents = buildSystemEventsDecoder(metadataRpc)
 
     const { hash } = await assembleSubstrateTransaction(payload, signature)
 

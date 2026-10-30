@@ -1,18 +1,23 @@
+import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-library/react"
+import BigNumber from "bignumber.js"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-
-import type {
-  BaseQuote,
-  SupportedSwapProtocol,
-  SwapModule,
-} from "../swap-modules/common.swap-module"
+import type { SwapModule } from "../swap-modules/common.swap-module"
 
 const getQuoteMock = vi.fn()
 
 const track = vi.hoisted(() => vi.fn())
 vi.mock("@ui/api/track", () => ({ track }))
+
+const nativeBalance = vi.hoisted(() => ({
+  current: null as { token: { decimals: number }; transferable: { planck: bigint } } | null,
+}))
+vi.mock("@ui/hooks/useBalancesByParams", () => ({
+  useBalanceByParams: () => nativeBalance.current,
+}))
 
 vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({ "from-token": { usd: { price: 25 } } }),
@@ -25,7 +30,8 @@ vi.mock("@ui/state/chaindata", () => ({
       : tokenId === "to-token"
         ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
         : null,
-  useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
+  useNetworkById: (networkId?: string) =>
+    networkId ? { id: networkId, nativeTokenId: "from-token", __isKnown: true } : null,
 }))
 
 vi.mock("../swaps.api", () => {
@@ -37,8 +43,9 @@ vi.mock("../swaps.api", () => {
       getToAssets: async () => [],
       getQuote: (params: Parameters<SwapModule["getQuote"]>[0], signal: AbortSignal) =>
         getQuoteMock(params, signal),
-      createExchange: async () => null,
-      getTransaction: async () => null,
+      buildLeg: async () => {
+        throw new Error("not built in quote tests")
+      },
     } satisfies SwapModule,
   ]
   return { swapModules, useSwapModules: () => swapModules }
@@ -63,16 +70,28 @@ const createDeferred = <T,>(): Deferred<T> => {
   return { promise, resolve }
 }
 
-const makeQuote = (outputAmountBN: bigint): BaseQuote => ({
-  decentralisationScore: 2,
-  protocol: "lifi",
-  outputAmountBN,
-  inputAmountBN: 1n,
-  fees: [],
-  timeInSec: 30,
-  providerLogo: "https://example.com/logo.png",
-  providerName: "LI.FI",
-})
+const makeQuote = (outputAmountBN: bigint, fees: BaseQuote["fees"] = []): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: "lifi",
+        fromTokenId: "from-token",
+        toTokenId: "to-token",
+        signer: null,
+        recipient: null,
+        inputAmount: 1n,
+        outputAmount: outputAmountBN,
+        fees,
+        timeInSec: 30,
+      },
+    ],
+    {
+      decentralisationScore: 2,
+      protocol: "lifi",
+      providerLogo: "https://example.com/logo.png",
+      providerName: "LI.FI",
+    }
+  )
 
 const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
   ["from-token", new Set(["lifi"])],
@@ -103,6 +122,79 @@ describe("useSwapQuoteManager", () => {
 
   afterEach(() => {
     queryClient.clear()
+    nativeBalance.current = null
+  })
+
+  it("lists a route whose fees on top cost more than the account holds last, with what it lacks", async () => {
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 10n } }
+    const bridgeFee = { amount: BigNumber(195), name: "Bridge Fee", tokenId: "from-token" }
+    const glacis = makeQuote(300n, [{ ...bridgeFee, additional: true }])
+    const across = makeQuote(200n)
+    getQuoteMock.mockResolvedValue([glacis, across])
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    const { result } = renderHook(
+      () =>
+        useSwapQuoteManager({
+          fromTokenId: "from-token",
+          toTokenId: "to-token",
+          fromSupportMap,
+          toSupportMap,
+          fromAmount: 1n,
+          fromAddress: "0x111",
+          toAddress: "0x222",
+          selectedProtocol: null,
+          selectedSubProtocol: undefined,
+          quoteSorting: "bestRate",
+        }),
+      { wrapper }
+    )
+
+    await waitFor(() => expect(result.current.sortedQuotes).toHaveLength(2))
+    expect(result.current.sortedQuotes.map(({ quote, shortfall }) => [quote, shortfall])).toEqual([
+      [across, null],
+      [glacis, { tokenId: "from-token", planck: 186n }],
+    ])
+    expect(result.current.selectedQuote).toBe(across)
+  })
+
+  it("keeps the confirmed route while the quote is frozen, even if the balance drops", async () => {
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 1000n } }
+    const bridgeFee = { amount: BigNumber(195), name: "Bridge Fee", tokenId: "from-token" }
+    const glacis = makeQuote(300n, [{ ...bridgeFee, additional: true }])
+    getQuoteMock.mockResolvedValue([glacis, makeQuote(200n)])
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let freezeQuote = false
+    const { result, rerender } = renderHook(
+      () =>
+        useSwapQuoteManager({
+          fromTokenId: "from-token",
+          toTokenId: "to-token",
+          fromSupportMap,
+          toSupportMap,
+          fromAmount: 1n,
+          fromAddress: "0x111",
+          toAddress: "0x222",
+          selectedProtocol: null,
+          selectedSubProtocol: undefined,
+          quoteSorting: "bestRate",
+          freezeQuote,
+        }),
+      { wrapper }
+    )
+    await waitFor(() => expect(result.current.selectedQuote).toBe(glacis))
+
+    freezeQuote = true
+    rerender()
+    nativeBalance.current = { token: { decimals: 0 }, transferable: { planck: 10n } }
+    rerender()
+
+    expect(result.current.selectedQuote).toBe(glacis)
   })
 
   it("keeps the previous quotes available while a new amount is refetching", async () => {

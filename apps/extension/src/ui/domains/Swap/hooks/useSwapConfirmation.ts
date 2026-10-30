@@ -1,8 +1,7 @@
 import { activeNetworksStore } from "@core/domains/chaindata/store.activeNetworks"
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import type { SupportedSwapProtocol, SwapExchange } from "../swap-modules/common.swap-module"
+import { useCallback, useEffect, useState } from "react"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
 
 /**
@@ -20,91 +19,6 @@ export function useConfirmReadiness(swapView: string): boolean {
   }, [swapView])
 
   return isReady
-}
-
-/**
- * Builds WalletTransactionInfo for the swap, shared across EVM and Substrate flows.
- */
-export function useSwapTxInfo({
-  exchange,
-  fromTokenId,
-  toTokenId,
-  fromAmount,
-  toAmount,
-  toAddress,
-  protocol,
-  subProtocol,
-}: {
-  exchange: SwapExchange | undefined
-  fromTokenId: string | null
-  toTokenId: string | null
-  fromAmount: bigint | null
-  toAmount: bigint | null
-  toAddress: string | null
-  protocol: SupportedSwapProtocol | (string & {}) | undefined
-  subProtocol?: string
-}): WalletTransactionInfo | undefined {
-  return useMemo(() => {
-    if (!fromTokenId || !toTokenId || !toAmount || !fromAmount || toAddress === null) return
-
-    switch (protocol) {
-      case "simpleswap":
-        if (exchange?.protocol !== "simpleswap") return
-        return {
-          type: "swap-simpleswap",
-          exchangeId: exchange.data.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "stealthex":
-        if (exchange?.protocol !== "stealthex") return
-        return {
-          type: "swap-stealthex",
-          exchangeId: exchange.data.id,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "lifi":
-        if (!subProtocol) return
-        return {
-          type: "swap-lifi",
-          protocolName: subProtocol,
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "bittensor-evm":
-        return {
-          type: "swap-bittensor-evm",
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-        }
-      case "forevermoney":
-        if (exchange?.protocol !== "forevermoney") return
-        return {
-          type: "swap-forevermoney",
-          fromTokenId,
-          toTokenId,
-          fromAmount: fromAmount.toString(),
-          toAmount: toAmount.toString(),
-          to: toAddress,
-          destinationStartBlock: exchange.data.destinationStartBlock,
-        }
-      default:
-        throw new Error(`swapModule ${protocol as string} not supported`)
-    }
-  }, [exchange, fromAmount, fromTokenId, protocol, subProtocol, toAddress, toAmount, toTokenId])
 }
 
 /**

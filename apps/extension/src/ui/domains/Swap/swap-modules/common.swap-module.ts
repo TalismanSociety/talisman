@@ -1,7 +1,14 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
-import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { SolRpc } from "@talismn/chain-connectors"
+import type {
+  ApprovalInfo,
+  ApprovalParams,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+} from "@core/domains/swaps/types"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
@@ -12,81 +19,12 @@ import {
   subNativeTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import type { ScaleApi } from "@talismn/sapi"
-import type { SolTransaction } from "@talismn/solana"
-import type BigNumber from "bignumber.js"
-import type { TransactionRequest } from "viem"
 
-import type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
+import type { SwapExchange } from "./swap-protocols"
 
-export type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
-
-/** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
-export const TALISMAN_FEE_NAME = "Talisman Fee"
-
-export type QuoteFee = {
-  name: string
-  amount: BigNumber
-  tokenId: TokenId
-  /**
-   * Charged on top of the input amount and of the network fee, shown as "Additional Fee" on the confirm screen.
-   * Only fees in the source network's native token are balance-checked and allowed in the transaction value.
-   */
-  additional?: boolean
-}
-
-export type BaseQuote<TData = any> = {
-  decentralisationScore: number
-  protocol: SupportedSwapProtocol
-  subProtocol?: string
-  outputAmountBN: bigint
-  inputAmountBN: bigint
-  error?: string
-  fees: QuoteFee[]
-  talismanFee?: number
-  data?: TData
-  timeInSec: number
-  providerLogo: string
-  providerName: string
-  /** Short provider-specific remark shown on the confirmation screen */
-  note?: string
-  /** Provider-specific notice shown as an info banner on the confirmation screen */
-  notice?: string
-
-  /** If defined, the UI must account for a gas buffer of `maxNativeTokenGasBuffer` wei to be used for the swap */
-  maxNativeTokenGasBuffer?: string
-}
-
-export type QuoteResponse = {
-  query: {
-    amount: string
-    quote: {
-      intermediateAmount?: string
-      egressAmount: string
-      includedFees: Array<{
-        type: "LIQUIDITY" | "NETWORK" | "INGRESS" | "EGRESS" | "BROKER" | "BOOST"
-        chain: unknown
-        asset: unknown
-        amount: string
-      }>
-      lowLiquidityWarning: boolean | undefined
-      estimatedDurationSeconds: number
-    }
-  }
-}
+export type { SwapExchange } from "./swap-protocols"
 
 export type SwapView = "form" | "approve-recipient" | "confirm" | "submitted"
-
-// --- Param types for SwapModule methods ---
-
-export type QuoteParams = {
-  fromTokenId: TokenId | null
-  toTokenId: TokenId | null
-  fromAmount: bigint | null
-  fromAddress: string | null
-  toAddress: string | null
-  selectedSubProtocol?: string
-}
 
 export type ExchangeParams = {
   fromTokenId: TokenId
@@ -96,45 +34,10 @@ export type ExchangeParams = {
   toAddress: string | null
 }
 
-export type SwapTransactionContext =
-  | { platform: "ethereum" }
-  | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
-  | { platform: "solana"; rpc: SolRpc }
-
-export type GetTransactionParams = {
-  fromTokenId: TokenId
-  fromAddress: string
-  /** amount entered by the user, and the only amount shown on the confirmation screen */
-  fromAmount: bigint
-  exchange: unknown // specific exchange type varies per module
-  context: SwapTransactionContext
-  /** recipient selected by the user, lets modules reject a quote built for another recipient */
-  toAddress?: string
+export type SwapBuildLegParams = BuildLegParams & {
+  /** the exchange createExchange opened for this leg */
+  exchange: SwapExchange | null
 }
-
-export type SwapModuleTransaction =
-  | {
-      platform: "ethereum"
-      transaction: TransactionRequest
-    }
-  | {
-      platform: "polkadot"
-      payload: SignerPayloadJSON
-      txMetadata?: Uint8Array
-    }
-  | {
-      platform: "solana"
-      transaction: SolTransaction
-    }
-
-export type ApprovalInfo = {
-  contractAddress: string
-  amount: bigint
-  tokenAddress: string
-  chainId: number
-  fromAddress: string
-  protocolName: string
-} | null
 
 export type SwapModule = {
   protocol: SupportedSwapProtocol
@@ -146,12 +49,11 @@ export type SwapModule = {
 
   getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
 
-  createExchange: (params: ExchangeParams) => Promise<SwapExchange | null>
-  getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
+  /** opens an order with the provider, once per confirm screen: the order is what the leg pays into */
+  createExchange?: (params: ExchangeParams) => Promise<SwapExchange>
+  buildLeg: (params: SwapBuildLegParams) => Promise<BuiltLeg>
 
-  getApprovalInfo?: (
-    params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
-  ) => ApprovalInfo
+  getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
 
 // helpers — module-internal use only

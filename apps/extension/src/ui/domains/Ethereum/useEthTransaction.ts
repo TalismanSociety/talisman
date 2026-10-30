@@ -504,7 +504,7 @@ export const useEthTransaction = (
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
     evmNetworkId,
-    isReplacement && tx?.nonce ? tx.nonce : undefined
+    isReplacement ? tx?.nonce : undefined
   )
   const {
     gasPrice,

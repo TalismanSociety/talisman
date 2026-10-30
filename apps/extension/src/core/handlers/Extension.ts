@@ -26,6 +26,8 @@ import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
+import { SwapsHandler } from "../domains/swaps/handler"
+import { resumeSwapPlans } from "../domains/swaps/plans/executor"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { cleanupAllDroppedTransactions } from "../domains/transactions/cleanupDroppedTransactions"
 import { updateTransactionsRestart } from "../domains/transactions/store.transactions"
@@ -68,6 +70,7 @@ export default class Extension extends ExtensionHandler {
       gandalf: new GandalfHandler(stores),
       sendFunds: new SendFundsHandler(stores),
       queryCache: new QueryCacheHandler(stores),
+      swaps: new SwapsHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -156,8 +159,10 @@ export default class Extension extends ExtensionHandler {
     db.metadata.toArray()
 
     // marks all pending transaction as status unknown, then verifies
-    // "unknown" txs against the chain and cleans up dropped ones
-    updateTransactionsRestart().then(() => cleanupAllDroppedTransactions())
+    // "unknown" txs against the chain and cleans up dropped ones, then picks the swap plans up
+    updateTransactionsRestart()
+      .then(() => cleanupAllDroppedTransactions())
+      .then(() => resumeSwapPlans())
 
     // resume background swap status watchers for in-progress swaps
     resumeSwapWatchers()

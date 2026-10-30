@@ -5,6 +5,15 @@ import {
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { assertDepositAmountWithinInput } from "@core/domains/swaps/exports"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type {
+  BaseQuote,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+} from "@core/domains/swaps/types"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
@@ -16,19 +25,13 @@ import createClient from "openapi-fetch"
 import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
-  type BaseQuote,
   type ExchangeParams,
-  type GetTransactionParams,
   getTokenIdForSwappableAsset,
   platformFromTokenId,
-  type QuoteFee,
-  type QuoteParams,
-  type SupportedSwapProtocol,
+  type SwapBuildLegParams,
   type SwapExchange,
   type SwapModule,
-  type SwapModuleTransaction,
   type SwappableAssetBaseType,
-  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import {
   buildDepositTransaction,
@@ -40,7 +43,6 @@ import {
   getStealthexAdditionalFeePercent,
   getStealthexTalismanTotalFee,
 } from "./fee-utils"
-import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
@@ -369,7 +371,7 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
 }
 
 const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
-  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
@@ -408,18 +410,29 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       tokenId: fromAsset.id,
     })
 
-    return {
-      decentralisationScore: DECENTRALISATION_SCORE,
-      protocol: PROTOCOL,
-      inputAmountBN: fromAmount,
-      outputAmountBN: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
-      // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
-      timeInSec: 5 * 60,
-      fees,
-      providerLogo: LOGO,
-      providerName: PROTOCOL_NAME,
-      talismanFee,
-    }
+    return quoteFromLegs(
+      [
+        {
+          protocol: PROTOCOL,
+          fromTokenId,
+          toTokenId,
+          signer: fromAddress,
+          recipient: toAddress,
+          inputAmount: fromAmount,
+          outputAmount: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
+          fees,
+          // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
+          timeInSec: 5 * 60,
+        },
+      ],
+      {
+        decentralisationScore: DECENTRALISATION_SCORE,
+        protocol: PROTOCOL,
+        providerLogo: LOGO,
+        providerName: PROTOCOL_NAME,
+        talismanFee,
+      }
+    )
   } catch (cause) {
     log.error(`Failed to get StealthEX quote`, cause)
     return null
@@ -429,7 +442,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 /** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type { StealthexExchange }
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
+const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -535,32 +548,50 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
   }
 }
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  const fromAsset = resolveAsset(params.fromTokenId)
+const buildLeg = async ({
+  leg,
+  input,
+  context,
+  exchange,
+}: SwapBuildLegParams): Promise<BuiltLeg> => {
+  const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
-  const exchange = params.exchange as StealthexExchange | undefined
-  if (!exchange?.deposit?.address) throw new Error("Missing exchange")
+  if (exchange?.protocol !== "stealthex" || !exchange.data.deposit?.address)
+    throw new Error("Missing exchange")
+  if (!leg.signer) throw new Error("Missing from address")
+  if (!leg.recipient) throw new Error("Missing to address")
 
   assertDepositAmountWithinInput({
-    depositAmount: exchange.deposit.expected_amount,
-    fromAmount: params.fromAmount,
+    depositAmount: exchange.data.deposit.expected_amount,
+    fromAmount: input,
     decimals: fromAsset.decimals,
   })
 
   const deposit: DepositInfo = {
-    depositAddress: exchange.deposit.address,
-    depositAmount: BigNumber(exchange.deposit.expected_amount).toFixed(),
+    depositAddress: exchange.data.deposit.address,
+    depositAmount: BigNumber(exchange.data.deposit.expected_amount).toFixed(),
   }
 
-  return buildDepositTransaction({
-    fromAsset,
-    fromAddress: params.fromAddress,
-    deposit,
-    context: params.context,
-  })
+  return {
+    transaction: await buildDepositTransaction({
+      fromAsset,
+      fromAddress: leg.signer,
+      deposit,
+      context,
+    }),
+    fees: leg.fees,
+    expectedOutput: leg.outputAmount,
+    txInfo: {
+      type: "swap-stealthex",
+      exchangeId: exchange.data.id,
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: leg.outputAmount.toString(),
+      to: leg.recipient,
+    },
+  }
 }
 
 export const stealthexSwapModule: SwapModule = {
@@ -569,6 +600,6 @@ export const stealthexSwapModule: SwapModule = {
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: createExchange,
-  getTransaction: getTransaction,
+  createExchange,
+  buildLeg,
 }

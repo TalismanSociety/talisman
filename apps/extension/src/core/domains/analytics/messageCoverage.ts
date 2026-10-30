@@ -128,6 +128,8 @@ export const MESSAGE_COVERAGE = {
   "pri(chaindata.tokens.upsert)": { event: ["custom_token_added", "custom_token_edited"] },
   "pri(chaindata.tokens.remove)": { event: "custom_token_deleted" },
   "pri(sendFunds.confirmedAddresses.add)": { flow: "send" },
+  "pri(swaps.plan.propose)": { flow: "swap" },
+  "pri(swaps.plan.cancel)": { flow: "swap" },
   "pri(queryCache.get)": "read",
   "pri(queryCache.set)": { exempt: "transport" },
   "pri(queryCache.remove)": { exempt: "transport" },

@@ -5,6 +5,8 @@ import type { Subscription } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { db } from "../../db"
+import { LEG0, LEG0_HASH, LEG1, PLAN_ID, SUMMARY } from "../swaps/plans/__tests__/fixtures"
+import type { SwapPlan } from "../swaps/plans/types"
 import {
   markTransactionDropped,
   type TxStatusFact,
@@ -14,7 +16,12 @@ import {
   updateTransactionsRestart,
 } from "../transactions/store.transactions"
 import type { TransactionStatus, WalletTransactionEth } from "../transactions/types"
-import { settledStatusOf, trackSwapOutcome, trackTxSettled } from "./txSettled"
+import {
+  settledStatusOf,
+  trackSwapOutcome,
+  trackSwapPlanSettled,
+  trackTxSettled,
+} from "./txSettled"
 
 type TrackedCall = [event: EventName, props?: EventProperties]
 
@@ -240,5 +247,149 @@ describe("tx_settled from the transaction store", () => {
     expect(trackedCalls()).toEqual([
       ["tx_settled", expect.objectContaining({ status: "success", time_to_settle_ms: 7 * DAY_MS })],
     ])
+  })
+})
+
+describe("a swap plan settles its flow once, on the plan", () => {
+  beforeEach(async () => {
+    await db.transactionsV2.clear()
+    tracked.calls.length = 0
+    settled.mockClear()
+  })
+
+  const LANDED_LEG0 = {
+    ...LEG0,
+    state: { at: "landed", hash: LEG0_HASH, amount: "1", landedAt: 2_000 },
+  } as const
+
+  const plan = (phase: SwapPlan["phase"], second: SwapPlan["legs"][1]): SwapPlan => ({
+    id: PLAN_ID,
+    phase,
+    createdAt: 1_000,
+    updatedAt: 1_000,
+    signUntil: 10_000,
+    summary: SUMMARY,
+    legs: [LANDED_LEG0, second],
+  })
+
+  it("skips the rows of its legs", async () => {
+    const row = {
+      ...makeEvmTx(5),
+      txInfo: {
+        type: "swap-forevermoney",
+        fromTokenId: "964:evm-native",
+        toTokenId: LEG1.quote.toTokenId,
+        fromAmount: "1",
+        toAmount: "1",
+        to: ACCOUNT,
+        destinationStartBlock: "1",
+        plan: { id: PLAN_ID, leg: 1 },
+      },
+    } satisfies WalletTransactionEth
+
+    await trackTxSettled({ row, from: "pending", to: "error", reason: "watch", at: 5_000 })
+    await trackSwapOutcome({ row, status: "finished", at: 5_000 })
+
+    expect(trackedCalls()).toEqual([])
+    expect(settled).not.toHaveBeenCalled()
+  })
+
+  it("completes the flow linked to the first leg, timed from its row", async () => {
+    await db.transactionsV2.put({ ...makeEvmTx(5), id: LEG0_HASH, timestamp: 1_500 })
+
+    await trackSwapPlanSettled({
+      plan: {
+        ...plan("completed", {
+          ...LEG1,
+          state: { at: "landed", hash: `0x${"22".repeat(32)}`, amount: "1", landedAt: 3_000 },
+        }),
+        pausedFor: "unlock",
+      },
+      at: 61_500,
+    })
+
+    expect(settled).toHaveBeenCalledWith(
+      LEG0_HASH,
+      {
+        status: "success",
+        timeToSettleMs: 60_000,
+        properties: {
+          protocol: "forevermoney",
+          cross_chain: true,
+          plan_outcome: "completed",
+          paused_for: "unlock",
+        },
+      },
+      expect.any(Number)
+    )
+  })
+
+  it("completes the flow linked to the first leg's own transaction when a speed-up of it executed", async () => {
+    const landedLeg1 = {
+      ...LEG1,
+      state: { at: "landed", hash: `0x${"22".repeat(32)}`, amount: "1", landedAt: 3_000 },
+    } as const
+    const spedUpLeg0 = {
+      ...LEG0,
+      state: {
+        at: "landed",
+        hash: `0x${"33".repeat(32)}`,
+        sentHash: LEG0_HASH,
+        amount: "1",
+        landedAt: 2_000,
+      },
+    } as const
+
+    await trackSwapPlanSettled({
+      plan: { ...plan("completed", landedLeg1), legs: [spedUpLeg0, landedLeg1] },
+      at: 3_000,
+    })
+
+    expect(settled).toHaveBeenCalledWith(
+      LEG0_HASH,
+      expect.objectContaining({ status: "success" }),
+      expect.any(Number)
+    )
+  })
+
+  it("names the leg and the reason a plan stopped at", async () => {
+    await trackSwapPlanSettled({
+      plan: plan("stopped", {
+        ...LEG1,
+        state: { at: "failed", failure: "provider-unavailable", failedAt: 3_000 },
+      }),
+      at: 3_000,
+    })
+
+    expect(settled).toHaveBeenCalledWith(
+      LEG0_HASH,
+      {
+        status: "error",
+        timeToSettleMs: 2_000,
+        properties: {
+          protocol: "forevermoney",
+          cross_chain: true,
+          plan_outcome: "stopped",
+          stopped_at_leg: 2,
+          stop_reason: "provider_unavailable",
+        },
+      },
+      expect.any(Number)
+    )
+  })
+
+  it("settles nothing for a plan whose first leg was never signed", async () => {
+    await trackSwapPlanSettled({
+      plan: {
+        ...plan("aborted", { ...LEG1, state: { at: "skipped" } }),
+        legs: [
+          { ...LEG0, state: { at: "failed", failure: "expired", failedAt: 3_000 } },
+          { ...LEG1, state: { at: "skipped" } },
+        ],
+      },
+      at: 3_000,
+    })
+
+    expect(settled).not.toHaveBeenCalled()
   })
 })

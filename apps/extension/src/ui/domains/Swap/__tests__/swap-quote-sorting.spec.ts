@@ -1,33 +1,59 @@
+import { quoteFromLegs } from "@core/domains/swaps/helpers"
+import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
 import {
   attachFees,
+  attachShortfalls,
   calculateQuoteFees,
   flattenQuotes,
+  isSelectionAvailable,
   type QuoteWithFees,
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
-import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
 // ---------------------------------------------------------------------------
 
-const makeQuote = (overrides: Partial<BaseQuote> = {}): BaseQuote => ({
-  decentralisationScore: 1,
-  protocol: "simpleswap",
-  outputAmountBN: 1000n,
-  inputAmountBN: 500n,
-  fees: [],
-  timeInSec: 60,
-  providerLogo: "",
-  providerName: "SimpleSwap",
-  ...overrides,
-})
+const makeQuote = ({
+  inputAmountBN = 500n,
+  outputAmountBN = 1000n,
+  fees = [],
+  timeInSec = 60,
+  ...presentation
+}: Partial<BaseQuote> = {}): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: presentation.protocol ?? "simpleswap",
+        fromTokenId: "from-token",
+        toTokenId: "to-token",
+        signer: null,
+        recipient: null,
+        inputAmount: inputAmountBN,
+        outputAmount: outputAmountBN,
+        fees,
+        timeInSec,
+      },
+    ],
+    {
+      decentralisationScore: 1,
+      protocol: "simpleswap",
+      providerLogo: "",
+      providerName: "SimpleSwap",
+      ...presentation,
+    }
+  )
 
-const wrap = (quote: BaseQuote, fees = 0): QuoteWithFees => ({ quote, fees })
+const wrap = (quote: BaseQuote, fees = 0, netUsd: number | null = null): QuoteWithFees => ({
+  quote,
+  fees,
+  netUsd,
+  shortfall: null,
+})
 
 /** Cast a partial rate map to TokenRatesList – tests only need the `usd.price` path. */
 const mockRates = (map: Record<string, { usd?: { price: number } | undefined }>): TokenRatesList =>
@@ -123,6 +149,70 @@ describe("sortQuotes – bestRate", () => {
     // Array.sort is stable in V8 – order should be preserved
     const sorted = sortQuotes([a, b], "bestRate")
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["A", "B"])
+  })
+
+  it("ranks by the USD value delivered less the fees paid on top, when the output has a rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("0.0195"), tokenId: "eth", additional: true }],
+    })
+    const stargate = makeQuote({
+      outputAmountBN: 795n,
+      providerName: "Stargate",
+      fees: [{ name: "Gas", amount: BigNumber("0.0001"), tokenId: "eth", gas: true }],
+    })
+    const across = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Across",
+      fees: [{ name: "LIFI Fixed Fee", amount: BigNumber("0.01"), tokenId: "eth" }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([glacis, stargate, across], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Across", "Stargate", "Glacis"])
+  })
+
+  it("falls back to the output amount when the output token has no rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("1"), tokenId: "eth", additional: true }],
+    })
+    const across = makeQuote({ outputAmountBN: 790n, providerName: "Across" })
+    const rates = mockRates({ eth: { usd: { price: 2300 } } })
+
+    const sorted = sortQuotes(
+      attachFees([across, glacis], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Glacis", "Across"])
+  })
+
+  it("falls back to the output amount when a fee paid on top has no rate", () => {
+    const unpricedFee = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Unpriced fee",
+      fees: [{ name: "Gas", amount: BigNumber("1"), tokenId: "unpriced", gas: true }],
+    })
+    const pricedFee = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Priced fee",
+      fees: [{ name: "Gas", amount: BigNumber("0.0005"), tokenId: "eth", gas: true }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([unpricedFee, pricedFee], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Priced fee", "Unpriced fee"])
   })
 
   it("handles very large bigint differences", () => {
@@ -284,7 +374,7 @@ describe("full sorting pipeline", () => {
     const flat = flattenQuotes([lowOutput, [highOutput, zeroOutput], null])
     expect(flat).toHaveLength(2) // zero output filtered out
 
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "bestRate")
 
     expect(sorted[0]!.quote.providerName).toBe("LI.FI")
@@ -312,11 +402,96 @@ describe("full sorting pipeline", () => {
 
     const r = mockRates({ eth: { usd: { price: 3000 } } })
     const flat = flattenQuotes([highOutputHighFee, lowOutputLowFee])
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "cheapest")
 
     expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")
     expect(sorted[0]!.fees).toBe(3)
     expect(sorted[1]!.fees).toBe(30)
+  })
+})
+
+describe("attachShortfalls", () => {
+  const additionalFee = (amount: string, tokenId = "from-token") => ({
+    amount: BigNumber(amount),
+    name: "Bridge Fee",
+    tokenId,
+    additional: true,
+  })
+  const holding = (transferable: bigint, tokenId = "from-token") => ({
+    tokenId,
+    decimals: 0,
+    transferable,
+  })
+  const shortfallOf = (quote: QuoteWithFees, transferable: bigint, tokenId?: string) =>
+    attachShortfalls([quote], holding(transferable, tokenId))[0]?.shortfall
+
+  it("records what the account lacks to pay the input and the fees on top", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
+    expect(shortfallOf(quote, 40n)).toEqual({ tokenId: "from-token", planck: 165n })
+  })
+
+  it("records nothing when the account holds enough", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("5")] }))
+    expect(shortfallOf(quote, 15n)).toBeNull()
+  })
+
+  it("counts only the fees on top when the input is another token", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 1000n, fees: [additionalFee("5", "native")] }))
+    expect(shortfallOf(quote, 5n, "native")).toBeNull()
+  })
+
+  it("ignores fees taken from the swapped amount and fees in other tokens", () => {
+    const quote = wrap(
+      makeQuote({
+        inputAmountBN: 10n,
+        fees: [
+          { amount: BigNumber("500"), name: "LIFI Fixed Fee", tokenId: "from-token" },
+          additionalFee("500", "10:evm-native"),
+        ],
+      })
+    )
+    expect(shortfallOf(quote, 10n)).toBeNull()
+  })
+
+  it("records nothing while the balance is unknown", () => {
+    const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
+    expect(attachShortfalls(quotes, null)).toEqual(quotes)
+  })
+
+  it("sorts the routes the account cannot pay for after the ones it can", () => {
+    const glacis = {
+      ...wrap(makeQuote({ providerName: "Glacis", outputAmountBN: 3000n })),
+      shortfall: { tokenId: "from-token", planck: 1n },
+    }
+    const across = wrap(makeQuote({ providerName: "Across", outputAmountBN: 2000n }))
+    expect(sortQuotes([glacis, across], "bestRate").map(({ quote }) => quote.providerName)).toEqual(
+      ["Across", "Glacis"]
+    )
+  })
+})
+
+describe("isSelectionAvailable", () => {
+  const short = (quote: BaseQuote): QuoteWithFees => ({
+    ...wrap(quote),
+    shortfall: { tokenId: "from-token", planck: 1n },
+  })
+  const across = makeQuote({ protocol: "lifi", subProtocol: "across" })
+  const glacis = makeQuote({ protocol: "lifi", subProtocol: "glacis" })
+
+  it("keeps a route the account can pay for", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "across")).toBe(true)
+  })
+
+  it("drops a route the account can no longer pay for when another one fits", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "glacis")).toBe(false)
+  })
+
+  it("keeps a route the account cannot pay for when none fits, so the confirm screen names the shortfall", () => {
+    expect(isSelectionAvailable([short(across), short(glacis)], "lifi", "glacis")).toBe(true)
+  })
+
+  it("drops a route that is no longer quoted", () => {
+    expect(isSelectionAvailable([wrap(across)], "lifi", "glacis")).toBe(false)
   })
 })

@@ -1,0 +1,482 @@
+import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
+import type { BuiltLeg } from "@core/domains/swaps/types"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { act, render, screen, waitFor } from "@testing-library/react"
+import { useState } from "react"
+import { of } from "rxjs"
+import { encodeFunctionData, erc20Abi } from "viem"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+const USDT_ID = `1:evm-erc20:${USDT.toLowerCase()}`
+const SPENDER = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE"
+const APPROVAL_HASH = `0x${"ab".repeat(32)}`
+
+const { ethGetTransactionsCount, priced, pricing, submitted, payloadLock, button, client } =
+  vi.hoisted(() => {
+    const pricing = { setCustomSettings: vi.fn(), setPriority: vi.fn() }
+    return {
+      ethGetTransactionsCount: vi.fn(),
+      pricing,
+      priced: vi.fn(
+        (
+          request: object | undefined,
+          _networkId?: string,
+          _isLocked?: boolean,
+          _isReplacement?: boolean
+        ) => ({
+          transaction: request && { ...request, nonce: 99 },
+          error: undefined,
+          ...pricing,
+        })
+      ),
+      submitted: vi.fn(),
+      payloadLock: { current: undefined as ((isLocked: boolean) => void) | undefined },
+      button: {
+        sign: undefined as (() => void) | undefined,
+        submit: undefined as ((hash: string) => void) | undefined,
+        reject: undefined as ((cause: unknown) => void) | undefined,
+      },
+      client: {
+        allowance: vi.fn<() => Promise<bigint>>(),
+        waitForTransactionReceipt: vi.fn(),
+      },
+    }
+  })
+
+const { lifiBuildLeg } = vi.hoisted(() => ({ lifiBuildLeg: vi.fn() }))
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) =>
+      key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(options?.[name])),
+  }),
+}))
+vi.mock("@ui/api", () => ({ api: { ethGetTransactionsCount } }))
+vi.mock("@ui/state/balances", () => ({ useBalance: () => undefined }))
+vi.mock("@ui/domains/Ethereum/useEthTransaction", () => ({ useEthTransaction: priced }))
+vi.mock("@ui/state/chaindata", () => ({
+  getToken$: () => of({ symbol: "USDT" }),
+  useToken: () => ({ symbol: "ETH", decimals: 18 }),
+}))
+vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
+  TxSubmitButton: ({
+    tx,
+    label,
+    isProcessing,
+    onSubmit,
+    onPayloadLockChange,
+    onError,
+    disabled,
+  }: {
+    tx?: unknown
+    label?: string
+    disabled?: boolean
+    isProcessing?: boolean
+    onSubmit: (hash: string) => void
+    onPayloadLockChange?: (isLocked: boolean) => void
+    onError?: (cause: unknown) => void
+  }) => {
+    const [isSigning, setIsSigning] = useState(false)
+    payloadLock.current = onPayloadLockChange
+    button.sign = () => setIsSigning(true)
+    button.submit = onSubmit
+    button.reject = onError
+    if (tx) submitted(tx)
+    return (
+      <button type="button" aria-busy={isSigning || !!isProcessing} disabled={disabled}>
+        {label}
+      </button>
+    )
+  },
+}))
+vi.mock("../swap-modules/evm-network", () => ({
+  getEvmPublicClient: async () => ({
+    getBalance: async () => 10n ** 21n,
+    getTransactionCount: async () => 7,
+    readContract: async ({ functionName }: { functionName: string }) =>
+      functionName === "allowance" ? client.allowance() : 10n ** 21n,
+    prepareTransactionRequest: async (request: object) => ({
+      ...request,
+      gas: 50_000n,
+      maxFeePerGas: 10n,
+      maxPriorityFeePerGas: 1n,
+    }),
+    waitForTransactionReceipt: client.waitForTransactionReceipt,
+  }),
+}))
+
+const builtLeg = (to: `0x${string}`, txInfo: BuiltLeg["txInfo"]): BuiltLeg => ({
+  transaction: {
+    platform: "ethereum",
+    transaction: {
+      to,
+      data: "0x",
+      value: 1n,
+      gas: 21_000n,
+      maxFeePerGas: 10n,
+      maxPriorityFeePerGas: 1n,
+    },
+  },
+  fees: [],
+  expectedOutput: 1n,
+  txInfo,
+})
+
+vi.mock("../swaps.api", () => ({
+  swapModules: [
+    {
+      protocol: "forevermoney",
+      buildLeg: async () =>
+        builtLeg(GATEWAY, {
+          type: "swap-forevermoney",
+          fromTokenId: "964:evm-native",
+          toTokenId: "8453:evm-native",
+          fromAmount: "1",
+          toAmount: "1",
+          to: GATEWAY,
+          destinationStartBlock: "1",
+        }),
+    },
+    {
+      protocol: "lifi",
+      getApprovalInfo: ({
+        fromAmount,
+        fromAddress,
+      }: {
+        fromAmount: bigint
+        fromAddress: string
+      }) => ({
+        contractAddress: SPENDER,
+        amount: fromAmount,
+        tokenAddress: USDT,
+        chainId: 1,
+        fromAddress,
+        protocolName: "LI.FI",
+      }),
+      buildLeg: lifiBuildLeg,
+    },
+  ],
+}))
+
+import {
+  EVM_ADDRESS,
+  GATEWAY,
+  LEG0,
+  LEG0_OUTPUT,
+  LEG1,
+  PLAN_ID,
+  RECIPIENT,
+  SUMMARY,
+  T0,
+} from "@core/domains/swaps/plans/__tests__/fixtures"
+import { PlanLegSignButton, usePlanLegSigning } from "../components/SwapPlanLedgerSign"
+import { SwapRateDropNotice } from "../components/SwapTxDetails"
+
+const lifiBuilt = (): BuiltLeg =>
+  builtLeg(SPENDER, {
+    type: "swap-lifi",
+    protocolName: "fly",
+    fromTokenId: USDT_ID,
+    toTokenId: "8453:evm-native",
+    fromAmount: "1",
+    toAmount: "1",
+    to: RECIPIENT,
+  })
+
+const planWaitingOn = (leg: PlanLeg, landed = LEG0_OUTPUT): SwapPlan => ({
+  id: PLAN_ID,
+  phase: "paused",
+  createdAt: T0,
+  updatedAt: T0,
+  signUntil: null,
+  summary: SUMMARY,
+  legs: [
+    {
+      ...LEG0,
+      state: {
+        at: "landed",
+        hash: `0x${"11".repeat(32)}`,
+        amount: landed.toString(),
+        landedAt: T0,
+      },
+    },
+    { ...leg, state: { at: "awaiting-user", why: "signature", since: T0 } },
+  ],
+})
+
+const LEDGER_PLAN = planWaitingOn({ ...LEG1, signerType: "ledger-ethereum" })
+
+const LIFI_PLAN = planWaitingOn({
+  ...LEG1,
+  quote: { ...LEG1.quote, protocol: "lifi", fromTokenId: USDT_ID, data: {} },
+  bound: null,
+})
+
+const approveData = (amount: bigint) =>
+  encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [SPENDER, amount] })
+
+const WaitingLeg = ({ plan }: { plan: SwapPlan }) => (
+  <PlanLegSignButton button={usePlanLegSigning(plan, 1).button} />
+)
+
+const renderSign = (plan = LEDGER_PLAN) =>
+  render(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
+      <WaitingLeg plan={plan} />
+    </QueryClientProvider>
+  )
+
+const buttonLabel = () => screen.getByRole("button").textContent
+
+const BuiltAmounts = ({ plan }: { plan: SwapPlan }) => {
+  const { built } = usePlanLegSigning(plan, 1)
+  return <output>{built ? `${built.inputAmount} -> ${built.outputAmount}` : "building"}</output>
+}
+
+const RateDropLeg = ({ plan }: { plan: SwapPlan }) => {
+  const { built, button } = usePlanLegSigning(plan, 1)
+  return (
+    <>
+      {built?.acceptedOutput !== undefined ? (
+        <SwapRateDropNotice
+          tokenId={plan.legs[1].quote.toTokenId}
+          amount={built.outputAmount}
+          accepted={built.acceptedOutput}
+        />
+      ) : null}
+      <PlanLegSignButton button={button} />
+    </>
+  )
+}
+
+describe("usePlanLegSigning", () => {
+  beforeEach(() => lifiBuildLeg.mockImplementation(async () => lifiBuilt()))
+
+  it("shows a processing button until it knows what the user signs", () => {
+    ethGetTransactionsCount.mockReturnValue(new Promise(() => {}))
+    renderSign()
+    expect(buttonLabel()).toBe("Processing")
+  })
+
+  it("describes the leg by what the previous leg landed, not by its quote", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    const landed = LEG0_OUTPUT - 5n
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <BuiltAmounts plan={planWaitingOn({ ...LEG1, signerType: "ledger-ethereum" }, landed)} />
+      </QueryClientProvider>
+    )
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe(`${landed} -> 1`))
+  })
+
+  it("rebuilds the leg on a fresh nonce once a sign attempt ends without the leg sent", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderSign()
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    )
+
+    ethGetTransactionsCount.mockResolvedValue(9)
+    act(() => payloadLock.current?.(true))
+    act(() => payloadLock.current?.(false))
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
+    )
+  })
+
+  it("offers a fresh sign attempt once the background rejects the signed leg", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderSign()
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+
+    act(() => button.sign?.())
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
+    act(() => button.reject?.(new Error("nonce already used")))
+
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
+    expect(buttonLabel()).toBe("Try again")
+  })
+
+  it("rebuilds the leg on a fresh nonce once the background rejects the signed leg", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderSign()
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    )
+
+    ethGetTransactionsCount.mockResolvedValue(9)
+    act(() => button.sign?.())
+    act(() => button.reject?.(new Error("nonce already used")))
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
+    )
+  })
+
+  it("signs the leg with the wallet's next nonce, past the transactions it still has pending", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    renderSign()
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(ethGetTransactionsCount).toHaveBeenCalledWith(EVM_ADDRESS, "964")
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    expect(buttonLabel()).toBe("Sign on Ledger")
+  })
+
+  it("prices the leg on screen with no fee of its own and signs it on the nonce the plan pinned", async () => {
+    renderSign({
+      ...LEDGER_PLAN,
+      legs: [LEDGER_PLAN.legs[0], { ...LEDGER_PLAN.legs[1], nonce: 4 }],
+    })
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    const [request, networkId, , isReplacement] = priced.mock.lastCall ?? []
+    expect(request).toMatchObject({ nonce: 4 })
+    expect(request).not.toHaveProperty("maxFeePerGas")
+    expect(request).not.toHaveProperty("maxPriorityFeePerGas")
+    expect(request).not.toHaveProperty("gasPrice")
+    expect(networkId).toBe("964")
+    expect(isReplacement).toBeUndefined()
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 4 } })
+  })
+
+  it("asks a keypair signer to sign, not a Ledger", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    renderSign(LIFI_PLAN)
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: SPENDER, nonce: 8 },
+      txInfo: { type: "swap-lifi", plan: { id: PLAN_ID, leg: 1 } },
+    })
+    expect(buttonLabel()).toBe("Sign")
+  })
+
+  it("asks for the spender's allowance before the leg when it is short", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    renderSign(LIFI_PLAN)
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    const tx = submitted.mock.lastCall?.[0]
+    expect(tx).toMatchObject({
+      networkId: "1",
+      payload: {
+        from: EVM_ADDRESS,
+        to: USDT,
+        data: approveData(BigInt(LEG1.quote.inputAmount)),
+        value: 0n,
+        nonce: 8,
+      },
+      txInfo: {
+        type: "approve-erc20",
+        tokenId: USDT_ID,
+        contractAddress: SPENDER,
+        amount: LEG1.quote.inputAmount,
+      },
+    })
+    expect(tx.txInfo.plan).toBeUndefined()
+    expect(buttonLabel()).toBe("Approve USDT")
+  })
+
+  it("revokes a short non-zero allowance before it approves the amount the leg needs", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(50n)
+    client.waitForTransactionReceipt.mockResolvedValue(undefined)
+    renderSign({
+      ...LIFI_PLAN,
+      legs: [
+        LIFI_PLAN.legs[0],
+        { ...LIFI_PLAN.legs[1], quote: { ...LIFI_PLAN.legs[1].quote, inputAmount: "100" } },
+      ],
+    })
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: USDT, data: approveData(0n) },
+      txInfo: { type: "approve-erc20", amount: "0" },
+    })
+    expect(buttonLabel()).toBe("Revoke Approval")
+
+    client.allowance.mockResolvedValue(0n)
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({
+        payload: { to: USDT, data: approveData(100n) },
+        txInfo: { type: "approve-erc20", amount: "100" },
+      })
+    )
+    expect(buttonLabel()).toBe("Approve USDT")
+  })
+
+  it("builds the leg once the approval mined, priced afresh", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    let mined: () => void = () => {}
+    client.waitForTransactionReceipt.mockReturnValue(
+      new Promise<void>((resolve) => {
+        mined = resolve
+      })
+    )
+    renderSign(LIFI_PLAN)
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+    pricing.setCustomSettings.mockClear()
+    pricing.setPriority.mockClear()
+
+    act(() => {
+      button.submit?.(APPROVAL_HASH)
+    })
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
+    await waitFor(() =>
+      expect(client.waitForTransactionReceipt).toHaveBeenCalledWith(
+        expect.objectContaining({ hash: APPROVAL_HASH })
+      )
+    )
+
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    ethGetTransactionsCount.mockResolvedValue(9)
+    await act(async () => {
+      mined()
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: SPENDER, nonce: 9 },
+      txInfo: { plan: { id: PLAN_ID, leg: 1 } },
+    })
+    expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
+    expect(pricing.setCustomSettings).toHaveBeenCalledWith(undefined)
+    expect(pricing.setPriority).toHaveBeenCalledWith(undefined)
+  })
+
+  it("warns of a rate that dropped since the swap started and still lets the user sign", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    lifiBuildLeg.mockImplementation(async () => ({
+      ...lifiBuilt(),
+      expectedOutput: 1_500_000_000_000_000_000n,
+      acceptedOutput: 2_000_000_000_000_000_000n,
+    }))
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RateDropLeg plan={LIFI_PLAN} />
+      </QueryClientProvider>
+    )
+
+    await waitFor(() =>
+      expect(screen.getByRole("note").textContent).toBe(
+        "The rate for this step dropped since the swap started. You will receive at least 1.5 ETH instead of 2 ETH."
+      )
+    )
+    expect(buttonLabel()).toBe("Sign")
+    expect(screen.getByRole("button").hasAttribute("disabled")).toBe(false)
+  })
+})

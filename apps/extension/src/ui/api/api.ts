@@ -263,6 +263,8 @@ export const api: MessageTypes = {
       signature,
       txInfo,
     }),
+  swapPlanPropose: (request) => messageService.sendMessage("pri(swaps.plan.propose)", request),
+  swapPlanCancel: (id) => messageService.sendMessage("pri(swaps.plan.cancel)", { id }),
   subSubmitWithBittensorMevShield: (payload: SignerPayloadJSON, txInfo?: WalletTransactionInfo) =>
     messageService.sendMessage("pri(substrate.rpc.submit.withBittensorMevShield)", {
       payload,

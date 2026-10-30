@@ -7,12 +7,13 @@ import { SwapWizard } from "./SwapWizard"
 
 // This control is injected directly in the layout of dashboard
 export const SwapModal = () => {
-  const { isOpen, close, args } = useSwapModal()
+  const { isOpen, close, args, openKey } = useSwapModal()
 
   return (
     <Modal analyticsId="swap" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="swap-modal">
-        <SwapProvider stateInit={args} isOpen={isOpen}>
+        {/* a swap plan's recovery opens the modal again from inside it, with a new swap to prefill */}
+        <SwapProvider key={openKey} stateInit={args} isOpen={isOpen}>
           <SwapWizard />
         </SwapProvider>
       </PopupSizeModalContainer>

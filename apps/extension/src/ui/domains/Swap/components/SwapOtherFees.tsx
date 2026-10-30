@@ -1,3 +1,5 @@
+import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import type { QuoteFee } from "@core/domains/swaps/types"
 import { InfoIcon } from "@talismn/icons"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -9,23 +11,12 @@ import { useTokenRatesMap } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
 import type { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
-import { type QuoteFee, TALISMAN_FEE_NAME } from "../swap-modules/common.swap-module"
-
-const getAdditionalFees = (fees: QuoteFee[]) => fees.filter((fee) => fee.additional)
+import { toPlanck } from "../hooks/quote-sorting"
 
 const isTalismanFee = (fee: QuoteFee) => fee.name === TALISMAN_FEE_NAME && fee.amount.gt(0)
 
 const getOtherFees = (fees: QuoteFee[]) =>
   fees.filter((fee) => fee.additional || isTalismanFee(fee))
-
-const toPlanck = (fee: QuoteFee, decimals: number) =>
-  BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
-
-/** Sum of the additional fees charged in `tokenId`, the amount the account must hold on top of gas */
-export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: string, decimals: number) =>
-  getAdditionalFees(fees)
-    .filter((fee) => fee.tokenId === tokenId)
-    .reduce((total, fee) => total + BigInt(toPlanck(fee, decimals)), 0n)
 
 export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
   fees,

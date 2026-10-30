@@ -6,6 +6,7 @@ import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
 import { gandalfFetch } from "../gandalf/fetch"
+import { LIFI_API_URL } from "../swaps/modules/lifi"
 import { isTxInfoSwap } from "./exports"
 import { updateSwapStatus } from "./store.transactions"
 import {
@@ -205,7 +206,7 @@ async function fetchLifiStatus(
   if (fromChain !== undefined) params.set("fromChain", String(fromChain))
   if (toChain !== undefined) params.set("toChain", String(toChain))
 
-  const res = await gandalfFetch(`https://lifi.talisman.xyz/v1/status?${params}`)
+  const res = await gandalfFetch(`${LIFI_API_URL}/status?${params}`)
   if (!res.ok) throw new Error(`LiFi API error: ${res.status}`)
 
   const data: { status: string } = await res.json()

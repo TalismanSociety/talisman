@@ -1,9 +1,10 @@
+import type { BaseQuote } from "@core/domains/swaps/types"
 import { AlertCircleIcon, ChevronRightIcon } from "@talismn/icons"
 import { useToken } from "@ui/state/chaindata"
 import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { isSelectionAvailable } from "../hooks/quote-sorting"
 import { useSwap } from "../SwapProvider"
-import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { formatSwapExchangeRate } from "../swap-utils"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 
@@ -53,12 +54,7 @@ const Details = () => {
 
     // When a protocol is already selected, only clear it if no longer available
     if (selectedProtocol !== null) {
-      const isAvailable = sortedQuotes.some(
-        ({ quote }) =>
-          quote.protocol === selectedProtocol &&
-          (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
-      )
-      if (!isAvailable) {
+      if (!isSelectionAvailable(sortedQuotes, selectedProtocol, selectedSubProtocol)) {
         autoSelectQuote(null)
       }
       return
@@ -85,7 +81,10 @@ const Details = () => {
         (quote.subProtocol ? quote.subProtocol === selectedSubProtocol : true)
     )
     const idx = selectedIdx >= 0 ? selectedIdx : 0
-    return { displayQuote: sortedQuotes[idx], isBestRate: idx === 0 }
+    return {
+      displayQuote: sortedQuotes[idx],
+      isBestRate: idx === 0 && !sortedQuotes[idx]?.shortfall,
+    }
   }, [sortedQuotes, selectedProtocol, selectedSubProtocol])
 
   // Extract the lowest provider minimum from error messages (e.g. "SimpleSwap minimum is 0.001 BTC")
