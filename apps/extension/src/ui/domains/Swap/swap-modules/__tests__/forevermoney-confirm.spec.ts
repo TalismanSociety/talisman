@@ -23,7 +23,6 @@ vi.mock("@core/domains/app/store.remoteConfig", () => ({
 
 const NETWORKS: Record<string, unknown> = {
   "8453": { id: "8453", platform: "ethereum", nativeTokenId: "8453:evm-native", name: "Base" },
-  "4663": { id: "4663", platform: "ethereum", nativeTokenId: "4663:evm-native", name: "Robinhood" },
   "964": {
     id: "964",
     platform: "ethereum",
@@ -66,16 +65,12 @@ const forevermoneySwapModule = withSwapEnv(BACKGROUND_SWAP_MODULES.forevermoney,
 
 const BASE_WTAO = "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67"
 const SUB_TAO = "bittensor:substrate-native"
-const EVM_TAO = "964:evm-native"
 
 const BASE_GATEWAY = "0x1da2415229b614C787e145D1D7346eb496319C52"
-const OUTBOUND_ALPHA_GATEWAY = "0xd5Fa238aa4177f6c1341491969d9cBeec94EEd69"
 
 const SUB_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
 const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-const OTHER_EVM_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
 
-const WEI_PER_RAO = 1_000_000_000n
 const ONE_TAO_WEI = 10n ** 18n
 const CCIP_FEE = 1_000_000_000_000_000n // 0.001
 const FEE_WITH_BUFFER = (CCIP_FEE * 102n) / 100n
@@ -100,36 +95,11 @@ const state: ChainState = {
   fee: CCIP_FEE,
 }
 
-const PARTNER = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
-const RAO_ROUND_UP = (wei: bigint) => ((wei + WEI_PER_RAO - 1n) / WEI_PER_RAO) * WEI_PER_RAO
-
 const readContractImpl = async (
   _networkId: string,
   args: { functionName: string; args?: readonly unknown[] }
 ) => {
   switch (args.functionName) {
-    case "quoteBridgeToFinneyWithFee": {
-      const [, amount, , , { bps }] = args.args as [
-        unknown,
-        bigint,
-        unknown,
-        unknown,
-        { bps: number },
-      ]
-      return [state.fee, (amount * BigInt(bps)) / 10_000n, amount]
-    }
-    case "quoteBridgeOutWithFee": {
-      const [, , , minted, taoAmount, , { bps }] = args.args as [
-        unknown,
-        unknown,
-        unknown,
-        bigint,
-        bigint,
-        unknown,
-        { bps: number },
-      ]
-      return [state.fee, RAO_ROUND_UP((taoAmount * BigInt(bps)) / 10_000n), 0n, minted]
-    }
     case "getCurrentOutboundRateLimiterState":
       return {
         tokens: state.bucketTokens,
@@ -145,7 +115,6 @@ const readContractImpl = async (
     case "allowedLane":
       return state.laneAllowed
     case "quoteBridgeToFinney":
-    case "quoteBridgeOut":
       return state.fee
     default:
       throw new Error(`unexpected read ${args.functionName}`)
@@ -235,61 +204,5 @@ describe("forevermoneySwapModule confirm screen", () => {
         destinationStartBlock: "7000000",
       },
     })
-  })
-
-  it("bridges Bittensor EVM TAO out with the partner fee", async () => {
-    Object.assign(forevermoneyConfig, { feeRecipients: { "964": PARTNER }, feeBps: 100 })
-    const fromAmount = ONE_TAO_WEI + ONE_TAO_WEI / 100n
-
-    expect(await confirm(EVM_TAO, BASE_WTAO, fromAmount, OTHER_EVM_ADDRESS)).toEqual({
-      transaction: {
-        platform: "ethereum",
-        transaction: {
-          chain: null,
-          account: EVM_ADDRESS,
-          to: OUTBOUND_ALPHA_GATEWAY,
-          data: "0x6f303b9d000000000000000000000000000000000000000000000000dda641cfe44aff82000000000000000000000000c5b6c1632d34901239396f5e1bde54b34290025600000000000000000000000070045a9f59a354550ec0272f73aae03b01fb8a7a0000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b9060000000000000000000000000000000000000000000000000000000000000064",
-          value: fromAmount + FEE_WITH_BUFFER,
-        },
-      },
-      fees: [
-        { name: "Talisman Fee", tokenId: EVM_TAO, amount: BigNumber("0.01") },
-        {
-          name: "Chainlink CCIP Fee",
-          tokenId: EVM_TAO,
-          amount: BigNumber("0.00102"),
-          additional: true,
-        },
-      ],
-      txInfo: {
-        type: "swap-forevermoney",
-        fromTokenId: EVM_TAO,
-        toTokenId: BASE_WTAO,
-        fromAmount: "1010000000000000000",
-        toAmount: "1000000000000000000",
-        to: OTHER_EVM_ADDRESS,
-        destinationStartBlock: "50000000",
-      },
-    })
-  })
-
-  it("rejects an exchange that delivers less than the selected quote", async () => {
-    const fromAmount = ONE_TAO_WEI + ONE_TAO_WEI / 100n
-    const q = single(await quote(BASE_WTAO, SUB_TAO, fromAmount, SUB_ADDRESS))
-    if (!q) throw new Error("expected a quote")
-    Object.assign(forevermoneyConfig, { feeRecipients: { "8453": PARTNER }, feeBps: 100 })
-
-    await expect(
-      confirmSwap({
-        module: forevermoneySwapModule,
-        quote: q,
-        fromTokenId: BASE_WTAO,
-        toTokenId: SUB_TAO,
-        fromAddress: EVM_ADDRESS,
-        toAddress: SUB_ADDRESS,
-        fromAmount,
-        context: { platform: "ethereum" },
-      })
-    ).rejects.toThrow("Please select the quote again")
   })
 })

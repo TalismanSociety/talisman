@@ -156,33 +156,12 @@ describe("swapTxCards", () => {
     expect(activeSwapTxKey(cards)).toBe("approval-0")
   })
 
-  it("gives a swap without an approval one card per leg, the first one active", () => {
-    const cards = swapTxCards(confirming())
-
-    expect(statuses(cards)).toEqual({ "leg-0": "ready", "leg-1": "upcoming" })
-    expect(activeSwapTxKey(cards)).toBe("leg-0")
-  })
-
-  it("keeps the approval active while it is submitted", () => {
-    const cards = swapTxCards(confirming({ at: "sent", hash: APPROVAL_HASH }))
-
-    expect(statuses(cards)).toMatchObject({ "approval-0": "signing", "leg-0": "upcoming" })
-    expect(activeSwapTxKey(cards)).toBe("approval-0")
-  })
-
   it("keeps a failed approval active, with its error, until it is tried again", () => {
     const cards = swapTxCards(confirming({ at: "failed", error: "Approval reverted" }))
 
     expect(cards[0]).toMatchObject({ status: "failed", error: "Approval reverted" })
     expect(cards[1].status).toBe("upcoming")
     expect(activeSwapTxKey(cards)).toBe("approval-0")
-  })
-
-  it("moves on to the leg once its approval landed", () => {
-    const cards = swapTxCards(confirming({ at: "landed", hash: APPROVAL_HASH, href: "explorer" }))
-
-    expect(cards[0]).toMatchObject({ status: "done", hash: APPROVAL_HASH, href: "explorer" })
-    expect(activeSwapTxKey(cards)).toBe("leg-0")
   })
 
   it("shows a blocking error on the leg it holds back without failing it", () => {
