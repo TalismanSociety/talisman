@@ -798,7 +798,6 @@ export const forevermoneySwapModule: BackgroundSwapModule = {
       from: FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,
       hub: FOREVERMONEY_BITTENSOR_EVM_TOKEN_ID,
       via: "bittensor-evm",
-      intermediate: "owned-evm",
       flag: "SWAPS_MULTI_HOP",
     },
   ],

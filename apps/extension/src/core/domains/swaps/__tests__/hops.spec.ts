@@ -69,7 +69,6 @@ const HOP: EntryHop = {
   from: FINNEY_TAO,
   hub: HUB_TAO,
   via: "bittensor-evm",
-  intermediate: "owned-evm",
   flag: "SWAPS_MULTI_HOP",
 }
 
@@ -215,6 +214,37 @@ describe("withEntryHops", () => {
       fees: [],
       timeInSec: 192,
     })
+  })
+
+  it("keeps every leg of both quotes, in order", async () => {
+    const MID_TOKEN = "bittensor:substrate-dtao:1"
+    const viaLegs: [QuoteLeg, QuoteLeg] = [
+      { ...LEG0, toTokenId: MID_TOKEN, recipient: SUB_ADDRESS },
+      { ...LEG0, fromTokenId: MID_TOKEN, outputAmount: 999_000_000_000_000_000n },
+    ]
+    const targetLegs: [QuoteLeg, QuoteLeg] = [
+      { ...LEG1, toTokenId: ROBINHOOD_WTAO, recipient: KEYPAIR_POOR },
+      { ...LEG1, fromTokenId: ROBINHOOD_WTAO, outputAmount: 997_000_000_000_000_000n },
+    ]
+    const presentation = { decentralisationScore: 2, providerLogo: "", providerName: "" }
+    vi.mocked(viaModule.getQuote).mockResolvedValueOnce(
+      quoteFromLegs(viaLegs, { ...presentation, protocol: "bittensor-evm" })
+    )
+    vi.mocked(finishingModule.getQuote).mockResolvedValueOnce(
+      quoteFromLegs(targetLegs, { ...presentation, protocol: "forevermoney" })
+    )
+
+    const quote = (await withEntryHops(finishingModule, options(true)).getQuote(
+      QUOTE_PARAMS,
+      signal
+    )) as BaseQuote
+
+    expect(quote.legs).toEqual([...viaLegs, ...targetLegs])
+    expect(quote.outputAmountBN).toBe(997_000_000_000_000_000n)
+    expect(finishingModule.getQuote).toHaveBeenLastCalledWith(
+      expect.objectContaining({ fromAmount: 999_000_000_000_000_000n }),
+      signal
+    )
   })
 
   it("passes a direct route through untouched", async () => {

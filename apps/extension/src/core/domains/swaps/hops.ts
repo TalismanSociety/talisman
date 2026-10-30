@@ -62,9 +62,9 @@ const first = (quote: BaseQuote | BaseQuote[] | null) => (Array.isArray(quote) ?
 const unique = (tokenIds: TokenId[]) => [...new Set(tokenIds)]
 
 /**
- * Advertises the module's enabled entry hops as sources and composes a two-leg quote for them:
- * leg 0 through the via module to the intermediate, leg 1 through the module itself, quoted
- * `upTo` what leg 0 delivers. Everything else passes through to the module.
+ * Advertises the module's enabled entry hops as sources and composes a quote for them: the via
+ * module's legs to the intermediate, then the module's own legs, quoted `upTo` what the via quote
+ * delivers. Everything else passes through to the module.
  */
 export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopOptions): T => {
   const hops = (module.entryHops ?? []).filter((hop) => options.enabled(hop.flag))
@@ -107,7 +107,7 @@ export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopO
     if (!leg1) return null
 
     const { legs, inputAmountBN, outputAmountBN, fees, timeInSec, ...presentation } = leg1
-    return quoteFromLegs([leg0.legs[0], legs[0]], {
+    return quoteFromLegs([...leg0.legs, ...legs], {
       ...presentation,
       subProtocol: `via-${hop.via}`,
       maxNativeTokenGasBuffer: undefined,

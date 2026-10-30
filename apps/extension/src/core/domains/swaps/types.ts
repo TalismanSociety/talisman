@@ -252,8 +252,6 @@ export type EntryHop = {
   /** this module's source token, the via module must route from → hub */
   hub: TokenId
   via: SupportedSwapProtocol
-  /** who holds the funds between the legs */
-  intermediate: "owned-evm"
   flag: FeatureFlag
 }
 
