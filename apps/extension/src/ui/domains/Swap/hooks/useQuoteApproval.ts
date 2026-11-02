@@ -1,9 +1,10 @@
 import { networkIdForAnalytics } from "@common/analytics/funds"
 import { log } from "@common/log"
 import { getErrorMessage, isErrorOfName } from "@talismn/util"
+import { useQueryClient } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
 import { notify } from "@ui/components/Notifications"
-import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { invalidateNonceQueries, useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { withPricing } from "@ui/domains/Ethereum/withPricing"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
@@ -18,6 +19,7 @@ import { approveRequest } from "./erc20Approval"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const {
     fromTokenId,
     selectedModule,
@@ -88,6 +90,7 @@ export const useQuoteApproval = () => {
       setIsPending(true)
       try {
         const approved = await publicClient.waitForTransactionReceipt({ hash })
+        await invalidateNonceQueries(queryClient)
         if (approved.status === "success") incrementApprovalCounter()
         else throw new Error("Approval reverted")
       } catch (cause) {
@@ -112,6 +115,7 @@ export const useQuoteApproval = () => {
       needsRevoke,
       protocol,
       publicClient,
+      queryClient,
       reportFailure,
       setApprovalHash,
       t,
