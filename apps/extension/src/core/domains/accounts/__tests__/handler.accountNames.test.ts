@@ -28,7 +28,7 @@ const handler = new AccountsHandler({
 } as unknown as ExtensionStore)
 const port = {} as Port
 
-describe("AccountsHandler contact names", () => {
+describe("AccountsHandler account names", () => {
   beforeEach(() => {
     keyring.accounts = [ACCOUNT, CONTACT]
     vi.clearAllMocks()
@@ -66,6 +66,13 @@ describe("AccountsHandler contact names", () => {
     ).rejects.toThrow("Name already in use")
     await expect(
       handler.handle("1", "pri(accounts.update.contact)", { ...CONTACT, name: "alice" }, port)
+    ).rejects.toThrow("Name already in use")
+    expect(keyring.updateAccount).not.toHaveBeenCalled()
+  })
+
+  it("rejects renaming an account to a contact's name", async () => {
+    await expect(
+      handler.handle("1", "pri(accounts.rename)", { address: ACCOUNT.address, name: " bob" }, port)
     ).rejects.toThrow("Name already in use")
     expect(keyring.updateAccount).not.toHaveBeenCalled()
   })

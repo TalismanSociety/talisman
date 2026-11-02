@@ -51,10 +51,10 @@ const assertContactNamesAvailable = async (options: RequestAddAccountExternal) =
   }
 }
 
-const assertContactRenameAllowed = async (contact: Account, name: string) => {
-  if (name === contact.name) return
+const assertRenameAllowed = async (account: Account, name: string) => {
+  if (name === account.name) return
   const otherAccounts = (await keyringStore.getAccounts()).filter(
-    (account) => account.address !== contact.address
+    (other) => other.address !== account.address
   )
   if (isAccountNameTaken(otherAccounts, name)) throw new Error("Name already in use")
 }
@@ -194,7 +194,8 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
     const account = await keyringStore.getAccount(address)
-    if (account?.type === "contact") await assertContactRenameAllowed(account, name)
+    assert(account, "Account not found")
+    await assertRenameAllowed(account, name)
 
     await keyringStore.updateAccount(address, { name })
     return true
@@ -296,7 +297,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const account = await keyringStore.getAccount(address)
     if (account?.type !== "contact") throw new Error("Contact not found")
 
-    await assertContactRenameAllowed(account, name)
+    await assertRenameAllowed(account, name)
 
     await keyringStore.updateAccount(address, { name, genesisHash })
 
