@@ -229,7 +229,7 @@ const SwapTxCard: FC<{
           {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </button>
       </div>
-      {isExpanded ? <div className="flex flex-col gap-4">{children}</div> : null}
+      {isExpanded ? <div className="flex flex-col gap-2">{children}</div> : null}
       {card.error ? (
         <div role="alert" className="flex items-start gap-4 text-orange-500 text-xs">
           <AlertCircleIcon className="mt-px shrink-0 text-sm" />
