@@ -1,7 +1,9 @@
+import type { SwapPlanId } from "@core/domains/swaps/plans/types"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import type { ReplacementCallbackArgs } from "@ui/domains/Transactions/TxProgress"
-import { useCallback } from "react"
+import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { Hex } from "viem"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
 import { SWAP_CONFIRM_CONTAINER_ID, SwapConfirm } from "./SwapConfirm"
@@ -11,11 +13,15 @@ import { SwapProgress } from "./SwapProgress"
 
 export const SwapWizard = () => {
   const { swapView, isInitializing } = useSwap()
+  const [continuedPlanId, setContinuedPlanId] = useState<SwapPlanId | null>(null)
+  const backToForm = useCallback(() => setContinuedPlanId(null), [])
 
   switch (swapView) {
     case "form":
     case "approve-recipient":
-      return isInitializing ? <SwapFormShimmer /> : <SwapForm />
+      if (isInitializing) return <SwapFormShimmer />
+      if (continuedPlanId) return <SwapPlanDialog id={continuedPlanId} onClose={backToForm} />
+      return <SwapForm onContinuePlan={setContinuedPlanId} />
     case "confirm":
       return <SwapConfirm />
     case "submitted":
@@ -23,8 +29,32 @@ export const SwapWizard = () => {
   }
 }
 
-const SwapSubmitted = () => {
+const SwapPlanDialog: FC<{ id: SwapPlanId; onClose: () => void; leg0ApprovalHash?: Hex }> = ({
+  id,
+  onClose,
+  leg0ApprovalHash,
+}) => {
   const { t } = useTranslation()
+  return (
+    <ModalDialog
+      variant="wizard"
+      className="size-full border-none"
+      title={t("Confirm")}
+      onCloseClick={onClose}
+      contentClassName="relative flex flex-col overflow-hidden! p-0!"
+      id={SWAP_CONFIRM_CONTAINER_ID}
+    >
+      <SwapPlanTransactions
+        id={id}
+        onClose={onClose}
+        containerId={SWAP_CONFIRM_CONTAINER_ID}
+        leg0ApprovalHash={leg0ApprovalHash}
+      />
+    </ModalDialog>
+  )
+}
+
+const SwapSubmitted = () => {
   const { submittedTxHash, submittedNetworkId, submittedTxInfo, gotoSubmitted, approvalHash } =
     useSwap()
   const { close: closeSwapTokensModal } = useSwapModal()
@@ -45,21 +75,11 @@ const SwapSubmitted = () => {
 
   if (submittedTxInfo.plan)
     return (
-      <ModalDialog
-        variant="wizard"
-        className="size-full border-none"
-        title={t("Confirm")}
-        onCloseClick={closeSwapTokensModal}
-        contentClassName="relative flex flex-col overflow-hidden! p-0!"
-        id={SWAP_CONFIRM_CONTAINER_ID}
-      >
-        <SwapPlanTransactions
-          id={submittedTxInfo.plan.id}
-          onClose={closeSwapTokensModal}
-          containerId={SWAP_CONFIRM_CONTAINER_ID}
-          leg0ApprovalHash={approvalHash ?? undefined}
-        />
-      </ModalDialog>
+      <SwapPlanDialog
+        id={submittedTxInfo.plan.id}
+        onClose={closeSwapTokensModal}
+        leg0ApprovalHash={approvalHash ?? undefined}
+      />
     )
 
   return (

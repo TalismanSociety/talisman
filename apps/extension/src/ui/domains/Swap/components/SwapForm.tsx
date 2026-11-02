@@ -1,10 +1,11 @@
+import type { SwapPlanId } from "@core/domains/swaps/plans/types"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { Drawer } from "@ui/components/Drawer"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { useAccountsMap } from "@ui/state/accounts"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
-import { useCallback, useEffect, useMemo } from "react"
+import { type FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
@@ -13,11 +14,12 @@ import { InputFromAmount } from "./InputFromAmount"
 import { ReverseButton } from "./ReverseButton"
 import { SelectTokenButton } from "./SelectTokenButton"
 import { SwapAccountPicker } from "./SwapAccountPicker"
+import { SwapPausedPlans } from "./SwapPausedPlans"
 import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
 import { ToAmountDisplay } from "./ToAmountDisplay"
 import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
 
-export const SwapForm = () => {
+export const SwapForm: FC<{ onContinuePlan: (id: SwapPlanId) => void }> = ({ onContinuePlan }) => {
   const { t } = useTranslation()
   const { close } = useSwapModal()
 
@@ -107,6 +109,7 @@ export const SwapForm = () => {
       contentClassName="relative overflow-hidden! p-0!"
     >
       <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
+        <SwapPausedPlans onContinue={onContinuePlan} />
         <div className="relative flex flex-col gap-6">
           <TokenAndAmountContainer
             tokenButton={
