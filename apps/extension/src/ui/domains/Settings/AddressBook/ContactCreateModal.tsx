@@ -1,5 +1,6 @@
 import { chainPlatformOf } from "@common/analytics/accounts"
 import { classifyError } from "@common/analytics/errorCategory"
+import { isAccountNameTaken } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   getAccountPlatformFromAddress,
@@ -45,7 +46,14 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const schema = useMemo(
     () =>
       yup.object({
-        name: yup.string().required(" "),
+        name: yup
+          .string()
+          .required(" ")
+          .test(
+            "is-available",
+            t("Name already in use"),
+            (value) => !isAccountNameTaken(accounts, value)
+          ),
         searchAddress: yup.string().required(" "),
         address: yup
           .string()

@@ -2,7 +2,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import type { DotNetwork, EthNetwork } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
-import { isAccountCompatibleWithNetwork } from "../helpers"
+import { isAccountCompatibleWithNetwork, isAccountNameTaken } from "../helpers"
 
 const ASSET_HUB_GENESIS = "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f"
 const POLKADOT_GENESIS = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
@@ -31,5 +31,17 @@ describe("isAccountCompatibleWithNetwork", () => {
     expect(isAccountCompatibleWithNetwork(dotNetwork(ASSET_HUB_GENESIS), vault)).toBe(true)
     expect(isAccountCompatibleWithNetwork(dotNetwork(POLKADOT_GENESIS), vault)).toBe(false)
     expect(isAccountCompatibleWithNetwork(ethereum, vault)).toBe(false)
+  })
+})
+
+describe("isAccountNameTaken", () => {
+  const accounts = [{ name: "Alice" }, { name: "Bob" }]
+
+  it("matches an existing name regardless of case and surrounding spaces", () => {
+    expect(isAccountNameTaken(accounts, " alice ")).toBe(true)
+  })
+
+  it("accepts a name no account uses", () => {
+    expect(isAccountNameTaken(accounts, "Carol")).toBe(false)
   })
 })
