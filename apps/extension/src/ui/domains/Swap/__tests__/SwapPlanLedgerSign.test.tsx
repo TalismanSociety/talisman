@@ -38,7 +38,7 @@ const { ethGetTransactionsCount, priced, pricing, submitted, payloadLock, button
         reject: undefined as ((cause: unknown) => void) | undefined,
       },
       client: {
-        allowance: vi.fn<() => Promise<bigint>>(),
+        allowance: vi.fn<(blockNumber?: bigint) => Promise<bigint>>(),
         waitForTransactionReceipt: vi.fn(),
       },
     }
@@ -94,8 +94,13 @@ vi.mock("../swap-modules/evm-network", () => ({
   getEvmPublicClient: async () => ({
     getBalance: async () => 10n ** 21n,
     getTransactionCount: async () => 7,
-    readContract: async ({ functionName }: { functionName: string }) =>
-      functionName === "allowance" ? client.allowance() : 10n ** 21n,
+    readContract: async ({
+      functionName,
+      blockNumber,
+    }: {
+      functionName: string
+      blockNumber?: bigint
+    }) => (functionName === "allowance" ? client.allowance(blockNumber) : 10n ** 21n),
     prepareTransactionRequest: async (request: object) => ({
       ...request,
       gas: 50_000n,
@@ -455,6 +460,28 @@ describe("usePlanLegSigning", () => {
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
     expect(pricing.setCustomSettings).toHaveBeenCalledWith(undefined)
     expect(pricing.setPriority).toHaveBeenCalledWith(undefined)
+  })
+
+  it("builds the leg once the approval mined, even from a node still behind the approval's block", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    client.waitForTransactionReceipt.mockResolvedValue({ blockNumber: 100n, status: "success" })
+    renderSign(LIFI_PLAN)
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+
+    client.allowance.mockImplementation(async (blockNumber) =>
+      blockNumber === undefined ? 0n : BigInt(LEG1.quote.inputAmount)
+    )
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(client.allowance).toHaveBeenLastCalledWith(100n)
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      payload: { to: SPENDER, nonce: 9 },
+      txInfo: { plan: { id: PLAN_ID, leg: 1 } },
+    })
   })
 
   it("warns of a rate that dropped since the swap started and still lets the user sign", async () => {

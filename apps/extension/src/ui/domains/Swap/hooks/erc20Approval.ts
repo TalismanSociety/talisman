@@ -12,13 +12,15 @@ export type AllowanceStep = "none" | "revoke" | "approve"
  */
 export const readAllowanceStep = async (
   client: PublicClient,
-  approval: Approval
+  approval: Approval,
+  blockNumber?: bigint
 ): Promise<AllowanceStep> => {
   const allowance = await client.readContract({
     address: approval.tokenAddress as Hex,
     abi: erc20Abi,
     functionName: "allowance",
     args: [approval.fromAddress as Hex, approval.contractAddress as Hex],
+    blockNumber,
   })
   if (allowance >= approval.amount) return "none"
   return allowance > 0n ? "revoke" : "approve"

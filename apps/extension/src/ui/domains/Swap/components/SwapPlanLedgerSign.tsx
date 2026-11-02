@@ -45,6 +45,12 @@ type PlanLegSignRequest =
 
 const APPROVAL_WAIT_MS = 2 * 60_000
 
+/**
+ * An approval the screen saw mine. An rpc node can still answer from before its block, so the
+ * leg's next build reads the allowance at that block and signs past the approval's nonce.
+ */
+type MinedApproval = { blockNumber: bigint; nonce: number }
+
 const buildApprovalTransaction = async (
   client: PublicClient,
   leg: PlanLeg,
@@ -78,7 +84,8 @@ const buildApprovalTransaction = async (
 
 const buildOnScreenLegTransaction = async (
   plan: SwapPlan,
-  index: number
+  index: number,
+  mined: MinedApproval | undefined
 ): Promise<PlanLegSignRequest> => {
   const leg = plan.legs[index]
   const module = swapModules.find((candidate) => candidate.protocol === leg.quote.protocol)
@@ -90,8 +97,11 @@ const buildOnScreenLegTransaction = async (
   const approval = legApproval(module, fromPersistedLeg(leg.quote))
   const [balance, nextNonce, allowanceStep] = await Promise.all([
     readLegBalance(client, leg.quote),
-    leg.nonce ?? api.ethGetTransactionsCount(signer, networkId),
-    approval ? readAllowanceStep(client, approval) : ("none" as const),
+    leg.nonce ??
+      api
+        .ethGetTransactionsCount(signer, networkId)
+        .then((count) => (mined ? Math.max(count, mined.nonce + 1) : count)),
+    approval ? readAllowanceStep(client, approval, mined?.blockNumber) : ("none" as const),
   ])
   if (approval && allowanceStep !== "none")
     return buildApprovalTransaction(client, leg, approval, allowanceStep, nextNonce)
@@ -131,19 +141,33 @@ const buildOnScreenLegTransaction = async (
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
  */
-const useOnScreenLegTransaction = (plan: SwapPlan | null | undefined, index: number | null) =>
+const useOnScreenLegTransaction = (
+  plan: SwapPlan | null | undefined,
+  index: number | null,
+  mined: MinedApproval | undefined
+) =>
   useQuery({
-    queryKey: ["swap-plan-on-screen-leg", plan?.id, index, plan?.updatedAt],
-    queryFn: plan && index !== null ? () => buildOnScreenLegTransaction(plan, index) : skipToken,
+    queryKey: [
+      "swap-plan-on-screen-leg",
+      plan?.id,
+      index,
+      plan?.updatedAt,
+      mined?.blockNumber.toString(),
+      mined?.nonce,
+    ],
+    queryFn:
+      plan && index !== null ? () => buildOnScreenLegTransaction(plan, index, mined) : skipToken,
     retry: false,
   })
 
 const waitForApproval = async (tx: TxSubmitButtonTransactionEth, hash: Hex) => {
   try {
     const client = await getEvmPublicClient(tx.networkId)
-    await client.waitForTransactionReceipt({ hash, timeout: APPROVAL_WAIT_MS })
+    const receipt = await client.waitForTransactionReceipt({ hash, timeout: APPROVAL_WAIT_MS })
+    return receipt.blockNumber
   } catch (cause) {
     log.warn("Could not wait for the approval to mine", { cause, hash })
+    return undefined
   }
 }
 
@@ -171,7 +195,8 @@ const useFreshPricingPer = (
 /** the leg a paused plan waits on the user to sign, priced on screen and signed on the nonce it was built with */
 export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: number | null) => {
   const { t } = useTranslation()
-  const request = useOnScreenLegTransaction(plan, index)
+  const [minedApproval, setMinedApproval] = useState<LegNote<MinedApproval>>()
+  const request = useOnScreenLegTransaction(plan, index, noteFor(minedApproval, index))
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
@@ -204,10 +229,13 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   const onSubmit = async (hash: string) => {
     clearFailure()
     if (request.data?.signs !== "approval" || index === null) return
+    const { tx } = request.data
     setSentApproval({ leg: index, value: hash as Hex })
     setIsApprovalPending(true)
-    await waitForApproval(request.data.tx, hash as Hex)
-    await request.refetch()
+    const blockNumber = await waitForApproval(tx, hash as Hex)
+    if (blockNumber !== undefined && tx.payload.nonce !== undefined)
+      setMinedApproval({ leg: index, value: { blockNumber, nonce: tx.payload.nonce } })
+    else await request.refetch()
     setIsApprovalPending(false)
   }
 
