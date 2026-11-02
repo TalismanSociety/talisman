@@ -1,10 +1,11 @@
+import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
 import { type Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
-import { useTokens } from "@ui/state/chaindata"
+import { useNetworkById, useTokens } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { useMemo } from "react"
 import { type SubnetLeaderboardRow, useSubnetLeaderboard } from "../hooks/useSn45Api"
@@ -33,6 +34,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const balances = useBalances("all")
   const balancesStatus = useBalancesStatus(balances)
   const isBalanceInitializing = useIsBalanceInitializing()
+  const network = useNetworkById(networkId)
 
   const subnetTokens = useMemo(() => {
     return allTokens.filter(
@@ -75,7 +77,9 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
   const canStake =
     !!stakeAddress ||
-    (isBalanceInitializing && selectedAccounts.some((acc) => !isEthereumAddress(acc.address)))
+    (isBalanceInitializing &&
+      !!network &&
+      selectedAccounts.some((acc) => isAccountCompatibleWithNetwork(network, acc)))
 
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {
