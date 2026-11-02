@@ -10,7 +10,8 @@ vi.mock("@ui/state/accounts", () => ({ useAccountsMap: () => ({}) }))
 vi.mock("@ui/domains/Asset/TokenLogo", () => ({ TokenLogo: () => null }))
 vi.mock("@ui/domains/Networks/NetworkLogo", () => ({ NetworkLogo: () => null }))
 
-const legs = [{ fromTokenId: "1:evm-native", toTokenId: "10:evm-native" }] as unknown as QuoteLeg[]
+const leg = { fromTokenId: "1:evm-native", toTokenId: "10:evm-native" }
+const legs = [leg, leg] as unknown as QuoteLeg[]
 
 const cards = (approval: SwapTxStatus, swap: SwapTxStatus): SwapTxCardModel[] => [
   { key: "approval-0", kind: "approval", leg: 0, status: approval },
@@ -41,6 +42,20 @@ describe("SwapTxCards", () => {
     expect(screen.queryByText("body approval-0")).toBeNull()
     expect(scrolled).toHaveBeenCalledOnce()
     expect(scrolled.mock.calls[0][0]).toContain("body leg-0")
+  })
+
+  it("scrolls to the next transaction when the plan queues it for a moment before it opens", () => {
+    const twoLegs = (first: SwapTxStatus, approval: SwapTxStatus): SwapTxCardModel[] => [
+      { key: "leg-0", kind: "leg", leg: 0, status: first },
+      { key: "approval-1", kind: "approval", leg: 1, status: approval },
+      { key: "leg-1", kind: "leg", leg: 1, status: "upcoming" },
+    ]
+    const { rerender } = render(renderCards(twoLegs("pending", "upcoming")))
+    rerender(renderCards(twoLegs("done", "upcoming")))
+    rerender(renderCards(twoLegs("done", "ready")))
+
+    expect(scrolled).toHaveBeenCalledOnce()
+    expect(scrolled.mock.calls[0][0]).toContain("body approval-1")
   })
 
   it("stays put when a late allowance read puts an approval before the open transaction", () => {

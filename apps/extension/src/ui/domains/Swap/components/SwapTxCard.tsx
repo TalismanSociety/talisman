@@ -35,7 +35,8 @@ export const useSwapTxContext = (): SwapTxContext => {
 
 /**
  * The card that becomes active opens and the others close, the user can still open any of them.
- * It scrolls into view only when the card before it is done, not when a late allowance read adds it.
+ * It scrolls into view only when the card open before it is done, not when a late allowance read adds it.
+ * A moment with no active card, while the plan queues the next leg, keeps the card open before it.
  */
 const useExpandedCards = (cards: readonly SwapTxCardModel[]) => {
   const activeKey = activeSwapTxKey(cards)
@@ -44,11 +45,11 @@ const useExpandedCards = (cards: readonly SwapTxCardModel[]) => {
   )
   const [expandedFor, setExpandedFor] = useState(activeKey)
   const [scrollTarget, setScrollTarget] = useState<SwapTxCardKey | null>(null)
-  if (activeKey !== expandedFor) {
+  if (activeKey && activeKey !== expandedFor) {
     const hasAdvanced = cards.some((card) => card.key === expandedFor && card.status === "done")
     setExpandedFor(activeKey)
     setScrollTarget(hasAdvanced ? activeKey : null)
-    if (activeKey) setExpanded(new Set([activeKey]))
+    setExpanded(new Set([activeKey]))
   }
 
   const toggle = useCallback(
@@ -200,7 +201,7 @@ const SwapTxCard: FC<{
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    if (isScrollTarget) ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    if (isScrollTarget) ref.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }, [isScrollTarget])
 
   return (
