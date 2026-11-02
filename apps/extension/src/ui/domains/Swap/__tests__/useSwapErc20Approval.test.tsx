@@ -4,13 +4,14 @@ import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const readContract = vi.fn()
+const getBlockNumber = vi.fn()
 
 vi.mock("@ui/state/chaindata", () => ({
   useNetworks: () => [{ id: "8453", platform: "ethereum" }],
 }))
 
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
-  getExtensionPublicClient: () => ({ readContract }),
+  getExtensionPublicClient: () => ({ readContract, getBlockNumber }),
 }))
 
 import type { BaseQuote } from "@core/domains/swaps/types"
@@ -43,6 +44,7 @@ describe("useSwapErc20Approval", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     readContract.mockReset()
+    getBlockNumber.mockReset()
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   })
 
@@ -51,7 +53,7 @@ describe("useSwapErc20Approval", () => {
     vi.useRealTimers()
   })
 
-  const render = (approvalCounter: number) =>
+  const render = (approvalCounter: number, approvalMinedAt?: bigint) =>
     renderHook(
       () =>
         useSwapErc20Approval({
@@ -64,6 +66,7 @@ describe("useSwapErc20Approval", () => {
           selectedSubProtocol: undefined,
           selectedQuote,
           approvalCounter,
+          approvalMinedAt,
         }),
       {
         wrapper: ({ children }: PropsWithChildren) => (
@@ -72,7 +75,21 @@ describe("useSwapErc20Approval", () => {
       }
     )
 
-  it("reads the allowance again when a lagging node still reports the previous one after approval", async () => {
+  it("never reports an approval that mined as still needed, even from a node behind its block", async () => {
+    const MINED_AT = 100n
+    getBlockNumber.mockResolvedValue(MINED_AT - 1n)
+    readContract.mockImplementation(async ({ blockNumber }: { blockNumber?: bigint }) =>
+      blockNumber !== undefined && blockNumber >= MINED_AT ? AMOUNT : 0n
+    )
+
+    const { result } = render(1, MINED_AT)
+
+    await elapse(0)
+    expect(result.current.loading).toBe(false)
+    expect(result.current.data).toBeNull()
+  })
+
+  it("reads the allowance again until an approval sent without its receipt shows", async () => {
     readContract.mockResolvedValueOnce(0n).mockResolvedValue(AMOUNT)
 
     const { result } = render(1)

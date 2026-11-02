@@ -91,7 +91,7 @@ export const useQuoteApproval = () => {
       try {
         const approved = await publicClient.waitForTransactionReceipt({ hash })
         await invalidateNonceQueries(queryClient)
-        if (approved.status === "success") incrementApprovalCounter()
+        if (approved.status === "success") incrementApprovalCounter(approved.blockNumber)
         else throw new Error("Approval reverted")
       } catch (cause) {
         const title = isErrorOfName(cause, "EstimateGasExecutionError")

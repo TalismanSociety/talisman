@@ -3,15 +3,24 @@ import { useQuery } from "@tanstack/react-query"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
+import type { PublicClient } from "viem"
 import type { SwapModuleEntry } from "../swaps.api"
 import { readAllowanceStep } from "./erc20Approval"
 
-// an RPC node behind the approval block still reports the previous allowance
+// an approval sent without waiting for its receipt is only seen once it mines
 const ALLOWANCE_RECHECK_MS = 3_000
+
+/** an RPC node behind the approval's block still reports the allowance before it, so it fails the read instead and the query retries */
+const blockAtLeast = async (client: PublicClient, minedAt: bigint | undefined) => {
+  if (minedAt === undefined) return undefined
+  const latest = await client.getBlockNumber({ cacheTime: 0 })
+  return latest > minedAt ? latest : minedAt
+}
 
 /**
  * The allowance the selected module's spender still needs for the first leg, with the step that grants it.
  * A revoke is read again once it confirms and the `approvalCounter` increments, and the real approval follows.
+ * Once an approval mined, the allowance is never read from before its block.
  */
 export const useSwapErc20Approval = (params: {
   selectedModule: SwapModuleEntry | undefined
@@ -23,6 +32,7 @@ export const useSwapErc20Approval = (params: {
   selectedSubProtocol: string | undefined
   selectedQuote: BaseQuote | null
   approvalCounter: number
+  approvalMinedAt: bigint | undefined
 }) => {
   const {
     selectedModule,
@@ -73,6 +83,7 @@ export const useSwapErc20Approval = (params: {
       approvalInfo?.chainId,
       approvalInfo?.amount?.toString(),
       params.approvalCounter,
+      params.approvalMinedAt?.toString(),
     ],
     queryFn: async () => {
       if (!approvalInfo) return null
@@ -83,7 +94,8 @@ export const useSwapErc20Approval = (params: {
       const client = getExtensionPublicClient(network)
       if (!client) return null
 
-      const step = await readAllowanceStep(client, approvalInfo)
+      const blockNumber = await blockAtLeast(client, params.approvalMinedAt)
+      const step = await readAllowanceStep(client, approvalInfo, blockNumber)
       return step === "none" ? null : { ...approvalInfo, step }
     },
     enabled: !!approvalInfo,

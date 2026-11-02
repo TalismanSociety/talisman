@@ -119,7 +119,11 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
 
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
-  const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
+  const [approvalMinedAt, setApprovalMinedAt] = useState<bigint>()
+  const incrementApprovalCounter = useCallback((minedAt?: bigint) => {
+    setApprovalCounter((c) => c + 1)
+    setApprovalMinedAt(minedAt)
+  }, [])
   const [approvalHash, setApprovalHash] = useState<Hex | null>(null)
 
   // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
@@ -144,6 +148,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
+    setApprovalMinedAt(undefined)
     setApprovalHash(null)
     setAcknowledgedTokenVerdicts(new Map())
     resetFromAddressManuallySet()
@@ -247,6 +252,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     selectedSubProtocol,
     selectedQuote,
     approvalCounter,
+    approvalMinedAt,
   })
 
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
