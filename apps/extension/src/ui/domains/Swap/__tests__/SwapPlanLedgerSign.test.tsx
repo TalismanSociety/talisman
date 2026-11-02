@@ -484,6 +484,34 @@ describe("usePlanLegSigning", () => {
     })
   })
 
+  it("keeps the approval sent until the leg after it is built, so the leg never opens early", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    client.waitForTransactionReceipt.mockResolvedValue({ blockNumber: 100n, status: "success" })
+    const seen: string[] = []
+    const ApprovalProgress = () => {
+      const { signing, button } = usePlanLegSigning(LIFI_PLAN, 1)
+      seen.push(`${signing?.signs}:${signing?.isApprovalPending}`)
+      return <PlanLegSignButton button={button} />
+    }
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <ApprovalProgress />
+      </QueryClientProvider>
+    )
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    seen.length = 0
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(seen).not.toContain("undefined:false")
+    expect(seen.at(-1)).toBe("leg:false")
+  })
+
   it("warns of a rate that dropped since the swap started and still lets the user sign", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))

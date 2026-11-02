@@ -5,7 +5,7 @@ import type { PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
 import type { ApprovalInfo, BuiltLeg, QuoteLeg } from "@core/domains/swaps/types"
 import { evmNativeTokenId, networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
-import { skipToken, useQuery } from "@tanstack/react-query"
+import { queryOptions, skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { Button } from "@ui/components/Button"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -141,12 +141,12 @@ const buildOnScreenLegTransaction = async (
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
  */
-const useOnScreenLegTransaction = (
+const onScreenLegQuery = (
   plan: SwapPlan | null | undefined,
   index: number | null,
   mined: MinedApproval | undefined
 ) =>
-  useQuery({
+  queryOptions({
     queryKey: [
       "swap-plan-on-screen-leg",
       plan?.id,
@@ -195,8 +195,9 @@ const useFreshPricingPer = (
 /** the leg a paused plan waits on the user to sign, priced on screen and signed on the nonce it was built with */
 export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: number | null) => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const [minedApproval, setMinedApproval] = useState<LegNote<MinedApproval>>()
-  const request = useOnScreenLegTransaction(plan, index, noteFor(minedApproval, index))
+  const request = useQuery(onScreenLegQuery(plan, index, noteFor(minedApproval, index)))
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
@@ -233,9 +234,11 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
     setSentApproval({ leg: index, value: hash as Hex })
     setIsApprovalPending(true)
     const blockNumber = await waitForApproval(tx, hash as Hex)
-    if (blockNumber !== undefined && tx.payload.nonce !== undefined)
-      setMinedApproval({ leg: index, value: { blockNumber, nonce: tx.payload.nonce } })
-    else await request.refetch()
+    if (blockNumber !== undefined && tx.payload.nonce !== undefined) {
+      const mined = { blockNumber, nonce: tx.payload.nonce }
+      await queryClient.prefetchQuery(onScreenLegQuery(plan, index, mined))
+      setMinedApproval({ leg: index, value: mined })
+    } else await request.refetch()
     setIsApprovalPending(false)
   }
 
