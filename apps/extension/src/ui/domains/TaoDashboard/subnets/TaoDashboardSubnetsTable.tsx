@@ -164,7 +164,8 @@ export const TaoDashboardSubnetsTable: FC<{
   period: TimePeriod
   hideHeader?: boolean
 }> = ({ search = "", period, hideHeader = false }) => {
-  const { subnets, stakeAddress, isLoading, loading, errors } = useTaoDashboardSubnets(period)
+  const { subnets, stakeAddress, canStake, isLoading, loading, errors } =
+    useTaoDashboardSubnets(period)
   const sortSetting = useSortSetting()
   const setSortSetting = useSetSortSetting()
 
@@ -312,6 +313,7 @@ export const TaoDashboardSubnetsTable: FC<{
                 loading={loading}
                 errors={errors}
                 stakeAddress={stakeAddress}
+                canStake={canStake}
               />
             </div>
           )
@@ -476,13 +478,13 @@ const SubnetRow: FC<{
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
   stakeAddress: string | undefined
-}> = memo(({ subnet, rowIndex, loading, errors, stakeAddress }) => {
+  canStake: boolean
+}> = memo(({ subnet, rowIndex, loading, errors, stakeAddress, canStake }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const networkId = useTaoDashboardNetworkId()
   const { open: openBondModal } = useBittensorBondModal()
   const isRoot = subnet.netuid === 0
-  const canStake = !!stakeAddress
   const canUnstake = !!subnet.unstakeAddress
 
   // Compare last price to first price in 7d data to determine chart color

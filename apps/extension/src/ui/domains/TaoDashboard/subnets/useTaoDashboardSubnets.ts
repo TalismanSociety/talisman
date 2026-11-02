@@ -3,7 +3,7 @@ import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useBalances } from "@ui/state/balances"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useTokens } from "@ui/state/chaindata"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { useMemo } from "react"
@@ -32,6 +32,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
 
   const balances = useBalances("all")
   const balancesStatus = useBalancesStatus(balances)
+  const isBalanceInitializing = useIsBalanceInitializing()
 
   const subnetTokens = useMemo(() => {
     return allTokens.filter(
@@ -71,6 +72,10 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     }
     return undefined
   }, [selectedAccounts, balances, networkId])
+
+  const canStake =
+    !!stakeAddress ||
+    (isBalanceInitializing && selectedAccounts.some((acc) => !isEthereumAddress(acc.address)))
 
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {
@@ -166,7 +171,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const isLoading = Object.values(loading).some(Boolean)
   const isError = Object.values(errors).some(Boolean)
 
-  return { subnets, stakeAddress, isLoading, isError, loading, errors }
+  return { subnets, stakeAddress, canStake, isLoading, isError, loading, errors }
 }
 
 export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>["subnets"][number]
