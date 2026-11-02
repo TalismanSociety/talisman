@@ -107,6 +107,19 @@ describe("useSwapErc20Approval", () => {
     expect(result.current.data).not.toBeNull()
   })
 
+  it("keeps checking, and reads again, while the allowance read fails", async () => {
+    readContract.mockRejectedValueOnce(new Error("header not found")).mockResolvedValue(0n)
+
+    const { result } = render(1, minedOn("8453", 100n))
+
+    await elapse(0)
+    expect(result.current.loading).toBe(true)
+
+    await elapse(ALLOWANCE_RECHECK_MS)
+    expect(result.current.loading).toBe(false)
+    expect(result.current.data).not.toBeNull()
+  })
+
   it("reads the allowance again until an approval sent without its receipt shows", async () => {
     readContract.mockResolvedValueOnce(0n).mockResolvedValue(AMOUNT)
 

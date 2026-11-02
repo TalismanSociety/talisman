@@ -21,6 +21,7 @@ const blockAtLeast = async (client: PublicClient, minedAt: bigint | undefined) =
  * The allowance the selected module's spender still needs for the first leg, with the step that grants it.
  * A revoke is read again once it confirms and the `approvalCounter` increments, and the real approval follows.
  * Once an approval mined, the allowance is never read from before its block.
+ * Only a successful read tells whether an approval is needed: a failed one keeps it checking and reads again.
  */
 export const useSwapErc20Approval = (params: {
   selectedModule: SwapModuleEntry | undefined
@@ -104,17 +105,20 @@ export const useSwapErc20Approval = (params: {
     },
     enabled: !!approvalInfo,
     refetchInterval: (query) =>
-      params.approvalCounter > 0 && query.state.data ? ALLOWANCE_RECHECK_MS : false,
+      query.state.status === "error" || (params.approvalCounter > 0 && query.state.data)
+        ? ALLOWANCE_RECHECK_MS
+        : false,
   })
 
   const needsRevoke = allowanceQuery.data?.step === "revoke"
+  const isChecked = !approvalInfo || allowanceQuery.data !== undefined
 
   return useMemo(
     () => ({
       data: allowanceQuery.data ?? null,
-      loading: allowanceQuery.isLoading,
+      loading: !isChecked,
       needsRevoke,
     }),
-    [allowanceQuery.data, allowanceQuery.isLoading, needsRevoke]
+    [allowanceQuery.data, isChecked, needsRevoke]
   )
 }
