@@ -304,40 +304,40 @@ jobs:
       - name: Setup workspace
         uses: $/.github/actions/setup-workspace
       - name: Bump changed package versions to a snapshot version
-        # changesets 3 exits 1 when there are no unreleased changesets; pnpm publish skips
-        # already-published versions, so an empty snapshot is a no-op rather than a failure
+        id: snapshot
+        # changesets 3 exits 1 when there are no unreleased changesets, so only version when some exist.
+        # Only packages at a snapshot version are published: right after the version bump PR merges,
+        # a rebased PR holds real versions that dev has not published yet, and must not claim them.
         run: |
           if [ -n "$(find .changeset -maxdepth 1 -name '*.md' -not -name README.md)" ]; then
             pnpm changeset version --snapshot "pr$PR_NUMBER"
           else
             echo "No unreleased changesets, nothing to snapshot"
           fi
+          jq -r --arg tag "-pr$PR_NUMBER-" 'select(.version // "" | contains($tag)) | "\(.name)@\(.version)"' \
+            packages/*/package.json > "$RUNNER_TEMP/snapshots.txt"
+          echo "has-snapshots=$([ -s "$RUNNER_TEMP/snapshots.txt" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - name: Build packages for npm publish
+        if: steps.snapshot.outputs.has-snapshots == 'true'
         run: pnpm build:packages
       - name: Publish snapshot packages
-        run: pnpm --filter './packages/*' publish --no-git-checks --access public --tag "pr$PR_NUMBER"
-      - name: Report published snapshot versions
-        if: always()
+        if: steps.snapshot.outputs.has-snapshots == 'true'
         run: |
-          TAG="pr$PR_NUMBER"
-          echo "### 📦 Snapshot packages" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Install with \`@${TAG}\` dist-tag:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          VERSIONS=""
-          for pkg in packages/*/; do
-            VERSION=$(jq -r '.version // empty' "${pkg}package.json")
-            NAME=$(jq -r '.name // empty' "${pkg}package.json")
-            if [ -n "$VERSION" ] && [ -n "$NAME" ]; then
-              echo "${NAME}@${VERSION}" >> $GITHUB_STEP_SUMMARY
-              VERSIONS="${VERSIONS}${NAME}@${VERSION}, "
-            fi
-          done
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          if [ -n "$VERSIONS" ]; then
-            echo "::notice::Snapshot published: ${VERSIONS%, }"
-          fi
+          mapfile -t FILTERS < <(sed 's/@[^@]*$//; s/^/--filter=/' "$RUNNER_TEMP/snapshots.txt")
+          pnpm "${FILTERS[@]}" publish --no-git-checks --access public --tag "pr$PR_NUMBER"
+      - name: Report published snapshot versions
+        if: always() && steps.snapshot.outputs.has-snapshots == 'true'
+        run: |
+          {
+            echo "### 📦 Snapshot packages"
+            echo ""
+            echo "Install with \`@pr$PR_NUMBER\` dist-tag:"
+            echo ""
+            echo '```'
+            cat "$RUNNER_TEMP/snapshots.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Snapshot published: $(paste -sd ' ' "$RUNNER_TEMP/snapshots.txt")"
 
   # This job will check for changed packages in this PR, and will comment on the PR if any changed packages do not yet have changesets
   ensure_pr_has_changeset:
