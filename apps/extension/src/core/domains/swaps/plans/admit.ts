@@ -1,5 +1,6 @@
 import { db } from "@core/db"
 import { isNonceHeldLocally } from "@core/domains/ethereum/nonceManager"
+import { recoverTransactionSigner } from "@core/domains/ethereum/recoverSigner"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type {
   WalletTransaction,
@@ -14,7 +15,6 @@ import {
   type Hex,
   keccak256,
   parseTransaction,
-  recoverTransactionAddress,
   type TransactionRequest,
   type TransactionSerialized,
 } from "viem"
@@ -216,9 +216,7 @@ export const admitEvmLeg = async (
   assertSealed(plan, isSealed)
   const runtime = getPlanLegRuntime(leg.quote.protocol)
 
-  const signer = await recoverTransactionAddress({
-    serializedTransaction: raw as TransactionSerialized,
-  })
+  const signer = recoverTransactionSigner(raw as TransactionSerialized)
   const tx = parseTransaction(raw as TransactionSerialized)
   const check = (current: SwapPlan) => {
     const currentLeg = current.legs[ref.leg]
@@ -324,9 +322,7 @@ export const admitEvmReplacement = async (
   ref: SwapPlanRef,
   { raw, networkId, unsigned, txInfo }: EvmLegTx
 ): Promise<AppliedEvent> => {
-  const signer = await recoverTransactionAddress({
-    serializedTransaction: raw as TransactionSerialized,
-  })
+  const signer = recoverTransactionSigner(raw as TransactionSerialized)
   const tx = parseTransaction(raw as TransactionSerialized)
   const hash = keccak256(raw)
 
