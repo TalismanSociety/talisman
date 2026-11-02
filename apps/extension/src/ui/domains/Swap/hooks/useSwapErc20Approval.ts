@@ -5,7 +5,7 @@ import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import type { PublicClient } from "viem"
 import type { SwapModuleEntry } from "../swaps.api"
-import { readAllowanceStep } from "./erc20Approval"
+import { type MinedApproval, minedBlockOn, readAllowanceStep } from "./erc20Approval"
 
 // an approval sent without waiting for its receipt is only seen once it mines
 const ALLOWANCE_RECHECK_MS = 3_000
@@ -32,7 +32,7 @@ export const useSwapErc20Approval = (params: {
   selectedSubProtocol: string | undefined
   selectedQuote: BaseQuote | null
   approvalCounter: number
-  approvalMinedAt: bigint | undefined
+  minedApproval: MinedApproval | undefined
 }) => {
   const {
     selectedModule,
@@ -73,6 +73,10 @@ export const useSwapErc20Approval = (params: {
     selectedQuote,
   ])
 
+  const approvalMinedAt = approvalInfo
+    ? minedBlockOn(params.minedApproval, approvalInfo)
+    : undefined
+
   // Check on-chain allowance and determine if approval is needed
   const allowanceQuery = useQuery({
     queryKey: [
@@ -83,7 +87,7 @@ export const useSwapErc20Approval = (params: {
       approvalInfo?.chainId,
       approvalInfo?.amount?.toString(),
       params.approvalCounter,
-      params.approvalMinedAt?.toString(),
+      approvalMinedAt?.toString(),
     ],
     queryFn: async () => {
       if (!approvalInfo) return null
@@ -94,7 +98,7 @@ export const useSwapErc20Approval = (params: {
       const client = getExtensionPublicClient(network)
       if (!client) return null
 
-      const blockNumber = await blockAtLeast(client, params.approvalMinedAt)
+      const blockNumber = await blockAtLeast(client, approvalMinedAt)
       const step = await readAllowanceStep(client, approvalInfo, blockNumber)
       return step === "none" ? null : { ...approvalInfo, step }
     },

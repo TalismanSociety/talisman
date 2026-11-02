@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
-import { approveRequest } from "./erc20Approval"
+import { approveRequest, nonceAfter } from "./erc20Approval"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()
@@ -24,6 +24,8 @@ export const useQuoteApproval = () => {
     fromTokenId,
     selectedModule,
     incrementApprovalCounter,
+    minedApproval,
+    setMinedApproval,
     approvalHash,
     setApprovalHash,
     erc20Approval: { data, loading, needsRevoke },
@@ -42,7 +44,14 @@ export const useQuoteApproval = () => {
   }, [data, fromTokenId])
   const approveTx = approve?.tx
 
-  const ethTx = useEthTransaction(approveTx, fromToken?.networkId, false)
+  const ethTx = useEthTransaction(
+    approveTx,
+    fromToken?.networkId,
+    false,
+    false,
+    nonceAfter(minedApproval, approveTx?.from, fromToken?.networkId)
+  )
+  const signedNonce = ethTx.transaction?.nonce
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!fromToken?.networkId || !ethTx.transaction || !approve) return null
@@ -90,8 +99,15 @@ export const useQuoteApproval = () => {
       setIsPending(true)
       try {
         const approved = await publicClient.waitForTransactionReceipt({ hash })
+        if (signedNonce !== undefined && fromToken?.networkId)
+          setMinedApproval({
+            networkId: fromToken.networkId,
+            from: approved.from,
+            nonce: signedNonce,
+            blockNumber: approved.blockNumber,
+          })
         await invalidateNonceQueries(queryClient)
-        if (approved.status === "success") incrementApprovalCounter(approved.blockNumber)
+        if (approved.status === "success") incrementApprovalCounter()
         else throw new Error("Approval reverted")
       } catch (cause) {
         const title = isErrorOfName(cause, "EstimateGasExecutionError")
@@ -111,6 +127,7 @@ export const useQuoteApproval = () => {
     },
     [
       fromNetwork,
+      fromToken?.networkId,
       incrementApprovalCounter,
       needsRevoke,
       protocol,
@@ -118,6 +135,8 @@ export const useQuoteApproval = () => {
       queryClient,
       reportFailure,
       setApprovalHash,
+      setMinedApproval,
+      signedNonce,
       t,
     ]
   )

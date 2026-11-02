@@ -15,6 +15,7 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
 }))
 
 import type { BaseQuote } from "@core/domains/swaps/types"
+import type { MinedApproval } from "../hooks/erc20Approval"
 import { useSwapErc20Approval } from "../hooks/useSwapErc20Approval"
 import type { SwapModuleEntry } from "../swaps.api"
 
@@ -35,6 +36,13 @@ const selectedModule = {
 
 const selectedQuote = { protocol: "forevermoney" } as unknown as BaseQuote
 
+const minedOn = (networkId: string, blockNumber: bigint): MinedApproval => ({
+  networkId,
+  from: FROM,
+  nonce: 377,
+  blockNumber,
+})
+
 // a zero-delay timer created while the clock ticks is due one millisecond later
 const elapse = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms + 1))
 
@@ -53,7 +61,7 @@ describe("useSwapErc20Approval", () => {
     vi.useRealTimers()
   })
 
-  const render = (approvalCounter: number, approvalMinedAt?: bigint) =>
+  const render = (approvalCounter: number, minedApproval?: MinedApproval) =>
     renderHook(
       () =>
         useSwapErc20Approval({
@@ -66,7 +74,7 @@ describe("useSwapErc20Approval", () => {
           selectedSubProtocol: undefined,
           selectedQuote,
           approvalCounter,
-          approvalMinedAt,
+          minedApproval,
         }),
       {
         wrapper: ({ children }: PropsWithChildren) => (
@@ -82,11 +90,21 @@ describe("useSwapErc20Approval", () => {
       blockNumber !== undefined && blockNumber >= MINED_AT ? AMOUNT : 0n
     )
 
-    const { result } = render(1, MINED_AT)
+    const { result } = render(1, minedOn("8453", MINED_AT))
 
     await elapse(0)
     expect(result.current.loading).toBe(false)
     expect(result.current.data).toBeNull()
+  })
+
+  it("reads the allowance of another network at its own latest block", async () => {
+    readContract.mockResolvedValue(0n)
+
+    const { result } = render(1, minedOn("56", 50_000_000n))
+
+    await elapse(0)
+    expect(readContract).toHaveBeenCalledWith(expect.objectContaining({ blockNumber: undefined }))
+    expect(result.current.data).not.toBeNull()
   })
 
   it("reads the allowance again until an approval sent without its receipt shows", async () => {

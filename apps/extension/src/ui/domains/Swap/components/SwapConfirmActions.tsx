@@ -31,6 +31,7 @@ import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
+import { nonceAfter } from "../hooks/erc20Approval"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
@@ -88,6 +89,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     isQuotePicked,
     gotoSubmitted,
     approvalCounter,
+    minedApproval,
   } = useSwap()
 
   const fromToken = useToken(fromTokenId ?? undefined)
@@ -203,10 +205,13 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   // Gate on !needsApproval so we report false while the query is intentionally disabled during the approval phase.
   const isExchangeLoading = !needsApproval && !exchangeAndTransactionQuery.data && !exchangeError
 
+  const swapRequest = transaction?.platform === "ethereum" ? transaction.transaction : undefined
   const swapEthTx = useEthTransaction(
-    transaction?.platform === "ethereum" ? transaction.transaction : undefined,
+    swapRequest,
     fromToken?.networkId,
-    false
+    false,
+    false,
+    nonceAfter(minedApproval, swapRequest?.from ?? undefined, fromToken?.networkId)
   )
 
   const plan = useSwapPlanProposal({

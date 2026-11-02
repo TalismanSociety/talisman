@@ -41,7 +41,8 @@ const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 const useNonce = (
   address: `0x${string}` | undefined,
   evmNetworkId: EthNetworkId | undefined,
-  forcedValue?: number
+  forcedValue?: number,
+  minValue?: number
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: ["useNonce", address, evmNetworkId, forcedValue],
@@ -51,7 +52,10 @@ const useNonce = (
     },
   })
 
-  return { nonce: forcedValue ?? data ?? undefined, ...rest }
+  const fetched = data ?? undefined
+  const nonce =
+    fetched !== undefined && minValue !== undefined ? Math.max(fetched, minValue) : fetched
+  return { nonce: forcedValue ?? nonce, ...rest }
 }
 
 // the nonce is fetched once per address & network and cached for as long as the consuming
@@ -491,7 +495,9 @@ export const useEthTransaction = (
   request: TransactionRequest | undefined,
   evmNetworkId: EthNetworkId | undefined,
   lockTransaction = false,
-  isReplacement = false
+  isReplacement = false,
+  /** the lowest nonce to sign with: one the caller knows is spent may still be next on a lagging RPC node */
+  minNonce?: number
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const {
@@ -504,7 +510,8 @@ export const useEthTransaction = (
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
     evmNetworkId,
-    isReplacement ? tx?.nonce : undefined
+    isReplacement ? tx?.nonce : undefined,
+    minNonce
   )
   const {
     gasPrice,

@@ -7,8 +7,13 @@ import { useQuoteApproval } from "../hooks/useQuoteApproval"
 const FROM = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
 const NONCE_KEY = ["useNonce", FROM, "8453", undefined]
 
-const { receipt } = vi.hoisted(() => ({
-  receipt: { status: "success" as "success" | "reverted" },
+const { receipt, setMinedApproval } = vi.hoisted(() => ({
+  receipt: {
+    status: "success" as "success" | "reverted",
+    from: "0x5c9eba3b10e45bf6db77267b40b95f3f91fc5f67",
+    blockNumber: 100n,
+  },
+  setMinedApproval: vi.fn(),
 }))
 
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
@@ -17,7 +22,7 @@ vi.mock("@ui/components/Notifications", () => ({ notify: vi.fn() }))
 vi.mock("@ui/hooks/analytics/flows", () => ({ flows: { swap: { failed: vi.fn() } } }))
 vi.mock("@ui/domains/Ethereum/useEthTransaction", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ui/domains/Ethereum/useEthTransaction")>()),
-  useEthTransaction: () => ({ transaction: undefined }),
+  useEthTransaction: () => ({ transaction: { nonce: 377 } }),
 }))
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   usePublicClient: () => ({ waitForTransactionReceipt: async () => receipt }),
@@ -31,6 +36,8 @@ vi.mock("../SwapProvider", () => ({
     fromTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
     selectedModule: { protocol: "lifi" },
     incrementApprovalCounter: vi.fn(),
+    minedApproval: undefined,
+    setMinedApproval,
     approvalHash: null,
     setApprovalHash: vi.fn(),
     erc20Approval: {
@@ -68,6 +75,24 @@ describe("useQuoteApproval", () => {
       await act(() => result.current.onSubmit("0x12c5"))
 
       expect(queryClient.getQueryState(NONCE_KEY)?.isInvalidated).toBe(true)
+    }
+  )
+
+  it.each(["success", "reverted"] as const)(
+    "keeps the nonce a %s approval spent, which a node behind its block still reports as next",
+    async (status) => {
+      receipt.status = status
+      setMinedApproval.mockReset()
+      const { result } = renderWithCachedNonce()
+
+      await act(() => result.current.onSubmit("0x12c5"))
+
+      expect(setMinedApproval).toHaveBeenCalledWith({
+        networkId: "8453",
+        from: receipt.from,
+        nonce: 377,
+        blockNumber: 100n,
+      })
     }
   )
 })

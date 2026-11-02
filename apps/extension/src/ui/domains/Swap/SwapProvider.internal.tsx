@@ -7,6 +7,7 @@ import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Hex } from "viem"
+import type { MinedApproval } from "./hooks/erc20Approval"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
@@ -119,11 +120,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
 
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
-  const [approvalMinedAt, setApprovalMinedAt] = useState<bigint>()
-  const incrementApprovalCounter = useCallback((minedAt?: bigint) => {
-    setApprovalCounter((c) => c + 1)
-    setApprovalMinedAt(minedAt)
-  }, [])
+  const [minedApproval, setMinedApproval] = useState<MinedApproval>()
+  const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
   const [approvalHash, setApprovalHash] = useState<Hex | null>(null)
 
   // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
@@ -148,7 +146,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
-    setApprovalMinedAt(undefined)
+    setMinedApproval(undefined)
     setApprovalHash(null)
     setAcknowledgedTokenVerdicts(new Map())
     resetFromAddressManuallySet()
@@ -252,7 +250,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     selectedSubProtocol,
     selectedQuote,
     approvalCounter,
-    approvalMinedAt,
+    minedApproval,
   })
 
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
@@ -326,6 +324,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     approvalCounter,
     setApprovalCounter,
     incrementApprovalCounter,
+    minedApproval,
+    setMinedApproval,
     approvalHash,
     setApprovalHash,
 
