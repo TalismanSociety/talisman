@@ -51,11 +51,11 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 
 ## Features
 
-- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-10-26.
-- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-10-26.
-- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-10-26 (EVM, Substrate and Solana connect, EVM sign and reject, Substrate `createTransaction`).
-- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-10-26 with a testTAO transfer.
-- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-10-26, Solana forget included.
-- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-10-26 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
+- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-11-03.
+- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-11-03, popup coachmark and bottom nav `Swap` included.
+- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-11-03 (EVM, Substrate and Solana connect, EVM sign and reject, sign-in domain refusal on all three and the Developer mode warning on EVM, Substrate `createTransaction`).
+- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-11-03 with a testTAO transfer.
+- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-11-03, Solana forget included.
+- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-11-03 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
 
 Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.
