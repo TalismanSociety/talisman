@@ -134,7 +134,6 @@ describe("lifiLegRuntime.observeLeg", () => {
       txHash: SOURCE_HASH,
       fromChain: "1",
       toChain: "56",
-      bridge: "lifiIntents",
     })
   })
 

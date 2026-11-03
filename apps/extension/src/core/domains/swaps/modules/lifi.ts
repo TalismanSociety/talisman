@@ -10,13 +10,6 @@ export const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
 
 const INDETERMINATE: LegObservation = { status: "failed", reason: "indeterminate" }
 
-/** the one field the engine reads from the step the UI module quoted: the bridge `/status` indexes by */
-const toolOf = (data: unknown): string | undefined => {
-  const steps = (data as { steps?: { tool?: unknown }[] } | undefined)?.steps
-  const tool = steps?.[0]?.tool
-  return typeof tool === "string" ? tool : undefined
-}
-
 const erc20Address = (tokenId: QuoteLeg["toTokenId"]): Hex | null => {
   const specs = parseTokenId(tokenId)
   return specs.type === "evm-erc20" ? specs.contractAddress : null
@@ -78,7 +71,7 @@ const parseLifiTransfer = (body: unknown): LifiTransfer => {
 }
 
 const fetchLifiTransfer = async (
-  params: { txHash: Hex; fromChain: string; toChain: string; bridge?: string },
+  params: { txHash: Hex; fromChain: string; toChain: string },
   env: SwapEnv
 ): Promise<LifiTransfer> => {
   const query = new URLSearchParams(params)
@@ -97,10 +90,7 @@ const observeDelivery = async (
 ): Promise<LegObservation> => {
   const fromChain = networkIdFromTokenId(leg.fromTokenId)
   const toChain = networkIdFromTokenId(leg.toTokenId)
-  const transfer = await fetchLifiTransfer(
-    { txHash: sourceHash, fromChain, toChain, bridge: toolOf(leg.data) },
-    env
-  )
+  const transfer = await fetchLifiTransfer({ txHash: sourceHash, fromChain, toChain }, env)
   if (transfer.outcome === "pending") return { status: "pending" }
   if (transfer.outcome === "failed") return INDETERMINATE
   const { receiving, toAddress } = transfer
