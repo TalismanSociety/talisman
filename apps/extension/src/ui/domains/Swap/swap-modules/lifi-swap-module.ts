@@ -6,7 +6,6 @@ import {
   SwapRouteUnbuildableError,
 } from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import { LIFI_API_URL } from "@core/domains/swaps/modules/lifi"
 import type {
   ApprovalInfo,
   ApprovalParams,
@@ -45,7 +44,6 @@ import {
 } from "@talismn/solana"
 import { isAbortError } from "@talismn/util"
 import { getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
-import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
@@ -53,6 +51,7 @@ import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-module"
 import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
+import { defaultLifiApi as api } from "./lifi-api"
 
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
@@ -129,24 +128,6 @@ const feeTokenId = async (token: { address: string; chainId: number }): Promise<
   }
   return evmTokenIdOf(token)
 }
-
-// LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
-// instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
-// The Talisman proxy requires a Gandalf access token on every request. The SDK
-// builds `headers` as a plain object and spreads it again when it retries, so the
-// interceptor keeps it a plain object.
-const lifiClient = lifiSdk.createClient({
-  integrator: "talisman",
-  apiUrl: LIFI_API_URL,
-  requestInterceptor: async (request) => {
-    const authorization = await getGandalfAuthorization()
-    if (!authorization) return request
-    return {
-      ...request,
-      headers: { ...(request.headers as Record<string, string>), Authorization: authorization },
-    }
-  },
-})
 
 // --- Internal asset type for LI.FI (not exposed) ---
 type LifiInternalAsset = {
@@ -236,8 +217,8 @@ const getLifiAssets = async (_signal?: AbortSignal): Promise<LifiInternalAsset[]
 
 const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
   const [allSdkTokens, swapsConfig] = await Promise.all([
-    lifiSdk
-      .getTokens(lifiClient, { chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
+    api
+      .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
       .then((r) => r?.tokens),
     remoteConfigStore.get("swaps"),
   ])
@@ -251,7 +232,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
     try {
       const lifiChainId =
         type === "sol-spl" || type === "sol-token2022" ? solanaChainId : parseInt(chainId, 10)
-      const token = await lifiSdk.getToken(lifiClient, lifiChainId, contractAddress)
+      const token = await api.getToken(lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
       log.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
@@ -485,8 +466,7 @@ const getRoutes = async (
       ? (toAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (toAsset.contractAddress ?? zeroAddress)
 
-    const response = await lifiSdk.getRoutes(
-      lifiClient,
+    const response = await api.getRoutes(
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
@@ -747,7 +727,7 @@ const buildRouteTransaction = async (
   if (!fromAsset) throw new Error("Not supported on Lifi")
 
   // Fetch fresh transaction calldata from LiFi at confirmation time
-  const stepTransaction = await lifiSdk.getStepTransaction(lifiClient, step)
+  const stepTransaction = await api.getStepTransaction(step)
   const txRequest = stepTransaction?.transactionRequest
   if (!txRequest) throw new Error("Unknown error, please try again")
 
