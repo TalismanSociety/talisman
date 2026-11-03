@@ -1,3 +1,4 @@
+import { SwapRouteUnbuildableError } from "@core/domains/swaps/errors"
 import { InsufficientGasBalanceError } from "@core/domains/swaps/evm-gas-check"
 import { describe, expect, it } from "vitest"
 import {
@@ -52,6 +53,12 @@ describe("classifySwapError", () => {
       feeTokenId: "evm-native-42161",
       required: 2_534_600_000_000_000n,
       available: 2_653_076_276_816n,
+    })
+  })
+
+  it("maps a route the provider cannot build to route-unbuildable", () => {
+    expect(classifySwapError(new SwapRouteUnbuildableError("Mayan cannot run this swap"))).toEqual({
+      type: "route-unbuildable",
     })
   })
 })

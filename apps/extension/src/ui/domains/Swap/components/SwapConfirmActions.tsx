@@ -8,7 +8,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
 import { getErrorMessage } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@ui/components/Button"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { withPricing } from "@ui/domains/Ethereum/withPricing"
@@ -90,7 +90,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     gotoSubmitted,
     approvalCounter,
     minedApproval,
+    setSwapView,
+    setApprovalHash,
   } = useSwap()
+  const queryClient = useQueryClient()
 
   const fromToken = useToken(fromTokenId ?? undefined)
   const toToken = useToken(toTokenId ?? undefined)
@@ -594,7 +597,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     ]
   )
 
-  const isBuildFailed = !!exchangeError && swapError?.type === "transaction-craft-error"
+  const isRouteUnbuildable = swapError?.type === "route-unbuildable"
+  const isBuildFailed =
+    !!exchangeError && (swapError?.type === "transaction-craft-error" || isRouteUnbuildable)
+  const chooseAnotherQuote = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["swap-quote", selectedQuote?.protocol] })
+    setApprovalHash(null)
+    setSwapView("form")
+  }, [queryClient, selectedQuote?.protocol, setApprovalHash, setSwapView])
   const legFailure = signFailure ?? (isBuildFailed && errorMessage ? errorMessage : undefined)
 
   const ctx = useSwapTxContext()
@@ -714,6 +724,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       }
       isProcessing={approval.isPending}
     />
+  ) : isRouteUnbuildable ? (
+    <Button color="orange" fullWidth onClick={chooseAnotherQuote}>
+      {t("Choose another quote")}
+    </Button>
   ) : isBuildFailed ? (
     <Button color="orange" fullWidth onClick={() => exchangeAndTransactionQuery.refetch()}>
       {t("Try again")}

@@ -1,4 +1,4 @@
-import { InsufficientGasBalanceError } from "@core/domains/swaps/exports"
+import { InsufficientGasBalanceError, SwapRouteUnbuildableError } from "@core/domains/swaps/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"
@@ -37,6 +37,10 @@ export type SwapConfirmError =
   | {
       type: "quote-stale"
     }
+  | {
+      /** The provider cannot build the selected route, another quote may still work */
+      type: "route-unbuildable"
+    }
 
 // ---------------------------------------------------------------------------
 // Classifier — maps raw errors into structured types
@@ -69,6 +73,8 @@ export const classifySwapError = (rawError: unknown): SwapConfirmError | null =>
       required: rawError.required,
       available: rawError.available,
     }
+
+  if (rawError instanceof SwapRouteUnbuildableError) return { type: "route-unbuildable" }
 
   const message = (rawError as { shortMessage?: string }).shortMessage ?? getErrorMessage(rawError)
 
@@ -126,5 +132,8 @@ export const getSwapErrorMessage = (
 
     case "quote-stale":
       return t("Quote has expired. Please go back and get a new quote.")
+
+    case "route-unbuildable":
+      return t("This route cannot run this swap right now. Please choose another quote.")
   }
 }
