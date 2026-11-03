@@ -16,7 +16,7 @@ vi.mock("@core/domains/chaindata/store.activeTokens", () => ({
   activeTokensStore: { setActive: (...args: unknown[]) => mockSetActiveToken(...args) },
 }))
 
-vi.mock("../swap-modules/simpleswap-swap-module", () => ({
+vi.mock("../swap-modules/monitoring", () => ({
   saveIdForMonitoring: (...args: unknown[]) => Promise.resolve(mockSaveIdForMonitoring(...args)),
 }))
 

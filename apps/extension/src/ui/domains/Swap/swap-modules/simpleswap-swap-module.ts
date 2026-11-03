@@ -270,16 +270,6 @@ const getQuote = async (
   return quote(parseUserInputToPlanck(output, toAsset.decimals), fees)
 }
 
-export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
-  await fetch(`https://swap-providers-monitor.fly.dev/simpleswap/exchange`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id: swapId, deposit_tx_hash: txHash }),
-  })
-}
-
 /** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type SimpleswapExchange = Exchange
 
