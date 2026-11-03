@@ -2,7 +2,7 @@ import { activeNetworksStore } from "@core/domains/chaindata/store.activeNetwork
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useCallback, useEffect, useState } from "react"
-import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
+import { saveIdForMonitoring } from "../swap-modules/monitoring"
 
 /**
  * Delays readiness by 1 second after entering the confirm view,
