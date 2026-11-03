@@ -37,34 +37,84 @@ const resolveImport = (from: string, specifier: string): string | undefined => {
     .find((file) => existsSync(file) && statSync(file).isFile())
 }
 
-const isForbidden = (file: string) => file.startsWith(UI) || basename(file).startsWith("handler")
+type ImportRules = {
+  entryImports: RegExp
+  isForbidden: (file: string) => boolean
+  isBoundary: (file: string) => boolean
+}
 
-const forbiddenChain = (entry: string): string[] | null => {
-  const parent = new Map<string, string | null>([[entry, null]])
-  const queue = [entry]
-  while (queue.length) {
-    const file = queue.shift() as string
-    const imports = file === entry ? ANY_IMPORT : RUNTIME_IMPORT
-    for (const [, specifier] of readFileSync(file, "utf8").matchAll(imports)) {
-      const next = resolveImport(file, specifier)
-      if (!next || parent.has(next)) continue
-      parent.set(next, file)
-      if (isForbidden(next)) {
-        const chain: string[] = []
-        for (let at: string | null | undefined = next; at; at = parent.get(at))
-          chain.unshift(relative(EXTENSION, at))
-        return chain
+const BACKGROUND_RULES: ImportRules = {
+  entryImports: ANY_IMPORT,
+  isForbidden: (file) => file.startsWith(UI) || basename(file).startsWith("handler"),
+  isBoundary: () => false,
+}
+
+const forbiddenChain =
+  ({ entryImports, isForbidden, isBoundary }: ImportRules) =>
+  (entry: string): string[] | null => {
+    const parent = new Map<string, string | null>([[entry, null]])
+    const queue = [entry]
+    while (queue.length) {
+      const file = queue.shift() as string
+      const imports = file === entry ? entryImports : RUNTIME_IMPORT
+      for (const [, specifier] of readFileSync(file, "utf8").matchAll(imports)) {
+        const next = resolveImport(file, specifier)
+        if (!next || parent.has(next)) continue
+        parent.set(next, file)
+        if (isForbidden(next)) {
+          const chain: string[] = []
+          for (let at: string | null | undefined = next; at; at = parent.get(at))
+            chain.unshift(relative(EXTENSION, at))
+          return chain
+        }
+        if (!isBoundary(next)) queue.push(next)
       }
-      queue.push(next)
     }
+    return null
   }
-  return null
+
+/**
+ * The page swap modules are copied into the mobile wallet, so their bodies read the pages only
+ * through `PageSwapEnv` and the per-repo adapter files next to them, which the walk does not enter.
+ */
+const SWAP_MODULES = join(SRC, "ui/domains/Swap/swap-modules")
+
+const PAGE_SWAP_MODULES = [
+  join(SWAP_MODULES, "lifi-swap-module.ts"),
+  join(SWAP_MODULES, "stealthex-swap-module.ts"),
+  join(SWAP_MODULES, "simpleswap-swap-module.ts"),
+  join(SWAP_MODULES, "deposit-swap-transactions.ts"),
+  join(SWAP_MODULES, "fee-utils.ts"),
+  join(SWAP_MODULES, "monitoring.ts"),
+  join(SWAPS, "status.ts"),
+]
+
+const PAGE_REALM = [
+  join(UI, "state/"),
+  join(UI, "api/"),
+  join(UI, "util/gandalfFetch.ts"),
+  join(SRC, "core/domains/app/store.remoteConfig.ts"),
+  join(SRC, "ui/domains/Swap/hooks/"),
+]
+
+const PAGE_ADAPTERS = new Set([
+  join(SWAP_MODULES, "lifi-api.ts"),
+  join(SWAP_MODULES, "stealthex-api.ts"),
+  join(SWAP_MODULES, "simpleswap-api.ts"),
+  join(SWAP_MODULES, "substrate-deposit.ts"),
+  join(SRC, "ui/domains/Swap/swapEnv.ui.ts"),
+])
+
+const PAGE_RULES: ImportRules = {
+  entryImports: RUNTIME_IMPORT,
+  isForbidden: (file) => PAGE_REALM.some((realm) => file.startsWith(realm)),
+  isBoundary: (file) => PAGE_ADAPTERS.has(file),
 }
 
 describe("background swap modules", () => {
   it("reach nothing in ui/ and no handler", () => {
     const offenders = listSourceFiles(SWAPS, { includeTests: true })
-      .map(forbiddenChain)
+      .map(forbiddenChain(BACKGROUND_RULES))
       .filter((chain) => chain !== null)
       .map((chain) => chain.join(" -> "))
 
@@ -75,6 +125,16 @@ describe("background swap modules", () => {
     const offenders = listSourceFiles(SWAPS)
       .filter((file) => DYNAMIC_IMPORT.test(readFileSync(file, "utf8")))
       .map((file) => relative(EXTENSION, file))
+
+    expect(offenders).toEqual([])
+  })
+})
+
+describe("page swap modules", () => {
+  it("read the pages only through the env and their adapters", () => {
+    const offenders = PAGE_SWAP_MODULES.map(forbiddenChain(PAGE_RULES))
+      .filter((chain) => chain !== null)
+      .map((chain) => chain.join(" -> "))
 
     expect(offenders).toEqual([])
   })
