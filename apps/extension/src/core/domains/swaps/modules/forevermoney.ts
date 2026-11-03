@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { BITTENSOR_SS58_PREFIX, BITTENSOR_WEI_PER_RAO } from "@core/domains/bittensor/constants"
 import {
   abiCcipTokenPool,
@@ -118,8 +117,11 @@ const toWholeRao = (wei: bigint) => (wei / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WE
 
 const toWholeRaoRoundedUp = (wei: bigint) => toWholeRao(wei + BITTENSOR_WEI_PER_RAO - 1n)
 
-const getPartnerFee = async (route: ForevermoneyRoute): Promise<PartnerFee | null> => {
-  const config = (await remoteConfigStore.get("swaps"))?.forevermoney
+const getPartnerFee = async (
+  env: SwapEnv,
+  route: ForevermoneyRoute
+): Promise<PartnerFee | null> => {
+  const config = (await env.getSwapsConfig())?.forevermoney
   const recipient = config?.feeRecipients?.[route.sourceNetworkId]
   const bps = config?.feeBps ?? 0
   if (!recipient || !isEthereumAddress(recipient) || isAddressEqual(recipient, zeroAddress))
@@ -135,11 +137,12 @@ const getPartnerFeeWei = (route: ForevermoneyRoute, amountWei: bigint, bps: numb
 }
 
 const getBridgeAmounts = async (
+  env: SwapEnv,
   route: ForevermoneyRoute,
   fromAmount: bigint
 ): Promise<BridgeAmounts> => {
   const withoutFee = { amountWei: toWholeRao(fromAmount), partnerFee: null, partnerFeeWei: 0n }
-  const partnerFee = await getPartnerFee(route)
+  const partnerFee = await getPartnerFee(env, route)
   if (!partnerFee) return withoutFee
 
   let amountWei = toWholeRao(
@@ -403,6 +406,7 @@ type UpToFit = { amounts: BridgeAmounts; feeWei: bigint; gasReserveWei: bigint }
  * Never estimates gas: the sender may hold nothing yet.
  */
 const fitUpTo = async (
+  env: SwapEnv,
   client: PublicClient,
   route: ForevermoneyRoute,
   available: bigint,
@@ -410,15 +414,15 @@ const fitUpTo = async (
   toAddress: string | null,
   feePerGasWei: bigint
 ): Promise<UpToFit> => {
-  const partnerFee = await getPartnerFee(route)
+  const partnerFee = await getPartnerFee(env, route)
   const gasReserveWei = gasCeiling(partnerFee) * feePerGasWei
   const fit = (feeWei: bigint) =>
-    getBridgeAmounts(route, available - withFeeBuffer(feeWei) - gasReserveWei)
+    getBridgeAmounts(env, route, available - withFeeBuffer(feeWei) - gasReserveWei)
 
   const fullFee = await readCcipFeeWei(
     client,
     route,
-    await getBridgeAmounts(route, available),
+    await getBridgeAmounts(env, route, available),
     fromAddress,
     toAddress
   )
@@ -497,6 +501,7 @@ const getUpToQuote = async (
   const client = await env.evmClient(route.sourceNetworkId)
   const { maxFeePerGas } = await client.estimateFeesPerGas()
   const { amounts, feeWei, gasReserveWei } = await fitUpTo(
+    env,
     client,
     route,
     fromAmount,
@@ -540,7 +545,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
 
   const isOutbound = route.direction === "evm-to-spoke"
   const [amounts, client] = await Promise.all([
-    getBridgeAmounts(route, fromAmount),
+    getBridgeAmounts(env, route, fromAmount),
     env.evmClient(route.sourceNetworkId),
   ])
 
@@ -617,8 +622,16 @@ const buildLeg = async (
   const upTo = isUpToLeg(leg)
   const feesPerGas = upTo ? await sourceClient.estimateFeesPerGas() : null
   const fit = feesPerGas
-    ? await fitUpTo(sourceClient, route, input, fromAddress, toAddress, feesPerGas.maxFeePerGas)
-    : { amounts: await getBridgeAmounts(route, input), feeWei: null }
+    ? await fitUpTo(
+        env,
+        sourceClient,
+        route,
+        input,
+        fromAddress,
+        toAddress,
+        feesPerGas.maxFeePerGas
+      )
+    : { amounts: await getBridgeAmounts(env, route, input), feeWei: null }
   const { amounts } = fit
 
   await runChecks(env, sourceClient, route, amounts)
@@ -708,7 +721,7 @@ const boundLeg = async (
     return null
 
   const [partnerFee, client] = await Promise.all([
-    getPartnerFee(route),
+    getPartnerFee(env, route),
     env.evmClient(route.sourceNetworkId),
   ])
   const { maxFeePerGas } = await client.estimateFeesPerGas()
