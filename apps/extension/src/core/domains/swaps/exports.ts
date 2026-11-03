@@ -1,3 +1,4 @@
+export { SwapRouteUnbuildableError } from "./errors"
 export { InsufficientGasBalanceError, prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 export { withEntryHops, withSingleLegQuotes } from "./hops"
 export {

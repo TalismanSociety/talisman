@@ -3,6 +3,7 @@ import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import {
   assertNativeValueWithinInput,
   prepareTransactionRequestWithGasCheck,
+  SwapRouteUnbuildableError,
 } from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import { LIFI_API_URL } from "@core/domains/swaps/modules/lifi"
@@ -395,6 +396,30 @@ const intermediateTokenIds = (
   return tokenIds
 }
 
+/**
+ * LI.FI lists routes without simulating them, then refuses to build a step whose simulation reverts.
+ * Such a step stays out of every quote for the rest of the page's life.
+ */
+const unbuildableSteps = new Set<string>()
+
+const stepKey = ({ tool, action }: lifiSdk.LiFiStep) =>
+  [
+    tool,
+    action.fromAddress,
+    action.fromChainId,
+    action.fromToken.address,
+    action.toChainId,
+    action.toToken.address,
+  ]
+    .join(":")
+    .toLowerCase()
+
+const isUnbuildableStepError = (err: unknown) => {
+  for (let cause = err; cause instanceof Error; cause = cause.cause)
+    if (cause.name === "HTTPError" && (cause as { status?: number }).status === 422) return true
+  return false
+}
+
 const canRunRoute = async (
   route: lifiSdk.Route,
   params: QuoteParams,
@@ -477,7 +502,10 @@ const getRoutes = async (
     const runnable = await Promise.all(
       response.routes.map((route) => canRunRoute(route, params, knownEvmNetworks, request))
     )
-    response.routes = response.routes.filter((_, index) => runnable[index])
+    response.routes = response.routes.filter(
+      (route, index) =>
+        runnable[index] && !route.steps.some((step) => unbuildableSteps.has(stepKey(step)))
+    )
 
     return response
   } catch (cause) {
@@ -826,6 +854,8 @@ const spenderOf = (route: lifiSdk.Route | undefined) =>
  * quoted step. A worse rate refuses the first leg, before the plan starts, but not a later one, which the
  * user signs on screen: the build reports the output they accepted instead. Its token input was
  * approved to the quoted step's spender, so only a fresh route through that spender can use the allowance.
+ * A step LI.FI cannot build sends the user back to the quotes while their funds have not moved. A later
+ * leg's funds already sit in the intermediate token, so it falls through to the next fresh route.
  */
 const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Promise<BuiltLeg> => {
   try {
@@ -834,6 +864,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
     if (!quotedRoute || !tool) throw new Error("Please select the quote again")
     if (!leg.signer || !leg.recipient) throw new Error("Missing from address")
     const isPlanLeg = quotedRoute.stepCount > 1
+    const isLaterLeg = isPlanLeg && quotedRoute.stepIndex > 0
 
     const freshQuotes =
       (await quoteRoutes(
@@ -846,7 +877,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
           input: "exact",
         },
         slippage,
-        { multiStep: false, chargesTalismanFee: !isPlanLeg || quotedRoute.stepIndex === 0 }
+        { multiStep: false, chargesTalismanFee: !isLaterLeg }
       )) ?? []
     const usableQuotes =
       isPlanLeg && parseTokenId(leg.fromTokenId).type === "evm-erc20"
@@ -854,43 +885,57 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
             (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
           )
         : freshQuotes
-    const freshLeg = (usableQuotes.find((quote) => quote.subProtocol === tool) ?? usableQuotes[0])
-      ?.legs[0]
-    const freshRoute = freshLeg?.data as LifiLegRoute | undefined
+    const freshLegs = [
+      ...usableQuotes.filter((quote) => quote.subProtocol === tool),
+      ...usableQuotes.filter((quote) => quote.subProtocol !== tool),
+    ].map((quote) => quote.legs[0])
+    const candidates: { route: LifiLegRoute; fees: QuoteLeg["fees"] }[] = freshLegs.length
+      ? freshLegs.map((fresh) => ({ route: fresh.data as LifiLegRoute, fees: fresh.fees }))
+      : isPlanLeg
+        ? []
+        : [{ route: quotedRoute, fees: leg.fees }]
 
-    if (isPlanLeg && !freshRoute)
-      throw new Error("No route for this step right now, please try again later")
+    for (const candidate of isLaterLeg ? candidates : candidates.slice(0, 1)) {
+      const step = candidate.route.steps[0]
+      if (!step) throw new Error("No step found in route")
 
-    const step = (freshRoute ?? quotedRoute).steps[0]
-    if (!step) throw new Error("No step found in route")
+      let built: Awaited<ReturnType<typeof buildRouteTransaction>>
+      try {
+        built = await buildRouteTransaction(step, leg.fromTokenId, leg.signer, input, context)
+      } catch (err) {
+        if (!isUnbuildableStepError(err)) throw err
+        unbuildableSteps.add(stepKey(step))
+        if (isLaterLeg) continue
+        throw new SwapRouteUnbuildableError(`${step.toolDetails.name} cannot run this swap`, {
+          cause: err,
+        })
+      }
 
-    const { transaction, preparedStep } = await buildRouteTransaction(
-      step,
-      leg.fromTokenId,
-      leg.signer,
-      input,
-      context
-    )
-    const expectedOutput = isPlanLeg ? BigInt(preparedStep.estimate.toAmountMin) : leg.outputAmount
-    const acceptedOutput = isPlanLeg ? planLegFloor(quotedRoute, input, slippage) : expectedOutput
-    if (expectedOutput < acceptedOutput && quotedRoute.stepIndex === 0)
-      throw new Error("The rate has moved too far, please select the quote again")
+      const { transaction, preparedStep } = built
+      const expectedOutput = isPlanLeg
+        ? BigInt(preparedStep.estimate.toAmountMin)
+        : leg.outputAmount
+      const acceptedOutput = isPlanLeg ? planLegFloor(quotedRoute, input, slippage) : expectedOutput
+      if (expectedOutput < acceptedOutput && !isLaterLeg)
+        throw new Error("The rate has moved too far, please select the quote again")
 
-    return {
-      transaction,
-      fees: freshLeg?.fees ?? leg.fees,
-      expectedOutput,
-      ...(expectedOutput < acceptedOutput && { acceptedOutput }),
-      txInfo: {
-        type: "swap-lifi",
-        protocolName: tool,
-        fromTokenId: leg.fromTokenId,
-        toTokenId: leg.toTokenId,
-        fromAmount: input.toString(),
-        toAmount: expectedOutput.toString(),
-        to: leg.recipient,
-      },
+      return {
+        transaction,
+        fees: candidate.fees,
+        expectedOutput,
+        ...(expectedOutput < acceptedOutput && { acceptedOutput }),
+        txInfo: {
+          type: "swap-lifi",
+          protocolName: step.tool,
+          fromTokenId: leg.fromTokenId,
+          toTokenId: leg.toTokenId,
+          fromAmount: input.toString(),
+          toAmount: expectedOutput.toString(),
+          to: leg.recipient,
+        },
+      }
     }
+    throw new Error("No route for this step right now, please try again later")
   } catch (cause) {
     log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause

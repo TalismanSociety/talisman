@@ -1,3 +1,4 @@
+import { SwapRouteUnbuildableError } from "@core/domains/swaps/errors"
 import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type { BaseQuote, QuoteLeg, QuoteParams } from "@core/domains/swaps/types"
 import type { LiFiStep, Route, RoutesResponse, Token } from "@lifi/types"
@@ -455,6 +456,7 @@ describe("LI.FI plan leg build", () => {
     toTokenId?: string
     module?: typeof lifiSwapModule
     legIndex?: number
+    beforeBuild?: () => void
   }
 
   const buildSwapLeg = async (
@@ -467,6 +469,7 @@ describe("LI.FI plan leg build", () => {
       toTokenId = TRUMP_ID,
       module = lifiSwapModule,
       legIndex = 1,
+      beforeBuild,
     }: BuildOptions = {}
   ) => {
     const [quote] = await quotesFor([quoted], { toTokenId })
@@ -491,6 +494,7 @@ describe("LI.FI plan leg build", () => {
       },
     }))
     mockPrepare.mockImplementation(async (_client, _native, tx) => tx)
+    beforeBuild?.()
     return module.buildLeg({
       leg,
       input,
@@ -628,6 +632,86 @@ describe("LI.FI plan leg build", () => {
     )
 
     expect(built.expectedOutput).toBe(500_000_000_000_000_000n)
+  })
+
+  describe("when LI.FI cannot build a step its route list offered", () => {
+    const landed = 2_800_000_000_000_000_000_000n
+    const unbuildable = () =>
+      new Error("[HTTPError] Step simulation failed: execution reverted", {
+        cause: Object.assign(new Error("Step simulation failed: execution reverted"), {
+          name: "HTTPError",
+          status: 422,
+        }),
+      })
+    const failingTool = (tool: string) => {
+      const build = mockGetStepTransaction.getMockImplementation()
+      mockGetStepTransaction.mockImplementation(async (step: LiFiStep) => {
+        if (step.tool === tool) throw unbuildable()
+        return build?.(step)
+      })
+    }
+    const viaKyber = withStep(skyaiToTrump(landed.toString(), "15600000000000"), 0, (s) => ({
+      ...s,
+      tool: "kyberswap",
+      toolDetails: { key: "kyberswap", name: "KyberSwap", logoURI: "" },
+    }))
+    const freshPage = async () => {
+      vi.resetModules()
+      return (await import("../lifi-swap-module")).lifiSwapModule
+    }
+
+    it("sends the user back to the quotes before any funds move, and quotes the route no more", async () => {
+      const module = await freshPage()
+      mockGetStepTransaction.mockRejectedValue(unbuildable())
+      mockLifiGetRoutes.mockResolvedValue({
+        routes: [ethToArb()],
+        unavailableRoutes: { failed: [], filteredOut: [] },
+      })
+      const quoteParams: QuoteParams = {
+        fromTokenId: BASE_ETH_ID,
+        toTokenId: ARB_ID,
+        fromAmount: 20_000_000_000_000_000n,
+        fromAddress: ALICE,
+        toAddress: BOB,
+        input: "exact",
+      }
+      const quote = [(await module.getQuote(quoteParams, signal)) ?? []].flat()[0]
+
+      await expect(
+        module.buildLeg({
+          leg: quote.legs[0],
+          input: 20_000_000_000_000_000n,
+          slippage: 0.005,
+          exchange: null,
+          context: context as never,
+        })
+      ).rejects.toThrow(SwapRouteUnbuildableError)
+      expect(await module.getQuote(quoteParams, signal)).toBeNull()
+    })
+
+    it("builds a later leg through the next fresh route", async () => {
+      const module = await freshPage()
+
+      const built = await buildSwapLeg(
+        landed,
+        [skyaiToTrump(landed.toString(), "15700000000000"), viaKyber],
+        { module, beforeBuild: () => failingTool("fly") }
+      )
+
+      expect(built.txInfo).toMatchObject({ protocolName: "kyberswap" })
+      expect(built.expectedOutput).toBe(15_600_000_000_000n)
+    })
+
+    it("refuses a later leg when no fresh route builds", async () => {
+      const module = await freshPage()
+
+      await expect(
+        buildSwapLeg(landed, [skyaiToTrump(landed.toString(), "15700000000000")], {
+          module,
+          beforeBuild: () => failingTool("fly"),
+        })
+      ).rejects.toThrow("No route")
+    })
   })
 
   describe("when a fresh route spends through another contract than the one approved", () => {
