@@ -8,8 +8,10 @@ import type {
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
+  QuoteFee,
   QuoteParams,
   SupportedSwapProtocol,
+  SwapModuleTransaction,
 } from "@core/domains/swaps/types"
 import {
   evmErc20TokenId,
@@ -27,6 +29,7 @@ import {
 } from "@talismn/chaindata-provider"
 import type { PublicClient } from "viem"
 
+import type { DepositSwapAsset, DepositTransactionParams } from "./deposit-swap-transactions"
 import type { SwapExchange } from "./swap-protocols"
 
 export type { SwapExchange } from "./swap-protocols"
@@ -60,6 +63,11 @@ export type PageSwapEnv = Omit<SwapEnv, "getToken"> & {
   getSlippageDecimal: () => Promise<number>
   /** undefined for unknown networks and networks without an evm-native token */
   findEvmClient: (networkId: NetworkId) => Promise<PublicClient | undefined>
+  estimateSubstrateDepositFee: (
+    fromAsset: DepositSwapAsset,
+    fromAddress: string
+  ) => Promise<QuoteFee | null>
+  buildSubstrateDeposit: (params: DepositTransactionParams) => Promise<SwapModuleTransaction>
 }
 
 export type SwapModule = {

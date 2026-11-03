@@ -31,6 +31,10 @@ import type {
   SwapModule,
 } from "./swap-modules/common.swap-module"
 import { findEvmPublicClient, getEvmPublicClient } from "./swap-modules/evm-network"
+import {
+  buildSubstrateDeposit,
+  estimateSubstrateDepositFee,
+} from "./swap-modules/substrate-deposit"
 
 const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
   const network = await firstValueFrom(getNetworkById$(networkId))
@@ -77,6 +81,9 @@ export const uiSwapEnv: PageSwapEnv = {
   getAccounts: () => firstValueFrom(accounts$),
   getSlippageDecimal: () => getSwapSlippageDecimal(),
   findEvmClient: (networkId) => findEvmPublicClient(networkId),
+  estimateSubstrateDepositFee: (fromAsset, fromAddress) =>
+    estimateSubstrateDepositFee(fromAsset, fromAddress),
+  buildSubstrateDeposit: (params) => buildSubstrateDeposit(params),
 }
 
 export const withSwapEnv = (module: BackgroundSwapModule, env: SwapEnv): SwapModule => ({
