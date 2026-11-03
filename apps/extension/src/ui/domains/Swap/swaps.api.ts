@@ -31,7 +31,7 @@ import {
 
 export const swapModules = [
   simpleswapSwapModule,
-  stealthexSwapModule,
+  withPageSwapEnv(stealthexSwapModule, uiSwapEnv),
   withPageSwapEnv(lifiSwapModule, uiSwapEnv),
   ...Object.values(BACKGROUND_SWAP_MODULES).map((module) => withSwapEnv(module, uiSwapEnv)),
 ]
