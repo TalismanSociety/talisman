@@ -69,7 +69,7 @@ export const createSimpleSwapApi = ({
   fetch: typeof globalThis.fetch
   getSwapsConfig: () => Promise<SwapsConfig>
 }) => {
-  const getApiKey = (route: RouteProps) => getSimpleSwapApiKey(route)
+  const getApiKey = (route: RouteProps) => getSimpleSwapApiKey(route, getSwapsConfig)
   return {
     getAllCurrencies: async (): Promise<SimpleSwapCurrency[]> => {
       const { simpleswapApiKey } = await getSwapsConfig()

@@ -45,7 +45,8 @@ const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 
 type RouteProps = { currencyFrom: string; currencyTo: string }
-const getTalismanFee = (route: RouteProps) => getSimpleSwapTalismanFee(route)
+const getTalismanFee = (route: RouteProps) =>
+  getSimpleSwapTalismanFee(route, () => remoteConfigStore.get("swaps"))
 
 const LOGO = simpleswapLogo
 
