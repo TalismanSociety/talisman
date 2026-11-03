@@ -84,6 +84,12 @@ describe("TokenPicker empty list", () => {
     expect(screen.queryByText(NO_MATCH_MESSAGE)).toBeNull()
   })
 
+  it("ignores a search of only spaces", () => {
+    renderPicker({ address: ADDRESS, initialSearch: "   " })
+
+    expect(screen.getByText(NO_BALANCES_MESSAGE)).toBeTruthy()
+  })
+
   it("says no token matches once the user searches", async () => {
     mockBalances.mockReturnValue(new Balances([reservedOnly]))
     renderPicker({ address: ADDRESS })

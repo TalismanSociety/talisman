@@ -426,7 +426,7 @@ const TokensList: FC<TokensListProps> = ({
   )
 
   const emptyListMessage =
-    search || selectedNetworkId
+    search?.trim() || selectedNetworkId
       ? t("No token matches your search")
       : address
         ? t("There are no tokens with balances in this account")
