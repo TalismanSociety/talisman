@@ -1,7 +1,8 @@
 import { isAccountCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import { isAccountOwned } from "@core/domains/keyring/exports"
 import { type Balance, Balances } from "@talismn/balances"
 import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import { isAddressEqual } from "@talismn/crypto"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
@@ -13,6 +14,7 @@ import { useSubnetMarkets } from "../hooks/useSubnetMarkets"
 import { useTaoDashboardNetwork } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { raoToTao } from "../shared/util"
+import { getStakeTarget } from "./stakeTarget"
 
 type SubnetSentiment = "bullish" | "bearish" | null
 
@@ -59,27 +61,23 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
     }, new Map<number, Balance[]>())
   }, [balances, networkId, selectedAccounts])
 
-  // Find the first selected substrate account with transferable native TAO
-  const stakeAddress = useMemo(() => {
-    const nativeTokenId = subNativeTokenId(networkId)
-    for (const acc of selectedAccounts) {
-      if (isEthereumAddress(acc.address)) continue
-      const bal = balances.each.find(
-        (b) =>
-          b.tokenId === nativeTokenId &&
-          isAddressEqual(b.address, acc.address) &&
-          b.transferable.planck > 0n
-      )
-      if (bal) return acc.address
-    }
-    return undefined
-  }, [selectedAccounts, balances, networkId])
+  const stakingAddresses = useMemo(
+    () =>
+      network
+        ? selectedAccounts
+            .filter((acc) => isAccountOwned(acc) && isAccountCompatibleWithNetwork(network, acc))
+            .map((acc) => acc.address)
+        : [],
+    [network, selectedAccounts]
+  )
 
-  const canStake =
-    !!stakeAddress ||
-    (isBalanceInitializing &&
-      !!network &&
-      selectedAccounts.some((acc) => isAccountCompatibleWithNetwork(network, acc)))
+  const stakeTarget = useMemo(() => {
+    const nativeTokenId = subNativeTokenId(networkId)
+    const fundedAddresses = balances.each
+      .filter((b) => b.tokenId === nativeTokenId && b.transferable.planck > 0n)
+      .map((b) => b.address)
+    return getStakeTarget(stakingAddresses, fundedAddresses, isBalanceInitializing)
+  }, [stakingAddresses, balances, networkId, isBalanceInitializing])
 
   // Index leaderboard by netuid
   const leaderboardMap = useMemo(() => {
@@ -175,7 +173,7 @@ export const useTaoDashboardSubnets = (period: TimePeriod) => {
   const isLoading = Object.values(loading).some(Boolean)
   const isError = Object.values(errors).some(Boolean)
 
-  return { subnets, stakeAddress, canStake, isLoading, isError, loading, errors }
+  return { subnets, stakeTarget, isLoading, isError, loading, errors }
 }
 
 export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>["subnets"][number]

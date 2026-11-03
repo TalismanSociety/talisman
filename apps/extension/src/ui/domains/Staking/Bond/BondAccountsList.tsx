@@ -3,7 +3,7 @@ import type { Balance } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useBalances } from "@ui/state/balances"
+import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -154,6 +154,7 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
 
   const token = useToken(tokenId)
   const balances = useBalances()
+  const isBalanceInitializing = useIsBalanceInitializing()
 
   const accountsWithBalance = useMemo(() => {
     return accounts
@@ -175,9 +176,11 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
       })
       .map((account) => ({
         ...account,
-        disabled: !account.balance || account.balance.transferable.planck === 0n,
+        disabled: account.balance
+          ? account.balance.transferable.planck === 0n
+          : !isBalanceInitializing,
       }))
-  }, [accounts, balances, selected, tokenId])
+  }, [accounts, balances, isBalanceInitializing, selected, tokenId])
 
   if (!showIfEmpty && !accounts?.length) return null
 

@@ -1,5 +1,9 @@
 import type { Account } from "@core/domains/keyring/exports"
-import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
+import {
+  getAccountGenesisHash,
+  isAccountOfType,
+  isAccountPlatformPolkadot,
+} from "@core/domains/keyring/exports"
 import type { Address } from "@core/types/base"
 import { isTokenEth, type Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
@@ -54,7 +58,7 @@ export const BondAccountPicker = ({
               isTokenEth(token) ||
               (chain?.account === "secp256k1" && !isAccountOfType(account, "ledger-polkadot"))
             )
-          else return chain && chain?.account !== "secp256k1"
+          return !!chain && chain.account !== "secp256k1" && isAccountPlatformPolkadot(account)
         })
         .filter((account) => {
           const genesisHash = getAccountGenesisHash(account)
