@@ -4,7 +4,6 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { assertDepositAmountWithinInput } from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type {
@@ -17,18 +16,16 @@ import type {
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
-import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type ExchangeParams,
   getTokenIdForSwappableAsset,
+  type PageSwapEnv,
+  type PageSwapModule,
   platformFromTokenId,
   type SwapBuildLegParams,
   type SwapExchange,
-  type SwapModule,
   type SwappableAssetBaseType,
 } from "./common.swap-module"
 import {
@@ -78,9 +75,12 @@ const resolveAsset = (tokenId: string): StealthexInternalAsset | undefined =>
 // --- Cached assets (promise-based to deduplicate concurrent calls) ---
 let cachedAssetsPromise: Promise<StealthexInternalAsset[]> | null = null
 
-const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexInternalAsset[]> => {
+const getStealthexAssets = async (
+  env: PageSwapEnv,
+  _signal: AbortSignal
+): Promise<StealthexInternalAsset[]> => {
   if (!cachedAssetsPromise) {
-    cachedAssetsPromise = fetchStealthexAssets().catch((err) => {
+    cachedAssetsPromise = fetchStealthexAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
       throw err
     })
@@ -88,13 +88,13 @@ const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexIntern
   return cachedAssetsPromise
 }
 
-const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
+const fetchStealthexAssets = async (env: PageSwapEnv): Promise<StealthexInternalAsset[]> => {
   const [allCurrencies, { stealthex: mappings }, knownEvmNetworks, knownTokens] = await Promise.all(
     [
       stealthexSdk.getAllCurrencies(),
-      remoteConfigStore.get("swaps"),
-      firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
-      firstValueFrom(getTokensMap$()),
+      env.getSwapsConfig(),
+      env.getNetworksMap("ethereum"),
+      env.getTokensMap(),
     ]
   )
   const { networks, tokens } = mappings
@@ -201,13 +201,17 @@ const getRouteHasCustomFee = async (
   return !!pair.features.includes("custom_fee")
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
-  const assets = await getStealthexAssets(signal)
+const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+  const assets = await getStealthexAssets(env, signal)
   return assets.map((a) => a.id)
 }
 
-const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
-  const allAssets = await getStealthexAssets(signal)
+const getToAssets = async (
+  fromTokenId: string | null,
+  env: PageSwapEnv,
+  signal: AbortSignal
+): Promise<string[]> => {
+  const allAssets = await getStealthexAssets(env, signal)
   if (!fromTokenId) return allAssets.map((a) => a.id)
 
   const pairs = await getPairs(fromTokenId)
@@ -221,7 +225,11 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
   return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
-const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
+const getQuote = async (
+  params: QuoteParams,
+  _env: PageSwapEnv,
+  _signal: AbortSignal
+): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
@@ -293,14 +301,14 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 /** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type { StealthexExchange }
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => {
+const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
     const fromAsset = resolveAsset(fromTokenId)
     const toAsset = resolveAsset(toTokenId)
 
-    const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
+    const substrateChains = await env.getNetworks("polkadot")
     const formatAddress = (address: string | null, asset: StealthexInternalAsset | undefined) => {
       if (!address) return address
       if (asset?.platform !== "polkadot") return address
@@ -315,7 +323,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
     if (!fromAsset) throw new Error("Missing from asset")
     if (!toAsset) throw new Error("Missing to asset")
 
-    const allAccounts = await firstValueFrom(accounts$)
+    const allAccounts = await env.getAccounts()
 
     const formattedFromAddress = formatAddress(fromAddress, fromAsset)
     const formattedToAddress = formatAddress(toAddress, toAsset)
@@ -327,7 +335,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
     if (!from) throw new Error("Missing route from")
     if (!to) throw new Error("Missing route to")
 
-    const allNetworks = await firstValueFrom(getNetworks$())
+    const allNetworks = await env.getNetworks()
 
     // validate from address for the source chain
     const fromAccount = allAccounts.find((account) =>
@@ -445,7 +453,7 @@ const buildLeg = async ({
   }
 }
 
-export const stealthexSwapModule: SwapModule = {
+export const stealthexSwapModule: PageSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: getFromAssets,

@@ -55,7 +55,9 @@ vi.mock("@core/domains/swaps/evm-gas-check", () => ({
   ),
 }))
 
-const { stealthexSwapModule } = await import("../stealthex-swap-module")
+const { stealthexSwapModule: stealthexPageModule } = await import("../stealthex-swap-module")
+const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
+const stealthexSwapModule = withPageSwapEnv(stealthexPageModule, uiSwapEnv)
 const { confirmSwap } = await import("./confirmSwap")
 
 const FROM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
