@@ -1,16 +1,31 @@
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SwapEnv } from "@core/domains/swaps/env"
 import { memoiseByKey } from "@core/domains/swaps/helpers"
 import type { BackgroundSwapModule } from "@core/domains/swaps/types"
-import type { NetworkId } from "@talismn/chaindata-provider"
+import type {
+  NetworkId,
+  NetworkOfPlatform,
+  NetworkPlatform,
+  TokenId,
+  TokenOfPlatform,
+} from "@talismn/chaindata-provider"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
-import { getNetworkById$, getToken$ } from "@ui/state/chaindata"
+import { accounts$ } from "@ui/state/accounts"
+import {
+  getNetworkById$,
+  getNetworks$,
+  getNetworksMapById$,
+  getToken$,
+  getTokensMap$,
+} from "@ui/state/chaindata"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { firstValueFrom } from "rxjs"
 
-import type { SwapModule } from "./swap-modules/common.swap-module"
-import { getEvmPublicClient } from "./swap-modules/evm-network"
+import { getSwapSlippageDecimal } from "./hooks/useSwapSlippage"
+import type { PageSwapEnv, SwapModule } from "./swap-modules/common.swap-module"
+import { findEvmPublicClient, getEvmPublicClient } from "./swap-modules/evm-network"
 
 const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
   const network = await firstValueFrom(getNetworkById$(networkId))
@@ -34,16 +49,29 @@ const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
 }
 
 /** The pages quote and build legs. Observing a sent leg is the background executor's job */
-export const uiSwapEnv: SwapEnv = {
+export const uiSwapEnv: PageSwapEnv = {
   getNetwork: (networkId) => firstValueFrom(getNetworkById$(networkId)),
   getToken: (tokenId) => firstValueFrom(getToken$(tokenId)),
-  evmClient: getEvmPublicClient,
+  evmClient: (networkId) => getEvmPublicClient(networkId),
   substrateApi: memoiseByKey(createSubstrateApi),
   substrateSend: (networkId, method, params) => api.subSend(networkId, method, params),
   decodeExtrinsicEvents: async () => {
     throw new Error("Swap legs are observed in the background")
   },
-  proxyFetch: gandalfFetch,
+  proxyFetch: (...args) => gandalfFetch(...args),
+  fetch: (...args) => fetch(...args),
+  getSwapsConfig: () => remoteConfigStore.get("swaps"),
+  getTokensMap: <P extends NetworkPlatform>(platform?: P) =>
+    firstValueFrom(getTokensMap$({ platform })) as Promise<Record<TokenId, TokenOfPlatform<P>>>,
+  getNetworksMap: <P extends NetworkPlatform>(platform?: P) =>
+    firstValueFrom(getNetworksMapById$({ platform })) as Promise<
+      Record<NetworkId, NetworkOfPlatform<P>>
+    >,
+  getNetworks: <P extends NetworkPlatform>(platform?: P) =>
+    firstValueFrom(getNetworks$({ platform })) as Promise<NetworkOfPlatform<P>[]>,
+  getAccounts: () => firstValueFrom(accounts$),
+  getSlippageDecimal: () => getSwapSlippageDecimal(),
+  findEvmClient: (networkId) => findEvmPublicClient(networkId),
 }
 
 export const withSwapEnv = (module: BackgroundSwapModule, env: SwapEnv): SwapModule => ({

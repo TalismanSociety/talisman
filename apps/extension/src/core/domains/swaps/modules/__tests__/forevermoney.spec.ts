@@ -57,6 +57,7 @@ const NETWORKS: Record<string, unknown> = {
 vi.mock("../forevermoney-logo.svg?url", () => ({ default: "forevermoney-logo.svg" }))
 
 const { forevermoneySwapModule } = await import("../forevermoney")
+const { remoteConfigStore } = await import("@core/domains/app/store.remoteConfig")
 const { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } = await import(
   "@core/domains/forevermoney/abi"
 )
@@ -115,6 +116,10 @@ const env: SwapEnv = {
   proxyFetch: async () => {
     throw new Error("ForeverMoney calls no Talisman proxy")
   },
+  fetch: async () => {
+    throw new Error("ForeverMoney calls no HTTP API")
+  },
+  getSwapsConfig: () => remoteConfigStore.get("swaps"),
 }
 
 type ChainState = {

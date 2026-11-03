@@ -1,3 +1,4 @@
+import type { RemoteConfigStoreData } from "@core/domains/app/types"
 import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { Hex, PublicClient } from "viem"
@@ -8,6 +9,8 @@ export type ExtrinsicEvents = {
   success: boolean
   events: { pallet: string; name: string; value: unknown }[]
 }
+
+export type SwapsConfig = RemoteConfigStoreData["swaps"]
 
 /** What a background swap module reads from the realm that runs it */
 export type SwapEnv = {
@@ -30,4 +33,6 @@ export type SwapEnv = {
   ) => Promise<ExtrinsicEvents | null>
   /** a fetch that carries the Gandalf token the Talisman API proxies require */
   proxyFetch: typeof fetch
+  fetch: typeof fetch
+  getSwapsConfig: () => Promise<SwapsConfig>
 }

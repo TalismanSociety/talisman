@@ -79,6 +79,12 @@ const env: SwapEnv = {
   proxyFetch: async () => {
     throw new Error("Bittensor EVM calls no Talisman proxy")
   },
+  fetch: async () => {
+    throw new Error("Bittensor EVM calls no HTTP API")
+  },
+  getSwapsConfig: async () => {
+    throw new Error("Bittensor EVM reads no swaps config")
+  },
 }
 
 // --- Test helpers ---

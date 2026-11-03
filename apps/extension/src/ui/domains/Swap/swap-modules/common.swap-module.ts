@@ -1,5 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
+import type { Account } from "@core/domains/keyring/exports"
+import type { SwapEnv } from "@core/domains/swaps/env"
 import type {
   ApprovalInfo,
   ApprovalParams,
@@ -12,13 +14,18 @@ import type {
 import {
   evmErc20TokenId,
   evmNativeTokenId,
+  type NetworkId,
+  type NetworkOfPlatform,
   type NetworkPlatform,
   parseTokenId,
   solNativeTokenId,
   solSplTokenId,
   subNativeTokenId,
+  type Token,
   type TokenId,
+  type TokenOfPlatform,
 } from "@talismn/chaindata-provider"
+import type { PublicClient } from "viem"
 
 import type { SwapExchange } from "./swap-protocols"
 
@@ -37,6 +44,22 @@ export type ExchangeParams = {
 export type SwapBuildLegParams = BuildLegParams & {
   /** the exchange createExchange opened for this leg */
   exchange: SwapExchange | null
+}
+
+/** What a page swap module reads from the pages */
+export type PageSwapEnv = Omit<SwapEnv, "getToken"> & {
+  getToken: (tokenId: TokenId | undefined) => Promise<Token | null>
+  getTokensMap: <P extends NetworkPlatform>(
+    platform?: P
+  ) => Promise<Record<TokenId, TokenOfPlatform<P>>>
+  getNetworksMap: <P extends NetworkPlatform>(
+    platform?: P
+  ) => Promise<Record<NetworkId, NetworkOfPlatform<P>>>
+  getNetworks: <P extends NetworkPlatform>(platform?: P) => Promise<NetworkOfPlatform<P>[]>
+  getAccounts: () => Promise<Account[]>
+  getSlippageDecimal: () => Promise<number>
+  /** undefined for unknown networks and networks without an evm-native token */
+  findEvmClient: (networkId: NetworkId) => Promise<PublicClient | undefined>
 }
 
 export type SwapModule = {
