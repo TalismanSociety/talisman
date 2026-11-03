@@ -25,6 +25,8 @@ const {
   getLifiCustomFeeForRoute,
   getLifiTalismanFee,
 } = await import("../fee-utils")
+const { remoteConfigStore } = await import("@core/domains/app/store.remoteConfig")
+const getSwapsConfig = () => remoteConfigStore.get("swaps")
 
 // --- Test helpers ---
 
@@ -146,52 +148,70 @@ describe("SimpleSwap fee logic", () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot", "ksm", "eth"],
       })
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "dot", currencyTo: "btc" })).toBe(
-        true
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "dot", currencyTo: "btc" },
+          getSwapsConfig
+        )
+      ).toBe(true)
     })
 
     it("returns true when currencyTo is in discounted list", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot", "ksm", "eth"],
       })
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "btc", currencyTo: "eth" })).toBe(
-        true
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "btc", currencyTo: "eth" },
+          getSwapsConfig
+        )
+      ).toBe(true)
     })
 
     it("returns true when both currencies are in discounted list", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot", "eth"],
       })
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "dot", currencyTo: "eth" })).toBe(
-        true
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "dot", currencyTo: "eth" },
+          getSwapsConfig
+        )
+      ).toBe(true)
     })
 
     it("returns false when neither currency is in discounted list", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot", "ksm"],
       })
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "btc", currencyTo: "sol" })).toBe(
-        false
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "btc", currencyTo: "sol" },
+          getSwapsConfig
+        )
+      ).toBe(false)
     })
 
     it("returns false when discounted list is empty", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: [],
       })
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "dot", currencyTo: "eth" })).toBe(
-        false
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "dot", currencyTo: "eth" },
+          getSwapsConfig
+        )
+      ).toBe(false)
     })
 
     it("defaults to empty array when simpleswapDiscountedCurrencies is missing", async () => {
       mockRemoteConfigGet.mockResolvedValue({})
-      expect(await isSimpleSwapDiscountedRoute({ currencyFrom: "dot", currencyTo: "eth" })).toBe(
-        false
-      )
+      expect(
+        await isSimpleSwapDiscountedRoute(
+          { currencyFrom: "dot", currencyTo: "eth" },
+          getSwapsConfig
+        )
+      ).toBe(false)
     })
   })
 
@@ -200,25 +220,25 @@ describe("SimpleSwap fee logic", () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot"],
       })
-      expect(await getSimpleSwapTalismanFee({ currencyFrom: "dot", currencyTo: "btc" })).toBe(
-        SIMPLESWAP_TALISMAN_FEE_DISCOUNTED
-      )
+      expect(
+        await getSimpleSwapTalismanFee({ currencyFrom: "dot", currencyTo: "btc" }, getSwapsConfig)
+      ).toBe(SIMPLESWAP_TALISMAN_FEE_DISCOUNTED)
     })
 
     it("returns standard fee for non-discounted routes", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         simpleswapDiscountedCurrencies: ["dot"],
       })
-      expect(await getSimpleSwapTalismanFee({ currencyFrom: "btc", currencyTo: "sol" })).toBe(
-        SIMPLESWAP_TALISMAN_FEE
-      )
+      expect(
+        await getSimpleSwapTalismanFee({ currencyFrom: "btc", currencyTo: "sol" }, getSwapsConfig)
+      ).toBe(SIMPLESWAP_TALISMAN_FEE)
     })
 
     it("returns standard fee when no discounted currencies exist", async () => {
       mockRemoteConfigGet.mockResolvedValue({})
-      expect(await getSimpleSwapTalismanFee({ currencyFrom: "dot", currencyTo: "eth" })).toBe(
-        SIMPLESWAP_TALISMAN_FEE
-      )
+      expect(
+        await getSimpleSwapTalismanFee({ currencyFrom: "dot", currencyTo: "eth" }, getSwapsConfig)
+      ).toBe(SIMPLESWAP_TALISMAN_FEE)
     })
   })
 
@@ -229,9 +249,9 @@ describe("SimpleSwap fee logic", () => {
         simpleswapApiKeyDiscounted: "discounted-key-123",
         simpleswapApiKey: "standard-key-456",
       })
-      expect(await getSimpleSwapApiKey({ currencyFrom: "dot", currencyTo: "btc" })).toBe(
-        "discounted-key-123"
-      )
+      expect(
+        await getSimpleSwapApiKey({ currencyFrom: "dot", currencyTo: "btc" }, getSwapsConfig)
+      ).toBe("discounted-key-123")
     })
 
     it("returns standard API key for non-discounted routes", async () => {
@@ -240,9 +260,9 @@ describe("SimpleSwap fee logic", () => {
         simpleswapApiKeyDiscounted: "discounted-key-123",
         simpleswapApiKey: "standard-key-456",
       })
-      expect(await getSimpleSwapApiKey({ currencyFrom: "btc", currencyTo: "sol" })).toBe(
-        "standard-key-456"
-      )
+      expect(
+        await getSimpleSwapApiKey({ currencyFrom: "btc", currencyTo: "sol" }, getSwapsConfig)
+      ).toBe("standard-key-456")
     })
   })
 })
@@ -268,14 +288,20 @@ describe("LI.FI fee logic", () => {
     it("returns undefined when no custom fees exist", async () => {
       mockRemoteConfigGet.mockResolvedValue({})
       expect(
-        await getLifiCustomFeeForRoute({ fromAssetId: "token-a", toAssetId: "token-b" })
+        await getLifiCustomFeeForRoute(
+          { fromAssetId: "token-a", toAssetId: "token-b" },
+          getSwapsConfig
+        )
       ).toBeUndefined()
     })
 
     it("returns undefined when lifiCustomFeeTokens is empty", async () => {
       mockRemoteConfigGet.mockResolvedValue({ lifiCustomFeeTokens: {} })
       expect(
-        await getLifiCustomFeeForRoute({ fromAssetId: "token-a", toAssetId: "token-b" })
+        await getLifiCustomFeeForRoute(
+          { fromAssetId: "token-a", toAssetId: "token-b" },
+          getSwapsConfig
+        )
       ).toBeUndefined()
     })
 
@@ -286,10 +312,13 @@ describe("LI.FI fee logic", () => {
           "token-b": 0.003,
         },
       })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: "token-a",
-        toAssetId: "token-b",
-      })
+      const result = await getLifiCustomFeeForRoute(
+        {
+          fromAssetId: "token-a",
+          toAssetId: "token-b",
+        },
+        getSwapsConfig
+      )
       expect(result).toBe(0.003)
     })
 
@@ -297,9 +326,12 @@ describe("LI.FI fee logic", () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-a": 0.005 },
       })
-      expect(await getLifiCustomFeeForRoute({ fromAssetId: "token-a", toAssetId: undefined })).toBe(
-        0.005
-      )
+      expect(
+        await getLifiCustomFeeForRoute(
+          { fromAssetId: "token-a", toAssetId: undefined },
+          getSwapsConfig
+        )
+      ).toBe(0.005)
     })
 
     it("falls back to fromAsset fee when toAsset has no custom fee", async () => {
@@ -308,10 +340,13 @@ describe("LI.FI fee logic", () => {
           "token-a": 0.001,
         },
       })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: "token-a",
-        toAssetId: "token-b",
-      })
+      const result = await getLifiCustomFeeForRoute(
+        {
+          fromAssetId: "token-a",
+          toAssetId: "token-b",
+        },
+        getSwapsConfig
+      )
       expect(result).toBe(0.001)
     })
 
@@ -321,10 +356,13 @@ describe("LI.FI fee logic", () => {
           "token-b": 0,
         },
       })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: "token-a",
-        toAssetId: "token-b",
-      })
+      const result = await getLifiCustomFeeForRoute(
+        {
+          fromAssetId: "token-a",
+          toAssetId: "token-b",
+        },
+        getSwapsConfig
+      )
       expect(result).toBe(0)
     })
 
@@ -332,10 +370,13 @@ describe("LI.FI fee logic", () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-b": 0.005 },
       })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: undefined,
-        toAssetId: "token-b",
-      })
+      const result = await getLifiCustomFeeForRoute(
+        {
+          fromAssetId: undefined,
+          toAssetId: "token-b",
+        },
+        getSwapsConfig
+      )
       expect(result).toBe(0.005)
     })
 
@@ -343,10 +384,13 @@ describe("LI.FI fee logic", () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-a": 0.005 },
       })
-      const result = await getLifiCustomFeeForRoute({
-        fromAssetId: undefined,
-        toAssetId: undefined,
-      })
+      const result = await getLifiCustomFeeForRoute(
+        {
+          fromAssetId: undefined,
+          toAssetId: undefined,
+        },
+        getSwapsConfig
+      )
       expect(result).toBeUndefined()
     })
   })
@@ -354,37 +398,43 @@ describe("LI.FI fee logic", () => {
   describe("getLifiTalismanFee", () => {
     it("returns default TALISMAN_FEE when no custom fees exist", async () => {
       mockRemoteConfigGet.mockResolvedValue({})
-      expect(await getLifiTalismanFee({})).toBe(LIFI_TALISMAN_FEE)
+      expect(await getLifiTalismanFee({}, getSwapsConfig)).toBe(LIFI_TALISMAN_FEE)
     })
 
     it("returns custom fee when configured for toAsset", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-b": 0.005 },
       })
-      expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(0.005)
+      expect(
+        await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" }, getSwapsConfig)
+      ).toBe(0.005)
     })
 
     it("returns custom fee when configured for fromAsset only", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-a": 0.003 },
       })
-      expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(0.003)
+      expect(
+        await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" }, getSwapsConfig)
+      ).toBe(0.003)
     })
 
     it("returns 0 when custom fee is explicitly 0", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "token-b": 0 },
       })
-      expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(0)
+      expect(
+        await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" }, getSwapsConfig)
+      ).toBe(0)
     })
 
     it("returns default fee when no matching tokens in custom config", async () => {
       mockRemoteConfigGet.mockResolvedValue({
         lifiCustomFeeTokens: { "other-token": 0.01 },
       })
-      expect(await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" })).toBe(
-        LIFI_TALISMAN_FEE
-      )
+      expect(
+        await getLifiTalismanFee({ fromAssetId: "token-a", toAssetId: "token-b" }, getSwapsConfig)
+      ).toBe(LIFI_TALISMAN_FEE)
     })
   })
 })

@@ -1,4 +1,6 @@
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import type { SwapsConfig } from "@core/domains/swaps/env"
+
+export type GetSwapsConfig = () => Promise<SwapsConfig>
 
 // === StealthEX fee logic ===
 
@@ -49,22 +51,28 @@ export const SIMPLESWAP_TALISMAN_FEE_DISCOUNTED = 0.004
 
 export type SimpleSwapRouteProps = { currencyFrom: string; currencyTo: string }
 
-export const isSimpleSwapDiscountedRoute = async ({
-  currencyFrom,
-  currencyTo,
-}: SimpleSwapRouteProps): Promise<boolean> => {
-  const { simpleswapDiscountedCurrencies: discounted = [] } = await remoteConfigStore.get("swaps")
+export const isSimpleSwapDiscountedRoute = async (
+  { currencyFrom, currencyTo }: SimpleSwapRouteProps,
+  getSwapsConfig: GetSwapsConfig
+): Promise<boolean> => {
+  const { simpleswapDiscountedCurrencies: discounted = [] } = await getSwapsConfig()
   return discounted.includes(currencyFrom) || discounted.includes(currencyTo)
 }
 
-export const getSimpleSwapTalismanFee = async (route: SimpleSwapRouteProps): Promise<number> =>
-  (await isSimpleSwapDiscountedRoute(route))
+export const getSimpleSwapTalismanFee = async (
+  route: SimpleSwapRouteProps,
+  getSwapsConfig: GetSwapsConfig
+): Promise<number> =>
+  (await isSimpleSwapDiscountedRoute(route, getSwapsConfig))
     ? SIMPLESWAP_TALISMAN_FEE_DISCOUNTED
     : SIMPLESWAP_TALISMAN_FEE
 
-export const getSimpleSwapApiKey = async (route: SimpleSwapRouteProps): Promise<string> => {
-  const swaps = await remoteConfigStore.get("swaps")
-  return (await isSimpleSwapDiscountedRoute(route))
+export const getSimpleSwapApiKey = async (
+  route: SimpleSwapRouteProps,
+  getSwapsConfig: GetSwapsConfig
+): Promise<string> => {
+  const swaps = await getSwapsConfig()
+  return (await isSimpleSwapDiscountedRoute(route, getSwapsConfig))
     ? (swaps.simpleswapApiKeyDiscounted ?? "")
     : (swaps.simpleswapApiKey ?? "")
 }
@@ -79,11 +87,11 @@ export type LifiRouteProps = {
   toAssetId?: string
 }
 
-export const getLifiCustomFeeForRoute = async ({
-  fromAssetId,
-  toAssetId,
-}: LifiRouteProps): Promise<number | undefined> => {
-  const lifiCustomFeeTokens = (await remoteConfigStore.get("swaps"))?.lifiCustomFeeTokens ?? {}
+export const getLifiCustomFeeForRoute = async (
+  { fromAssetId, toAssetId }: LifiRouteProps,
+  getSwapsConfig: GetSwapsConfig
+): Promise<number | undefined> => {
+  const lifiCustomFeeTokens = (await getSwapsConfig())?.lifiCustomFeeTokens ?? {}
 
   // prefer toAsset fee
   const toFee = toAssetId && lifiCustomFeeTokens[toAssetId]
@@ -97,8 +105,11 @@ export const getLifiCustomFeeForRoute = async ({
   return undefined
 }
 
-export const getLifiTalismanFee = async (route: LifiRouteProps): Promise<number> => {
-  const customFee = await getLifiCustomFeeForRoute(route)
+export const getLifiTalismanFee = async (
+  route: LifiRouteProps,
+  getSwapsConfig: GetSwapsConfig
+): Promise<number> => {
+  const customFee = await getLifiCustomFeeForRoute(route, getSwapsConfig)
   if (customFee !== undefined) return customFee
   return LIFI_TALISMAN_FEE
 }

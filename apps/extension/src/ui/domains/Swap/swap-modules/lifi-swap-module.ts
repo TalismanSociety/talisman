@@ -659,7 +659,9 @@ const quoteRoutes = async (
   if (!fromTokenId || !toTokenId || signal?.aborted) return null
 
   const talismanFee = request.chargesTalismanFee
-    ? await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
+    ? await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId }, () =>
+        remoteConfigStore.get("swaps")
+      )
     : null
   const routes = await getRoutes(params, slippage, talismanFee ?? 0, request, signal)
   if (!routes || signal?.aborted) return null
