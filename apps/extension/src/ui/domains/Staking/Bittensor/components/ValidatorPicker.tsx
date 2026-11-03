@@ -18,6 +18,7 @@ import { cn } from "@ui/util/cn"
 import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { BondOption as BondOptionType } from "../hooks/types"
+import { formatValidatorApy } from "../utils/formatValidatorApy"
 import type { ValidatorSortValue } from "../utils/validatorSorting"
 import { BasketHoldingsStat, BasketHoldingsViewAllModal } from "./BasketHoldingsStat"
 import { BittensorHotkeyAvatar } from "./BittensorHotkeyAvatar"
@@ -240,9 +241,7 @@ const ValidatorRow: FC<{
             </div>
           </div>
           <div className={cn("shrink-0", isLoading && "animate-pulse")}>
-            {option.validatorYield?.thirty_day_apy
-              ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
-              : t("N/A")}
+            {formatValidatorApy(option.validatorYield?.thirty_day_apy) ?? t("N/A")}
           </div>
         </div>
         {/* metagraph entries have no registry stats: stakers/subnets would be fake zeros */}
