@@ -258,7 +258,10 @@ const RateDropLeg = ({ plan }: { plan: SwapPlan }) => {
 }
 
 describe("usePlanLegSigning", () => {
-  beforeEach(() => lifiBuildLeg.mockImplementation(async () => lifiBuilt()))
+  beforeEach(() => {
+    lifiBuildLeg.mockClear()
+    lifiBuildLeg.mockImplementation(async () => lifiBuilt())
+  })
 
   it("shows a processing button until it knows what the user signs", () => {
     ethGetTransactionsCount.mockReturnValue(new Promise(() => {}))
@@ -482,6 +485,49 @@ describe("usePlanLegSigning", () => {
       payload: { to: SPENDER, nonce: 9 },
       txInfo: { plan: { id: PLAN_ID, leg: 1 } },
     })
+  })
+
+  it("builds the leg once after its approval mined, so the leg on screen is the one the user signs", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    client.waitForTransactionReceipt.mockResolvedValue({ blockNumber: 100n, status: "success" })
+    renderSign(LIFI_PLAN)
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+
+    client.allowance.mockResolvedValue(BigInt(LEG1.quote.inputAmount))
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+
+    expect(lifiBuildLeg).toHaveBeenCalledTimes(1)
+  })
+
+  it("prepares the leg afresh when its screen opens again, never on the nonce it had before", async () => {
+    const queryClient = new QueryClient()
+    const open = () =>
+      render(
+        <QueryClientProvider client={queryClient}>
+          <WaitingLeg plan={LIFI_PLAN} />
+        </QueryClientProvider>
+      )
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    const first = open()
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+    )
+    first.unmount()
+
+    ethGetTransactionsCount.mockResolvedValue(9)
+    submitted.mockClear()
+    open()
+
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
+    )
+    expect(submitted.mock.calls.map(([tx]) => tx.payload.nonce)).not.toContain(8)
   })
 
   it("keeps the approval sent until the leg after it is built, so the leg never opens early", async () => {

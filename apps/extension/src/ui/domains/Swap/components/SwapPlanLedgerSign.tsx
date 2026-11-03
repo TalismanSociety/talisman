@@ -12,7 +12,7 @@ import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { withPricing } from "@ui/domains/Ethereum/withPricing"
 import type { TxSubmitButtonTransactionEth } from "@ui/domains/Sign/TxSubmitButton/types"
 import { getToken$ } from "@ui/state/chaindata"
-import { type FC, useMemo, useState } from "react"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
 import type { Hex, PublicClient } from "viem"
@@ -140,7 +140,10 @@ const buildOnScreenLegTransaction = async (
  * The signed bytes go to the background, which admits them against the leg's bound before sending.
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
+ * A build lives only as long as its screen: opening the screen again builds afresh.
  */
+const ON_SCREEN_LEG_QUERY = "swap-plan-on-screen-leg"
+
 const onScreenLegQuery = (
   plan: SwapPlan | null | undefined,
   index: number | null,
@@ -148,7 +151,7 @@ const onScreenLegQuery = (
 ) =>
   queryOptions({
     queryKey: [
-      "swap-plan-on-screen-leg",
+      ON_SCREEN_LEG_QUERY,
       plan?.id,
       index,
       plan?.updatedAt,
@@ -158,6 +161,7 @@ const onScreenLegQuery = (
     queryFn:
       plan && index !== null ? () => buildOnScreenLegTransaction(plan, index, mined) : skipToken,
     staleTime: Infinity,
+    refetchOnWindowFocus: "always",
     retry: false,
   })
 
@@ -199,6 +203,11 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   const queryClient = useQueryClient()
   const [minedApproval, setMinedApproval] = useState<LegNote<MinedApproval>>()
   const request = useQuery(onScreenLegQuery(plan, index, noteFor(minedApproval, index)))
+  const planId = plan?.id
+  useEffect(
+    () => () => queryClient.removeQueries({ queryKey: [ON_SCREEN_LEG_QUERY, planId] }),
+    [planId, queryClient]
+  )
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
