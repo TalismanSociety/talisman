@@ -4,7 +4,6 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { assertDepositAmountWithinInput } from "@core/domains/swaps/exports"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
 import type {
@@ -17,18 +16,16 @@ import type {
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
-import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
 import {
   type ExchangeParams,
   getTokenIdForSwappableAsset,
+  type PageSwapEnv,
+  type PageSwapModule,
   platformFromTokenId,
   type SwapBuildLegParams,
   type SwapExchange,
-  type SwapModule,
   type SwappableAssetBaseType,
 } from "./common.swap-module"
 import {
@@ -44,20 +41,11 @@ const PROTOCOL: SupportedSwapProtocol = "simpleswap"
 const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 
-type RouteProps = { currencyFrom: string; currencyTo: string }
-const getTalismanFee = (route: RouteProps) =>
-  getSimpleSwapTalismanFee(route, () => remoteConfigStore.get("swaps"))
-
 const LOGO = simpleswapLogo
 
 type SimpleSwapAssetContext = {
   symbol: string
 }
-
-const simpleSwapSdk = createSimpleSwapApi({
-  fetch: (...args) => fetch(...args),
-  getSwapsConfig: () => remoteConfigStore.get("swaps"),
-})
 
 // --- Internal asset type for SimpleSwap (not exposed) ---
 type SimpleswapInternalAsset = SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }> & {
@@ -73,9 +61,12 @@ const resolveAsset = (tokenId: string): SimpleswapInternalAsset | undefined =>
 // --- Cached assets (promise-based to deduplicate concurrent calls) ---
 let cachedAssetsPromise: Promise<SimpleswapInternalAsset[]> | null = null
 
-const getSimpleswapAssets = async (_signal: AbortSignal): Promise<SimpleswapInternalAsset[]> => {
+const getSimpleswapAssets = async (
+  env: PageSwapEnv,
+  _signal: AbortSignal
+): Promise<SimpleswapInternalAsset[]> => {
   if (!cachedAssetsPromise) {
-    cachedAssetsPromise = fetchSimpleswapAssets().catch((err) => {
+    cachedAssetsPromise = fetchSimpleswapAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
       throw err
     })
@@ -83,13 +74,14 @@ const getSimpleswapAssets = async (_signal: AbortSignal): Promise<SimpleswapInte
   return cachedAssetsPromise
 }
 
-const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
+const fetchSimpleswapAssets = async (env: PageSwapEnv): Promise<SimpleswapInternalAsset[]> => {
+  const simpleSwapSdk = createSimpleSwapApi(env)
   const [allCurrencies, { simpleswap: mappings }, knownEvmNetworks, knownTokens] =
     await Promise.all([
       simpleSwapSdk.getAllCurrencies(),
-      remoteConfigStore.get("swaps"),
-      firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
-      firstValueFrom(getTokensMap$()),
+      env.getSwapsConfig(),
+      env.getNetworksMap("ethereum"),
+      env.getTokensMap(),
     ])
   const { networks, tokens } = mappings
 
@@ -164,27 +156,31 @@ const fetchSimpleswapAssets = async (): Promise<SimpleswapInternalAsset[]> => {
 
 const pairKeyFromPair = (pair: string) => pair.toLowerCase()
 
-const getPairs = async (fromTokenId: string | null) => {
+const getPairs = async (env: PageSwapEnv, fromTokenId: string | null) => {
   const fromAsset = fromTokenId ? resolveAsset(fromTokenId) : null
   const { symbol } = fromAsset?.context?.simpleswap ?? {}
   if (!symbol) return [] // not supported
 
-  const pairs = await simpleSwapSdk.getPairs({ symbol, fixed: false })
+  const pairs = await createSimpleSwapApi(env).getPairs({ symbol, fixed: false })
   if (!pairs || !Array.isArray(pairs)) return []
 
   return pairs
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
-  const assets = await getSimpleswapAssets(signal)
+const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+  const assets = await getSimpleswapAssets(env, signal)
   return assets.map((a) => a.id)
 }
 
-const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
-  const allAssets = await getSimpleswapAssets(signal)
+const getToAssets = async (
+  fromTokenId: string | null,
+  env: PageSwapEnv,
+  signal: AbortSignal
+): Promise<string[]> => {
+  const allAssets = await getSimpleswapAssets(env, signal)
   if (!fromTokenId) return allAssets.map((a) => a.id)
 
-  const pairs = await getPairs(fromTokenId)
+  const pairs = await getPairs(env, fromTokenId)
   if (!pairs || !Array.isArray(pairs)) return []
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
@@ -195,7 +191,11 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
   return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
-const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
+const getQuote = async (
+  params: QuoteParams,
+  env: PageSwapEnv,
+  _signal: AbortSignal
+): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
@@ -208,6 +208,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
 
   const fromAmountHuman = planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"
 
+  const simpleSwapSdk = createSimpleSwapApi(env)
   const range = await simpleSwapSdk.getRange({
     currency_from: currencyFrom,
     currency_to: currencyTo,
@@ -221,7 +222,10 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
     currencyTo,
     fixed: false,
   })
-  const talismanFee = await getTalismanFee({ currencyFrom, currencyTo })
+  const talismanFee = await getSimpleSwapTalismanFee(
+    { currencyFrom, currencyTo },
+    env.getSwapsConfig
+  )
 
   // swaps take about 5mins according to their faq: https://simpleswap.io/faq#crypto-to-crypto-exchanges--how-long-does-it-take-to-exchange-coins
   const quote = (outputAmount: bigint, fees: QuoteFee[], error?: string) =>
@@ -279,14 +283,14 @@ export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
 /** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type SimpleswapExchange = Exchange
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => {
+const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
     const fromAsset = resolveAsset(fromTokenId)
     const toAsset = resolveAsset(toTokenId)
 
-    const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
+    const substrateChains = await env.getNetworks("polkadot")
     const formatAddress = (address: string | null, asset: SimpleswapInternalAsset | undefined) => {
       if (!address) return address
       if (asset?.platform !== "polkadot") return address
@@ -301,7 +305,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
     if (!fromAsset) throw new Error("Missing from asset")
     if (!toAsset) throw new Error("Missing to asset")
 
-    const allAccounts = await firstValueFrom(accounts$)
+    const allAccounts = await env.getAccounts()
 
     const formattedFromAddress = formatAddress(fromAddress, fromAsset)
     const formattedToAddress = formatAddress(toAddress, toAsset)
@@ -313,7 +317,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
     if (!currency_from) throw new Error("Missing currency from")
     if (!currency_to) throw new Error("Missing currency to")
 
-    const allNetworks = await firstValueFrom(getNetworks$())
+    const allNetworks = await env.getNetworks()
 
     // validate from address for the source chain
     const fromAccount = allAccounts.find((account) =>
@@ -345,7 +349,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange> => 
       throw new Error(`Cannot swap to ${toAsset.chainId} chain with address: ${formattedToAddress}`)
     }
 
-    const exchange = await simpleSwapSdk.createExchange({
+    const exchange = await createSimpleSwapApi(env).createExchange({
       fixed: false,
       address_to: formattedToAddress,
       amount: Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0"),
@@ -444,7 +448,7 @@ const buildLeg = async ({
   }
 }
 
-export const simpleswapSwapModule: SwapModule = {
+export const simpleswapSwapModule: PageSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: getFromAssets,
