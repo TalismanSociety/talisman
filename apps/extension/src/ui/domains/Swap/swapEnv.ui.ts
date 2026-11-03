@@ -24,7 +24,12 @@ import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { firstValueFrom } from "rxjs"
 
 import { getSwapSlippageDecimal } from "./hooks/useSwapSlippage"
-import type { PageSwapEnv, SwapModule } from "./swap-modules/common.swap-module"
+import type {
+  ExchangeParams,
+  PageSwapEnv,
+  PageSwapModule,
+  SwapModule,
+} from "./swap-modules/common.swap-module"
 import { findEvmPublicClient, getEvmPublicClient } from "./swap-modules/evm-network"
 
 const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
@@ -78,4 +83,18 @@ export const withSwapEnv = (module: BackgroundSwapModule, env: SwapEnv): SwapMod
   ...module,
   getQuote: (params, signal) => module.getQuote(params, env, signal),
   buildLeg: (params) => module.buildLeg(params, env),
+})
+
+export const withPageSwapEnv = (
+  { getFromAssets, getToAssets, getQuote, createExchange, buildLeg, ...module }: PageSwapModule,
+  env: PageSwapEnv
+): SwapModule => ({
+  ...module,
+  getFromAssets: (signal) => getFromAssets(env, signal),
+  getToAssets: (fromTokenId, signal) => getToAssets(fromTokenId, env, signal),
+  getQuote: (params, signal) => getQuote(params, env, signal),
+  ...(createExchange && {
+    createExchange: (params: ExchangeParams) => createExchange(params, env),
+  }),
+  buildLeg: (params) => buildLeg(params, env),
 })

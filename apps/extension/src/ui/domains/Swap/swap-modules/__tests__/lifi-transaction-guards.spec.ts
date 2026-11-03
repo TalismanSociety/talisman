@@ -89,7 +89,9 @@ vi.mock("@ui/state/chaindata", () => ({
 const logError = vi.spyOn(log, "error").mockImplementation(() => {})
 
 const lifiSdk = await import("@lifi/sdk")
-const { lifiSwapModule } = await import("../lifi-swap-module")
+const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
+const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
+const lifiSwapModule = withPageSwapEnv(lifiPageModule, uiSwapEnv)
 const { quoteFromLegs } = await import("@core/domains/swaps/helpers")
 const { confirmSwap } = await import("./confirmSwap")
 
