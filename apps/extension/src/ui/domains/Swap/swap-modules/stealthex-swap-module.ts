@@ -227,7 +227,7 @@ const getToAssets = async (
 
 const getQuote = async (
   params: QuoteParams,
-  _env: PageSwapEnv,
+  env: PageSwapEnv,
   _signal: AbortSignal
 ): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
@@ -257,7 +257,7 @@ const getQuote = async (
       additional_fee_percent,
     })
 
-    const gasFee = fromAddress ? await estimateDepositGas(fromAsset, fromAddress) : null
+    const gasFee = fromAddress ? await estimateDepositGas(env, fromAsset, fromAddress) : null
     // relative fee, multiply by fromAmount to get planck fee
     const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
     // add talisman fee
@@ -407,12 +407,10 @@ const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise
   }
 }
 
-const buildLeg = async ({
-  leg,
-  input,
-  context,
-  exchange,
-}: SwapBuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async (
+  { leg, input, context, exchange }: SwapBuildLegParams,
+  env: PageSwapEnv
+): Promise<BuiltLeg> => {
   const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
@@ -433,7 +431,7 @@ const buildLeg = async ({
   }
 
   return {
-    transaction: await buildDepositTransaction({
+    transaction: await buildDepositTransaction(env, {
       fromAsset,
       fromAddress: leg.signer,
       deposit,

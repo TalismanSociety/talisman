@@ -257,7 +257,7 @@ const getQuote = async (
   if (!output || typeof output !== "string")
     return output && typeof output !== "string" ? quote(0n, [], output.description) : null
 
-  const gasFee = fromAddress ? await estimateDepositGas(fromAsset, fromAddress) : null
+  const gasFee = fromAddress ? await estimateDepositGas(env, fromAsset, fromAddress) : null
   // add talisman fee
   const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
     amount: BigNumber(fromAmount.toString())
@@ -402,12 +402,10 @@ const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise
   }
 }
 
-const buildLeg = async ({
-  leg,
-  input,
-  context,
-  exchange,
-}: SwapBuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async (
+  { leg, input, context, exchange }: SwapBuildLegParams,
+  env: PageSwapEnv
+): Promise<BuiltLeg> => {
   const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
@@ -428,7 +426,7 @@ const buildLeg = async ({
   }
 
   return {
-    transaction: await buildDepositTransaction({
+    transaction: await buildDepositTransaction(env, {
       fromAsset,
       fromAddress: leg.signer,
       deposit,
