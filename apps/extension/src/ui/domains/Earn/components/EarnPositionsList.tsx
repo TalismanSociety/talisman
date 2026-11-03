@@ -19,9 +19,10 @@ import { usePortfolioGlobalData } from "@ui/state/portfolio"
 import { cn } from "@ui/util/cn"
 import { IS_POPUP } from "@ui/util/constants"
 import { toPairs } from "lodash-es"
-import { type FC, Fragment, useCallback, useMemo, useState } from "react"
+import { type FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useCollapsedEarnGroups } from "../hooks/useCollapsedEarnGroups"
 import type { EarnPosition, EarnPositionDisplayToken } from "../hooks/useEarnPositions"
 import { useEarnPositions } from "../hooks/useEarnPositions"
 import { AccountDisplay } from "../shared/AccountDisplay"
@@ -401,16 +402,7 @@ export const EarnPositionsList: FC<{
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set())
-
-  const toggleGroup = useCallback((key: string) => {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }, [])
+  const { collapsedGroups, toggleGroup, setCollapsedGroups } = useCollapsedEarnGroups()
 
   const filteredPositions = useMemo(() => {
     if (!networkFilter) return positions ?? []
@@ -517,12 +509,8 @@ export const EarnPositionsList: FC<{
   )
 
   const toggleAll = useCallback(() => {
-    if (allCollapsed) {
-      setCollapsedGroups(new Set())
-    } else {
-      setCollapsedGroups(new Set(allGroupKeys))
-    }
-  }, [allCollapsed, allGroupKeys])
+    setCollapsedGroups(allCollapsed ? [] : allGroupKeys)
+  }, [allCollapsed, allGroupKeys, setCollapsedGroups])
 
   const totalDefiAmountUsd = useMemo(
     () => deduplicatedPositions.reduce((sum, pos) => sum + pos.totalAmountUsd, 0),
