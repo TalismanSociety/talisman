@@ -18,7 +18,7 @@ import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { getIntermediateCandidates } from "./swap-services/intermediateCandidates"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
-import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
+import { uiSwapEnv, withPageSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -32,7 +32,7 @@ import {
 export const swapModules = [
   simpleswapSwapModule,
   stealthexSwapModule,
-  lifiSwapModule,
+  withPageSwapEnv(lifiSwapModule, uiSwapEnv),
   ...Object.values(BACKGROUND_SWAP_MODULES).map((module) => withSwapEnv(module, uiSwapEnv)),
 ]
 

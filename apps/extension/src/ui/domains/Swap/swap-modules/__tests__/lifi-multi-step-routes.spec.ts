@@ -279,7 +279,9 @@ vi.mock("@ui/state/chaindata", () => ({
   getTokensMap$: vi.fn(() => of(tokens)),
 }))
 
-const { lifiSwapModule } = await import("../lifi-swap-module")
+const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
+const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
+const lifiSwapModule = withPageSwapEnv(lifiPageModule, uiSwapEnv)
 
 const signal = new AbortController().signal
 
@@ -627,7 +629,7 @@ describe("LI.FI plan leg build", () => {
       {
         quoted: usdtToBnb,
         toTokenId: "56:evm-native",
-        module: freshPage,
+        module: withPageSwapEnv(freshPage, uiSwapEnv),
       }
     )
 
@@ -657,7 +659,7 @@ describe("LI.FI plan leg build", () => {
     }))
     const freshPage = async () => {
       vi.resetModules()
-      return (await import("../lifi-swap-module")).lifiSwapModule
+      return withPageSwapEnv((await import("../lifi-swap-module")).lifiSwapModule, uiSwapEnv)
     }
 
     const ethToArbParams: QuoteParams = {

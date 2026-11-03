@@ -79,6 +79,26 @@ export type SwapModule = {
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
 
+/** A swap module that reads the pages through the env it is given on each call */
+export type PageSwapModule = Omit<
+  SwapModule,
+  "getFromAssets" | "getToAssets" | "getQuote" | "createExchange" | "buildLeg"
+> & {
+  getFromAssets: (env: PageSwapEnv, signal: AbortSignal) => Promise<TokenId[]>
+  getToAssets: (
+    fromTokenId: TokenId | null,
+    env: PageSwapEnv,
+    signal: AbortSignal
+  ) => Promise<TokenId[]>
+  getQuote: (
+    params: QuoteParams,
+    env: PageSwapEnv,
+    signal: AbortSignal
+  ) => Promise<BaseQuote | BaseQuote[] | null>
+  createExchange?: (params: ExchangeParams, env: PageSwapEnv) => Promise<SwapExchange>
+  buildLeg: (params: SwapBuildLegParams, env: PageSwapEnv) => Promise<BuiltLeg>
+}
+
 // helpers — module-internal use only
 
 type SwapChainType = "substrate" | "evm" | "solana"

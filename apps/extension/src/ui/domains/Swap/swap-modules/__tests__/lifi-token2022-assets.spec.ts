@@ -83,7 +83,9 @@ vi.mock("@ui/state/chaindata", () => ({
   ),
 }))
 
-const { lifiSwapModule } = await import("../lifi-swap-module")
+const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
+const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
+const lifiSwapModule = withPageSwapEnv(lifiPageModule, uiSwapEnv)
 
 const makeRoute = (): Route =>
   ({

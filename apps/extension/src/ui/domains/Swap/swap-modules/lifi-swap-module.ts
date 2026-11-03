@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import {
   assertNativeValueWithinInput,
   prepareTransactionRequestWithGasCheck,
@@ -43,13 +42,13 @@ import {
   transactionFromBytes,
 } from "@talismn/solana"
 import { isAbortError } from "@talismn/util"
-import { getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
-import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
-import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-module"
-import { findEvmPublicClient } from "./evm-network"
+import {
+  getTokenIdForSwappableAsset,
+  type PageSwapEnv,
+  type PageSwapModule,
+} from "./common.swap-module"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 import { defaultLifiApi as api, solanaTransactionBytes } from "./lifi-api"
 
@@ -103,14 +102,14 @@ const getKnownSolanaTokenId = (
   )
 }
 
-const getLifiSolanaChainId = async () => {
-  const { lifi } = await remoteConfigStore.get("swaps")
+const getLifiSolanaChainId = async (env: PageSwapEnv) => {
+  const { lifi } = await env.getSwapsConfig()
   return lifi.solanaChainId
 }
 
 /** Convert a Talisman chain ID to a LI.FI numeric chain ID. */
-const toLifiChainId = async (chainId: string | number): Promise<number> => {
-  if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId()
+const toLifiChainId = async (env: PageSwapEnv, chainId: string | number): Promise<number> => {
+  if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId(env)
   return +chainId
 }
 
@@ -120,10 +119,13 @@ const evmTokenIdOf = (token: { address: string; chainId: number }): TokenId =>
     : evmErc20TokenId(token.chainId.toString(), token.address as `0x${string}`)
 
 /** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
-const feeTokenId = async (token: { address: string; chainId: number }): Promise<string> => {
-  const solanaChainId = await getLifiSolanaChainId()
+const feeTokenId = async (
+  env: PageSwapEnv,
+  token: { address: string; chainId: number }
+): Promise<string> => {
+  const solanaChainId = await getLifiSolanaChainId(env)
   if (token.chainId === solanaChainId) {
-    const knownSolTokens = await firstValueFrom(getTokensMap$({ platform: "solana" }))
+    const knownSolTokens = await env.getTokensMap("solana")
     return getKnownSolanaTokenId(token.address, knownSolTokens)
   }
   return evmTokenIdOf(token)
@@ -167,7 +169,10 @@ const lifiAssetFromErc20 = (token: EvmErc20Token): LifiInternalAsset => ({
 
 type SolToken = SolSplToken | SolToken2022Token
 
-const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset> => ({
+const lifiAssetFromSolToken = async (
+  env: PageSwapEnv,
+  token: SolToken
+): Promise<LifiInternalAsset> => ({
   tokenId: token.id,
   chainId: SOLANA_NETWORK_ID,
   contractAddress: token.mintAddress,
@@ -175,7 +180,7 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
   symbol: token.symbol,
   lifiToken: {
     address: token.mintAddress,
-    chainId: await getLifiSolanaChainId(),
+    chainId: await getLifiSolanaChainId(env),
     decimals: token.decimals,
     symbol: token.symbol,
     name: token.name ?? token.symbol,
@@ -185,19 +190,22 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
 })
 
 /** a native token resolves only through LI.FI's own list, which a page resuming a plan has not loaded */
-const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset | null> => {
-  await getLifiAssets()
+const resolveOrBuildAsset = async (
+  env: PageSwapEnv,
+  tokenId: string
+): Promise<LifiInternalAsset | null> => {
+  await getLifiAssets(env)
   const cached = resolveAsset(tokenId)
   if (cached) return cached
 
-  const token = await firstValueFrom(getToken$(tokenId))
+  const token = await env.getToken(tokenId)
   if (token?.type === "evm-erc20") {
     const asset = lifiAssetFromErc20(token as EvmErc20Token)
     assetsByTokenId.set(tokenId, asset)
     return asset
   }
   if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
-    const asset = await lifiAssetFromSolToken(token as SolToken)
+    const asset = await lifiAssetFromSolToken(env, token as SolToken)
     assetsByTokenId.set(tokenId, asset)
     return asset
   }
@@ -205,9 +213,12 @@ const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset |
   return null
 }
 
-const getLifiAssets = async (_signal?: AbortSignal): Promise<LifiInternalAsset[]> => {
+const getLifiAssets = async (
+  env: PageSwapEnv,
+  _signal?: AbortSignal
+): Promise<LifiInternalAsset[]> => {
   if (!cachedAssetsPromise) {
-    cachedAssetsPromise = fetchLifiAssets().catch((err) => {
+    cachedAssetsPromise = fetchLifiAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
       throw err
     })
@@ -215,12 +226,12 @@ const getLifiAssets = async (_signal?: AbortSignal): Promise<LifiInternalAsset[]
   return cachedAssetsPromise
 }
 
-const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
+const fetchLifiAssets = async (env: PageSwapEnv): Promise<LifiInternalAsset[]> => {
   const [allSdkTokens, swapsConfig] = await Promise.all([
     api
       .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
       .then((r) => r?.tokens),
-    remoteConfigStore.get("swaps"),
+    env.getSwapsConfig(),
   ])
   const solanaChainId = swapsConfig.lifi.solanaChainId
   const configuredLifiTokenIds = new Set(swapsConfig.lifiTalismanTokens ?? [])
@@ -240,12 +251,12 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
   }
 
   const [knownEvmNetworks] = await Promise.all([
-    firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
-    firstValueFrom(getNetworksMapById$({ platform: "solana" })),
+    env.getNetworksMap("ethereum"),
+    env.getNetworksMap("solana"),
   ])
   const [knownEvmTokens, knownSolTokens] = await Promise.all([
-    firstValueFrom(getTokensMap$({ platform: "ethereum" })),
-    firstValueFrom(getTokensMap$({ platform: "solana" })),
+    env.getTokensMap("ethereum"),
+    env.getTokensMap("solana"),
   ])
   const knownTokens = { ...knownEvmTokens, ...knownSolTokens }
 
@@ -315,19 +326,19 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
 // Include all EVM ERC-20 and Solana SPL/Token2022 tokens on LI.FI-supported chains
 // in addition to the standard list. LI.FI can route tokens not in its default list
 // when there is on-chain liquidity, allowing users to swap RWA and other niche tokens.
-const getLifiAssetIds = async (signal: AbortSignal): Promise<string[]> => {
-  const assets = await getLifiAssets(signal)
+const getLifiAssetIds = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+  const assets = await getLifiAssets(env, signal)
   const ids = new Set(assets.map((a) => a.tokenId))
 
   const lifiChainIds = new Set(assets.map((a) => a.chainId))
 
-  const allEvmTokens = await firstValueFrom(getTokensMap$({ platform: "ethereum" }))
+  const allEvmTokens = await env.getTokensMap("ethereum")
   for (const token of Object.values(allEvmTokens)) {
     if (token.type === "evm-erc20" && lifiChainIds.has(token.networkId)) ids.add(token.id)
   }
 
   if (lifiChainIds.has(SOLANA_NETWORK_ID)) {
-    const allSolTokens = await firstValueFrom(getTokensMap$({ platform: "solana" }))
+    const allSolTokens = await env.getTokensMap("solana")
     for (const token of Object.values(allSolTokens)) {
       if (token.type === "sol-spl" || token.type === "sol-token2022") ids.add(token.id)
     }
@@ -336,10 +347,14 @@ const getLifiAssetIds = async (signal: AbortSignal): Promise<string[]> => {
   return [...ids]
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => getLifiAssetIds(signal)
+const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> =>
+  getLifiAssetIds(env, signal)
 
-const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Promise<string[]> =>
-  getLifiAssetIds(signal)
+const getToAssets = async (
+  _fromTokenId: string | null,
+  env: PageSwapEnv,
+  signal: AbortSignal
+): Promise<string[]> => getLifiAssetIds(env, signal)
 
 const sameAddress = (a: string | undefined, b: string | undefined) =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase()
@@ -403,6 +418,7 @@ const isUnbuildableStepError = (err: unknown) => {
 }
 
 const canRunRoute = async (
+  env: PageSwapEnv,
   route: lifiSdk.Route,
   params: QuoteParams,
   knownEvmNetworks: Record<string, unknown>,
@@ -411,11 +427,14 @@ const canRunRoute = async (
   if (!request.multiStep) return route.steps.length === 1
   const intermediates = intermediateTokenIds(route, params, knownEvmNetworks)
   if (!intermediates) return false
-  const assets = await Promise.all(intermediates.map(resolveOrBuildAsset))
+  const assets = await Promise.all(
+    intermediates.map((tokenId) => resolveOrBuildAsset(env, tokenId))
+  )
   return assets.every((asset) => asset !== null)
 }
 
 const getRoutes = async (
+  env: PageSwapEnv,
   params: QuoteParams,
   slippage: number,
   talismanFee: number,
@@ -430,12 +449,12 @@ const getRoutes = async (
     // For tokens not in LI.FI's default list, construct the asset
     // from chaindata so the contract address is passed directly to the SDK.
     const [fromAsset, toAsset] = await Promise.all([
-      resolveOrBuildAsset(fromTokenId),
-      resolveOrBuildAsset(toTokenId),
+      resolveOrBuildAsset(env, fromTokenId),
+      resolveOrBuildAsset(env, toTokenId),
     ])
     if (!fromAsset || !toAsset) return null
 
-    const solanaChainId = await getLifiSolanaChainId()
+    const solanaChainId = await getLifiSolanaChainId(env)
 
     const isSolanaFrom =
       fromAsset.chainId === SOLANA_NETWORK_ID || Number(fromAsset.chainId) === solanaChainId
@@ -447,7 +466,7 @@ const getRoutes = async (
     const effectiveToAddress =
       toAddress ?? (isSolanaTo ? SOLANA_PLACEHOLDER_ADDRESS : SWAP_PLACEHOLDER_ADDRESS)
 
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+    const knownEvmNetworks = await env.getNetworksMap("ethereum")
 
     if (fromAmount === 0n) return null
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
@@ -470,8 +489,8 @@ const getRoutes = async (
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
-        fromChainId: await toLifiChainId(fromAsset.chainId),
-        toChainId: await toLifiChainId(toAsset.chainId),
+        fromChainId: await toLifiChainId(env, fromAsset.chainId),
+        toChainId: await toLifiChainId(env, toAsset.chainId),
         fromAmount: fromAmount.toString(),
         fromTokenAddress,
         toTokenAddress,
@@ -481,7 +500,7 @@ const getRoutes = async (
     )
 
     const runnable = await Promise.all(
-      response.routes.map((route) => canRunRoute(route, params, knownEvmNetworks, request))
+      response.routes.map((route) => canRunRoute(env, route, params, knownEvmNetworks, request))
     )
     response.routes = response.routes.filter(
       (route, index) =>
@@ -533,12 +552,12 @@ const getAdditionalNativeFeeWei = (
     .reduce((total, fee) => total + BigInt(fee.amount), 0n)
 }
 
-const stepFees = async (step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
+const stepFees = async (env: PageSwapEnv, step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
   const fees: QuoteFee[] = await Promise.all(
     step.estimate.feeCosts?.map(async (fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
       name: fee.name,
-      tokenId: await feeTokenId(fee.token),
+      tokenId: await feeTokenId(env, fee.token),
       additional: !fee.included,
     })) ?? []
   )
@@ -547,7 +566,7 @@ const stepFees = async (step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
       amount: BigNumber(gas.amount).times(10 ** -gas.token.decimals),
       name: "Gas",
       gas: true,
-      tokenId: await feeTokenId(gas.token),
+      tokenId: await feeTokenId(env, gas.token),
     })
   }
   return fees
@@ -579,6 +598,7 @@ const stepRoute = (
 })
 
 const getRouteQuote = async (
+  env: PageSwapEnv,
   route: lifiSdk.Route,
   {
     fromTokenId,
@@ -605,7 +625,7 @@ const getRouteQuote = async (
       recipient,
       inputAmount: BigInt(step.action.fromAmount),
       outputAmount: BigInt(step.estimate.toAmountMin),
-      fees: await stepFees(step),
+      fees: await stepFees(env, step),
       timeInSec: step.estimate.executionDuration,
       data: stepRoute(route, step, index, fromAddress, recipient),
     }
@@ -623,7 +643,7 @@ const getRouteQuote = async (
     })
   const laterLegs = await Promise.all(laterSteps.map((step, index) => stepLeg(step, index + 1)))
 
-  const lifiSolanaChainId = await getLifiSolanaChainId()
+  const lifiSolanaChainId = await getLifiSolanaChainId(env)
   const isNativeGasToken = isSourceNativeToken(fromAsset, lifiSolanaChainId)
 
   const maxNativeTokenGasBuffer =
@@ -650,6 +670,7 @@ const getRouteQuote = async (
 }
 
 const quoteRoutes = async (
+  env: PageSwapEnv,
   params: QuoteParams,
   slippage: number,
   request: RouteRequest,
@@ -659,16 +680,14 @@ const quoteRoutes = async (
   if (!fromTokenId || !toTokenId || signal?.aborted) return null
 
   const talismanFee = request.chargesTalismanFee
-    ? await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId }, () =>
-        remoteConfigStore.get("swaps")
-      )
+    ? await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId }, env.getSwapsConfig)
     : null
-  const routes = await getRoutes(params, slippage, talismanFee ?? 0, request, signal)
+  const routes = await getRoutes(env, params, slippage, talismanFee ?? 0, request, signal)
   if (!routes || signal?.aborted) return null
 
   const quotes = await Promise.allSettled(
     routes.routes.map((route) =>
-      getRouteQuote(route, { ...params, fromTokenId, toTokenId }, talismanFee)
+      getRouteQuote(env, route, { ...params, fromTokenId, toTokenId }, talismanFee)
     )
   )
   if (signal?.aborted) return null
@@ -681,10 +700,15 @@ const quoteRoutes = async (
   return validQuotes.length > 0 ? validQuotes : null
 }
 
-const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> =>
+const getQuote = async (
+  params: QuoteParams,
+  env: PageSwapEnv,
+  signal: AbortSignal
+): Promise<BaseQuote[] | null> =>
   quoteRoutes(
+    env,
     params,
-    await getSwapSlippageDecimal(),
+    await env.getSlippageDecimal(),
     { multiStep: true, chargesTalismanFee: true },
     signal
   )
@@ -719,6 +743,7 @@ const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
 }
 
 const buildRouteTransaction = async (
+  env: PageSwapEnv,
   step: lifiSdk.LiFiStep,
   fromTokenId: TokenId,
   fromAddress: string,
@@ -735,7 +760,7 @@ const buildRouteTransaction = async (
 
   // Solana transaction handling — txRequest for Solana may omit chainId,
   // so detect via the step's fromChainId instead.
-  const lifiSolanaChainId = await getLifiSolanaChainId()
+  const lifiSolanaChainId = await getLifiSolanaChainId(env)
   const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
   if (isSolanaStep) {
     if (!txRequest.data) throw new Error("Missing Solana transaction data")
@@ -793,11 +818,11 @@ const buildRouteTransaction = async (
     additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
   })
 
-  const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+  const knownEvmNetworks = await env.getNetworksMap("ethereum")
   const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
   if (!evmNetwork) throw new Error("Unknown chain")
 
-  const publicClient = await findEvmPublicClient(evmNetwork.id)
+  const publicClient = await env.findEvmClient(evmNetwork.id)
   if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
   const transaction = await prepareTransactionRequestWithGasCheck(
@@ -837,7 +862,10 @@ const spenderOf = (route: lifiSdk.Route | undefined) =>
  * A step LI.FI cannot build sends the user back to the quotes while their funds have not moved. A later
  * leg's funds already sit in the intermediate token, so it falls through to the next fresh route.
  */
-const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Promise<BuiltLeg> => {
+const buildLeg = async (
+  { leg, input, context, slippage }: BuildLegParams,
+  env: PageSwapEnv
+): Promise<BuiltLeg> => {
   try {
     const quotedRoute = leg.data as LifiLegRoute | undefined
     const tool = quotedRoute?.steps[0]?.tool
@@ -848,6 +876,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
 
     const freshQuotes =
       (await quoteRoutes(
+        env,
         {
           fromTokenId: leg.fromTokenId,
           toTokenId: leg.toTokenId,
@@ -881,7 +910,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
 
       let built: Awaited<ReturnType<typeof buildRouteTransaction>>
       try {
-        built = await buildRouteTransaction(step, leg.fromTokenId, leg.signer, input, context)
+        built = await buildRouteTransaction(env, step, leg.fromTokenId, leg.signer, input, context)
       } catch (err) {
         if (!isUnbuildableStepError(err)) throw err
         unbuildableSteps.add(stepKey(step))
@@ -922,7 +951,7 @@ const buildLeg = async ({ leg, input, context, slippage }: BuildLegParams): Prom
   }
 }
 
-export const lifiSwapModule: SwapModule = {
+export const lifiSwapModule: PageSwapModule = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   supportsSlippageSetting: true,
