@@ -53,3 +53,9 @@ export const defaultLifiApi: LifiApi = {
   getRoutes: (params, options) => lifiSdk.getRoutes(lifiClient, params, options),
   getStepTransaction: (step, options) => lifiSdk.getStepTransaction(lifiClient, step, options),
 }
+
+// LI.FI may return Solana transactions as base64 or hex-encoded
+export const solanaTransactionBytes = (data: string) =>
+  data.startsWith("0x")
+    ? Buffer.from(data.slice(2), "hex")
+    : Uint8Array.from(atob(data), (c) => c.charCodeAt(0))
