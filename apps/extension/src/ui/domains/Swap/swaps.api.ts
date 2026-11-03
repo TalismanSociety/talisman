@@ -30,7 +30,7 @@ import {
 // ─── Constants ──────────────────────────────────────────────────────
 
 export const swapModules = [
-  simpleswapSwapModule,
+  withPageSwapEnv(simpleswapSwapModule, uiSwapEnv),
   withPageSwapEnv(stealthexSwapModule, uiSwapEnv),
   withPageSwapEnv(lifiSwapModule, uiSwapEnv),
   ...Object.values(BACKGROUND_SWAP_MODULES).map((module) => withSwapEnv(module, uiSwapEnv)),
