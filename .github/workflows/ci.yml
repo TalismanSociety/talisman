@@ -318,7 +318,6 @@ jobs:
             packages/*/package.json > "$RUNNER_TEMP/snapshots.txt"
           echo "has-snapshots=$([ -s "$RUNNER_TEMP/snapshots.txt" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - name: Build packages for npm publish
-        if: steps.snapshot.outputs.has-snapshots == 'true'
         run: pnpm build:packages
       - name: Publish snapshot packages
         if: steps.snapshot.outputs.has-snapshots == 'true'
@@ -326,7 +325,7 @@ jobs:
           mapfile -t FILTERS < <(sed 's/@[^@]*$//; s/^/--filter=/' "$RUNNER_TEMP/snapshots.txt")
           pnpm "${FILTERS[@]}" publish --no-git-checks --access public --tag "pr$PR_NUMBER"
       - name: Report published snapshot versions
-        if: always() && steps.snapshot.outputs.has-snapshots == 'true'
+        if: steps.snapshot.outputs.has-snapshots == 'true'
         run: |
           {
             echo "### 📦 Snapshot packages"
