@@ -1,5 +1,8 @@
 import { classifyError } from "@common/analytics/errorCategory"
-import { isAccountNameTaken, isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import {
+  isAccountNameAvailable,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
@@ -32,20 +35,19 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
   const { t } = useTranslation()
   const accounts = useAccounts("all")
 
-  const schema = useMemo(() => {
-    const otherAccounts = accounts.filter((account) => account.address !== contact.address)
-    return yup.object({
-      name: yup
-        .string()
-        .required(" ")
-        .test(
-          "is-available",
-          t("Name already in use"),
-          (value) => value === contact.name || !isAccountNameTaken(otherAccounts, value)
-        ),
-      genesisHash: yup.mixed<HexString>(),
-    })
-  }, [accounts, contact, t])
+  const schema = useMemo(
+    () =>
+      yup.object({
+        name: yup
+          .string()
+          .required(" ")
+          .test("is-available", t("Name already in use"), (value) =>
+            isAccountNameAvailable(accounts, value, contact)
+          ),
+        genesisHash: yup.mixed<HexString>(),
+      }),
+    [accounts, contact, t]
+  )
 
   const {
     register,

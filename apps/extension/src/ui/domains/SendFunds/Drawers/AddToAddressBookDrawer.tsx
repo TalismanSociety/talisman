@@ -1,5 +1,5 @@
 import { chainPlatformOf } from "@common/analytics/accounts"
-import { isAccountNameTaken } from "@core/domains/accounts/helpers"
+import { isAccountNameAvailable } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   detectAddressEncoding,
@@ -48,10 +48,8 @@ const AddToAddressBookDrawerForm: FC<{
           .string()
           .trim()
           .required(" ")
-          .test(
-            "is-available",
-            t("Name already in use"),
-            (value) => !isAccountNameTaken(accounts, value)
+          .test("is-available", t("Name already in use"), (value) =>
+            isAccountNameAvailable(accounts, value)
           ),
         limitToNetwork: yup.bool(),
       }),

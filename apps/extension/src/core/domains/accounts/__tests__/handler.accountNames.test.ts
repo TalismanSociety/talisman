@@ -77,6 +77,23 @@ describe("AccountsHandler account names", () => {
     expect(keyring.updateAccount).not.toHaveBeenCalled()
   })
 
+  it("renames an account to a free name or its own duplicate name", async () => {
+    await handler.handle(
+      "1",
+      "pri(accounts.rename)",
+      { address: CONTACT.address, name: "Carol" },
+      port
+    )
+    keyring.accounts = [ACCOUNT, { ...CONTACT, name: "Alice" }]
+    await handler.handle(
+      "1",
+      "pri(accounts.rename)",
+      { address: ACCOUNT.address, name: "Alice" },
+      port
+    )
+    expect(keyring.updateAccount).toHaveBeenCalledTimes(2)
+  })
+
   it("lets a contact keep its name", async () => {
     keyring.accounts = [ACCOUNT, { ...CONTACT, name: "Alice" }]
     await handler.handle("1", "pri(accounts.update.contact)", { ...CONTACT, name: "Alice" }, port)

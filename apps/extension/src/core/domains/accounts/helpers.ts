@@ -212,7 +212,17 @@ export const isAddressCompatibleWithNetwork = (network: Network, address: string
 
 const normaliseAccountName = (name: string) => name.trim().toLowerCase()
 
-export const isAccountNameTaken = (accounts: Pick<Account, "name">[], name: string) => {
+type NamedAccount = Pick<Account, "address" | "name">
+
+export const isAccountNameAvailable = (
+  accounts: NamedAccount[],
+  name: string,
+  current?: NamedAccount | null
+) => {
+  if (name === current?.name) return true
   const normalisedName = normaliseAccountName(name)
-  return accounts.some((account) => normaliseAccountName(account.name) === normalisedName)
+  return !accounts.some(
+    (account) =>
+      account.address !== current?.address && normaliseAccountName(account.name) === normalisedName
+  )
 }

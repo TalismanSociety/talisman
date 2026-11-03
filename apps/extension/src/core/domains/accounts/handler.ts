@@ -20,7 +20,7 @@ import { encodePjsKeyringPairJson } from "../keyring/pjsKeystore"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { isAccountNameTaken, sortAccounts } from "./helpers"
+import { isAccountNameAvailable, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { type AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import type {
@@ -43,20 +43,17 @@ import type {
 } from "./types"
 
 const assertContactNamesAvailable = async (options: RequestAddAccountExternal) => {
-  const accounts: Pick<Account, "name">[] = [...(await keyringStore.getAccounts())]
+  const accounts: Pick<Account, "address" | "name">[] = [...(await keyringStore.getAccounts())]
   for (const option of options) {
-    if (option.type === "contact" && isAccountNameTaken(accounts, option.name))
+    if (option.type === "contact" && !isAccountNameAvailable(accounts, option.name))
       throw new Error("Name already in use")
     accounts.push(option)
   }
 }
 
 const assertRenameAllowed = async (account: Account, name: string) => {
-  if (name === account.name) return
-  const otherAccounts = (await keyringStore.getAccounts()).filter(
-    (other) => other.address !== account.address
-  )
-  if (isAccountNameTaken(otherAccounts, name)) throw new Error("Name already in use")
+  if (!isAccountNameAvailable(await keyringStore.getAccounts(), name, account))
+    throw new Error("Name already in use")
 }
 
 export default class AccountsHandler extends ExtensionHandler {

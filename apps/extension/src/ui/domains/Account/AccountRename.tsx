@@ -1,4 +1,4 @@
-import { isAccountNameTaken } from "@core/domains/accounts/helpers"
+import { isAccountNameAvailable } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
@@ -25,21 +25,20 @@ export const AccountRename: FC<{
 
   const allAccounts = useAccounts("all")
 
-  const schema = useMemo(() => {
-    const otherAccounts = allAccounts.filter((a) => a.address !== address)
-    return yup
-      .object({
-        name: yup
-          .string()
-          .required(" ")
-          .test(
-            "is-available",
-            t("Name already in use"),
-            (value) => value === account?.name || !isAccountNameTaken(otherAccounts, value)
-          ),
-      })
-      .required()
-  }, [account?.name, address, allAccounts, t])
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          name: yup
+            .string()
+            .required(" ")
+            .test("is-available", t("Name already in use"), (value) =>
+              isAccountNameAvailable(allAccounts, value, account)
+            ),
+        })
+        .required(),
+    [account, allAccounts, t]
+  )
 
   const defaultValues = useMemo(
     () => ({
