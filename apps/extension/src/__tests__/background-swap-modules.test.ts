@@ -92,21 +92,21 @@ const PAGE_REALM = [
   join(UI, "state/"),
   join(UI, "api/"),
   join(UI, "util/gandalfFetch.ts"),
-  join(SRC, "core/domains/app/store.remoteConfig.ts"),
   join(SRC, "ui/domains/Swap/hooks/"),
+  join(SRC, "ui/domains/Swap/swapEnv.ui.ts"),
 ]
+const STORE = /\/core\/domains\/[^/]+\/store\.[^/]+\.ts$/
 
 const PAGE_ADAPTERS = new Set([
   join(SWAP_MODULES, "lifi-api.ts"),
   join(SWAP_MODULES, "stealthex-api.ts"),
   join(SWAP_MODULES, "simpleswap-api.ts"),
   join(SWAP_MODULES, "substrate-deposit.ts"),
-  join(SRC, "ui/domains/Swap/swapEnv.ui.ts"),
 ])
 
 const PAGE_RULES: ImportRules = {
   entryImports: RUNTIME_IMPORT,
-  isForbidden: (file) => PAGE_REALM.some((realm) => file.startsWith(realm)),
+  isForbidden: (file) => STORE.test(file) || PAGE_REALM.some((realm) => file.startsWith(realm)),
   isBoundary: (file) => PAGE_ADAPTERS.has(file),
 }
 
@@ -134,6 +134,14 @@ describe("page swap modules", () => {
     const offenders = PAGE_SWAP_MODULES.map(forbiddenChain(PAGE_RULES))
       .filter((chain) => chain !== null)
       .map((chain) => chain.join(" -> "))
+
+    expect(offenders).toEqual([])
+  })
+
+  it("have no dynamic import", () => {
+    const offenders = PAGE_SWAP_MODULES.filter((file) =>
+      DYNAMIC_IMPORT.test(readFileSync(file, "utf8"))
+    ).map((file) => relative(EXTENSION, file))
 
     expect(offenders).toEqual([])
   })
