@@ -49,7 +49,6 @@ export type SwapBuildLegParams = BuildLegParams & {
   exchange: SwapExchange | null
 }
 
-/** What a page swap module reads from the pages */
 export type PageSwapEnv = Omit<SwapEnv, "getToken"> & {
   getToken: (tokenId: TokenId | undefined) => Promise<Token | null>
   getTokensMap: <P extends NetworkPlatform>(
@@ -61,7 +60,6 @@ export type PageSwapEnv = Omit<SwapEnv, "getToken"> & {
   getNetworks: <P extends NetworkPlatform>(platform?: P) => Promise<NetworkOfPlatform<P>[]>
   getAccounts: () => Promise<Account[]>
   getSlippageDecimal: () => Promise<number>
-  /** undefined for unknown networks and networks without an evm-native token */
   findEvmClient: (networkId: NetworkId) => Promise<PublicClient | undefined>
   estimateSubstrateDepositFee: (
     fromAsset: DepositSwapAsset,
@@ -87,7 +85,6 @@ export type SwapModule = {
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
 
-/** A swap module that reads the pages through the env it is given on each call */
 export type PageSwapModule = Omit<
   SwapModule,
   "getFromAssets" | "getToAssets" | "getQuote" | "createExchange" | "buildLeg"
