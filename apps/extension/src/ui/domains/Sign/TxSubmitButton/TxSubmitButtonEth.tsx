@@ -40,7 +40,10 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
         cause,
       })
-      await invalidateNonceQueries(queryClient)
+      await invalidateNonceQueries(queryClient, {
+        address: tx.payload.from,
+        networkId: tx.networkId,
+      })
       onError?.(cause)
     },
     [onError, queryClient, tx, t]

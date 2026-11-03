@@ -68,8 +68,11 @@ describe("TxSubmitButtonEth", () => {
     ethSignAndSend.mockRejectedValueOnce(new Error("nonce too low: tx: 6 state: 7"))
     ethSignAndSend.mockResolvedValueOnce("0xhash")
     const onError = vi.fn()
+    const queryClient = new QueryClient()
+    const otherNetwork = ["useNonce", FROM, "1", undefined]
+    queryClient.setQueryData(otherNetwork, 42)
     render(
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={queryClient}>
         <SwapScreen readNonce={readNonce} onError={onError} />
       </QueryClientProvider>
     )
@@ -87,5 +90,6 @@ describe("TxSubmitButtonEth", () => {
 
     await waitFor(() => expect(ethSignAndSend).toHaveBeenCalledTimes(2))
     expect(ethSignAndSend.mock.calls.map(([, tx]) => tx.nonce)).toEqual([6, 7])
+    expect(queryClient.getQueryState(otherNetwork)?.isInvalidated).toBe(false)
   })
 })
