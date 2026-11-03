@@ -402,10 +402,11 @@ const intermediateTokenIds = (
  */
 const unbuildableSteps = new Set<string>()
 
-const stepKey = ({ tool, action }: lifiSdk.LiFiStep) =>
+const stepKey = ({ tool, includedSteps, action }: lifiSdk.LiFiStep) =>
   [
-    tool,
+    [tool, ...includedSteps.map((included) => included.tool)].join(">"),
     action.fromAddress,
+    action.fromAmount,
     action.fromChainId,
     action.fromToken.address,
     action.toChainId,

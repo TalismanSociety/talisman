@@ -660,33 +660,50 @@ describe("LI.FI plan leg build", () => {
       return (await import("../lifi-swap-module")).lifiSwapModule
     }
 
-    it("sends the user back to the quotes before any funds move, and quotes the route no more", async () => {
-      const module = await freshPage()
-      mockGetStepTransaction.mockRejectedValue(unbuildable())
+    const ethToArbParams: QuoteParams = {
+      fromTokenId: BASE_ETH_ID,
+      toTokenId: ARB_ID,
+      fromAmount: 20_000_000_000_000_000n,
+      fromAddress: ALICE,
+      toAddress: BOB,
+      input: "exact",
+    }
+    const routesAre = (...routes: Route[]) =>
       mockLifiGetRoutes.mockResolvedValue({
-        routes: [ethToArb()],
+        routes,
         unavailableRoutes: { failed: [], filteredOut: [] },
       })
-      const quoteParams: QuoteParams = {
-        fromTokenId: BASE_ETH_ID,
-        toTokenId: ARB_ID,
-        fromAmount: 20_000_000_000_000_000n,
-        fromAddress: ALICE,
-        toAddress: BOB,
-        input: "exact",
-      }
-      const quote = [(await module.getQuote(quoteParams, signal)) ?? []].flat()[0]
+    const failFirstLeg = async (module: typeof lifiSwapModule) => {
+      mockGetStepTransaction.mockRejectedValue(unbuildable())
+      routesAre(ethToArb())
+      const quote = [(await module.getQuote(ethToArbParams, signal)) ?? []].flat()[0]
+      return module.buildLeg({
+        leg: quote.legs[0],
+        input: 20_000_000_000_000_000n,
+        slippage: 0.005,
+        exchange: null,
+        context: context as never,
+      })
+    }
 
-      await expect(
-        module.buildLeg({
-          leg: quote.legs[0],
-          input: 20_000_000_000_000_000n,
-          slippage: 0.005,
-          exchange: null,
-          context: context as never,
-        })
-      ).rejects.toThrow(SwapRouteUnbuildableError)
-      expect(await module.getQuote(quoteParams, signal)).toBeNull()
+    it("sends the user back to the quotes before any funds move, and quotes the route no more", async () => {
+      const module = await freshPage()
+
+      await expect(failFirstLeg(module)).rejects.toThrow(SwapRouteUnbuildableError)
+      expect(await module.getQuote(ethToArbParams, signal)).toBeNull()
+    })
+
+    it("keeps quoting the same bridge through other inner steps", async () => {
+      const module = await freshPage()
+      await expect(failFirstLeg(module)).rejects.toThrow(SwapRouteUnbuildableError)
+
+      routesAre(
+        withStep(ethToArb(), 0, (s) => ({
+          ...s,
+          includedSteps: [{ tool: "composer" }, { tool: s.tool }] as LiFiStep["includedSteps"],
+        }))
+      )
+      expect(await module.getQuote(ethToArbParams, signal)).not.toBeNull()
     })
 
     it("builds a later leg through the next fresh route", async () => {
