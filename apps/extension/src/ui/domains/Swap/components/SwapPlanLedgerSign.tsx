@@ -157,6 +157,7 @@ const onScreenLegQuery = (
     ],
     queryFn:
       plan && index !== null ? () => buildOnScreenLegTransaction(plan, index, mined) : skipToken,
+    staleTime: Infinity,
     retry: false,
   })
 
