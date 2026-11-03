@@ -12,7 +12,7 @@ import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { withPricing } from "@ui/domains/Ethereum/withPricing"
 import type { TxSubmitButtonTransactionEth } from "@ui/domains/Sign/TxSubmitButton/types"
 import { getToken$ } from "@ui/state/chaindata"
-import { type FC, useEffect, useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { firstValueFrom } from "rxjs"
 import type { Hex, PublicClient } from "viem"
@@ -140,18 +140,19 @@ const buildOnScreenLegTransaction = async (
  * The signed bytes go to the background, which admits them against the leg's bound before sending.
  * Every sign attempt that ends rebuilds it, so a retry never reuses a nonce another transaction took,
  * and the allowance is read on every build, so an approval that mined is never asked for twice.
- * A build lives only as long as its screen: opening the screen again builds afresh.
+ * A build belongs to the screen that opened it: opening the screen again builds afresh, and
+ * nothing the closed screen still does can hand its build to the next one.
  */
-const ON_SCREEN_LEG_QUERY = "swap-plan-on-screen-leg"
-
 const onScreenLegQuery = (
+  screenId: string,
   plan: SwapPlan | null | undefined,
   index: number | null,
   mined: MinedApproval | undefined
 ) =>
   queryOptions({
     queryKey: [
-      ON_SCREEN_LEG_QUERY,
+      "swap-plan-on-screen-leg",
+      screenId,
       plan?.id,
       index,
       plan?.updatedAt,
@@ -202,12 +203,8 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [minedApproval, setMinedApproval] = useState<LegNote<MinedApproval>>()
-  const request = useQuery(onScreenLegQuery(plan, index, noteFor(minedApproval, index)))
-  const planId = plan?.id
-  useEffect(
-    () => () => queryClient.removeQueries({ queryKey: [ON_SCREEN_LEG_QUERY, planId] }),
-    [planId, queryClient]
-  )
+  const [screenId] = useState(() => crypto.randomUUID())
+  const request = useQuery(onScreenLegQuery(screenId, plan, index, noteFor(minedApproval, index)))
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [sentApproval, setSentApproval] = useState<LegNote<Hex>>()
@@ -246,7 +243,7 @@ export const usePlanLegSigning = (plan: SwapPlan | null | undefined, index: numb
     const blockNumber = await waitForApproval(tx, hash as Hex)
     if (blockNumber !== undefined && tx.payload.nonce !== undefined) {
       const mined = { blockNumber, nonce: tx.payload.nonce }
-      await queryClient.prefetchQuery(onScreenLegQuery(plan, index, mined))
+      await queryClient.prefetchQuery(onScreenLegQuery(screenId, plan, index, mined))
       setMinedApproval({ leg: index, value: mined })
     } else await request.refetch()
     setIsApprovalPending(false)

@@ -504,30 +504,63 @@ describe("usePlanLegSigning", () => {
     expect(lifiBuildLeg).toHaveBeenCalledTimes(1)
   })
 
-  it("prepares the leg afresh when its screen opens again, never on the nonce it had before", async () => {
-    const queryClient = new QueryClient()
-    const open = () =>
-      render(
-        <QueryClientProvider client={queryClient}>
-          <WaitingLeg plan={LIFI_PLAN} />
-        </QueryClientProvider>
+  describe("prepares the leg afresh when its screen opens again, never on the nonce it had before", () => {
+    const reopen = async (closeWhile: (screen: ReturnType<typeof render>) => Promise<void>) => {
+      const queryClient = new QueryClient()
+      const open = () =>
+        render(
+          <QueryClientProvider client={queryClient}>
+            <WaitingLeg plan={LIFI_PLAN} />
+          </QueryClientProvider>
+        )
+      ethGetTransactionsCount.mockResolvedValue(8)
+      client.allowance.mockResolvedValue(0n)
+      await closeWhile(open())
+
+      ethGetTransactionsCount.mockResolvedValue(9)
+      submitted.mockClear()
+      open()
+
+      await waitFor(() =>
+        expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
       )
-    ethGetTransactionsCount.mockResolvedValue(8)
-    client.allowance.mockResolvedValue(0n)
-    const first = open()
-    await waitFor(() =>
-      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
-    )
-    first.unmount()
+      expect(submitted.mock.calls.map(([tx]) => tx.payload.nonce)).not.toContain(8)
+    }
 
-    ethGetTransactionsCount.mockResolvedValue(9)
-    submitted.mockClear()
-    open()
+    const prepared = () =>
+      waitFor(() => expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } }))
 
-    await waitFor(() =>
-      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
-    )
-    expect(submitted.mock.calls.map(([tx]) => tx.payload.nonce)).not.toContain(8)
+    it("after a plain close", () =>
+      reopen(async (screen) => {
+        await prepared()
+        screen.unmount()
+      }))
+
+    it("after a close while a Ledger held the payload", () =>
+      reopen(async (screen) => {
+        await prepared()
+        act(() => payloadLock.current?.(true))
+        const release = payloadLock.current
+        screen.unmount()
+        await act(async () => release?.(false))
+      }))
+
+    it("after a close while the approval was mining", () =>
+      reopen(async (screen) => {
+        await prepared()
+        let timeout: (cause: Error) => void = () => {}
+        client.waitForTransactionReceipt.mockReturnValue(
+          new Promise((_, reject) => {
+            timeout = reject
+          })
+        )
+        act(() => {
+          button.submit?.(APPROVAL_HASH)
+        })
+        await waitFor(() => expect(client.waitForTransactionReceipt).toHaveBeenCalled())
+        screen.unmount()
+        await act(async () => timeout(new Error("timed out")))
+      }))
   })
 
   it("keeps the approval sent until the leg after it is built, so the leg never opens early", async () => {
