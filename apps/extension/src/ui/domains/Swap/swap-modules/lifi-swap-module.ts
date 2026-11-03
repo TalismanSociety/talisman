@@ -51,7 +51,7 @@ import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
 import { getTokenIdForSwappableAsset, type SwapModule } from "./common.swap-module"
 import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
-import { defaultLifiApi as api } from "./lifi-api"
+import { defaultLifiApi as api, solanaTransactionBytes } from "./lifi-api"
 
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
@@ -738,10 +738,7 @@ const buildRouteTransaction = async (
   if (isSolanaStep) {
     if (!txRequest.data) throw new Error("Missing Solana transaction data")
 
-    // LI.FI may return Solana transactions as base64 or hex-encoded
-    const txBytes = txRequest.data.startsWith("0x")
-      ? Buffer.from(txRequest.data.slice(2), "hex")
-      : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
+    const txBytes = solanaTransactionBytes(txRequest.data)
 
     let transaction = transactionFromBytes(txBytes)
 
