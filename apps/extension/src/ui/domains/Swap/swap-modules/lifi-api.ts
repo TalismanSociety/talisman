@@ -14,7 +14,6 @@ import type {
 import * as lifiSdk from "@lifi/sdk"
 import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
 
-/** The slice of the @lifi/sdk action surface the LI.FI swap module consumes. */
 export type LifiApi = {
   getTokens: (
     params?: TokensRequest & { extended?: false },

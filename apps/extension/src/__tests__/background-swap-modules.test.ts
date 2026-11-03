@@ -20,6 +20,7 @@ const EXTENSION = join(REPO_ROOT, "apps/extension")
 const SRC = join(EXTENSION, "src")
 const SWAPS = join(SRC, "core/domains/swaps")
 const UI = join(SRC, "ui")
+const SWAP_MODULES = join(SRC, "ui/domains/Swap/swap-modules")
 
 const RUNTIME_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm
 const ANY_IMPORT = /^\s*(?:import|export)\s+(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm
@@ -77,8 +78,6 @@ const forbiddenChain =
  * The page swap modules are copied into the mobile wallet, so their bodies read the pages only
  * through `PageSwapEnv` and the per-repo adapter files next to them, which the walk does not enter.
  */
-const SWAP_MODULES = join(SRC, "ui/domains/Swap/swap-modules")
-
 const PAGE_SWAP_MODULES = [
   join(SWAP_MODULES, "lifi-swap-module.ts"),
   join(SWAP_MODULES, "stealthex-swap-module.ts"),
