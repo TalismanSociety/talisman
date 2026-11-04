@@ -868,7 +868,7 @@ const buildLeg = async (
         { multiStep: false, chargesTalismanFee: !isLaterLeg }
       )) ?? []
     const usableQuotes =
-      isRouteStep && parseTokenId(leg.fromTokenId).type === "evm-erc20"
+      parseTokenId(leg.fromTokenId).type === "evm-erc20"
         ? freshQuotes.filter(
             (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
           )

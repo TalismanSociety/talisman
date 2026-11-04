@@ -164,6 +164,28 @@ const ethToArb = (fromAddress = ALICE, toAddress = BOB) =>
     toAddress
   )
 
+const usdtToTrumpInOneStep = () =>
+  route(
+    "direct",
+    [
+      step("direct:0", {
+        tool: "lifiIntents",
+        name: "LI.FI Intents",
+        from: USDT,
+        to: TRUMP,
+        fromAmount: "100000000",
+        toAmount: "15863223449369",
+        toAmountMin: "15783907332122",
+        fromAddress: ALICE,
+        toAddress: BOB,
+        gas: { amount: "27589130120000", token: ETH },
+        executionDuration: 22,
+      }),
+    ],
+    ALICE,
+    BOB
+  )
+
 const skyaiToTrump = (fromAmount: string, toAmountMin: string) =>
   route(
     "fresh",
@@ -756,6 +778,19 @@ describe("LI.FI leg build", () => {
     it("refuses the leg when no fresh route spends through it", async () => {
       await expect(buildSwapLeg(landed, [elsewhere])).rejects.toThrow("No route")
       expect(mockGetStepTransaction).not.toHaveBeenCalled()
+    })
+
+    it("keeps a single-step swap on the contract the user approved", async () => {
+      const quoted = usdtToTrumpInOneStep()
+      const elsewhere = withStep(quoted, 0, (s) => ({
+        ...s,
+        estimate: { ...s.estimate, approvalAddress: BOB },
+        action: s.action,
+      }))
+
+      await buildSwapLeg(100_000_000n, [elsewhere], { quoted, legIndex: 0 })
+
+      expect(mockGetStepTransaction.mock.calls[0][0].estimate.approvalAddress).toBe(DIAMOND)
     })
   })
 })
