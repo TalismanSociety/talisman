@@ -114,7 +114,7 @@
     "semver": "7.8.5",
     "ts-results": "3.3.0",
     "typescript": "^7.0.2",
-    "url-join": "^5.2.0",
+    "url-join": "^6.0.0",
     "uuid": "^14.0.3",
     "viem": "2.57.14",
     "webfontloader": "^1.6.28",
