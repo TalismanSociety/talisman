@@ -223,8 +223,8 @@ importers:
         specifier: 9.0.0
         version: 9.0.0(supports-color@10.2.2)
       '@metamask/phishing-controller':
-        specifier: ^17.4.1
-        version: 17.4.1(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)
+        specifier: ^18.3.0
+        version: 18.3.0(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@16.0.0(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
       '@noble/curves':
         specifier: 2.4.0
         version: 2.4.0
@@ -2574,27 +2574,31 @@ packages:
     resolution: {integrity: sha512-7spDmKJjiJp2pLNp7mSwMsFsFqSVjaE+yk4qXamLXuSYmfr28tdbTvRh1RzB6qKVkPez5zlwq4AcpWBaADpogw==}
     engines: {node: '>=22'}
 
-  '@metamask/account-tree-controller@9.0.0':
-    resolution: {integrity: sha512-qksYSB+omcdOgXqquGtSBBwf9dAQJID9FOILGeELCXc21iZbbdkz9CjqYNMg1fTu0+1tT0l7rHkWqgTco9000Q==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/account-tree-controller@11.2.0':
+    resolution: {integrity: sha512-H1Yrx9wxB9R+jO2v06jl9fIkD/Xr0JnVNjT+ngZKmjA4UY+kupxjbUxIWqdsyImiXUcWGoiwUmTgsGoQg9Z/JA==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
     peerDependencies:
       '@metamask/providers': ^22.0.0
       webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
 
-  '@metamask/accounts-controller@39.1.1':
-    resolution: {integrity: sha512-yIAMM88YVYFtn6pTUGnaOCzv8dgrsppBbeG/LsY5Vh3r/I568d0sAcLmpyV4FBwAzZXXyJLwDFMYm/u/BGQ+aA==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/accounts-controller@40.1.0':
+    resolution: {integrity: sha512-XomFnroAYLUw+A24/UHBo0MsHjk+Pl32YDk5RNux+NGVfFDmhslBp3QXY7kilDmcGNfLXPILoxj/Mzmi1jwV2Q==}
+    engines: {node: ^22.14.0 || ^24}
     peerDependencies:
       '@metamask/providers': ^22.0.0
       webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
 
-  '@metamask/address-book-controller@7.1.2':
-    resolution: {integrity: sha512-Zkky7fDv36IO22Qomyb+knq5LtJQPBeCz+TqIKPTV77Xt9nKBKx6/cUqfQXzoudJaMmuvENqg43tLRwlhsUzLA==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/address-book-controller@8.0.0':
+    resolution: {integrity: sha512-oYv9WzASc7aP7KmE9eq45flh36xDYP09LOEOHPtiU9C/BIKq/z/BgKyhqKAHdbDP7EWrSyMGFPPG5WT5aMrLxw==}
+    engines: {node: ^22.14.0 || ^24}
 
-  '@metamask/analytics-controller@2.1.0':
-    resolution: {integrity: sha512-k3ppylRiwG6fh5x0R9A++9oArgVZI6gZdVCFuoT3CsNaPdWQgwA6MvqkFGlMRdyzlSdAtaDLh6RUauvzCzuNQg==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/analytics-controller@4.1.0':
+    resolution: {integrity: sha512-KUxGHvRfv2XgnjlyKLdsoRma3YrL6sM5nrxQF7K+Db4EZ3F6jUBT3p2QDzHZ5Uh03SgjyNv7OG7FjqXR92+pcA==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
+
+  '@metamask/approval-controller@10.0.0':
+    resolution: {integrity: sha512-a/MjA/vyY022Z56Tvq2Ok3U/z2rXAVI8c6OdTJudyLreekoyk1kBa+vM36PYKFce5qx4NIf6PbrpsIxdn1j/pw==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/approval-controller@9.0.2':
     resolution: {integrity: sha512-A9uQ/oK7VAtw9oVgGwTyQemYAJtgtLQX3iVAZUD6x7PlPzphr2WvUvECHVHkLm2l9V9q7DZK4MTCoHwq55k3IQ==}
@@ -2608,9 +2612,17 @@ packages:
     resolution: {integrity: sha512-TtH+p5UqdhifPY09hGvvIWK7fz8Bh/kPc8Krd2cwc1Detj/WE8tLt15d0oC3eD9bmZqoSNJzH2eVmmgvQdFGEA==}
     engines: {node: ^18.18 || >=20}
 
+  '@metamask/base-controller@10.1.0':
+    resolution: {integrity: sha512-W3za9tYQ9FyG/pvv17mTlTSDvz2GE+NaPbiTlvBj3y1wTbQ+xEUu4TrYp6EeJH7KJGroCjuL+O6sE0oTZYHHmA==}
+    engines: {node: ^22.14.0 || ^24}
+
   '@metamask/base-controller@9.1.0':
     resolution: {integrity: sha512-iYGzkV7fCSi/BK9nUgF64V4Yd4V6PQ38suh3ewUJsOk2/ksAq0HuugmLFJ7JeUmWUr9wZsGKJ3Z/jB9CJ91o0g==}
     engines: {node: ^18.18 || >=20}
+
+  '@metamask/base-data-service@2.1.0':
+    resolution: {integrity: sha512-h25hKrp8p8n4QianyZMupXWRxVBBwjGSrs+ezf6MfEHOw8ASLQmham0XKKuLIdaLDOGAOHStdxYn7CAuadq6lA==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/browser-passworder@6.0.0':
     resolution: {integrity: sha512-/LhNSOu8ThLtIOLKrHhXS4D0SuseK731tWH+1GxI6FO9j0XQtJvPdMw89EEXwCd8mA5iFUK/cU6kxsszfH7GaQ==}
@@ -2620,13 +2632,13 @@ packages:
     resolution: {integrity: sha512-wEI4XqCTr6DD/D0Tz+Wge77M6LiViG+56WAg28VbGe1mz7W5knC9dneqHgkccSCMIESUayC3NT5DjIvuE6pPdA==}
     engines: {node: ^22.14.0 || ^24 || ^26}
 
-  '@metamask/config-registry-controller@3.1.0':
-    resolution: {integrity: sha512-CEEjytKVYcghET+NfyaU4xnNX1oXCbo16kcKPI9UN+BmyTIxRsSu8EH2pDyiafskXnsFETB+x9fhWFH4ejjhAg==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/config-registry-controller@5.0.0':
+    resolution: {integrity: sha512-G+FokXzkktvHiMBNymheIWPUwYnsfg1r6NYEcJnnE0JGMib5y8nU/hvegg47JCmE8b/IlZ2lstRNxWBTCdxP1Q==}
+    engines: {node: ^22.14.0 || ^24}
 
-  '@metamask/connectivity-controller@0.3.0':
-    resolution: {integrity: sha512-3N6tJ8NQXxC9IQWyFxhERPic6vL3c6wP8ZgEFw+QotFOFWO4Bb6eacUAQ37fQjrh9OaJzr3NQLz6Uecs2Kwqiw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/connectivity-controller@1.0.0':
+    resolution: {integrity: sha512-FxFG6qKsTcNSaoDmE8KmTnGmIucH0XoXQauav89kHurMI9vG3/f/XkNapCbn9r5lqSWLcwEkQQWJ51sOEwX7Yg==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/controller-utils@11.20.0':
     resolution: {integrity: sha512-B/6QfotVxSDHSSsreUgjGPRVj5MxgcYIxHjXo4wOAVAYT+KE7/W+F4zQhiwctMXuekD3eW5wXYaN/xp6fnm+kA==}
@@ -2640,9 +2652,15 @@ packages:
     peerDependencies:
       '@babel/runtime': '>=7.26.10 <8.0.0'
 
-  '@metamask/core-backend@9.1.1':
-    resolution: {integrity: sha512-BLjHRyE8o/1/48jAfX/ajMt218mKueTmuvFZSNEFeQGifuf2AFvFcvfphm0UvttgFHifEIn5QvpobRP+k/CHnw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/controller-utils@13.0.0':
+    resolution: {integrity: sha512-xbcg8G2UdokV4yEVyGb2yhg64dWVZ1yEhEG4jWfMFRffkhNN2kPdZscwWMkDve8hD4Nt04943mpeuExXTw9PpA==}
+    engines: {node: ^22.14.0 || ^24}
+    peerDependencies:
+      '@babel/runtime': '>=7.26.10 <8.0.0'
+
+  '@metamask/core-backend@13.0.0':
+    resolution: {integrity: sha512-Cc+ellJIKaI7ZM3dJIdNzB7T5t7l3qVZftmBxs+uHLvK+8th3BvdFjL4gSIRX9skxR+yLMjUBTxOSXyq28JDpA==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
 
   '@metamask/cryptography@1.1.2':
     resolution: {integrity: sha512-IUc1z+BfbXjCpJku8lTJrBkLinIi9q4u+tK5R/kR5uW+YDXluB87YWAO4Uh2hvFMiuQVv0YL0bZ0NDTltKP65Q==}
@@ -2652,9 +2670,9 @@ packages:
     resolution: {integrity: sha512-cwwBGUTp8QUuxSTDQ+4D3IONLtf+AzyoNKno5L75Xcbd8TDEyTGV5mlQprxlzLPJ0hOQXSY1Zl7oICq8fvg6rw==}
     engines: {node: ^22.14.0 || ^24 || ^26}
 
-  '@metamask/eth-block-tracker@15.0.1':
-    resolution: {integrity: sha512-7iD26QKjFSlRkyTE3Ldnv0Ev02jhADzKpqkOf/OmlmNY7PvaADr3wsRTSzOd13oWrdYoRydyN2SE9Z3vj3Hp6Q==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/eth-block-tracker@16.0.0':
+    resolution: {integrity: sha512-jERxGWFDPcB4vPfiLqHNql59iPR+Nsk6LdQJWmpGJvftR+eqIzLBrtjjpzU3VWb+TdVUOck5sA9BDFqY1OZR1Q==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/eth-hd-keyring@15.0.1':
     resolution: {integrity: sha512-HW8XkFZXz//T/tj1/ITV0uSLrSvdXcmuCxCu9ouBoiaBY8+E/bSmobJgzVAJtYJh+bC58l0i9OXfQ7SnL28JLA==}
@@ -2664,25 +2682,21 @@ packages:
     resolution: {integrity: sha512-DNseqMBG/mUsdrU3dvca+arOa5TMEfRJOFINHeUfVvn7mxV60I5xw4ggyaxFM21uNujw9SS3espgW/6cvOUaiw==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
-  '@metamask/eth-json-rpc-middleware@24.0.2':
-    resolution: {integrity: sha512-43qPVbeDmNBb6AGatemyujvZRT/iax6quRfhNy/7krYKJ0+HQc7BX3KGyLuD27gR9T+qSva8OQbZmwD4S2eFHw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/eth-json-rpc-middleware@26.0.0':
+    resolution: {integrity: sha512-HZTNw0MF0MDrHpLgCRFRxv+m3HdNDBw64bxadbak6JE+yFvmD6LX7Ldr8jEEBTqGn28KuAyLNGyetl4W2a4vVw==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/eth-json-rpc-provider@5.0.1':
     resolution: {integrity: sha512-RGaHATGsq+9uk0Suqiu7k8waZyxq0dSnoc6Fk4g5RGkgSTBTTLyj1QsGO1cupAsJnavQH0/EzRyjtGJq6QKchQ==}
     engines: {node: ^18.18 || >=20}
 
-  '@metamask/eth-json-rpc-provider@6.0.1':
-    resolution: {integrity: sha512-UPkR0h3BWrBj1XzwChJrffP7GwAz40SaA58Up0BXnyiSmyWV1g9rC1NhZS1MlclQOVxvDzavFNyH/uL4WVG6SA==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/eth-json-rpc-provider@7.0.0':
+    resolution: {integrity: sha512-YQ7xGFiIaJ8MDlc+aE3Ljl1XohHT3QgrJ3DoOX1eaf4me1ywPl5g44mlrLlEZCcvcnDHhjRzdMa9flebtjzSRQ==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/eth-query@4.0.0':
     resolution: {integrity: sha512-j2yPO2axYGyxwdqXRRhk2zBijt1Nd/xKCIXQkzvfWac0sKP0L9mSt1ZxMOe/sOF1SwS2R+NSaq+gsQDsQvrC4Q==}
     engines: {node: '>=16.0.0'}
-
-  '@metamask/eth-sig-util@8.2.0':
-    resolution: {integrity: sha512-LZDglIh4gYGw9Myp+2aIwKrj6lIJpMC4e0m7wKJU+BxLLBFcrTgKrjdjstXGVWvuYG3kutlh9J+uNBRPJqffWQ==}
-    engines: {node: ^18.18 || ^20.14 || >=22}
 
   '@metamask/eth-sig-util@9.0.0':
     resolution: {integrity: sha512-iB/iNjA+f+Vl4RlxbWw96UJGJnGG5SP4kZjGlR+e8IC2bTRIzx46r9Xr5mpWgAGeU4G3o3KuXeWRLffhr+JtxA==}
@@ -2740,19 +2754,23 @@ packages:
     peerDependencies:
       '@babel/runtime': '>=7.26.10 <8.0.0'
 
-  '@metamask/gas-fee-controller@26.3.2':
-    resolution: {integrity: sha512-/IYRbHMkEdsRQh9n+9jcSaNerry/GGXImk7xgZ52sVj7KPcbGesrcxt7u73qcv4VRBQXdTHra1QfiT9NYBwTNA==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/gas-fee-controller@27.0.0':
+    resolution: {integrity: sha512-wXnMnhqyFyHAZPv1sYnzcxEllC//2RCs9cRgHaNnK908ZD1h5RXUvAjzP995alJFMl6Gf3F2lnszU83qNJhTKw==}
+    engines: {node: ^22.14.0 || ^24}
     peerDependencies:
       '@babel/runtime': '>=7.26.10 <8.0.0'
 
-  '@metamask/geolocation-controller@1.0.0':
-    resolution: {integrity: sha512-YkdbPpQb10o3vgR2cWXWAaQgORT5J2rfBTC9+JDEZRcWNKwoStnN3nFspIU8NYQ7/G/ifWs5o3mDNBS1SIcgFg==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/geolocation-controller@2.0.0':
+    resolution: {integrity: sha512-0jJlxhwbAJ14VGtxGMApn6Kt0BGKG9dhf0bIkHi8KuiO71ln5iSQQi6Tq3I1yFYXMju1etXwEeHUPWfbgDUATQ==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/json-rpc-engine@10.5.0':
     resolution: {integrity: sha512-16ZjhuMGH5YUE7MLTKLclpHl7M5DZxrtAQu8AjEs1r3aRQnzslItDvjm3qk2lhm1kFddHtmDfh/ktcxaFpRkiw==}
     engines: {node: ^18.18 || >=20}
+
+  '@metamask/json-rpc-engine@11.0.0':
+    resolution: {integrity: sha512-7+/1XUX1Me/JA5Gow4qd1g/w9qnH6noSwBaED+guXQwHyPVcRbMgACdt9xNgQDivmIYjodTlSOwfqzct+0x07w==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/json-rpc-middleware-stream@8.0.8':
     resolution: {integrity: sha512-GeYc3tfRvEMhKzNcRSN1m1XIQs2SPaCpzgljoDlYyvnYeftGqteSSXu9ZXRGSdgtOzoS7gUJntj+JYxticGoYg==}
@@ -2766,9 +2784,9 @@ packages:
     resolution: {integrity: sha512-J3f9Lm1gm0qau599nSZJEr0us6zhOP3gC4jCUg6U3LR1Xjjm6foMJknHOMZuzhDnnNqAwzJKDprWBa5y05qwVg==}
     engines: {node: '>=22'}
 
-  '@metamask/keyring-controller@27.1.1':
-    resolution: {integrity: sha512-Gv8RpeJVykX6EWMgnATd5MUIoZz9uZJ17eKXb/ZKgNTLnZz3inXAmfPxhMq7lPsFMowMUUO4l1fbq6JXtAb2xw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/keyring-controller@28.2.0':
+    resolution: {integrity: sha512-2bykkRFSZlzl4mB0p90vFPO6ifundj+1ONUDR+DiZHscTnVSwjp2nCYKjMxL409x3XGoOtdaW4GuV840fKfBFw==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/keyring-internal-api@12.1.2':
     resolution: {integrity: sha512-USudtChJjR4n721LJzHORAuF6L7kc7zZ4MjWd1cENUUKIasGytORf0j6OV6JpEXKx8sgdikAJfnC7sCMLcMFcA==}
@@ -2776,10 +2794,6 @@ packages:
 
   '@metamask/keyring-internal-snap-client@11.1.1':
     resolution: {integrity: sha512-XChhOjt+mJoPoVB3gefsPgfGijMGRh92eEzTLVyXoTot/vxxYCYd5AEG12ExBdL4ZiAN+Lc7VzQcZTVvLNW9sw==}
-    engines: {node: '>=22'}
-
-  '@metamask/keyring-sdk@3.1.0':
-    resolution: {integrity: sha512-mAc/87K+9gRx2aib/fxyk9xhe/pqQloVSZGym1zJEmA2aD20fjW2zwE4SFJa4yPjywzEGn4NTQ47yw+Cx9G6/g==}
     engines: {node: '>=22'}
 
   '@metamask/keyring-sdk@4.1.0':
@@ -2803,9 +2817,9 @@ packages:
     resolution: {integrity: sha512-X1C/w5XiY1PXJ5Y6e9WT4IwXt1yOgiRO25qtVCRRNuDmHsfIBrWpH2+YWIj156lxihs0ZrkbV5TtE+XSQ6CbBA==}
     engines: {node: '>=22'}
 
-  '@metamask/message-manager@14.1.2':
-    resolution: {integrity: sha512-KzX39OWABulE0WCLVb5djZ95BoPXlc+KASdp9tL17Csg++yoMWK3u8qIfrMFgs01jOlXpljrxNU7ILgiaP5T1w==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/message-manager@15.0.0':
+    resolution: {integrity: sha512-wFNnZyjOPs4LHHW4MRSlSOLcDYha/xGhlnCN5jslbUfNrYUq3ePbFWo3UhrwNby27PV3NPkYV8lJVn/HhOyUXg==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/messenger@1.2.0':
     resolution: {integrity: sha512-vWgqiMswt2f1VSjJKbx744Ft9OEEMTRc6WA4GxYWGUm6I3VuXyZvXEKjZbHv561i9RvJglA+fB0QXnFae0V+eA==}
@@ -2820,24 +2834,26 @@ packages:
     peerDependencies:
       typescript: '>=5.0.0'
 
+  '@metamask/messenger@3.0.0':
+    resolution: {integrity: sha512-PiYDwqRUc1bYD6wsO1gMMv1Ari8+tSmXJW1IrEbTOVwlfU6H67+Keg/HeEVTdGMYLBcrVdwdlXrgw/BKuaGhgw==}
+    engines: {node: ^22.14.0 || ^24}
+    peerDependencies:
+      typescript: '>=5.0.0'
+
   '@metamask/metamask-eth-abis@3.1.1':
     resolution: {integrity: sha512-lRUyWN/GrIFQlT0wq/9gB+4wIV2i0N6yAQlJhfLCT6bVfK5GI5IUDxvCyLTDvxQxaLpNgtBFFzbuY1iVj3UWLA==}
     engines: {node: '>=12.0.0'}
 
-  '@metamask/multichain-account-service@13.0.2':
-    resolution: {integrity: sha512-Vjo5/rAq5ve6wWFB51AyLVWxBVqsfszp6b3gvXu9MoHRAmDhnJur6BZ/3Anlwu+2fiwfp+DoPpTm/2GYqBpRDw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/multichain-account-service@14.1.0':
+    resolution: {integrity: sha512-4pPH+fU7Rax+5gGf5VkZEovGMGeLxF2VzqxqudUem7fxq0Fss5Z41Mi3sy7r1EDYDo+fv2gOAzsbIbVWquGi6w==}
+    engines: {node: ^22.14.0 || ^24}
     peerDependencies:
       '@metamask/providers': ^22.0.0
       webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
 
-  '@metamask/network-controller@35.0.1':
-    resolution: {integrity: sha512-3QgmfuA+ekOrBwQmqdfE8NaeO/gqh/OuIuMBNeIjXx5P1YAIkIvuEUW1PQgrHPW+fpWUTEWlImFrITf+PIklSQ==}
-    engines: {node: ^18.18 || >=20}
-
-  '@metamask/network-controller@36.0.0':
-    resolution: {integrity: sha512-b0m3ErF818NswVOUDEYQ7G9hbe/85+pgzmPfLC5O7yqSyWJRCWIlEipg3JcIsvIkoI+fBPmlML5MIgZFV3Iryw==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/network-controller@37.1.1':
+    resolution: {integrity: sha512-stF3bgrv5BYbnLrgbuKlbZY1HUcSUuZvluKbtkdQOn/SSKX9ryEt3/wlI5zwRf4cvhz9j11+CPw3yXQ8wbzQkg==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/node-utils@0.1.0':
     resolution: {integrity: sha512-OXuAS8qIToizYyt4NcgqdWWOkNAmNASm/czl9lV9IxsPIjI4+/RlqLriflsmGgMi0mv3I3eookpy8e105dtXsg==}
@@ -2863,21 +2879,21 @@ packages:
     resolution: {integrity: sha512-1ClzK2H0D+Zkg4papXJ2kDqyz7Y3ZHCFS+/doPifeJUPSbPq3sWVjgMkC+bEp6oKA2yafaPTwnPUDxMbLSNsjg==}
     engines: {node: ^18.18 || >=20}
 
-  '@metamask/phishing-controller@17.4.1':
-    resolution: {integrity: sha512-7N5DSdf6r23/DQrLTpd1pyYKtgKhyggJYIbYQUEROuonEYpdQB9qfS5vylpAIoFvDumDUZrCuvVwOjqKtsq2qg==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/phishing-controller@18.3.0':
+    resolution: {integrity: sha512-UP0SkujcydB4gs+d6l+QHQ5tGwLe790U1r+XX5VHiMvf6ZRtrR8mkN9NQOxEpdAEd39ZXw51sNqOYXmC3S4XMQ==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
 
-  '@metamask/polling-controller@16.0.9':
-    resolution: {integrity: sha512-aMwef1gAH8SO0RPLeHvJYFa3wz4K78q9Id06k1gB6VJMEuN9vWMpPdVejRCS6Su4lYavHJtcE0+XZIvW65HSZQ==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/polling-controller@17.0.0':
+    resolution: {integrity: sha512-ymnK4Cpuf0ZV8j92c2rlZ431wSHPtzSD3vbwO4blp9dpJ99cmB7d1TSQhDiFssYGVgrS75tMpnQZGLbN6VlQcA==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/post-message-stream@10.0.0':
     resolution: {integrity: sha512-nFepq24aGQw81hkSgCIEBYFpNocnLZpIArCEICdT74pLTMXLgm4G8aHSszF+sOOvnMKW8zV56og9ImZSondIjA==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
-  '@metamask/profile-sync-controller@30.0.0':
-    resolution: {integrity: sha512-hNj1t5/db2hK18fcy21eov41upUETKhz8HcH3i7LJBxIP9BYg5sEzw2PzB067rS0LCy2ooK0sXunKXyQawovsA==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/profile-sync-controller@36.0.0':
+    resolution: {integrity: sha512-nK9U7wH0I2cStKvfFbtgnZRt0Jl75MMKGY8lGYwYRK1VFJGBFnlOxhFfW2yxcjyD1hp+rwHhSUAd+bf2eZj/DA==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
     peerDependencies:
       '@metamask/providers': ^22.0.0
       webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
@@ -2888,13 +2904,9 @@ packages:
     peerDependencies:
       webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
 
-  '@metamask/remote-feature-flag-controller@5.0.0':
-    resolution: {integrity: sha512-oT4vKLQEAVPYpbGl/dpZihL9sPM+lE0me4GDZwslTrBdx06rFZi2NOIaE70lKpFWQpdlCkbobVcfong7tdOnrA==}
-    engines: {node: ^18.18 || >=20}
-
-  '@metamask/remote-feature-flag-controller@6.1.1':
-    resolution: {integrity: sha512-0jCfb7FNsuqMy+46faSUlFPUIr7Tu0tPxwbTswd9YXsnH0uu1Ujd/jxyAcax4wG5qnvzCOIJtVuyc+3TGaHZjQ==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/remote-feature-flag-controller@7.0.0':
+    resolution: {integrity: sha512-Q122nTzJZ6p8tAXZL1XwVgeDsUTkYfTZSgZneE6xtXLyhCHsj4mYLRhab7fTf32qM4s20sdpMEzxf9zEOzLMEQ==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/rpc-errors@7.0.3':
     resolution: {integrity: sha512-nrEaeBawm8yFU7hetJKok/CUs0tQsWtTqp3OLbFhPUMXYqU7uI5LAV5vi9o7rTjFkUyof7Nzbw5bea5+1ou+dg==}
@@ -2908,17 +2920,21 @@ packages:
     resolution: {integrity: sha512-1K8aBsAqr6+8jWhguVl06n8e+zjV9sUnys+5PLyVU4mb8LbulQ60F6cq7iQys3xX/yCwKt1+7c7j2nuTEpW+ZQ==}
     engines: {node: ^16.20 || ^18.16 || >=20}
 
-  '@metamask/seedless-onboarding-controller@10.1.1':
-    resolution: {integrity: sha512-HUuq5afVrdBVO7nZVjtnI8quREVYgbq4MzwOb5mzhb1FoZVd2wIhzSTOa/Q4gENcpT/V+CATUm30YRHNhdgbDQ==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/seedless-onboarding-controller@12.0.0':
+    resolution: {integrity: sha512-cfDLtqNXvcUGKSt/cpKRjmwtZxKG0Mc/Ho5sk8gKWJ9BB6tk1Qf3bBKQjDsx0O1U4PDINJS7dVr6RrL5m1EX6Q==}
+    engines: {node: ^22.14.0 || ^24}
+
+  '@metamask/sentinel-api-service@2.1.0':
+    resolution: {integrity: sha512-ObqL7jBSJ4JU3uwluhi8KHGMq+EqwpmvadOoSV38lTLBUYA/0jAvZsIHB8QNe1DgDiq09nhd8a6OaWlkQjnWEQ==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/slip44@4.5.0':
     resolution: {integrity: sha512-BSEtoFpNN8dXnJlS1XfhEDn/WH0lJBGIn+nO/A9WKlpa3uTla2x8N/c1asrfr9YaT9qiBuIdu8fRt/BUsv2MEg==}
     engines: {node: ^18.16 || >=20}
 
-  '@metamask/snap-account-service@2.1.2':
-    resolution: {integrity: sha512-IcdPWZ29eupHtCfIck3wKUiNOY1VHc4cYM1x2qc8IdjM+OxBIzoKFGx24z5RrG1Y1pjvSr8gjebw8vf7VJaiag==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/snap-account-service@4.0.0':
+    resolution: {integrity: sha512-G1kvNY/LrHkhTpdU8GiVnDmEsDJYPNnY1t7BOVflxEMNJ+uYK2oO7zPoPtjZzfU1LJ+8f+uSBKDNITpwXmmPFw==}
+    engines: {node: ^22.14.0 || ^24}
 
   '@metamask/snaps-controllers@19.0.1':
     resolution: {integrity: sha512-0/jY1b5Bw3q8ihP3OAXPTiIV7mcH+1/xdmZm8ghSnqO3yDYc8lJQqHvBRYrP4Um0I1jxqr++1NspnpgUL33YjA==}
@@ -2953,6 +2969,10 @@ packages:
     resolution: {integrity: sha512-BZ9aOFVZ65IOruCgFKvDglCqblHzt0RZkiuXr1rXrQUR8gviwlmsTtY+w5zNO16Z3idW6C27ftB/d17L4GpbfQ==}
     engines: {node: ^18.18 || >=20}
 
+  '@metamask/storage-service@2.0.0':
+    resolution: {integrity: sha512-t9dtWOvTYsP7S4W3Rf+dgVfdfKudzJEwDOWRGhC5anjeuUuvtrJFvK5RYPWkBcCKZGclg2qxUb9x8jY0BK1ojg==}
+    engines: {node: ^22.14.0 || ^24}
+
   '@metamask/superstruct@3.4.1':
     resolution: {integrity: sha512-caTaaBUcwBGbUNf3r0uT48upX4nECRbKhQ9pPOfW4sIkfcIUUDV4S9DZxq/5fuNPVt5KWpyd5xIIz0sP+iWLlg==}
     engines: {node: '>=16.0.0'}
@@ -2965,9 +2985,9 @@ packages:
     resolution: {integrity: sha512-uaCsEErzdTOAPfLaYZYql6fBxKnfloQz55/rq9Ddk44tTe3RU6QPVmTHLGSIPRs9yiY7cL1OM0VMVVMYBP0Fwg==}
     engines: {node: ^18.18 || >=20}
 
-  '@metamask/transaction-controller@69.8.1':
-    resolution: {integrity: sha512-ZFPs9Y2ciIA5eBOgTmpLfZ782/Xz4xG9llte6I7OIKw8xTk80gtbhagg6ISQ26T/io4+Hy4R3cpAO5fWDsmYlg==}
-    engines: {node: ^18.18 || >=20}
+  '@metamask/transaction-controller@73.0.0':
+    resolution: {integrity: sha512-6hMazNpuHFqg2+N3kYXfwP+tTqEOEQb6xLU2MBO0qVmfCKMk8djFHTY3+/sMU7sQJmtqcDgQR7CviLTG+KFymg==}
+    engines: {node: ^22.14.0 || ^24 || ^26}
     peerDependencies:
       '@babel/runtime': '>=7.26.10 <8.0.0'
       '@metamask/eth-block-tracker': '>=9'
@@ -2983,6 +3003,10 @@ packages:
   '@metamask/utils@12.0.1':
     resolution: {integrity: sha512-HK+gXHyFXD8NmwnBKDJUpCxDFI+uZMWgE4VMLe+9cUVMsX5ONEQOxGWfguzZlyTUEeM9JtZ9BS4d1ZJ0PWH+IA==}
     engines: {node: ^22.14.0 || ^24 || ^26}
+
+  '@metamask/watch-only-keyring@0.1.1':
+    resolution: {integrity: sha512-qWK+9vo4tB32918Z5CUUGZ8atB9PZz4sC2px5axGsZl7h8lV+dh3FQ2aJXNsuZM140jcwM/rb2yPos2rYXu4tQ==}
+    engines: {node: '>=22'}
 
   '@metaplex-foundation/mpl-token-metadata@3.4.0':
     resolution: {integrity: sha512-AxBAYCK73JWxY3g9//z/C9krkR0t1orXZDknUPS4+GjwGH2vgPfsk04yfZ31Htka2AdS9YE/3wH7sMUBHKn9Rg==}
@@ -3039,6 +3063,10 @@ packages:
 
   '@noble/curves@1.4.2':
     resolution: {integrity: sha512-TavHr8qycMChk8UwMld0ZDRvatedkzWfH8IiaeGCfymOP5i0hSCozz9vHOL0nkwk7HRMlFnAiKpS2jrUmSybcw==}
+
+  '@noble/curves@1.9.0':
+    resolution: {integrity: sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/curves@1.9.1':
     resolution: {integrity: sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==}
@@ -3773,6 +3801,20 @@ packages:
     resolution: {integrity: sha512-WYEP2ZHkTQMP7Gg5frzrQy1475TnK5Qv8wgvHiTlNerYaEBCNpAeWjUltTgfCQ8Hbv1iq4inca7Kqmmyv9gLnQ==}
     engines: {node: '>=18'}
 
+  '@signinwithethereum/siwe-parser@4.2.1':
+    resolution: {integrity: sha512-GAdwNiBaRpUMTiFfPrbQ3e/RBhPbEhRRN1sZmDMLgLEZuKqKwO7V0ksVzCerE9l8HFKTNw5R/q3kPDCWJRz4zA==}
+
+  '@signinwithethereum/siwe@4.2.1':
+    resolution: {integrity: sha512-CQEQhCIgN9blil1YpaGR+wvGPdsBVK6zed5DBu03s1IdbSO3kA/n7Zp+SAkZGiHy3HY6OJm1Su0/Bd33vKK6nQ==}
+    peerDependencies:
+      ethers: ^5.7.0 || ^6.13.0
+      viem: ^2.7.0
+    peerDependenciesMeta:
+      ethers:
+        optional: true
+      viem:
+        optional: true
+
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
@@ -4237,23 +4279,8 @@ packages:
   '@spruceid/siwe-parser@2.1.0':
     resolution: {integrity: sha512-tFQwY2oQLa4qvHE6npKsVgVdVLQOCGP1zJM3yjZOHut43LqCwdSwitZndFLrJHZLpqru9FnmYHRakvsPvrI+qA==}
 
-  '@spruceid/siwe-parser@2.1.2':
-    resolution: {integrity: sha512-d/r3S1LwJyMaRAKQ0awmo9whfXeE88Qt00vRj91q5uv5ATtWIQEGJ67Yr5eSZw5zp1/fZCXZYuEckt8lSkereQ==}
-
   '@spruceid/siwe-parser@3.0.0':
     resolution: {integrity: sha512-Y92k63ilw/8jH9Ry4G2e7lQd0jZAvb0d/Q7ssSD0D9mp/Zt2aCXIc3g0ny9yhplpAx1QXHsMz/JJptHK/zDGdw==}
-
-  '@stablelib/binary@1.0.1':
-    resolution: {integrity: sha512-ClJWvmL6UBM/wjkvv/7m5VP3GMr9t0osr4yVgLZsLCOz4hGN9gIAFEqnJ0TsSMAN+n840nf2cHZnA5/KFqHC7Q==}
-
-  '@stablelib/int@1.0.1':
-    resolution: {integrity: sha512-byr69X/sDtDiIjIV6m4roLVWnNNlRGzsvxw+agj8CIEazqWGOQp2dTYgQhtyVXV9wpO6WyXRQUzLV/JRNumT2w==}
-
-  '@stablelib/random@1.0.2':
-    resolution: {integrity: sha512-rIsE83Xpb7clHPVRlBj8qNe5L8ISQOzjghYQm/dZ7VaM2KHYwMW5adjQjrzTZCchFnNCNhkwtnOBa9HTMJCI8w==}
-
-  '@stablelib/wipe@1.0.1':
-    resolution: {integrity: sha512-WfqfX/eXGiAd3RJe4VU2snh/ZPwtSjLG4ynQ/vYzvghTh7dHFcI1wl+nrkWG6lGhukOxOsUHfv8dUXr58D0ayg==}
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
@@ -6204,6 +6231,10 @@ packages:
   ethereum-cryptography@2.2.1:
     resolution: {integrity: sha512-r/W8lkHSiTLxUxW8Rf3u4HGB0xQweG2RyETjywylKZSzLWoWAijRz8WCuOtJ6wah+avllXBqZuk29HCCvhEIRg==}
 
+  ethereum-cryptography@3.2.0:
+    resolution: {integrity: sha512-Urr5YVsalH+Jo0sYkTkv1MyI9bLYZwW8BENZCeE1QYaTHETEYx0Nv/SVsWkSqpYrzweg6d8KMY1wTjH/1m/BIg==}
+    engines: {node: ^14.21.3 || >=16, npm: '>=9'}
+
   ethereumjs-util@7.1.5:
     resolution: {integrity: sha512-SDl5kKrQAudFBUe5OJM9Ac6WmMyYmXX/6sTmLZ3ffG2eY6ZIGBes3pEDxNN6V72WyOw4CPD5RomKdsa8DAAwLg==}
     engines: {node: '>=10.0.0'}
@@ -6654,6 +6685,9 @@ packages:
 
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
+
+  immer@11.2.9:
+    resolution: {integrity: sha512-IQ4UEtXjZjyefyWjtLEDXUSrF6T2hwjKPi6BIJl3bY/2XXW24d6cNGdXJSBOA/+KNnuiXkZY6DR0C3efolhitA==}
 
   immer@9.0.21:
     resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
@@ -8250,11 +8284,6 @@ packages:
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
-
-  siwe@2.3.2:
-    resolution: {integrity: sha512-aSf+6+Latyttbj5nMu6GF3doMfv2UYj83hhwZgUF20ky6fTS83uVhkQABdIVnEuS8y1bBdk7p6ltb9SmlhTTlA==}
-    peerDependencies:
-      ethers: ^5.6.8 || ^6.0.8
 
   smol-toml@1.9.1:
     resolution: {integrity: sha512-j7WyPdf0CJoutMzMoPLF/bVXHtKZIT9Rb4eGeEbWw8X2t5oirjPgpL+OpaENZrILYaXqYwnVH+qgUwVbl+pUJQ==}
@@ -10393,6 +10422,7 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
+    optional: true
 
   '@ethersproject/abi@5.8.0':
     dependencies:
@@ -10415,6 +10445,7 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/transactions': 5.8.0
       '@ethersproject/web': 5.8.0
+    optional: true
 
   '@ethersproject/abstract-provider@5.8.0':
     dependencies:
@@ -10433,6 +10464,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
+    optional: true
 
   '@ethersproject/abstract-signer@5.8.0':
     dependencies:
@@ -10449,6 +10481,7 @@ snapshots:
       '@ethersproject/keccak256': 5.8.0
       '@ethersproject/logger': 5.8.0
       '@ethersproject/rlp': 5.8.0
+    optional: true
 
   '@ethersproject/address@5.8.0':
     dependencies:
@@ -10461,6 +10494,7 @@ snapshots:
   '@ethersproject/base64@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
+    optional: true
 
   '@ethersproject/base64@5.8.0':
     dependencies:
@@ -10470,6 +10504,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/properties': 5.8.0
+    optional: true
 
   '@ethersproject/basex@5.8.0':
     dependencies:
@@ -10481,6 +10516,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
       bn.js: 5.2.5
+    optional: true
 
   '@ethersproject/bignumber@5.8.0':
     dependencies:
@@ -10491,6 +10527,7 @@ snapshots:
   '@ethersproject/bytes@5.7.0':
     dependencies:
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/bytes@5.8.0':
     dependencies:
@@ -10499,6 +10536,7 @@ snapshots:
   '@ethersproject/constants@5.7.0':
     dependencies:
       '@ethersproject/bignumber': 5.8.0
+    optional: true
 
   '@ethersproject/constants@5.8.0':
     dependencies:
@@ -10516,6 +10554,7 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/transactions': 5.8.0
+    optional: true
 
   '@ethersproject/contracts@5.8.0':
     dependencies:
@@ -10541,6 +10580,7 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
+    optional: true
 
   '@ethersproject/hash@5.8.0':
     dependencies:
@@ -10568,6 +10608,7 @@ snapshots:
       '@ethersproject/strings': 5.8.0
       '@ethersproject/transactions': 5.8.0
       '@ethersproject/wordlists': 5.8.0
+    optional: true
 
   '@ethersproject/hdnode@5.8.0':
     dependencies:
@@ -10599,6 +10640,7 @@ snapshots:
       '@ethersproject/transactions': 5.8.0
       aes-js: 3.0.0
       scrypt-js: 3.0.1
+    optional: true
 
   '@ethersproject/json-wallets@5.8.0':
     dependencies:
@@ -10620,19 +10662,22 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       js-sha3: 0.8.0
+    optional: true
 
   '@ethersproject/keccak256@5.8.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
       js-sha3: 0.8.0
 
-  '@ethersproject/logger@5.7.0': {}
+  '@ethersproject/logger@5.7.0':
+    optional: true
 
   '@ethersproject/logger@5.8.0': {}
 
   '@ethersproject/networks@5.7.1':
     dependencies:
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/networks@5.8.0':
     dependencies:
@@ -10642,6 +10687,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/sha2': 5.8.0
+    optional: true
 
   '@ethersproject/pbkdf2@5.8.0':
     dependencies:
@@ -10651,6 +10697,7 @@ snapshots:
   '@ethersproject/properties@5.7.0':
     dependencies:
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/properties@5.8.0':
     dependencies:
@@ -10681,6 +10728,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   '@ethersproject/providers@5.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
@@ -10712,6 +10760,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/random@5.8.0':
     dependencies:
@@ -10722,6 +10771,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/rlp@5.8.0':
     dependencies:
@@ -10733,6 +10783,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/logger': 5.8.0
       hash.js: 1.1.7
+    optional: true
 
   '@ethersproject/sha2@5.8.0':
     dependencies:
@@ -10748,6 +10799,7 @@ snapshots:
       bn.js: 5.2.5
       elliptic: 6.6.1
       hash.js: 1.1.7
+    optional: true
 
   '@ethersproject/signing-key@5.8.0':
     dependencies:
@@ -10766,12 +10818,14 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/sha2': 5.8.0
       '@ethersproject/strings': 5.8.0
+    optional: true
 
   '@ethersproject/strings@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/strings@5.8.0':
     dependencies:
@@ -10790,6 +10844,7 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/rlp': 5.8.0
       '@ethersproject/signing-key': 5.8.0
+    optional: true
 
   '@ethersproject/transactions@5.8.0':
     dependencies:
@@ -10808,6 +10863,7 @@ snapshots:
       '@ethersproject/bignumber': 5.8.0
       '@ethersproject/constants': 5.8.0
       '@ethersproject/logger': 5.8.0
+    optional: true
 
   '@ethersproject/wallet@5.7.0':
     dependencies:
@@ -10826,6 +10882,7 @@ snapshots:
       '@ethersproject/signing-key': 5.8.0
       '@ethersproject/transactions': 5.8.0
       '@ethersproject/wordlists': 5.8.0
+    optional: true
 
   '@ethersproject/wallet@5.8.0':
     dependencies:
@@ -10852,6 +10909,7 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
+    optional: true
 
   '@ethersproject/web@5.8.0':
     dependencies:
@@ -10868,6 +10926,7 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
+    optional: true
 
   '@ethersproject/wordlists@5.8.0':
     dependencies:
@@ -11200,22 +11259,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/account-tree-controller@9.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/account-tree-controller@11.2.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)':
     dependencies:
-      '@metamask/accounts-controller': 39.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/accounts-controller': 40.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/multichain-account-service': 13.0.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/profile-sync-controller': 30.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/multichain-account-service': 14.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/profile-sync-controller': 36.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
       '@metamask/snaps-controllers': 19.0.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-sdk': 11.2.0(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-utils': 12.6.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       fast-deep-equal: 3.1.3
-      lodash: 4.18.1
+      lodash-es: 4.18.1
       webextension-polyfill: 0.12.0
     transitivePeerDependencies:
       - '@babel/runtime'
@@ -11226,25 +11285,27 @@ snapshots:
       - react-native-b4a
       - supports-color
       - typescript
+      - viem
 
-  '@metamask/accounts-controller@39.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/accounts-controller@40.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
     dependencies:
       '@ethereumjs/util': 9.1.0
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/eth-snap-keyring': 24.1.1(@babel/runtime@7.29.10)(@metamask/keyring-api@24.3.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/keyring-internal-api': 12.1.2(supports-color@10.2.2)
-      '@metamask/keyring-sdk': 3.1.0(supports-color@10.2.2)
+      '@metamask/keyring-sdk': 4.1.0(supports-color@10.2.2)
       '@metamask/keyring-utils': 5.0.0(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/network-controller': 36.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/network-controller': 37.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      '@metamask/watch-only-keyring': 0.1.1(supports-color@10.2.2)
       deepmerge: 4.3.1
-      ethereum-cryptography: 2.2.1
-      immer: 9.0.21
-      lodash: 4.18.1
+      ethereum-cryptography: 3.2.0
+      immer: 11.2.9
+      lodash-es: 4.18.1
       uuid: 11.1.1
       webextension-polyfill: 0.12.0
     transitivePeerDependencies:
@@ -11256,27 +11317,39 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/address-book-controller@7.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/address-book-controller@8.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/messenger': 1.2.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - '@babel/runtime'
       - supports-color
       - typescript
 
-  '@metamask/analytics-controller@2.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/analytics-controller@4.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/geolocation-controller': 1.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      lodash: 4.18.1
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/config-registry-controller': 5.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/geolocation-controller': 2.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      lodash-es: 4.18.1
       uuid: 11.1.1
     transitivePeerDependencies:
       - '@babel/runtime'
+      - supports-color
+      - typescript
+
+  '@metamask/approval-controller@10.0.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
+      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      nanoid: 3.3.20
+    transitivePeerDependencies:
       - supports-color
       - typescript
 
@@ -11319,11 +11392,36 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/runtime'
 
+  '@metamask/base-controller@10.1.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/superstruct': 3.4.1
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      immer: 11.2.9
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@metamask/base-controller@9.1.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
       '@metamask/messenger': 1.2.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       immer: 9.0.21
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  '@metamask/base-data-service@2.1.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/storage-service': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/superstruct': 3.4.1
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      '@tanstack/query-core': 5.105.1
+      cockatiel: 3.2.1
+      fast-deep-equal: 3.1.3
+      lodash-es: 4.18.1
+      uuid: 11.1.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -11339,26 +11437,26 @@ snapshots:
       '@metamask/type-utils': 0.1.0
       '@scure/base': 1.2.6
 
-  '@metamask/config-registry-controller@3.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/config-registry-controller@5.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/polling-controller': 16.0.9(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/remote-feature-flag-controller': 6.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/polling-controller': 17.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/remote-feature-flag-controller': 7.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       reselect: 5.3.0
     transitivePeerDependencies:
       - '@babel/runtime'
       - supports-color
       - typescript
 
-  '@metamask/connectivity-controller@0.3.0(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/connectivity-controller@1.0.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       reselect: 5.3.0
     transitivePeerDependencies:
       - supports-color
@@ -11399,19 +11497,37 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/core-backend@9.1.1(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/controller-utils@13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)':
     dependencies:
-      '@metamask/account-tree-controller': 9.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/profile-sync-controller': 30.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/remote-feature-flag-controller': 6.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@babel/runtime': 7.29.10
+      '@ethersproject/abi': 5.8.0
+      '@metamask/eth-query': 4.0.0
+      '@metamask/ethjs-unit': 0.3.0(@babel/runtime@7.29.10)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@signinwithethereum/siwe-parser': 4.2.1
+      '@types/bn.js': 5.2.0
+      bignumber.js: 9.3.1
+      bn.js: 5.2.5
+      cockatiel: 3.2.1
+      eth-ens-namehash: 2.0.8
+      fast-deep-equal: 3.1.3
+      lodash-es: 4.18.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@metamask/core-backend@13.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)':
+    dependencies:
+      '@metamask/account-tree-controller': 11.2.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/profile-sync-controller': 36.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
+      '@metamask/remote-feature-flag-controller': 7.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       '@tanstack/query-core': 5.105.1
       async-mutex: 0.5.0
       cockatiel: 3.2.1
-      uuid: 11.1.1
+      uuid: 14.0.3
     transitivePeerDependencies:
       - '@babel/runtime'
       - '@metamask/providers'
@@ -11422,6 +11538,7 @@ snapshots:
       - react-native-b4a
       - supports-color
       - typescript
+      - viem
       - webextension-polyfill
 
   '@metamask/cryptography@1.1.2': {}
@@ -11431,9 +11548,9 @@ snapshots:
       '@metamask/type-utils': 0.1.0
       pony-cause: 2.1.11
 
-  '@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/eth-block-tracker@16.0.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/eth-json-rpc-provider': 6.0.1(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/eth-json-rpc-provider': 7.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/safe-event-emitter': 3.1.3
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       json-rpc-random-id: 1.0.1
@@ -11467,16 +11584,16 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/eth-json-rpc-middleware@24.0.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/eth-json-rpc-middleware@26.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/eth-block-tracker': 15.0.1(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-provider': 6.0.1(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/eth-block-tracker': 16.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/eth-json-rpc-provider': 7.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/eth-sig-util': 9.0.0(supports-color@10.2.2)
-      '@metamask/json-rpc-engine': 10.5.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/message-manager': 14.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/json-rpc-engine': 11.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/message-manager': 15.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
       '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       klona: 2.0.6
       safe-stable-stringify: 2.5.0
     transitivePeerDependencies:
@@ -11495,11 +11612,13 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/eth-json-rpc-provider@6.0.1(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/eth-json-rpc-provider@7.0.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/json-rpc-engine': 10.5.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/json-rpc-engine': 11.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@types/lodash': 4.17.27
+      lodash-es: 4.18.1
       nanoid: 3.3.20
     transitivePeerDependencies:
       - supports-color
@@ -11509,18 +11628,6 @@ snapshots:
     dependencies:
       json-rpc-random-id: 1.0.1
       xtend: 4.0.2
-
-  '@metamask/eth-sig-util@8.2.0(supports-color@10.2.2)':
-    dependencies:
-      '@ethereumjs/rlp': 4.0.1
-      '@ethereumjs/util': 8.1.0
-      '@metamask/abi-utils': 3.0.0(supports-color@10.2.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      '@scure/base': 1.1.9
-      ethereum-cryptography: 2.2.1
-      tweetnacl: 1.0.3
-    transitivePeerDependencies:
-      - supports-color
 
   '@metamask/eth-sig-util@9.0.0(supports-color@10.2.2)':
     dependencies:
@@ -11623,16 +11730,16 @@ snapshots:
       is-hex-prefixed: 1.0.0
       strip-hex-prefix: 1.0.0
 
-  '@metamask/gas-fee-controller@26.3.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/gas-fee-controller@27.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
       '@babel/runtime': 7.29.10
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
       '@metamask/eth-query': 4.0.0
       '@metamask/ethjs-unit': 0.3.0(@babel/runtime@7.29.10)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/network-controller': 36.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/polling-controller': 16.0.9(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/network-controller': 37.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/polling-controller': 17.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       '@types/bn.js': 5.2.0
       '@types/uuid': 8.3.4
@@ -11642,11 +11749,11 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/geolocation-controller@1.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/geolocation-controller@2.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
     transitivePeerDependencies:
       - '@babel/runtime'
       - supports-color
@@ -11655,6 +11762,19 @@ snapshots:
   '@metamask/json-rpc-engine@10.5.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
       '@metamask/messenger': 1.2.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
+      '@metamask/safe-event-emitter': 3.1.3
+      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@types/deep-freeze-strict': 1.1.2
+      deep-freeze-strict: 1.1.1
+      klona: 2.0.6
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  '@metamask/json-rpc-engine@11.0.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
       '@metamask/safe-event-emitter': 3.1.3
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
@@ -11694,23 +11814,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/keyring-controller@27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/keyring-controller@28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
       '@ethereumjs/util': 9.1.0
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/browser-passworder': 6.0.0(supports-color@10.2.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
       '@metamask/eth-hd-keyring': 15.0.1(supports-color@10.2.2)
-      '@metamask/eth-sig-util': 8.2.0(supports-color@10.2.2)
+      '@metamask/eth-sig-util': 9.0.0(supports-color@10.2.2)
       '@metamask/eth-simple-keyring': 13.0.1(supports-color@10.2.2)
       '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
       '@metamask/keyring-internal-api': 12.1.2(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       async-mutex: 0.5.0
       ethereumjs-wallet: 1.0.2
-      immer: 9.0.21
-      lodash: 4.18.1
+      immer: 11.2.9
+      lodash-es: 4.18.1
       ulid: 2.4.0
     transitivePeerDependencies:
       - '@babel/runtime'
@@ -11736,22 +11856,6 @@ snapshots:
       - '@metamask/providers'
       - supports-color
       - typescript
-
-  '@metamask/keyring-sdk@3.1.0(supports-color@10.2.2)':
-    dependencies:
-      '@ethereumjs/tx': 5.4.0
-      '@metamask/eth-sig-util': 8.2.0(supports-color@10.2.2)
-      '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
-      '@metamask/keyring-utils': 5.0.0(supports-color@10.2.2)
-      '@metamask/scure-bip39': 2.1.1
-      '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      '@noble/hashes': 1.8.0
-      async-mutex: 0.5.0
-      ethereum-cryptography: 2.2.1
-      uuid: 11.1.1
-    transitivePeerDependencies:
-      - supports-color
 
   '@metamask/keyring-sdk@4.1.0(supports-color@10.2.2)':
     dependencies:
@@ -11801,12 +11905,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/message-manager@14.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/message-manager@15.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/eth-sig-util': 8.2.0(supports-color@10.2.2)
-      '@metamask/messenger': 1.2.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/eth-sig-util': 9.0.0(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       '@types/uuid': 8.3.4
       jsonschema: 1.5.0
@@ -11831,30 +11935,37 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@metamask/messenger@3.0.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      typescript: 7.0.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@metamask/metamask-eth-abis@3.1.1': {}
 
-  '@metamask/multichain-account-service@13.0.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/multichain-account-service@14.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
     dependencies:
       '@ethereumjs/util': 9.1.0
       '@metamask/account-api': 2.2.0(supports-color@10.2.2)
-      '@metamask/accounts-controller': 39.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/accounts-controller': 40.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/eth-snap-keyring': 24.1.1(@babel/runtime@7.29.10)(@metamask/keyring-api@24.3.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/key-tree': 10.1.1(supports-color@10.2.2)
       '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/keyring-internal-api': 12.1.2(supports-color@10.2.2)
       '@metamask/keyring-snap-client': 10.0.1(supports-color@10.2.2)
       '@metamask/keyring-utils': 5.0.0(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/snap-account-service': 2.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/snap-account-service': 4.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-controllers': 19.0.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-sdk': 11.2.0(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-utils': 12.6.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/superstruct': 3.4.1
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       async-mutex: 0.5.0
-      lodash: 4.18.1
+      lodash-es: 4.18.1
       webextension-polyfill: 0.12.0
     transitivePeerDependencies:
       - '@babel/runtime'
@@ -11865,54 +11976,27 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/network-controller@35.0.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/network-controller@37.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/analytics-controller': 2.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/connectivity-controller': 0.3.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/eth-block-tracker': 15.0.1(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/analytics-controller': 4.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/config-registry-controller': 5.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/connectivity-controller': 1.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/eth-block-tracker': 16.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/eth-json-rpc-infura': 10.3.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-middleware': 24.0.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-provider': 6.0.1(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/eth-json-rpc-middleware': 26.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/eth-json-rpc-provider': 7.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/eth-query': 4.0.0
-      '@metamask/json-rpc-engine': 10.5.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/remote-feature-flag-controller': 5.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/json-rpc-engine': 11.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/remote-feature-flag-controller': 7.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
+      '@metamask/superstruct': 3.4.1
       '@metamask/swappable-obj-proxy': 2.3.0
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       fast-deep-equal: 3.1.3
-      immer: 9.0.21
-      loglevel: 1.9.2
-      reselect: 5.3.0
-      uri-js: 4.4.1
-      uuid: 11.1.1
-    transitivePeerDependencies:
-      - '@babel/runtime'
-      - supports-color
-      - typescript
-
-  '@metamask/network-controller@36.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
-    dependencies:
-      '@metamask/analytics-controller': 2.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/config-registry-controller': 3.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/connectivity-controller': 0.3.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/eth-block-tracker': 15.0.1(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-infura': 10.3.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-middleware': 24.0.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-json-rpc-provider': 6.0.1(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/eth-query': 4.0.0
-      '@metamask/json-rpc-engine': 10.5.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/remote-feature-flag-controller': 6.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
-      '@metamask/swappable-obj-proxy': 2.3.0
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      fast-deep-equal: 3.1.3
-      immer: 9.0.21
+      immer: 11.2.9
       loglevel: 1.9.2
       reselect: 5.3.0
       uri-js: 4.4.1
@@ -11982,16 +12066,16 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/phishing-controller@17.4.1(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)':
+  '@metamask/phishing-controller@18.3.0(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@16.0.0(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)':
     dependencies:
-      '@metamask/address-book-controller': 7.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/transaction-controller': 69.8.1(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)
+      '@metamask/address-book-controller': 8.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/transaction-controller': 73.0.0(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@16.0.0(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
       '@noble/hashes': 1.8.0
       '@types/punycode': 2.1.4
-      ethereum-cryptography: 2.2.1
+      ethereum-cryptography: 3.2.0
       fastest-levenshtein: 1.0.16
       punycode: 2.3.1
     transitivePeerDependencies:
@@ -12007,18 +12091,17 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+      - viem
       - webextension-polyfill
 
-  '@metamask/polling-controller@16.0.9(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/polling-controller@17.0.0(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/network-controller': 35.0.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       '@types/uuid': 8.3.4
       fast-json-stable-stringify: 2.1.0
       uuid: 11.1.1
     transitivePeerDependencies:
-      - '@babel/runtime'
       - supports-color
       - typescript
 
@@ -12029,27 +12112,30 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/profile-sync-controller@30.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/profile-sync-controller@36.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)':
     dependencies:
-      '@metamask/address-book-controller': 7.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/address-book-controller': 8.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/cryptography': 1.1.2
       '@metamask/key-tree': 10.1.1(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/seedless-onboarding-controller': 10.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      '@noble/ciphers': 1.3.0
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/seedless-onboarding-controller': 12.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/superstruct': 3.4.1
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
-      immer: 9.0.21
+      '@signinwithethereum/siwe': 4.2.1(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))
+      immer: 11.2.9
       loglevel: 1.9.2
-      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))
       webextension-polyfill: 0.12.0
     transitivePeerDependencies:
       - '@babel/runtime'
       - ethers
       - supports-color
       - typescript
+      - viem
 
   '@metamask/providers@22.1.1(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
     dependencies:
@@ -12069,23 +12155,11 @@ snapshots:
       - supports-color
       - typescript
 
-  '@metamask/remote-feature-flag-controller@5.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/remote-feature-flag-controller@7.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      uuid: 11.1.1
-    transitivePeerDependencies:
-      - '@babel/runtime'
-      - supports-color
-      - typescript
-
-  '@metamask/remote-feature-flag-controller@6.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
-    dependencies:
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/utils': 11.12.1(supports-color@10.2.2)
       uuid: 11.1.1
     transitivePeerDependencies:
@@ -12107,15 +12181,16 @@ snapshots:
       '@noble/hashes': 1.3.3
       '@scure/base': 1.1.9
 
-  '@metamask/seedless-onboarding-controller@10.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+  '@metamask/seedless-onboarding-controller@12.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
     dependencies:
+      '@metamask/analytics-controller': 4.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/auth-network-utils': 0.3.1(@babel/runtime@7.29.10)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/browser-passworder': 6.0.0(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/toprf-secure-backup': 1.1.0(@babel/runtime@7.29.10)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
@@ -12125,21 +12200,35 @@ snapshots:
       - supports-color
       - typescript
 
+  '@metamask/sentinel-api-service@2.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/base-data-service': 2.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/superstruct': 3.4.1
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      '@tanstack/query-core': 5.105.1
+    transitivePeerDependencies:
+      - '@babel/runtime'
+      - supports-color
+      - typescript
+
   '@metamask/slip44@4.5.0': {}
 
-  '@metamask/snap-account-service@2.1.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
+  '@metamask/snap-account-service@4.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)':
     dependencies:
       '@metamask/account-api': 2.2.0(supports-color@10.2.2)
+      '@metamask/accounts-controller': 40.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/eth-snap-keyring': 24.1.1(@babel/runtime@7.29.10)(@metamask/keyring-api@24.3.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
-      '@metamask/keyring-controller': 27.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/keyring-controller': 28.2.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/keyring-internal-snap-client': 11.1.1(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/keyring-snap-sdk': 10.0.1(@metamask/keyring-api@24.3.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/snaps-controllers': 19.0.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
       '@metamask/snaps-sdk': 11.2.0(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
-      lodash: 4.18.1
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
+      lodash-es: 4.18.1
     transitivePeerDependencies:
       - '@babel/runtime'
       - '@metamask/providers'
@@ -12286,6 +12375,14 @@ snapshots:
       - supports-color
       - typescript
 
+  '@metamask/storage-service@2.0.0(supports-color@10.2.2)(typescript@7.0.2)':
+    dependencies:
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@metamask/superstruct@3.4.1': {}
 
   '@metamask/swappable-obj-proxy@2.3.0': {}
@@ -12305,7 +12402,7 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/runtime'
 
-  '@metamask/transaction-controller@69.8.1(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@15.0.1(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(webextension-polyfill@0.12.0)':
+  '@metamask/transaction-controller@73.0.0(@babel/runtime@7.29.10)(@metamask/eth-block-tracker@16.0.0(supports-color@10.2.2)(typescript@7.0.2))(bufferutil@4.0.8)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(utf-8-validate@6.0.4)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)':
     dependencies:
       '@babel/runtime': 7.29.10
       '@ethereumjs/common': 4.4.0
@@ -12315,28 +12412,29 @@ snapshots:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/contracts': 5.8.0
       '@ethersproject/wallet': 5.8.0
-      '@metamask/accounts-controller': 39.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/approval-controller': 9.0.2(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/base-controller': 9.1.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/controller-utils': 12.3.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
-      '@metamask/core-backend': 9.1.1(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
-      '@metamask/eth-block-tracker': 15.0.1(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/gas-fee-controller': 26.3.2(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
-      '@metamask/messenger': 2.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/accounts-controller': 40.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)(webextension-polyfill@0.12.0)
+      '@metamask/approval-controller': 10.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/base-controller': 10.1.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/controller-utils': 13.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)
+      '@metamask/core-backend': 13.0.0(@babel/runtime@7.29.10)(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(supports-color@10.2.2)(typescript@7.0.2)(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))(webextension-polyfill@0.12.0)
+      '@metamask/eth-block-tracker': 16.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/gas-fee-controller': 27.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/messenger': 3.0.0(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/metamask-eth-abis': 3.1.1
-      '@metamask/network-controller': 36.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/network-controller': 37.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/nonce-tracker': 6.1.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@metamask/remote-feature-flag-controller': 6.1.1(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/remote-feature-flag-controller': 7.0.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
       '@metamask/rpc-errors': 7.0.3(supports-color@10.2.2)
-      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      '@metamask/sentinel-api-service': 2.1.0(@babel/runtime@7.29.10)(supports-color@10.2.2)(typescript@7.0.2)
+      '@metamask/utils': 12.0.1(supports-color@10.2.2)
       async-mutex: 0.5.0
       bignumber.js: 9.3.1
       bn.js: 5.2.5
       eth-method-registry: 4.0.0(@babel/runtime@7.29.10)
-      ethereum-cryptography: 2.2.1
+      ethereum-cryptography: 3.2.0
       fast-json-patch: 3.1.1
-      lodash: 4.18.1
-      uuid: 11.1.1
+      lodash-es: 4.18.1
+      uuid: 14.0.3
     transitivePeerDependencies:
       - '@metamask/providers'
       - '@metamask/snaps-execution-environments'
@@ -12348,6 +12446,7 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+      - viem
       - webextension-polyfill
 
   '@metamask/type-utils@0.1.0': {}
@@ -12384,6 +12483,17 @@ snapshots:
       debug: 4.4.3(supports-color@10.2.2)
       lodash: 4.18.1
       semver: 7.8.5
+    transitivePeerDependencies:
+      - supports-color
+
+  '@metamask/watch-only-keyring@0.1.1(supports-color@10.2.2)':
+    dependencies:
+      '@metamask/keyring-api': 24.3.0(supports-color@10.2.2)
+      '@metamask/keyring-sdk': 4.1.0(supports-color@10.2.2)
+      '@metamask/keyring-utils': 5.0.0(supports-color@10.2.2)
+      '@metamask/superstruct': 3.4.1
+      '@metamask/utils': 11.12.1(supports-color@10.2.2)
+      async-mutex: 0.5.0
     transitivePeerDependencies:
       - supports-color
 
@@ -12443,6 +12553,10 @@ snapshots:
   '@noble/curves@1.4.2':
     dependencies:
       '@noble/hashes': 1.4.0
+
+  '@noble/curves@1.9.0':
+    dependencies:
+      '@noble/hashes': 1.8.0
 
   '@noble/curves@1.9.1':
     dependencies:
@@ -13046,6 +13160,18 @@ snapshots:
 
   '@sentry/core@9.47.2': {}
 
+  '@signinwithethereum/siwe-parser@4.2.1':
+    dependencies:
+      '@noble/hashes': 1.8.0
+      apg-js: 4.4.0
+
+  '@signinwithethereum/siwe@4.2.1(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(viem@2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7))':
+    dependencies:
+      '@signinwithethereum/siwe-parser': 4.2.1
+    optionalDependencies:
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      viem: 2.57.14(bufferutil@4.0.8)(typescript@7.0.2)(utf-8-validate@6.0.4)(zod@4.6.7)
+
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@sinonjs/commons@1.8.6':
@@ -13624,30 +13750,10 @@ snapshots:
       uri-js: 4.4.1
       valid-url: 1.0.9
 
-  '@spruceid/siwe-parser@2.1.2':
-    dependencies:
-      '@noble/hashes': 1.8.0
-      apg-js: 4.4.0
-      uri-js: 4.4.1
-      valid-url: 1.0.9
-
   '@spruceid/siwe-parser@3.0.0':
     dependencies:
       '@noble/hashes': 1.8.0
       apg-js: 4.4.0
-
-  '@stablelib/binary@1.0.1':
-    dependencies:
-      '@stablelib/int': 1.0.1
-
-  '@stablelib/int@1.0.1': {}
-
-  '@stablelib/random@1.0.2':
-    dependencies:
-      '@stablelib/binary': 1.0.1
-      '@stablelib/wipe': 1.0.1
-
-  '@stablelib/wipe@1.0.1': {}
 
   '@standard-schema/spec@1.1.0':
     optional: true
@@ -15561,6 +15667,14 @@ snapshots:
       '@scure/bip32': 1.4.0
       '@scure/bip39': 1.3.0
 
+  ethereum-cryptography@3.2.0:
+    dependencies:
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.0
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+
   ethereumjs-util@7.1.5:
     dependencies:
       '@types/bn.js': 5.2.0
@@ -15615,6 +15729,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   ethjs-abi@0.2.1:
     dependencies:
@@ -16076,6 +16191,8 @@ snapshots:
   image-size@2.0.4: {}
 
   immediate@3.0.6: {}
+
+  immer@11.2.9: {}
 
   immer@9.0.21: {}
 
@@ -17781,14 +17898,6 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  siwe@2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)):
-    dependencies:
-      '@spruceid/siwe-parser': 2.1.2
-      '@stablelib/random': 1.0.2
-      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      uri-js: 4.4.1
-      valid-url: 1.0.9
-
   smol-toml@1.9.1: {}
 
   smoldot@3.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
@@ -18616,6 +18725,7 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 6.0.4
+    optional: true
 
   ws@8.21.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     optionalDependencies:
