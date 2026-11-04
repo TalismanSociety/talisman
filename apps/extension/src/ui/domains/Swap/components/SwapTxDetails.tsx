@@ -135,7 +135,6 @@ export const SwapRateDropNotice: FC<{ tokenId: TokenId; amount: bigint; accepted
   )
 }
 
-/** a multi-leg swap goes on only while its screen stays open, the second leg's signer holds the funds meanwhile */
 export const SwapRunNotice: FC<{ secondLeg: QuoteLeg }> = ({ secondLeg }) => {
   const { t } = useTranslation()
   const token = useToken(secondLeg.fromTokenId)

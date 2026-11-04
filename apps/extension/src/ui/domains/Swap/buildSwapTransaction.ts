@@ -20,7 +20,6 @@ export type BuildSwapTransactionParams = {
   signal?: AbortSignal
 }
 
-/** the quote the first leg was built from: each later leg is built from it once the previous one lands */
 export type BuiltSwap = { quote: BaseQuote; leg: BuiltLeg }
 
 export const quoteLegsKey = (quote: BaseQuote | null | undefined) =>

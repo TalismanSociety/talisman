@@ -108,10 +108,8 @@ const RunFooter: FC<{
   }
 }
 
-/** the legs of a multi-leg swap, each signed by the user once the previous one landed */
 export const SwapRunView: FC<{
   run: SwapRun
-  /** the first leg's approval, sent from the confirm screen */
   leg0ApprovalHash: Hex | null
   onLegSent: (index: number, hash: Hex, input: bigint) => void
   onClose: () => void

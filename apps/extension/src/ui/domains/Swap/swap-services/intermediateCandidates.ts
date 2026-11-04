@@ -5,7 +5,6 @@ import { getBalances$ } from "@ui/state/balances"
 import { firstValueFrom } from "rxjs"
 import type { IntermediateCandidate } from "../swap-modules/hops"
 
-/** the owned EVM accounts, with their hub balance */
 export const getIntermediateCandidates = async (hub: TokenId): Promise<IntermediateCandidate[]> => {
   const [accounts, balances] = await Promise.all([
     firstValueFrom(getAccountsByCategory$("owned")),

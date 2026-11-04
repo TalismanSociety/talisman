@@ -60,10 +60,6 @@ const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
   )
 }
 
-/**
- * A success settles once final. The background marks a Bittensor EVM swap finished when its
- * finality check gave up, so that settles it too instead of waiting forever.
- */
 const settledOf = (row: WalletTransaction | null): SettledTransaction | null => {
   if (!row || row.platform === "solana") return null
   const { hash } = row

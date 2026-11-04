@@ -16,21 +16,14 @@ import { type AllowanceStep, readAllowanceStep } from "./erc20-approval"
 
 export type RunLeg =
   | { at: "queued" }
-  /** the previous leg landed: the user signs this one next */
   | { at: "ready" }
   | { at: "sent"; hash: Hex; input: bigint }
-  /** amount: what reached the next leg's signer */
   | { at: "landed"; hash: Hex; amount: bigint }
   | { at: "stopped"; hash: Hex; stop: LegStop }
 
-/**
- * A multi-leg swap while the screen that started it stays open. The user signs each leg once the
- * previous one landed. The last leg is never settled here: its card follows its own transaction.
- */
 export type SwapRun = {
   id: string
   quote: BaseQuote
-  /** decimal, 0.005 is 0.5% */
   slippage: number
   legs: NonEmpty<RunLeg>
 }
@@ -56,11 +49,9 @@ const withLegs = (run: SwapRun, changes: Record<number, RunLeg>): SwapRun => ({
   legs: run.legs.map((leg, index) => changes[index] ?? leg) as NonEmpty<RunLeg>,
 })
 
-/** a leg that is not ready returns the run unchanged */
 export const legSent = (run: SwapRun, index: number, hash: Hex, input: bigint): SwapRun =>
   run.legs[index]?.at === "ready" ? withLegs(run, { [index]: { at: "sent", hash, input } }) : run
 
-/** a leg that is not sent returns the run unchanged, so a late or repeated settle changes nothing */
 export const legSettled = (run: SwapRun, index: number, outcome: LegOutcome): SwapRun => {
   if (run.legs[index]?.at !== "sent") return run
   if (!outcome.landed)
@@ -75,19 +66,16 @@ export const legSettled = (run: SwapRun, index: number, outcome: LegOutcome): Sw
   )
 }
 
-/** the sent leg the run waits on, never the last: that one follows its own transaction */
 export const settlingLeg = (run: SwapRun): number | null => {
   const index = run.legs.findIndex((leg) => leg.at === "sent")
   return index >= 0 && index < run.legs.length - 1 ? index : null
 }
 
-/** the leg the user signs next */
 export const readyLeg = (run: SwapRun): number | null => {
   const index = run.legs.findIndex((leg) => leg.at === "ready")
   return index >= 0 ? index : null
 }
 
-/** a settle that cannot tell leaves the leg untracked, the user checks the balance the funds went to */
 export const settleRunLeg = async (
   run: SwapRun,
   index: number,
@@ -122,7 +110,6 @@ export const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => 
   )
 }
 
-/** what the signer can spend of the leg's token: Bittensor EVM keeps its existential deposit back */
 export const readLegBalance = async (client: PublicClient, leg: QuoteLeg): Promise<bigint> => {
   const specs = parseTokenId(leg.fromTokenId)
   const address = leg.signer as Hex
@@ -138,10 +125,6 @@ export const readLegBalance = async (client: PublicClient, leg: QuoteLeg): Promi
   return balance - getBittensorEvmReservedWei(leg.fromTokenId)
 }
 
-/**
- * Never more than the previous leg landed, so funds already on the account stay out of the swap,
- * nor more than the quote the user confirmed, nor more than the signer holds.
- */
 export const legInput = (landed: bigint, quoted: bigint, spendable: bigint): bigint => {
   const input = [landed, quoted, spendable].reduce((min, value) => (value < min ? value : min))
   if (input <= 0n) throw new Error("Nothing arrived from the previous leg")
@@ -160,13 +143,11 @@ export type NextLegStepParams = {
   run: SwapRun
   index: number
   module: SwapModule
-  /** a client of the network the leg spends on */
   client: PublicClient
   /** the block an approval the screen saw mine is in: a node behind it still reports the old allowance */
   allowanceAt?: bigint
 }
 
-/** what the user signs next for a ready leg: the allowance its spender still needs, else the leg itself */
 export const nextLegStep = async ({
   run,
   index,

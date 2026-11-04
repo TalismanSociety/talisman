@@ -33,11 +33,6 @@ export const useSwapTxContext = (): SwapTxContext => {
   return useMemo(() => ({ t, accounts, networks }), [accounts, networks, t])
 }
 
-/**
- * The card that becomes active opens and the others close, the user can still open any of them.
- * It scrolls into view only when the card open before it is done, not when a late allowance read adds it.
- * A moment with no active card, while the next leg is queued, keeps the card open before it.
- */
 const useExpandedCards = (cards: readonly SwapTxCardModel[]) => {
   const activeKey = activeSwapTxKey(cards)
   const [expanded, setExpanded] = useState<ReadonlySet<SwapTxCardKey>>(
