@@ -33,10 +33,9 @@ minimumReleaseAgeExclude:
   - "@talismn/siws"
 
 overrides:
-  # dedupe @ledgerhq/hw-transport to a single copy — @zondax/ledger-substrate 2.x
-  # pins 6.35.6 while hw-app-eth/solana 7.x use 6.35.7 and the web transports 6.35.5, which
-  # otherwise produces two incompatible Transport types. The Transport API is
-  # stable across 6.x. devices follows transport.
+  # dedupe @ledgerhq/hw-transport to a single copy — hw-app-eth/solana 7.x pin 6.36.0
+  # and the web transports 6.35.5, which otherwise produces two incompatible Transport
+  # types. The Transport API is stable across 6.x. devices follows transport.
   "@ledgerhq/devices": "8.18.1"
   "@ledgerhq/hw-transport": "6.36.1"
   # errors 7 only removed two type aliases; webhid/webusb still declare ^6.37.
