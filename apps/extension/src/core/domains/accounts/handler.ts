@@ -7,7 +7,7 @@ import {
   hex,
   type KeypairCurve,
 } from "@talismn/crypto"
-import type { AddAccountKeypairOptions } from "@talismn/keyring"
+import type { Account, AddAccountKeypairOptions } from "@talismn/keyring"
 import { assert, stringToU8a } from "@talismn/util"
 import { combineLatest } from "rxjs"
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
@@ -20,7 +20,7 @@ import { encodePjsKeyringPairJson } from "../keyring/pjsKeystore"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { sortAccounts } from "./helpers"
+import { isAccountNameAvailable, sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { type AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import type {
@@ -41,6 +41,20 @@ import type {
   ResponseAccountExport,
   ResponseAccountsExport,
 } from "./types"
+
+const assertContactNamesAvailable = async (options: RequestAddAccountExternal) => {
+  const accounts: Pick<Account, "address" | "name">[] = [...(await keyringStore.getAccounts())]
+  for (const option of options) {
+    if (option.type === "contact" && !isAccountNameAvailable(accounts, option.name))
+      throw new Error("Name already in use")
+    accounts.push(option)
+  }
+}
+
+const assertRenameAllowed = async (account: Account, name: string) => {
+  if (!isAccountNameAvailable(await keyringStore.getAccounts(), name, account))
+    throw new Error("Name already in use")
+}
 
 export default class AccountsHandler extends ExtensionHandler {
   private async accountCreateJson({
@@ -176,6 +190,10 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
+    const account = await keyringStore.getAccount(address)
+    assert(account, "Account not found")
+    await assertRenameAllowed(account, name)
+
     await keyringStore.updateAccount(address, { name })
     return true
   }
@@ -242,6 +260,8 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
+    await assertContactNamesAvailable(options)
+
     const accounts = await keyringStore.addAccountExternalMulti(options)
 
     return accounts.map((a) => a.address)
@@ -273,6 +293,8 @@ export default class AccountsHandler extends ExtensionHandler {
   private async updateContact({ address, name, genesisHash }: RequestAccountContactUpdate) {
     const account = await keyringStore.getAccount(address)
     if (account?.type !== "contact") throw new Error("Contact not found")
+
+    await assertRenameAllowed(account, name)
 
     await keyringStore.updateAccount(address, { name, genesisHash })
 

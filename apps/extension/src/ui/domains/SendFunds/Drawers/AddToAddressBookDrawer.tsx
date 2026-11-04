@@ -1,4 +1,5 @@
 import { chainPlatformOf } from "@common/analytics/accounts"
+import { isAccountNameAvailable } from "@core/domains/accounts/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import {
   detectAddressEncoding,
@@ -18,6 +19,7 @@ import { FormFieldInputText } from "@ui/components/FormFieldInputText"
 import { Address } from "@ui/domains/Account/Address"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
+import { useAccounts } from "@ui/state/accounts"
 import { useNetworkByGenesisHash } from "@ui/state/chaindata"
 import { type FC, type FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -31,11 +33,6 @@ type FormValues = {
   limitToNetwork?: boolean
 }
 
-const schema = yup.object({
-  name: yup.string().trim().required(" "),
-  limitToNetwork: yup.bool(),
-})
-
 const AddToAddressBookDrawerForm: FC<{
   address: string
   tokenGenesisHash?: HexString
@@ -43,6 +40,21 @@ const AddToAddressBookDrawerForm: FC<{
 }> = ({ address, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation()
   const { recipientSource } = useSendFundsWizard()
+  const accounts = useAccounts("all")
+  const schema = useMemo(
+    () =>
+      yup.object({
+        name: yup
+          .string()
+          .trim()
+          .required(" ")
+          .test("is-available", t("Name already in use"), (value) =>
+            isAccountNameAvailable(accounts, value)
+          ),
+        limitToNetwork: yup.bool(),
+      }),
+    [accounts, t]
+  )
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === normalizeAddress(address),

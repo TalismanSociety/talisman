@@ -209,3 +209,20 @@ export const isAddressCompatibleWithNetwork = (network: Network, address: string
   const accountPlatform = getAccountPlatformFromAddress(address)
   return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }
+
+const normaliseAccountName = (name: string) => name.trim().toLowerCase()
+
+type NamedAccount = Pick<Account, "address" | "name">
+
+export const isAccountNameAvailable = (
+  accounts: NamedAccount[],
+  name: string,
+  current?: NamedAccount | null
+) => {
+  if (name === current?.name) return true
+  const normalisedName = normaliseAccountName(name)
+  return !accounts.some(
+    (account) =>
+      account.address !== current?.address && normaliseAccountName(account.name) === normalisedName
+  )
+}

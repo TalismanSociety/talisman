@@ -2,7 +2,7 @@ import type { Account } from "@core/domains/keyring/exports"
 import type { DotNetwork, EthNetwork } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
-import { isAccountCompatibleWithNetwork } from "../helpers"
+import { isAccountCompatibleWithNetwork, isAccountNameAvailable } from "../helpers"
 
 const ASSET_HUB_GENESIS = "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f"
 const POLKADOT_GENESIS = "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
@@ -31,5 +31,28 @@ describe("isAccountCompatibleWithNetwork", () => {
     expect(isAccountCompatibleWithNetwork(dotNetwork(ASSET_HUB_GENESIS), vault)).toBe(true)
     expect(isAccountCompatibleWithNetwork(dotNetwork(POLKADOT_GENESIS), vault)).toBe(false)
     expect(isAccountCompatibleWithNetwork(ethereum, vault)).toBe(false)
+  })
+})
+
+describe("isAccountNameAvailable", () => {
+  const alice = { address: "0xalice", name: "Alice" }
+  const accounts = [alice, { address: "0xbob", name: "Bob" }]
+
+  it("rejects a name another account uses, regardless of case and surrounding spaces", () => {
+    expect(isAccountNameAvailable(accounts, " bob ", alice)).toBe(false)
+    expect(isAccountNameAvailable(accounts, "ALICE")).toBe(false)
+  })
+
+  it("accepts a name no account uses", () => {
+    expect(isAccountNameAvailable(accounts, "Carol", alice)).toBe(true)
+  })
+
+  it("lets an account change the case of its own name", () => {
+    expect(isAccountNameAvailable(accounts, "alice", alice)).toBe(true)
+  })
+
+  it("lets an account keep a name another account already uses", () => {
+    const duplicate = { address: "0xother", name: "Bob" }
+    expect(isAccountNameAvailable([...accounts, duplicate], "Bob", duplicate)).toBe(true)
   })
 })

@@ -1,5 +1,8 @@
 import { classifyError } from "@common/analytics/errorCategory"
-import { isAddressCompatibleWithNetwork } from "@core/domains/accounts/helpers"
+import {
+  isAccountNameAvailable,
+  isAddressCompatibleWithNetwork,
+} from "@core/domains/accounts/helpers"
 import { isAccountAddressSs58 } from "@core/domains/keyring/exports"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { encodeAddressSs58 } from "@talismn/crypto"
@@ -12,6 +15,7 @@ import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { CopyAddressIconButton } from "@ui/domains/CopyAddress/CopyAddressIconButton"
 import { errorCategoryOfField } from "@ui/hooks/analytics/errorShown"
+import { useAccounts } from "@ui/state/accounts"
 import { useNetworks } from "@ui/state/chaindata"
 import { keyBy } from "lodash-es"
 import { useCallback, useMemo } from "react"
@@ -27,13 +31,23 @@ type FormValues = {
   genesisHash?: HexString
 }
 
-const schema = yup.object({
-  name: yup.string().required(" "),
-  genesisHash: yup.mixed<HexString>(),
-})
-
 export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
   const { t } = useTranslation()
+  const accounts = useAccounts("all")
+
+  const schema = useMemo(
+    () =>
+      yup.object({
+        name: yup
+          .string()
+          .required(" ")
+          .test("is-available", t("Name already in use"), (value) =>
+            isAccountNameAvailable(accounts, value, contact)
+          ),
+        genesisHash: yup.mixed<HexString>(),
+      }),
+    [accounts, contact, t]
+  )
 
   const {
     register,
