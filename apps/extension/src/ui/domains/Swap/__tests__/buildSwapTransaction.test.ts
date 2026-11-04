@@ -1,7 +1,13 @@
 import BigNumber from "bignumber.js"
 import { describe, expect, it, vi } from "vitest"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
-import type { BuildLegParams, BuiltLeg, SwapModule } from "../swap-modules/common.swap-module"
+import type {
+  BuildLegParams,
+  BuiltLeg,
+  NonEmpty,
+  QuoteLeg,
+  SwapModule,
+} from "../swap-modules/common.swap-module"
 import { quoteFromLegs } from "../swap-modules/helpers"
 
 const SOL = "solana-mainnet:sol-native"
@@ -99,6 +105,24 @@ describe("buildSwapTransaction", () => {
       exchange: { protocol: "simpleswap", data: { id: "exchange-1" } },
       slippage: 0.005,
     })
+  })
+
+  it("marks the first leg of a multi-leg swap so the swap ends with its last leg", async () => {
+    const { module } = fakeModule()
+    const single = quote(RECIPIENT)
+    const twoLegs = {
+      ...single,
+      legs: [single.legs[0], single.legs[0]] satisfies NonEmpty<QuoteLeg>,
+    }
+
+    const built = await buildSwapTransaction({
+      ...params,
+      module,
+      quote: twoLegs,
+      context: { platform: "ethereum" },
+      slippage: 0.005,
+    })
+    expect(built.leg.txInfo).toEqual({ ...BUILT.txInfo, swapRun: { isLastLeg: false } })
   })
 
   it("rejects a quote built for another recipient before opening an exchange", async () => {
