@@ -73,9 +73,7 @@ const PLACEHOLDER_ADDRESSES = new Set([SWAP_PLACEHOLDER_ADDRESS, SOLANA_PLACEHOL
 const MAX_ROUTE_LEGS = 3
 
 type RouteRequest = {
-  /** the quote list takes a route of several steps as several legs, a leg rebuild takes one step only */
   multiStep: boolean
-  /** false for a later leg: leg 0 collected the fee for the whole swap */
   chargesTalismanFee: boolean
 }
 
@@ -188,7 +186,6 @@ const lifiAssetFromSolToken = async (
   },
 })
 
-/** a native token resolves only through LI.FI's own list, so the list loads first */
 const resolveOrBuildAsset = async (
   env: SwapEnv,
   tokenId: string
@@ -355,11 +352,6 @@ const getToAssets = async (
 const sameAddress = (a: string | undefined, b: string | undefined) =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase()
 
-/**
- * The tokens the swap holds between the steps, [] for a single step, null when the route cannot run as
- * legs: each intermediate token is an ERC20 the wallet can watch land, held by `fromAddress` on an
- * EVM network it knows, and only the last step pays `toAddress`.
- */
 const intermediateTokenIds = (
   route: lifiSdk.Route,
   { fromAddress, toAddress }: Pick<QuoteParams, "fromAddress" | "toAddress">,
@@ -849,15 +841,6 @@ const routeStepFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =
 const spenderOf = (route: lifiSdk.Route | undefined) =>
   route?.steps[0]?.estimate.approvalAddress?.toLowerCase()
 
-/**
- * Re-quotes at the user's slippage, which the quote list leaves out so editing it does not reshuffle
- * the quotes. A step of a multi-step route is re-quoted at what landed, as a single step: LI.FI cannot
- * re-amount the quoted step. A worse rate refuses the first leg, before funds move, but not a later one, which the
- * user signs on screen: the build reports the output they accepted instead. Its token input was
- * approved to the quoted step's spender, so only a fresh route through that spender can use the allowance.
- * A step LI.FI cannot build sends the user back to the quotes while their funds have not moved. A later
- * leg's funds already sit in the intermediate token, so it falls through to the next fresh route.
- */
 const buildLeg = async (
   { leg, input, context, slippage }: BuildLegParams,
   env: SwapEnv

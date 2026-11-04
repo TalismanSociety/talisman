@@ -48,7 +48,6 @@ type LegSignRequest =
 
 const APPROVAL_WAIT_MS = 2 * 60_000
 
-/** a leg's signer and network are fixed, so its mined approval needs neither */
 type MinedLegApproval = Pick<MinedApproval, "blockNumber" | "nonce">
 
 const buildApprovalTransaction = async (
@@ -124,11 +123,6 @@ const buildLegSignRequest = async (
   }
 }
 
-/**
- * Every sign attempt that ends rebuilds the leg, so a retry never reuses a nonce another
- * transaction took, and the allowance is read on every build, so an approval that mined is never
- * asked for twice.
- */
 const legSignQuery = (run: SwapRun, index: number | null, mined: MinedLegApproval | undefined) =>
   queryOptions({
     queryKey: ["swap-run-leg", run.id, index, mined?.blockNumber.toString(), mined?.nonce],
@@ -170,7 +164,6 @@ const useFreshPricingPer = (
   }
 }
 
-/** the leg the run waits on the user to sign, priced on screen */
 export const useLegSigning = (
   run: SwapRun,
   index: number | null,
@@ -209,6 +202,7 @@ export const useLegSigning = (
   )
 
   const clearFailure = () => setSignFailure(undefined)
+  const rebuild = () => request.refetch()
 
   const onSubmit = async (hash: string) => {
     clearFailure()
@@ -224,7 +218,7 @@ export const useLegSigning = (
       const mined = { blockNumber, nonce: tx.payload.nonce }
       await queryClient.prefetchQuery(legSignQuery(run, index, mined))
       setMinedApproval({ leg: index, value: mined })
-    } else await request.refetch()
+    } else await rebuild()
     setIsApprovalPending(false)
   }
 
@@ -232,12 +226,12 @@ export const useLegSigning = (
     setRejectedSubmissions((count) => count + 1)
     if (index !== null)
       setSignFailure({ leg: index, value: getErrorMessage(cause, t("Failed to submit")) })
-    request.refetch()
+    rebuild()
   }
 
   const onPayloadLockChange = (isLocked: boolean) => {
     if (isLocked) clearFailure()
-    else request.refetch()
+    else rebuild()
   }
 
   return {
@@ -255,7 +249,7 @@ export const useLegSigning = (
       isRetry: !!failure,
       isApprovalPending,
       rejectedSubmissions,
-      rebuild: () => request.refetch(),
+      rebuild,
       onSubmit,
       onError,
       onPayloadLockChange,

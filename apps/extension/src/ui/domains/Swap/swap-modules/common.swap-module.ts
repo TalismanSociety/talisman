@@ -164,28 +164,21 @@ export type SettledTransaction =
   | { landed: false; hash: Hex; stop: Exclude<LegStop, "undelivered"> }
 
 export type LegOutcome =
-  /** amount: what reached the next leg's signer, in planck of the leg's output token */
-  { landed: true; hash: Hex; amount: bigint } | { landed: false; hash: Hex; stop: LegStop }
+  | { landed: true; hash: Hex; amount: bigint }
+  | { landed: false; hash: Hex; stop: LegStop }
 
 export type SettleLegParams = {
   leg: QuoteLeg
   hash: Hex
-  /** what the leg was built to spend */
   input: bigint
 }
 
-/** the quote whose first leg is approved: a later leg passes itself as a one-leg quote */
 type ApprovalQuote = Pick<BaseQuote, "legs" | "subProtocol">
 
 export type ApprovalParams = Omit<QuoteParams, "input"> & {
   quoteData: ApprovalQuote | ApprovalQuote[] | null
 }
 
-/**
- * A route this module can finish once another module moved the funds to its source token first.
- * ForeverMoney declares Finney TAO → 964 TAO via bittensor-evm, so a Finney TAO → Base TAO quote
- * becomes a two-leg quote, with an owned EVM account in between.
- */
 export type EntryHop = {
   from: TokenId
   /** this module's source token, the via module must route from → hub */
@@ -264,7 +257,6 @@ export type SwapModule = {
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 
-  /** what a leg delivered to the next leg's signer. Only a module that implements it runs before another leg */
   settleLeg?: (params: SettleLegParams, signal: AbortSignal) => Promise<LegOutcome>
 }
 

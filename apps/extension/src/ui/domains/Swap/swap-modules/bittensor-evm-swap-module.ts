@@ -54,7 +54,6 @@ type Route = {
   toTokenId: TokenId
 }
 
-/** what a substrate to EVM leg carries from its quote to its settlement */
 type SubToEvmLegData = { edHeldRao: string }
 
 const ROUTES: Route[] = BITTENSOR_EVM_PAIRS.flatMap((pair) => [
@@ -368,7 +367,6 @@ const edHeldRaoOf = (leg: QuoteLeg) => {
   return data?.edHeldRao ? BigInt(data.edHeldRao) : 0n
 }
 
-/** a deposit moves its whole input to the mirror, the EVM account keeps the existential deposit an empty account needs */
 const settleLeg = async (
   { leg, hash, input }: SettleLegParams,
   env: SwapEnv,

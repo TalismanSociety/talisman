@@ -472,7 +472,6 @@ const presentation = (
   maxNativeTokenGasBuffer: route.direction === "evm-to-spoke" ? maxNativeTokenGasBuffer : undefined,
 })
 
-/** quotes a later leg: the sender holds nothing yet, every cost fits inside the input */
 const getUpToQuote = async (
   route: ForevermoneyRoute,
   { fromAmount, fromAddress, toAddress }: QuoteParams & { fromAmount: bigint },
@@ -629,8 +628,6 @@ const buildLeg = async (
     destinationClient.getBlockNumber(),
   ])
 
-  // the confirm screen shows the quoted output, the bridge must not deliver less. A later leg
-  // spends what landed instead: below its floor, the user signs it seeing the drop
   const expectedOutput = getOutputAmount(route, amounts.amountWei)
   if (!upTo && expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
   const acceptedOutput = upTo ? legFloor(leg, slippage) : expectedOutput
