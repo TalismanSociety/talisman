@@ -57,12 +57,15 @@ type SignAttempt = { step: SignedStep; nonce: number }
 const nextNonce = (count: number, mined: MinedLegApproval | undefined) =>
   mined ? Math.max(count, mined.nonce + 1) : count
 
+const isApprovalAttemptMined = (attempt: SignAttempt, mined: MinedLegApproval | undefined) =>
+  attempt.step !== "leg" && mined !== undefined && mined.nonce >= attempt.nonce
+
 const pinnedNonce = (
   attempt: SignAttempt | undefined,
   signs: SignedStep,
   mined: MinedLegApproval | undefined
 ) =>
-  attempt?.step === signs && !(mined && mined.nonce >= attempt.nonce) ? attempt.nonce : undefined
+  attempt?.step === signs && !isApprovalAttemptMined(attempt, mined) ? attempt.nonce : undefined
 
 const buildApprovalTransaction = async (
   client: PublicClient,
