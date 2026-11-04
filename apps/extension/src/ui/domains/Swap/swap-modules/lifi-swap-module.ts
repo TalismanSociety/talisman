@@ -941,22 +941,19 @@ const buildLeg = async (
       }
 
       const holding =
-        isRouteStep && !isLaterLeg && BigInt(built.preparedStep.estimate.toAmountMin) < floor
+        !isLaterLeg && BigInt(built.preparedStep.estimate.toAmountMin) < floor
           ? await buildHoldingFloor(step, built.preparedStep)
           : undefined
       const { transaction, preparedStep, fees } = holding ?? { ...built, fees: candidate.fees }
-      const expectedOutput = isRouteStep
-        ? BigInt(preparedStep.estimate.toAmountMin)
-        : leg.outputAmount
-      const acceptedOutput = isRouteStep ? floor : expectedOutput
-      if (expectedOutput < acceptedOutput && !isLaterLeg)
+      const expectedOutput = BigInt(preparedStep.estimate.toAmountMin)
+      if (expectedOutput < floor && !isLaterLeg)
         throw new Error("The rate has moved too far, please select the quote again")
 
       return {
         transaction,
         fees,
         expectedOutput,
-        ...(expectedOutput < acceptedOutput && { acceptedOutput }),
+        ...(expectedOutput < floor && { acceptedOutput: floor }),
         txInfo: {
           type: "swap-lifi",
           protocolName: step.tool,

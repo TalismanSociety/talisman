@@ -595,9 +595,21 @@ describe("LI.FI leg build", () => {
     )
   })
 
-  describe("on the first leg of a multi-step route", () => {
-    const quoted = usdtToTrump().steps[0]
-    const floor = 2_805_507_390_849_766_156_231n
+  describe.each([
+    {
+      leg: "the first leg of a multi-step route",
+      quotedRoute: usdtToTrump,
+      recipient: ALICE,
+      floor: 2_805_507_390_849_766_156_231n,
+    },
+    {
+      leg: "a single-step swap",
+      quotedRoute: usdtToTrumpInOneStep,
+      recipient: BOB,
+      floor: 15_783_907_332_122n,
+    },
+  ])("on $leg", ({ quotedRoute, recipient, floor }) => {
+    const quoted = quotedRoute().steps[0]
     const firstStep = (toAmount: bigint, toAmountMin: bigint, slippage = 0.005) =>
       route(
         "fresh",
@@ -613,7 +625,7 @@ describe("LI.FI leg build", () => {
           } as LiFiStep,
         ],
         ALICE,
-        ALICE
+        recipient
       )
     const lessSlippage = (toAmount: bigint, slippage: number) =>
       (toAmount * BigInt(Math.round((1 - slippage) * 10_000))) / 10_000n
@@ -635,7 +647,7 @@ describe("LI.FI leg build", () => {
       const built = await buildSwapLeg(
         100_000_000n,
         [firstStep(dipped, lessSlippage(dipped, 0.005))],
-        { legIndex: 0, beforeBuild: () => routesTakingSlippageOff(dipped) }
+        { quoted: quotedRoute(), legIndex: 0, beforeBuild: () => routesTakingSlippageOff(dipped) }
       )
 
       expect(built.expectedOutput).toBe(lessSlippage(dipped, 0.0039))
@@ -647,6 +659,7 @@ describe("LI.FI leg build", () => {
     it("refuses a bridge whose fixed output fell below the floor, before funds move", async () => {
       await expect(
         buildSwapLeg(100_000_000n, [firstStep(floor - 1n, floor - 1n)], {
+          quoted: quotedRoute(),
           legIndex: 0,
           beforeBuild: () => routesTakingSlippageOff(floor - 1n),
         })

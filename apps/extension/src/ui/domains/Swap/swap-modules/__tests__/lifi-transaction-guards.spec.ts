@@ -128,7 +128,7 @@ const makeRoute = (fromAmount: bigint, feeCosts: FeeCost[] = []): Route =>
     toChainId: 1,
     fromAmount: fromAmount.toString(),
     toAmount: "950000000000000000",
-    toAmountMin: "940000000000000000",
+    toAmountMin: "945250000000000000",
     steps: [
       {
         id: "step-1",
@@ -146,7 +146,7 @@ const makeRoute = (fromAmount: bigint, feeCosts: FeeCost[] = []): Route =>
           tool: "1inch",
           fromAmount: fromAmount.toString(),
           toAmount: "950000000000000000",
-          toAmountMin: "940000000000000000",
+          toAmountMin: "945250000000000000",
           approvalAddress: APPROVAL_ADDRESS,
           executionDuration: 30,
           feeCosts,
@@ -184,7 +184,8 @@ const givenRoutes = (routes: Route[]) =>
 
 /** Set what the provider returns from `getStepTransaction`. */
 const givenProviderTransaction = (txRequest: Record<string, unknown>) =>
-  mockGetStepTransaction.mockResolvedValue({
+  mockGetStepTransaction.mockImplementation(async (step: object) => ({
+    ...step,
     transactionRequest: {
       from: FROM_ADDRESS,
       to: ROUTER_ADDRESS,
@@ -194,7 +195,7 @@ const givenProviderTransaction = (txRequest: Record<string, unknown>) =>
       gasLimit: "0x5208",
       ...txRequest,
     },
-  })
+  }))
 
 const buildLeg = (
   fromTokenId = NATIVE_TOKEN_ID,
@@ -438,7 +439,7 @@ describe("lifi confirm screen", () => {
         fromTokenId: NATIVE_TOKEN_ID,
         toTokenId: NATIVE_TOKEN_ID,
         fromAmount: "1000000000000000000",
-        toAmount: "940000000000000000",
+        toAmount: "945250000000000000",
         to: FROM_ADDRESS,
       },
     })
