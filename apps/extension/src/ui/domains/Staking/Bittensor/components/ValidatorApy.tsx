@@ -1,4 +1,5 @@
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/Bittensor/hooks/useCombinedBittensorValidatorsData"
+import { formatValidatorApy } from "@ui/domains/Staking/Bittensor/utils/formatValidatorApy"
 import { cn } from "@ui/util/cn"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,10 +16,8 @@ export const ValidatorApy = () => {
 
   const apy = useMemo(() => {
     const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)
-    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
+    return validator?.validatorYield?.thirty_day_apy ?? null
   }, [combinedValidatorsData, hotkey])
-
-  const display = useMemo(() => (apy ? `${(apy * 100).toFixed(2)}%` : "N/A"), [apy])
 
   if (isLoading) {
     return <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">15.00%</div>
@@ -28,5 +27,9 @@ export const ValidatorApy = () => {
     return <div className="text-alert-warn">{t("Unable to fetch APY data")}</div>
   }
 
-  return <span className={cn(apy ? "text-alert-success" : "text-body-secondary")}>{display}</span>
+  return (
+    <span className={cn(apy ? "text-alert-success" : "text-body-secondary")}>
+      {formatValidatorApy(apy) ?? t("N/A")}
+    </span>
+  )
 }
