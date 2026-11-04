@@ -1,5 +1,7 @@
 import { log } from "@common/log"
+import { db } from "@core/db"
 import { evmNativeTokenId, networkIdFromTokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { getErrorMessage } from "@talismn/util"
 import { queryOptions, skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -67,6 +69,29 @@ const pinnedNonce = (
 ) =>
   attempt?.step === signs && !isApprovalAttemptMined(attempt, mined) ? attempt.nonce : undefined
 
+/** A leg of this run mined on the nonce may be the attempt the node took, so it does not count */
+const isNonceMinedOutsideRun = async (
+  run: SwapRun,
+  networkId: string,
+  signer: Hex,
+  nonce: number
+) => {
+  const firstLeg = run.legs[0]
+  const firstLegHash = "hash" in firstLeg ? firstLeg.hash : undefined
+  const mined = await db.transactionsV2
+    .filter(
+      (tx) =>
+        tx.platform === "ethereum" &&
+        tx.networkId === networkId &&
+        tx.nonce === nonce &&
+        tx.blockNumber !== undefined &&
+        isAddressEqual(tx.account, signer) &&
+        !(firstLegHash && tx.txInfo?.swapRun?.firstLegHash === firstLegHash)
+    )
+    .first()
+  return mined !== undefined
+}
+
 const buildApprovalTransaction = async (
   client: PublicClient,
   leg: QuoteLeg,
@@ -116,7 +141,11 @@ const buildLegSignRequest = async (
     api.ethGetTransactionsCount(signer, networkId),
   ])
   const signs: SignedStep = step.signs === "approval" ? step.allowance : "leg"
-  const nonce = pinnedNonce(failedAttempt, signs, mined) ?? nextNonce(count, mined)
+  const pinned = pinnedNonce(failedAttempt, signs, mined)
+  const nonce =
+    pinned !== undefined && !(await isNonceMinedOutsideRun(run, networkId, signer, pinned))
+      ? pinned
+      : nextNonce(count, mined)
   if (step.signs === "approval")
     return buildApprovalTransaction(client, leg, step.approval, step.allowance, nonce)
 

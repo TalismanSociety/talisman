@@ -1,3 +1,5 @@
+import { db } from "@core/db"
+import type { WalletTransactionEth } from "@core/domains/transactions/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
@@ -382,6 +384,72 @@ describe("useLegSigning", () => {
     await waitFor(() => expect(ethGetTransactionsCount).toHaveBeenCalled())
     await waitFor(() => expect(buttonLabel()).toBe("Try again"))
     expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+  })
+
+  describe("once a transaction of the wallet mined on the nonce of a leg that failed to send", () => {
+    const minedOn = (nonce: number, txInfo?: WalletTransactionEth["txInfo"]) =>
+      db.transactionsV2.put({
+        id: `0x${nonce.toString(16).padStart(64, "0")}`,
+        hash: `0x${nonce.toString(16).padStart(64, "0")}`,
+        platform: "ethereum",
+        networkId: "964",
+        account: EVM_ADDRESS.toLowerCase() as `0x${string}`,
+        nonce,
+        status: "success",
+        blockNumber: "100",
+        confirmed: true,
+        payload: {},
+        timestamp: 0,
+        txInfo,
+      })
+    const retryAfterFailingOnNonce8 = async () => {
+      ethGetTransactionsCount.mockResolvedValue(8)
+      renderSign()
+      await waitFor(() =>
+        expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+      )
+      const failedPayloads = new Set(priced.mock.calls.map(([payload]) => payload))
+      ethGetTransactionsCount.mockResolvedValue(9)
+      act(() => button.sign?.())
+      act(() => button.reject?.(new Error("nonce too low")))
+      await waitFor(() => expect(buttonLabel()).toBe("Try again"))
+      return waitFor(() => {
+        const retried = priced.mock.calls
+          .map(([payload]) => payload)
+          .find((payload) => payload && !failedPayloads.has(payload))
+        expect(retried).toBeDefined()
+        return retried
+      })
+    }
+
+    beforeEach(() => db.transactionsV2.clear())
+
+    it("signs the leg on the next nonce, as the leg can never land on its own", async () => {
+      await minedOn(8, {
+        type: "transfer",
+        tokenId: "964:evm-native",
+        value: "1",
+        to: RECIPIENT,
+      })
+
+      expect(await retryAfterFailingOnNonce8()).toMatchObject({ nonce: 9 })
+    })
+
+    it("keeps the leg on its nonce when the mined transaction is a leg of this run", async () => {
+      const firstLeg = FOREVERMONEY_RUN.legs[0]
+      await minedOn(8, {
+        type: "swap-forevermoney",
+        fromTokenId: "964:evm-native",
+        toTokenId: "8453:evm-native",
+        fromAmount: "1",
+        toAmount: "1",
+        to: RECIPIENT,
+        destinationStartBlock: "1",
+        swapRun: { firstLegHash: "hash" in firstLeg ? firstLeg.hash : undefined, isLastLeg: true },
+      })
+
+      expect(await retryAfterFailingOnNonce8()).toMatchObject({ nonce: 8 })
+    })
   })
 
   it("does not hold the leg to the nonce of an approval that failed to send", async () => {
