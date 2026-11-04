@@ -108,7 +108,6 @@ const readBridgeDelivery = async (
   return landedWith(sourceHash, netReceived(receipt.logs, token, recipient))
 }
 
-/** null while the delivery cannot be read yet */
 const readDelivery = async (delivery: Delivery, env: SwapEnv): Promise<LegOutcome | null> => {
   const { leg, recipient, token, sourceHash } = delivery
   const fromChain = networkIdFromTokenId(leg.fromTokenId)
@@ -133,11 +132,6 @@ const wait = (ms: number, signal: AbortSignal) =>
     )
   })
 
-/**
- * Once the step's own transaction is final, what reached the recipient is read from the token's
- * Transfer events: in that receipt for a same-chain step, in the confirmed receiving receipt
- * `/status` points at for a bridge.
- */
 export const settleLifiLeg = async (
   { leg, hash }: SettleLegParams,
   env: SwapEnv,

@@ -74,7 +74,6 @@ import {
   withBlockingError,
 } from "./swapTxCards"
 
-/** the module that builds the quote's first leg: a multi-leg quote starts with another module's leg */
 const useFirstLegModule = (
   quote: BaseQuote | null | undefined,
   selectedModule: SwapModule | null | undefined
@@ -439,8 +438,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
-  // the swap is only built once approved, so until then the quote tells what it will charge.
-  // A later leg is built only once the previous one lands, so its quote tells its fees
   const swapFees = useMemo(
     () =>
       built

@@ -19,11 +19,6 @@ export type IntermediateCandidate = {
   hubBalance: bigint
 }
 
-/**
- * The recipient when it is one of the user's EVM accounts, as it signs the next leg with the same
- * address. Else the keypair account holding the least of the hub token, so a swap never
- * mingles with a large balance. Else a Ledger account, which signs the next leg on the device.
- */
 export const pickIntermediateAccount = (
   candidates: readonly IntermediateCandidate[],
   recipient: string | null
@@ -58,12 +53,6 @@ const first = (quote: BaseQuote | BaseQuote[] | null) => (Array.isArray(quote) ?
 
 const unique = (tokenIds: TokenId[]) => [...new Set(tokenIds)]
 
-/**
- * Advertises the module's enabled entry hops as sources and composes a quote for them: the via
- * module's legs to the intermediate, then the module's own legs, quoted `upTo` what the via quote
- * delivers. A via module that cannot settle its leg offers no route: the next leg's input is
- * what the via leg delivered. Everything else passes through to the module.
- */
 export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopOptions): T => {
   const hops = (module.entryHops ?? []).filter((hop) => options.enabled(hop.flag))
   if (!hops.length) return module

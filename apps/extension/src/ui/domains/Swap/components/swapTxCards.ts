@@ -162,7 +162,6 @@ const quoteApprovalFacts = (
   return hash ? { at: "landed", ...sent } : undefined
 }
 
-/** on the confirm screen the first leg waits on the user and every later leg is queued */
 export const swapQuoteTxFacts = (ctx: SwapTxContext, input: SwapQuoteTxInput): SwapTxLegFacts[] =>
   Array.from({ length: input.legCount }, (_, index): SwapTxLegFacts => {
     if (index > 0)
@@ -198,9 +197,7 @@ export type RunLegSigning = {
 
 export type SwapRunTxInput = {
   run: SwapRun
-  /** each sent leg's transaction row, by leg: null once the wallet no longer holds it */
   rows: ReadonlyArray<WalletTransaction | null | undefined>
-  /** only the screen that sent an approval knows its hash */
   approvalHashes: Readonly<Partial<Record<number, Hex>>>
   approvalsNeeded: ReadonlySet<number>
   signing: RunLegSigning | null
@@ -242,7 +239,6 @@ const deliveryError = (
   return undefined
 }
 
-/** a leg that did not execute leaves the funds on its signer */
 const FUNDS_ON_SIGNER: ReadonlySet<LegStop> = new Set(["failed", "cancelled"])
 
 const stopError = (ctx: SwapTxContext, leg: QuoteLeg, stop: LegStop) => {
@@ -290,7 +286,6 @@ const withSigningFailure = (facts: SwapTxLegFacts, signing: RunLegSigning): Swap
 
 const isStopped = (run: SwapRun) => run.legs.some((leg) => leg.at === "stopped")
 
-/** the last leg is never settled by the run: once sent, its card follows its own transaction */
 export const swapRunTxFacts = (ctx: SwapTxContext, input: SwapRunTxInput): SwapTxLegFacts[] => {
   const { run, rows, signing } = input
   const lastIndex = run.legs.length - 1
@@ -325,7 +320,6 @@ export type SwapRunFooter =
   | { type: "finish"; offer: RecoveryOffer }
   | { type: "check-activity" }
 
-/** the funds provably wait on the stopping leg's signer, so a new swap from there finishes the route */
 const recoveryOffer = ({ quote, legs }: SwapRun): RecoveryOffer | null => {
   const index = legs.findIndex((leg) => leg.at === "stopped")
   const stopped = legs[index]

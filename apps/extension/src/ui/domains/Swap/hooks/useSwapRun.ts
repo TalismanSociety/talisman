@@ -12,7 +12,6 @@ import {
 } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
 
-/** a multi-leg swap lives as long as the swap screen: closing it stops following the legs */
 export const useSwapRun = () => {
   const [run, setRun] = useState<SwapRun | null>(null)
 
