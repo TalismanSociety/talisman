@@ -11,13 +11,13 @@ import {
   startRun,
 } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
-import { saveUnfinishedSwap } from "../unfinishedSwaps"
+import { addUnfinishedSwap, updateUnfinishedSwap } from "../unfinishedSwaps"
 
 export const useSwapRun = () => {
   const [run, setRun] = useState<SwapRun | null>(null)
 
   useEffect(() => {
-    if (run) saveUnfinishedSwap(run)
+    if (run) updateUnfinishedSwap(run)
   }, [run])
 
   useEffect(() => {
@@ -35,8 +35,11 @@ export const useSwapRun = () => {
   }, [run])
 
   const start = useCallback(
-    (quote: BaseQuote, slippage: number, first: { hash: Hex; input: bigint }) =>
-      setRun(startRun(quote, slippage, first)),
+    (quote: BaseQuote, slippage: number, first: { hash: Hex; input: bigint }) => {
+      const started = startRun(quote, slippage, first)
+      addUnfinishedSwap(started)
+      setRun(started)
+    },
     []
   )
 

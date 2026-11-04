@@ -36,7 +36,7 @@ const useLatestHeldSwap = (
         (balance) =>
           balance.tokenId === swap.fromTokenId && isAddressEqual(balance.address, swap.fromAddress)
       ).each[0]
-      if (balance && balance.transferable.planck > 0n) return swap
+      if (balance?.status === "live" && balance.transferable.planck > 0n) return swap
     }
     return null
   }, [balances, formFromTokenId, swaps])

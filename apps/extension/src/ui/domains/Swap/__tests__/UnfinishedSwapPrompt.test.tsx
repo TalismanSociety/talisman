@@ -11,7 +11,7 @@ const BASE_WTAO = "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67"
 
 const openSwapModal = vi.fn()
 const featureFlags = { SWAPS_MULTI_HOP: true }
-const held = { planck: 0n }
+const held: { planck: bigint; status: "live" | "cache" | "stale" } = { planck: 0n, status: "live" }
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (value: string) => value }),
@@ -45,7 +45,7 @@ vi.mock("@ui/hooks/useBalancesByParams", () => ({
           {
             address: EVM_ADDRESS,
             tokenId: HUB_TAO,
-            token: { symbol: "TAO" },
+            status: held.status,
             transferable: { planck: held.planck, tokens: "1" },
           },
         ]
@@ -62,7 +62,7 @@ vi.mock("../hooks/useSwapModal", () => ({
 
 import { UnfinishedSwapPrompt } from "../components/UnfinishedSwapPrompt"
 import { quoteFromLegs } from "../swap-modules/helpers"
-import { saveUnfinishedSwap } from "../unfinishedSwaps"
+import { updateUnfinishedSwap } from "../unfinishedSwaps"
 
 const UNFINISHED: UnfinishedSwap = {
   runId: "run-1",
@@ -84,6 +84,7 @@ describe("UnfinishedSwapPrompt", () => {
     vi.clearAllMocks()
     featureFlags.SWAPS_MULTI_HOP = true
     held.planck = 10n ** 18n
+    held.status = "live"
     await appStore.set({ unfinishedSwaps: [UNFINISHED] })
   })
 
@@ -99,6 +100,16 @@ describe("UnfinishedSwapPrompt", () => {
 
     await expectNoPrompt()
   })
+
+  it.each(["cache", "stale"] as const)(
+    "stays hidden while the held balance is %s, not live",
+    async (status) => {
+      held.status = status
+      renderPrompt()
+
+      await expectNoPrompt()
+    }
+  )
 
   it("stays hidden when multi-hop swaps are off", async () => {
     featureFlags.SWAPS_MULTI_HOP = false
@@ -157,7 +168,7 @@ describe("UnfinishedSwapPrompt", () => {
         providerName: "ForeverMoney",
       }
     )
-    await saveUnfinishedSwap({
+    await updateUnfinishedSwap({
       id: UNFINISHED.runId,
       quote,
       slippage: 0.005,

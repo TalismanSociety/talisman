@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { quoteFromLegs } from "../swap-modules/helpers"
 import type { RunLeg, SwapRun } from "../swap-modules/swap-run"
 import {
-  saveUnfinishedSwap,
+  addUnfinishedSwap,
   unfinishedSwapOf,
+  updateUnfinishedSwap,
   withoutHeldFunds,
   withRunNote,
 } from "../unfinishedSwaps"
@@ -151,14 +152,33 @@ describe("withoutHeldFunds", () => {
   })
 })
 
-describe("saveUnfinishedSwap", () => {
+describe("a run's note in the app store", () => {
   beforeEach(() => appStore.set({ unfinishedSwaps: [] }))
 
   it("stores the note while the run is unfinished and removes it once the last leg is sent", async () => {
-    await saveUnfinishedSwap(run(SENT_0, { at: "queued" }))
+    await addUnfinishedSwap(run(SENT_0, { at: "queued" }))
     expect(await appStore.get("unfinishedSwaps")).toEqual([note()])
 
-    await saveUnfinishedSwap(run(LANDED_0, SENT_1))
+    await updateUnfinishedSwap(run(LANDED_0, { at: "ready" }))
+    expect(await appStore.get("unfinishedSwaps")).toEqual([note()])
+
+    await updateUnfinishedSwap(run(LANDED_0, SENT_1))
     expect(await appStore.get("unfinishedSwaps")).toEqual([])
+  })
+
+  it("does not bring back a note the user dismissed while the run went on", async () => {
+    await addUnfinishedSwap(run(SENT_0, { at: "queued" }))
+    await appStore.set({ unfinishedSwaps: [] })
+
+    await updateUnfinishedSwap(run(LANDED_0, { at: "ready" }))
+    expect(await appStore.get("unfinishedSwaps")).toEqual([])
+  })
+
+  it("keeps a newer run's note when an older run of the account updates", async () => {
+    await addUnfinishedSwap(run(SENT_0, { at: "queued" }, "run-old"))
+    await addUnfinishedSwap(run(SENT_0, { at: "queued" }, "run-new"))
+
+    await updateUnfinishedSwap(run(LANDED_0, { at: "ready" }, "run-old"))
+    expect(await appStore.get("unfinishedSwaps")).toEqual([note({ runId: "run-new" })])
   })
 })

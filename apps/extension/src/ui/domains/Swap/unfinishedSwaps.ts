@@ -31,6 +31,13 @@ export const withRunNote = (
   return [...others.filter((entry) => !isAddressEqual(entry.fromAddress, note.fromAddress)), note]
 }
 
+const withRunUpdate = (
+  list: readonly UnfinishedSwap[],
+  runId: string,
+  note: UnfinishedSwap | null
+): UnfinishedSwap[] =>
+  list.some((entry) => entry.runId === runId) ? withRunNote(list, runId, note) : [...list]
+
 export const withoutHeldFunds = (
   list: readonly UnfinishedSwap[],
   held: HeldFunds
@@ -45,8 +52,11 @@ const updateUnfinishedSwaps = (update: (list: readonly UnfinishedSwap[]) => Unfi
     .mutate((state) => ({ ...state, unfinishedSwaps: update(state.unfinishedSwaps ?? []) }))
     .catch((cause) => log.error("Failed to update the unfinished swaps", { cause }))
 
-export const saveUnfinishedSwap = (run: SwapRun) =>
+export const addUnfinishedSwap = (run: SwapRun) =>
   updateUnfinishedSwaps((list) => withRunNote(list, run.id, unfinishedSwapOf(run)))
+
+export const updateUnfinishedSwap = (run: SwapRun) =>
+  updateUnfinishedSwaps((list) => withRunUpdate(list, run.id, unfinishedSwapOf(run)))
 
 export const clearUnfinishedSwap = (runId: string) =>
   updateUnfinishedSwaps((list) => withRunNote(list, runId, null))
