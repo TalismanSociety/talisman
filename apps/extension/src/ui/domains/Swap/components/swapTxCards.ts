@@ -320,7 +320,7 @@ export type SwapRunFooter =
   | { type: "finish"; offer: RecoveryOffer }
   | { type: "check-activity" }
 
-const offerFrom = ({ quote }: SwapRun, index: number): RecoveryOffer | null => {
+export const offerFrom = ({ quote }: SwapRun, index: number): RecoveryOffer | null => {
   const { fromTokenId, signer } = quote.legs[index] ?? {}
   if (!fromTokenId || !signer) return null
   return {
@@ -330,7 +330,7 @@ const offerFrom = ({ quote }: SwapRun, index: number): RecoveryOffer | null => {
   }
 }
 
-const recoveryOffer = (run: SwapRun): RecoveryOffer | null => {
+export const recoveryOffer = (run: SwapRun): RecoveryOffer | null => {
   const index = run.legs.findIndex((leg) => leg.at === "stopped")
   const stopped = run.legs[index]
   return stopped?.at === "stopped" && FUNDS_ON_SIGNER.has(stopped.stop)

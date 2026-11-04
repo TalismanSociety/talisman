@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@common/constants"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { gt } from "semver"
 
 import { StorageProvider } from "../../libs/Store"
@@ -22,6 +23,13 @@ type CurrentMigration = {
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
 
+export type UnfinishedSwap = {
+  runId: string
+  fromAddress: string
+  fromTokenId: TokenId
+  toTokenId: TokenId
+}
+
 export type AppStoreData = {
   onboarded: OnboardedType
   hideBraveWarning: boolean
@@ -39,6 +47,8 @@ export type AppStoreData = {
   hideGetStarted?: boolean
   hideQuickUnlockOffer?: boolean
   dismissedCoachmarks?: CoachmarkId[]
+  /** oldest first, at most one per fromAddress */
+  unfinishedSwaps?: UnfinishedSwap[]
 
   // dismissed earn disclaimer
   hideEarnDisclaimer?: boolean

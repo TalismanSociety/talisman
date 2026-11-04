@@ -16,6 +16,7 @@ import { SwapAccountPicker } from "./SwapAccountPicker"
 import { SwapProviderPickerButton } from "./SwapProviderPickerButton"
 import { ToAmountDisplay } from "./ToAmountDisplay"
 import { TokenAndAmountContainer } from "./TokenAndAmountContainer"
+import { UnfinishedSwapPrompt } from "./UnfinishedSwapPrompt"
 
 export const SwapForm = () => {
   const { t } = useTranslation()
@@ -44,6 +45,7 @@ export const SwapForm = () => {
     reverse,
     setFromAddress,
     setToAddress,
+    stateInit,
   } = useSwap()
 
   const toToken = useToken(toTokenId ?? undefined)
@@ -107,6 +109,7 @@ export const SwapForm = () => {
       contentClassName="relative overflow-hidden! p-0!"
     >
       <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
+        <UnfinishedSwapPrompt formFromTokenId={fromTokenId ?? stateInit?.fromTokenId ?? null} />
         <div className="relative flex flex-col gap-6">
           <TokenAndAmountContainer
             tokenButton={
