@@ -341,24 +341,46 @@ describe("useLegSigning", () => {
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("true")
     act(() => button.reject?.(new Error("nonce already used")))
 
+    await waitFor(() => expect(buttonLabel()).toBe("Try again"))
     expect(screen.getByRole("button").getAttribute("aria-busy")).toBe("false")
-    expect(buttonLabel()).toBe("Try again")
   })
 
-  it("rebuilds the leg on a fresh nonce once the background rejects the signed leg", async () => {
+  it("retries a leg the background failed to send on the same nonce, so a leg the node took anyway cannot run twice", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     renderSign()
     await waitFor(() =>
       expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
     )
 
+    ethGetTransactionsCount.mockClear()
     ethGetTransactionsCount.mockResolvedValue(9)
     act(() => button.sign?.())
-    act(() => button.reject?.(new Error("nonce already used")))
+    act(() => button.reject?.(new Error("request timed out")))
 
-    await waitFor(() =>
-      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 9 } })
-    )
+    await waitFor(() => expect(ethGetTransactionsCount).toHaveBeenCalled())
+    await waitFor(() => expect(buttonLabel()).toBe("Try again"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
+  })
+
+  it("does not hold the leg to the nonce of an approval that failed to send", async () => {
+    signer.type = "keypair"
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(0n)
+    client.waitForTransactionReceipt.mockResolvedValue({ blockNumber: 100n, status: "success" })
+    renderSign(LIFI_RUN)
+    await waitFor(() => expect(buttonLabel()).toBe("Approve USDT"))
+
+    act(() => button.reject?.(new Error("request timed out")))
+    await waitFor(() => expect(buttonLabel()).toBe("Try again"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { to: USDT, nonce: 8 } })
+
+    client.allowance.mockResolvedValue(LIFI_LEG.inputAmount)
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { to: SPENDER, nonce: 9 } })
   })
 
   it("signs the leg with the wallet's next nonce, priced on screen with no fee of its own", async () => {

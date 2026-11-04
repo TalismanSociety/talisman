@@ -50,6 +50,13 @@ const APPROVAL_WAIT_MS = 2 * 60_000
 
 type MinedLegApproval = Pick<MinedApproval, "blockNumber" | "nonce">
 
+type SignedStep = Exclude<AllowanceStep, "none"> | "leg"
+
+type SignAttempt = { step: SignedStep; nonce: number }
+
+const nextNonce = (count: number, mined: MinedLegApproval | undefined) =>
+  mined ? Math.max(count, mined.nonce + 1) : count
+
 const buildApprovalTransaction = async (
   client: PublicClient,
   leg: QuoteLeg,
@@ -84,7 +91,8 @@ const buildApprovalTransaction = async (
 const buildLegSignRequest = async (
   run: SwapRun,
   index: number,
-  mined: MinedLegApproval | undefined
+  mined: MinedLegApproval | undefined,
+  failedAttempt: SignAttempt | undefined
 ): Promise<LegSignRequest> => {
   const leg = run.quote.legs[index]
   const module = swapModules.find((candidate) => candidate.protocol === leg.protocol)
@@ -93,12 +101,12 @@ const buildLegSignRequest = async (
   const networkId = networkIdFromTokenId(leg.fromTokenId)
   const signer = leg.signer as Hex
   const client = await getEvmPublicClient(networkId)
-  const [step, nonce] = await Promise.all([
+  const [step, count] = await Promise.all([
     nextLegStep({ run, index, module, client, allowanceAt: mined?.blockNumber }),
-    api
-      .ethGetTransactionsCount(signer, networkId)
-      .then((count) => (mined ? Math.max(count, mined.nonce + 1) : count)),
+    api.ethGetTransactionsCount(signer, networkId),
   ])
+  const signs: SignedStep = step.signs === "approval" ? step.allowance : "leg"
+  const nonce = failedAttempt?.step === signs ? failedAttempt.nonce : nextNonce(count, mined)
   if (step.signs === "approval")
     return buildApprovalTransaction(client, leg, step.approval, step.allowance, nonce)
 
@@ -123,10 +131,24 @@ const buildLegSignRequest = async (
   }
 }
 
-const legSignQuery = (run: SwapRun, index: number | null, mined: MinedLegApproval | undefined) =>
+const legSignQuery = (
+  run: SwapRun,
+  index: number | null,
+  mined: MinedLegApproval | undefined,
+  failedAttempt: SignAttempt | undefined
+) =>
   queryOptions({
-    queryKey: ["swap-run-leg", run.id, index, mined?.blockNumber.toString(), mined?.nonce],
-    queryFn: index !== null ? () => buildLegSignRequest(run, index, mined) : skipToken,
+    queryKey: [
+      "swap-run-leg",
+      run.id,
+      index,
+      mined?.blockNumber.toString(),
+      mined?.nonce,
+      failedAttempt?.step,
+      failedAttempt?.nonce,
+    ],
+    queryFn:
+      index !== null ? () => buildLegSignRequest(run, index, mined, failedAttempt) : skipToken,
     staleTime: Infinity,
     refetchOnWindowFocus: "always",
     retry: false,
@@ -143,8 +165,13 @@ const waitForApproval = async (tx: TxSubmitButtonTransactionEth, hash: Hex) => {
   }
 }
 
-const signedStep = (request: LegSignRequest) =>
+const signedStep = (request: LegSignRequest): SignedStep =>
   request.signs === "approval" ? request.step : request.signs
+
+const attemptOf = (request: LegSignRequest | undefined): SignAttempt | undefined => {
+  const nonce = request?.tx.payload.nonce
+  return request && nonce !== undefined ? { step: signedStep(request), nonce } : undefined
+}
 
 type LegNote<T> = { leg: number; value: T }
 
@@ -172,7 +199,11 @@ export const useLegSigning = (
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [minedApproval, setMinedApproval] = useState<LegNote<MinedLegApproval>>()
-  const request = useQuery(legSignQuery(run, index, noteFor(minedApproval, index)))
+  const [failedAttempt, setFailedAttempt] = useState<LegNote<SignAttempt>>()
+  const legFailedAttempt = noteFor(failedAttempt, index)
+  const request = useQuery(
+    legSignQuery(run, index, noteFor(minedApproval, index), legFailedAttempt)
+  )
   const ethTx = useEthTransaction(request.data?.tx.payload, request.data?.tx.networkId)
   useFreshPricingPer(request.data && `${index}:${signedStep(request.data)}`, ethTx)
   const [approvalHashes, setApprovalHashes] = useState<Readonly<Partial<Record<number, Hex>>>>({})
@@ -216,16 +247,19 @@ export const useLegSigning = (
     const blockNumber = await waitForApproval(tx, hash as Hex)
     if (blockNumber !== undefined && tx.payload.nonce !== undefined) {
       const mined = { blockNumber, nonce: tx.payload.nonce }
-      await queryClient.prefetchQuery(legSignQuery(run, index, mined))
+      await queryClient.prefetchQuery(legSignQuery(run, index, mined, legFailedAttempt))
       setMinedApproval({ leg: index, value: mined })
     } else await rebuild()
     setIsApprovalPending(false)
   }
 
+  const attempt = attemptOf(request.data)
   const onError = (cause: unknown) => {
     setRejectedSubmissions((count) => count + 1)
-    if (index !== null)
+    if (index !== null) {
       setSignFailure({ leg: index, value: getErrorMessage(cause, t("Failed to submit")) })
+      if (attempt) setFailedAttempt({ leg: index, value: attempt })
+    }
     rebuild()
   }
 
