@@ -338,21 +338,28 @@ const recoveryOffer = (run: SwapRun): RecoveryOffer | null => {
     : null
 }
 
+const lastLegOffer = ({ run, rows }: Pick<SwapRunTxInput, "run" | "rows">) => {
+  const last = run.legs.length - 1
+  const status = rows[last]?.status
+  return status === "error" || status === "replaced" ? offerFrom(run, last) : null
+}
+
+const finishOrCheckActivity = (offer: RecoveryOffer | null): SwapRunFooter =>
+  offer ? { type: "finish", offer } : { type: "check-activity" }
+
 export const swapRunFooter = (
-  { run, signing }: Pick<SwapRunTxInput, "run" | "signing">,
+  { run, rows, signing }: Pick<SwapRunTxInput, "run" | "rows" | "signing">,
   cards: readonly SwapTxCardModel[]
 ): SwapRunFooter => {
   const ready = readyLeg(run)
   if (ready !== null)
     return { type: "sign", offer: signing?.failure ? offerFrom(run, ready) : null }
-  if (isStopped(run)) {
-    const offer = recoveryOffer(run)
-    return offer ? { type: "finish", offer } : { type: "check-activity" }
-  }
+  if (isStopped(run)) return finishOrCheckActivity(recoveryOffer(run))
   switch (cards.at(-1)?.status) {
     case "done":
       return { type: "close" }
     case "failed":
+      return finishOrCheckActivity(lastLegOffer({ run, rows }))
     case "untracked":
       return { type: "check-activity" }
     default:
