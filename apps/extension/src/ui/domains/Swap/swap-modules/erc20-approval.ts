@@ -1,7 +1,7 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { isAddressEqual } from "@talismn/crypto"
 import { encodeFunctionData, erc20Abi, type Hex, type PublicClient } from "viem"
-import type { ApprovalInfo } from "../swap-modules/common.swap-module"
+import type { ApprovalInfo } from "./common.swap-module"
 
 type Approval = NonNullable<ApprovalInfo>
 

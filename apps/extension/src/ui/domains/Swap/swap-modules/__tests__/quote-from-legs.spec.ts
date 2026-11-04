@@ -101,4 +101,17 @@ describe("quoteFromLegs", () => {
       quoteFromLegs([moveToEvm, { ...bridgeToBase, signer: RECIPIENT }], presentation)
     ).toThrow("Quote legs do not chain")
   })
+
+  it("rejects a later leg a substrate account would sign", () => {
+    const backToFinney: QuoteLeg = {
+      ...moveToEvm,
+      fromTokenId: moveToEvm.toTokenId,
+      toTokenId: moveToEvm.fromTokenId,
+      signer: SUB_ADDRESS,
+      recipient: SUB_ADDRESS,
+    }
+    expect(() =>
+      quoteFromLegs([{ ...moveToEvm, recipient: SUB_ADDRESS }, backToFinney], presentation)
+    ).toThrow("Only an EVM account signs a later leg")
+  })
 })

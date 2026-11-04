@@ -1,5 +1,5 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { BaseQuote, NonEmpty, QuoteLeg, SwapEnv } from "./common.swap-module"
 
 /** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
@@ -16,6 +16,8 @@ export const quoteFromLegs = (
     if (leg.fromTokenId !== previous.toTokenId) throw new Error("Quote legs do not chain")
     if (leg.signer && previous.recipient && !isAddressEqual(leg.signer, previous.recipient))
       throw new Error("Quote legs do not chain")
+    if (leg.signer && !isEthereumAddress(leg.signer))
+      throw new Error("Only an EVM account signs a later leg")
   })
 
   return {

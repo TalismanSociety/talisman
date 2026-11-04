@@ -13,7 +13,7 @@ import type {
 import * as lifiSdk from "@lifi/sdk"
 import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
 
-const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
+export const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
 
 export type LifiApi = {
   getTokens: (

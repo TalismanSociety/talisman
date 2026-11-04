@@ -204,10 +204,15 @@ describe("withEntryHops", () => {
   })
 
   it("keeps every leg of both quotes, in order", async () => {
-    const MID_TOKEN = "bittensor:substrate-dtao:1"
+    const MID_TOKEN = "964:evm-erc20:0x0000000000000000000000000000000000000805"
     const viaLegs: [QuoteLeg, QuoteLeg] = [
-      { ...LEG0, toTokenId: MID_TOKEN, recipient: SUB_ADDRESS },
-      { ...LEG0, fromTokenId: MID_TOKEN, outputAmount: 999_000_000_000_000_000n },
+      { ...LEG0, toTokenId: MID_TOKEN },
+      {
+        ...LEG0,
+        fromTokenId: MID_TOKEN,
+        signer: KEYPAIR_POOR,
+        outputAmount: 999_000_000_000_000_000n,
+      },
     ]
     const targetLegs: [QuoteLeg, QuoteLeg] = [
       { ...LEG1, toTokenId: ROBINHOOD_WTAO, recipient: KEYPAIR_POOR },

@@ -48,6 +48,7 @@ import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
 import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
 import { defaultLifiApi as api, solanaTransactionBytes } from "./lifi-api"
+import { settleLifiLeg } from "./lifi-delivery"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
@@ -957,4 +958,5 @@ export const lifiSwapModule: SwapModuleDefinition = {
   getQuote: getQuote,
   buildLeg,
   getApprovalInfo: getApprovalInfo,
+  settleLeg: settleLifiLeg,
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { type MinedApproval, minedBlockOn, nonceAfter } from "../hooks/erc20Approval"
+import { type MinedApproval, minedBlockOn, nonceAfter } from "../erc20-approval"
 
 const FROM = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
 const OTHER = "0x1da2415229b614C787e145D1D7346eb496319C52"
