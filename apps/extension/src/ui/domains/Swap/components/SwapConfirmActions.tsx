@@ -31,7 +31,12 @@ import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useSt
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
-import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
+import {
+  getAdditionalFeePlanck,
+  getLaterLegHoldingKeys,
+  getShortfall,
+} from "../hooks/quote-sorting"
+import { useHoldings } from "../hooks/useHoldings"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
@@ -461,6 +466,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromAmount,
   })
 
+  const runQuote = built?.quote ?? selectedQuote
+  const laterLegHoldings = useHoldings(runQuote ? getLaterLegHoldingKeys(runQuote) : [])
+  const laterLegShortfall = useMemo(
+    () => (runQuote && laterLegHoldings ? getShortfall(runQuote, laterLegHoldings) : null),
+    [runQuote, laterLegHoldings]
+  )
+  const isLaterLegBalanceLoading = laterLegHoldings === null
+
   const swapError = useMemo<SwapConfirmError | null>(() => {
     // 1. Balance errors — most actionable for the user
     if (isInsufficientBalance === true && fromTokenId) {
@@ -472,6 +485,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         feeTokenId: feeBalanceCheck.feeTokenId,
         required: feeBalanceCheck.required ?? 0n,
         available: feeBalanceCheck.available ?? 0n,
+      }
+    }
+    if (laterLegShortfall) {
+      return {
+        type: "insufficient-fee-balance",
+        feeTokenId: laterLegShortfall.tokenId,
+        required: laterLegShortfall.required,
+        available: laterLegShortfall.available,
       }
     }
 
@@ -492,6 +513,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     isInsufficientBalance,
     fromTokenId,
     feeBalanceCheck,
+    laterLegShortfall,
     exchangeError,
     needsApproval,
     approvalEthTx.errorDetails,
@@ -500,13 +522,21 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     solanaFee.error,
   ])
 
+  const errorFeeToken = useToken(
+    swapError?.type === "insufficient-fee-balance" ? swapError.feeTokenId : undefined
+  )
+  const errorFeeNetwork = useNetworkById(errorFeeToken?.networkId)
+  const errorFeeNetworkName =
+    errorFeeToken && errorFeeToken.networkId !== fromNetwork?.id ? errorFeeNetwork?.name : undefined
+
   const errorMessage = useMemo<string | null>(() => {
     if (!swapError) return null
     return getSwapErrorMessage(swapError, t, {
       tokenSymbol: fromToken?.symbol,
-      feeTokenSymbol: feeToken?.symbol,
+      feeTokenSymbol: errorFeeToken?.symbol,
+      feeNetworkName: errorFeeNetworkName,
     })
-  }, [swapError, t, fromToken?.symbol, feeToken?.symbol])
+  }, [swapError, t, fromToken?.symbol, errorFeeToken?.symbol, errorFeeNetworkName])
 
   useErrorShown({ shown: swapError?.type, surface: "alert", category: classifyError(swapError) })
 
@@ -600,6 +630,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       isInsufficientBalance !== false ||
       feeBalanceCheck.status === "insufficient" ||
       feeBalanceCheck.status === "loading" ||
+      isLaterLegBalanceLoading ||
       isExchangeLoading ||
       !swapTx ||
       !!swapError,
@@ -608,6 +639,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       isExchangeLoading,
       isInsufficientBalance,
       feeBalanceCheck.status,
+      isLaterLegBalanceLoading,
       isReady,
       swapTx,
       toAddress,
@@ -739,7 +771,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         !approval.tx ||
         !!approvalEthTx.errorDetails ||
         feeBalanceCheck.status === "insufficient" ||
-        feeBalanceCheck.status === "loading"
+        feeBalanceCheck.status === "loading" ||
+        isLaterLegBalanceLoading ||
+        !!laterLegShortfall
       }
       isProcessing={approval.isPending}
     />

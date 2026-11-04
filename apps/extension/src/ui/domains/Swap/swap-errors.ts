@@ -110,7 +110,7 @@ export const classifyFeeEstimationError = (rawError: unknown): SwapConfirmError 
 export const getSwapErrorMessage = (
   error: SwapConfirmError,
   t: TFunction,
-  opts?: { tokenSymbol?: string; feeTokenSymbol?: string }
+  opts?: { tokenSymbol?: string; feeTokenSymbol?: string; feeNetworkName?: string }
 ): string => {
   switch (error.type) {
     case "insufficient-swap-balance":
@@ -119,6 +119,11 @@ export const getSwapErrorMessage = (
         : t("Insufficient balance")
 
     case "insufficient-fee-balance":
+      if (opts?.feeTokenSymbol && opts.feeNetworkName)
+        return t("Insufficient {{symbol}} on {{network}} to pay for transaction fees", {
+          symbol: opts.feeTokenSymbol,
+          network: opts.feeNetworkName,
+        })
       return opts?.feeTokenSymbol
         ? t("Insufficient {{symbol}} to pay for transaction fees", {
             symbol: opts.feeTokenSymbol,

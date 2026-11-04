@@ -1,11 +1,18 @@
+import type { TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
-import type { BaseQuote, QuoteFee, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  QuoteFee,
+  QuoteLeg,
+  SupportedSwapProtocol,
+} from "../swap-modules/common.swap-module"
 
 export type QuoteSorting = "decentalised" | "cheapest" | "fastest" | "bestRate"
 
-/** What the account lacks in the source network's native token to pay for the route */
-export type Shortfall = { tokenId: string; planck: bigint }
+/** A token the route spends from an account that holds less of it than `required` */
+export type Shortfall = { tokenId: TokenId; required: bigint; available: bigint }
 
 /** `netUsd` is null when the output token or a fee paid on top has no rate */
 export type QuoteWithFees = {
@@ -81,33 +88,70 @@ export const attachFees = (
 export const toPlanck = (fee: QuoteFee, decimals: number) =>
   BigNumber(fee.amount).shiftedBy(decimals).integerValue(BigNumber.ROUND_CEIL).toFixed()
 
-/** Sum of the additional fees charged in `tokenId`, the amount the account must hold on top of gas */
-export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: string, decimals: number) =>
+const sumPlanck = (fees: QuoteFee[], tokenId: TokenId, decimals: number) =>
   fees
-    .filter((fee) => fee.additional && fee.tokenId === tokenId)
+    .filter((fee) => fee.tokenId === tokenId)
     .reduce((total, fee) => total + BigInt(toPlanck(fee, decimals)), 0n)
 
-export type NativeHolding = { tokenId: string; decimals: number; transferable: bigint }
+/** Sum of the additional fees charged in `tokenId`, the amount the account must hold on top of gas */
+export const getAdditionalFeePlanck = (fees: QuoteFee[], tokenId: TokenId, decimals: number) =>
+  sumPlanck(
+    fees.filter((fee) => fee.additional),
+    tokenId,
+    decimals
+  )
+
+const isPaidOnTop = (fee: QuoteFee) => fee.additional || fee.gas
+
+export type HoldingKey = { address: string; tokenId: TokenId }
+export type Holding = HoldingKey & { decimals: number; transferable: bigint }
 
 /**
- * Mark the quotes the account cannot pay for: the input plus the fees charged on top of it,
- * in the source network's native token, exceed what it holds.
+ * The tokens a later leg spends from its signer's own balance: its gas and the fees charged on top,
+ * except in the token it receives, which it pays out of what the previous leg delivers.
  */
-export const attachShortfalls = (
-  quotes: QuoteWithFees[],
-  native: NativeHolding | null
-): QuoteWithFees[] => {
-  if (!native) return quotes
-  return quotes.map((entry) => {
-    const { quote } = entry
-    const input = quote.legs[0].fromTokenId === native.tokenId ? quote.inputAmountBN : 0n
-    const additionalFees = getAdditionalFeePlanck(quote.fees, native.tokenId, native.decimals)
-    const missing = input + additionalFees - native.transferable
-    return missing > 0n
-      ? { ...entry, shortfall: { tokenId: native.tokenId, planck: missing } }
-      : entry
-  })
+export const getLaterLegHoldingKeys = (quote: BaseQuote): HoldingKey[] =>
+  quote.legs
+    .slice(1)
+    .flatMap(({ signer, fromTokenId, fees }) =>
+      signer
+        ? fees
+            .filter((fee) => isPaidOnTop(fee) && fee.tokenId !== fromTokenId)
+            .map((fee) => ({ address: signer, tokenId: fee.tokenId }))
+        : []
+    )
+
+/** The first leg's gas is left out: the confirm screen estimates it against the live balance */
+const getLegSpend = (leg: QuoteLeg, index: number, holding: Holding) => {
+  if (!leg.signer || !isAddressEqual(leg.signer, holding.address)) return 0n
+  if (index === 0)
+    return (
+      (leg.fromTokenId === holding.tokenId ? leg.inputAmount : 0n) +
+      getAdditionalFeePlanck(leg.fees, holding.tokenId, holding.decimals)
+    )
+  if (leg.fromTokenId === holding.tokenId) return 0n
+  return sumPlanck(leg.fees.filter(isPaidOnTop), holding.tokenId, holding.decimals)
 }
+
+/** The first holding, in the given order, that cannot pay what the route spends from it */
+export const getShortfall = (quote: BaseQuote, holdings: Holding[]): Shortfall | null =>
+  holdings
+    .map((holding) => ({
+      tokenId: holding.tokenId,
+      required: quote.legs.reduce(
+        (total, leg, index) => total + getLegSpend(leg, index, holding),
+        0n
+      ),
+      available: holding.transferable,
+    }))
+    .find(({ required, available }) => required > available) ?? null
+
+/** Mark the quotes the holdings cannot pay for. A holding whose balance is unknown is left out. */
+export const attachShortfalls = (quotes: QuoteWithFees[], holdings: Holding[]): QuoteWithFees[] =>
+  quotes.map((entry) => {
+    const shortfall = getShortfall(entry.quote, holdings)
+    return shortfall ? { ...entry, shortfall } : entry
+  })
 
 /**
  * Sort quotes according to the chosen sorting strategy, the ones the account can pay for first.

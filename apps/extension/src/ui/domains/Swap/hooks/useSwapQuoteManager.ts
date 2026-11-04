@@ -10,7 +10,6 @@ import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
-import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
@@ -25,11 +24,18 @@ import {
   attachFees,
   attachShortfalls,
   flattenQuotes,
-  type NativeHolding,
+  getLaterLegHoldingKeys,
   type QuoteWithFees,
+  type Shortfall,
   selectQuote,
   sortQuotes,
 } from "./quote-sorting"
+import { useHoldings } from "./useHoldings"
+
+const isSameShortfall = (left: Shortfall | null, right: Shortfall | null) =>
+  left?.tokenId === right?.tokenId &&
+  left?.required === right?.required &&
+  left?.available === right?.available
 
 const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): boolean =>
   left.length === right.length &&
@@ -38,7 +44,7 @@ const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): bo
       right[index]?.quote === quote &&
       right[index]?.fees === fees &&
       right[index]?.netUsd === netUsd &&
-      right[index]?.shortfall?.planck === shortfall?.planck
+      isSameShortfall(right[index]?.shortfall ?? null, shortfall)
   )
 
 type QuoteQueryData = BaseQuote | BaseQuote[] | null
@@ -95,18 +101,6 @@ export const useSwapQuoteManager = (params: {
   const toToken = useToken(toTokenId ?? undefined)
   const fromNetwork = useNetworkById(fromToken?.networkId)
   const toNetwork = useNetworkById(toToken?.networkId)
-  const nativeTokenId = fromNetwork?.nativeTokenId
-  const nativeBalance = useBalanceByParams({ address: fromAddress, tokenId: nativeTokenId })
-  const nativeDecimals = nativeBalance?.token?.decimals
-  const nativeTransferable = nativeBalance?.transferable.planck
-  const liveNativeHolding = useMemo<NativeHolding | null>(
-    () =>
-      nativeTokenId && nativeDecimals !== undefined && nativeTransferable !== undefined
-        ? { tokenId: nativeTokenId, decimals: nativeDecimals, transferable: nativeTransferable }
-        : null,
-    [nativeTokenId, nativeDecimals, nativeTransferable]
-  )
-  const nativeHolding = useLockedValue(liveNativeHolding, freezeQuote)
   const quoteReport = useMemo(
     () => ({
       from_network_id: networkIdForAnalytics(fromNetwork),
@@ -231,11 +225,28 @@ export const useSwapQuoteManager = (params: {
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
+  const liveQuotes = useMemo(
+    () => flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data))),
+    [quotesDataKey]
+  )
+
+  const sourceNativeTokenId = fromNetwork?.nativeTokenId
+  const sourceHoldings = useHoldings(
+    fromAddress && sourceNativeTokenId
+      ? [{ address: fromAddress, tokenId: sourceNativeTokenId }]
+      : []
+  )
+  const laterLegHoldings = useHoldings(liveQuotes.flatMap(getLaterLegHoldingKeys))
+  const liveHoldings = useMemo(
+    () => [...(sourceHoldings ?? []), ...(laterLegHoldings ?? [])],
+    [sourceHoldings, laterLegHoldings]
+  )
+  const holdings = useLockedValue(liveHoldings, freezeQuote)
+
   const liveSortedQuotes: QuoteWithFees[] = useMemo(() => {
-    const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
-    const withFees = attachFees(flatQuotes, tokenRates, toToken ?? null)
-    return sortQuotes(attachShortfalls(withFees, nativeHolding), quoteSorting)
-  }, [quotesDataKey, tokenRates, quoteSorting, nativeHolding, toToken])
+    const withFees = attachFees(liveQuotes, tokenRates, toToken ?? null)
+    return sortQuotes(attachShortfalls(withFees, holdings), quoteSorting)
+  }, [liveQuotes, tokenRates, quoteSorting, holdings, toToken])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])
 

@@ -8,12 +8,38 @@ import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { quoteFromLegs } from "../swap-modules/helpers"
 
 const ETH = "8453:evm-native"
+const OP_ETH = "10:evm-native"
+const OP_WETH = "10:evm-erc20:0x4200000000000000000000000000000000000006"
+const ACCOUNT = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
 const USDC = "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
 const APPROVAL_GAS = 100_000_000_000_000n
 const BRIDGE_FEE = 2_000_000_000_000_000n
 
-const { swap, feeCheck, sentApproval } = vi.hoisted(() => ({
+const { swap, feeCheck, sentApproval, held } = vi.hoisted(() => ({
   swap: { selectedQuote: null as BaseQuote | null },
+  held: (() => {
+    const balancesOf = (planckByTokenId: Record<string, bigint>, status = "live") => ({
+      status,
+      balances: {
+        find: ({ tokenId }: { tokenId: string }) => ({
+          each:
+            planckByTokenId[tokenId] === undefined
+              ? []
+              : [{ token: { decimals: 18 }, transferable: { planck: planckByTokenId[tokenId] } }],
+        }),
+      },
+    })
+    const held = {
+      balances: balancesOf({}),
+      set: (planckByTokenId: Record<string, bigint>) => {
+        held.balances = balancesOf(planckByTokenId)
+      },
+      setLoading: () => {
+        held.balances = balancesOf({}, "initialising")
+      },
+    }
+    return held
+  })(),
   sentApproval: { current: null as { hash: string; isPending: boolean; failure?: string } | null },
   feeCheck: {
     available: 0n,
@@ -24,7 +50,9 @@ const { swap, feeCheck, sentApproval } = vi.hoisted(() => ({
 const tokens: Record<string, object> = {
   [ETH]: { id: ETH, symbol: "ETH", decimals: 18, networkId: "8453", platform: "ethereum" },
   [USDC]: { id: USDC, symbol: "USDC", decimals: 6, networkId: "8453", platform: "ethereum" },
+  [OP_ETH]: { id: OP_ETH, symbol: "ETH", decimals: 18, networkId: "10", platform: "ethereum" },
 }
+const networkNames: Record<string, string> = { "8453": "Base", "10": "OP Mainnet" }
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -89,10 +117,13 @@ vi.mock("@ui/state/accounts", () => ({
   useAccountsMap: () => ({}),
 }))
 vi.mock("@ui/state/balances", () => ({ useBalance: () => null }))
+vi.mock("@ui/hooks/useBalancesByParams", () => ({ useBalancesByParams: () => held.balances }))
 vi.mock("@ui/state/tokenRates", () => ({ useTokenRates: () => null }))
 vi.mock("@ui/state/chaindata", () => ({
+  useTokensMap: () => tokens,
   useToken: (id?: string) => (id ? (tokens[id] ?? null) : null),
-  useNetworkById: (id?: string) => (id ? { id, nativeTokenId: ETH } : null),
+  useNetworkById: (id?: string) =>
+    id ? { id, name: networkNames[id], nativeTokenId: `${id}:evm-native` } : null,
   useNetworksMapById: () => ({}),
 }))
 vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
@@ -199,6 +230,40 @@ const quoteWithBridgeFee = quoteFromLegs(
   }
 )
 
+const quoteWithLaterLegGas = quoteFromLegs(
+  [
+    {
+      protocol: "lifi",
+      fromTokenId: USDC,
+      toTokenId: OP_WETH,
+      signer: ACCOUNT,
+      recipient: ACCOUNT,
+      inputAmount: 1_000_000n,
+      outputAmount: 1n,
+      fees: [],
+      timeInSec: 60,
+    },
+    {
+      protocol: "lifi",
+      fromTokenId: OP_WETH,
+      toTokenId: OP_ETH,
+      signer: ACCOUNT,
+      recipient: ACCOUNT,
+      inputAmount: 1n,
+      outputAmount: 1n,
+      fees: [{ name: "Gas", tokenId: OP_ETH, amount: BigNumber("0.00002"), gas: true }],
+      timeInSec: 30,
+    },
+  ],
+  {
+    decentralisationScore: 1,
+    protocol: "lifi",
+    subProtocol: "glacis",
+    providerLogo: "",
+    providerName: "Glacis",
+  }
+)
+
 const renderConfirmActions = () =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -211,6 +276,7 @@ describe("SwapConfirmActions approval", () => {
     swap.selectedQuote = quoteWithBridgeFee
     feeCheck.calls = []
     sentApproval.current = null
+    held.set({})
   })
 
   it("asks for the swap's additional fees before the approval is paid for", () => {
@@ -226,6 +292,40 @@ describe("SwapConfirmActions approval", () => {
 
   it("allows the approval when the account covers its gas and the swap's additional fees", () => {
     feeCheck.available = APPROVAL_GAS + BRIDGE_FEE
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(
+      false
+    )
+    expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("holds the first signature when a later leg cannot pay its gas on its own network", () => {
+    feeCheck.available = APPROVAL_GAS
+    swap.selectedQuote = quoteWithLaterLegGas
+    held.set({})
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Insufficient ETH on OP Mainnet to pay for transaction fees"
+    )
+  })
+
+  it("holds the first signature until the balances a later leg pays its gas from are known", () => {
+    feeCheck.available = APPROVAL_GAS
+    swap.selectedQuote = quoteWithLaterLegGas
+    held.setLoading()
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("allows the first signature when every later leg can pay its gas", () => {
+    feeCheck.available = APPROVAL_GAS
+    swap.selectedQuote = quoteWithLaterLegGas
+    held.set({ [OP_ETH]: 20_000_000_000_000n })
     renderConfirmActions()
 
     expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(

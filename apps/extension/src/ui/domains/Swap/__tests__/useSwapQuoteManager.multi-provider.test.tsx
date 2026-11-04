@@ -12,21 +12,28 @@ import { quoteFromLegs } from "../swap-modules/helpers"
 const lifiGetQuoteMock = vi.fn()
 const simpleswapGetQuoteMock = vi.fn()
 
-vi.mock("@ui/hooks/useBalancesByParams", () => ({ useBalanceByParams: () => null }))
+vi.mock("@ui/hooks/useBalancesByParams", () => {
+  const unknown = { status: "initialising", balances: { find: () => ({ each: [] }) } }
+  return { useBalancesByParams: () => unknown }
+})
 
 vi.mock("@ui/state/tokenRates", () => ({
   useTokenRatesMap: () => ({}),
 }))
 
-vi.mock("@ui/state/chaindata", () => ({
-  useToken: (tokenId?: string) =>
-    tokenId === "from-token"
-      ? { id: tokenId, symbol: "DOT", __isKnown: true, decimals: 10, networkId: "polkadot" }
-      : tokenId === "to-token"
-        ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
-        : null,
-  useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
-}))
+vi.mock("@ui/state/chaindata", () => {
+  const tokensMap = {}
+  return {
+    useTokensMap: () => tokensMap,
+    useToken: (tokenId?: string) =>
+      tokenId === "from-token"
+        ? { id: tokenId, symbol: "DOT", __isKnown: true, decimals: 10, networkId: "polkadot" }
+        : tokenId === "to-token"
+          ? { id: tokenId, symbol: "USDC", __isKnown: true, decimals: 6, networkId: "ethereum" }
+          : null,
+    useNetworkById: (networkId?: string) => (networkId ? { id: networkId, __isKnown: true } : null),
+  }
+})
 
 vi.mock("../swaps.api", () => {
   const swapModules = [

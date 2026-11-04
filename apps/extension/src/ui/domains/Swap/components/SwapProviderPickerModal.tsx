@@ -3,7 +3,7 @@ import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state/chaindata"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, memo, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -158,22 +158,33 @@ const SwapProviderQuoteButton: FC<{
         </div>
       </div>
 
-      {shortfall && <ShortfallNotice shortfall={shortfall} />}
+      {shortfall && <ShortfallNotice shortfall={shortfall} sourceNetworkId={fromToken.networkId} />}
     </button>
   )
 })
 
-const ShortfallNotice: FC<{ shortfall: Shortfall }> = ({ shortfall }) => {
+const ShortfallNotice: FC<{ shortfall: Shortfall; sourceNetworkId: string }> = ({
+  shortfall,
+  sourceNetworkId,
+}) => {
   const { t } = useTranslation()
   const token = useToken(shortfall.tokenId)
+  const network = useNetworkById(token?.networkId)
   if (!token) return null
+
+  const amount = formatDecimals(
+    planckToTokens((shortfall.required - shortfall.available).toString(), token.decimals)
+  )
 
   return (
     <div className="text-left text-alert-warn text-xs">
-      {t("Needs {{amount}} {{symbol}} more to use this route", {
-        amount: formatDecimals(planckToTokens(shortfall.planck.toString(), token.decimals)),
-        symbol: token.symbol,
-      })}
+      {network && token.networkId !== sourceNetworkId
+        ? t("Needs {{amount}} {{symbol}} more on {{network}} to use this route", {
+            amount,
+            symbol: token.symbol,
+            network: network.name,
+          })
+        : t("Needs {{amount}} {{symbol}} more to use this route", { amount, symbol: token.symbol })}
     </div>
   )
 }

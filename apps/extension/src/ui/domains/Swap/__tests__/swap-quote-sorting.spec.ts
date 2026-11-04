@@ -6,17 +6,25 @@ import {
   attachShortfalls,
   calculateQuoteFees,
   flattenQuotes,
+  getLaterLegHoldingKeys,
   isSelectionAvailable,
   type QuoteWithFees,
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
-import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  QuoteFee,
+  QuoteLeg,
+  SupportedSwapProtocol,
+} from "../swap-modules/common.swap-module"
 import { quoteFromLegs } from "../swap-modules/helpers"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
 // ---------------------------------------------------------------------------
+
+const account = "0x8eb8a3b98659cce290402893d0123abb75e3ab28"
 
 const makeQuote = ({
   inputAmountBN = 500n,
@@ -31,7 +39,7 @@ const makeQuote = ({
         protocol: presentation.protocol ?? "simpleswap",
         fromTokenId: "from-token",
         toTokenId: "to-token",
-        signer: null,
+        signer: account,
         recipient: null,
         inputAmount: inputAmountBN,
         outputAmount: outputAmountBN,
@@ -418,17 +426,22 @@ describe("attachShortfalls", () => {
     tokenId,
     additional: true,
   })
-  const holding = (transferable: bigint, tokenId = "from-token") => ({
+  const holding = (transferable: bigint, tokenId = "from-token", address = account) => ({
+    address,
     tokenId,
     decimals: 0,
     transferable,
   })
   const shortfallOf = (quote: QuoteWithFees, transferable: bigint, tokenId?: string) =>
-    attachShortfalls([quote], holding(transferable, tokenId))[0]?.shortfall
+    attachShortfalls([quote], [holding(transferable, tokenId)])[0]?.shortfall
 
   it("records what the account lacks to pay the input and the fees on top", () => {
     const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
-    expect(shortfallOf(quote, 40n)).toEqual({ tokenId: "from-token", planck: 165n })
+    expect(shortfallOf(quote, 40n)).toEqual({
+      tokenId: "from-token",
+      required: 205n,
+      available: 40n,
+    })
   })
 
   it("records nothing when the account holds enough", () => {
@@ -456,13 +469,118 @@ describe("attachShortfalls", () => {
 
   it("records nothing while the balance is unknown", () => {
     const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
-    expect(attachShortfalls(quotes, null)).toEqual(quotes)
+    expect(attachShortfalls(quotes, [])).toEqual(quotes)
+  })
+
+  describe("on a later leg", () => {
+    const twoLegQuote = (
+      laterLeg: Pick<QuoteLeg, "fromTokenId" | "toTokenId" | "fees">,
+      firstLegFees: QuoteFee[] = []
+    ) =>
+      wrap(
+        quoteFromLegs(
+          [
+            {
+              protocol: "lifi",
+              fromTokenId: "8453:evm-native",
+              toTokenId: laterLeg.fromTokenId,
+              signer: account,
+              recipient: account,
+              inputAmount: 100n,
+              outputAmount: 90n,
+              fees: firstLegFees,
+              timeInSec: 60,
+            },
+            {
+              protocol: "lifi",
+              signer: account,
+              recipient: account,
+              inputAmount: 90n,
+              outputAmount: 80n,
+              timeInSec: 30,
+              ...laterLeg,
+            },
+          ],
+          { decentralisationScore: 2, protocol: "lifi", providerLogo: "", providerName: "LI.FI" }
+        )
+      )
+    const laterLegGas = (amount: string, tokenId = "10:evm-native") => ({
+      amount: BigNumber(amount),
+      name: "Gas",
+      tokenId,
+      gas: true,
+    })
+    const bridgedToOptimismWeth = (fees: QuoteFee[]) =>
+      twoLegQuote({
+        fromTokenId: "10:evm-erc20:0x4200000000000000000000000000000000000006",
+        toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+        fees,
+      })
+    const sourceHolding = holding(1000n, "8453:evm-native", account)
+
+    it("records what the account lacks on that leg's network to pay its gas", () => {
+      const quote = bridgedToOptimismWeth([laterLegGas("3")])
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(1n, "10:evm-native", account)]
+      )
+      expect(checked?.shortfall).toEqual({ tokenId: "10:evm-native", required: 3n, available: 1n })
+    })
+
+    it("records nothing when the account holds enough on that leg's network", () => {
+      const quote = bridgedToOptimismWeth([laterLegGas("3"), additionalFee("2", "10:evm-native")])
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(5n, "10:evm-native", account)]
+      )
+      expect(checked?.shortfall).toBeNull()
+    })
+
+    it("lets a later leg pay its fees from the native token the previous leg delivers", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "964:evm-native",
+        toTokenId: "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        fees: [laterLegGas("4", "964:evm-native"), additionalFee("6", "964:evm-native")],
+      })
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(0n, "964:evm-native", account)]
+      )
+      expect(checked?.shortfall).toBeNull()
+    })
+
+    it("asks for the balance a later leg pays its fees from, not for the token it receives", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "964:evm-native",
+        toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+        fees: [
+          laterLegGas("4", "964:evm-native"),
+          laterLegGas("3", "10:evm-native"),
+          { amount: BigNumber("1"), name: "LIFI Fixed Fee", tokenId: "10:evm-native" },
+        ],
+      })
+      expect(getLaterLegHoldingKeys(quote.quote)).toEqual([
+        { address: account, tokenId: "10:evm-native" },
+      ])
+    })
+
+    it("does not count the first leg's gas, which the confirm screen estimates", () => {
+      const quote = twoLegQuote(
+        {
+          fromTokenId: "10:evm-erc20:0x4200000000000000000000000000000000000006",
+          toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+          fees: [],
+        },
+        [laterLegGas("5000", "8453:evm-native")]
+      )
+      expect(attachShortfalls([quote], [sourceHolding])[0]?.shortfall).toBeNull()
+    })
   })
 
   it("sorts the routes the account cannot pay for after the ones it can", () => {
     const glacis = {
       ...wrap(makeQuote({ providerName: "Glacis", outputAmountBN: 3000n })),
-      shortfall: { tokenId: "from-token", planck: 1n },
+      shortfall: { tokenId: "from-token", required: 1n, available: 0n },
     }
     const across = wrap(makeQuote({ providerName: "Across", outputAmountBN: 2000n }))
     expect(sortQuotes([glacis, across], "bestRate").map(({ quote }) => quote.providerName)).toEqual(
@@ -474,7 +592,7 @@ describe("attachShortfalls", () => {
 describe("isSelectionAvailable", () => {
   const short = (quote: BaseQuote): QuoteWithFees => ({
     ...wrap(quote),
-    shortfall: { tokenId: "from-token", planck: 1n },
+    shortfall: { tokenId: "from-token", required: 1n, available: 0n },
   })
   const across = makeQuote({ protocol: "lifi", subProtocol: "across" })
   const glacis = makeQuote({ protocol: "lifi", subProtocol: "glacis" })

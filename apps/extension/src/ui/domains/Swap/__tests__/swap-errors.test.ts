@@ -105,6 +105,20 @@ describe("getSwapErrorMessage", () => {
     expect(msg).toBe("Insufficient SOL to pay for transaction fees")
   })
 
+  it("names the network of a fee paid on another network than the source", () => {
+    const error: SwapConfirmError = {
+      type: "insufficient-fee-balance",
+      feeTokenId: "42161:evm-native",
+      required: 20000n,
+      available: 0n,
+    }
+    const msg = getSwapErrorMessage(error, mockT, {
+      feeTokenSymbol: "ETH",
+      feeNetworkName: "Arbitrum One",
+    })
+    expect(msg).toBe("Insufficient ETH on Arbitrum One to pay for transaction fees")
+  })
+
   it("formats insufficient-fee-balance without symbol", () => {
     const error: SwapConfirmError = {
       type: "insufficient-fee-balance",
