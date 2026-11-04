@@ -43,17 +43,16 @@ export const useBalancesByParams = ({
   const data = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
-  const [debouncedBalances, setDebouncedBalances] = useState<BalanceSubscriptionResponse>(
-    () => data
-  )
-  useDebounce(() => setDebouncedBalances(data), 100, [data])
+  const [debounced, setDebounced] = useState(() => ({ subscriptionKey, data }))
+  useDebounce(() => setDebounced({ subscriptionKey, data }), 100, [data, subscriptionKey])
 
   return useMemo(
     () => ({
-      status: debouncedBalances.status,
-      balances: new Balances(debouncedBalances.balances, hydrate),
+      status:
+        debounced.subscriptionKey === subscriptionKey ? debounced.data.status : "initialising",
+      balances: new Balances(debounced.data.balances, hydrate),
     }),
-    [debouncedBalances, hydrate]
+    [debounced, subscriptionKey, hydrate]
   )
 }
 
