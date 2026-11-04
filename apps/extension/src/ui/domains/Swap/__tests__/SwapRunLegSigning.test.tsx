@@ -303,6 +303,28 @@ describe("useLegSigning", () => {
     await waitFor(() => expect(screen.getByRole("status").textContent).toBe(`${landed} -> 1`))
   })
 
+  it("explains a leg that failed to build in the error's short message", async () => {
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(LIFI_LEG.inputAmount)
+    lifiBuildLeg.mockRejectedValue(
+      Object.assign(new Error("Failed to fetch\n\nRequest body: ...\nVersion: viem@2"), {
+        shortMessage: "Failed to fetch",
+      })
+    )
+    const LegFailure = () => {
+      const { signing } = useLegSigning(LIFI_RUN, 1, legSent)
+      return <output>{signing?.failure}</output>
+    }
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <LegFailure />
+      </QueryClientProvider>
+    )
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Failed to fetch"))
+  })
+
   it("hands the run the input it built the leg on, once the leg is sent", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     const landed = LEG0_OUTPUT - 5n

@@ -136,6 +136,9 @@ const buildLegSignRequest = async (
   }
 }
 
+const errorSummary = (error: unknown, fallback: string) =>
+  (error as { shortMessage?: string }).shortMessage || getErrorMessage(error, fallback)
+
 const legSignQuery = (
   run: SwapRun,
   index: number | null,
@@ -227,7 +230,7 @@ export const useLegSigning = (
       : undefined
 
   const failure = request.error
-    ? getErrorMessage(request.error, t("Failed to prepare the transaction"))
+    ? errorSummary(request.error, t("Failed to prepare the transaction"))
     : noteFor(signFailure, index)
 
   const approvalHash = index === null ? undefined : approvalHashes[index]
@@ -262,7 +265,7 @@ export const useLegSigning = (
   const onError = (cause: unknown) => {
     setRejectedSubmissions((count) => count + 1)
     if (index !== null) {
-      setSignFailure({ leg: index, value: getErrorMessage(cause, t("Failed to submit")) })
+      setSignFailure({ leg: index, value: errorSummary(cause, t("Failed to submit")) })
       if (attempt) setFailedAttempt({ leg: index, value: attempt })
     }
     rebuild()
