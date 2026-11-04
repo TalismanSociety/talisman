@@ -1,23 +1,4 @@
 import { log } from "@common/log"
-import {
-  assertNativeValueWithinInput,
-  prepareTransactionRequestWithGasCheck,
-  SwapRouteUnbuildableError,
-} from "@core/domains/swaps/exports"
-import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import type {
-  ApprovalInfo,
-  ApprovalParams,
-  BaseQuote,
-  BuildLegParams,
-  BuiltLeg,
-  QuoteFee,
-  QuoteLeg,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapModuleTransaction,
-  SwapTransactionContext,
-} from "@core/domains/swaps/types"
 import * as lifiSdk from "@lifi/sdk"
 import type {
   EvmErc20Token,
@@ -44,13 +25,30 @@ import {
 import { isAbortError } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { zeroAddress } from "viem"
+import type {
+  ApprovalInfo,
+  ApprovalParams,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "./common.swap-module"
 import {
   getTokenIdForSwappableAsset,
-  type PageSwapEnv,
-  type PageSwapModule,
+  type SwapEnv,
+  type SwapModuleDefinition,
 } from "./common.swap-module"
+import { SwapRouteUnbuildableError } from "./errors"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
 import { defaultLifiApi as api, solanaTransactionBytes } from "./lifi-api"
+import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
@@ -71,12 +69,12 @@ const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
 const SOLANA_PLACEHOLDER_ADDRESS = "11111111111111111111111111111111"
 const PLACEHOLDER_ADDRESSES = new Set([SWAP_PLACEHOLDER_ADDRESS, SOLANA_PLACEHOLDER_ADDRESS])
 
-const MAX_PLAN_STEPS = 3
+const MAX_ROUTE_LEGS = 3
 
 type RouteRequest = {
-  /** the quote list takes a route of several steps as a plan, a leg rebuild takes one step only */
+  /** the quote list takes a route of several steps as several legs, a leg rebuild takes one step only */
   multiStep: boolean
-  /** false for a later leg of a plan: leg 0 collected the fee for the whole swap */
+  /** false for a later leg: leg 0 collected the fee for the whole swap */
   chargesTalismanFee: boolean
 }
 
@@ -102,13 +100,13 @@ const getKnownSolanaTokenId = (
   )
 }
 
-const getLifiSolanaChainId = async (env: PageSwapEnv) => {
+const getLifiSolanaChainId = async (env: SwapEnv) => {
   const { lifi } = await env.getSwapsConfig()
   return lifi.solanaChainId
 }
 
 /** Convert a Talisman chain ID to a LI.FI numeric chain ID. */
-const toLifiChainId = async (env: PageSwapEnv, chainId: string | number): Promise<number> => {
+const toLifiChainId = async (env: SwapEnv, chainId: string | number): Promise<number> => {
   if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId(env)
   return +chainId
 }
@@ -120,7 +118,7 @@ const evmTokenIdOf = (token: { address: string; chainId: number }): TokenId =>
 
 /** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
 const feeTokenId = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   token: { address: string; chainId: number }
 ): Promise<string> => {
   const solanaChainId = await getLifiSolanaChainId(env)
@@ -170,7 +168,7 @@ const lifiAssetFromErc20 = (token: EvmErc20Token): LifiInternalAsset => ({
 type SolToken = SolSplToken | SolToken2022Token
 
 const lifiAssetFromSolToken = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   token: SolToken
 ): Promise<LifiInternalAsset> => ({
   tokenId: token.id,
@@ -189,9 +187,9 @@ const lifiAssetFromSolToken = async (
   },
 })
 
-/** a native token resolves only through LI.FI's own list, which a page resuming a plan has not loaded */
+/** a native token resolves only through LI.FI's own list, so the list loads first */
 const resolveOrBuildAsset = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   tokenId: string
 ): Promise<LifiInternalAsset | null> => {
   await getLifiAssets(env)
@@ -213,10 +211,7 @@ const resolveOrBuildAsset = async (
   return null
 }
 
-const getLifiAssets = async (
-  env: PageSwapEnv,
-  _signal?: AbortSignal
-): Promise<LifiInternalAsset[]> => {
+const getLifiAssets = async (env: SwapEnv, _signal?: AbortSignal): Promise<LifiInternalAsset[]> => {
   if (!cachedAssetsPromise) {
     cachedAssetsPromise = fetchLifiAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
@@ -226,7 +221,7 @@ const getLifiAssets = async (
   return cachedAssetsPromise
 }
 
-const fetchLifiAssets = async (env: PageSwapEnv): Promise<LifiInternalAsset[]> => {
+const fetchLifiAssets = async (env: SwapEnv): Promise<LifiInternalAsset[]> => {
   const [allSdkTokens, swapsConfig] = await Promise.all([
     api
       .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
@@ -326,7 +321,7 @@ const fetchLifiAssets = async (env: PageSwapEnv): Promise<LifiInternalAsset[]> =
 // Include all EVM ERC-20 and Solana SPL/Token2022 tokens on LI.FI-supported chains
 // in addition to the standard list. LI.FI can route tokens not in its default list
 // when there is on-chain liquidity, allowing users to swap RWA and other niche tokens.
-const getLifiAssetIds = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+const getLifiAssetIds = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> => {
   const assets = await getLifiAssets(env, signal)
   const ids = new Set(assets.map((a) => a.tokenId))
 
@@ -347,12 +342,12 @@ const getLifiAssetIds = async (env: PageSwapEnv, signal: AbortSignal): Promise<s
   return [...ids]
 }
 
-const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> =>
+const getFromAssets = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> =>
   getLifiAssetIds(env, signal)
 
 const getToAssets = async (
   _fromTokenId: string | null,
-  env: PageSwapEnv,
+  env: SwapEnv,
   signal: AbortSignal
 ): Promise<string[]> => getLifiAssetIds(env, signal)
 
@@ -360,8 +355,8 @@ const sameAddress = (a: string | undefined, b: string | undefined) =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase()
 
 /**
- * The tokens a plan holds between the steps, [] for a single step, null when the route cannot run as
- * a plan: each intermediate token is an ERC20 the wallet can watch land, held by `fromAddress` on an
+ * The tokens the swap holds between the steps, [] for a single step, null when the route cannot run as
+ * legs: each intermediate token is an ERC20 the wallet can watch land, held by `fromAddress` on an
  * EVM network it knows, and only the last step pays `toAddress`.
  */
 const intermediateTokenIds = (
@@ -371,7 +366,7 @@ const intermediateTokenIds = (
 ): TokenId[] | null => {
   const { steps } = route
   if (steps.length === 1) return []
-  if (steps.length > MAX_PLAN_STEPS) return null
+  if (steps.length > MAX_ROUTE_LEGS) return null
   if (!fromAddress || !toAddress) return null
   if (PLACEHOLDER_ADDRESSES.has(fromAddress) || PLACEHOLDER_ADDRESSES.has(toAddress)) return null
 
@@ -418,7 +413,7 @@ const isUnbuildableStepError = (err: unknown) => {
 }
 
 const canRunRoute = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   route: lifiSdk.Route,
   params: QuoteParams,
   knownEvmNetworks: Record<string, unknown>,
@@ -434,7 +429,7 @@ const canRunRoute = async (
 }
 
 const getRoutes = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   params: QuoteParams,
   slippage: number,
   talismanFee: number,
@@ -552,7 +547,7 @@ const getAdditionalNativeFeeWei = (
     .reduce((total, fee) => total + BigInt(fee.amount), 0n)
 }
 
-const stepFees = async (env: PageSwapEnv, step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
+const stepFees = async (env: SwapEnv, step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
   const fees: QuoteFee[] = await Promise.all(
     step.estimate.feeCosts?.map(async (fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
@@ -598,7 +593,7 @@ const stepRoute = (
 })
 
 const getRouteQuote = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   route: lifiSdk.Route,
   {
     fromTokenId,
@@ -670,7 +665,7 @@ const getRouteQuote = async (
 }
 
 const quoteRoutes = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   params: QuoteParams,
   slippage: number,
   request: RouteRequest,
@@ -702,7 +697,7 @@ const quoteRoutes = async (
 
 const getQuote = async (
   params: QuoteParams,
-  env: PageSwapEnv,
+  env: SwapEnv,
   signal: AbortSignal
 ): Promise<BaseQuote[] | null> =>
   quoteRoutes(
@@ -743,7 +738,7 @@ const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
 }
 
 const buildRouteTransaction = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   step: lifiSdk.LiFiStep,
   fromTokenId: TokenId,
   fromAddress: string,
@@ -846,7 +841,7 @@ const buildRouteTransaction = async (
  * The rate is the step's estimate, not `leg.outputAmount`: that is its `toAmountMin`, which already
  * has the quote's slippage taken off.
  */
-const planLegFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =>
+const routeStepFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =>
   (BigInt(quoted.toAmount) * input * BigInt(Math.round((1 - slippage) * 10_000))) /
   (BigInt(quoted.fromAmount) * 10_000n)
 
@@ -855,8 +850,8 @@ const spenderOf = (route: lifiSdk.Route | undefined) =>
 
 /**
  * Re-quotes at the user's slippage, which the quote list leaves out so editing it does not reshuffle
- * the quotes. A leg of a plan is re-quoted at what landed, as a single step: LI.FI cannot re-amount the
- * quoted step. A worse rate refuses the first leg, before the plan starts, but not a later one, which the
+ * the quotes. A step of a multi-step route is re-quoted at what landed, as a single step: LI.FI cannot
+ * re-amount the quoted step. A worse rate refuses the first leg, before funds move, but not a later one, which the
  * user signs on screen: the build reports the output they accepted instead. Its token input was
  * approved to the quoted step's spender, so only a fresh route through that spender can use the allowance.
  * A step LI.FI cannot build sends the user back to the quotes while their funds have not moved. A later
@@ -864,15 +859,15 @@ const spenderOf = (route: lifiSdk.Route | undefined) =>
  */
 const buildLeg = async (
   { leg, input, context, slippage }: BuildLegParams,
-  env: PageSwapEnv
+  env: SwapEnv
 ): Promise<BuiltLeg> => {
   try {
     const quotedRoute = leg.data as LifiLegRoute | undefined
     const tool = quotedRoute?.steps[0]?.tool
     if (!quotedRoute || !tool) throw new Error("Please select the quote again")
     if (!leg.signer || !leg.recipient) throw new Error("Missing from address")
-    const isPlanLeg = quotedRoute.stepCount > 1
-    const isLaterLeg = isPlanLeg && quotedRoute.stepIndex > 0
+    const isRouteStep = quotedRoute.stepCount > 1
+    const isLaterLeg = isRouteStep && quotedRoute.stepIndex > 0
 
     const freshQuotes =
       (await quoteRoutes(
@@ -889,7 +884,7 @@ const buildLeg = async (
         { multiStep: false, chargesTalismanFee: !isLaterLeg }
       )) ?? []
     const usableQuotes =
-      isPlanLeg && parseTokenId(leg.fromTokenId).type === "evm-erc20"
+      isRouteStep && parseTokenId(leg.fromTokenId).type === "evm-erc20"
         ? freshQuotes.filter(
             (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
           )
@@ -900,7 +895,7 @@ const buildLeg = async (
     ].map((quote) => quote.legs[0])
     const candidates: { route: LifiLegRoute; fees: QuoteLeg["fees"] }[] = freshLegs.length
       ? freshLegs.map((fresh) => ({ route: fresh.data as LifiLegRoute, fees: fresh.fees }))
-      : isPlanLeg
+      : isRouteStep
         ? []
         : [{ route: quotedRoute, fees: leg.fees }]
 
@@ -921,10 +916,12 @@ const buildLeg = async (
       }
 
       const { transaction, preparedStep } = built
-      const expectedOutput = isPlanLeg
+      const expectedOutput = isRouteStep
         ? BigInt(preparedStep.estimate.toAmountMin)
         : leg.outputAmount
-      const acceptedOutput = isPlanLeg ? planLegFloor(quotedRoute, input, slippage) : expectedOutput
+      const acceptedOutput = isRouteStep
+        ? routeStepFloor(quotedRoute, input, slippage)
+        : expectedOutput
       if (expectedOutput < acceptedOutput && !isLaterLeg)
         throw new Error("The rate has moved too far, please select the quote again")
 
@@ -951,7 +948,7 @@ const buildLeg = async (
   }
 }
 
-export const lifiSwapModule: PageSwapModule = {
+export const lifiSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   supportsSlippageSetting: true,

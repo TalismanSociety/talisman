@@ -1,4 +1,3 @@
-import type { QuoteLeg } from "@core/domains/swaps/types"
 import { type EthNetworkId, evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { Skeleton } from "@ui/components/Skeleton"
@@ -17,8 +16,8 @@ import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { type FC, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
-
 import { useSentTxFee } from "../hooks/useSentTxFee"
+import type { QuoteLeg } from "../swap-modules/common.swap-module"
 import { formatSwapDuration, formatSwapExchangeRate } from "../swap-utils"
 import { SwapTxRow } from "./SwapTxCard"
 

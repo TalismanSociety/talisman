@@ -3,11 +3,6 @@ import { classifyError } from "@common/analytics/errorCategory"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
-import type {
-  BaseQuote,
-  SwapModuleTransaction,
-  SwapTransactionContext,
-} from "@core/domains/swaps/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
@@ -48,7 +43,12 @@ import {
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
-import type { SwapModule } from "../swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  SwapModule,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "../swap-modules/common.swap-module"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { useSwapModules } from "../swaps.api"
 import { SwapOtherFees } from "./SwapOtherFees"

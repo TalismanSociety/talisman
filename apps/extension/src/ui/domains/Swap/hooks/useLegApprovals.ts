@@ -1,8 +1,6 @@
-import type { ApprovalInfo, QuoteLeg } from "@core/domains/swaps/types"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { skipToken, type UseQueryResult, useQueries } from "@tanstack/react-query"
-
-import type { SwapModule } from "../swap-modules/common.swap-module"
+import type { ApprovalInfo, QuoteLeg, SwapModule } from "../swap-modules/common.swap-module"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
 import { readAllowanceStep } from "./erc20Approval"

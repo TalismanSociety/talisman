@@ -1,4 +1,3 @@
-import type { QuoteLeg } from "@core/domains/swaps/types"
 import { networkIdFromTokenId, type TokenId } from "@talismn/chaindata-provider"
 import {
   AlertCircleIcon,
@@ -17,6 +16,7 @@ import { useNetworksMapById, useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { QuoteLeg } from "../swap-modules/common.swap-module"
 
 import {
   activeSwapTxKey,
@@ -36,7 +36,7 @@ export const useSwapTxContext = (): SwapTxContext => {
 /**
  * The card that becomes active opens and the others close, the user can still open any of them.
  * It scrolls into view only when the card open before it is done, not when a late allowance read adds it.
- * A moment with no active card, while the plan queues the next leg, keeps the card open before it.
+ * A moment with no active card, while the next leg is queued, keeps the card open before it.
  */
 const useExpandedCards = (cards: readonly SwapTxCardModel[]) => {
   const activeKey = activeSwapTxKey(cards)

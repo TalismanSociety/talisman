@@ -72,11 +72,11 @@ vi.mock("@talismn/sapi", () => ({
   })),
 }))
 
-const { BACKGROUND_SWAP_MODULES } = await import("@core/domains/swaps/registry")
+const { bittensorEvmSwapModule: definition } = await import("../bittensor-evm-swap-module")
 const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
 const { confirmSwap } = await import("./confirmSwap")
 
-const bittensorEvmSwapModule = withSwapEnv(BACKGROUND_SWAP_MODULES["bittensor-evm"], uiSwapEnv)
+const bittensorEvmSwapModule = withSwapEnv(definition, uiSwapEnv)
 
 // --- Test helpers ---
 

@@ -1,4 +1,3 @@
-import type { BaseQuote } from "@core/domains/swaps/types"
 import { formatDecimals, planckToTokens } from "@talismn/util"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
@@ -11,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import type { Shortfall } from "../hooks/quote-sorting"
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { useSwap } from "../SwapProvider"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { formatSwapDuration, formatSwapExchangeRate } from "../swap-utils"
 
 export const SwapProviderPickerModal: FC<{

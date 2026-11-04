@@ -1,5 +1,4 @@
 import { BITTENSOR_BALANCE_TRANSFER_PRECOMPILE } from "@core/domains/bittensor/constants"
-import type { SwapEnv } from "@core/domains/swaps/env"
 import { abiBittensorBalanceTransfer } from "@core/util/abi"
 import type { Network, Token } from "@talismn/chaindata-provider"
 import { frontierH160ToSs58Mirror } from "@talismn/crypto"
@@ -7,8 +6,8 @@ import type { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-
-import { bittensorEvmSwapModule } from "../bittensorEvm"
+import { bittensorEvmSwapModule } from "../bittensor-evm-swap-module"
+import type { SwapEnv } from "../common.swap-module"
 
 // --- Fake env ---
 
@@ -53,7 +52,7 @@ const evmClient = {
   prepareTransactionRequest: async (request: unknown) => request,
 }
 
-const env: SwapEnv = {
+const env = {
   getNetwork: async (id) => (id === EVM_NETWORK.id ? (EVM_NETWORK as Network) : null),
   getToken: async (id) =>
     ([SUB_TOKEN, EVM_TOKEN].find((token) => token.id === id) as Token | undefined) ?? null,
@@ -68,7 +67,7 @@ const env: SwapEnv = {
   getSwapsConfig: async () => {
     throw new Error("Bittensor EVM reads no swaps config")
   },
-}
+} satisfies Partial<SwapEnv> as unknown as SwapEnv
 
 // --- Test helpers ---
 
@@ -132,7 +131,7 @@ beforeEach(() => {
 
 describe("bittensorEvmSwapModule assets", () => {
   it("lists both sides of both networks as sources", async () => {
-    const assets = await bittensorEvmSwapModule.getFromAssets(signal)
+    const assets = await bittensorEvmSwapModule.getFromAssets(env, signal)
 
     expect(assets).toEqual(
       expect.arrayContaining([
@@ -145,13 +144,13 @@ describe("bittensorEvmSwapModule assets", () => {
   })
 
   it("pairs each source with its sibling only", async () => {
-    expect(await bittensorEvmSwapModule.getToAssets("bittensor:substrate-native", signal)).toEqual([
-      "964:evm-native",
-    ])
-    expect(await bittensorEvmSwapModule.getToAssets("945:evm-native", signal)).toEqual([
+    expect(
+      await bittensorEvmSwapModule.getToAssets("bittensor:substrate-native", env, signal)
+    ).toEqual(["964:evm-native"])
+    expect(await bittensorEvmSwapModule.getToAssets("945:evm-native", env, signal)).toEqual([
       "bittensor-testnet:substrate-native",
     ])
-    expect(await bittensorEvmSwapModule.getToAssets("1:evm-native", signal)).toEqual([])
+    expect(await bittensorEvmSwapModule.getToAssets("1:evm-native", env, signal)).toEqual([])
   })
 })
 
@@ -303,6 +302,7 @@ describe("bittensorEvmSwapModule buildLeg substrate -> evm", () => {
         input: ONE_TAO_RAO,
         context: { platform: "polkadot", sapi: fakeSapi as never, allowReap },
         slippage: 0,
+        exchange: null,
       },
       env
     )
@@ -349,6 +349,7 @@ describe("bittensorEvmSwapModule buildLeg substrate -> evm", () => {
           input: ONE_TAO_RAO,
           context: { platform: "ethereum" },
           slippage: 0,
+          exchange: null,
         },
         env
       )
@@ -366,6 +367,7 @@ describe("bittensorEvmSwapModule buildLeg evm -> substrate", () => {
         input: fromAmount,
         context: { platform: "ethereum" },
         slippage: 0,
+        exchange: null,
       },
       env
     )

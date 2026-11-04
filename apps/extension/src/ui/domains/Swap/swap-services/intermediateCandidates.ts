@@ -1,9 +1,9 @@
-import type { IntermediateCandidate } from "@core/domains/swaps/hops"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getAccountsByCategory$ } from "@ui/state/accounts"
 import { getBalances$ } from "@ui/state/balances"
 import { firstValueFrom } from "rxjs"
+import type { IntermediateCandidate } from "../swap-modules/hops"
 
 /** the owned EVM accounts, with their hub balance */
 export const getIntermediateCandidates = async (hub: TokenId): Promise<IntermediateCandidate[]> => {

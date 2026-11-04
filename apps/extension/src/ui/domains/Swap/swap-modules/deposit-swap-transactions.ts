@@ -1,10 +1,4 @@
 import { log } from "@common/log"
-import { prepareTransactionRequestWithGasCheck } from "@core/domains/swaps/exports"
-import type {
-  QuoteFee,
-  SwapModuleTransaction,
-  SwapTransactionContext,
-} from "@core/domains/swaps/types"
 import type { Instruction } from "@solana/kit"
 import { createNoopSigner, address as solAddress } from "@solana/kit"
 import { getTransferSolInstruction } from "@solana-program/system"
@@ -20,7 +14,13 @@ import { buildUnsignedTransaction, type SolTransaction } from "@talismn/solana"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
 import { parseUserInputToPlanck } from "../swap-utils"
-import type { PageSwapEnv } from "./common.swap-module"
+import type {
+  QuoteFee,
+  SwapEnv,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "./common.swap-module"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 
 /**
  * Common info needed to build a deposit transaction for a centralized swap.
@@ -44,7 +44,7 @@ export type DepositSwapAsset = {
 // --- Exported functions ---
 
 export type DepositTransactionsEnv = Pick<
-  PageSwapEnv,
+  SwapEnv,
   | "getNetworksMap"
   | "getToken"
   | "findEvmClient"

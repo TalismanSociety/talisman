@@ -14,9 +14,9 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   getExtensionPublicClient: () => ({ readContract, getBlockNumber }),
 }))
 
-import type { BaseQuote } from "@core/domains/swaps/types"
 import type { MinedApproval } from "../hooks/erc20Approval"
 import { useSwapErc20Approval } from "../hooks/useSwapErc20Approval"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
 import type { SwapModuleEntry } from "../swaps.api"
 
 const AMOUNT = 10n ** 18n

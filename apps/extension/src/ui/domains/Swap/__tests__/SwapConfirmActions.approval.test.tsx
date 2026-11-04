@@ -1,11 +1,11 @@
-import { quoteFromLegs } from "@core/domains/swaps/helpers"
-import type { BaseQuote } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { PropsWithChildren } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SwapConfirmActions } from "../components/SwapConfirmActions"
+import type { BaseQuote } from "../swap-modules/common.swap-module"
+import { quoteFromLegs } from "../swap-modules/helpers"
 
 const ETH = "8453:evm-native"
 const USDC = "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
