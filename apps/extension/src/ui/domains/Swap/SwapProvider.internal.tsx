@@ -10,6 +10,7 @@ import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
+import { useSwapRun } from "./hooks/useSwapRun"
 import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
 import type { MinedApproval } from "./swap-modules/erc20-approval"
 import { getSwapFormState } from "./swapFormState"
@@ -116,6 +117,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     },
     []
   )
+
+  const { run, startRun, legSent } = useSwapRun()
 
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
@@ -346,5 +349,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     submittedNetworkId,
     submittedTxInfo,
     gotoSubmitted,
+    run,
+    startRun,
+    legSent,
   }
 }

@@ -51,7 +51,7 @@ export const useSwapModules = (): SwapModuleEntry[] => {
         resolve: (protocol) => enabled.find((entry) => entry.protocol === protocol),
         candidates: getIntermediateCandidates,
       })
-      return withSingleLegQuotes(withHops)
+      return isMultiHopEnabled ? withHops : withSingleLegQuotes(withHops)
     })
   }, [isForevermoneyEnabled, isMultiHopEnabled])
 }

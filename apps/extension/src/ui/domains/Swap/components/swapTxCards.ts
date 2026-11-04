@@ -1,11 +1,19 @@
+import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
 import {
   getBlockExplorerUrl,
   type Network,
   networkIdFromTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
+import { normalizeAddress } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import type { Hex } from "viem"
+
+import { getSwapTrackerUrl } from "../getSwapTrackerUrl"
+import type { LegStop, QuoteLeg } from "../swap-modules/common.swap-module"
+import { type RunLeg, readyLeg, type SwapRun } from "../swap-modules/swap-run"
+import { getSwapProgressDetails } from "./swapProgressStatus"
 
 export type SwapTxStatus =
   | "upcoming"
@@ -36,14 +44,7 @@ export type SwapTxApprovalFacts = TxFacts & { at: "needed" | "sent" | "landed" |
 
 export type SwapTxDelivery = "processing" | "success" | "failure" | "untracked"
 
-type SwapTxLegAt =
-  | "queued"
-  | "awaiting-user"
-  | "building"
-  | "sent"
-  | "landed"
-  | "failed"
-  | "skipped"
+type SwapTxLegAt = "queued" | "awaiting-user" | "sent" | "landed" | "failed" | "skipped"
 
 export type SwapTxLegFacts = TxFacts & {
   at: SwapTxLegAt
@@ -55,7 +56,6 @@ export type SwapTxLegFacts = TxFacts & {
 const LEG_STATUS: Record<SwapTxLegAt, SwapTxStatus> = {
   "queued": "upcoming",
   "awaiting-user": "ready",
-  "building": "signing",
   "sent": "pending",
   "landed": "done",
   "failed": "failed",
@@ -124,6 +124,9 @@ export type SwapTxContext = {
   networks: Readonly<Record<string, Network | undefined>>
 }
 
+const accountName = ({ accounts }: SwapTxContext, address: string) =>
+  accounts[normalizeAddress(address)]?.name ?? shortenAddress(address)
+
 const networkOf = ({ networks }: SwapTxContext, tokenId: TokenId) =>
   networks[networkIdFromTokenId(tokenId)]
 
@@ -183,4 +186,189 @@ export const withBlockingError = (
   return cards.map((card) =>
     error && card.key === activeKey && !card.error ? { ...card, error } : card
   )
+}
+
+export type RunLegSigning = {
+  leg: number
+  signs?: "leg" | "approval"
+  approvalHash?: Hex
+  isApprovalPending: boolean
+  failure?: string
+}
+
+export type SwapRunTxInput = {
+  run: SwapRun
+  /** each sent leg's transaction row, by leg: null once the wallet no longer holds it */
+  rows: ReadonlyArray<WalletTransaction | null | undefined>
+  /** only the screen that sent an approval knows its hash */
+  approvalHashes: Readonly<Partial<Record<number, Hex>>>
+  approvalsNeeded: ReadonlySet<number>
+  signing: RunLegSigning | null
+}
+
+const RUN_LEG_AT: Record<RunLeg["at"], SwapTxLegAt> = {
+  queued: "queued",
+  ready: "awaiting-user",
+  sent: "sent",
+  landed: "landed",
+  stopped: "failed",
+}
+
+const UNTRACKED_SWAP_STATUSES: ReadonlySet<WalletTransaction["swapStatus"]> = new Set([
+  "invalid",
+  "unknown",
+])
+
+const lastLegDelivery = (
+  t: Translator,
+  row: WalletTransaction | null | undefined
+): SwapTxDelivery => {
+  if (row === null || row?.status === "unknown" || UNTRACKED_SWAP_STATUSES.has(row?.swapStatus))
+    return "untracked"
+  return getSwapProgressDetails(t, row, true).animStatus
+}
+
+const deliveryError = (
+  ctx: SwapTxContext,
+  leg: QuoteLeg,
+  delivery: SwapTxDelivery | undefined,
+  row: WalletTransaction | null | undefined
+) => {
+  if (delivery === "failure") return getSwapProgressDetails(ctx.t, row, true).subtitle
+  if (delivery === "untracked")
+    return ctx.t("Check your balance on {{network}}", {
+      network: networkOf(ctx, leg.toTokenId)?.name ?? "",
+    })
+  return undefined
+}
+
+/** a leg that did not execute leaves the funds on its signer */
+const FUNDS_ON_SIGNER: ReadonlySet<LegStop> = new Set(["failed", "cancelled"])
+
+const stopError = (ctx: SwapTxContext, leg: QuoteLeg, stop: LegStop) => {
+  if (!FUNDS_ON_SIGNER.has(stop) || !leg.signer)
+    return ctx.t("Did not complete. Check your activity")
+  const account = accountName(ctx, leg.signer)
+  return stop === "cancelled"
+    ? ctx.t("Cancelled. Your funds wait on {{account}}", { account })
+    : ctx.t("Failed. Your funds wait on {{account}}", { account })
+}
+
+const runApprovalFacts = (
+  ctx: SwapTxContext,
+  { run, approvalHashes, approvalsNeeded, signing }: SwapRunTxInput,
+  index: number
+): SwapTxApprovalFacts | undefined => {
+  const tokenId = run.quote.legs[index].fromTokenId
+  const sent = (at: "sent" | "landed", hash: Hex): SwapTxApprovalFacts => ({
+    at,
+    hash,
+    href: txExplorerUrl(ctx, tokenId, hash),
+  })
+
+  const isNeeded = approvalsNeeded.has(index)
+  const sentHash = approvalHashes[index]
+  if (signing?.leg !== index) {
+    if (sentHash) return sent("landed", sentHash)
+    return isNeeded ? { at: "needed" } : undefined
+  }
+
+  if (signing.approvalHash && signing.isApprovalPending) return sent("sent", signing.approvalHash)
+  if (signing.signs === "approval") return { at: "needed" }
+  if (signing.approvalHash) return sent("landed", signing.approvalHash)
+  if (signing.signs === "leg") return isNeeded ? { at: "landed" } : undefined
+  return isNeeded ? { at: "needed" } : undefined
+}
+
+/** a failed sign attempt or build belongs to the transaction the leg asked for next */
+const withSigningFailure = (facts: SwapTxLegFacts, signing: RunLegSigning): SwapTxLegFacts => {
+  if (!signing.failure) return facts
+  if (facts.approval?.at === "needed")
+    return { ...facts, approval: { ...facts.approval, at: "failed", error: signing.failure } }
+  return { ...facts, at: "failed", error: signing.failure }
+}
+
+const isStopped = (run: SwapRun) => run.legs.some((leg) => leg.at === "stopped")
+
+/** the last leg is never settled by the run: once sent, its card follows its own transaction */
+export const swapRunTxFacts = (ctx: SwapTxContext, input: SwapRunTxInput): SwapTxLegFacts[] => {
+  const { run, rows, signing } = input
+  const lastIndex = run.legs.length - 1
+  const stopped = isStopped(run)
+
+  return run.legs.map((leg, index) => {
+    const quoteLeg = run.quote.legs[index]
+    const hash = "hash" in leg ? leg.hash : undefined
+    const delivery =
+      index === lastIndex && leg.at === "sent" ? lastLegDelivery(ctx.t, rows[index]) : undefined
+    const facts: SwapTxLegFacts = {
+      at: leg.at === "queued" && stopped ? "skipped" : RUN_LEG_AT[leg.at],
+      hash,
+      href: hash ? txExplorerUrl(ctx, quoteLeg.fromTokenId, hash) : undefined,
+      error:
+        leg.at === "stopped"
+          ? stopError(ctx, quoteLeg, leg.stop)
+          : deliveryError(ctx, quoteLeg, delivery, rows[index]),
+      delivery,
+      approval: runApprovalFacts(ctx, input, index),
+    }
+    return signing?.leg === index ? withSigningFailure(facts, signing) : facts
+  })
+}
+
+type RecoveryOffer = { fromTokenId: TokenId; toTokenId: TokenId; fromAddress: string }
+
+export type SwapRunFooter =
+  | { type: "processing" }
+  | { type: "sign" }
+  | { type: "close" }
+  | { type: "finish"; offer: RecoveryOffer }
+  | { type: "check-activity" }
+
+/** the funds provably wait on the stopping leg's signer, so a new swap from there finishes the route */
+const recoveryOffer = ({ quote, legs }: SwapRun): RecoveryOffer | null => {
+  const index = legs.findIndex((leg) => leg.at === "stopped")
+  const stopped = legs[index]
+  const { fromTokenId, signer } = quote.legs[index] ?? {}
+  if (stopped?.at !== "stopped" || !FUNDS_ON_SIGNER.has(stopped.stop) || !fromTokenId || !signer)
+    return null
+  return {
+    fromTokenId,
+    toTokenId: quote.legs[quote.legs.length - 1].toTokenId,
+    fromAddress: signer,
+  }
+}
+
+export const swapRunFooter = (run: SwapRun, cards: readonly SwapTxCardModel[]): SwapRunFooter => {
+  if (readyLeg(run) !== null) return { type: "sign" }
+  if (isStopped(run)) {
+    const offer = recoveryOffer(run)
+    return offer ? { type: "finish", offer } : { type: "check-activity" }
+  }
+  switch (cards.at(-1)?.status) {
+    case "done":
+      return { type: "close" }
+    case "failed":
+    case "untracked":
+      return { type: "check-activity" }
+    default:
+      return { type: "processing" }
+  }
+}
+
+/** the user can speed up or cancel a sent EVM leg until it is mined, through its latest replacement */
+export const pendingEvmLegRow = (
+  { run, rows }: Pick<SwapRunTxInput, "run" | "rows">,
+  index: number
+): WalletTransactionEth | undefined => {
+  const row = rows[index]
+  const isUnsettled = row?.status === "pending" || row?.status === "unknown"
+  return run.legs[index].at === "sent" && row?.platform === "ethereum" && isUnsettled
+    ? { ...row, status: "pending" }
+    : undefined
+}
+
+export const legTrackerUrl = ({ rows }: Pick<SwapRunTxInput, "rows">, index: number) => {
+  const row = rows[index]
+  return (row && getSwapTrackerUrl(row.txInfo, row.id)) ?? undefined
 }
