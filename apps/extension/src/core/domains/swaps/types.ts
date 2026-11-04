@@ -1,15 +1,14 @@
 import type { FeatureFlag } from "@core/domains/app/types"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { WalletTransaction, WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import type { TokenId } from "@talismn/chaindata-provider"
-import type { DecodedCall, ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
-import type { Hex, TransactionRequest } from "viem"
+import type { TransactionRequest } from "viem"
 
 import type { SwapEnv } from "./env"
-import type { PersistedQuoteLeg, PlanSummary, SwapPlanId } from "./plans/types"
 
 export type SupportedSwapProtocol =
   | "simpleswap"
@@ -127,107 +126,6 @@ export type BuiltLeg = {
   txInfo: WalletTransactionInfo
 }
 
-/** What the chain says about a sent leg. The engine maps these answers onto the plan's state machine */
-export type LegObservation =
-  /** scanned: blocks this observation read without finding the leg, so no later one reads them again */
-  | { status: "pending"; scanned?: number[] }
-  /** hash: the transaction that landed, a speed-up's when one replaced the leg's own */
-  | { status: "landed"; hash: Hex; amount: bigint }
-  /** proven never executed: nothing moved */
-  | { status: "dropped" }
-  /** hash: the transaction that executed, a cancel's when the user cancelled the leg */
-  | { status: "failed"; reason: "reverted" | "cancelled"; hash: Hex }
-  | { status: "failed"; reason: "replaced" | "indeterminate" }
-
-/** a transaction the user sent on a leg's nonce: the same call with higher fees, or a no-op */
-export type LegReplacement = {
-  kind: "speed-up" | "cancel"
-  hash: Hex
-  /** resent while the leg is pending: the same bytes keep the same hash */
-  raw: Hex
-  sentAt: number
-}
-
-export type SentEvidence =
-  | {
-      platform: "ethereum"
-      /** the signed bytes when the background signed: a resend of the same bytes keeps the same hash */
-      raw?: Hex
-      /** oldest first. Whichever transaction on the leg's nonce lands decides the leg */
-      replacements?: LegReplacement[]
-    }
-  | {
-      platform: "polkadot"
-      /** the mortal era: the extrinsic can only land in [birth, birth + period) */
-      era: { birth: number; period: number }
-      /** finalised blocks of the era already read without the extrinsic */
-      scanned?: number[]
-    }
-
-export type SentLeg = {
-  hash: Hex
-  nonce: number
-  sentAt: number
-  evidence: SentEvidence
-  /** the transactionsV2 row: evidence, not a verdict */
-  row: WalletTransaction | null
-}
-
-export type ObserveLegParams = {
-  leg: QuoteLeg
-  sent: SentLeg
-  /** a later leg spends what this one delivers, so the landed amount must be chain evidence of the delivery */
-  handsOver: boolean
-}
-
-export type BoundLegParams = {
-  leg: QuoteLeg
-  /** decimal, 0.005 is 0.5% */
-  slippage: number
-  /** the previous leg's quoted output: a later leg never spends, value and gas, more than the plan brought */
-  maxSpend: bigint
-}
-
-export type LegBoundCall = {
-  /** the approved calldata with every free amount slot zeroed */
-  template: Hex
-  /** 32-byte word indices after the selector that hold an amount */
-  amountSlots: number[]
-  /** gas × maxFeePerGas cap for this function, in wei */
-  maxNetworkFee: string
-}
-
-/**
- * An approved calldata template for a leg the background signs alone. Admission parses the signed
- * bytes and compares: everything is pinned except the amount slots, which must hold at least `floor`.
- */
-export type LegBound = {
-  platform: "ethereum"
-  chainId: number
-  signer: Hex
-  to: Hex
-  calls: NonEmpty<LegBoundCall>
-  /** in planck of the leg's output token */
-  floor: string
-  /** in wei, the value plus gas × maxFeePerGas */
-  maxSpend: string
-}
-
-export type SwapPlanProposeRequest = {
-  id: SwapPlanId
-  legs: NonEmpty<PersistedQuoteLeg>
-  summary: PlanSummary
-  /** the nonce of the leg 0 payload the page built: admission holds the signed leg to it */
-  leg0Nonce: number
-}
-
-export interface SwapsMessages {
-  /** one proposal per id, rejected while a started or newer plan holds one of its intermediates. The background computes the bounds */
-  "pri(swaps.plan.propose)": [SwapPlanProposeRequest, boolean]
-  /** proposed to aborted, a paused or building plan to stopped. False once the current leg is sent */
-  "pri(swaps.plan.cancel)": [{ id: SwapPlanId }, boolean]
-}
-
 export type ApprovalInfo = {
   contractAddress: string
   amount: bigint
@@ -272,31 +170,7 @@ export type BackgroundSwapModule = {
   ) => Promise<BaseQuote | BaseQuote[] | null>
   buildLeg: (params: BuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
 
-  /** how long a sent leg may stay pending before the plan calls it indeterminate */
-  legDeadlineMs: number
-  /** the template admission checks before the background signs this leg alone. Null: the leg always needs the user */
-  boundLeg: (params: BoundLegParams, env: SwapEnv) => Promise<LegBound | null>
-  /** what the chain says about a sent leg, from chain evidence only */
-  observeLeg: (params: ObserveLegParams, env: SwapEnv) => Promise<LegObservation>
-  /** the decoded call of a signed substrate leg against the plan. Without it, none of the module's substrate legs is admitted */
-  checkSubstrateCall?: (params: CheckSubstrateCallParams) => SubstrateCallViolation | null
-
   entryHops?: EntryHop[]
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
 }
-
-export type SubstrateCallViolation = "call" | "dest" | "value"
-
-export type CheckSubstrateCallParams = {
-  leg: PersistedQuoteLeg
-  /** the leg the funds go to next, undefined on the last leg */
-  next: PersistedQuoteLeg | undefined
-  call: DecodedCall
-}
-
-/** What the plan engine needs from a module whose legs it admits and observes, whether or not it can build them */
-export type PlanLegRuntime = Pick<
-  BackgroundSwapModule,
-  "legDeadlineMs" | "boundLeg" | "observeLeg" | "checkSubstrateCall"
->

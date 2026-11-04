@@ -2,7 +2,6 @@ import type { EthNetworkId } from "@talismn/chaindata-provider"
 
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
-import { getLivePlanNonces } from "../swaps/plans/store"
 import { cleanupDroppedEvmTransactions } from "../transactions/cleanupDroppedTransactions"
 
 // Tracks all nonces handed out per address:network that may not be persisted
@@ -139,10 +138,13 @@ const computeNextNonce = async (
 }
 
 /**
- * The nonces of pending/unknown EVM transactions for a given address+network, and the nonces the
- * live swap plans hold. Uses the existing Dexie `status` index for efficient querying.
+ * Finds the highest nonce among pending/unknown EVM transactions for a given address+network.
+ * Uses the existing Dexie `status` index for efficient querying.
  */
-const getLocalNonces = async (address: string, evmNetworkId: EthNetworkId): Promise<number[]> => {
+const getHighestLocalNonce = async (
+  address: string,
+  evmNetworkId: EthNetworkId
+): Promise<number | null> => {
   const normalizedAddress = address.toLowerCase()
 
   const pendingTxs = await db.transactionsV2
@@ -156,23 +158,14 @@ const getLocalNonces = async (address: string, evmNetworkId: EthNetworkId): Prom
     )
     .toArray()
 
-  const rowNonces = pendingTxs.flatMap((tx) =>
-    tx.platform !== "solana" && typeof tx.nonce === "number" ? [tx.nonce] : []
-  )
-  return [...rowNonces, ...(await getLivePlanNonces(normalizedAddress, evmNetworkId))]
-}
+  if (pendingTxs.length === 0) return null
 
-const getHighestLocalNonce = async (
-  address: string,
-  evmNetworkId: EthNetworkId
-): Promise<number | null> => {
-  const nonces = await getLocalNonces(address, evmNetworkId)
-  return nonces.length ? Math.max(...nonces) : null
-}
+  let highest = -1
+  for (const tx of pendingTxs) {
+    if (tx.platform !== "solana" && typeof tx.nonce === "number" && tx.nonce > highest) {
+      highest = tx.nonce
+    }
+  }
 
-/** a pending or unknown transaction, or a live swap plan, holds the nonce. Reads Dexie only */
-export const isNonceHeldLocally = async (
-  address: string,
-  evmNetworkId: EthNetworkId,
-  nonce: number
-): Promise<boolean> => (await getLocalNonces(address, evmNetworkId)).includes(nonce)
+  return highest === -1 ? null : highest
+}

@@ -127,15 +127,7 @@ vi.mock("../hooks/useSwapConfirmation", () => ({
   useConfirmReadiness: () => true,
   useSwapPostSubmit: () => vi.fn(),
 }))
-vi.mock("../hooks/useSwapPlanProposal", () => ({
-  useFirstLegModule: () => null,
-  useSwapPlanProposal: () => ({
-    fees: undefined,
-    txInfo: undefined,
-    isProposing: false,
-    proposeError: null,
-  }),
-}))
+vi.mock("../swaps.api", () => ({ useSwapModules: () => [] }))
 vi.mock("../hooks/useSwapSlippage", () => ({
   SWAP_SLIPPAGE_DEFAULT: 0.5,
   toSlippageDecimal: (percent: number) => percent / 100,
