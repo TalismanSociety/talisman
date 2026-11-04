@@ -112,6 +112,12 @@ describe("withRunNote", () => {
     expect(withRunNote([older, other], "run-1", latest)).toEqual([other, latest])
   })
 
+  it("keeps the notes of other accounts, whatever their address format", () => {
+    const substrateNote = note({ runId: "run-0", fromAddress: SUB_ADDRESS, fromTokenId: SUB_TAO })
+
+    expect(withRunNote([substrateNote], "run-1", note())).toEqual([substrateNote, note()])
+  })
+
   it("replaces the note of the same run", () => {
     const first = note({ fromAddress: SUB_ADDRESS, fromTokenId: SUB_TAO })
 
