@@ -402,14 +402,14 @@ describe("useLegSigning", () => {
         timestamp: 0,
         txInfo,
       })
-    const retryAfterFailingOnNonce8 = async () => {
+    const retryAfterFailingOnNonce8 = async (countOnRetry = 9) => {
       ethGetTransactionsCount.mockResolvedValue(8)
       renderSign()
       await waitFor(() =>
         expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { nonce: 8 } })
       )
       const failedPayloads = new Set(priced.mock.calls.map(([payload]) => payload))
-      ethGetTransactionsCount.mockResolvedValue(9)
+      ethGetTransactionsCount.mockResolvedValue(countOnRetry)
       act(() => button.sign?.())
       act(() => button.reject?.(new Error("nonce too low")))
       await waitFor(() => expect(buttonLabel()).toBe("Try again"))
@@ -433,6 +433,17 @@ describe("useLegSigning", () => {
       })
 
       expect(await retryAfterFailingOnNonce8()).toMatchObject({ nonce: 9 })
+    })
+
+    it("signs the leg past the mined nonce while the node still counts it as next", async () => {
+      await minedOn(8, {
+        type: "transfer",
+        tokenId: "964:evm-native",
+        value: "1",
+        to: RECIPIENT,
+      })
+
+      expect(await retryAfterFailingOnNonce8(8)).toMatchObject({ nonce: 9 })
     })
 
     it("keeps the leg on its nonce when the mined transaction is a leg of this run", async () => {

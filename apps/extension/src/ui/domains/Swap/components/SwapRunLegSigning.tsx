@@ -143,9 +143,11 @@ const buildLegSignRequest = async (
   const signs: SignedStep = step.signs === "approval" ? step.allowance : "leg"
   const pinned = pinnedNonce(failedAttempt, signs, mined)
   const nonce =
-    pinned !== undefined && !(await isNonceMinedOutsideRun(run, networkId, signer, pinned))
-      ? pinned
-      : nextNonce(count, mined)
+    pinned === undefined
+      ? nextNonce(count, mined)
+      : (await isNonceMinedOutsideRun(run, networkId, signer, pinned))
+        ? Math.max(nextNonce(count, mined), pinned + 1)
+        : pinned
   if (step.signs === "approval")
     return buildApprovalTransaction(client, leg, step.approval, step.allowance, nonce)
 
