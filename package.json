@@ -73,7 +73,7 @@
     "@types/node": "^24.19.2",
     "@vitest/coverage-v8": "^5.0.5",
     "@vitest/ui": "5.0.5",
-    "dotenv": "17.4.2",
+    "dotenv": "18.0.9",
     "knip": "6.44.1",
     "simple-git-hooks": "2.14.0",
     "tsdown": "0.23.4",

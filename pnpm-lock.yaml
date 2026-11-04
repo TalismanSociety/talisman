@@ -126,8 +126,8 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(vitest@5.0.5)
       dotenv:
-        specifier: 17.4.2
-        version: 17.4.2
+        specifier: 18.0.9
+        version: 18.0.9
       knip:
         specifier: 6.44.1
         version: 6.44.1
@@ -6001,6 +6001,11 @@ packages:
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
+
+  dotenv@18.0.9:
+    resolution: {integrity: sha512-3fVOW4cB02R066PUSwn8O4TJyz9NckQl7F81blIbaq9jKBm2tSmOKky7ZHIXzGvkVPXCSn6jkpziBPZdGFs8Tw==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -15299,6 +15304,8 @@ snapshots:
       type-fest: 4.41.0
 
   dotenv@17.4.2: {}
+
+  dotenv@18.0.9: {}
 
   dts-resolver@3.0.0(oxc-resolver@11.24.2):
     optionalDependencies:
