@@ -1,10 +1,15 @@
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
+import type { RemoteConfigStoreData } from "../app/types"
 import type { SwapStatus, WalletTransactionInfo } from "../transactions/types"
-import type { SwapEnv } from "./env"
 
-export const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
+const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
 
-export type SwapStatusEnv = Pick<SwapEnv, "fetch" | "proxyFetch" | "getSwapsConfig">
+export type SwapStatusEnv = {
+  fetch: typeof fetch
+  /** a fetch that carries the Gandalf token the Talisman API proxies require */
+  proxyFetch: typeof fetch
+  getSwapsConfig: () => Promise<RemoteConfigStoreData["swaps"]>
+}
 
 export async function fetchSimpleswapStatus(
   exchangeId: string,

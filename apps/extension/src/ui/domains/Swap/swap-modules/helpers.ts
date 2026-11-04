@@ -1,8 +1,6 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-
-import type { SwapEnv } from "./env"
-import type { BaseQuote, NonEmpty, QuoteLeg } from "./types"
+import type { BaseQuote, NonEmpty, QuoteLeg, SwapEnv } from "./common.swap-module"
 
 /** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
 export const TALISMAN_FEE_NAME = "Talisman Fee"

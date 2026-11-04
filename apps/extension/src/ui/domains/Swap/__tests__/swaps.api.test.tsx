@@ -60,7 +60,7 @@ vi.mock("../swap-modules/stealthex-swap-module", () => ({
   },
 }))
 
-vi.mock("@core/domains/swaps/modules/forevermoney", () => ({
+vi.mock("../swap-modules/forevermoney-swap-module", () => ({
   forevermoneySwapModule: {
     protocol: "forevermoney",
     getFromAssets: (signal: AbortSignal) => getFromAssetsMock("forevermoney", signal),

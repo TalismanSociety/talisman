@@ -45,21 +45,21 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   })),
 }))
 
-vi.mock("@core/domains/swaps/evm-gas-check", () => ({
+vi.mock("../evm-gas-check", () => ({
   prepareTransactionRequestWithGasCheck: vi.fn(
     async (_client: unknown, _feeTokenId: string, request: unknown) => request
   ),
 }))
 
-vi.mock("@core/domains/swaps/modules/forevermoney-logo.svg?url", () => ({
+vi.mock("../forevermoney-logo.svg?url", () => ({
   default: "forevermoney-logo.svg",
 }))
 
-const { BACKGROUND_SWAP_MODULES } = await import("@core/domains/swaps/registry")
+const { forevermoneySwapModule: definition } = await import("../forevermoney-swap-module")
 const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
 const { confirmSwap } = await import("./confirmSwap")
 
-const forevermoneySwapModule = withSwapEnv(BACKGROUND_SWAP_MODULES.forevermoney, uiSwapEnv)
+const forevermoneySwapModule = withSwapEnv(definition, uiSwapEnv)
 
 // --- Fixtures ---
 

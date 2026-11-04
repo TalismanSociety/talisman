@@ -7,20 +7,6 @@ import {
   BITTENSOR_WEI_PER_RAO,
   type BittensorEvmPair,
 } from "@core/domains/bittensor/constants"
-import type { SwapEnv } from "@core/domains/swaps/env"
-import { getEvmNetwork, quoteFromLegs } from "@core/domains/swaps/helpers"
-import type {
-  BackgroundSwapModule,
-  BaseQuote,
-  BuildLegParams,
-  BuiltLeg,
-  QuoteFee,
-  QuoteLeg,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapModuleTransaction,
-  SwapTransactionContext,
-} from "@core/domains/swaps/types"
 import { abiBittensorBalanceTransfer } from "@core/util/abi"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { evmNativeTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
@@ -32,9 +18,23 @@ import {
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, zeroHash } from "viem"
-import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
-import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import bittensorLogo from "./bittensor-logo.svg?url"
+import type {
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapEnv,
+  SwapModuleDefinition,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "./common.swap-module"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
+import { getEvmNetwork, quoteFromLegs } from "./helpers"
+import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "bittensor-evm"
 const PROTOCOL_NAME = "Bittensor EVM"
@@ -361,7 +361,7 @@ const buildLeg = async (
   }
 }
 
-export const bittensorEvmSwapModule: BackgroundSwapModule = {
+export const bittensorEvmSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: async () => ROUTES.map((route) => route.fromTokenId),

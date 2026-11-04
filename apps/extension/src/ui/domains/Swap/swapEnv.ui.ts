@@ -1,8 +1,5 @@
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
-import type { SwapEnv } from "@core/domains/swaps/env"
-import { memoiseByKey } from "@core/domains/swaps/helpers"
-import type { BackgroundSwapModule } from "@core/domains/swaps/types"
 import type {
   NetworkId,
   NetworkOfPlatform,
@@ -22,15 +19,15 @@ import {
 } from "@ui/state/chaindata"
 import { gandalfFetch } from "@ui/util/gandalfFetch"
 import { firstValueFrom } from "rxjs"
-
 import { getSwapSlippageDecimal } from "./hooks/useSwapSlippage"
 import type {
   ExchangeParams,
-  PageSwapEnv,
-  PageSwapModule,
+  SwapEnv,
   SwapModule,
+  SwapModuleDefinition,
 } from "./swap-modules/common.swap-module"
 import { findEvmPublicClient, getEvmPublicClient } from "./swap-modules/evm-network"
+import { memoiseByKey } from "./swap-modules/helpers"
 import {
   buildSubstrateDeposit,
   estimateSubstrateDepositFee,
@@ -57,7 +54,7 @@ const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
   )
 }
 
-export const uiSwapEnv: PageSwapEnv = {
+export const uiSwapEnv: SwapEnv = {
   getNetwork: (networkId) => firstValueFrom(getNetworkById$(networkId)),
   getToken: (tokenId) => firstValueFrom(getToken$(tokenId)),
   evmClient: (networkId) => getEvmPublicClient(networkId),
@@ -81,15 +78,16 @@ export const uiSwapEnv: PageSwapEnv = {
   buildSubstrateDeposit: (params) => buildSubstrateDeposit(params),
 }
 
-export const withSwapEnv = (module: BackgroundSwapModule, env: SwapEnv): SwapModule => ({
-  ...module,
-  getQuote: (params, signal) => module.getQuote(params, env, signal),
-  buildLeg: (params) => module.buildLeg(params, env),
-})
-
-export const withPageSwapEnv = (
-  { getFromAssets, getToAssets, getQuote, createExchange, buildLeg, ...module }: PageSwapModule,
-  env: PageSwapEnv
+export const withSwapEnv = (
+  {
+    getFromAssets,
+    getToAssets,
+    getQuote,
+    createExchange,
+    buildLeg,
+    ...module
+  }: SwapModuleDefinition,
+  env: SwapEnv
 ): SwapModule => ({
   ...module,
   getFromAssets: (signal) => getFromAssets(env, signal),

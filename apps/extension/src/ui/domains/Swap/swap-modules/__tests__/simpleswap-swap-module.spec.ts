@@ -49,7 +49,7 @@ vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   })),
 }))
 
-vi.mock("@core/domains/swaps/evm-gas-check", () => ({
+vi.mock("../evm-gas-check", () => ({
   prepareTransactionRequestWithGasCheck: vi.fn(
     async (_client: unknown, _feeTokenId: string, request: unknown) => request
   ),
@@ -58,8 +58,8 @@ vi.mock("@core/domains/swaps/evm-gas-check", () => ({
 vi.stubGlobal("fetch", mockFetch)
 
 const { simpleswapSwapModule: simpleswapPageModule } = await import("../simpleswap-swap-module")
-const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
-const simpleswapSwapModule = withPageSwapEnv(simpleswapPageModule, uiSwapEnv)
+const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
+const simpleswapSwapModule = withSwapEnv(simpleswapPageModule, uiSwapEnv)
 const { confirmSwap } = await import("./confirmSwap")
 
 const FROM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"

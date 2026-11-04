@@ -12,7 +12,7 @@ export const SwapModal = () => {
   return (
     <Modal analyticsId="swap" containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="swap-modal">
-        {/* a swap plan's recovery opens the modal again from inside it, with a new swap to prefill */}
+        {/* a stopped multi-leg swap's recovery opens the modal again from inside it, with a new swap to prefill */}
         <SwapProvider key={openKey} stateInit={args} isOpen={isOpen}>
           <SwapWizard />
         </SwapProvider>

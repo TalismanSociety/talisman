@@ -1,6 +1,10 @@
-import type { BaseQuote, BuiltLeg, SwapTransactionContext } from "@core/domains/swaps/types"
 import { isAddressEqual } from "@talismn/crypto"
-import type { SwapModule } from "./swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  BuiltLeg,
+  SwapModule,
+  SwapTransactionContext,
+} from "./swap-modules/common.swap-module"
 
 export type BuildSwapTransactionParams = {
   module: SwapModule
@@ -16,7 +20,7 @@ export type BuildSwapTransactionParams = {
   signal?: AbortSignal
 }
 
-/** the quote the first leg was built from: the plan proposes the legs of the transaction the user signs */
+/** the quote the first leg was built from: each later leg is built from it once the previous one lands */
 export type BuiltSwap = { quote: BaseQuote; leg: BuiltLeg }
 
 export const quoteLegsKey = (quote: BaseQuote | null | undefined) =>

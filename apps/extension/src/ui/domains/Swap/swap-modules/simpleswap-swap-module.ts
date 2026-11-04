@@ -4,28 +4,26 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { assertDepositAmountWithinInput } from "@core/domains/swaps/exports"
-import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import { parseTokenId } from "@talismn/chaindata-provider"
+import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
+import { planckToTokens } from "@talismn/util"
+import BigNumber from "bignumber.js"
+import { parseUserInputToPlanck } from "../swap-utils"
 import type {
   BaseQuote,
   BuiltLeg,
   QuoteFee,
   QuoteParams,
   SupportedSwapProtocol,
-} from "@core/domains/swaps/types"
-import { parseTokenId } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
-import { planckToTokens } from "@talismn/util"
-import BigNumber from "bignumber.js"
-import { parseUserInputToPlanck } from "../swap-utils"
+} from "./common.swap-module"
 import {
   type ExchangeParams,
   getTokenIdForSwappableAsset,
-  type PageSwapEnv,
-  type PageSwapModule,
   platformFromTokenId,
   type SwapBuildLegParams,
+  type SwapEnv,
   type SwapExchange,
+  type SwapModuleDefinition,
   type SwappableAssetBaseType,
 } from "./common.swap-module"
 import {
@@ -34,6 +32,8 @@ import {
   estimateDepositGas,
 } from "./deposit-swap-transactions"
 import { getSimpleSwapTalismanFee } from "./fee-utils"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
+import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import { createSimpleSwapApi, type Exchange } from "./simpleswap-api"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
@@ -62,7 +62,7 @@ const resolveAsset = (tokenId: string): SimpleswapInternalAsset | undefined =>
 let cachedAssetsPromise: Promise<SimpleswapInternalAsset[]> | null = null
 
 const getSimpleswapAssets = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   _signal: AbortSignal
 ): Promise<SimpleswapInternalAsset[]> => {
   if (!cachedAssetsPromise) {
@@ -74,7 +74,7 @@ const getSimpleswapAssets = async (
   return cachedAssetsPromise
 }
 
-const fetchSimpleswapAssets = async (env: PageSwapEnv): Promise<SimpleswapInternalAsset[]> => {
+const fetchSimpleswapAssets = async (env: SwapEnv): Promise<SimpleswapInternalAsset[]> => {
   const simpleSwapSdk = createSimpleSwapApi(env)
   const [allCurrencies, { simpleswap: mappings }, knownEvmNetworks, knownTokens] =
     await Promise.all([
@@ -156,7 +156,7 @@ const fetchSimpleswapAssets = async (env: PageSwapEnv): Promise<SimpleswapIntern
 
 const pairKeyFromPair = (pair: string) => pair.toLowerCase()
 
-const getPairs = async (env: PageSwapEnv, fromTokenId: string | null) => {
+const getPairs = async (env: SwapEnv, fromTokenId: string | null) => {
   const fromAsset = fromTokenId ? resolveAsset(fromTokenId) : null
   const { symbol } = fromAsset?.context?.simpleswap ?? {}
   if (!symbol) return [] // not supported
@@ -167,14 +167,14 @@ const getPairs = async (env: PageSwapEnv, fromTokenId: string | null) => {
   return pairs
 }
 
-const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+const getFromAssets = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> => {
   const assets = await getSimpleswapAssets(env, signal)
   return assets.map((a) => a.id)
 }
 
 const getToAssets = async (
   fromTokenId: string | null,
-  env: PageSwapEnv,
+  env: SwapEnv,
   signal: AbortSignal
 ): Promise<string[]> => {
   const allAssets = await getSimpleswapAssets(env, signal)
@@ -193,7 +193,7 @@ const getToAssets = async (
 
 const getQuote = async (
   params: QuoteParams,
-  env: PageSwapEnv,
+  env: SwapEnv,
   _signal: AbortSignal
 ): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
@@ -270,10 +270,9 @@ const getQuote = async (
   return quote(parseUserInputToPlanck(output, toAsset.decimals), fees)
 }
 
-/** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type SimpleswapExchange = Exchange
 
-const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise<SwapExchange> => {
+const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -394,7 +393,7 @@ const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise
 
 const buildLeg = async (
   { leg, input, context, exchange }: SwapBuildLegParams,
-  env: PageSwapEnv
+  env: SwapEnv
 ): Promise<BuiltLeg> => {
   const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
@@ -436,7 +435,7 @@ const buildLeg = async (
   }
 }
 
-export const simpleswapSwapModule: PageSwapModule = {
+export const simpleswapSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: getFromAssets,

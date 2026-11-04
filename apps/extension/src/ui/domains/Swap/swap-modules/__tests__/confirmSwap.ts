@@ -1,6 +1,5 @@
-import type { BaseQuote, SwapTransactionContext } from "@core/domains/swaps/types"
 import { buildSwapTransaction } from "../../buildSwapTransaction"
-import type { SwapModule } from "../common.swap-module"
+import type { BaseQuote, SwapModule, SwapTransactionContext } from "../common.swap-module"
 
 export type ConfirmSwapParams = {
   module: SwapModule

@@ -1,9 +1,9 @@
-import type { ApprovalInfo, BaseQuote } from "@core/domains/swaps/types"
 import { useQuery } from "@tanstack/react-query"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import type { PublicClient } from "viem"
+import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
 import type { SwapModuleEntry } from "../swaps.api"
 import { type MinedApproval, minedBlockOn, readAllowanceStep } from "./erc20Approval"
 

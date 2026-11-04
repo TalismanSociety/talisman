@@ -1,7 +1,8 @@
-import { InsufficientGasBalanceError, SwapRouteUnbuildableError } from "@core/domains/swaps/exports"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"
+import { SwapRouteUnbuildableError } from "./swap-modules/errors"
+import { InsufficientGasBalanceError } from "./swap-modules/evm-gas-check"
 
 /**
  * Structured error types for the swap confirmation flow.

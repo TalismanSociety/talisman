@@ -1,5 +1,3 @@
-import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import type { QuoteFee } from "@core/domains/swaps/types"
 import { InfoIcon } from "@talismn/icons"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
@@ -12,6 +10,8 @@ import BigNumber from "bignumber.js"
 import type { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 import { toPlanck } from "../hooks/quote-sorting"
+import type { QuoteFee } from "../swap-modules/common.swap-module"
+import { TALISMAN_FEE_NAME } from "../swap-modules/helpers"
 
 const isTalismanFee = (fee: QuoteFee) => fee.name === TALISMAN_FEE_NAME && fee.amount.gt(0)
 

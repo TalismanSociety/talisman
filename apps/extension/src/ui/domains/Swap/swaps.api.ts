@@ -2,23 +2,21 @@
 
 import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import {
-  BACKGROUND_SWAP_MODULES,
-  withEntryHops,
-  withSingleLegQuotes,
-} from "@core/domains/swaps/exports"
-import type { SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/queryStoragePersister"
 import { useTokensMap } from "@ui/state/chaindata"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
+import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
+import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
+import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
+import { withEntryHops, withSingleLegQuotes } from "./swap-modules/hops"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
 import { getIntermediateCandidates } from "./swap-services/intermediateCandidates"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
-import { uiSwapEnv, withPageSwapEnv, withSwapEnv } from "./swapEnv.ui"
+import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -30,10 +28,11 @@ import {
 // ─── Constants ──────────────────────────────────────────────────────
 
 export const swapModules = [
-  withPageSwapEnv(simpleswapSwapModule, uiSwapEnv),
-  withPageSwapEnv(stealthexSwapModule, uiSwapEnv),
-  withPageSwapEnv(lifiSwapModule, uiSwapEnv),
-  ...Object.values(BACKGROUND_SWAP_MODULES).map((module) => withSwapEnv(module, uiSwapEnv)),
+  withSwapEnv(simpleswapSwapModule, uiSwapEnv),
+  withSwapEnv(stealthexSwapModule, uiSwapEnv),
+  withSwapEnv(lifiSwapModule, uiSwapEnv),
+  withSwapEnv(bittensorEvmSwapModule, uiSwapEnv),
+  withSwapEnv(forevermoneySwapModule, uiSwapEnv),
 ]
 
 export type SwapModuleEntry = (typeof swapModules)[number]

@@ -1,8 +1,8 @@
-import type { QuoteLeg } from "@core/domains/swaps/types"
 import { render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { SwapTxCards } from "../components/SwapTxCard"
 import type { SwapTxCardModel, SwapTxStatus } from "../components/swapTxCards"
+import type { QuoteLeg } from "../swap-modules/common.swap-module"
 
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (value: string) => value }) }))
 vi.mock("@ui/state/chaindata", () => ({ useToken: () => ({ symbol: "ETH" }) }))
@@ -44,7 +44,7 @@ describe("SwapTxCards", () => {
     expect(scrolled.mock.calls[0][0]).toContain("body leg-0")
   })
 
-  it("scrolls to the next transaction when the plan queues it for a moment before it opens", () => {
+  it("scrolls to the next transaction when it is queued for a moment before it opens", () => {
     const twoLegs = (first: SwapTxStatus, approval: SwapTxStatus): SwapTxCardModel[] => [
       { key: "leg-0", kind: "leg", leg: 0, status: first },
       { key: "approval-1", kind: "approval", leg: 1, status: approval },

@@ -1,5 +1,3 @@
-import { quoteFromLegs } from "@core/domains/swaps/helpers"
-import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import type { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
@@ -13,6 +11,8 @@ import {
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
+import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import { quoteFromLegs } from "../swap-modules/helpers"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
