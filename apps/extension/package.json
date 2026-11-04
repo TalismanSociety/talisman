@@ -96,7 +96,7 @@
     "loglevel": "^1.9.2",
     "lottie-react": "3.1.2",
     "marked": "^18.1.2",
-    "motion": "13.4.0",
+    "motion": "14.9.0",
     "openapi-fetch": "^0.17.0",
     "p-queue": "9.3.3",
     "raptorq": "1.7.24",
