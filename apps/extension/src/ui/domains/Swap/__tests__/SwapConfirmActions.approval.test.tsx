@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { PropsWithChildren } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type { BuiltSwap } from "../buildSwapTransaction"
 import { SwapConfirmActions } from "../components/SwapConfirmActions"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
 import { quoteFromLegs } from "../swap-modules/helpers"
@@ -17,7 +18,7 @@ const APPROVAL_GAS = 100_000_000_000_000n
 const BRIDGE_FEE = 2_000_000_000_000_000n
 
 const { swap, feeCheck, sentApproval, held } = vi.hoisted(() => ({
-  swap: { selectedQuote: null as BaseQuote | null },
+  swap: { selectedQuote: null as BaseQuote | null, built: null as BuiltSwap | null },
   held: (() => {
     const balancesOf = (planckByTokenId: Record<string, bigint>, status = "live") => ({
       status,
@@ -159,7 +160,11 @@ vi.mock("../hooks/useSwapConfirmation", () => ({
   useConfirmReadiness: () => true,
   useSwapPostSubmit: () => vi.fn(),
 }))
-vi.mock("../swaps.api", () => ({ useSwapModules: () => [] }))
+vi.mock("../swaps.api", () => ({ useSwapModules: () => [{ protocol: "lifi" }] }))
+vi.mock("../buildSwapTransaction", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../buildSwapTransaction")>()),
+  buildSwapTransaction: async () => swap.built,
+}))
 vi.mock("../hooks/useSwapSlippage", () => ({
   SWAP_SLIPPAGE_DEFAULT: 0.5,
   toSlippageDecimal: (percent: number) => percent / 100,
@@ -186,18 +191,20 @@ vi.mock("../SwapProvider", () => ({
     incrementApprovalCounter: vi.fn(),
     approvalHash: null,
     setApprovalHash: vi.fn(),
-    erc20Approval: {
-      data: {
-        chainId: 8453,
-        tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-        contractAddress: "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
-        fromAddress: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
-        amount: 1_000_000n,
-        step: "approve",
-      },
-      loading: false,
-      needsRevoke: false,
-    },
+    erc20Approval: swap.built
+      ? { data: null, loading: false, needsRevoke: false }
+      : {
+          data: {
+            chainId: 8453,
+            tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            contractAddress: "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+            fromAddress: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
+            amount: 1_000_000n,
+            step: "approve",
+          },
+          loading: false,
+          needsRevoke: false,
+        },
   }),
 }))
 
@@ -316,6 +323,7 @@ const renderConfirmActions = () =>
 describe("SwapConfirmActions approval", () => {
   beforeEach(() => {
     swap.selectedQuote = quoteWithBridgeFee
+    swap.built = null
     feeCheck.calls = []
     sentApproval.current = null
     held.set({})
@@ -386,6 +394,40 @@ describe("SwapConfirmActions approval", () => {
     expect(screen.getByRole("alert").textContent).toBe(
       "Insufficient ETH to pay for transaction fees"
     )
+  })
+
+  it("adds the fees the first leg was built with to a later leg's gas on the same network", async () => {
+    const builtFee = APPROVAL_GAS
+    feeCheck.available = APPROVAL_GAS + builtFee
+    swap.selectedQuote = quoteWithSameNetworkLaterLeg
+    swap.built = {
+      quote: quoteWithSameNetworkLaterLeg,
+      leg: {
+        transaction: {
+          platform: "ethereum",
+          transaction: { from: ACCOUNT, to: ACCOUNT, data: "0x", chainId: 8453 },
+        },
+        fees: [
+          {
+            name: "Bridge Fee",
+            tokenId: ETH,
+            amount: BigNumber(builtFee.toString()).shiftedBy(-18),
+            additional: true,
+          },
+        ],
+        expectedOutput: 1n,
+        txInfo: { type: "swap" },
+      } as BuiltSwap["leg"],
+    }
+    held.set({ [ETH]: (APPROVAL_GAS * 5n) / 2n })
+    renderConfirmActions()
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toBe(
+        "Insufficient ETH to pay for transaction fees"
+      )
+    )
+    expect(screen.getByRole("button", { name: "Confirm Swap" }).hasAttribute("disabled")).toBe(true)
   })
 
   it("prices a retry of a reverted approval afresh, not as the transaction that reverted", () => {

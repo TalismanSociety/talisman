@@ -466,16 +466,27 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromAmount,
   })
 
-  const runQuote = built?.quote ?? selectedQuote
-  const laterLegHoldings = useHoldings(runQuote ? getLaterLegHoldingKeys(runQuote) : [])
+  const quoteAsBuilt = useMemo(
+    () =>
+      built
+        ? {
+            ...built.quote,
+            legs: built.quote.legs.map((leg, index) =>
+              index === 0 ? { ...leg, fees: built.leg.fees } : leg
+            ),
+          }
+        : selectedQuote,
+    [built, selectedQuote]
+  )
+  const laterLegHoldings = useHoldings(quoteAsBuilt ? getLaterLegHoldingKeys(quoteAsBuilt) : [])
   const laterLegShortfall = useMemo(() => {
-    if (!runQuote || !laterLegHoldings) return null
+    if (!quoteAsBuilt || !laterLegHoldings) return null
     const firstLegGas =
       activeFeeTokenId && feePlanck !== null
         ? { tokenId: activeFeeTokenId, planck: feePlanck }
         : null
-    return getShortfall(runQuote, laterLegHoldings, firstLegGas)
-  }, [runQuote, laterLegHoldings, activeFeeTokenId, feePlanck])
+    return getShortfall(quoteAsBuilt, laterLegHoldings, firstLegGas)
+  }, [quoteAsBuilt, laterLegHoldings, activeFeeTokenId, feePlanck])
   const isLaterLegBalanceLoading = laterLegHoldings === null
 
   const swapError = useMemo<SwapConfirmError | null>(() => {
