@@ -12,34 +12,30 @@ export type IntermediateCandidate = {
   type: AccountType
   /** its balance of the hub token */
   hubBalance: bigint
-  /** a live plan already holds it */
-  busy: boolean
 }
 
 /**
  * The recipient when it is one of the user's EVM accounts, as it signs the next leg with the same
- * address. Else the free keypair account holding the least of the hub token, so a plan never
- * mingles with a large balance. Else a free Ledger account, which signs the next leg on the device.
+ * address. Else the keypair account holding the least of the hub token, so a swap never
+ * mingles with a large balance. Else a Ledger account, which signs the next leg on the device.
  */
 export const pickIntermediateAccount = (
   candidates: readonly IntermediateCandidate[],
   recipient: string | null
 ): string | null => {
-  const free = candidates.filter(
-    (candidate) => isEthereumAddress(candidate.address) && !candidate.busy
-  )
+  const evm = candidates.filter((candidate) => isEthereumAddress(candidate.address))
   const own =
     recipient && isEthereumAddress(recipient)
-      ? free.find((candidate) => isAddressEqual(candidate.address, recipient))
+      ? evm.find((candidate) => isAddressEqual(candidate.address, recipient))
       : undefined
   if (own) return own.address
 
-  const keypair = free
+  const keypair = evm
     .filter((candidate) => candidate.type === "keypair")
     .sort((a, b) => (a.hubBalance < b.hubBalance ? -1 : a.hubBalance > b.hubBalance ? 1 : 0))[0]
   if (keypair) return keypair.address
 
-  return free.find((candidate) => candidate.type === "ledger-ethereum")?.address ?? null
+  return evm.find((candidate) => candidate.type === "ledger-ethereum")?.address ?? null
 }
 
 /** the realm-bound face of a module the composition calls: the pages' SwapModule has this shape */

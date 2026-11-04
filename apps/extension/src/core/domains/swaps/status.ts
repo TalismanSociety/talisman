@@ -1,7 +1,8 @@
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import type { SwapStatus, WalletTransactionInfo } from "../transactions/types"
 import type { SwapEnv } from "./env"
-import { LIFI_API_URL } from "./modules/lifi"
+
+export const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
 
 export type SwapStatusEnv = Pick<SwapEnv, "fetch" | "proxyFetch" | "getSwapsConfig">
 

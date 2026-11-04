@@ -7,7 +7,7 @@ import { getEvmPublicClient } from "../swap-modules/evm-network"
 import { swapModules } from "../swaps.api"
 import { readAllowanceStep } from "./erc20Approval"
 
-export const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => {
+const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => {
   if (!leg.signer) return null
   return (
     module.getApprovalInfo?.({

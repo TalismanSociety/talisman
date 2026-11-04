@@ -28,14 +28,8 @@ import type {
   ApprovalParams,
   BackgroundSwapModule,
   BaseQuote,
-  BoundLegParams,
   BuildLegParams,
   BuiltLeg,
-  LegBound,
-  LegBoundCall,
-  LegObservation,
-  NonEmpty,
-  ObserveLegParams,
   QuoteFee,
   QuoteLeg,
   QuoteParams,
@@ -50,15 +44,8 @@ import {
 } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
-import {
-  decodeFunctionData,
-  encodeFunctionData,
-  type Hex,
-  type PublicClient,
-  zeroAddress,
-} from "viem"
+import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
 import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
-import { observeEvmLeg } from "../observeEvm"
 import { assertNativeValueWithinInput } from "../provider-transaction-guards"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
 
@@ -86,12 +73,8 @@ const MAX_PARTNER_FEE_BPS = 100
 // measured on Finney: 615k for bridgeOut, 743k for bridgeOutWithFee
 const BRIDGE_OUT_GAS_CEILING = 700_000n
 const BRIDGE_OUT_WITH_FEE_GAS_CEILING = 850_000n
-// the fee cap of a background-signed leg leaves room for the gas price to move after the approval
-const MAX_NETWORK_FEE_HEADROOM = 3n
 // a later leg's output floor: the user's slippage, but never under 1%, as the CCIP fee drifts
 const MIN_FLOOR_BPS = 100
-/** the source receipt must exist within this, the CCIP delivery is tracked by the swap status */
-const LEG_DEADLINE_MS = 30 * 60_000
 
 type PartnerFee = { recipient: `0x${string}`; bps: number }
 
@@ -595,6 +578,11 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
 
 // --- leg (re-quoted on the confirmation screen) ---
 
+const legFloor = (leg: QuoteLeg, slippage: number) => {
+  const floorBps = BigInt(Math.max(Math.round(slippage * Number(BPS_DENOMINATOR)), MIN_FLOOR_BPS))
+  return (leg.outputAmount * (BPS_DENOMINATOR - floorBps)) / BPS_DENOMINATOR
+}
+
 /** Fresh fee, fresh checks and the destination block the delivery watcher starts from */
 const buildLeg = async (
   { leg, input, context, slippage }: BuildLegParams,
@@ -699,84 +687,6 @@ const buildLeg = async (
   }
 }
 
-// --- plan legs signed by the background ---
-
-const legFloor = (leg: QuoteLeg, slippage: number) => {
-  const floorBps = BigInt(Math.max(Math.round(slippage * Number(BPS_DENOMINATOR)), MIN_FLOOR_BPS))
-  return (leg.outputAmount * (BPS_DENOMINATOR - floorBps)) / BPS_DENOMINATOR
-}
-
-/**
- * The approved calldata: bridgeOut to the recipient, or bridgeOutWithFee with the partner tuple
- * pinned, with only the two amount words free. Each function carries its own gas ceiling.
- */
-const boundLeg = async (
-  { leg, slippage, maxSpend }: BoundLegParams,
-  env: SwapEnv
-): Promise<LegBound | null> => {
-  const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
-  if (route?.direction !== "evm-to-spoke") return null
-  const { signer, recipient } = leg
-  if (!signer || !isEthereumAddress(signer) || !recipient || !isEthereumAddress(recipient))
-    return null
-
-  const [partnerFee, client] = await Promise.all([
-    getPartnerFee(env, route),
-    env.evmClient(route.sourceNetworkId),
-  ])
-  const { maxFeePerGas } = await client.estimateFeesPerGas()
-
-  const call = (fee: PartnerFee | null): LegBoundCall => ({
-    template: encodeBridgeOut(route, recipient, {
-      amountWei: 0n,
-      partnerFee: fee,
-      partnerFeeWei: 0n,
-    }),
-    amountSlots: [3, 5],
-    maxNetworkFee: (gasCeiling(fee) * maxFeePerGas * MAX_NETWORK_FEE_HEADROOM).toString(),
-  })
-  const calls: NonEmpty<LegBoundCall> = partnerFee ? [call(null), call(partnerFee)] : [call(null)]
-
-  return {
-    platform: "ethereum",
-    chainId: Number(route.sourceNetworkId),
-    signer,
-    to: route.sourceGateway,
-    calls,
-    floor: legFloor(leg, slippage).toString(),
-    maxSpend: maxSpend.toString(),
-  }
-}
-
-const decodeBridgedAmount = (route: ForevermoneyRoute, data: Hex): bigint => {
-  if (route.direction === "evm-to-spoke") {
-    const decoded = decodeFunctionData({ abi: abiForevermoneyAlphaGateway, data })
-    if (decoded.functionName === "bridgeOut" || decoded.functionName === "bridgeOutWithFee")
-      return decoded.args[3]
-  } else {
-    const decoded = decodeFunctionData({ abi: abiForevermoneySpokeGateway, data })
-    if (
-      decoded.functionName === "bridgeToFinney" ||
-      decoded.functionName === "bridgeToFinneyWithFee"
-    )
-      return getOutputAmount(route, decoded.args[1])
-  }
-  throw new Error("Unexpected ForeverMoney call")
-}
-
-/** the leg lands on its source receipt, the CCIP delivery stays on the row's swap status */
-const observeLeg = async (
-  { leg, sent }: ObserveLegParams,
-  env: SwapEnv
-): Promise<LegObservation> => {
-  const route = findForevermoneyRoute(leg.fromTokenId, leg.toTokenId)
-  if (!route) throw new Error("Unknown ForeverMoney route")
-  if (!leg.signer || !isEthereumAddress(leg.signer)) throw new Error("Invalid sender address")
-
-  const client = await env.evmClient(route.sourceNetworkId)
-  return observeEvmLeg(client, sent, leg.signer, ({ data }) => decodeBridgedAmount(route, data))
-}
-
 // --- approval ---
 
 const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
@@ -809,9 +719,6 @@ export const forevermoneySwapModule: BackgroundSwapModule = {
   ],
   getQuote,
   buildLeg,
-  legDeadlineMs: LEG_DEADLINE_MS,
-  boundLeg,
-  observeLeg,
   entryHops: [
     {
       from: FOREVERMONEY_BITTENSOR_SUB_TOKEN_ID,

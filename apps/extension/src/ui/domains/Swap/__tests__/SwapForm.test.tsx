@@ -74,10 +74,6 @@ vi.mock("../components/SwapProviderPickerButton", () => ({
   SwapProviderPickerButton: () => <div />,
 }))
 
-vi.mock("../components/SwapPausedPlans", () => ({
-  SwapPausedPlans: () => null,
-}))
-
 vi.mock("../components/ToAmountDisplay", () => ({
   ToAmountDisplay: () => <div />,
 }))
@@ -140,7 +136,7 @@ describe("SwapForm", () => {
     const onMaxFromAmountClick = vi.fn()
     useSwapMock.mockReturnValue(createSwapState({ onMaxFromAmountClick }))
 
-    render(<SwapForm onContinuePlan={vi.fn()} />)
+    render(<SwapForm />)
 
     expect(availableBalanceMock).toHaveBeenCalledTimes(2)
 
@@ -154,7 +150,7 @@ describe("SwapForm", () => {
   it("keeps max disabled when provider does not expose callback", () => {
     useSwapMock.mockReturnValue(createSwapState({ onMaxFromAmountClick: undefined }))
 
-    render(<SwapForm onContinuePlan={vi.fn()} />)
+    render(<SwapForm />)
 
     expect(availableBalanceMock).toHaveBeenCalledTimes(2)
 
@@ -171,7 +167,7 @@ describe("SwapForm", () => {
       })
     )
 
-    const { getByRole } = render(<SwapForm onContinuePlan={vi.fn()} />)
+    const { getByRole } = render(<SwapForm />)
     const reviewButton = getByRole("button", { name: "Review" })
 
     expect(reviewButton.getAttribute("disabled")).toBeNull()
@@ -186,7 +182,7 @@ describe("SwapForm", () => {
       })
     )
 
-    const { getByRole } = render(<SwapForm onContinuePlan={vi.fn()} />)
+    const { getByRole } = render(<SwapForm />)
     const reviewButton = getByRole("button", { name: "Review" })
 
     expect(reviewButton.getAttribute("disabled")).not.toBeNull()
@@ -199,7 +195,7 @@ describe("SwapForm", () => {
       })
     )
 
-    const { getByRole } = render(<SwapForm onContinuePlan={vi.fn()} />)
+    const { getByRole } = render(<SwapForm />)
     const reviewButton = getByRole("button", { name: "Review" })
 
     expect(reviewButton.getAttribute("disabled")).toBeNull()

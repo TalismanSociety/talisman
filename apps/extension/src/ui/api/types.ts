@@ -74,8 +74,6 @@ import type {
   SolRpcRequest,
 } from "@core/domains/solana/exports"
 import type { TalismanMetadataDef } from "@core/domains/substrate/types"
-import type { SwapPlanId } from "@core/domains/swaps/plans/types"
-import type { SwapPlanProposeRequest } from "@core/domains/swaps/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { KnownRequestId, ValidRequests } from "@core/libs/requests/types"
 import type { UnsubscribeFn } from "@core/types"
@@ -290,8 +288,6 @@ export default interface MessageTypes {
     signature?: HexString,
     txInfo?: WalletTransactionInfo
   ) => Promise<{ hash: HexString }>
-  swapPlanPropose: (request: SwapPlanProposeRequest) => Promise<boolean>
-  swapPlanCancel: (id: SwapPlanId) => Promise<boolean>
   subSubmitWithBittensorMevShield: (
     payload: SignerPayloadJSON,
     txInfo?: WalletTransactionInfo

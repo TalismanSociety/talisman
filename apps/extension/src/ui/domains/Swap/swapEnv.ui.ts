@@ -57,16 +57,11 @@ const createSubstrateApi = async (networkId: NetworkId): Promise<ScaleApi> => {
   )
 }
 
-/** The pages quote and build legs. Observing a sent leg is the background executor's job */
 export const uiSwapEnv: PageSwapEnv = {
   getNetwork: (networkId) => firstValueFrom(getNetworkById$(networkId)),
   getToken: (tokenId) => firstValueFrom(getToken$(tokenId)),
   evmClient: (networkId) => getEvmPublicClient(networkId),
   substrateApi: memoiseByKey(createSubstrateApi),
-  substrateSend: (networkId, method, params) => api.subSend(networkId, method, params),
-  decodeExtrinsicEvents: async () => {
-    throw new Error("Swap legs are observed in the background")
-  },
   proxyFetch: (...args) => gandalfFetch(...args),
   fetch: (...args) => fetch(...args),
   getSwapsConfig: () => remoteConfigStore.get("swaps"),
