@@ -33,6 +33,7 @@ import { SwapTxSummary } from "./SwapTxSummary"
 import {
   legTrackerUrl,
   pendingEvmLegRow,
+  type RecoveryOffer,
   type SwapRunFooter,
   type SwapRunTxInput,
   type SwapTxCardModel,
@@ -57,6 +58,20 @@ const useLegRows = (run: SwapRun): SwapRunTxInput["rows"] => {
 const supportsSlippage = (protocol: SupportedSwapProtocol) =>
   swapModules.find((module) => module.protocol === protocol)?.supportsSlippageSetting === true
 
+const FinishSwapButton: FC<{ offer: RecoveryOffer; primary?: boolean }> = ({ offer, primary }) => {
+  const { t } = useTranslation()
+  const { open: openSwapModal } = useSwapModal()
+  return (
+    <Button
+      primary={primary}
+      fullWidth
+      onClick={() => openSwapModal({ entry: "swap_plan", ...offer })}
+    >
+      {t("Finish the swap")}
+    </Button>
+  )
+}
+
 const RunFooter: FC<{
   footer: SwapRunFooter
   signButton: LegSigningState["button"]
@@ -65,7 +80,6 @@ const RunFooter: FC<{
 }> = ({ footer, signButton, onClose, containerId }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { open: openSwapModal } = useSwapModal()
 
   switch (footer.type) {
     case "processing":
@@ -81,17 +95,14 @@ const RunFooter: FC<{
         </Button>
       )
     case "sign":
-      return <LegSignButton button={signButton} containerId={containerId} />
-    case "finish":
       return (
-        <Button
-          primary
-          fullWidth
-          onClick={() => openSwapModal({ entry: "swap_plan", ...footer.offer })}
-        >
-          {t("Finish the swap")}
-        </Button>
+        <div className="flex flex-col gap-4">
+          <LegSignButton button={signButton} containerId={containerId} />
+          {footer.offer ? <FinishSwapButton offer={footer.offer} /> : null}
+        </div>
       )
+    case "finish":
+      return <FinishSwapButton offer={footer.offer} primary />
     case "check-activity":
       return (
         <Button
@@ -254,7 +265,7 @@ export const SwapRunView: FC<{
       <SwapTxLayout
         footer={
           <RunFooter
-            footer={swapRunFooter(run, cards)}
+            footer={swapRunFooter(input, cards)}
             signButton={legSigning.button}
             onClose={onClose}
             containerId={containerId}

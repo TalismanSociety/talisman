@@ -311,21 +311,18 @@ export const swapRunTxFacts = (ctx: SwapTxContext, input: SwapRunTxInput): SwapT
   })
 }
 
-type RecoveryOffer = { fromTokenId: TokenId; toTokenId: TokenId; fromAddress: string }
+export type RecoveryOffer = { fromTokenId: TokenId; toTokenId: TokenId; fromAddress: string }
 
 export type SwapRunFooter =
   | { type: "processing" }
-  | { type: "sign" }
+  | { type: "sign"; offer: RecoveryOffer | null }
   | { type: "close" }
   | { type: "finish"; offer: RecoveryOffer }
   | { type: "check-activity" }
 
-const recoveryOffer = ({ quote, legs }: SwapRun): RecoveryOffer | null => {
-  const index = legs.findIndex((leg) => leg.at === "stopped")
-  const stopped = legs[index]
+const offerFrom = ({ quote }: SwapRun, index: number): RecoveryOffer | null => {
   const { fromTokenId, signer } = quote.legs[index] ?? {}
-  if (stopped?.at !== "stopped" || !FUNDS_ON_SIGNER.has(stopped.stop) || !fromTokenId || !signer)
-    return null
+  if (!fromTokenId || !signer) return null
   return {
     fromTokenId,
     toTokenId: quote.legs[quote.legs.length - 1].toTokenId,
@@ -333,8 +330,21 @@ const recoveryOffer = ({ quote, legs }: SwapRun): RecoveryOffer | null => {
   }
 }
 
-export const swapRunFooter = (run: SwapRun, cards: readonly SwapTxCardModel[]): SwapRunFooter => {
-  if (readyLeg(run) !== null) return { type: "sign" }
+const recoveryOffer = (run: SwapRun): RecoveryOffer | null => {
+  const index = run.legs.findIndex((leg) => leg.at === "stopped")
+  const stopped = run.legs[index]
+  return stopped?.at === "stopped" && FUNDS_ON_SIGNER.has(stopped.stop)
+    ? offerFrom(run, index)
+    : null
+}
+
+export const swapRunFooter = (
+  { run, signing }: Pick<SwapRunTxInput, "run" | "signing">,
+  cards: readonly SwapTxCardModel[]
+): SwapRunFooter => {
+  const ready = readyLeg(run)
+  if (ready !== null)
+    return { type: "sign", offer: signing?.failure ? offerFrom(run, ready) : null }
   if (isStopped(run)) {
     const offer = recoveryOffer(run)
     return offer ? { type: "finish", offer } : { type: "check-activity" }
