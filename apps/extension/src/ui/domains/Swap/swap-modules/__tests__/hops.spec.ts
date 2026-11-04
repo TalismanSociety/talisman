@@ -114,6 +114,7 @@ const viaModule: HopModule = {
   getFromAssets: async () => [FINNEY_TAO, HUB_TAO],
   getToAssets: async (from) => (from === FINNEY_TAO ? [HUB_TAO] : [FINNEY_TAO]),
   getQuote: vi.fn(async () => bittensorQuote),
+  settleLeg: vi.fn(),
 }
 
 const finishingModule: HopModule & { decentralisationScore: number } = {
@@ -255,6 +256,13 @@ describe("withEntryHops", () => {
 
   it("offers no route when the via module is not available", async () => {
     const wrapped = withEntryHops(finishingModule, { ...options(true), resolve: () => undefined })
+
+    expect(await wrapped.getQuote(QUOTE_PARAMS, signal)).toBe(null)
+  })
+
+  it("offers no route when the via module cannot settle its leg", async () => {
+    const { settleLeg: _, ...unsettled } = viaModule
+    const wrapped = withEntryHops(finishingModule, { ...options(true), resolve: () => unsettled })
 
     expect(await wrapped.getQuote(QUOTE_PARAMS, signal)).toBe(null)
   })

@@ -1,10 +1,14 @@
+import { ModalDialog } from "@ui/components/ModalDialog"
 import type { ReplacementCallbackArgs } from "@ui/domains/Transactions/TxProgress"
-import { useCallback } from "react"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
-import { SwapConfirm } from "./SwapConfirm"
+import type { SwapRun } from "../swap-modules/swap-run"
+import { SWAP_CONFIRM_CONTAINER_ID, SwapConfirm } from "./SwapConfirm"
 import { SwapForm, SwapFormShimmer } from "./SwapForm"
 import { SwapProgress } from "./SwapProgress"
+import { SwapRunView } from "./SwapRunView"
 
 export const SwapWizard = () => {
   const { swapView, isInitializing } = useSwap()
@@ -20,8 +24,33 @@ export const SwapWizard = () => {
   }
 }
 
+const SwapRunDialog: FC<{ run: SwapRun }> = ({ run }) => {
+  const { t } = useTranslation()
+  const { legSent, approvalHash } = useSwap()
+  const { close } = useSwapModal()
+
+  return (
+    <ModalDialog
+      variant="wizard"
+      className="size-full border-none"
+      title={t("Confirm")}
+      onCloseClick={close}
+      contentClassName="relative flex flex-col overflow-hidden! p-0!"
+      id={SWAP_CONFIRM_CONTAINER_ID}
+    >
+      <SwapRunView
+        run={run}
+        leg0ApprovalHash={approvalHash}
+        onLegSent={legSent}
+        onClose={close}
+        containerId={SWAP_CONFIRM_CONTAINER_ID}
+      />
+    </ModalDialog>
+  )
+}
+
 const SwapSubmitted = () => {
-  const { submittedTxHash, submittedNetworkId, submittedTxInfo, gotoSubmitted } = useSwap()
+  const { run, submittedTxHash, submittedNetworkId, submittedTxInfo, gotoSubmitted } = useSwap()
   const { close: closeSwapTokensModal } = useSwapModal()
 
   // Follow speed-up replacements so tracking continues on the new hash. If the
@@ -36,6 +65,7 @@ const SwapSubmitted = () => {
     [gotoSubmitted, submittedTxInfo]
   )
 
+  if (run) return <SwapRunDialog run={run} />
   if (!submittedTxHash || !submittedNetworkId || !submittedTxInfo) return null
 
   return (

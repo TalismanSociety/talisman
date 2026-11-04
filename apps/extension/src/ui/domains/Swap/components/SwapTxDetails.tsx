@@ -1,5 +1,6 @@
 import { type EthNetworkId, evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { EditIcon, InfoIcon } from "@talismn/icons"
+import { formatDecimals, planckToTokens } from "@talismn/util"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -11,8 +12,10 @@ import {
   RiskAnalysisPillButton,
   useShowRiskAnalysisPillButton,
 } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import { useAccountByAddress } from "@ui/state/accounts"
 import { useBalance } from "@ui/state/balances"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { shortenAddress } from "@ui/util/shortenAddress"
 import { type FC, type ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
@@ -107,6 +110,45 @@ export const SwapLegDetails: FC<{
       {provider?.note ? <div className="text-body-secondary text-xs">{provider.note}</div> : null}
       {provider?.notice ? <Notice>{provider.notice}</Notice> : null}
     </>
+  )
+}
+
+const formatTokens = (planck: bigint, { decimals, symbol }: { decimals: number; symbol: string }) =>
+  `${formatDecimals(planckToTokens(planck.toString(), decimals))} ${symbol}`
+
+export const SwapRateDropNotice: FC<{ tokenId: TokenId; amount: bigint; accepted: bigint }> = ({
+  tokenId,
+  amount,
+  accepted,
+}) => {
+  const { t } = useTranslation()
+  const token = useToken(tokenId)
+  if (!token) return null
+
+  return (
+    <Notice>
+      {t(
+        "The rate for this step dropped since the swap started. You will receive at least {{amount}} instead of {{accepted}}.",
+        { amount: formatTokens(amount, token), accepted: formatTokens(accepted, token) }
+      )}
+    </Notice>
+  )
+}
+
+/** a multi-leg swap goes on only while its screen stays open, the second leg's signer holds the funds meanwhile */
+export const SwapRunNotice: FC<{ secondLeg: QuoteLeg }> = ({ secondLeg }) => {
+  const { t } = useTranslation()
+  const token = useToken(secondLeg.fromTokenId)
+  const signer = useAccountByAddress(secondLeg.signer)
+  if (!token || !secondLeg.signer) return null
+
+  return (
+    <Notice>
+      {t(
+        "This swap needs a signature for each step. Keep this window open until the last one. If it closes, your {{symbol}} waits on {{account}} and you can swap it from there.",
+        { symbol: token.symbol, account: signer?.name ?? shortenAddress(secondLeg.signer) }
+      )}
+    </Notice>
   )
 }
 

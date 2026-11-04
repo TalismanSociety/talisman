@@ -40,10 +40,6 @@ type RunModule = Pick<SwapModule, "protocol" | "settleLeg">
 const moduleOf = <M extends RunModule>(modules: readonly M[], leg: QuoteLeg) =>
   modules.find((module) => module.protocol === leg.protocol)
 
-/** every leg before the last can tell what it delivered, so the run reaches the last one */
-export const canRun = (quote: BaseQuote, modules: readonly RunModule[]): boolean =>
-  quote.legs.slice(0, -1).every((leg) => !!moduleOf(modules, leg)?.settleLeg)
-
 export const startRun = (
   quote: BaseQuote,
   slippage: number,
@@ -83,6 +79,12 @@ export const legSettled = (run: SwapRun, index: number, outcome: LegOutcome): Sw
 export const settlingLeg = (run: SwapRun): number | null => {
   const index = run.legs.findIndex((leg) => leg.at === "sent")
   return index >= 0 && index < run.legs.length - 1 ? index : null
+}
+
+/** the leg the user signs next */
+export const readyLeg = (run: SwapRun): number | null => {
+  const index = run.legs.findIndex((leg) => leg.at === "ready")
+  return index >= 0 ? index : null
 }
 
 /** a settle that cannot tell leaves the leg untracked, the user checks the balance the funds went to */
