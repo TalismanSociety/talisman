@@ -11,9 +11,14 @@ import {
   startRun,
 } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
+import { saveUnfinishedSwap } from "../unfinishedSwaps"
 
 export const useSwapRun = () => {
   const [run, setRun] = useState<SwapRun | null>(null)
+
+  useEffect(() => {
+    if (run) saveUnfinishedSwap(run)
+  }, [run])
 
   useEffect(() => {
     const index = run && settlingLeg(run)

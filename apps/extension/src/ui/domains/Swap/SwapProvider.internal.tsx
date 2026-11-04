@@ -15,6 +15,7 @@ import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/
 import type { MinedApproval } from "./swap-modules/erc20-approval"
 import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
+import { clearUnfinishedSwapsHolding } from "./unfinishedSwaps"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
 const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
@@ -110,12 +111,13 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
       networkId: string
       txInfo: WalletTransactionInfo
     }) => {
+      if (fromAddress && fromTokenId) clearUnfinishedSwapsHolding({ fromAddress, fromTokenId })
       setSubmittedTxHash(hash)
       setSubmittedNetworkId(networkId)
       setSubmittedTxInfo(txInfo)
       setSwapView("submitted")
     },
-    []
+    [fromAddress, fromTokenId]
   )
 
   const { run, startRun, legSent } = useSwapRun()
