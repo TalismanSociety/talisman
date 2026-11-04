@@ -76,14 +76,6 @@ class TalismanDatabase extends Dexie {
     this.version(15).upgrade((tx) => {
       tx.table("metadata").clear()
     })
-
-    this.version(16).stores({
-      swapPlans: "id, phase, updatedAt",
-    })
-
-    this.version(17).stores({
-      swapPlans: null,
-    })
   }
 }
 
