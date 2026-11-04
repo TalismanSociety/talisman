@@ -7,6 +7,7 @@ import {
   calculateQuoteFees,
   flattenQuotes,
   getLaterLegHoldingKeys,
+  getShortfall,
   isSelectionAvailable,
   type QuoteWithFees,
   selectQuote,
@@ -574,6 +575,22 @@ describe("attachShortfalls", () => {
         [laterLegGas("5000", "8453:evm-native")]
       )
       expect(attachShortfalls([quote], [sourceHolding])[0]?.shortfall).toBeNull()
+    })
+
+    it("adds the first leg's live gas to a later leg's gas on the same network", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        toTokenId: "10:evm-native",
+        fees: [laterLegGas("600", "8453:evm-native")],
+      }).quote
+      const firstLegGas = { tokenId: "8453:evm-native", planck: 500n }
+
+      expect(getShortfall(quote, [sourceHolding])).toBeNull()
+      expect(getShortfall(quote, [sourceHolding], firstLegGas)).toEqual({
+        tokenId: "8453:evm-native",
+        required: 1200n,
+        available: 1000n,
+      })
     })
   })
 

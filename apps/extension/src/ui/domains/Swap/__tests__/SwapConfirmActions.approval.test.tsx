@@ -10,6 +10,7 @@ import { quoteFromLegs } from "../swap-modules/helpers"
 const ETH = "8453:evm-native"
 const OP_ETH = "10:evm-native"
 const OP_WETH = "10:evm-erc20:0x4200000000000000000000000000000000000006"
+const BASE_WETH = "8453:evm-erc20:0x4200000000000000000000000000000000000006"
 const ACCOUNT = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
 const USDC = "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
 const APPROVAL_GAS = 100_000_000_000_000n
@@ -264,6 +265,47 @@ const quoteWithLaterLegGas = quoteFromLegs(
   }
 )
 
+const quoteWithSameNetworkLaterLeg = quoteFromLegs(
+  [
+    {
+      protocol: "lifi",
+      fromTokenId: USDC,
+      toTokenId: BASE_WETH,
+      signer: ACCOUNT,
+      recipient: ACCOUNT,
+      inputAmount: 1_000_000n,
+      outputAmount: 1n,
+      fees: [],
+      timeInSec: 60,
+    },
+    {
+      protocol: "lifi",
+      fromTokenId: BASE_WETH,
+      toTokenId: OP_ETH,
+      signer: ACCOUNT,
+      recipient: ACCOUNT,
+      inputAmount: 1n,
+      outputAmount: 1n,
+      fees: [
+        {
+          name: "Gas",
+          tokenId: ETH,
+          amount: BigNumber(APPROVAL_GAS.toString()).shiftedBy(-18),
+          gas: true,
+        },
+      ],
+      timeInSec: 30,
+    },
+  ],
+  {
+    decentralisationScore: 1,
+    protocol: "lifi",
+    subProtocol: "glacis",
+    providerLogo: "",
+    providerName: "Glacis",
+  }
+)
+
 const renderConfirmActions = () =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -332,6 +374,18 @@ describe("SwapConfirmActions approval", () => {
       false
     )
     expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("holds the first signature when the first and a later leg cannot both pay their gas on one network", () => {
+    feeCheck.available = APPROVAL_GAS
+    swap.selectedQuote = quoteWithSameNetworkLaterLeg
+    held.set({ [ETH]: (APPROVAL_GAS * 3n) / 2n })
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Insufficient ETH to pay for transaction fees"
+    )
   })
 
   it("prices a retry of a reverted approval afresh, not as the transaction that reverted", () => {

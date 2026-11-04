@@ -468,10 +468,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const runQuote = built?.quote ?? selectedQuote
   const laterLegHoldings = useHoldings(runQuote ? getLaterLegHoldingKeys(runQuote) : [])
-  const laterLegShortfall = useMemo(
-    () => (runQuote && laterLegHoldings ? getShortfall(runQuote, laterLegHoldings) : null),
-    [runQuote, laterLegHoldings]
-  )
+  const laterLegShortfall = useMemo(() => {
+    if (!runQuote || !laterLegHoldings) return null
+    const firstLegGas =
+      activeFeeTokenId && feePlanck !== null
+        ? { tokenId: activeFeeTokenId, planck: feePlanck }
+        : null
+    return getShortfall(runQuote, laterLegHoldings, firstLegGas)
+  }, [runQuote, laterLegHoldings, activeFeeTokenId, feePlanck])
   const isLaterLegBalanceLoading = laterLegHoldings === null
 
   const swapError = useMemo<SwapConfirmError | null>(() => {

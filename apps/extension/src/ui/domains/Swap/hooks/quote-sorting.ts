@@ -121,12 +121,20 @@ export const getLaterLegHoldingKeys = (quote: BaseQuote): HoldingKey[] =>
         : []
     )
 
-/** The first leg's gas is left out: the confirm screen estimates it against the live balance */
-const getLegSpend = (leg: QuoteLeg, index: number, holding: Holding) => {
+type FirstLegGas = { tokenId: TokenId; planck: bigint }
+
+/** The first leg's gas counts only when given, as the confirm screen estimates it live */
+const getLegSpend = (
+  leg: QuoteLeg,
+  index: number,
+  holding: Holding,
+  firstLegGas: FirstLegGas | null
+) => {
   if (!leg.signer || !isAddressEqual(leg.signer, holding.address)) return 0n
   if (index === 0)
     return (
       (leg.fromTokenId === holding.tokenId ? leg.inputAmount : 0n) +
+      (firstLegGas?.tokenId === holding.tokenId ? firstLegGas.planck : 0n) +
       getAdditionalFeePlanck(leg.fees, holding.tokenId, holding.decimals)
     )
   if (leg.fromTokenId === holding.tokenId) return 0n
@@ -134,12 +142,16 @@ const getLegSpend = (leg: QuoteLeg, index: number, holding: Holding) => {
 }
 
 /** The first holding, in the given order, that cannot pay what the route spends from it */
-export const getShortfall = (quote: BaseQuote, holdings: Holding[]): Shortfall | null =>
+export const getShortfall = (
+  quote: BaseQuote,
+  holdings: Holding[],
+  firstLegGas: FirstLegGas | null = null
+): Shortfall | null =>
   holdings
     .map((holding) => ({
       tokenId: holding.tokenId,
       required: quote.legs.reduce(
-        (total, leg, index) => total + getLegSpend(leg, index, holding),
+        (total, leg, index) => total + getLegSpend(leg, index, holding, firstLegGas),
         0n
       ),
       available: holding.transferable,
