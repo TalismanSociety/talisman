@@ -114,13 +114,18 @@ const buildLegSignRequest = async (
   if (built.transaction.platform !== "ethereum")
     throw new Error("Only an EVM leg is signed on screen")
   const { to, data, value, gas } = built.transaction.transaction
+  const firstLeg = run.legs[0]
+  const swapRun = {
+    firstLegHash: "hash" in firstLeg ? firstLeg.hash : undefined,
+    isLastLeg: index === run.quote.legs.length - 1,
+  }
   return {
     signs: "leg",
     tx: {
       platform: "ethereum",
       networkId,
       payload: { from: signer, to, data, value, gas, nonce },
-      txInfo: built.txInfo,
+      txInfo: { ...built.txInfo, swapRun },
     },
     built: {
       inputAmount: input,

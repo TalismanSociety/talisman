@@ -82,5 +82,6 @@ export const buildSwapTransaction = async ({
   })
   throwIfAborted(signal)
 
-  return { quote, leg }
+  if (quote.legs.length === 1) return { quote, leg }
+  return { quote, leg: { ...leg, txInfo: { ...leg.txInfo, swapRun: { isLastLeg: false } } } }
 }
