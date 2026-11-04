@@ -1,7 +1,11 @@
 import { describe, expect, test } from "vitest"
 
 import type { IBalance } from "../../types"
-import { classifySmallAmountDrift, createBalanceStabilizer } from "./stabilizeBalances"
+import {
+  classifySmallAmountDrift,
+  createBalanceStabilizer,
+  GENERIC_DRIFT_TOLERANCE_BPS,
+} from "./stabilizeBalances"
 
 const makeBalance = (overrides: Partial<IBalance> & { address: string; tokenId: string }) =>
   ({
@@ -194,6 +198,24 @@ describe("classifySmallAmountDrift", () => {
       ],
     })
     expect(classify(makeBalance({ address: "a", tokenId: "t" }), withExtra)).toBe("changed")
+  })
+})
+
+describe("GENERIC_DRIFT_TOLERANCE_BPS", () => {
+  const classify = classifySmallAmountDrift(GENERIC_DRIFT_TOLERANCE_BPS)
+
+  test("a 0.03% balance change emits as changed, not held back as drift", () => {
+    const previous = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1000000000" }],
+    })
+    const next = makeBalance({
+      address: "a",
+      tokenId: "t",
+      values: [{ type: "free", label: "free", amount: "1000300000" }], // +0.03%
+    })
+    expect(classify(previous, next)).toBe("changed")
   })
 })
 

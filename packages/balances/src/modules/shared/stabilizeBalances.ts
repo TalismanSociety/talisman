@@ -137,6 +137,13 @@ export const createBalanceStabilizer = (
 }
 
 /**
+ * Cross-module drift tolerance (see classifySmallAmountDrift): amounts moving by no more
+ * than this classify as drift and re-emit at most once per stabilizer refresh interval.
+ * Kept tight — a real incoming transfer above 0.01% of the position emits immediately.
+ */
+export const GENERIC_DRIFT_TOLERANCE_BPS = 1n
+
+/**
  * Default cross-module drift classifier: balances whose SHAPE is identical (same
  * address/token/status, same value set with same types/labels/metas) but whose amounts
  * moved by no more than `toleranceBps` classify as "drift" — continuously-moving

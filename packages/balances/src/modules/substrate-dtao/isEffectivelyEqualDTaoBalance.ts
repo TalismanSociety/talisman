@@ -7,18 +7,12 @@ import type { SubDTaoBalanceMeta } from "./types"
 /** basket claimable amounts are marked NAV quotes: they move with subnet pool prices and
  * dividend accrual on (nearly) every block; the display is informational */
 const CLAIM_DRIFT_TOLERANCE_BPS = 100n
-/**
- * subnet staking positions auto-compound: dividend injections land once per subnet tempo
- * (staggered across subnets, so with many positions SOME position bumps on nearly every
- * poll). Moves up to this size classify as drift (surfaced within the refresh interval);
- * anything larger (a real stake/unstake) emits immediately.
- */
-const STAKE_DRIFT_TOLERANCE_BPS = 100n
 
 /**
  * dtao balances embed values that drift on (nearly) every block even when the user's
- * position is untouched: staking positions auto-compound, basket claimable quotes move,
- * and conviction locks decay.
+ * position is untouched: basket claimable quotes move and conviction locks decay.
+ * Stake itself only moves on dividend injections, once per subnet tempo, so every stake
+ * move emits immediately.
  *
  * Without special handling, every 6s poll re-emits the full result set, which defeats
  * every distinctUntilChanged stage downstream and forces the whole pipeline
@@ -97,7 +91,7 @@ const classifyValue = (
   if (previousMeta?.rootStakeHold?.unlockAtBlock !== nextMeta?.rootStakeHold?.unlockAtBlock)
     return changed("root stake hold meta")
 
-  // amounts: every dtao amount kind moves continuously in its own way
+  // amounts: claimable quotes and conviction locks move continuously, stake does not
   let drift = false
   if (previous.amount !== next.amount) {
     if (previous.label === CLAIMABLE_REWARDS_LABEL) {
@@ -110,11 +104,7 @@ const classifyValue = (
       // entirely removes its value and is treated as a drift-prone toggle instead)
       drift = true
     } else {
-      // stake: auto-compounding dividend injections are drift, real stake/unstake moves
-      // emit immediately
-      if (isWithinDriftTolerance(previous.amount, next.amount, STAKE_DRIFT_TOLERANCE_BPS))
-        drift = true
-      else return changed(`amount ${previous.amount}→${next.amount}`)
+      return changed(`amount ${previous.amount}→${next.amount}`)
     }
   }
 

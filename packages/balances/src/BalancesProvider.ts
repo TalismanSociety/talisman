@@ -52,6 +52,7 @@ import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
 import {
   classifySmallAmountDrift,
+  GENERIC_DRIFT_TOLERANCE_BPS,
   stabilizeModuleResults,
 } from "./modules/shared/stabilizeBalances"
 import {
@@ -66,13 +67,6 @@ import {
 import type { TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
-
-/**
- * Cross-module drift tolerance (see classifySmallAmountDrift): amounts moving by no more
- * than this classify as drift and re-emit at most once per stabilizer refresh interval.
- * Kept tight — a real incoming transfer above 0.1% of the position emits immediately.
- */
-const GENERIC_DRIFT_TOLERANCE_BPS = 10n
 
 /** Delay before resubscribing a substrate module stream that errored: 2s, doubling, capped at 1min */
 const substrateModuleRetryDelay = (retryCount: number) =>
