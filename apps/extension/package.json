@@ -10,7 +10,7 @@
     "@dnd-kit/utilities": "3.2.2",
     "@floating-ui/react": "0.27.20",
     "@headlessui/react": "2.2.10",
-    "@hookform/resolvers": "5.9.1",
+    "@hookform/resolvers": "7.0.1",
     "@iconify/react": "^6.0.4",
     "@ledgerhq/hw-app-eth": "7.11.1",
     "@ledgerhq/hw-app-solana": "^7.12.0",
