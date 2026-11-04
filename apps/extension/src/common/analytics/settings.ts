@@ -98,6 +98,7 @@ const APP_FLAGS: { readonly [K in keyof AppStoreData]-?: SettingRule | NotASetti
   hideEarnDisclaimer: bool("hideEarnDisclaimer"),
   hideQuickUnlockOffer: bool("hideQuickUnlockOffer"),
   dismissedCoachmarks: "a list, not one value",
+  unfinishedSwaps: "a list, not one value",
   currentMigration: "not a user choice",
 }
 
