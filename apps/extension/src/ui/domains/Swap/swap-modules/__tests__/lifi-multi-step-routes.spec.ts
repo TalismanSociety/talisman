@@ -595,24 +595,63 @@ describe("LI.FI leg build", () => {
     )
   })
 
-  it("refuses the first leg of a multi-step route below the floor, before funds move", async () => {
+  describe("on the first leg of a multi-step route", () => {
     const quoted = usdtToTrump().steps[0]
     const floor = 2_805_507_390_849_766_156_231n
-    const fresh = route(
-      "fresh",
-      [
-        {
-          ...quoted,
-          estimate: { ...quoted.estimate, toAmountMin: (floor - 1n).toString() },
-        } as LiFiStep,
-      ],
-      ALICE,
-      ALICE
-    )
+    const firstStep = (toAmount: bigint, toAmountMin: bigint, slippage = 0.005) =>
+      route(
+        "fresh",
+        [
+          {
+            ...quoted,
+            action: { ...quoted.action, slippage },
+            estimate: {
+              ...quoted.estimate,
+              toAmount: toAmount.toString(),
+              toAmountMin: toAmountMin.toString(),
+            },
+          } as LiFiStep,
+        ],
+        ALICE,
+        ALICE
+      )
+    const lessSlippage = (toAmount: bigint, slippage: number) =>
+      (toAmount * BigInt(Math.round((1 - slippage) * 10_000))) / 10_000n
+    const routesTakingSlippageOff = (toAmount: bigint) =>
+      mockLifiGetRoutes.mockImplementation(async (request: { options: { slippage: number } }) => ({
+        routes: [
+          firstStep(
+            toAmount,
+            lessSlippage(toAmount, request.options.slippage),
+            request.options.slippage
+          ),
+        ],
+        unavailableRoutes: { failed: [], filteredOut: [] },
+      }))
 
-    await expect(buildSwapLeg(100_000_000n, [fresh], { legIndex: 0 })).rejects.toThrow(
-      "moved too far"
-    )
+    it("holds the floor when the rate dipped, by asking LI.FI for less slippage", async () => {
+      const dipped = (BigInt(quoted.estimate.toAmount) * 999n) / 1_000n
+
+      const built = await buildSwapLeg(
+        100_000_000n,
+        [firstStep(dipped, lessSlippage(dipped, 0.005))],
+        { legIndex: 0, beforeBuild: () => routesTakingSlippageOff(dipped) }
+      )
+
+      expect(built.expectedOutput).toBe(lessSlippage(dipped, 0.0039))
+      expect(built.expectedOutput).toBeGreaterThanOrEqual(floor)
+      expect(built).not.toHaveProperty("acceptedOutput")
+      expect(mockGetStepTransaction.mock.lastCall?.[0].action.slippage).toBe(0.0039)
+    })
+
+    it("refuses a bridge whose fixed output fell below the floor, before funds move", async () => {
+      await expect(
+        buildSwapLeg(100_000_000n, [firstStep(floor - 1n, floor - 1n)], {
+          legIndex: 0,
+          beforeBuild: () => routesTakingSlippageOff(floor - 1n),
+        })
+      ).rejects.toThrow("moved too far")
+    })
   })
 
   it("refuses a later leg LI.FI no longer routes", async () => {

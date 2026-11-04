@@ -838,6 +838,17 @@ const routeStepFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =
   (BigInt(quoted.toAmount) * input * BigInt(Math.round((1 - slippage) * 10_000))) /
   (BigInt(quoted.fromAmount) * 10_000n)
 
+/**
+ * The slippage that keeps a step estimating its `toAmount` one basis point above `floor`, when it is
+ * less than the user's. The basis point absorbs LI.FI re-estimating the step as it builds it.
+ */
+const slippageHolding = (step: lifiSdk.LiFiStep, floor: bigint, slippage: number) => {
+  const estimate = BigInt(step.estimate.toAmount)
+  if (estimate <= floor) return undefined
+  const bps = Number(((estimate - floor) * 10_000n) / estimate) - 1
+  return bps >= 1 && bps < slippage * 10_000 ? bps / 10_000 : undefined
+}
+
 const spenderOf = (route: lifiSdk.Route | undefined) =>
   route?.steps[0]?.estimate.approvalAddress?.toLowerCase()
 
@@ -852,31 +863,61 @@ const buildLeg = async (
     if (!leg.signer || !leg.recipient) throw new Error("Missing from address")
     const isRouteStep = quotedRoute.stepCount > 1
     const isLaterLeg = isRouteStep && quotedRoute.stepIndex > 0
+    const signer = leg.signer
+    const floor = routeStepFloor(quotedRoute, input, slippage)
 
-    const freshQuotes =
-      (await quoteRoutes(
-        env,
-        {
-          fromTokenId: leg.fromTokenId,
-          toTokenId: leg.toTokenId,
-          fromAmount: input,
-          fromAddress: leg.signer,
-          toAddress: leg.recipient,
-          input: "exact",
-        },
-        slippage,
-        { multiStep: false, chargesTalismanFee: !isLaterLeg }
-      )) ?? []
-    const usableQuotes =
-      parseTokenId(leg.fromTokenId).type === "evm-erc20"
-        ? freshQuotes.filter(
-            (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
-          )
-        : freshQuotes
-    const freshLegs = [
-      ...usableQuotes.filter((quote) => quote.subProtocol === tool),
-      ...usableQuotes.filter((quote) => quote.subProtocol !== tool),
-    ].map((quote) => quote.legs[0])
+    const freshLegsAt = async (atSlippage: number) => {
+      const freshQuotes =
+        (await quoteRoutes(
+          env,
+          {
+            fromTokenId: leg.fromTokenId,
+            toTokenId: leg.toTokenId,
+            fromAmount: input,
+            fromAddress: signer,
+            toAddress: leg.recipient,
+            input: "exact",
+          },
+          atSlippage,
+          { multiStep: false, chargesTalismanFee: !isLaterLeg }
+        )) ?? []
+      const usableQuotes =
+        parseTokenId(leg.fromTokenId).type === "evm-erc20"
+          ? freshQuotes.filter(
+              (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
+            )
+          : freshQuotes
+      return [
+        ...usableQuotes.filter((quote) => quote.subProtocol === tool),
+        ...usableQuotes.filter((quote) => quote.subProtocol !== tool),
+      ].map((quote) => quote.legs[0])
+    }
+
+    const buildHoldingFloor = async (step: lifiSdk.LiFiStep, prepared: lifiSdk.LiFiStep) => {
+      const tighter = slippageHolding(prepared, floor, slippage)
+      if (tighter === undefined) return undefined
+      try {
+        const fresh = (await freshLegsAt(tighter)).find(
+          (candidate) => (candidate.data as LifiLegRoute).steps[0]?.tool === step.tool
+        )
+        if (!fresh) return undefined
+        const freshStep = (fresh.data as LifiLegRoute).steps[0]
+        const built = await buildRouteTransaction(
+          env,
+          freshStep,
+          leg.fromTokenId,
+          signer,
+          input,
+          context
+        )
+        return { ...built, fees: fresh.fees }
+      } catch (err) {
+        log.warn("Could not hold the floor with less slippage", err)
+        return undefined
+      }
+    }
+
+    const freshLegs = await freshLegsAt(slippage)
     const candidates: { route: LifiLegRoute; fees: QuoteLeg["fees"] }[] = freshLegs.length
       ? freshLegs.map((fresh) => ({ route: fresh.data as LifiLegRoute, fees: fresh.fees }))
       : isRouteStep
@@ -889,7 +930,7 @@ const buildLeg = async (
 
       let built: Awaited<ReturnType<typeof buildRouteTransaction>>
       try {
-        built = await buildRouteTransaction(env, step, leg.fromTokenId, leg.signer, input, context)
+        built = await buildRouteTransaction(env, step, leg.fromTokenId, signer, input, context)
       } catch (err) {
         if (!isUnbuildableStepError(err)) throw err
         unbuildableSteps.add(stepKey(step))
@@ -899,19 +940,21 @@ const buildLeg = async (
         })
       }
 
-      const { transaction, preparedStep } = built
+      const holding =
+        isRouteStep && !isLaterLeg && BigInt(built.preparedStep.estimate.toAmountMin) < floor
+          ? await buildHoldingFloor(step, built.preparedStep)
+          : undefined
+      const { transaction, preparedStep, fees } = holding ?? { ...built, fees: candidate.fees }
       const expectedOutput = isRouteStep
         ? BigInt(preparedStep.estimate.toAmountMin)
         : leg.outputAmount
-      const acceptedOutput = isRouteStep
-        ? routeStepFloor(quotedRoute, input, slippage)
-        : expectedOutput
+      const acceptedOutput = isRouteStep ? floor : expectedOutput
       if (expectedOutput < acceptedOutput && !isLaterLeg)
         throw new Error("The rate has moved too far, please select the quote again")
 
       return {
         transaction,
-        fees: candidate.fees,
+        fees,
         expectedOutput,
         ...(expectedOutput < acceptedOutput && { acceptedOutput }),
         txInfo: {
