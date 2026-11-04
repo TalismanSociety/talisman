@@ -3,7 +3,11 @@ import { classifyError } from "@common/analytics/errorCategory"
 import { networkIdForAnalytics, tokenSymbolForAnalytics } from "@common/analytics/funds"
 import { toSlippagePercent } from "@common/analytics/schema"
 import { signerOf } from "@common/analytics/transactions"
-import type { SwapModuleTransaction, SwapTransactionContext } from "@core/domains/swaps/types"
+import type {
+  BaseQuote,
+  SwapModuleTransaction,
+  SwapTransactionContext,
+} from "@core/domains/swaps/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
@@ -36,7 +40,6 @@ import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
-import { useFirstLegModule, useSwapPlanProposal } from "../hooks/useSwapPlanProposal"
 import { SWAP_SLIPPAGE_DEFAULT, toSlippageDecimal, useSwapSlippage } from "../hooks/useSwapSlippage"
 import { useSwap } from "../SwapProvider"
 import {
@@ -45,7 +48,9 @@ import {
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
+import type { SwapModule } from "../swap-modules/common.swap-module"
 import { getSwapRouteReport } from "../swapRouteReport"
+import { useSwapModules } from "../swaps.api"
 import { SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
 import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
@@ -66,6 +71,18 @@ import {
   swapTxCards,
   withBlockingError,
 } from "./swapTxCards"
+
+/** the module that builds the quote's first leg: a multi-leg quote starts with another module's leg */
+const useFirstLegModule = (
+  quote: BaseQuote | null | undefined,
+  selectedModule: SwapModule | null | undefined
+) => {
+  const swapModules = useSwapModules()
+  return useMemo(() => {
+    if (!quote || quote.legs.length === 1) return selectedModule
+    return swapModules.find((module) => module.protocol === quote.legs[0].protocol)
+  }, [quote, selectedModule, swapModules])
+}
 
 export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode }> = ({
   containerId,
@@ -217,14 +234,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     nonceAfter(minedApproval, swapRequest?.from ?? undefined, fromToken?.networkId)
   )
 
-  const plan = useSwapPlanProposal({
-    built: exchangeAndTransactionQuery.data,
-    fromAmount,
-    toAddress,
-    slippage: toSlippageDecimal(slippagePercent),
-    evmNonce: swapEthTx.transaction?.nonce,
-  })
-  const txInfo = plan.txInfo
+  const built = exchangeAndTransactionQuery.data
+  const txInfo = built?.leg.txInfo
 
   const substrateFee = useGetFeeEstimate({
     sapi,
@@ -425,8 +436,15 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     swapEthTx.txDetails,
   ])
 
-  // the swap is only built once approved, so until then the quote tells what it will charge
-  const swapFees = plan.fees ?? selectedQuote?.fees ?? []
+  // the swap is only built once approved, so until then the quote tells what it will charge.
+  // A later leg is built only once the previous one lands, so its quote tells its fees
+  const swapFees = useMemo(
+    () =>
+      built
+        ? [...built.leg.fees, ...built.quote.legs.slice(1).flatMap((leg) => leg.fees)]
+        : (selectedQuote?.fees ?? []),
+    [built, selectedQuote]
+  )
 
   // the swap draws the additional fees, so an approval is only worth paying for if they are covered too
   const additionalFeePlanck = useMemo(() => {
@@ -459,7 +477,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
     // 2. Exchange / transaction crafting errors
     if (exchangeError) return classifySwapError(exchangeError)
-    if (plan.proposeError) return classifySwapError(plan.proposeError)
 
     // 3. Fee estimation / simulation errors (only relevant when not in approval phase)
     if (needsApproval)
@@ -476,7 +493,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromTokenId,
     feeBalanceCheck,
     exchangeError,
-    plan.proposeError,
     needsApproval,
     approvalEthTx.errorDetails,
     swapEthTx.error,
@@ -581,10 +597,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       feeBalanceCheck.status === "loading" ||
       isExchangeLoading ||
       !swapTx ||
-      plan.isProposing ||
       !!swapError,
     [
-      plan.isProposing,
       fromAddress,
       isExchangeLoading,
       isInsufficientBalance,

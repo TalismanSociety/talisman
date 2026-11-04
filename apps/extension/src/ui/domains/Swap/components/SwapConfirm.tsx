@@ -6,7 +6,7 @@ import { useSwap } from "../SwapProvider"
 import { SwapConfirmActions } from "./SwapConfirmActions"
 import { SwapTxSummary } from "./SwapTxSummary"
 
-export const SWAP_CONFIRM_CONTAINER_ID = "swap-modal-confirm"
+const SWAP_CONFIRM_CONTAINER_ID = "swap-modal-confirm"
 
 export const SwapConfirm = () => {
   const { t } = useTranslation()

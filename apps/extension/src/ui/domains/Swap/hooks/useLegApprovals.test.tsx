@@ -1,4 +1,4 @@
-import { fromPersistedLeg } from "@core/domains/swaps/plans/helpers"
+import type { QuoteLeg } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
@@ -41,12 +41,33 @@ vi.mock("../swaps.api", () => ({
   ],
 }))
 
-import { LEG0, LEG1 } from "@core/domains/swaps/plans/__tests__/fixtures"
 import { useLaterLegApprovals } from "./useLegApprovals"
 
-const legs = [
-  fromPersistedLeg(LEG0.quote),
-  fromPersistedLeg({ ...LEG1.quote, protocol: "lifi", fromTokenId: `1:evm-erc20:${USDT}` }),
+const EVM_ADDRESS = "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A"
+
+const legs: QuoteLeg[] = [
+  {
+    protocol: "bittensor-evm",
+    fromTokenId: "bittensor:substrate-native",
+    toTokenId: "964:evm-native",
+    signer: "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu",
+    recipient: EVM_ADDRESS,
+    inputAmount: 1_000_000_000n,
+    outputAmount: 999_999_500_000_000_000n,
+    fees: [],
+    timeInSec: 12,
+  },
+  {
+    protocol: "lifi",
+    fromTokenId: `1:evm-erc20:${USDT}`,
+    toTokenId: "8453:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d67",
+    signer: EVM_ADDRESS,
+    recipient: "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a",
+    inputAmount: 999_999_500_000_000_000n,
+    outputAmount: 990_000_000_000_000_000n,
+    fees: [],
+    timeInSec: 180,
+  },
 ]
 const checks = legs.map((leg) => ({ leg, enabled: true }))
 

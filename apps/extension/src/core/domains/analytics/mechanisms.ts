@@ -4,7 +4,6 @@ import { filter } from "rxjs"
 import { requestStore } from "../../libs/requests/store"
 import { passwordStore } from "../app/store.password"
 import { liveWalletBalances$ } from "../balances/walletBalances"
-import { swapPlanSettledFacts$ } from "../swaps/plans/store"
 import { txStatusFacts$ } from "../transactions/store.transactions"
 import { swapOutcomeFacts$ } from "../transactions/watchSwapStatus"
 import { dappRequestTracker } from "./dappRequests"
@@ -14,7 +13,7 @@ import { analyticsLifecycleStore } from "./store.lifecycle"
 import { track } from "./track"
 import { gatherTvlInputs } from "./tvl/gather"
 import { createTvlSchedule } from "./tvl/schedule"
-import { trackSwapOutcome, trackSwapPlanSettled, trackTxSettled } from "./txSettled"
+import { trackSwapOutcome, trackTxSettled } from "./txSettled"
 
 const tvlSchedule = createTvlSchedule({
   admits: () => analyticsEngine.admits("usage"),
@@ -58,9 +57,5 @@ export const startAnalyticsMechanisms = () => {
 
   swapOutcomeFacts$.subscribe((fact) => {
     trackSwapOutcome(fact).catch(reportFailure("swap outcome"))
-  })
-
-  swapPlanSettledFacts$.subscribe((fact) => {
-    trackSwapPlanSettled(fact).catch(reportFailure("swap plan outcome"))
   })
 }

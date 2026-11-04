@@ -1,6 +1,5 @@
 import type { NetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import type { Hex } from "viem"
 
 import type { SwapEnv } from "./env"
 import type { BaseQuote, NonEmpty, QuoteLeg } from "./types"
@@ -35,15 +34,6 @@ export const getEvmNetwork = async (env: SwapEnv, networkId: NetworkId) => {
   const network = await env.getNetwork(networkId)
   if (network?.platform !== "ethereum") throw new Error("Unknown EVM network")
   return network
-}
-
-export const getFinalizedHead = async (env: SwapEnv, networkId: NetworkId) => {
-  const hash = await env.substrateSend<Hex>(networkId, "chain_getFinalizedHead", [])
-  const header = await env.substrateSend<{ number: Hex } | null>(networkId, "chain_getHeader", [
-    hash,
-  ])
-  if (!header) throw new Error("Finalised head not found")
-  return { hash, number: parseInt(header.number, 16) }
 }
 
 /** one in-flight or settled promise per key, a rejected one is forgotten so the next call retries */

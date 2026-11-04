@@ -23,9 +23,8 @@ const ROBINHOOD_WTAO = "4663:evm-erc20:0xf3081494b87e8d5fb7960f066e931d1d0e6e3d6
 const candidate = (
   address: string,
   type: IntermediateCandidate["type"],
-  hubBalance: bigint,
-  busy = false
-): IntermediateCandidate => ({ address, type, hubBalance, busy })
+  hubBalance: bigint
+): IntermediateCandidate => ({ address, type, hubBalance })
 
 describe("pickIntermediateAccount", () => {
   const candidates = [
@@ -39,28 +38,16 @@ describe("pickIntermediateAccount", () => {
     expect(pickIntermediateAccount(candidates, LEDGER)).toBe(LEDGER)
   })
 
-  it("otherwise picks the free keypair holding the least of the hub token", () => {
+  it("otherwise picks the keypair holding the least of the hub token", () => {
     expect(pickIntermediateAccount(candidates, EXTERNAL)).toBe(KEYPAIR_POOR)
     expect(pickIntermediateAccount(candidates, SUB_ADDRESS)).toBe(KEYPAIR_POOR)
     expect(pickIntermediateAccount(candidates, null)).toBe(KEYPAIR_POOR)
-  })
-
-  it("skips the accounts a live plan holds", () => {
-    const busy = [
-      candidate(KEYPAIR_RICH, "keypair", 5n, true),
-      candidate(KEYPAIR_POOR, "keypair", 1n, true),
-      candidate(LEDGER, "ledger-ethereum", 0n),
-    ]
-    expect(pickIntermediateAccount(busy, KEYPAIR_RICH)).toBe(LEDGER)
   })
 
   it("falls back to a Ledger account, then to nothing", () => {
     expect(pickIntermediateAccount([candidate(LEDGER, "ledger-ethereum", 0n)], EXTERNAL)).toBe(
       LEDGER
     )
-    expect(
-      pickIntermediateAccount([candidate(LEDGER, "ledger-ethereum", 0n, true)], EXTERNAL)
-    ).toBe(null)
     expect(pickIntermediateAccount([], EXTERNAL)).toBe(null)
   })
 })

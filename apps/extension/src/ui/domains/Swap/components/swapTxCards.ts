@@ -1,23 +1,11 @@
 import {
-  type PlanCallToAction,
-  planCallToAction,
-  planSteps,
-} from "@core/domains/swaps/plans/helpers"
-import type { LegState, PlanLeg, SwapPlan } from "@core/domains/swaps/plans/types"
-import type { WalletTransaction, WalletTransactionEth } from "@core/domains/transactions/types"
-import {
   getBlockExplorerUrl,
   type Network,
   networkIdFromTokenId,
   type TokenId,
 } from "@talismn/chaindata-provider"
-import { normalizeAddress } from "@talismn/crypto"
 import type { Account } from "@talismn/keyring"
-import { getSwapTrackerUrl } from "@ui/domains/Swap/getSwapTrackerUrl"
-import { shortenAddress } from "@ui/util/shortenAddress"
 import type { Hex } from "viem"
-
-import { getSwapProgressDetails } from "./swapProgressStatus"
 
 export type SwapTxStatus =
   | "upcoming"
@@ -48,15 +36,23 @@ export type SwapTxApprovalFacts = TxFacts & { at: "needed" | "sent" | "landed" |
 
 export type SwapTxDelivery = "processing" | "success" | "failure" | "untracked"
 
-/** a leg as the plan knows it, or as the confirm screen stands in for it before the plan exists */
+type SwapTxLegAt =
+  | "queued"
+  | "awaiting-user"
+  | "building"
+  | "sent"
+  | "landed"
+  | "failed"
+  | "skipped"
+
 export type SwapTxLegFacts = TxFacts & {
-  at: LegState["at"]
+  at: SwapTxLegAt
   /** the last leg only: once its own transaction landed, the swap ends at the funds' delivery */
   delivery?: SwapTxDelivery
   approval?: SwapTxApprovalFacts
 }
 
-const LEG_STATUS: Record<LegState["at"], SwapTxStatus> = {
+const LEG_STATUS: Record<SwapTxLegAt, SwapTxStatus> = {
   "queued": "upcoming",
   "awaiting-user": "ready",
   "building": "signing",
@@ -128,9 +124,6 @@ export type SwapTxContext = {
   networks: Readonly<Record<string, Network | undefined>>
 }
 
-const accountName = ({ accounts }: SwapTxContext, address: string) =>
-  accounts[normalizeAddress(address)]?.name ?? shortenAddress(address)
-
 const networkOf = ({ networks }: SwapTxContext, tokenId: TokenId) =>
   networks[networkIdFromTokenId(tokenId)]
 
@@ -166,7 +159,7 @@ const quoteApprovalFacts = (
   return hash ? { at: "landed", ...sent } : undefined
 }
 
-/** before the plan exists the first leg waits on the user and every later leg is queued */
+/** on the confirm screen the first leg waits on the user and every later leg is queued */
 export const swapQuoteTxFacts = (ctx: SwapTxContext, input: SwapQuoteTxInput): SwapTxLegFacts[] =>
   Array.from({ length: input.legCount }, (_, index): SwapTxLegFacts => {
     if (index > 0)
@@ -190,168 +183,4 @@ export const withBlockingError = (
   return cards.map((card) =>
     error && card.key === activeKey && !card.error ? { ...card, error } : card
   )
-}
-
-export type PlanLegSigning = {
-  leg: number
-  signs?: "leg" | "approval"
-  approvalHash?: Hex
-  isApprovalPending: boolean
-  failure?: string
-}
-
-export type SwapPlanTxInput = {
-  plan: SwapPlan
-  /** the transaction rows of the legs that have a hash, by hash: null once the wallet no longer holds the row */
-  rows: ReadonlyMap<string, WalletTransaction | null>
-  /** the plan does not keep approvals: only a screen that saw one sent knows its hash */
-  approvalHashes: Readonly<Partial<Record<number, Hex>>>
-  approvalsNeeded: ReadonlySet<number>
-  signing: PlanLegSigning | null
-}
-
-const UNTRACKED_SWAP_STATUSES: ReadonlySet<WalletTransaction["swapStatus"]> = new Set([
-  "invalid",
-  "unknown",
-])
-
-const lastLegDelivery = (
-  t: Translator,
-  row: WalletTransaction | null | undefined
-): SwapTxDelivery => {
-  if (row === null || row?.status === "unknown" || UNTRACKED_SWAP_STATUSES.has(row?.swapStatus))
-    return "untracked"
-  return getSwapProgressDetails(t, row, true).animStatus
-}
-
-const legRow = ({ plan, rows }: Pick<SwapPlanTxInput, "plan" | "rows">, index: number) => {
-  const hash = planSteps(plan)[index]?.hash
-  return hash ? rows.get(hash) : undefined
-}
-
-const legError = (
-  ctx: SwapTxContext,
-  leg: PlanLeg,
-  delivery: SwapTxDelivery | undefined,
-  row: WalletTransaction | null | undefined
-) => {
-  const { t } = ctx
-  if (delivery === "failure") return getSwapProgressDetails(t, row, true).subtitle
-  if (delivery === "untracked")
-    return t("Check your balance on {{network}}", {
-      network: networkOf(ctx, leg.quote.toTokenId)?.name ?? "",
-    })
-  if (leg.state.at !== "failed") return undefined
-
-  const account = accountName(ctx, leg.quote.signer)
-  if (leg.state.failure === "cancelled")
-    return t("Cancelled. Your funds wait on {{account}}", { account })
-  return leg.state.hash
-    ? t("Did not complete. Check your activity")
-    : t("Not sent. Your funds wait on {{account}}", { account })
-}
-
-const approvalFacts = (
-  ctx: SwapTxContext,
-  input: SwapPlanTxInput,
-  index: number
-): SwapTxApprovalFacts | undefined => {
-  const { plan, approvalHashes, approvalsNeeded, signing } = input
-  const tokenId = plan.legs[index].quote.fromTokenId
-  const sent = (at: "sent" | "landed", hash: Hex): SwapTxApprovalFacts => ({
-    at,
-    hash,
-    href: txExplorerUrl(ctx, tokenId, hash),
-  })
-
-  const isNeeded = approvalsNeeded.has(index)
-  const sentHash = approvalHashes[index]
-  if (signing?.leg !== index) {
-    if (sentHash) return sent("landed", sentHash)
-    return isNeeded ? { at: "needed" } : undefined
-  }
-
-  if (signing.approvalHash && signing.isApprovalPending) return sent("sent", signing.approvalHash)
-  if (signing.signs === "approval") return { at: "needed" }
-  if (signing.approvalHash) return sent("landed", signing.approvalHash)
-  if (signing.signs === "leg") return isNeeded ? { at: "landed" } : undefined
-  return isNeeded ? { at: "needed" } : undefined
-}
-
-/** a failed sign attempt or build belongs to the transaction the leg asked for next */
-const withSigningFailure = (facts: SwapTxLegFacts, signing: PlanLegSigning): SwapTxLegFacts => {
-  if (!signing.failure) return facts
-  if (facts.approval?.at === "needed")
-    return { ...facts, approval: { ...facts.approval, at: "failed", error: signing.failure } }
-  return { ...facts, at: "failed", error: signing.failure }
-}
-
-export const swapPlanTxFacts = (ctx: SwapTxContext, input: SwapPlanTxInput): SwapTxLegFacts[] => {
-  const { plan, signing } = input
-  const lastIndex = plan.legs.length - 1
-
-  return planSteps(plan).map(({ leg: index, hash }) => {
-    const leg = plan.legs[index]
-    const isDelivering = index === lastIndex && leg.state.at === "landed"
-    const row = isDelivering ? legRow(input, index) : undefined
-    const delivery = isDelivering ? lastLegDelivery(ctx.t, row) : undefined
-    const facts: SwapTxLegFacts = {
-      at: leg.state.at,
-      hash: hash ?? undefined,
-      href: hash ? txExplorerUrl(ctx, leg.quote.fromTokenId, hash) : undefined,
-      error: legError(ctx, leg, delivery, row),
-      delivery,
-      approval: approvalFacts(ctx, input, index),
-    }
-    return signing?.leg === index ? withSigningFailure(facts, signing) : facts
-  })
-}
-
-export type SwapPlanFooter = { type: "processing" } | { type: "close" } | PlanCallToAction
-
-export const swapPlanFooter = (
-  plan: SwapPlan,
-  cards: readonly SwapTxCardModel[]
-): SwapPlanFooter => {
-  switch (plan.phase) {
-    case "proposed":
-    case "running":
-      return { type: "processing" }
-    case "completed":
-      switch (cards.at(-1)?.status) {
-        case "pending":
-          return { type: "processing" }
-        case "done":
-          return { type: "close" }
-        default:
-          return { type: "check-activity" }
-      }
-    case "paused":
-    case "stopped":
-    case "aborted":
-      return planCallToAction(plan)
-  }
-}
-
-export const planSigningLeg = (plan: SwapPlan): number | null => {
-  if (plan.phase !== "paused") return null
-  const action = planCallToAction(plan)
-  return action.type === "sign" ? action.leg : null
-}
-
-/** the user can speed up or cancel a sent EVM leg until it is mined, through its latest replacement */
-export const pendingEvmLegRow = (
-  input: Pick<SwapPlanTxInput, "plan" | "rows">,
-  index: number
-): WalletTransactionEth | undefined => {
-  const row = legRow(input, index)
-  const isUnsettled = row?.status === "pending" || row?.status === "unknown"
-  return input.plan.legs[index].state.at === "sent" && row?.platform === "ethereum" && isUnsettled
-    ? { ...row, status: "pending" }
-    : undefined
-}
-
-export const legTrackerUrl = (input: Pick<SwapPlanTxInput, "plan" | "rows">, index: number) => {
-  const row = legRow(input, index)
-  return (row && getSwapTrackerUrl(row.txInfo, row.id)) ?? undefined
 }

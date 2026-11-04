@@ -1,4 +1,4 @@
-import { LIFI_API_URL } from "@core/domains/swaps/modules/lifi"
+import { LIFI_API_URL } from "@core/domains/swaps/status"
 import type {
   ChainId,
   ChainKey,

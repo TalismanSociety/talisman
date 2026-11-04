@@ -7,13 +7,9 @@ import {
   hexToBigInt,
   hexToBytes,
   hexToNumber,
-  keccak256,
-  parseTransaction,
   type SignableMessage,
-  serializeTransaction,
   size,
   slice,
-  type TransactionSerialized,
 } from "viem"
 import { publicKeyToAddress } from "viem/accounts"
 
@@ -35,21 +31,6 @@ const recoverAddress = (hash: Hex, r: Hex, s: Hex, yParityOrV: number): Address 
     .recoverPublicKey(hexToBytes(hash))
     .toBytes(false)
   return publicKeyToAddress(bytesToHex(publicKey))
-}
-
-export const recoverTransactionSigner = (serializedTransaction: TransactionSerialized): Address => {
-  const transaction = parseTransaction(serializedTransaction)
-  const { r, s, v, yParity } = transaction
-  if (!r || !s) throw new Error("The transaction is not signed")
-  const unsigned = serializeTransaction({
-    ...transaction,
-    r: undefined,
-    s: undefined,
-    v: undefined,
-    yParity: undefined,
-    sidecars: undefined,
-  })
-  return recoverAddress(keccak256(unsigned), r, s, Number(yParity ?? v))
 }
 
 export const recoverMessageSigner = (message: SignableMessage, signature: Hex): Address => {
