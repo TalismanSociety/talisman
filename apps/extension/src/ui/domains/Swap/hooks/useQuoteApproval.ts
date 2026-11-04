@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next"
 import type { Hex } from "viem"
 
 import { useSwap } from "../SwapProvider"
-import { approveRequest, nonceAfter } from "./erc20Approval"
+import { approveRequest, nonceAfter } from "../swap-modules/erc20-approval"
 
 export const useQuoteApproval = () => {
   const { t } = useTranslation()

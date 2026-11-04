@@ -4,8 +4,8 @@ import { useNetworks } from "@ui/state/chaindata"
 import { useMemo } from "react"
 import type { PublicClient } from "viem"
 import type { ApprovalInfo, BaseQuote } from "../swap-modules/common.swap-module"
+import { type MinedApproval, minedBlockOn, readAllowanceStep } from "../swap-modules/erc20-approval"
 import type { SwapModuleEntry } from "../swaps.api"
-import { type MinedApproval, minedBlockOn, readAllowanceStep } from "./erc20Approval"
 
 // an approval sent without waiting for its receipt is only seen once it mines
 const ALLOWANCE_RECHECK_MS = 3_000

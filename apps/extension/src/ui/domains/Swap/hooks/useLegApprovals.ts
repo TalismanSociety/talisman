@@ -1,23 +1,10 @@
 import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { skipToken, type UseQueryResult, useQueries } from "@tanstack/react-query"
-import type { ApprovalInfo, QuoteLeg, SwapModule } from "../swap-modules/common.swap-module"
+import type { ApprovalInfo, QuoteLeg } from "../swap-modules/common.swap-module"
+import { readAllowanceStep } from "../swap-modules/erc20-approval"
 import { getEvmPublicClient } from "../swap-modules/evm-network"
+import { legApproval } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
-import { readAllowanceStep } from "./erc20Approval"
-
-const legApproval = (module: SwapModule, leg: QuoteLeg): ApprovalInfo => {
-  if (!leg.signer) return null
-  return (
-    module.getApprovalInfo?.({
-      fromTokenId: leg.fromTokenId,
-      toTokenId: leg.toTokenId,
-      fromAmount: leg.inputAmount,
-      fromAddress: leg.signer,
-      toAddress: leg.recipient,
-      quoteData: { legs: [leg] },
-    }) ?? null
-  )
-}
 
 const approvalOf = (leg: QuoteLeg) => {
   const module = swapModules.find((candidate) => candidate.protocol === leg.protocol)

@@ -23,7 +23,7 @@ import {
 import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
-import type { PublicClient, TransactionRequest } from "viem"
+import type { Hex, PublicClient, TransactionRequest } from "viem"
 
 import type { DepositSwapAsset, DepositTransactionParams } from "./deposit-swap-transactions"
 import type { SwapExchange } from "./swap-protocols"
@@ -155,6 +155,25 @@ export type ApprovalInfo = {
   protocolName: string
 } | null
 
+/** why a leg stopped short of the next leg: reverted, cancelled by a replacement, lost by the wallet, or not delivered by the provider */
+export type LegStop = "failed" | "cancelled" | "untracked" | "undelivered"
+
+/** a sent transaction once the wallet settled it. hash: the speed-up that mined in its place, when one did */
+export type SettledTransaction =
+  | { landed: true; hash: Hex }
+  | { landed: false; hash: Hex; stop: Exclude<LegStop, "undelivered"> }
+
+export type LegOutcome =
+  /** amount: what reached the next leg's signer, in planck of the leg's output token */
+  { landed: true; hash: Hex; amount: bigint } | { landed: false; hash: Hex; stop: LegStop }
+
+export type SettleLegParams = {
+  leg: QuoteLeg
+  hash: Hex
+  /** what the leg was built to spend */
+  input: bigint
+}
+
 /** the quote whose first leg is approved: a later leg passes itself as a one-leg quote */
 type ApprovalQuote = Pick<BaseQuote, "legs" | "subProtocol">
 
@@ -219,6 +238,12 @@ export type SwapEnv = {
     fromAddress: string
   ) => Promise<QuoteFee | null>
   buildSubstrateDeposit: (params: DepositTransactionParams) => Promise<SwapModuleTransaction>
+  /** settles once the transaction is final, failed, replaced or no longer tracked; never for one the wallet did not send */
+  waitForTransaction: (
+    networkId: NetworkId,
+    hash: Hex,
+    signal: AbortSignal
+  ) => Promise<SettledTransaction>
 }
 
 export type SwapModule = {
@@ -238,11 +263,14 @@ export type SwapModule = {
   entryHops?: EntryHop[]
 
   getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
+
+  /** what a leg delivered to the next leg's signer. Only a module that implements it runs before another leg */
+  settleLeg?: (params: SettleLegParams, signal: AbortSignal) => Promise<LegOutcome>
 }
 
 export type SwapModuleDefinition = Omit<
   SwapModule,
-  "getFromAssets" | "getToAssets" | "getQuote" | "createExchange" | "buildLeg"
+  "getFromAssets" | "getToAssets" | "getQuote" | "createExchange" | "buildLeg" | "settleLeg"
 > & {
   getFromAssets: (env: SwapEnv, signal: AbortSignal) => Promise<TokenId[]>
   getToAssets: (
@@ -257,6 +285,7 @@ export type SwapModuleDefinition = Omit<
   ) => Promise<BaseQuote | BaseQuote[] | null>
   createExchange?: (params: ExchangeParams, env: SwapEnv) => Promise<SwapExchange>
   buildLeg: (params: SwapBuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
+  settleLeg?: (params: SettleLegParams, env: SwapEnv, signal: AbortSignal) => Promise<LegOutcome>
 }
 
 // helpers — module-internal use only

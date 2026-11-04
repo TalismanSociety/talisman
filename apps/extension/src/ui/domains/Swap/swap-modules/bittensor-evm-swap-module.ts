@@ -23,9 +23,11 @@ import type {
   BaseQuote,
   BuildLegParams,
   BuiltLeg,
+  LegOutcome,
   QuoteFee,
   QuoteLeg,
   QuoteParams,
+  SettleLegParams,
   SupportedSwapProtocol,
   SwapEnv,
   SwapModuleDefinition,
@@ -52,7 +54,7 @@ type Route = {
   toTokenId: TokenId
 }
 
-/** what a substrate to EVM leg carries from its quote to its observation */
+/** what a substrate to EVM leg carries from its quote to its settlement */
 type SubToEvmLegData = { edHeldRao: string }
 
 const ROUTES: Route[] = BITTENSOR_EVM_PAIRS.flatMap((pair) => [
@@ -361,6 +363,26 @@ const buildLeg = async (
   }
 }
 
+const edHeldRaoOf = (leg: QuoteLeg) => {
+  const data = leg.data as Partial<SubToEvmLegData> | undefined
+  return data?.edHeldRao ? BigInt(data.edHeldRao) : 0n
+}
+
+/** a deposit moves its whole input to the mirror, the EVM account keeps the existential deposit an empty account needs */
+const settleLeg = async (
+  { leg, hash, input }: SettleLegParams,
+  env: SwapEnv,
+  signal: AbortSignal
+): Promise<LegOutcome> => {
+  const route = findRoute(leg.fromTokenId, leg.toTokenId)
+  if (route?.direction !== "sub-to-evm")
+    throw new Error("Only a deposit to Bittensor EVM hands over")
+  const settled = await env.waitForTransaction(route.pair.substrateNetworkId, hash, signal)
+  return settled.landed
+    ? { ...settled, amount: (input - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO }
+    : settled
+}
+
 export const bittensorEvmSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
@@ -371,4 +393,5 @@ export const bittensorEvmSwapModule: SwapModuleDefinition = {
     ),
   getQuote,
   buildLeg,
+  settleLeg,
 }

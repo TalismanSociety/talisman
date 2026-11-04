@@ -30,7 +30,6 @@ import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
-import { nonceAfter } from "../hooks/erc20Approval"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useQuoteApproval } from "../hooks/useQuoteApproval"
@@ -49,6 +48,7 @@ import type {
   SwapModuleTransaction,
   SwapTransactionContext,
 } from "../swap-modules/common.swap-module"
+import { nonceAfter } from "../swap-modules/erc20-approval"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { useSwapModules } from "../swaps.api"
 import { SwapOtherFees } from "./SwapOtherFees"
