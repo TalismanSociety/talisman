@@ -54,7 +54,10 @@ export type WalletTransactionTransferInfo = {
 /** what the user chose to pay, for a transaction priced on screen */
 type PricingInfo = { pricing?: { priority: EthPriorityOptionName; estimatedFee: string } }
 
+type SwapRunLegInfo = { swapRun?: { firstLegHash?: string; isLastLeg: boolean } }
+
 export type WalletTransactionInfo = PricingInfo &
+  SwapRunLegInfo &
   (
     | { type: "transfer"; tokenId: TokenId; value: string; to: Address }
     | { type: "approve-erc20"; tokenId: TokenId; contractAddress: string; amount: string }

@@ -3,11 +3,15 @@ import { toSettleMs } from "@common/analytics/schema"
 import { type SettledStatus, txTypeOf } from "@common/analytics/transactions"
 
 import type { TxStatusFact, TxStatusReason } from "../transactions/store.transactions"
-import type { SwapStatus, TransactionStatus } from "../transactions/types"
+import type { SwapStatus, TransactionStatus, WalletTransaction } from "../transactions/types"
 import type { SwapOutcomeFact } from "../transactions/watchSwapStatus"
 import { flowTracker } from "./flowTracker"
 import { track } from "./track"
 import { analyticsNetworkId, signerOfAddress } from "./txContext"
+
+const isEarlierSwapLeg = (row: WalletTransaction) => row.txInfo?.swapRun?.isLastLeg === false
+
+const swapFlowLink = (row: WalletTransaction) => row.txInfo?.swapRun?.firstLegHash ?? row.id
 
 const isFinal = (status: TransactionStatus) =>
   status === "success" || status === "error" || status === "replaced"
@@ -42,9 +46,9 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     ...(signer && { signer }),
   })
   const swap = swapOfTransaction(row.txInfo)
-  if (swap && status === "success") return
+  if ((swap || isEarlierSwapLeg(row)) && status === "success") return
   await flowTracker.settled(
-    row.id,
+    swapFlowLink(row),
     { status, timeToSettleMs, ...(swap && { properties: swap }) },
     Date.now()
   )
@@ -56,8 +60,9 @@ const isSwapOutcome = (status: SwapStatus): status is SwapOutcome =>
 export const trackSwapOutcome = async ({ row, status, at }: SwapOutcomeFact) => {
   const swap = swapOfTransaction(row.txInfo)
   if (!swap || !isSwapOutcome(status)) return
+  if (status === "finished" && isEarlierSwapLeg(row)) return
   await flowTracker.settled(
-    row.id,
+    swapFlowLink(row),
     {
       status: "success",
       timeToSettleMs: toSettleMs(at - row.timestamp),

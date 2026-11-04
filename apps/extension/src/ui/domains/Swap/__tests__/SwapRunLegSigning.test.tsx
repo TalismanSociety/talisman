@@ -409,7 +409,10 @@ describe("useLegSigning", () => {
     await waitFor(() => expect(submitted).toHaveBeenCalled())
     expect(submitted.mock.lastCall?.[0]).toMatchObject({
       payload: { to: SPENDER, nonce: 8 },
-      txInfo: { type: "swap-lifi" },
+      txInfo: {
+        type: "swap-lifi",
+        swapRun: { firstLegHash: `0x${"11".repeat(32)}`, isLastLeg: true },
+      },
     })
     expect(buttonLabel()).toBe("Sign")
   })
