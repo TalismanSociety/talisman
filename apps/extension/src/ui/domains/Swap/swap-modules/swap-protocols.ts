@@ -1,7 +1,5 @@
-// Uses dynamic import types to avoid circular dependencies with provider modules.
-
-type SimpleswapExchange = import("./simpleswap-swap-module").SimpleswapExchange
-type StealthexExchange = import("./stealthex-swap-module").StealthexExchange
+import type { SimpleswapExchange } from "./simpleswap-swap-module"
+import type { StealthexExchange } from "./stealthex-swap-module"
 
 export type SwapExchange =
   | { protocol: "simpleswap"; data: SimpleswapExchange }

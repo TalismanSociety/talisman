@@ -1,4 +1,4 @@
-import type { SwapsConfig } from "@core/domains/swaps/env"
+import type { SwapsConfig } from "./common.swap-module"
 
 export type GetSwapsConfig = () => Promise<SwapsConfig>
 

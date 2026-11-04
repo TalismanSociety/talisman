@@ -1,8 +1,8 @@
-import type { QuoteLeg } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
+import type { QuoteLeg } from "../swap-modules/common.swap-module"
 
 const SPENDER_A = "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE"
 const SPENDER_B = "0x89c6340B1a1f4b25D36cd8B063D49045caF3f818"

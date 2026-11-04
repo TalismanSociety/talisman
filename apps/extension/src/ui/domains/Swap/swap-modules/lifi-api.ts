@@ -1,4 +1,3 @@
-import { LIFI_API_URL } from "@core/domains/swaps/status"
 import type {
   ChainId,
   ChainKey,
@@ -13,6 +12,8 @@ import type {
 } from "@lifi/sdk"
 import * as lifiSdk from "@lifi/sdk"
 import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
+
+const LIFI_API_URL = "https://lifi.talisman.xyz/v1"
 
 export type LifiApi = {
   getTokens: (

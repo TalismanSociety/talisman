@@ -1,5 +1,5 @@
-import type { BaseQuote, EntryHop, QuoteLeg, QuoteParams } from "@core/domains/swaps/types"
 import { describe, expect, it, vi } from "vitest"
+import type { BaseQuote, EntryHop, QuoteLeg, QuoteParams } from "../common.swap-module"
 import { quoteFromLegs } from "../helpers"
 import {
   type HopModule,

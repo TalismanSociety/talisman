@@ -20,21 +20,6 @@ import {
   type ForevermoneyRoute,
   findForevermoneyRoute,
 } from "@core/domains/forevermoney/constants"
-import type { SwapEnv } from "@core/domains/swaps/env"
-import { SwapProviderUnavailableError } from "@core/domains/swaps/errors"
-import { getEvmNetwork, quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import type {
-  ApprovalInfo,
-  ApprovalParams,
-  BackgroundSwapModule,
-  BaseQuote,
-  BuildLegParams,
-  BuiltLeg,
-  QuoteFee,
-  QuoteLeg,
-  QuoteParams,
-  SupportedSwapProtocol,
-} from "@core/domains/swaps/types"
 import { evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import {
   frontierH160ToSs58Mirror,
@@ -45,9 +30,24 @@ import {
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, type PublicClient, zeroAddress } from "viem"
-import { prepareTransactionRequestWithGasCheck } from "../evm-gas-check"
-import { assertNativeValueWithinInput } from "../provider-transaction-guards"
+import type {
+  ApprovalInfo,
+  ApprovalParams,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapEnv,
+  SwapModuleDefinition,
+} from "./common.swap-module"
+import { SwapProviderUnavailableError } from "./errors"
+import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
 import forevermoneyLogo from "./forevermoney-logo.svg?url"
+import { getEvmNetwork, quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
+import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
 const PROTOCOL: SupportedSwapProtocol = "forevermoney"
 const PROTOCOL_NAME = "ForeverMoney"
@@ -472,7 +472,7 @@ const presentation = (
   maxNativeTokenGasBuffer: route.direction === "evm-to-spoke" ? maxNativeTokenGasBuffer : undefined,
 })
 
-/** quotes a later leg of a plan: the sender holds nothing yet, every cost fits inside the input */
+/** quotes a later leg: the sender holds nothing yet, every cost fits inside the input */
 const getUpToQuote = async (
   route: ForevermoneyRoute,
   { fromAmount, fromAddress, toAddress }: QuoteParams & { fromAmount: bigint },
@@ -629,8 +629,8 @@ const buildLeg = async (
     destinationClient.getBlockNumber(),
   ])
 
-  // the confirm screen shows the quoted output, the bridge must not deliver less. A later leg of
-  // a plan spends what landed instead: below its floor, the user signs it seeing the drop
+  // the confirm screen shows the quoted output, the bridge must not deliver less. A later leg
+  // spends what landed instead: below its floor, the user signs it seeing the drop
   const expectedOutput = getOutputAmount(route, amounts.amountWei)
   if (!upTo && expectedOutput < leg.outputAmount) throw new Error("Please select the quote again")
   const acceptedOutput = upTo ? legFloor(leg, slippage) : expectedOutput
@@ -706,7 +706,7 @@ const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
   }
 }
 
-export const forevermoneySwapModule: BackgroundSwapModule = {
+export const forevermoneySwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: async () => [...new Set(FOREVERMONEY_ROUTES.map((route) => route.fromTokenId))],

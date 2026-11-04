@@ -1,6 +1,6 @@
 import { log } from "@common/log"
-import type { SwapsConfig } from "@core/domains/swaps/env"
 import BigNumber from "bignumber.js"
+import type { SwapsConfig } from "./common.swap-module"
 import { getSimpleSwapApiKey } from "./fee-utils"
 
 type RouteProps = { currencyFrom: string; currencyTo: string }

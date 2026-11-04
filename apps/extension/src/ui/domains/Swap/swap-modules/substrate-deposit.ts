@@ -1,7 +1,6 @@
 import { log } from "@common/log"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import type { QuoteFee, SwapModuleTransaction } from "@core/domains/swaps/types"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
@@ -9,6 +8,7 @@ import { getNetworksMapById$, getToken$ } from "@ui/state/chaindata"
 import BigNumber from "bignumber.js"
 import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
+import type { QuoteFee, SwapModuleTransaction } from "./common.swap-module"
 import type {
   DepositInfo,
   DepositSwapAsset,

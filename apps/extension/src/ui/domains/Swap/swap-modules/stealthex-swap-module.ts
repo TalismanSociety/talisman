@@ -4,28 +4,26 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { assertDepositAmountWithinInput } from "@core/domains/swaps/exports"
-import { quoteFromLegs, TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
+import { parseTokenId } from "@talismn/chaindata-provider"
+import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
+import { planckToTokens } from "@talismn/util"
+import BigNumber from "bignumber.js"
+import { parseUserInputToPlanck } from "../swap-utils"
 import type {
   BaseQuote,
   BuiltLeg,
   QuoteFee,
   QuoteParams,
   SupportedSwapProtocol,
-} from "@core/domains/swaps/types"
-import { parseTokenId } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
-import { planckToTokens } from "@talismn/util"
-import BigNumber from "bignumber.js"
-import { parseUserInputToPlanck } from "../swap-utils"
+} from "./common.swap-module"
 import {
   type ExchangeParams,
   getTokenIdForSwappableAsset,
-  type PageSwapEnv,
-  type PageSwapModule,
   platformFromTokenId,
   type SwapBuildLegParams,
+  type SwapEnv,
   type SwapExchange,
+  type SwapModuleDefinition,
   type SwappableAssetBaseType,
 } from "./common.swap-module"
 import {
@@ -38,6 +36,8 @@ import {
   getStealthexAdditionalFeePercent,
   getStealthexTalismanTotalFee,
 } from "./fee-utils"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
+import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import type {
   SchemaCurrency as StealthexCurrency,
   SchemaExchange as StealthexExchange,
@@ -76,7 +76,7 @@ const resolveAsset = (tokenId: string): StealthexInternalAsset | undefined =>
 let cachedAssetsPromise: Promise<StealthexInternalAsset[]> | null = null
 
 const getStealthexAssets = async (
-  env: PageSwapEnv,
+  env: SwapEnv,
   _signal: AbortSignal
 ): Promise<StealthexInternalAsset[]> => {
   if (!cachedAssetsPromise) {
@@ -88,7 +88,7 @@ const getStealthexAssets = async (
   return cachedAssetsPromise
 }
 
-const fetchStealthexAssets = async (env: PageSwapEnv): Promise<StealthexInternalAsset[]> => {
+const fetchStealthexAssets = async (env: SwapEnv): Promise<StealthexInternalAsset[]> => {
   const [allCurrencies, { stealthex: mappings }, knownEvmNetworks, knownTokens] = await Promise.all(
     [
       stealthexSdk.getAllCurrencies(),
@@ -201,14 +201,14 @@ const getRouteHasCustomFee = async (
   return !!pair.features.includes("custom_fee")
 }
 
-const getFromAssets = async (env: PageSwapEnv, signal: AbortSignal): Promise<string[]> => {
+const getFromAssets = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> => {
   const assets = await getStealthexAssets(env, signal)
   return assets.map((a) => a.id)
 }
 
 const getToAssets = async (
   fromTokenId: string | null,
-  env: PageSwapEnv,
+  env: SwapEnv,
   signal: AbortSignal
 ): Promise<string[]> => {
   const allAssets = await getStealthexAssets(env, signal)
@@ -227,7 +227,7 @@ const getToAssets = async (
 
 const getQuote = async (
   params: QuoteParams,
-  env: PageSwapEnv,
+  env: SwapEnv,
   _signal: AbortSignal
 ): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
@@ -298,10 +298,9 @@ const getQuote = async (
   }
 }
 
-/** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type { StealthexExchange }
 
-const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise<SwapExchange> => {
+const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -409,7 +408,7 @@ const createExchange = async (params: ExchangeParams, env: PageSwapEnv): Promise
 
 const buildLeg = async (
   { leg, input, context, exchange }: SwapBuildLegParams,
-  env: PageSwapEnv
+  env: SwapEnv
 ): Promise<BuiltLeg> => {
   const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
@@ -451,7 +450,7 @@ const buildLeg = async (
   }
 }
 
-export const stealthexSwapModule: PageSwapModule = {
+export const stealthexSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: getFromAssets,

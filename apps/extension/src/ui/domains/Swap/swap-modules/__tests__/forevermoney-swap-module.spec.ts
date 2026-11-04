@@ -1,8 +1,8 @@
-import type { SwapEnv } from "@core/domains/swaps/env"
 import type { Network } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { decodeFunctionData, type PublicClient } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type { SwapEnv } from "../common.swap-module"
 
 // --- Mocks ---
 
@@ -41,7 +41,7 @@ const NETWORKS: Record<string, unknown> = {
 
 vi.mock("../forevermoney-logo.svg?url", () => ({ default: "forevermoney-logo.svg" }))
 
-const { forevermoneySwapModule } = await import("../forevermoney")
+const { forevermoneySwapModule } = await import("../forevermoney-swap-module")
 const { remoteConfigStore } = await import("@core/domains/app/store.remoteConfig")
 const { abiForevermoneyAlphaGateway, abiForevermoneySpokeGateway } = await import(
   "@core/domains/forevermoney/abi"
@@ -82,7 +82,7 @@ const evmClient = (networkId: string) => ({
   prepareTransactionRequest: mockPrepareTransactionRequest,
 })
 
-const env: SwapEnv = {
+const env = {
   getNetwork: async (id) => (NETWORKS[id] as Network | undefined) ?? null,
   getToken: async () => null,
   evmClient: async (networkId) => evmClient(networkId) as unknown as PublicClient,
@@ -96,7 +96,7 @@ const env: SwapEnv = {
     throw new Error("ForeverMoney calls no HTTP API")
   },
   getSwapsConfig: () => remoteConfigStore.get("swaps"),
-}
+} satisfies Partial<SwapEnv> as unknown as SwapEnv
 
 type ChainState = {
   bucketTokens: bigint
@@ -205,6 +205,7 @@ const buildLeg = async (
       input: fromAmount,
       context: { platform: "ethereum" },
       slippage: 0,
+      exchange: null,
     },
     env
   )
@@ -243,7 +244,7 @@ beforeEach(() => {
 
 describe("forevermoneySwapModule assets", () => {
   it("lists spoke wTAO and Bittensor EVM TAO as sources", async () => {
-    expect(await forevermoneySwapModule.getFromAssets(signal)).toEqual([
+    expect(await forevermoneySwapModule.getFromAssets(env, signal)).toEqual([
       BASE_WTAO,
       EVM_TAO,
       ROBINHOOD_WTAO,
@@ -251,12 +252,15 @@ describe("forevermoneySwapModule assets", () => {
   })
 
   it("pairs each source with its bridge destinations", async () => {
-    expect(await forevermoneySwapModule.getToAssets(BASE_WTAO, signal)).toEqual([SUB_TAO, EVM_TAO])
-    expect(await forevermoneySwapModule.getToAssets(EVM_TAO, signal)).toEqual([
+    expect(await forevermoneySwapModule.getToAssets(BASE_WTAO, env, signal)).toEqual([
+      SUB_TAO,
+      EVM_TAO,
+    ])
+    expect(await forevermoneySwapModule.getToAssets(EVM_TAO, env, signal)).toEqual([
       BASE_WTAO,
       ROBINHOOD_WTAO,
     ])
-    expect(await forevermoneySwapModule.getToAssets(SUB_TAO, signal)).toEqual([])
+    expect(await forevermoneySwapModule.getToAssets(SUB_TAO, env, signal)).toEqual([])
   })
 })
 
@@ -421,6 +425,7 @@ describe("forevermoneySwapModule buildLeg", () => {
           input: ONE_TAO_WEI,
           context: { platform: "ethereum" },
           slippage: 0,
+          exchange: null,
         },
         env
       )
@@ -492,6 +497,7 @@ describe("forevermoneySwapModule buildLeg", () => {
           input: ONE_TAO_WEI,
           context: { platform: "ethereum" },
           slippage: 0,
+          exchange: null,
         },
         env
       )
@@ -506,6 +512,7 @@ describe("forevermoneySwapModule buildLeg", () => {
           input: ONE_TAO_WEI,
           context: { platform: "polkadot", sapi: {} as never },
           slippage: 0,
+          exchange: null,
         },
         env
       )
@@ -667,6 +674,7 @@ describe("forevermoneySwapModule partner fee", () => {
           input: ONE_PERCENT_ABOVE,
           context: { platform: "ethereum" },
           slippage: 0,
+          exchange: null,
         },
         env
       )
@@ -789,7 +797,13 @@ describe("forevermoneySwapModule buildLeg upTo", () => {
     if (!q) throw new Error("expected a quote")
 
     const built = await forevermoneySwapModule.buildLeg(
-      { leg: q.legs[0], input: UPTO_OUTPUT, context: { platform: "ethereum" }, slippage: 0.005 },
+      {
+        leg: q.legs[0],
+        input: UPTO_OUTPUT,
+        context: { platform: "ethereum" },
+        slippage: 0.005,
+        exchange: null,
+      },
       env
     )
     if (built.transaction.platform !== "ethereum") throw new Error("expected an ethereum tx")
@@ -826,6 +840,7 @@ describe("forevermoneySwapModule buildLeg upTo", () => {
         input: (UPTO_OUTPUT * 9n) / 10n,
         context: { platform: "ethereum" },
         slippage: 0.005,
+        exchange: null,
       },
       env
     )
@@ -845,7 +860,13 @@ describe("forevermoneySwapModule buildLeg upTo", () => {
     }))
 
     const built = await forevermoneySwapModule.buildLeg(
-      { leg: q.legs[0], input: UPTO_OUTPUT, context: { platform: "ethereum" }, slippage: 0.005 },
+      {
+        leg: q.legs[0],
+        input: UPTO_OUTPUT,
+        context: { platform: "ethereum" },
+        slippage: 0.005,
+        exchange: null,
+      },
       env
     )
     if (built.transaction.platform !== "ethereum") throw new Error("expected an ethereum tx")

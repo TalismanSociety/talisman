@@ -1,9 +1,8 @@
-import { SwapRouteUnbuildableError } from "@core/domains/swaps/errors"
-import { TALISMAN_FEE_NAME } from "@core/domains/swaps/helpers"
-import type { BaseQuote, QuoteLeg, QuoteParams } from "@core/domains/swaps/types"
 import type { LiFiStep, Route, RoutesResponse, Token } from "@lifi/types"
 import { of } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type { BaseQuote, QuoteLeg, QuoteParams } from "../common.swap-module"
+import { TALISMAN_FEE_NAME } from "../helpers"
 
 const ALICE = "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A"
 const BOB = "0x1111111111111111111111111111111111111111"
@@ -261,8 +260,8 @@ vi.mock("@core/domains/app/store.remoteConfig", () => ({
   },
 }))
 
-vi.mock("@core/domains/swaps/exports", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@core/domains/swaps/exports")>()),
+vi.mock("../evm-gas-check", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../evm-gas-check")>()),
   prepareTransactionRequestWithGasCheck: (...args: unknown[]) => mockPrepare(...args),
 }))
 
@@ -280,8 +279,8 @@ vi.mock("@ui/state/chaindata", () => ({
 }))
 
 const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
-const { uiSwapEnv, withPageSwapEnv } = await import("../../swapEnv.ui")
-const lifiSwapModule = withPageSwapEnv(lifiPageModule, uiSwapEnv)
+const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
+const lifiSwapModule = withSwapEnv(lifiPageModule, uiSwapEnv)
 
 const signal = new AbortController().signal
 
@@ -447,7 +446,7 @@ describe("LI.FI multi-step routes", () => {
   })
 })
 
-describe("LI.FI plan leg build", () => {
+describe("LI.FI leg build", () => {
   const context = { platform: "ethereum" as const }
   const prepared = { to: DIAMOND, data: "0x", value: 0n }
 
@@ -574,7 +573,7 @@ describe("LI.FI plan leg build", () => {
     )
   })
 
-  it("refuses the first leg of a plan below the floor, before the plan starts", async () => {
+  it("refuses the first leg of a multi-step route below the floor, before funds move", async () => {
     const quoted = usdtToTrump().steps[0]
     const floor = 2_805_507_390_849_766_156_231n
     const fresh = route(
@@ -629,7 +628,7 @@ describe("LI.FI plan leg build", () => {
       {
         quoted: usdtToBnb,
         toTokenId: "56:evm-native",
-        module: withPageSwapEnv(freshPage, uiSwapEnv),
+        module: withSwapEnv(freshPage, uiSwapEnv),
       }
     )
 
@@ -659,7 +658,7 @@ describe("LI.FI plan leg build", () => {
     }))
     const freshPage = async () => {
       vi.resetModules()
-      return withPageSwapEnv((await import("../lifi-swap-module")).lifiSwapModule, uiSwapEnv)
+      return withSwapEnv((await import("../lifi-swap-module")).lifiSwapModule, uiSwapEnv)
     }
 
     const ethToArbParams: QuoteParams = {
@@ -691,13 +690,17 @@ describe("LI.FI plan leg build", () => {
     it("sends the user back to the quotes before any funds move, and quotes the route no more", async () => {
       const module = await freshPage()
 
-      await expect(failFirstLeg(module)).rejects.toThrow(SwapRouteUnbuildableError)
+      await expect(failFirstLeg(module)).rejects.toMatchObject({
+        name: "SwapRouteUnbuildableError",
+      })
       expect(await module.getQuote(ethToArbParams, signal)).toBeNull()
     })
 
     it("keeps quoting the same bridge through other inner steps", async () => {
       const module = await freshPage()
-      await expect(failFirstLeg(module)).rejects.toThrow(SwapRouteUnbuildableError)
+      await expect(failFirstLeg(module)).rejects.toMatchObject({
+        name: "SwapRouteUnbuildableError",
+      })
 
       routesAre(
         withStep(ethToArb(), 0, (s) => ({

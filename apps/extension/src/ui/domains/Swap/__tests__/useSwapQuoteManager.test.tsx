@@ -1,11 +1,14 @@
-import { quoteFromLegs } from "@core/domains/swaps/helpers"
-import type { BaseQuote, SupportedSwapProtocol } from "@core/domains/swaps/types"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor as waitForWithDefaultInterval } from "@testing-library/react"
 import BigNumber from "bignumber.js"
 import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { SwapModule } from "../swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  SupportedSwapProtocol,
+  SwapModule,
+} from "../swap-modules/common.swap-module"
+import { quoteFromLegs } from "../swap-modules/helpers"
 
 const getQuoteMock = vi.fn()
 

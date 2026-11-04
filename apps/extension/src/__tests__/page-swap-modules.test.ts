@@ -1,29 +1,22 @@
 import { existsSync, readFileSync, statSync } from "node:fs"
-import { basename, dirname, join, relative } from "node:path"
+import { dirname, join, relative } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
 import { listSourceFiles, REPO_ROOT } from "./listSourceFiles"
 
 /**
- * `core/domains/swaps/` runs in the service worker as well as in the pages.
- *
- * - It reaches nothing in `ui/`, not even through another core file: the worker has no React, no
- *   `api` and no DOM. What a swap module reads from its realm comes in through `SwapEnv`
- *   (`core/domains/swaps/env.ts`), and the UI passes its own (`ui/domains/Swap/swapEnv.ui.ts`).
- * - It reaches no `handler*.ts`: the pages import these files too, and a handler in a page bundle
- *   runs the background's code there.
- * - It has no dynamic `import(`: Chrome forbids `import()` in a service worker, and the build
- *   would split the module into a chunk the worker cannot load.
+ * The swap modules in `ui/domains/Swap/swap-modules/` are copied into the mobile wallet, so they
+ * read the wallet only through `SwapEnv` and the per-repo adapter files next to them, which the
+ * walk does not enter. `core/domains/swaps/status.ts`, which the background polls swap status
+ * with, follows the same rule.
  */
 const EXTENSION = join(REPO_ROOT, "apps/extension")
 const SRC = join(EXTENSION, "src")
-const SWAPS = join(SRC, "core/domains/swaps")
 const UI = join(SRC, "ui")
 const SWAP_MODULES = join(SRC, "ui/domains/Swap/swap-modules")
 
 const RUNTIME_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm
-const ANY_IMPORT = /^\s*(?:import|export)\s+(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm
 const DYNAMIC_IMPORT = /\bimport\s*\(/
 const ALIAS = /^@(core|ui|common)(\/.*)?$/
 
@@ -39,26 +32,18 @@ const resolveImport = (from: string, specifier: string): string | undefined => {
 }
 
 type ImportRules = {
-  entryImports: RegExp
   isForbidden: (file: string) => boolean
   isBoundary: (file: string) => boolean
 }
 
-const BACKGROUND_RULES: ImportRules = {
-  entryImports: ANY_IMPORT,
-  isForbidden: (file) => file.startsWith(UI) || basename(file).startsWith("handler"),
-  isBoundary: () => false,
-}
-
 const forbiddenChain =
-  ({ entryImports, isForbidden, isBoundary }: ImportRules) =>
+  ({ isForbidden, isBoundary }: ImportRules) =>
   (entry: string): string[] | null => {
     const parent = new Map<string, string | null>([[entry, null]])
     const queue = [entry]
     while (queue.length) {
       const file = queue.shift() as string
-      const imports = file === entry ? entryImports : RUNTIME_IMPORT
-      for (const [, specifier] of readFileSync(file, "utf8").matchAll(imports)) {
+      for (const [, specifier] of readFileSync(file, "utf8").matchAll(RUNTIME_IMPORT)) {
         const next = resolveImport(file, specifier)
         if (!next || parent.has(next)) continue
         parent.set(next, file)
@@ -74,18 +59,17 @@ const forbiddenChain =
     return null
   }
 
-/**
- * The page swap modules are copied into the mobile wallet, so their bodies read the pages only
- * through `PageSwapEnv` and the per-repo adapter files next to them, which the walk does not enter.
- */
+const PAGE_ADAPTERS = new Set([
+  join(SWAP_MODULES, "evm-network.ts"),
+  join(SWAP_MODULES, "lifi-api.ts"),
+  join(SWAP_MODULES, "stealthex-api.ts"),
+  join(SWAP_MODULES, "simpleswap-api.ts"),
+  join(SWAP_MODULES, "substrate-deposit.ts"),
+])
+
 const PAGE_SWAP_MODULES = [
-  join(SWAP_MODULES, "lifi-swap-module.ts"),
-  join(SWAP_MODULES, "stealthex-swap-module.ts"),
-  join(SWAP_MODULES, "simpleswap-swap-module.ts"),
-  join(SWAP_MODULES, "deposit-swap-transactions.ts"),
-  join(SWAP_MODULES, "fee-utils.ts"),
-  join(SWAP_MODULES, "monitoring.ts"),
-  join(SWAPS, "status.ts"),
+  ...listSourceFiles(SWAP_MODULES).filter((file) => !PAGE_ADAPTERS.has(file)),
+  join(SRC, "core/domains/swaps/status.ts"),
 ]
 
 const PAGE_REALM = [
@@ -97,37 +81,10 @@ const PAGE_REALM = [
 ]
 const STORE = /\/core\/domains\/[^/]+\/store\.[^/]+\.ts$/
 
-const PAGE_ADAPTERS = new Set([
-  join(SWAP_MODULES, "lifi-api.ts"),
-  join(SWAP_MODULES, "stealthex-api.ts"),
-  join(SWAP_MODULES, "simpleswap-api.ts"),
-  join(SWAP_MODULES, "substrate-deposit.ts"),
-])
-
 const PAGE_RULES: ImportRules = {
-  entryImports: RUNTIME_IMPORT,
   isForbidden: (file) => STORE.test(file) || PAGE_REALM.some((realm) => file.startsWith(realm)),
   isBoundary: (file) => PAGE_ADAPTERS.has(file),
 }
-
-describe("background swap modules", () => {
-  it("reach nothing in ui/ and no handler", () => {
-    const offenders = listSourceFiles(SWAPS, { includeTests: true })
-      .map(forbiddenChain(BACKGROUND_RULES))
-      .filter((chain) => chain !== null)
-      .map((chain) => chain.join(" -> "))
-
-    expect(offenders).toEqual([])
-  })
-
-  it("have no dynamic import", () => {
-    const offenders = listSourceFiles(SWAPS)
-      .filter((file) => DYNAMIC_IMPORT.test(readFileSync(file, "utf8")))
-      .map((file) => relative(EXTENSION, file))
-
-    expect(offenders).toEqual([])
-  })
-})
 
 describe("page swap modules", () => {
   it("read the pages only through the env and their adapters", () => {

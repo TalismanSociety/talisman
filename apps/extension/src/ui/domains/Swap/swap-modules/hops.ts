@@ -2,9 +2,14 @@ import type { FeatureFlag } from "@core/domains/app/types"
 import type { TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import type { AccountType } from "@talismn/keyring"
-
+import type {
+  BaseQuote,
+  EntryHop,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapModule,
+} from "./common.swap-module"
 import { quoteFromLegs } from "./helpers"
-import type { BaseQuote, EntryHop, QuoteParams, SupportedSwapProtocol } from "./types"
 
 /** an owned EVM account that could hold the funds between two legs */
 export type IntermediateCandidate = {
@@ -38,14 +43,10 @@ export const pickIntermediateAccount = (
   return evm.find((candidate) => candidate.type === "ledger-ethereum")?.address ?? null
 }
 
-/** the realm-bound face of a module the composition calls: the pages' SwapModule has this shape */
-export type HopModule = {
-  protocol: SupportedSwapProtocol
-  entryHops?: EntryHop[]
-  getFromAssets: (signal: AbortSignal) => Promise<TokenId[]>
-  getToAssets: (fromTokenId: TokenId | null, signal: AbortSignal) => Promise<TokenId[]>
-  getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
-}
+export type HopModule = Pick<
+  SwapModule,
+  "protocol" | "entryHops" | "getFromAssets" | "getToAssets" | "getQuote"
+>
 
 export type EntryHopOptions = {
   enabled: (flag: FeatureFlag) => boolean
