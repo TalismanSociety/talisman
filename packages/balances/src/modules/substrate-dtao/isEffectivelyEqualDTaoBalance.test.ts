@@ -113,15 +113,9 @@ describe("isEffectivelyEqualDTaoBalance", () => {
     )
   })
 
-  test("small stake accrual (auto-compounding dividends) classifies as drift", () => {
+  test("any stake move emits immediately, down to 1 planck", () => {
     const previous = makeDTaoBalance({ stake: "1000000000000" })
-    const next = makeDTaoBalance({ stake: "1000000000001" }) // 1 planck
-    expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("drift")
-  })
-
-  test("large stake moves (real stake/unstake) emit immediately", () => {
-    const previous = makeDTaoBalance({ stake: "1000000000000" })
-    const next = makeDTaoBalance({ stake: "1100000000000" }) // +10%
+    const next = makeDTaoBalance({ stake: "1000000000001" })
     expect(isEffectivelyEqualDTaoBalance(previous, next)).toBe("changed")
   })
 
