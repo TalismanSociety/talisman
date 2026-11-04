@@ -80,6 +80,7 @@ const KNOWN_COMPATIBLE = new Set(
     "Zlib",
     "BlueOak-1.0.0",
     "Python-2.0",
+    "PSF-2.0",
     "public domain",
   ].map((s) => s.toLowerCase())
 )
