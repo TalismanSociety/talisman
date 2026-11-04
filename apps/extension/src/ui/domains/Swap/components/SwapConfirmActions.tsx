@@ -29,6 +29,7 @@ import { useTokenRates } from "@ui/state/tokenRates"
 import { useSolanaRpc } from "@ui/util/solana/useSolanaRpc"
 import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { Hex } from "viem"
 import { buildSwapTransaction, quoteLegsKey } from "../buildSwapTransaction"
 import { getAdditionalFeePlanck } from "../hooks/quote-sorting"
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
@@ -58,6 +59,7 @@ import {
   SwapApprovalDetails,
   SwapLegDetails,
   SwapRiskRow,
+  SwapRunNotice,
   SwapSlippageRow,
   SwapTxFeeRows,
   type SwapTxProvider,
@@ -109,6 +111,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     minedApproval,
     setSwapView,
     setApprovalHash,
+    startRun,
   } = useSwap()
   const queryClient = useQueryClient()
 
@@ -572,9 +575,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const handleSwapSubmitted = useCallback(
     (hash: string) => {
       if (swapReport) flows.swap.submitted({ ...swapReport, transactionId: hash })
+      if (built && built.quote.legs.length > 1 && fromAmount)
+        startRun(built.quote, toSlippageDecimal(slippagePercent), {
+          hash: hash as Hex,
+          input: fromAmount,
+        })
       onSwapSubmitted(hash)
     },
-    [onSwapSubmitted, swapReport]
+    [built, fromAmount, onSwapSubmitted, slippagePercent, startRun, swapReport]
   )
 
   const onSwapFailed = useCallback(
@@ -763,6 +771,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
       <SwapTxLayout footer={footer}>
         {children}
+        {legs[1] ? <SwapRunNotice secondLeg={legs[1]} /> : null}
         <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
       </SwapTxLayout>
       {supportsSlippage ? (

@@ -45,7 +45,7 @@ export const pickIntermediateAccount = (
 
 export type HopModule = Pick<
   SwapModule,
-  "protocol" | "entryHops" | "getFromAssets" | "getToAssets" | "getQuote"
+  "protocol" | "entryHops" | "getFromAssets" | "getToAssets" | "getQuote" | "settleLeg"
 >
 
 export type EntryHopOptions = {
@@ -61,7 +61,8 @@ const unique = (tokenIds: TokenId[]) => [...new Set(tokenIds)]
 /**
  * Advertises the module's enabled entry hops as sources and composes a quote for them: the via
  * module's legs to the intermediate, then the module's own legs, quoted `upTo` what the via quote
- * delivers. Everything else passes through to the module.
+ * delivers. A via module that cannot settle its leg offers no route: the next leg's input is
+ * what the via leg delivered. Everything else passes through to the module.
  */
 export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopOptions): T => {
   const hops = (module.entryHops ?? []).filter((hop) => options.enabled(hop.flag))
@@ -73,7 +74,7 @@ export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopO
     signal: AbortSignal
   ): Promise<BaseQuote | null> => {
     const via = options.resolve(hop.via)
-    if (!via) return null
+    if (!via?.settleLeg) return null
     const intermediate = pickIntermediateAccount(
       await options.candidates(hop.hub),
       params.toAddress

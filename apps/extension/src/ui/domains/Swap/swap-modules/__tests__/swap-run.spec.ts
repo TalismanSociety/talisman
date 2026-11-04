@@ -11,7 +11,6 @@ import type {
   SwapModule,
 } from "../common.swap-module"
 import {
-  canRun,
   legInput,
   legSent,
   legSettled,
@@ -116,20 +115,6 @@ describe("a swap run", () => {
     expect(legSettled(run, 0, landed(HASH_0, 1n))).toBe(run)
     expect(legSettled(run, 1, landed(HASH_1, 1n))).toBe(run)
     expect(legSent(run, 0, HASH_1, 1n)).toBe(run)
-  })
-})
-
-describe("canRun", () => {
-  const settles = { protocol: "bittensor-evm", settleLeg: vi.fn() } as const
-  const cannot = { protocol: "lifi" } as const
-
-  it("runs a route whose every leg before the last can settle", () => {
-    expect(canRun(twoLegs, [settles, cannot])).toBe(true)
-    expect(canRun(quoteOf([bridgeLeg]), [cannot])).toBe(true)
-  })
-
-  it("refuses a route whose first leg cannot tell what it delivered", () => {
-    expect(canRun(quoteOf([bridgeLeg, depositLeg]), [settles, cannot])).toBe(false)
   })
 })
 
