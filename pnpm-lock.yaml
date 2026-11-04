@@ -400,8 +400,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       cn:
-        specifier: ^0.3.3
-        version: 0.3.3
+        specifier: ^0.5.1
+        version: 0.5.1
       color:
         specifier: 5.0.3
         version: 5.0.3
@@ -5606,9 +5606,9 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
-  cn@0.3.3:
-    resolution: {integrity: sha512-OEiyJkSpYm2kOuNOKQ+c2wmzZRG8orrb9fnObtHTbCGNx/E9KLnGcmcocItOzREKk5KzQN5I2e3BUCj563KEpw==}
-    engines: {node: '>=20'}
+  cn@0.5.1:
+    resolution: {integrity: sha512-SA06SpzSWXRNrt/EQWnRpck9jEVDfVJonw8ZewiNR6pOC4U0SQ81tWaQ9/PKNPh/lWvjuY4CMlxpc8tJViiX6Q==}
+    engines: {node: '>=22'}
     hasBin: true
 
   cockatiel@3.2.1:
@@ -14915,7 +14915,7 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  cn@0.3.3: {}
+  cn@0.5.1: {}
 
   cockatiel@3.2.1: {}
 
