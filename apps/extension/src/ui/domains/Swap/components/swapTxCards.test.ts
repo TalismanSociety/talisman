@@ -503,7 +503,7 @@ describe("swapRunFooter", () => {
     value: SwapRun,
     rows: SwapRunTxInput["rows"] = [],
     signing: SwapRunTxInput["signing"] = null
-  ) => swapRunFooter({ run: value, signing }, runCards(value, { rows, signing }))
+  ) => swapRunFooter({ run: value, rows, signing }, runCards(value, { rows, signing }))
 
   it("asks nothing of the user while a leg runs", () => {
     expect(footer(run(SENT_0, { at: "queued" }))).toEqual({ type: "processing" })
@@ -549,6 +549,16 @@ describe("swapRunFooter", () => {
       offer: { fromTokenId: HUB_TAO, toTokenId: BASE_WTAO, fromAddress: EVM_ADDRESS },
     })
   })
+
+  it.each(["error", "replaced"] as const)(
+    "offers to swap the funds the last leg left on its signer once its transaction ended %s",
+    (status) => {
+      expect(footer(run(LANDED_0, SENT_1), [undefined, ethRow(LEG1_HASH, { status })])).toEqual({
+        type: "finish",
+        offer: { fromTokenId: HUB_TAO, toTokenId: BASE_WTAO, fromAddress: EVM_ADDRESS },
+      })
+    }
+  )
 
   it("points to the activity when the wallet could not tell where the funds went", () => {
     expect(footer(run(stopped(LEG0_HASH, "untracked"), { at: "queued" }))).toEqual({
