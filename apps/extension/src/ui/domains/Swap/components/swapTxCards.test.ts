@@ -499,8 +499,11 @@ describe("swapRunTxFacts", () => {
 })
 
 describe("swapRunFooter", () => {
-  const footer = (value: SwapRun, rows: SwapRunTxInput["rows"] = []) =>
-    swapRunFooter(value, runCards(value, { rows }))
+  const footer = (
+    value: SwapRun,
+    rows: SwapRunTxInput["rows"] = [],
+    signing: SwapRunTxInput["signing"] = null
+  ) => swapRunFooter({ run: value, signing }, runCards(value, { rows, signing }))
 
   it("asks nothing of the user while a leg runs", () => {
     expect(footer(run(SENT_0, { at: "queued" }))).toEqual({ type: "processing" })
@@ -525,7 +528,19 @@ describe("swapRunFooter", () => {
   })
 
   it("asks to sign the leg whose previous one landed", () => {
-    expect(footer(run(LANDED_0, READY))).toEqual({ type: "sign" })
+    expect(footer(run(LANDED_0, READY))).toEqual({ type: "sign", offer: null })
+  })
+
+  it("also offers to swap the landed funds onward once the leg after them failed", () => {
+    const failed = {
+      leg: 1,
+      isApprovalPending: false,
+      failure: "This swap provider is unavailable",
+    }
+    expect(footer(run(LANDED_0, READY), [], failed)).toEqual({
+      type: "sign",
+      offer: { fromTokenId: HUB_TAO, toTokenId: BASE_WTAO, fromAddress: EVM_ADDRESS },
+    })
   })
 
   it("offers to swap the funds a stopped leg left on its signer to the route's destination", () => {
