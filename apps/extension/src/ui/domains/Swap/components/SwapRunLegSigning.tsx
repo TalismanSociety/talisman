@@ -57,6 +57,13 @@ type SignAttempt = { step: SignedStep; nonce: number }
 const nextNonce = (count: number, mined: MinedLegApproval | undefined) =>
   mined ? Math.max(count, mined.nonce + 1) : count
 
+const pinnedNonce = (
+  attempt: SignAttempt | undefined,
+  signs: SignedStep,
+  mined: MinedLegApproval | undefined
+) =>
+  attempt?.step === signs && !(mined && mined.nonce >= attempt.nonce) ? attempt.nonce : undefined
+
 const buildApprovalTransaction = async (
   client: PublicClient,
   leg: QuoteLeg,
@@ -106,7 +113,7 @@ const buildLegSignRequest = async (
     api.ethGetTransactionsCount(signer, networkId),
   ])
   const signs: SignedStep = step.signs === "approval" ? step.allowance : "leg"
-  const nonce = failedAttempt?.step === signs ? failedAttempt.nonce : nextNonce(count, mined)
+  const nonce = pinnedNonce(failedAttempt, signs, mined) ?? nextNonce(count, mined)
   if (step.signs === "approval")
     return buildApprovalTransaction(client, leg, step.approval, step.allowance, nonce)
 
