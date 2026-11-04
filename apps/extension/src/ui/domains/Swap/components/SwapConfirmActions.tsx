@@ -466,18 +466,11 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromAmount,
   })
 
-  const quoteAsBuilt = useMemo(
-    () =>
-      built
-        ? {
-            ...built.quote,
-            legs: built.quote.legs.map((leg, index) =>
-              index === 0 ? { ...leg, fees: built.leg.fees } : leg
-            ),
-          }
-        : selectedQuote,
-    [built, selectedQuote]
-  )
+  const quoteAsBuilt = useMemo((): BaseQuote | null => {
+    if (!built) return selectedQuote ?? null
+    const [firstLeg, ...laterLegs] = built.quote.legs
+    return { ...built.quote, legs: [{ ...firstLeg, fees: built.leg.fees }, ...laterLegs] }
+  }, [built, selectedQuote])
   const laterLegHoldings = useHoldings(quoteAsBuilt ? getLaterLegHoldingKeys(quoteAsBuilt) : [])
   const laterLegShortfall = useMemo(() => {
     if (!quoteAsBuilt || !laterLegHoldings) return null

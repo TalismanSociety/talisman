@@ -405,7 +405,7 @@ describe("SwapConfirmActions approval", () => {
       leg: {
         transaction: {
           platform: "ethereum",
-          transaction: { from: ACCOUNT, to: ACCOUNT, data: "0x", chainId: 8453 },
+          transaction: { to: ACCOUNT, data: "0x" },
         },
         fees: [
           {
@@ -416,8 +416,16 @@ describe("SwapConfirmActions approval", () => {
           },
         ],
         expectedOutput: 1n,
-        txInfo: { type: "swap" },
-      } as BuiltSwap["leg"],
+        txInfo: {
+          type: "swap-lifi",
+          protocolName: "glacis",
+          fromTokenId: USDC,
+          toTokenId: OP_ETH,
+          fromAmount: "1000000",
+          toAmount: "1",
+          to: ACCOUNT,
+        },
+      },
     }
     held.set({ [ETH]: (APPROVAL_GAS * 5n) / 2n })
     renderConfirmActions()
