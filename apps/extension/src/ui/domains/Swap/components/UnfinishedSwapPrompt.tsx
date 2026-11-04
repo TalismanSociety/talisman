@@ -1,8 +1,6 @@
 import type { UnfinishedSwap } from "@core/domains/app/store.app"
-import type { Balance } from "@talismn/balances"
 import { networkIdFromTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { formatDecimals } from "@talismn/util"
 import { Button } from "@ui/components/Button"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useAccountByAddress } from "@ui/state/accounts"
@@ -16,14 +14,12 @@ import { useTranslation } from "react-i18next"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { clearUnfinishedSwap } from "../unfinishedSwaps"
 
-type HeldSwap = { swap: UnfinishedSwap; balance: Balance }
-
 const NO_SWAPS: UnfinishedSwap[] = []
 
 const useLatestHeldSwap = (
   swaps: readonly UnfinishedSwap[],
   formFromTokenId: TokenId | null
-): HeldSwap | null => {
+): UnfinishedSwap | null => {
   const addressesAndTokens = useMemo(
     () => ({
       addresses: [...new Set(swaps.map((swap) => swap.fromAddress))],
@@ -40,15 +36,16 @@ const useLatestHeldSwap = (
         (balance) =>
           balance.tokenId === swap.fromTokenId && isAddressEqual(balance.address, swap.fromAddress)
       ).each[0]
-      if (balance && balance.transferable.planck > 0n) return { swap, balance }
+      if (balance && balance.transferable.planck > 0n) return swap
     }
     return null
   }, [balances, formFromTokenId, swaps])
 }
 
-const FinishSwapPrompt: FC<HeldSwap> = ({ swap, balance }) => {
+const FinishSwapPrompt: FC<{ swap: UnfinishedSwap }> = ({ swap }) => {
   const { t } = useTranslation()
   const { open: openSwapModal } = useSwapModal()
+  const fromToken = useToken(swap.fromTokenId)
   const toToken = useToken(swap.toTokenId)
   const network = useNetworkById(networkIdFromTokenId(swap.fromTokenId))
   const account = useAccountByAddress(swap.fromAddress)
@@ -59,10 +56,9 @@ const FinishSwapPrompt: FC<HeldSwap> = ({ swap, balance }) => {
         <div className="font-bold text-body text-sm">{t("Finish your swap")}</div>
         <div className="text-body-secondary">
           {t(
-            "{{amount}} {{symbol}} is waiting on {{account}} on {{network}} to be swapped to {{target}}.",
+            "Your swap to {{target}} stopped partway. Swap the {{symbol}} it left on {{account}} on {{network}} to finish it.",
             {
-              amount: formatDecimals(balance.transferable.tokens),
-              symbol: balance.token?.symbol,
+              symbol: fromToken?.symbol,
               account: account?.name ?? shortenAddress(swap.fromAddress),
               network: network?.name,
               target: toToken?.symbol,
@@ -100,5 +96,5 @@ export const UnfinishedSwapPrompt: FC<{ formFromTokenId: TokenId | null }> = ({
   const [unfinishedSwaps = NO_SWAPS] = useAppState("unfinishedSwaps")
   const held = useLatestHeldSwap(isMultiHopEnabled ? unfinishedSwaps : NO_SWAPS, formFromTokenId)
 
-  return held ? <FinishSwapPrompt {...held} /> : null
+  return held ? <FinishSwapPrompt swap={held} /> : null
 }

@@ -83,12 +83,18 @@ describe("unfinishedSwapOf", () => {
   it.each(["failed", "cancelled"] as const)(
     "points at the stopped leg's token when it %s",
     (stop) => {
-      expect(
-        unfinishedSwapOf(run({ at: "stopped", hash: LEG0_HASH, stop }, { at: "queued" }))
-      ).toEqual(note({ fromAddress: SUB_ADDRESS, fromTokenId: SUB_TAO }))
       expect(unfinishedSwapOf(run(LANDED_0, { at: "stopped", hash: LEG1_HASH, stop }))).toEqual(
         note()
       )
+    }
+  )
+
+  it.each(["failed", "cancelled"] as const)(
+    "has no note when the first leg %s, as the funds never left",
+    (stop) => {
+      expect(
+        unfinishedSwapOf(run({ at: "stopped", hash: LEG0_HASH, stop }, { at: "queued" }))
+      ).toBeNull()
     }
   )
 

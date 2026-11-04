@@ -15,7 +15,10 @@ const heldFundsOffer = (run: SwapRun) => {
 
 export const unfinishedSwapOf = (run: SwapRun): UnfinishedSwap | null => {
   const offer = heldFundsOffer(run)
-  return offer && { runId: run.id, ...offer }
+  const start = run.quote.legs[0]
+  const isWhereItStarted =
+    offer?.fromTokenId === start.fromTokenId && offer.fromAddress === start.signer
+  return offer && !isWhereItStarted ? { runId: run.id, ...offer } : null
 }
 
 export const withRunNote = (
