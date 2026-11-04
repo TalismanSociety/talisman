@@ -427,6 +427,31 @@ describe("useLegSigning", () => {
     expect(buttonLabel()).toBe("Approve USDT")
   })
 
+  it("keeps a leg that failed to send on its nonce after an approval mined, so a leg the node took cannot run twice", async () => {
+    signer.type = "keypair"
+    ethGetTransactionsCount.mockResolvedValue(8)
+    client.allowance.mockResolvedValue(LIFI_LEG.inputAmount)
+    client.waitForTransactionReceipt.mockResolvedValue({ blockNumber: 100n, status: "success" })
+    renderSign(LIFI_RUN)
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+
+    ethGetTransactionsCount.mockResolvedValue(9)
+    client.allowance.mockResolvedValue(0n)
+    act(() => button.reject?.(new Error("request timed out")))
+    await waitFor(() =>
+      expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { to: USDT, nonce: 9 } })
+    )
+
+    ethGetTransactionsCount.mockResolvedValue(10)
+    client.allowance.mockResolvedValue(LIFI_LEG.inputAmount)
+    await act(async () => {
+      button.submit?.(APPROVAL_HASH)
+    })
+
+    await waitFor(() => expect(buttonLabel()).toBe("Sign"))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({ payload: { to: SPENDER, nonce: 8 } })
+  })
+
   it("signs the leg with the wallet's next nonce, priced on screen with no fee of its own", async () => {
     ethGetTransactionsCount.mockResolvedValue(8)
     renderSign()
