@@ -425,6 +425,13 @@ const TokensList: FC<TokensListProps> = ({
     [onSelect, search, selectedNetworkId]
   )
 
+  const emptyListMessage =
+    search?.trim() || selectedNetworkId
+      ? t("No token matches your search")
+      : address
+        ? t("There are no tokens with balances in this account")
+        : t("No tokens found")
+
   return (
     <div className="min-h-full">
       {(accountBalances.count || (showEmptyBalances && tokens.length > 0)) && !isInitializing ? (
@@ -438,7 +445,7 @@ const TokensList: FC<TokensListProps> = ({
 
           {!tokens?.length && (
             <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
-              {t("No token matches your search")}
+              {emptyListMessage}
             </div>
           )}
         </>
@@ -456,7 +463,7 @@ const TokensList: FC<TokensListProps> = ({
         </>
       ) : (
         <div className="flex h-14.5 w-full items-center px-12 text-left text-body-secondary">
-          {t("No tokens found")}
+          {emptyListMessage}
         </div>
       )}
     </div>
