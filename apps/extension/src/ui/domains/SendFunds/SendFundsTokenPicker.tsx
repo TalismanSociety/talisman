@@ -19,7 +19,7 @@ import { useCallback, useMemo } from "react"
 import { type TokenPick, TokenPicker } from "../Asset/TokenPicker"
 
 export const SendFundsTokenPicker = () => {
-  const { from, to, tokenId, tokenSymbol, set } = useSendFundsWizard()
+  const { from, to, tokenId, tokenIds, set } = useSendFundsWizard()
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
@@ -40,15 +40,16 @@ export const SendFundsTokenPicker = () => {
   )
 
   const tokenFilter = useMemo<((token: Token) => boolean) | undefined>(() => {
+    if (tokenIds.length) return (token) => tokenIds.includes(token.id)
+
     // in case the wizard is launched from the address book screen, by clicking a contact's "send to" link, tokens must be filtered by that contact address type
     // other cases are handled by the picker directly
     return !from && to && !tokenId ? getTokenFilter(to) : undefined
-  }, [from, to, tokenId])
+  }, [from, to, tokenId, tokenIds])
 
   return (
     <TokenPicker
       address={from}
-      initialSearch={tokenSymbol}
       selected={tokenId}
       networkFilterContainerId="main"
       hideSameNetworkMirrors

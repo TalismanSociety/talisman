@@ -221,14 +221,13 @@ export default class AppHandler extends ExtensionHandler {
     entry,
     from,
     tokenId,
-    tokenSymbol,
+    tokenIds,
     to,
   }: SendFundsOpenRequest): Promise<boolean> {
     const params = new URLSearchParams({ entry })
     if (from) params.append("from", from)
     if (tokenId) params.append("tokenId", tokenId)
-    // tokenId takes precedence over tokenSymbol
-    if (!tokenId && tokenSymbol) params.append("tokenSymbol", tokenSymbol)
+    for (const id of tokenIds ?? []) params.append("tokenIds", id)
     if (to) params.append("to", to)
     await windowManager.popupOpen(`#/send?${params.toString()}`)
 
