@@ -822,10 +822,14 @@ export default defineConfig({
             if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
               return
             }
-            // mlkem, micro-ftch and ox only reach Node builtins on code paths that never run in a browser
+            // These imports only run on code paths that never run in a browser
             if (warning.message?.includes("externalized for browser compatibility")) {
-              if (!/\/node_modules\/(mlkem|micro-ftch|ox)\//.test(warning.message))
-                unexpectedBrowserExternals.add(warning.message)
+              const isNodeOnlyPath =
+                /\/node_modules\/(mlkem|micro-ftch)\//.test(warning.message) ||
+                /"node:worker_threads".*\/node_modules\/ox\/_esm\/tempo\/internal\/virtualMasterPool\.js"/.test(
+                  warning.message
+                )
+              if (!isNodeOnlyPath) unexpectedBrowserExternals.add(warning.message)
               return
             }
             warn(warning)
