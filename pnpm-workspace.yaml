@@ -4,7 +4,7 @@ packages:
   - "config/*"
   - "packages/*"
 
-# pnpm 11 only reads auth/registry settings from .npmrc; every other setting must
+# since pnpm 11, only auth/registry settings are read from .npmrc; every other setting must
 # live here (camelCase). See .npmrc for the rationale behind shamefullyHoist.
 shamefullyHoist: true
 nodeVersion: 24.22.1
@@ -40,8 +40,8 @@ overrides:
   "semver": "7.8.5"
   "ws@>=7.0.0 <7.5.11": ">=7.5.11 <8.0.0"
   "ws@>=8.0.0 <8.21.0": ">=8.21.0 <9.0.0"
-  # <6, not <5: a <5 cap moves elliptic (Ledger EVM signing) from bn.js 5 back to the 4.x it declares
-  "bn.js@<4.12.3": ">=4.12.3 <6.0.0"
+  # lifts the 4.x consumers (elliptic for Ledger EVM signing among them) onto bn.js 5
+  "bn.js@<4.12.3": ">=5.2.3 <6.0.0"
   "bn.js@>=5.0.0 <5.2.3": ">=5.2.3 <6.0.0"
   # <12 cap: uuid 11.x is the last line with a CJS entrypoint, some consumers still require()
   "uuid@<11.1.1": ">=11.1.1 <12.0.0"
