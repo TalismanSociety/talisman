@@ -67,7 +67,7 @@ const PopoutButton: FC = () => {
   }, [])
 
   return (
-    <Tooltip>
+    <Tooltip placement="bottom-end">
       <TooltipTrigger asChild>
         <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Pop out")}>
           <PopoutIcon />
@@ -83,7 +83,7 @@ const FullscreenButton: FC = () => {
   const handleClick = useOpenFullscreen()
 
   return (
-    <Tooltip>
+    <Tooltip placement="bottom-end">
       <Coachmark
         id="popup_fullscreen_moved"
         title={t("Expand has moved here")}
