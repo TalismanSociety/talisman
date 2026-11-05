@@ -10,6 +10,7 @@ const DEFAULT_OPTIONS: ToastOptions = {
   closeButton: false,
   hideProgressBar: true,
   autoClose: 2000,
+  closeOnClick: true,
 }
 
 const categoryOf = (content: Extract<NotificationProps, { type: "error" }>): ErrorCategory =>
