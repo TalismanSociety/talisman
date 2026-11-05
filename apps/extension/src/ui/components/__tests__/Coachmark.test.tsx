@@ -22,6 +22,7 @@ vi.mock("@ui/state/app", () => ({
 }))
 
 const { Coachmark } = await import("../Coachmark")
+const { Tooltip, TooltipContent, TooltipTrigger } = await import("../Tooltip")
 
 const Page = () => (
   <Coachmark
@@ -31,6 +32,21 @@ const Page = () => (
   >
     <button type="button">Fullscreen</button>
   </Coachmark>
+)
+
+const PageWithTooltip = () => (
+  <Tooltip>
+    <Coachmark
+      id="popup_fullscreen_moved"
+      title="Expand has moved here"
+      description="Expand to open Talisman in a full tab."
+    >
+      <TooltipTrigger asChild>
+        <button type="button">Fullscreen</button>
+      </TooltipTrigger>
+    </Coachmark>
+    <TooltipContent>Fullscreen</TooltipContent>
+  </Tooltip>
 )
 
 const coachmark = () => screen.queryByRole("dialog", { name: "Expand has moved here" })
@@ -81,5 +97,17 @@ describe("Coachmark", () => {
     expect(modalClosed()).toEqual([
       { modal_id: "coachmark_popup_fullscreen_moved", dismiss: "escape" },
     ])
+  })
+
+  test("still anchors to a button that is also a tooltip trigger", async () => {
+    render(<PageWithTooltip />)
+
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: "Escape" })
+      await settle()
+    })
+
+    expect(coachmark()).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Fullscreen" }))
   })
 })

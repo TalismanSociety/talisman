@@ -5,6 +5,7 @@ import { api } from "@ui/api"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { Coachmark } from "@ui/components/Coachmark"
 import { IconButton } from "@ui/components/IconButton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { useHoverDirty } from "@ui/hooks/reactUseCompat"
 import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
@@ -59,15 +60,21 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
 }
 
 const PopoutButton: FC = () => {
+  const { t } = useTranslation()
   const handleClick = useCallback(() => {
     api.popupOpen("#/portfolio")
     window.close()
   }, [])
 
   return (
-    <IconButton className="p-3 text-base" onClick={handleClick}>
-      <PopoutIcon />
-    </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Pop out")}>
+          <PopoutIcon />
+        </IconButton>
+      </TooltipTrigger>
+      <TooltipContent>{t("Pop out")}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -76,18 +83,23 @@ const FullscreenButton: FC = () => {
   const handleClick = useOpenFullscreen()
 
   return (
-    <Coachmark
-      id="popup_fullscreen_moved"
-      title={t("Expand has moved here")}
-      description={
-        IS_EMBEDDED_POPUP
-          ? t("Expand to open Talisman in a full tab, or pop it out into its own window.")
-          : t("Expand to open Talisman in a full tab.")
-      }
-    >
-      <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
-        <ExpandIcon />
-      </IconButton>
-    </Coachmark>
+    <Tooltip>
+      <Coachmark
+        id="popup_fullscreen_moved"
+        title={t("Expand has moved here")}
+        description={
+          IS_EMBEDDED_POPUP
+            ? t("Expand to open Talisman in a full tab, or pop it out into its own window.")
+            : t("Expand to open Talisman in a full tab.")
+        }
+      >
+        <TooltipTrigger asChild>
+          <IconButton className="p-3 text-base" onClick={handleClick} aria-label={t("Fullscreen")}>
+            <ExpandIcon />
+          </IconButton>
+        </TooltipTrigger>
+      </Coachmark>
+      <TooltipContent>{t("Fullscreen")}</TooltipContent>
+    </Tooltip>
   )
 }
