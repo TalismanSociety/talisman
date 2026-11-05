@@ -23,6 +23,7 @@ import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts } from "@ui/state/accounts"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { TalismanWhiteLogo } from "@ui/theme/logos"
+import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,36 +37,41 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
+  const closeAfterNavigating = useCallback(() => {
+    close()
+    closeIfEmbeddedPopup()
+  }, [close])
+
   const handleAddAccountClick = useCallback(() => {
     api.dashboardOpen("/accounts/add")
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const handleAddressBookClick = useCallback(() => {
     api.dashboardOpen("/settings/address-book")
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const handleSendFundsClick = useCallback(async () => {
     await api.sendFundsOpen({ entry: "nav_menu" })
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const allBackedUp = useMnemonicsAllBackedUp()
   const handleBackupClick = useCallback(() => {
     api.dashboardOpen("/settings/mnemonics")
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const handleSettingsClick = useCallback(() => {
     api.dashboardOpen("/settings/general")
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const handleManageNetworksClick = useCallback(() => {
     api.dashboardOpen("/settings/networks-tokens/networks")
-    window.close()
-  }, [])
+    closeAfterNavigating()
+  }, [closeAfterNavigating])
 
   const handleFullscreenClick = useOpenFullscreen()
 
