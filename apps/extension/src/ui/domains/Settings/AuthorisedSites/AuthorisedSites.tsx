@@ -62,9 +62,9 @@ export const AuthorisedSites = () => {
         <div>
           <OptionSwitch
             options={[
-              ["ethereum", t("Ethereum")],
-              ["polkadot", t("Substrate")],
-              ["solana", t("Solana")],
+              ["ethereum", "Ethereum"],
+              ["polkadot", "Substrate"],
+              ["solana", "Solana"],
             ]}
             className="text-xs [&>div]:h-full"
             defaultOption="ethereum"
