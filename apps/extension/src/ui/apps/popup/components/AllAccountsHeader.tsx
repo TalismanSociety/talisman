@@ -99,7 +99,7 @@ const FullscreenButton: FC = () => {
           </IconButton>
         </TooltipTrigger>
       </Coachmark>
-      <TooltipContent>{t("Fullscreen")}</TooltipContent>
+      <TooltipContent>{t("Open Talisman in a full tab")}</TooltipContent>
     </Tooltip>
   )
 }
