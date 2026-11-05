@@ -18,6 +18,8 @@ const cards = (approval: SwapTxStatus, swap: SwapTxStatus): SwapTxCardModel[] =>
   { key: "leg-0", kind: "leg", leg: 0, status: swap },
 ]
 
+const swapOnly: SwapTxCardModel[] = [{ key: "leg-0", kind: "leg", leg: 0, status: "ready" }]
+
 const renderCards = (models: SwapTxCardModel[]) => (
   <SwapTxCards cards={models} legs={legs} renderBody={(card) => <p>{`body ${card.key}`}</p>} />
 )
@@ -59,7 +61,6 @@ describe("SwapTxCards", () => {
   })
 
   it("stays put when a late allowance read puts an approval before the open transaction", () => {
-    const swapOnly: SwapTxCardModel[] = [{ key: "leg-0", kind: "leg", leg: 0, status: "ready" }]
     const { rerender } = render(renderCards(swapOnly))
     rerender(renderCards(cards("ready", "upcoming")))
 
@@ -73,5 +74,29 @@ describe("SwapTxCards", () => {
     rerender(renderCards(cards("pending", "upcoming")))
 
     expect(scrolled).not.toHaveBeenCalled()
+  })
+
+  it("hides the step number when the plan has a single transaction", () => {
+    render(renderCards(swapOnly))
+
+    expect(screen.getByText("body leg-0")).toBeTruthy()
+    expect(screen.queryByText("1")).toBeNull()
+  })
+
+  it("numbers each transaction when one leg needs an approval and a swap", () => {
+    render(renderCards(cards("ready", "upcoming")))
+
+    expect(screen.getByText("1")).toBeTruthy()
+    expect(screen.getByText("2")).toBeTruthy()
+  })
+
+  it("shows the step numbers once a late allowance read grows the plan to two transactions", () => {
+    const { rerender } = render(renderCards(swapOnly))
+    expect(screen.queryByText("1")).toBeNull()
+
+    rerender(renderCards(cards("ready", "upcoming")))
+
+    expect(screen.getByText("1")).toBeTruthy()
+    expect(screen.getByText("2")).toBeTruthy()
   })
 })
