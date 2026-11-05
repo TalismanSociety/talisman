@@ -20,8 +20,6 @@ import {
 
 const KEYS = { POSTHOG_CLI_API_KEY: "phx_test" }
 const HOST = "https://us.posthog.com"
-const VERSION = "3.10.1"
-const BUILD = "4d329168b"
 
 const untouchable = new Proxy(
   {},
@@ -32,13 +30,10 @@ const untouchable = new Proxy(
   }
 )
 
-const plan = (args: Omit<Parameters<typeof planSourcemapUpload>[0], "version" | "build">) =>
-  planSourcemapUpload({ version: VERSION, build: BUILD, ...args })
-
 describe("planSourcemapUpload", () => {
   it("skips Firefox before it reads the env", () => {
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "firefox",
         buildType: "production",
         env: untouchable,
@@ -48,7 +43,7 @@ describe("planSourcemapUpload", () => {
 
   it.each(["dev", undefined])("skips a %s build: it has no maps", (buildType) => {
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "chrome",
         buildType,
         env: KEYS,
@@ -64,7 +59,7 @@ describe("planSourcemapUpload", () => {
     ["a blank key", { POSTHOG_CLI_API_KEY: "  " }],
   ])("fails with %s, and skips on the CLI's dry run", (_, env) => {
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "chrome",
         buildType: "canary",
         env,
@@ -73,7 +68,7 @@ describe("planSourcemapUpload", () => {
       action: "fail",
     })
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "chrome",
         buildType: "production",
         env: { ...KEYS, POSTHOG_CLI_DRY_RUN: "true" },
@@ -81,9 +76,9 @@ describe("planSourcemapUpload", () => {
     ).toEqual({ action: "skip", reason: "dry_run" })
   })
 
-  it("uploads a production or canary Chrome build with the key, a canary under its own version", () => {
+  it("uploads a production or canary Chrome build with the key", () => {
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "chrome",
         buildType: "production",
         env: KEYS,
@@ -92,11 +87,9 @@ describe("planSourcemapUpload", () => {
       action: "inject_and_upload",
       host: HOST,
       apiKey: "phx_test",
-      version: VERSION,
-      build: BUILD,
     })
     expect(
-      plan({
+      planSourcemapUpload({
         browser: "chrome",
         buildType: "canary",
         env: { ...KEYS, POSTHOG_CLI_HOST: "http://127.0.0.1:9" },
@@ -105,18 +98,14 @@ describe("planSourcemapUpload", () => {
       action: "inject_and_upload",
       host: "http://127.0.0.1:9",
       apiKey: "phx_test",
-      version: "3.10.1-canary",
-      build: BUILD,
     })
   })
 })
 
 describe("cliSteps", () => {
-  it("injects then uploads, both excluding page.js and content scripts, stamps the version and build on the upload only, and keeps maps uploaded by earlier builds", () => {
+  it("injects then uploads, both excluding page.js and content scripts, names no release, and keeps maps uploaded by earlier builds", () => {
     const [inject, upload] = cliSteps("/out/chrome-mv3", {
       host: "http://127.0.0.1:9",
-      version: VERSION,
-      build: BUILD,
     })
 
     for (const args of [inject, upload]) {
@@ -126,9 +115,9 @@ describe("cliSteps", () => {
     expect(inject.join(" ")).toContain("sourcemap inject")
     expect(inject.some((arg) => arg.startsWith("--release"))).toBe(false)
     expect(upload.join(" ")).toContain("sourcemap upload")
-    expect(upload.join(" ")).toContain(
-      "--release-name talisman-extension --release-version 3.10.1 --build 4d329168b --release-mode symbol-set --skip-on-conflict"
-    )
+    expect(upload.join(" ")).toContain("--release-mode symbol-set --skip-on-conflict")
+    for (const flag of ["--release-name", "--release-version", "--build"])
+      expect(upload).not.toContain(flag)
   })
 })
 
@@ -169,8 +158,6 @@ const UPLOAD: SourcemapPlan = {
   action: "inject_and_upload",
   host: HOST,
   apiKey: "phx_test",
-  version: VERSION,
-  build: BUILD,
 }
 
 describe("preflightSourcemapPlan", () => {
