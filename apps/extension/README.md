@@ -105,7 +105,7 @@ Put local values in `apps/extension/.env`. `.env.sample` lists every variable th
 Production and canary Chrome builds make hidden source maps (no inline reference in the JS) and upload them to PostHog, so error tracking shows exceptions at their source line. The `zip:extension:start` hook in `wxt.config.ts` runs `scripts/posthogSourcemaps.ts`, in this order:
 
 1. `@posthog/cli sourcemap inject` adds a chunk id to each bundle. `page.js` and `content-scripts/` are left out: they run in web pages and report no errors.
-2. `@posthog/cli sourcemap upload` uploads the maps under the release `talisman-extension` `<version>+<git sha>`, for example `3.10.1+de76c562f`. A canary build adds `-canary` to the version: `3.10.1-canary+de76c562f`.
+2. `@posthog/cli sourcemap upload` uploads the maps with no release. PostHog finds a map by its chunk id. To tell builds apart, filter events on `appVariant` and `appBuild`.
 3. The hook deletes every `.map` file. Maps never ship in the zip.
 
 Before the build starts, the `build:before` hook checks the key with PostHog. The key must be set and valid, hold `error_tracking:write`, and reach the project in `src/core/domains/analytics/posthogProject.ts`.
@@ -119,7 +119,7 @@ The CLI runs through `pnpm dlx` at the version pinned in `scripts/posthogSourcem
 | `POSTHOG_CLI_API_KEY` missing, invalid, without the scope or for another project | The build fails before it starts |
 | Inject or upload fails | The build fails, and no zip is made |
 
-Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. Each build is its own release. A chunk that an earlier build already uploaded keeps that build's release and map, even when its map changed without its code changing (a comment edit, another output folder): the stored map still resolves that code.
+Chunk ids depend on file contents only, so a rebuild of the same commit gets the same ids. A chunk that an earlier build already uploaded keeps that build's map, even when its map changed without its code changing (a comment edit, another output folder): the stored map still resolves that code.
 
 To build a production zip without uploading while the keys are in `.env`, set `POSTHOG_CLI_DRY_RUN=true` in the shell. The zip then has no chunk ids.
 

@@ -210,8 +210,6 @@ const sourcemapPlan = (browser: string) =>
     browser,
     buildType: BUILD_TYPE,
     env: process.env,
-    version: pkg.version,
-    build: getGitSha(),
   })
 
 // Delete sourcemap files from the output directory
