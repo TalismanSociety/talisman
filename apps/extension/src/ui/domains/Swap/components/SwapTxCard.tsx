@@ -185,7 +185,7 @@ const CardTitle: FC<{ card: SwapTxCardModel; leg: QuoteLeg }> = ({ card, leg }) 
 const SwapTxCard: FC<{
   card: SwapTxCardModel
   leg: QuoteLeg
-  number: number
+  number: number | null
   isExpanded: boolean
   isScrollTarget: boolean
   onToggle: (key: SwapTxCardKey) => void
@@ -211,7 +211,7 @@ const SwapTxCard: FC<{
           aria-expanded={isExpanded}
           className="flex min-w-0 grow items-center gap-3 text-left font-bold text-body text-sm"
         >
-          <Badge number={number} status={card.status} />
+          {number !== null ? <Badge number={number} status={card.status} /> : null}
           <CardTitle card={card} leg={leg} />
         </button>
         <StatusPill card={card} />
@@ -247,7 +247,7 @@ export const SwapTxCards: FC<{
       key={card.key}
       card={card}
       leg={legs[card.leg]}
-      number={index + 1}
+      number={cards.length > 1 ? index + 1 : null}
       isExpanded={expanded.has(card.key)}
       isScrollTarget={card.key === scrollTarget}
       onToggle={toggle}
