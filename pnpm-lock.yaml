@@ -200,7 +200,7 @@ overrides:
   bn.js@>=5.0.0 <5.2.3: '>=5.2.3 <6.0.0'
   uuid@<11.1.1: '>=11.1.1 <12.0.0'
   deepmerge-ts@<8.0.0: '>=8.0.0 <9.0.0'
-  utf-8-validate: 6.0.4
+  '@types/chrome': 0.0.279
   react: 19.3.1
   react-dom: 19.3.1
   '@types/react': 19.3.0
@@ -653,9 +653,6 @@ importers:
       '@types/blueimp-md5':
         specifier: 2.18.2
         version: 2.18.2
-      '@types/chrome':
-        specifier: 0.0.279
-        version: 0.0.279
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12
@@ -4803,9 +4800,6 @@ packages:
   '@types/chrome@0.0.279':
     resolution: {integrity: sha512-wl0IxQ2OQiMazPZM5LimHQ7Jwd72/O8UvvzyptplXT2S4eUqXH5C0n8S+v8PtKhyX89p0igCPpNy3Bwksyk57g==}
 
-  '@types/chrome@0.3.7':
-    resolution: {integrity: sha512-jWZgbHqWbTL1a5+PoyN0OJutNyejWgyZ5MdcvKo6iJE1TNRtXR3FxsC4WzNl52yZWPidfWC8NV/VUNZf+OFKcA==}
-
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
 
@@ -5515,9 +5509,6 @@ packages:
 
   blueimp-md5@2.19.0:
     resolution: {integrity: sha512-DRQrD6gJyy8FbiE4s+bDoXS9hiW3Vbx5uCdwvcCf3zLHL+Iv7LtGHLpr+GZV8rHG8tK766FGYBwRbu8pELTt+w==}
-
-  bn.js@4.12.5:
-    resolution: {integrity: sha512-3aRg6/JxfffFD+OlOjOFR3Vo79l39ooBTFucxx+MT3dhCtzn3EmiUPQo+6/OZuI2jbXi3YKgmiTFBgChQMwIRQ==}
 
   bn.js@5.2.5:
     resolution: {integrity: sha512-Vq886eXykuP5E6HcKSSStP3bJgrE6In5WKxVUvJ8XGpWWYs2xZHWqUwzCtGgEtBcxyd57KBFDPFoUfNzdaHCNg==}
@@ -9134,7 +9125,7 @@ packages:
     engines: {node: '>=8.3.0'}
     peerDependencies:
       bufferutil: ^4.0.1
-      utf-8-validate: 6.0.4
+      utf-8-validate: ^5.0.2
     peerDependenciesMeta:
       bufferutil:
         optional: true
@@ -9146,7 +9137,7 @@ packages:
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
-      utf-8-validate: 6.0.4
+      utf-8-validate: '>=5.0.2'
     peerDependenciesMeta:
       bufferutil:
         optional: true
@@ -9158,7 +9149,7 @@ packages:
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
-      utf-8-validate: 6.0.4
+      utf-8-validate: '>=5.0.2'
     peerDependenciesMeta:
       bufferutil:
         optional: true
@@ -14131,10 +14122,6 @@ snapshots:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
 
-  '@types/chrome@0.3.7':
-    dependencies:
-      '@types/har-format': 1.2.16
-
   '@types/debug@4.1.13':
     dependencies:
       '@types/ms': 2.1.0
@@ -14199,7 +14186,7 @@ snapshots:
 
   '@types/sinon-chrome@2.2.16':
     dependencies:
-      '@types/chrome': 0.3.7
+      '@types/chrome': 0.0.279
       '@types/sinon': 22.0.2
 
   '@types/sinon@22.0.2':
@@ -14582,7 +14569,7 @@ snapshots:
 
   asn1.js@4.10.1:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
 
@@ -14737,8 +14724,6 @@ snapshots:
   bluebird@3.7.2: {}
 
   blueimp-md5@2.19.0: {}
-
-  bn.js@4.12.5: {}
 
   bn.js@5.2.5: {}
 
@@ -15112,7 +15097,7 @@ snapshots:
 
   create-ecdh@4.0.4:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       elliptic: 6.6.1
 
   create-hash@1.2.0:
@@ -15317,7 +15302,7 @@ snapshots:
 
   diffie-hellman@5.0.3:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       miller-rabin: 4.0.1
       randombytes: 2.1.0
 
@@ -15405,7 +15390,7 @@ snapshots:
 
   elliptic@6.6.1:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       brorand: 1.1.0
       hash.js: 1.1.7
       hmac-drbg: 1.0.1
@@ -16698,7 +16683,7 @@ snapshots:
 
   miller-rabin@4.0.1:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       brorand: 1.1.0
 
   mime-db@1.52.0: {}
@@ -17277,7 +17262,7 @@ snapshots:
 
   public-encrypt@4.0.3:
     dependencies:
-      bn.js: 4.12.5
+      bn.js: 5.2.5
       browserify-rsa: 4.1.1
       create-hash: 1.2.0
       parse-asn1: 5.1.10

@@ -18,7 +18,6 @@ allowBuilds:
   keccak: false
   secp256k1: false
   simple-git-hooks: false
-  utf-8-validate: false
 
 # don't install NPM dependencies which were published less than 3 days ago
 # provides some buffer time for the package maintainer / wider community to detect and publicise malicious package versions
@@ -48,8 +47,8 @@ overrides:
   "uuid@<11.1.1": ">=11.1.1 <12.0.0"
   # 7.x has no patched release of its own; 8.0.0 is the fix line
   "deepmerge-ts@<8.0.0": ">=8.0.0 <9.0.0"
-  # single resolution for ws's optional native peer, avoids peer-hash graph forks
-  "utf-8-validate": "6.0.4"
+  # @types/sinon-chrome pulls @types/chrome through `*`, and 0.3.x breaks the extension's chrome types
+  "@types/chrome": "0.0.279"
   # dedupe to react 19 — transitive react-18 consumers (@ledgerhq/domain-service, react-icons,
   # icons/orb devDeps) otherwise load a second copy and break rendering ("React Element from an
   # older version of React"). All of them work on 19.
@@ -58,6 +57,3 @@ overrides:
   # dedupe @types/react too — icons/orb pin 18.3.12, extension 19.x; whichever hoists wins, and a
   # split makes react-icons' ReactNode (no bigint) clash with react 19's, breaking extension tsc.
   "@types/react": "19.3.0"
-peerDependencyRules:
-  allowAny:
-    - "utf-8-validate"
