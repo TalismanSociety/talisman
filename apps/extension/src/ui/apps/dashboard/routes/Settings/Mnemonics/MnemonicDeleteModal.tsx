@@ -98,6 +98,11 @@ export const MnemonicDeleteModal = () => {
             values={{ name }}
           />
         </p>
+        <p className="mt-4 text-body-secondary">
+          {t(
+            "This action cannot be undone, if you have not backed up this phrase you will lose access to it"
+          )}
+        </p>
         <div>
           <div className="mt-12 mb-4 text-body-disabled">{t("Type Delete to continue")}</div>
           <FormFieldInputText
