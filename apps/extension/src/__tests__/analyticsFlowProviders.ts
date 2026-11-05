@@ -83,4 +83,7 @@ export const STEP_STATE_ELSEWHERE: Readonly<Record<string, ProviderClass>> = {
   "ui/domains/Portfolio/AssetDetails/animations/monad/MonadAnimation.tsx": {
     none: "an animation frame counter",
   },
+  "ui/domains/Swap/components/SwapRunLegSigning.tsx": {
+    none: "the transaction a failed sign attempt signed, kept to reuse its nonce",
+  },
 }

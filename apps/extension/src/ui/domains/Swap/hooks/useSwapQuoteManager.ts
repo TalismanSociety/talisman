@@ -10,25 +10,41 @@ import { BalanceFormatter } from "@talismn/balances"
 import { getErrorMessage } from "@talismn/util"
 import { keepPreviousData, useQueries } from "@tanstack/react-query"
 import { track } from "@ui/api/track"
+import { useLockedValue } from "@ui/hooks/useLockedValue"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import { useEffect, useMemo, useRef, useState } from "react"
-
 import type {
   BaseQuote,
   SupportedSwapProtocol,
   SwapModule,
 } from "../swap-modules/common.swap-module"
 import { useSwapModules } from "../swaps.api"
-import { attachFees, flattenQuotes, selectQuote, sortQuotes } from "./quote-sorting"
+import {
+  attachFees,
+  attachShortfalls,
+  flattenQuotes,
+  getLaterLegHoldingKeys,
+  type QuoteWithFees,
+  type Shortfall,
+  selectQuote,
+  sortQuotes,
+} from "./quote-sorting"
+import { useHoldings } from "./useHoldings"
 
-const areSortedQuotesEqual = (
-  left: { quote: BaseQuote; fees: number }[],
-  right: { quote: BaseQuote; fees: number }[]
-): boolean =>
+const isSameShortfall = (left: Shortfall | null, right: Shortfall | null) =>
+  left?.tokenId === right?.tokenId &&
+  left?.required === right?.required &&
+  left?.available === right?.available
+
+const areSortedQuotesEqual = (left: QuoteWithFees[], right: QuoteWithFees[]): boolean =>
   left.length === right.length &&
   left.every(
-    ({ quote, fees }, index) => right[index]?.quote === quote && right[index]?.fees === fees
+    ({ quote, fees, netUsd, shortfall }, index) =>
+      right[index]?.quote === quote &&
+      right[index]?.fees === fees &&
+      right[index]?.netUsd === netUsd &&
+      isSameShortfall(right[index]?.shortfall ?? null, shortfall)
   )
 
 type QuoteQueryData = BaseQuote | BaseQuote[] | null
@@ -151,6 +167,7 @@ export const useSwapQuoteManager = (params: {
             fromAddress,
             toAddress,
             selectedSubProtocol,
+            input: "exact",
           },
           signal
         ),
@@ -208,11 +225,28 @@ export const useSwapQuoteManager = (params: {
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quotesDataKey is an intentional stable proxy for queryResults (useQueries returns a new array ref every render)
-  const liveSortedQuotes: { quote: BaseQuote; fees: number }[] = useMemo(() => {
-    const flatQuotes = flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data)))
-    const withFees = attachFees(flatQuotes, tokenRates)
-    return sortQuotes(withFees, quoteSorting)
-  }, [quotesDataKey, tokenRates, quoteSorting])
+  const liveQuotes = useMemo(
+    () => flattenQuotes(queryResults.map((r) => normalizeQuoteData(r.data))),
+    [quotesDataKey]
+  )
+
+  const sourceNativeTokenId = fromNetwork?.nativeTokenId
+  const sourceHoldings = useHoldings(
+    fromAddress && sourceNativeTokenId
+      ? [{ address: fromAddress, tokenId: sourceNativeTokenId }]
+      : []
+  )
+  const laterLegHoldings = useHoldings(liveQuotes.flatMap(getLaterLegHoldingKeys))
+  const liveHoldings = useMemo(
+    () => [...(sourceHoldings ?? []), ...(laterLegHoldings ?? [])],
+    [sourceHoldings, laterLegHoldings]
+  )
+  const holdings = useLockedValue(liveHoldings, freezeQuote)
+
+  const liveSortedQuotes: QuoteWithFees[] = useMemo(() => {
+    const withFees = attachFees(liveQuotes, tokenRates, toToken ?? null)
+    return sortQuotes(attachShortfalls(withFees, holdings), quoteSorting)
+  }, [liveQuotes, tokenRates, quoteSorting, holdings, toToken])
 
   const [staleSortedQuotes, setStaleSortedQuotes] = useState<typeof liveSortedQuotes>([])
 

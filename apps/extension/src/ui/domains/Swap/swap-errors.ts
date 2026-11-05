@@ -1,6 +1,7 @@
 import type { TokenId } from "@talismn/chaindata-provider"
 import { getErrorMessage } from "@talismn/util"
 import type { TFunction } from "i18next"
+import { SwapRouteUnbuildableError } from "./swap-modules/errors"
 import { InsufficientGasBalanceError } from "./swap-modules/evm-gas-check"
 
 /**
@@ -37,6 +38,10 @@ export type SwapConfirmError =
   | {
       type: "quote-stale"
     }
+  | {
+      /** The provider cannot build the selected route, another quote may still work */
+      type: "route-unbuildable"
+    }
 
 // ---------------------------------------------------------------------------
 // Classifier — maps raw errors into structured types
@@ -69,6 +74,8 @@ export const classifySwapError = (rawError: unknown): SwapConfirmError | null =>
       required: rawError.required,
       available: rawError.available,
     }
+
+  if (rawError instanceof SwapRouteUnbuildableError) return { type: "route-unbuildable" }
 
   const message = (rawError as { shortMessage?: string }).shortMessage ?? getErrorMessage(rawError)
 
@@ -103,7 +110,7 @@ export const classifyFeeEstimationError = (rawError: unknown): SwapConfirmError 
 export const getSwapErrorMessage = (
   error: SwapConfirmError,
   t: TFunction,
-  opts?: { tokenSymbol?: string; feeTokenSymbol?: string }
+  opts?: { tokenSymbol?: string; feeTokenSymbol?: string; feeNetworkName?: string }
 ): string => {
   switch (error.type) {
     case "insufficient-swap-balance":
@@ -112,6 +119,11 @@ export const getSwapErrorMessage = (
         : t("Insufficient balance")
 
     case "insufficient-fee-balance":
+      if (opts?.feeTokenSymbol && opts.feeNetworkName)
+        return t("Insufficient {{symbol}} on {{network}} to pay for transaction fees", {
+          symbol: opts.feeTokenSymbol,
+          network: opts.feeNetworkName,
+        })
       return opts?.feeTokenSymbol
         ? t("Insufficient {{symbol}} to pay for transaction fees", {
             symbol: opts.feeTokenSymbol,
@@ -126,5 +138,8 @@ export const getSwapErrorMessage = (
 
     case "quote-stale":
       return t("Quote has expired. Please go back and get a new quote.")
+
+    case "route-unbuildable":
+      return t("This route cannot run this swap right now. Please choose another quote.")
   }
 }

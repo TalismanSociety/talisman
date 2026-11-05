@@ -231,6 +231,48 @@ describe("tx_settled from the transaction store", () => {
     )
   })
 
+  const makeSwapLeg = (
+    nonce: number,
+    swapRun: { firstLegHash?: string; isLastLeg: boolean }
+  ): WalletTransactionEth => {
+    const tx = makeSwapTx(nonce)
+    return { ...tx, txInfo: tx.txInfo && { ...tx.txInfo, swapRun } }
+  }
+
+  it("ends a multi-leg swap when its last leg finishes, on the flow its first leg started", async () => {
+    const first = makeSwapLeg(5, { isLastLeg: false })
+    const last = makeSwapLeg(6, { firstLegHash: "tx-5", isLastLeg: true })
+    await db.transactionsV2.bulkPut([first, last])
+
+    await updateTransactionStatus("tx-5", "success")
+    await reportFacts()
+    await trackSwapOutcome({ row: first, status: "finished", at: Date.now() })
+    expect(settled).not.toHaveBeenCalled()
+
+    await trackSwapOutcome({ row: last, status: "finished", at: Date.now() })
+    expect(settled).toHaveBeenCalledOnce()
+    expect(settled).toHaveBeenCalledWith(
+      "tx-5",
+      expect.objectContaining({
+        properties: { protocol: "lifi", cross_chain: true, swap_status: "finished" },
+      }),
+      expect.any(Number)
+    )
+  })
+
+  it("ends a multi-leg swap when a leg before the last one fails", async () => {
+    await db.transactionsV2.put(makeSwapLeg(6, { firstLegHash: "tx-5", isLastLeg: false }))
+
+    await updateTransactionStatus("tx-6", "error")
+    await reportFacts()
+
+    expect(settled).toHaveBeenCalledWith(
+      "tx-5",
+      expect.objectContaining({ status: "error" }),
+      expect.any(Number)
+    )
+  })
+
   it("caps the time to settle of a transaction older than a week", async () => {
     await db.transactionsV2.put(makeEvmTx(5, "pending", { timestamp: Date.now() - 30 * DAY_MS }))
 

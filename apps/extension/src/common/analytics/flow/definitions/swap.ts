@@ -28,6 +28,7 @@ export const swap = defineFlow("swap", {
       provider_picked: "required",
       used_max: "required",
       reversed: "required",
+      leg_count: "required",
     },
     failed: { protocol: "required", phase: { narrow: z.enum(["approval", "submit"]) } },
     completed: { swap_status: "optional", protocol: "required", cross_chain: "required" },

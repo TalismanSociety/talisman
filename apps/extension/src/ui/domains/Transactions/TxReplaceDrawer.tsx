@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
+import { withPricing } from "../Ethereum/withPricing"
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import type { TxReplaceType } from "./types"
 
@@ -108,6 +109,7 @@ const EvmDrawerContent: FC<{
   } = useEthReplaceTransaction(tx.payload, tx.networkId, type, isLocked)
 
   const account = useAccountByAddress(tx.account)
+  const txInfo = tx.txInfo && withPricing(tx.txInfo, { priority, txDetails })
 
   const [isProcessing, setIsProcessing] = useState(false)
   const markOverlayCompleted = useMarkOverlayCompleted()
@@ -126,7 +128,7 @@ const EvmDrawerContent: FC<{
     setIsProcessing(true)
     try {
       const serialized = serializeTransactionRequest(transaction)
-      const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
+      const newHash = await api.ethSignAndSend(tx.networkId, serialized, txInfo)
       reportReplaced()
       markOverlayCompleted()
       onClose?.(newHash)
@@ -142,7 +144,7 @@ const EvmDrawerContent: FC<{
       })
     }
     setIsProcessing(false)
-  }, [markOverlayCompleted, onClose, reportReplaced, transaction, tx, type, t])
+  }, [markOverlayCompleted, onClose, reportReplaced, transaction, tx, txInfo, type, t])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -150,7 +152,7 @@ const EvmDrawerContent: FC<{
       setIsProcessing(true)
       try {
         const serialized = serializeTransactionRequest(transaction)
-        const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
+        const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, txInfo)
         reportReplaced()
         markOverlayCompleted()
         onClose?.(newHash)
@@ -168,7 +170,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [markOverlayCompleted, onClose, reportReplaced, t, transaction, tx, type]
+    [markOverlayCompleted, onClose, reportReplaced, t, transaction, tx, txInfo, type]
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -265,6 +267,7 @@ const EvmDrawerContent: FC<{
           <SignHardwareEthereum
             className="mt-6"
             account={account}
+            evmNetworkId={tx.networkId}
             method="eth_sendTransaction"
             payload={transaction}
             onSigned={handleSendSigned}

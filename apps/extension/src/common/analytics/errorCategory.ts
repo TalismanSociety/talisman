@@ -66,6 +66,7 @@ const SWAP_CATEGORIES: Readonly<Record<string, ErrorCategory>> = {
   "insufficient-swap-balance": "insufficient_balance",
   "insufficient-fee-balance": "insufficient_gas",
   "quote-stale": "quote_stale",
+  "route-unbuildable": "simulation",
   "transaction-likely-to-fail": "simulation",
   "transaction-craft-error": "simulation",
 }

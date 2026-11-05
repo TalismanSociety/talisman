@@ -8,6 +8,7 @@ import { FORM_STATES } from "./formState"
 import {
   FEE_PRIORITIES,
   GAS_TYPES,
+  MAX_SWAP_PLAN_LEGS,
   RAMP_DIRECTIONS,
   RAMP_PROVIDERS,
   RECIPIENT_SOURCES,
@@ -293,6 +294,10 @@ export const properties = {
   swap_status: p.enum(
     SWAP_OUTCOMES,
     "The exchange's final status, when the wallet watched one. unknown: the wallet stopped watching without one. Absent when the transaction itself did not succeed."
+  ),
+  leg_count: p.int(
+    "The transactions the swap takes. 1: a single transaction. More: the user signs each later leg once the previous one lands.",
+    { min: 1, max: MAX_SWAP_PLAN_LEGS }
   ),
   stage: p.slug("The step the user left the swap on: mobile's name for last_step."),
   prefill_from_token: p.bool("The swap opened with the token to swap from already picked."),

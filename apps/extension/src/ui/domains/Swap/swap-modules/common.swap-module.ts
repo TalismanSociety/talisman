@@ -1,28 +1,41 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
+import type { FeatureFlag, RemoteConfigStoreData } from "@core/domains/app/types"
+import type { Account } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
+import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { SolRpc } from "@talismn/chain-connectors"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
+  type Network,
+  type NetworkId,
+  type NetworkOfPlatform,
   type NetworkPlatform,
   parseTokenId,
   solNativeTokenId,
   solSplTokenId,
   subNativeTokenId,
+  type Token,
   type TokenId,
+  type TokenOfPlatform,
 } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type BigNumber from "bignumber.js"
-import type { TransactionRequest } from "viem"
+import type { Hex, PublicClient, TransactionRequest } from "viem"
 
-import type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
+import type { DepositSwapAsset, DepositTransactionParams } from "./deposit-swap-transactions"
+import type { SwapExchange } from "./swap-protocols"
 
-export type { SupportedSwapProtocol, SwapExchange } from "./swap-protocols"
+export type { SwapExchange } from "./swap-protocols"
 
-/** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
-export const TALISMAN_FEE_NAME = "Talisman Fee"
+export type SupportedSwapProtocol =
+  | "simpleswap"
+  | "stealthex"
+  | "lifi"
+  | "bittensor-evm"
+  | "forevermoney"
 
 export type QuoteFee = {
   name: string
@@ -33,19 +46,45 @@ export type QuoteFee = {
    * Only fees in the source network's native token are balance-checked and allowed in the transaction value.
    */
   additional?: boolean
+  /** A network fee the user pays on top of the swap, on any leg's network */
+  gas?: boolean
 }
 
-export type BaseQuote<TData = any> = {
+export type NonEmpty<T> = [T, ...T[]]
+
+/**
+ * One transaction the funds go through. A quote's legs run in order: each leg spends what the previous one delivers,
+ * signed by the previous leg's recipient. Addresses are null while the form has none yet.
+ */
+export type QuoteLeg = {
+  protocol: SupportedSwapProtocol
+  fromTokenId: TokenId
+  toTokenId: TokenId
+  signer: string | null
+  recipient: string | null
+  inputAmount: bigint
+  outputAmount: bigint
+  fees: QuoteFee[]
+  timeInSec: number
+  /** module specific, handed back to the module that quoted the leg when it builds the leg */
+  data?: unknown
+}
+
+export type BaseQuote = {
   decentralisationScore: number
   protocol: SupportedSwapProtocol
   subProtocol?: string
-  outputAmountBN: bigint
+  legs: NonEmpty<QuoteLeg>
+  /** the first leg's input */
   inputAmountBN: bigint
-  error?: string
+  /** the last leg's output */
+  outputAmountBN: bigint
+  /** every leg's fees */
   fees: QuoteFee[]
-  talismanFee?: number
-  data?: TData
+  /** every leg's duration, added up */
   timeInSec: number
+  error?: string
+  talismanFee?: number
   providerLogo: string
   providerName: string
   /** Short provider-specific remark shown on the confirmation screen */
@@ -57,28 +96,6 @@ export type BaseQuote<TData = any> = {
   maxNativeTokenGasBuffer?: string
 }
 
-export type QuoteResponse = {
-  query: {
-    amount: string
-    quote: {
-      intermediateAmount?: string
-      egressAmount: string
-      includedFees: Array<{
-        type: "LIQUIDITY" | "NETWORK" | "INGRESS" | "EGRESS" | "BROKER" | "BOOST"
-        chain: unknown
-        asset: unknown
-        amount: string
-      }>
-      lowLiquidityWarning: boolean | undefined
-      estimatedDurationSeconds: number
-    }
-  }
-}
-
-export type SwapView = "form" | "approve-recipient" | "confirm" | "submitted"
-
-// --- Param types for SwapModule methods ---
-
 export type QuoteParams = {
   fromTokenId: TokenId | null
   toTokenId: TokenId | null
@@ -86,31 +103,14 @@ export type QuoteParams = {
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
-}
-
-export type ExchangeParams = {
-  fromTokenId: TokenId
-  toTokenId: TokenId
-  fromAmount: bigint
-  fromAddress: string | null
-  toAddress: string | null
+  /** exact: the sender holds fromAmount now. upTo: a later leg, the sender holds at most fromAmount once the previous leg lands */
+  input: "exact" | "upTo"
 }
 
 export type SwapTransactionContext =
   | { platform: "ethereum" }
   | { platform: "polkadot"; sapi: ScaleApi; allowReap?: boolean }
   | { platform: "solana"; rpc: SolRpc }
-
-export type GetTransactionParams = {
-  fromTokenId: TokenId
-  fromAddress: string
-  /** amount entered by the user, and the only amount shown on the confirmation screen */
-  fromAmount: bigint
-  exchange: unknown // specific exchange type varies per module
-  context: SwapTransactionContext
-  /** recipient selected by the user, lets modules reject a quote built for another recipient */
-  toAddress?: string
-}
 
 export type SwapModuleTransaction =
   | {
@@ -127,6 +127,25 @@ export type SwapModuleTransaction =
       transaction: SolTransaction
     }
 
+export type BuildLegParams = {
+  leg: QuoteLeg
+  /** what the leg's signer spends, the amount the user entered for the first leg */
+  input: bigint
+  context: SwapTransactionContext
+  /** decimal, 0.005 is 0.5% */
+  slippage: number
+}
+
+export type BuiltLeg = {
+  transaction: SwapModuleTransaction
+  /** fees read when the leg was built, the confirm screen shows them instead of the quote's */
+  fees: QuoteFee[]
+  expectedOutput: bigint
+  /** the least output the user accepted for this leg. Set only when `expectedOutput` is below it: the user signs it on screen, seeing the drop */
+  acceptedOutput?: bigint
+  txInfo: WalletTransactionInfo
+}
+
 export type ApprovalInfo = {
   contractAddress: string
   amount: bigint
@@ -135,6 +154,90 @@ export type ApprovalInfo = {
   fromAddress: string
   protocolName: string
 } | null
+
+/** why a leg stopped short of the next leg: reverted, cancelled by a replacement, lost by the wallet, or not delivered by the provider */
+export type LegStop = "failed" | "cancelled" | "untracked" | "undelivered"
+
+/** a sent transaction once the wallet settled it. hash: the speed-up that mined in its place, when one did */
+export type SettledTransaction =
+  | { landed: true; hash: Hex }
+  | { landed: false; hash: Hex; stop: Exclude<LegStop, "undelivered"> }
+
+export type LegOutcome =
+  | { landed: true; hash: Hex; amount: bigint }
+  | { landed: false; hash: Hex; stop: LegStop }
+
+export type SettleLegParams = {
+  leg: QuoteLeg
+  hash: Hex
+  input: bigint
+}
+
+type ApprovalQuote = Pick<BaseQuote, "legs" | "subProtocol">
+
+export type ApprovalParams = Omit<QuoteParams, "input"> & {
+  quoteData: ApprovalQuote | ApprovalQuote[] | null
+}
+
+export type EntryHop = {
+  from: TokenId
+  /** this module's source token, the via module must route from → hub */
+  hub: TokenId
+  via: SupportedSwapProtocol
+  flag: FeatureFlag
+}
+
+export type SwapView = "form" | "approve-recipient" | "confirm" | "submitted"
+
+export type ExchangeParams = {
+  fromTokenId: TokenId
+  toTokenId: TokenId
+  fromAmount: bigint
+  fromAddress: string | null
+  toAddress: string | null
+}
+
+export type SwapBuildLegParams = BuildLegParams & {
+  /** the exchange createExchange opened for this leg */
+  exchange: SwapExchange | null
+}
+
+export type SwapsConfig = RemoteConfigStoreData["swaps"]
+
+/** Everything a swap module reads from the wallet that runs it */
+export type SwapEnv = {
+  getNetwork: (networkId: NetworkId) => Promise<Network | null>
+  getToken: (tokenId: TokenId | undefined) => Promise<Token | null>
+  /** rejects for a network that is not an EVM network */
+  evmClient: (networkId: NetworkId) => Promise<PublicClient>
+  /** rejects for a network that is not a substrate network */
+  substrateApi: (networkId: NetworkId) => Promise<ScaleApi>
+  /** a fetch that carries the Gandalf token the Talisman API proxies require */
+  proxyFetch: typeof fetch
+  fetch: typeof fetch
+  getSwapsConfig: () => Promise<SwapsConfig>
+  getTokensMap: <P extends NetworkPlatform>(
+    platform?: P
+  ) => Promise<Record<TokenId, TokenOfPlatform<P>>>
+  getNetworksMap: <P extends NetworkPlatform>(
+    platform?: P
+  ) => Promise<Record<NetworkId, NetworkOfPlatform<P>>>
+  getNetworks: <P extends NetworkPlatform>(platform?: P) => Promise<NetworkOfPlatform<P>[]>
+  getAccounts: () => Promise<Account[]>
+  getSlippageDecimal: () => Promise<number>
+  findEvmClient: (networkId: NetworkId) => Promise<PublicClient | undefined>
+  estimateSubstrateDepositFee: (
+    fromAsset: DepositSwapAsset,
+    fromAddress: string
+  ) => Promise<QuoteFee | null>
+  buildSubstrateDeposit: (params: DepositTransactionParams) => Promise<SwapModuleTransaction>
+  /** settles once the transaction is final, failed, replaced or no longer tracked; never for one the wallet did not send */
+  waitForTransaction: (
+    networkId: NetworkId,
+    hash: Hex,
+    signal: AbortSignal
+  ) => Promise<SettledTransaction>
+}
 
 export type SwapModule = {
   protocol: SupportedSwapProtocol
@@ -146,12 +249,35 @@ export type SwapModule = {
 
   getQuote: (params: QuoteParams, signal: AbortSignal) => Promise<BaseQuote | BaseQuote[] | null>
 
-  createExchange: (params: ExchangeParams) => Promise<SwapExchange | null>
-  getTransaction: (params: GetTransactionParams) => Promise<SwapModuleTransaction | null>
+  /** opens an order with the provider, once per confirm screen: the order is what the leg pays into */
+  createExchange?: (params: ExchangeParams) => Promise<SwapExchange>
+  buildLeg: (params: SwapBuildLegParams) => Promise<BuiltLeg>
 
-  getApprovalInfo?: (
-    params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
-  ) => ApprovalInfo
+  entryHops?: EntryHop[]
+
+  getApprovalInfo?: (params: ApprovalParams) => ApprovalInfo
+
+  settleLeg?: (params: SettleLegParams, signal: AbortSignal) => Promise<LegOutcome>
+}
+
+export type SwapModuleDefinition = Omit<
+  SwapModule,
+  "getFromAssets" | "getToAssets" | "getQuote" | "createExchange" | "buildLeg" | "settleLeg"
+> & {
+  getFromAssets: (env: SwapEnv, signal: AbortSignal) => Promise<TokenId[]>
+  getToAssets: (
+    fromTokenId: TokenId | null,
+    env: SwapEnv,
+    signal: AbortSignal
+  ) => Promise<TokenId[]>
+  getQuote: (
+    params: QuoteParams,
+    env: SwapEnv,
+    signal: AbortSignal
+  ) => Promise<BaseQuote | BaseQuote[] | null>
+  createExchange?: (params: ExchangeParams, env: SwapEnv) => Promise<SwapExchange>
+  buildLeg: (params: SwapBuildLegParams, env: SwapEnv) => Promise<BuiltLeg>
+  settleLeg?: (params: SettleLegParams, env: SwapEnv, signal: AbortSignal) => Promise<LegOutcome>
 }
 
 // helpers — module-internal use only

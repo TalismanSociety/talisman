@@ -1,11 +1,16 @@
 import { log } from "@common/log"
-import { networkIdFromTokenId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import { db } from "../../db"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
 import { gandalfFetch } from "../gandalf/fetch"
+import {
+  fetchLifiStatus,
+  fetchSimpleswapStatus,
+  fetchStealthexStatus,
+  type SwapStatusEnv,
+} from "../swaps/status"
 import { isTxInfoSwap } from "./exports"
 import { updateSwapStatus } from "./store.transactions"
 import {
@@ -20,6 +25,12 @@ const MAX_RETRIES = 10
 const RETRY_DELAY_MS = 5_000
 const NOT_FOUND_GRACE_PERIOD_MS = 10 * 60 * 1_000 // 10 minutes
 const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
+
+const swapStatusEnv: SwapStatusEnv = {
+  fetch: (...args) => fetch(...args),
+  proxyFetch: gandalfFetch,
+  getSwapsConfig: () => remoteConfigStore.get("swaps"),
+}
 
 export type SwapOutcomeFact = { row: WalletTransaction; status: SwapStatus; at: number }
 
@@ -114,11 +125,11 @@ async function fetchSwapStatusWithRetry(
 async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Promise<SwapStatus> {
   switch (txInfo.type) {
     case "swap-simpleswap":
-      return fetchSimpleswapStatus(txInfo.exchangeId)
+      return fetchSimpleswapStatus(txInfo.exchangeId, swapStatusEnv)
     case "swap-stealthex":
-      return fetchStealthexStatus(txInfo.exchangeId)
+      return fetchStealthexStatus(txInfo.exchangeId, swapStatusEnv)
     case "swap-lifi":
-      return fetchLifiStatus(txId, txInfo)
+      return fetchLifiStatus(txId, txInfo, swapStatusEnv)
     case "swap-bittensor-evm":
       return fetchBittensorEvmStatus(txId)
     case "swap-forevermoney":
@@ -160,65 +171,6 @@ async function fetchBittensorEvmStatus(txId: string): Promise<SwapStatus> {
     default:
       return "confirming"
   }
-}
-
-async function fetchSimpleswapStatus(exchangeId: string): Promise<SwapStatus> {
-  const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
-  if (!simpleswapApiKey) throw new Error("SimpleSwap API key not found")
-
-  const params = new URLSearchParams({ api_key: simpleswapApiKey, id: exchangeId })
-  const res = await fetch(`https://api.simpleswap.io/get_exchange?${params}`)
-  if (!res.ok) throw new Error(`SimpleSwap API error: ${res.status}`)
-
-  const data: { status: string } = await res.json()
-  return data.status as SwapStatus
-}
-
-async function fetchStealthexStatus(exchangeId: string): Promise<SwapStatus> {
-  const res = await gandalfFetch(`https://stealthex.talisman.xyz/v4/exchanges/${exchangeId}`)
-  if (!res.ok) throw new Error(`StealthEX API error: ${res.status}`)
-
-  const data: { status: string } = await res.json()
-  return data.status as SwapStatus
-}
-
-const LIFI_STATUS_MAP: Record<string, SwapStatus> = {
-  NOT_FOUND: "not_found",
-  INVALID: "invalid",
-  PENDING: "exchanging",
-  DONE: "finished",
-  FAILED: "failed",
-}
-
-async function fetchLifiStatus(
-  txId: string,
-  txInfo: Extract<WalletTransactionInfo, { type: "swap-lifi" }>
-): Promise<SwapStatus> {
-  const fromNetworkId = networkIdFromTokenId(txInfo.fromTokenId)
-  const toNetworkId = networkIdFromTokenId(txInfo.toTokenId)
-
-  const fromChain = await toLifiChainId(fromNetworkId)
-  const toChain = await toLifiChainId(toNetworkId)
-
-  // txId is the on-chain transaction hash (the DB primary key)
-  const params = new URLSearchParams({ txHash: txId })
-  if (fromChain !== undefined) params.set("fromChain", String(fromChain))
-  if (toChain !== undefined) params.set("toChain", String(toChain))
-
-  const res = await gandalfFetch(`https://lifi.talisman.xyz/v1/status?${params}`)
-  if (!res.ok) throw new Error(`LiFi API error: ${res.status}`)
-
-  const data: { status: string } = await res.json()
-  return LIFI_STATUS_MAP[data.status] ?? "unknown"
-}
-
-async function toLifiChainId(networkId: string): Promise<number | undefined> {
-  if (networkId === "solana-mainnet") {
-    const { lifi } = await remoteConfigStore.get("swaps")
-    return lifi.solanaChainId
-  }
-  const num = Number(networkId)
-  return Number.isFinite(num) ? num : undefined
 }
 
 /**

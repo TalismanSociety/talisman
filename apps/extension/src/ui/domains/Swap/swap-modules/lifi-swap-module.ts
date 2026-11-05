@@ -1,5 +1,4 @@
 import { log } from "@common/log"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import * as lifiSdk from "@lifi/sdk"
 import type {
   EvmErc20Token,
@@ -11,9 +10,11 @@ import {
   evmErc20TokenId,
   evmNativeTokenId,
   isTokenCustom,
+  parseTokenId,
   solNativeTokenId,
   solSplTokenId,
   solToken2022TokenId,
+  type TokenId,
   type TokenList,
 } from "@talismn/chaindata-provider"
 import {
@@ -22,30 +23,34 @@ import {
   transactionFromBytes,
 } from "@talismn/solana"
 import { isAbortError } from "@talismn/util"
-import { getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state/chaindata"
-import { getGandalfAuthorization } from "@ui/util/gandalfFetch"
 import BigNumber from "bignumber.js"
-import { firstValueFrom } from "rxjs"
 import { zeroAddress } from "viem"
-import { getSwapSlippageDecimal } from "../hooks/useSwapSlippage"
-import {
-  type ApprovalInfo,
-  type BaseQuote,
-  type GetTransactionParams,
-  getTokenIdForSwappableAsset,
-  type QuoteFee,
-  type QuoteParams,
-  type SupportedSwapProtocol,
-  type SwapModule,
-  type SwapModuleTransaction,
-  TALISMAN_FEE_NAME,
+import type {
+  ApprovalInfo,
+  ApprovalParams,
+  BaseQuote,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapModuleTransaction,
+  SwapTransactionContext,
 } from "./common.swap-module"
+import {
+  getTokenIdForSwappableAsset,
+  type SwapEnv,
+  type SwapModuleDefinition,
+} from "./common.swap-module"
+import { SwapRouteUnbuildableError } from "./errors"
 import { prepareTransactionRequestWithGasCheck } from "./evm-gas-check"
-import { findEvmPublicClient } from "./evm-network"
 import { getLifiTalismanFee as getTalismanFee, LIFI_PROTOCOL_FEE as LIFI_FEE } from "./fee-utils"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
+import { defaultLifiApi as api, solanaTransactionBytes } from "./lifi-api"
+import { settleLifiLeg } from "./lifi-delivery"
 import { assertNativeValueWithinInput } from "./provider-transaction-guards"
 
-const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
@@ -59,6 +64,21 @@ const SOLANA_NATIVE_ADDRESSES = new Set([
   SOLANA_NATIVE_TOKEN_ADDRESS,
   "So11111111111111111111111111111111111111112",
 ])
+
+// quoted in place of an account the user has not chosen yet
+const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
+const SOLANA_PLACEHOLDER_ADDRESS = "11111111111111111111111111111111"
+const PLACEHOLDER_ADDRESSES = new Set([SWAP_PLACEHOLDER_ADDRESS, SOLANA_PLACEHOLDER_ADDRESS])
+
+const MAX_ROUTE_LEGS = 3
+
+type RouteRequest = {
+  multiStep: boolean
+  chargesTalismanFee: boolean
+}
+
+/** `data` of a leg: its step as a route of its own, so every leg is built and approved the same way */
+type LifiLegRoute = lifiSdk.Route & { stepIndex: number; stepCount: number }
 
 const getKnownSolanaTokenId = (
   mintAddress: string,
@@ -79,46 +99,34 @@ const getKnownSolanaTokenId = (
   )
 }
 
-const getLifiSolanaChainId = async () => {
-  const { lifi } = await remoteConfigStore.get("swaps")
+const getLifiSolanaChainId = async (env: SwapEnv) => {
+  const { lifi } = await env.getSwapsConfig()
   return lifi.solanaChainId
 }
 
 /** Convert a Talisman chain ID to a LI.FI numeric chain ID. */
-const toLifiChainId = async (chainId: string | number): Promise<number> => {
-  if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId()
+const toLifiChainId = async (env: SwapEnv, chainId: string | number): Promise<number> => {
+  if (chainId === SOLANA_NETWORK_ID) return getLifiSolanaChainId(env)
   return +chainId
 }
 
-/** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
-const feeTokenId = async (token: { address: string; chainId: number }): Promise<string> => {
-  const solanaChainId = await getLifiSolanaChainId()
-  if (token.chainId === solanaChainId) {
-    const knownSolTokens = await firstValueFrom(getTokensMap$({ platform: "solana" }))
-    return getKnownSolanaTokenId(token.address, knownSolTokens)
-  }
-  return token.address === zeroAddress
+const evmTokenIdOf = (token: { address: string; chainId: number }): TokenId =>
+  token.address === zeroAddress
     ? evmNativeTokenId(token.chainId.toString())
     : evmErc20TokenId(token.chainId.toString(), token.address as `0x${string}`)
-}
 
-// LI.FI v4 replaced the global `createConfig` side-effect with an explicit client
-// instance that must be passed to every action function (getTokens/getToken/getRoutes/…).
-// The Talisman proxy requires a Gandalf access token on every request. The SDK
-// builds `headers` as a plain object and spreads it again when it retries, so the
-// interceptor keeps it a plain object.
-const lifiClient = lifiSdk.createClient({
-  integrator: "talisman",
-  apiUrl,
-  requestInterceptor: async (request) => {
-    const authorization = await getGandalfAuthorization()
-    if (!authorization) return request
-    return {
-      ...request,
-      headers: { ...(request.headers as Record<string, string>), Authorization: authorization },
-    }
-  },
-})
+/** Resolve a LI.FI fee/gas token to a Talisman token ID, handling both EVM and Solana chains. */
+const feeTokenId = async (
+  env: SwapEnv,
+  token: { address: string; chainId: number }
+): Promise<string> => {
+  const solanaChainId = await getLifiSolanaChainId(env)
+  if (token.chainId === solanaChainId) {
+    const knownSolTokens = await env.getTokensMap("solana")
+    return getKnownSolanaTokenId(token.address, knownSolTokens)
+  }
+  return evmTokenIdOf(token)
+}
 
 // --- Internal asset type for LI.FI (not exposed) ---
 type LifiInternalAsset = {
@@ -158,7 +166,10 @@ const lifiAssetFromErc20 = (token: EvmErc20Token): LifiInternalAsset => ({
 
 type SolToken = SolSplToken | SolToken2022Token
 
-const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset> => ({
+const lifiAssetFromSolToken = async (
+  env: SwapEnv,
+  token: SolToken
+): Promise<LifiInternalAsset> => ({
   tokenId: token.id,
   chainId: SOLANA_NETWORK_ID,
   contractAddress: token.mintAddress,
@@ -166,7 +177,7 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
   symbol: token.symbol,
   lifiToken: {
     address: token.mintAddress,
-    chainId: await getLifiSolanaChainId(),
+    chainId: await getLifiSolanaChainId(env),
     decimals: token.decimals,
     symbol: token.symbol,
     name: token.name ?? token.symbol,
@@ -175,18 +186,22 @@ const lifiAssetFromSolToken = async (token: SolToken): Promise<LifiInternalAsset
   },
 })
 
-const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset | null> => {
+const resolveOrBuildAsset = async (
+  env: SwapEnv,
+  tokenId: string
+): Promise<LifiInternalAsset | null> => {
+  await getLifiAssets(env)
   const cached = resolveAsset(tokenId)
   if (cached) return cached
 
-  const token = await firstValueFrom(getToken$(tokenId))
+  const token = await env.getToken(tokenId)
   if (token?.type === "evm-erc20") {
     const asset = lifiAssetFromErc20(token as EvmErc20Token)
     assetsByTokenId.set(tokenId, asset)
     return asset
   }
   if (token?.type === "sol-spl" || token?.type === "sol-token2022") {
-    const asset = await lifiAssetFromSolToken(token as SolToken)
+    const asset = await lifiAssetFromSolToken(env, token as SolToken)
     assetsByTokenId.set(tokenId, asset)
     return asset
   }
@@ -194,9 +209,9 @@ const resolveOrBuildAsset = async (tokenId: string): Promise<LifiInternalAsset |
   return null
 }
 
-const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]> => {
+const getLifiAssets = async (env: SwapEnv, _signal?: AbortSignal): Promise<LifiInternalAsset[]> => {
   if (!cachedAssetsPromise) {
-    cachedAssetsPromise = fetchLifiAssets().catch((err) => {
+    cachedAssetsPromise = fetchLifiAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
       throw err
     })
@@ -204,12 +219,12 @@ const getLifiAssets = async (_signal: AbortSignal): Promise<LifiInternalAsset[]>
   return cachedAssetsPromise
 }
 
-const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
+const fetchLifiAssets = async (env: SwapEnv): Promise<LifiInternalAsset[]> => {
   const [allSdkTokens, swapsConfig] = await Promise.all([
-    lifiSdk
-      .getTokens(lifiClient, { chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
+    api
+      .getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
       .then((r) => r?.tokens),
-    remoteConfigStore.get("swaps"),
+    env.getSwapsConfig(),
   ])
   const solanaChainId = swapsConfig.lifi.solanaChainId
   const configuredLifiTokenIds = new Set(swapsConfig.lifiTalismanTokens ?? [])
@@ -221,7 +236,7 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
     try {
       const lifiChainId =
         type === "sol-spl" || type === "sol-token2022" ? solanaChainId : parseInt(chainId, 10)
-      const token = await lifiSdk.getToken(lifiClient, lifiChainId, contractAddress)
+      const token = await api.getToken(lifiChainId, contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
       log.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
@@ -229,12 +244,12 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
   }
 
   const [knownEvmNetworks] = await Promise.all([
-    firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
-    firstValueFrom(getNetworksMapById$({ platform: "solana" })),
+    env.getNetworksMap("ethereum"),
+    env.getNetworksMap("solana"),
   ])
   const [knownEvmTokens, knownSolTokens] = await Promise.all([
-    firstValueFrom(getTokensMap$({ platform: "ethereum" })),
-    firstValueFrom(getTokensMap$({ platform: "solana" })),
+    env.getTokensMap("ethereum"),
+    env.getTokensMap("solana"),
   ])
   const knownTokens = { ...knownEvmTokens, ...knownSolTokens }
 
@@ -304,19 +319,19 @@ const fetchLifiAssets = async (): Promise<LifiInternalAsset[]> => {
 // Include all EVM ERC-20 and Solana SPL/Token2022 tokens on LI.FI-supported chains
 // in addition to the standard list. LI.FI can route tokens not in its default list
 // when there is on-chain liquidity, allowing users to swap RWA and other niche tokens.
-const getLifiAssetIds = async (signal: AbortSignal): Promise<string[]> => {
-  const assets = await getLifiAssets(signal)
+const getLifiAssetIds = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> => {
+  const assets = await getLifiAssets(env, signal)
   const ids = new Set(assets.map((a) => a.tokenId))
 
   const lifiChainIds = new Set(assets.map((a) => a.chainId))
 
-  const allEvmTokens = await firstValueFrom(getTokensMap$({ platform: "ethereum" }))
+  const allEvmTokens = await env.getTokensMap("ethereum")
   for (const token of Object.values(allEvmTokens)) {
     if (token.type === "evm-erc20" && lifiChainIds.has(token.networkId)) ids.add(token.id)
   }
 
   if (lifiChainIds.has(SOLANA_NETWORK_ID)) {
-    const allSolTokens = await firstValueFrom(getTokensMap$({ platform: "solana" }))
+    const allSolTokens = await env.getTokensMap("solana")
     for (const token of Object.values(allSolTokens)) {
       if (token.type === "sol-spl" || token.type === "sol-token2022") ids.add(token.id)
     }
@@ -325,32 +340,109 @@ const getLifiAssetIds = async (signal: AbortSignal): Promise<string[]> => {
   return [...ids]
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => getLifiAssetIds(signal)
+const getFromAssets = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> =>
+  getLifiAssetIds(env, signal)
 
-const getToAssets = async (_fromTokenId: string | null, signal: AbortSignal): Promise<string[]> =>
-  getLifiAssetIds(signal)
+const getToAssets = async (
+  _fromTokenId: string | null,
+  env: SwapEnv,
+  signal: AbortSignal
+): Promise<string[]> => getLifiAssetIds(env, signal)
+
+const sameAddress = (a: string | undefined, b: string | undefined) =>
+  !!a && !!b && a.toLowerCase() === b.toLowerCase()
+
+const intermediateTokenIds = (
+  route: lifiSdk.Route,
+  { fromAddress, toAddress }: Pick<QuoteParams, "fromAddress" | "toAddress">,
+  knownEvmNetworks: Record<string, unknown>
+): TokenId[] | null => {
+  const { steps } = route
+  if (steps.length === 1) return []
+  if (steps.length > MAX_ROUTE_LEGS) return null
+  if (!fromAddress || !toAddress) return null
+  if (PLACEHOLDER_ADDRESSES.has(fromAddress) || PLACEHOLDER_ADDRESSES.has(toAddress)) return null
+
+  const last = steps.length - 1
+  const tokenIds: TokenId[] = []
+  for (const [index, { action }] of steps.entries()) {
+    if (!knownEvmNetworks[action.fromChainId] || !knownEvmNetworks[action.toChainId]) return null
+    if (!sameAddress(action.fromAddress, fromAddress)) return null
+    if (!sameAddress(action.toAddress, index === last ? toAddress : fromAddress)) return null
+    if (index === last) break
+
+    const next = steps[index + 1].action.fromToken
+    if (action.toToken.address === zeroAddress) return null
+    if (next.chainId !== action.toChainId) return null
+    if (!sameAddress(next.address, action.toToken.address)) return null
+    tokenIds.push(evmTokenIdOf(action.toToken))
+  }
+  return tokenIds
+}
+
+/**
+ * LI.FI lists routes without simulating them, then refuses to build a step whose simulation reverts.
+ * Such a step stays out of every quote for the rest of the page's life.
+ */
+const unbuildableSteps = new Set<string>()
+
+const stepKey = ({ tool, includedSteps, action }: lifiSdk.LiFiStep) =>
+  [
+    [tool, ...includedSteps.map((included) => included.tool)].join(">"),
+    action.fromAddress,
+    action.fromAmount,
+    action.fromChainId,
+    action.fromToken.address,
+    action.toChainId,
+    action.toToken.address,
+  ]
+    .join(":")
+    .toLowerCase()
+
+const isUnbuildableStepError = (err: unknown) => {
+  for (let cause = err; cause instanceof Error; cause = cause.cause)
+    if (cause.name === "HTTPError" && (cause as { status?: number }).status === 422) return true
+  return false
+}
+
+const canRunRoute = async (
+  env: SwapEnv,
+  route: lifiSdk.Route,
+  params: QuoteParams,
+  knownEvmNetworks: Record<string, unknown>,
+  request: RouteRequest
+): Promise<boolean> => {
+  if (!request.multiStep) return route.steps.length === 1
+  const intermediates = intermediateTokenIds(route, params, knownEvmNetworks)
+  if (!intermediates) return false
+  const assets = await Promise.all(
+    intermediates.map((tokenId) => resolveOrBuildAsset(env, tokenId))
+  )
+  return assets.every((asset) => asset !== null)
+}
 
 const getRoutes = async (
+  env: SwapEnv,
   params: QuoteParams,
-  signal: AbortSignal
+  slippage: number,
+  talismanFee: number,
+  request: RouteRequest,
+  signal?: AbortSignal
 ): Promise<lifiSdk.RoutesResponse | null> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
     if (!fromTokenId || !toTokenId || !fromAmount) return null
-    if (signal.aborted) return null
+    if (signal?.aborted) return null
 
     // For tokens not in LI.FI's default list, construct the asset
     // from chaindata so the contract address is passed directly to the SDK.
     const [fromAsset, toAsset] = await Promise.all([
-      resolveOrBuildAsset(fromTokenId),
-      resolveOrBuildAsset(toTokenId),
+      resolveOrBuildAsset(env, fromTokenId),
+      resolveOrBuildAsset(env, toTokenId),
     ])
     if (!fromAsset || !toAsset) return null
 
-    const SWAP_PLACEHOLDER_ADDRESS = "0x70045A9F59A354550EC0272f73AAe03B01Fb8a7a"
-    const SOLANA_PLACEHOLDER_ADDRESS = "11111111111111111111111111111111"
-
-    const solanaChainId = await getLifiSolanaChainId()
+    const solanaChainId = await getLifiSolanaChainId(env)
 
     const isSolanaFrom =
       fromAsset.chainId === SOLANA_NETWORK_ID || Number(fromAsset.chainId) === solanaChainId
@@ -362,7 +454,7 @@ const getRoutes = async (
     const effectiveToAddress =
       toAddress ?? (isSolanaTo ? SOLANA_PLACEHOLDER_ADDRESS : SWAP_PLACEHOLDER_ADDRESS)
 
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
+    const knownEvmNetworks = await env.getNetworksMap("ethereum")
 
     if (fromAmount === 0n) return null
     const evmNetwork = knownEvmNetworks[fromAsset.chainId.toString()]
@@ -381,30 +473,31 @@ const getRoutes = async (
       ? (toAsset.contractAddress ?? SOLANA_NATIVE_TOKEN_ADDRESS)
       : (toAsset.contractAddress ?? zeroAddress)
 
-    const fee = await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId })
-    const slippage = await getSwapSlippageDecimal()
-    if (signal.aborted) return null
-    const response = await lifiSdk.getRoutes(
-      lifiClient,
+    const response = await api.getRoutes(
       {
         fromAddress: effectiveFromAddress,
         toAddress: effectiveToAddress,
-        fromChainId: await toLifiChainId(fromAsset.chainId),
-        toChainId: await toLifiChainId(toAsset.chainId),
+        fromChainId: await toLifiChainId(env, fromAsset.chainId),
+        toChainId: await toLifiChainId(env, toAsset.chainId),
         fromAmount: fromAmount.toString(),
         fromTokenAddress,
         toTokenAddress,
-        options: { integrator: "talisman", fee, slippage },
+        options: { integrator: "talisman", fee: talismanFee, slippage },
       },
       { signal }
     )
 
-    // Filter out multi-step routes — our execution/signing flow only handles a single transaction per swap
-    response.routes = response.routes.filter((route) => route.steps.length <= 1)
+    const runnable = await Promise.all(
+      response.routes.map((route) => canRunRoute(env, route, params, knownEvmNetworks, request))
+    )
+    response.routes = response.routes.filter(
+      (route, index) =>
+        runnable[index] && !route.steps.some((step) => unbuildableSteps.has(stepKey(step)))
+    )
 
     return response
   } catch (cause) {
-    if (signal.aborted || isAbortError(cause)) return null
+    if (signal?.aborted || isAbortError(cause)) return null
 
     log.warn("Failed to fetch lifi routes", cause)
     return {
@@ -413,8 +506,6 @@ const getRoutes = async (
     } as lifiSdk.RoutesResponse
   }
 }
-
-type LifiRouteQuote = BaseQuote<lifiSdk.Route>
 
 // Solana assets in this module are stored with `chainId: SOLANA_NETWORK_ID`
 // (string), but LI.FI gas tokens use the numeric LI.FI Solana chain ID. We
@@ -449,49 +540,98 @@ const getAdditionalNativeFeeWei = (
     .reduce((total, fee) => total + BigInt(fee.amount), 0n)
 }
 
-const getRouteQuote = async (
-  route: lifiSdk.Route,
-  fromTokenId: string,
-  toTokenId: string | null
-): Promise<LifiRouteQuote | null> => {
-  const step = route.steps[0]
-  if (!step) return null
-
-  const fromAsset = resolveAsset(fromTokenId)
-  if (!fromAsset) return null
-
+const stepFees = async (env: SwapEnv, step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
   const fees: QuoteFee[] = await Promise.all(
     step.estimate.feeCosts?.map(async (fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
       name: fee.name,
-      tokenId: await feeTokenId(fee.token),
+      tokenId: await feeTokenId(env, fee.token),
       additional: !fee.included,
     })) ?? []
   )
+  for (const gas of step.estimate.gasCosts ?? []) {
+    fees.push({
+      amount: BigNumber(gas.amount).times(10 ** -gas.token.decimals),
+      name: "Gas",
+      gas: true,
+      tokenId: await feeTokenId(env, gas.token),
+    })
+  }
+  return fees
+}
 
-  if (step.estimate.gasCosts) {
-    for (const c of step.estimate.gasCosts) {
-      fees.push({
-        amount: BigNumber(c.amount).times(10 ** -c.token.decimals),
-        name: "Gas",
-        tokenId: await feeTokenId(c.token),
-      })
+const stepRoute = (
+  route: lifiSdk.Route,
+  step: lifiSdk.LiFiStep,
+  stepIndex: number,
+  signer: string | null,
+  recipient: string | null
+): LifiLegRoute => ({
+  ...route,
+  fromChainId: step.action.fromChainId,
+  fromAmount: step.action.fromAmount,
+  fromAmountUSD: step.estimate.fromAmountUSD ?? route.fromAmountUSD,
+  fromToken: step.action.fromToken,
+  fromAddress: signer ?? route.fromAddress,
+  toChainId: step.action.toChainId,
+  toAmount: step.estimate.toAmount,
+  toAmountMin: step.estimate.toAmountMin,
+  toAmountUSD: step.estimate.toAmountUSD ?? route.toAmountUSD,
+  toToken: step.action.toToken,
+  toAddress: recipient ?? route.toAddress,
+  containsSwitchChain: false,
+  steps: [step],
+  stepIndex,
+  stepCount: route.steps.length,
+})
+
+const getRouteQuote = async (
+  env: SwapEnv,
+  route: lifiSdk.Route,
+  {
+    fromTokenId,
+    toTokenId,
+    fromAddress,
+    toAddress,
+  }: QuoteParams & { fromTokenId: TokenId; toTokenId: TokenId },
+  talismanFee: number | null
+): Promise<BaseQuote | null> => {
+  const [firstStep, ...laterSteps] = route.steps
+  if (!firstStep) return null
+
+  const fromAsset = resolveAsset(fromTokenId)
+  if (!fromAsset) return null
+
+  const last = route.steps.length - 1
+  const stepLeg = async (step: lifiSdk.LiFiStep, index: number): Promise<QuoteLeg> => {
+    const recipient = index === last ? toAddress : fromAddress
+    return {
+      protocol: PROTOCOL,
+      fromTokenId: index === 0 ? fromTokenId : evmTokenIdOf(step.action.fromToken),
+      toTokenId: index === last ? toTokenId : evmTokenIdOf(step.action.toToken),
+      signer: fromAddress,
+      recipient,
+      inputAmount: BigInt(step.action.fromAmount),
+      outputAmount: BigInt(step.estimate.toAmountMin),
+      fees: await stepFees(env, step),
+      timeInSec: step.estimate.executionDuration,
+      data: stepRoute(route, step, index, fromAddress, recipient),
     }
   }
 
-  const talismanFee = await getTalismanFee({
-    fromAssetId: fromTokenId,
-    toAssetId: toTokenId ?? undefined,
-  })
-  fees.push({
-    amount: BigNumber(step.estimate.fromAmount.toString())
-      .times(10 ** -fromAsset.decimals)
-      .times(Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000),
-    name: TALISMAN_FEE_NAME,
-    tokenId: fromTokenId,
-  })
+  const feeRate = Math.round((LIFI_FEE + (talismanFee ?? 0)) * 10_000) / 10_000
+  const firstLeg = await stepLeg(firstStep, 0)
+  if (talismanFee !== null)
+    firstLeg.fees.push({
+      amount: BigNumber(firstStep.action.fromAmount)
+        .times(10 ** -fromAsset.decimals)
+        .times(feeRate),
+      name: TALISMAN_FEE_NAME,
+      tokenId: fromTokenId,
+    })
+  const laterLegs = await Promise.all(laterSteps.map((step, index) => stepLeg(step, index + 1)))
 
-  const lifiSolanaChainId = await getLifiSolanaChainId()
+  const lifiSolanaChainId = await getLifiSolanaChainId(env)
   const isNativeGasToken = isSourceNativeToken(fromAsset, lifiSolanaChainId)
 
   const maxNativeTokenGasBuffer =
@@ -506,56 +646,73 @@ const getRouteQuote = async (
           .toString()
       : undefined
 
-  return {
+  return quoteFromLegs([firstLeg, ...laterLegs], {
     decentralisationScore: DECENTRALISATION_SCORE,
     protocol: PROTOCOL,
-    subProtocol: step.tool,
-    inputAmountBN: BigInt(step.estimate.fromAmount),
-    outputAmountBN: BigInt(route.toAmountMin),
-    timeInSec: step.estimate.executionDuration,
-    fees,
-    providerLogo: step.toolDetails.logoURI,
-    providerName: step.toolDetails.name,
-    talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
-    data: route,
+    subProtocol: route.steps.map((step) => step.tool).join("+"),
+    providerLogo: firstStep.toolDetails.logoURI,
+    providerName: firstStep.toolDetails.name,
+    talismanFee: feeRate,
     maxNativeTokenGasBuffer: maxNativeTokenGasBuffer,
-  }
+  })
 }
 
-const getQuote = async (params: QuoteParams, signal: AbortSignal): Promise<BaseQuote[] | null> => {
+const quoteRoutes = async (
+  env: SwapEnv,
+  params: QuoteParams,
+  slippage: number,
+  request: RouteRequest,
+  signal?: AbortSignal
+): Promise<BaseQuote[] | null> => {
   const { fromTokenId, toTokenId } = params
-  if (!fromTokenId || signal.aborted) return null
+  if (!fromTokenId || !toTokenId || signal?.aborted) return null
 
-  const routes = await getRoutes(params, signal)
-  if (!routes || signal.aborted) return null
+  const talismanFee = request.chargesTalismanFee
+    ? await getTalismanFee({ fromAssetId: fromTokenId, toAssetId: toTokenId }, env.getSwapsConfig)
+    : null
+  const routes = await getRoutes(env, params, slippage, talismanFee ?? 0, request, signal)
+  if (!routes || signal?.aborted) return null
 
   const quotes = await Promise.allSettled(
-    routes.routes.map((route) => getRouteQuote(route, fromTokenId, toTokenId))
+    routes.routes.map((route) =>
+      getRouteQuote(env, route, { ...params, fromTokenId, toTokenId }, talismanFee)
+    )
   )
-  if (signal.aborted) return null
+  if (signal?.aborted) return null
 
   // Filter out nulls and failed promises
   const validQuotes = quotes
-    .filter((r): r is PromiseFulfilledResult<LifiRouteQuote | null> => r.status === "fulfilled")
+    .filter((r): r is PromiseFulfilledResult<BaseQuote | null> => r.status === "fulfilled")
     .map((r) => r.value)
-    .filter((q): q is LifiRouteQuote => q !== null)
+    .filter((q): q is BaseQuote => q !== null)
   return validQuotes.length > 0 ? validQuotes : null
 }
 
+const getQuote = async (
+  params: QuoteParams,
+  env: SwapEnv,
+  signal: AbortSignal
+): Promise<BaseQuote[] | null> =>
+  quoteRoutes(
+    env,
+    params,
+    await env.getSlippageDecimal(),
+    { multiStep: true, chargesTalismanFee: true },
+    signal
+  )
+
 // if approval is required, returns the contract to approve for, the amount, and token contract
-const getApprovalInfo = (
-  params: QuoteParams & { quoteData: BaseQuote | BaseQuote[] | null }
-): ApprovalInfo => {
+const getApprovalInfo = (params: ApprovalParams): ApprovalInfo => {
   const { fromTokenId, fromAddress, fromAmount, selectedSubProtocol, quoteData } = params
-  if (!fromTokenId || !fromAddress || !fromAmount) return null
-  const fromAsset = resolveAsset(fromTokenId)
-  if (!quoteData || !fromAsset?.contractAddress) return null
+  if (!fromTokenId || !fromAddress || !fromAmount || !quoteData) return null
+  const fromToken = parseTokenId(fromTokenId)
+  if (fromToken.type !== "evm-erc20") return null
 
   const quoteItem = Array.isArray(quoteData)
     ? quoteData.find((d) => d?.subProtocol === selectedSubProtocol)
     : quoteData
 
-  const lifiData = quoteItem?.data as lifiSdk.Route | undefined
+  const lifiData = quoteItem?.legs[0].data as lifiSdk.Route | undefined
   if (!lifiData) return null
 
   const step = lifiData.steps[0]
@@ -566,133 +723,263 @@ const getApprovalInfo = (
     // the route echoes back the amount we asked it to quote — approve the amount the user
     // entered instead, so an inflated echo cannot widen the allowance we grant
     amount: fromAmount,
-    tokenAddress: fromAsset.contractAddress,
+    tokenAddress: fromToken.contractAddress,
     chainId: step.action.fromChainId,
     fromAddress,
     protocolName: PROTOCOL_NAME,
   }
 }
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  try {
-    const { fromTokenId, fromAddress, fromAmount, exchange: quoteData, context } = params
-    const selectedQuote = quoteData as BaseQuote<lifiSdk.Route> | undefined
-    if (!selectedQuote?.data) {
-      throw new Error("Please select the quote again")
+const buildRouteTransaction = async (
+  env: SwapEnv,
+  step: lifiSdk.LiFiStep,
+  fromTokenId: TokenId,
+  fromAddress: string,
+  fromAmount: bigint,
+  context: SwapTransactionContext
+): Promise<{ transaction: SwapModuleTransaction; preparedStep: lifiSdk.LiFiStep }> => {
+  const fromAsset = resolveAsset(fromTokenId)
+  if (!fromAsset) throw new Error("Not supported on Lifi")
+
+  // Fetch fresh transaction calldata from LiFi at confirmation time
+  const stepTransaction = await api.getStepTransaction(step)
+  const txRequest = stepTransaction?.transactionRequest
+  if (!txRequest) throw new Error("Unknown error, please try again")
+
+  // Solana transaction handling — txRequest for Solana may omit chainId,
+  // so detect via the step's fromChainId instead.
+  const lifiSolanaChainId = await getLifiSolanaChainId(env)
+  const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
+  if (isSolanaStep) {
+    if (!txRequest.data) throw new Error("Missing Solana transaction data")
+
+    const txBytes = solanaTransactionBytes(txRequest.data)
+
+    let transaction = transactionFromBytes(txBytes)
+
+    // the fee payer is the account we are about to sign with, so a transaction naming
+    // anyone else is not the one the user is confirming
+    const { feePayer } = parseTransactionInfo(transaction)
+    if (feePayer !== fromAddress) throw new Error("Invalid sender address")
+
+    // Refresh the blockhash — the one from getStepTransaction may expire before the user
+    // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
+    const rpc = context.platform === "solana" ? context.rpc : undefined
+    if (rpc) {
+      const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+      transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
     }
 
-    if (!fromAddress) throw new Error("Missing from address")
-    const fromAsset = resolveAsset(fromTokenId)
-    if (!fromAsset) throw new Error("Not supported on Lifi")
+    return { transaction: { platform: "solana", transaction }, preparedStep: stepTransaction }
+  }
 
-    const step = selectedQuote.data.steps[0]
-    if (!step) throw new Error("No step found in route")
+  // EVM transaction handling
+  if (
+    txRequest.to === undefined ||
+    txRequest.data === undefined ||
+    txRequest.chainId === undefined ||
+    txRequest.value === undefined ||
+    txRequest.from === undefined ||
+    txRequest.gasLimit === undefined
+  )
+    throw new Error("Unknown error, please try again")
 
-    // Fetch fresh transaction calldata from LiFi at confirmation time
-    const stepTransaction = await lifiSdk.getStepTransaction(lifiClient, step)
-    const txRequest = stepTransaction?.transactionRequest
-    if (!txRequest) throw new Error("Unknown error, please try again")
+  if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
+    throw new Error("Invalid sender address")
 
-    // Solana transaction handling — txRequest for Solana may omit chainId,
-    // so detect via the step's fromChainId instead.
-    const lifiSolanaChainId = await getLifiSolanaChainId()
-    const isSolanaStep = step.action.fromChainId === lifiSolanaChainId
-    if (isSolanaStep) {
-      if (!txRequest.data) throw new Error("Missing Solana transaction data")
+  // the transaction must run on the network holding the token the user is swapping,
+  // not on some other network we happen to know about
+  if (txRequest.chainId.toString() !== fromAsset.chainId) throw new Error("Unexpected chain")
 
-      // LI.FI may return Solana transactions as base64 or hex-encoded
-      const txBytes = txRequest.data.startsWith("0x")
-        ? Buffer.from(txRequest.data.slice(2), "hex")
-        : Uint8Array.from(atob(txRequest.data), (c) => c.charCodeAt(0))
+  // a swap is executed by LI.FI's router — calldata aimed at the token contract itself can
+  // only be a transfer or an approval made in the user's name
+  if (
+    fromAsset.contractAddress &&
+    txRequest.to.toLowerCase() === fromAsset.contractAddress.toLowerCase()
+  )
+    throw new Error("Unexpected transaction target from provider. Please try again.")
 
-      let transaction = transactionFromBytes(txBytes)
+  assertNativeValueWithinInput({
+    value: BigInt(txRequest.value),
+    fromAmount,
+    isNativeInput: !fromAsset.contractAddress,
+    additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
+  })
 
-      // the fee payer is the account we are about to sign with, so a transaction naming
-      // anyone else is not the one the user is confirming
-      const { feePayer } = parseTransactionInfo(transaction)
-      if (feePayer !== fromAddress) throw new Error("Invalid sender address")
+  const knownEvmNetworks = await env.getNetworksMap("ethereum")
+  const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
+  if (!evmNetwork) throw new Error("Unknown chain")
 
-      // Refresh the blockhash — the one from getStepTransaction may expire before the user
-      // clicks "Confirm Swap". Other swap modules (stealthex, simpleswap) do the same.
-      const rpc = context.platform === "solana" ? context.rpc : undefined
-      if (rpc) {
-        const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
-        transaction = setTransactionBlockhash(transaction, latestBlockhash.blockhash)
-      }
+  const publicClient = await env.findEvmClient(evmNetwork.id)
+  if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
-      return { platform: "solana", transaction }
-    }
-
-    // EVM transaction handling
-    if (
-      txRequest.to === undefined ||
-      txRequest.data === undefined ||
-      txRequest.chainId === undefined ||
-      txRequest.value === undefined ||
-      txRequest.from === undefined ||
-      txRequest.gasLimit === undefined
-    )
-      throw new Error("Unknown error, please try again")
-
-    if (txRequest.from.toLowerCase() !== fromAddress.toLowerCase())
-      throw new Error("Invalid sender address")
-
-    // the transaction must run on the network holding the token the user is swapping,
-    // not on some other network we happen to know about
-    if (txRequest.chainId.toString() !== fromAsset.chainId) throw new Error("Unexpected chain")
-
-    // a swap is executed by LI.FI's router — calldata aimed at the token contract itself can
-    // only be a transfer or an approval made in the user's name
-    if (
-      fromAsset.contractAddress &&
-      txRequest.to.toLowerCase() === fromAsset.contractAddress.toLowerCase()
-    )
-      throw new Error("Unexpected transaction target from provider. Please try again.")
-
-    assertNativeValueWithinInput({
+  const transaction = await prepareTransactionRequestWithGasCheck(
+    publicClient,
+    evmNetwork.nativeTokenId,
+    {
+      chain: null,
+      to: txRequest.to as `0x${string}`,
       value: BigInt(txRequest.value),
-      fromAmount,
-      isNativeInput: !fromAsset.contractAddress,
-      additionalNativeValue: getAdditionalNativeFeeWei(step, fromAsset, lifiSolanaChainId),
-    })
+      data: txRequest.data as `0x${string}`,
+      gasLimit: txRequest.gasLimit,
+      account: txRequest.from as `0x${string}`,
+    }
+  )
 
-    const knownEvmNetworks = await firstValueFrom(getNetworksMapById$({ platform: "ethereum" }))
-    const evmNetwork = knownEvmNetworks[txRequest.chainId.toString()]
-    if (!evmNetwork) throw new Error("Unknown chain")
+  return { transaction: { platform: "ethereum", transaction }, preparedStep: stepTransaction }
+}
 
-    const publicClient = await findEvmPublicClient(evmNetwork.id)
-    if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
+/**
+ * The quoted rate scaled to what the leg spends, less the slippage the user accepted.
+ * The rate is the step's estimate, not `leg.outputAmount`: that is its `toAmountMin`, which already
+ * has the quote's slippage taken off.
+ */
+const routeStepFloor = (quoted: LifiLegRoute, input: bigint, slippage: number) =>
+  (BigInt(quoted.toAmount) * input * BigInt(Math.round((1 - slippage) * 10_000))) /
+  (BigInt(quoted.fromAmount) * 10_000n)
 
-    const transaction = await prepareTransactionRequestWithGasCheck(
-      publicClient,
-      evmNetwork.nativeTokenId,
-      {
-        chain: null,
-        to: txRequest.to as `0x${string}`,
-        value: BigInt(txRequest.value),
-        data: txRequest.data as `0x${string}`,
-        gasLimit: txRequest.gasLimit,
-        account: txRequest.from as `0x${string}`,
+/**
+ * The slippage that keeps a step estimating its `toAmount` one basis point above `floor`, when it is
+ * less than the user's. The basis point absorbs LI.FI re-estimating the step as it builds it.
+ */
+const slippageHolding = (step: lifiSdk.LiFiStep, floor: bigint, slippage: number) => {
+  const estimate = BigInt(step.estimate.toAmount)
+  if (estimate <= floor) return undefined
+  const bps = Number(((estimate - floor) * 10_000n) / estimate) - 1
+  return bps >= 1 && bps < slippage * 10_000 ? bps / 10_000 : undefined
+}
+
+const spenderOf = (route: lifiSdk.Route | undefined) =>
+  route?.steps[0]?.estimate.approvalAddress?.toLowerCase()
+
+const buildLeg = async (
+  { leg, input, context, slippage }: BuildLegParams,
+  env: SwapEnv
+): Promise<BuiltLeg> => {
+  try {
+    const quotedRoute = leg.data as LifiLegRoute | undefined
+    const tool = quotedRoute?.steps[0]?.tool
+    if (!quotedRoute || !tool) throw new Error("Please select the quote again")
+    if (!leg.signer || !leg.recipient) throw new Error("Missing from address")
+    const isRouteStep = quotedRoute.stepCount > 1
+    const isLaterLeg = isRouteStep && quotedRoute.stepIndex > 0
+    const signer = leg.signer
+    const floor = routeStepFloor(quotedRoute, input, slippage)
+
+    const freshLegsAt = async (atSlippage: number) => {
+      const freshQuotes =
+        (await quoteRoutes(
+          env,
+          {
+            fromTokenId: leg.fromTokenId,
+            toTokenId: leg.toTokenId,
+            fromAmount: input,
+            fromAddress: signer,
+            toAddress: leg.recipient,
+            input: "exact",
+          },
+          atSlippage,
+          { multiStep: false, chargesTalismanFee: !isLaterLeg }
+        )) ?? []
+      const usableQuotes =
+        parseTokenId(leg.fromTokenId).type === "evm-erc20"
+          ? freshQuotes.filter(
+              (quote) => spenderOf(quote.legs[0].data as LifiLegRoute) === spenderOf(quotedRoute)
+            )
+          : freshQuotes
+      return [
+        ...usableQuotes.filter((quote) => quote.subProtocol === tool),
+        ...usableQuotes.filter((quote) => quote.subProtocol !== tool),
+      ].map((quote) => quote.legs[0])
+    }
+
+    const buildHoldingFloor = async (step: lifiSdk.LiFiStep, prepared: lifiSdk.LiFiStep) => {
+      const tighter = slippageHolding(prepared, floor, slippage)
+      if (tighter === undefined) return undefined
+      try {
+        const fresh = (await freshLegsAt(tighter)).find(
+          (candidate) => (candidate.data as LifiLegRoute).steps[0]?.tool === step.tool
+        )
+        if (!fresh) return undefined
+        const freshStep = (fresh.data as LifiLegRoute).steps[0]
+        const built = await buildRouteTransaction(
+          env,
+          freshStep,
+          leg.fromTokenId,
+          signer,
+          input,
+          context
+        )
+        return { ...built, fees: fresh.fees }
+      } catch (err) {
+        log.warn("Could not hold the floor with less slippage", err)
+        return undefined
       }
-    )
+    }
 
-    return { platform: "ethereum", transaction }
+    const freshLegs = await freshLegsAt(slippage)
+    const candidates: { route: LifiLegRoute; fees: QuoteLeg["fees"] }[] = freshLegs.length
+      ? freshLegs.map((fresh) => ({ route: fresh.data as LifiLegRoute, fees: fresh.fees }))
+      : isRouteStep
+        ? []
+        : [{ route: quotedRoute, fees: leg.fees }]
+
+    for (const candidate of isLaterLeg ? candidates : candidates.slice(0, 1)) {
+      const step = candidate.route.steps[0]
+      if (!step) throw new Error("No step found in route")
+
+      let built: Awaited<ReturnType<typeof buildRouteTransaction>>
+      try {
+        built = await buildRouteTransaction(env, step, leg.fromTokenId, signer, input, context)
+      } catch (err) {
+        if (!isUnbuildableStepError(err)) throw err
+        unbuildableSteps.add(stepKey(step))
+        if (isLaterLeg) continue
+        throw new SwapRouteUnbuildableError(`${step.toolDetails.name} cannot run this swap`, {
+          cause: err,
+        })
+      }
+
+      const holding =
+        !isLaterLeg && BigInt(built.preparedStep.estimate.toAmountMin) < floor
+          ? await buildHoldingFloor(step, built.preparedStep)
+          : undefined
+      const { transaction, preparedStep, fees } = holding ?? { ...built, fees: candidate.fees }
+      const expectedOutput = BigInt(preparedStep.estimate.toAmountMin)
+      if (expectedOutput < floor && !isLaterLeg)
+        throw new Error("The rate has moved too far, please select the quote again")
+
+      return {
+        transaction,
+        fees,
+        expectedOutput,
+        ...(expectedOutput < floor && { acceptedOutput: floor }),
+        txInfo: {
+          type: "swap-lifi",
+          protocolName: step.tool,
+          fromTokenId: leg.fromTokenId,
+          toTokenId: leg.toTokenId,
+          fromAmount: input.toString(),
+          toAmount: expectedOutput.toString(),
+          to: leg.recipient,
+        },
+      }
+    }
+    throw new Error("No route for this step right now, please try again later")
   } catch (cause) {
     log.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
 }
 
-export const lifiSwapModule: SwapModule = {
+export const lifiSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   supportsSlippageSetting: true,
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: async () => null,
-  getTransaction: getTransaction,
+  buildLeg,
   getApprovalInfo: getApprovalInfo,
+  settleLeg: settleLifiLeg,
 }

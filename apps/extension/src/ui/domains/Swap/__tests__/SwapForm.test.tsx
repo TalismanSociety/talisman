@@ -82,6 +82,10 @@ vi.mock("../hooks/useSwapModal", () => ({
   useSwapModal: () => ({ isOpen: false, args: null, open: vi.fn(), close: vi.fn() }),
 }))
 
+vi.mock("../components/UnfinishedSwapPrompt", () => ({
+  UnfinishedSwapPrompt: () => null,
+}))
+
 vi.mock("../components/TokenAndAmountContainer", () => ({
   TokenAndAmountContainer: ({ accountBalance }: { accountBalance: ReactNode }) => (
     <div>{accountBalance}</div>
