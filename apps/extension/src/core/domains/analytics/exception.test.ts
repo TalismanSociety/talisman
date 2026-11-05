@@ -193,12 +193,21 @@ describe("ownFrames", () => {
     ["text", "need 4200 USDC, have 3100"],
     ["an address", "sign_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"],
     ["a call with arguments", "Promise.all (index 0)"],
-  ])("keeps an own frame's position without a function name that is %s", (_label, name) => {
-    const [kept] = ownFrames([frame(`${ORIGIN}background.js`, name)], ORIGIN)
+    ["what the stack parser gives an anonymous function", "?"],
+    ["missing", undefined],
+  ])(
+    "keeps an own frame's position with the placeholder PostHog requires for a function name that is %s",
+    (_label, name) => {
+      const [kept] = ownFrames([frame(`${ORIGIN}background.js`, name)], ORIGIN)
 
-    expect(kept).not.toHaveProperty("function")
-    expect(kept).toMatchObject({ filename: `${ORIGIN}background.js`, lineno: 3, colno: 7 })
-  })
+      expect(kept).toMatchObject({
+        filename: `${ORIGIN}background.js`,
+        function: "?",
+        lineno: 3,
+        colno: 7,
+      })
+    }
+  )
 
   it("drops a chunk id that is not an id", () => {
     const [kept] = ownFrames(
@@ -235,6 +244,25 @@ describe("errorClassOf", () => {
 })
 
 describe("toExceptionEvent", () => {
+  it("names every frame of a real anonymous stack, as PostHog rejects an event with a frame that has no function", () => {
+    const thrown = new Error("boom")
+    thrown.stack = [
+      "Error: boom",
+      `    at ${ORIGIN}background.js:2:92860`,
+      `    at l.callback (${ORIGIN}background.js:2:90024)`,
+    ].join("\n")
+    const parsed = parseExceptionReport(buildExceptionReport(thrown, { mechanism: "caught" }))
+    if (!parsed.ok) throw new Error("report did not parse")
+
+    const { event: built } = event(parsed.report)
+    const frames = built.properties.$exception_list[0].stacktrace?.frames ?? []
+
+    expect(frames.map((frame) => [frame.lineno, frame.colno, frame.function]).sort()).toEqual([
+      [2, 90024, "l.callback"],
+      [2, 92860, "?"],
+    ])
+  })
+
   it("sends the class, the category and the code positions, and no text of the message", () => {
     const input = report({ category: "rpc" })
     const chained = {
