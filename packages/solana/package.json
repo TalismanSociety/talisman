@@ -28,12 +28,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@solana/kit": "8.3.0",
+    "@solana/kit": "8.6.0",
     "@talismn/crypto": "workspace:*"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.19.2",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",

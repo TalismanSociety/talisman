@@ -32,10 +32,10 @@
     "@metaplex-foundation/umi": "^1.6.0",
     "@polkadot-api/substrate-bindings": "0.21.2",
     "@polkadot-api/utils": "0.4.0",
-    "@solana-program/system": "0.14.1",
-    "@solana-program/token": "0.16.1",
-    "@solana-program/token-2022": "0.16.1",
-    "@solana/kit": "8.3.0",
+    "@solana-program/system": "0.16.0",
+    "@solana-program/token": "0.18.0",
+    "@solana-program/token-2022": "0.20.0",
+    "@solana/kit": "8.6.0",
     "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/crypto": "workspace:*",
@@ -49,13 +49,13 @@
     "p-queue": "9.3.3",
     "rxjs": "^7.8.2",
     "scale-ts": "^1.6.1",
-    "viem": "2.56.8",
-    "zod": "^4.6.5"
+    "viem": "2.57.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.19.2",
     "typescript": "^7.0.2"
   },
   "types": "./dist/index.d.ts",
