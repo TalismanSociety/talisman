@@ -33,12 +33,12 @@ const useSendFundsWizardProvider = () => {
     searchParams.has("to") ? "prefilled" : "unknown"
   )
 
-  const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
+  const { from, to, tokenId, tokenIds, amount, allowReap, sendMax } = useMemo(
     () => ({
       from: searchParams.get("from") ?? undefined,
       to: searchParams.get("to") ?? undefined,
       tokenId: searchParams.get("tokenId") ?? undefined,
-      tokenSymbol: searchParams.get("tokenSymbol") ?? undefined,
+      tokenIds: searchParams.getAll("tokenIds"),
       amount: searchParams.get("amount") ?? undefined,
       allowReap: searchParams.get("allowReap") !== null,
       sendMax: searchParams.get("sendMax") !== null,
@@ -139,7 +139,7 @@ const useSendFundsWizardProvider = () => {
     from,
     to,
     tokenId,
-    tokenSymbol,
+    tokenIds,
     amount,
     allowReap,
     sendMax,

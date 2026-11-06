@@ -501,7 +501,6 @@ const TokenFilterOptions: FC<TokenFilterOptionsProps> = ({
 type TokenPickerProps = {
   address?: string
   selected?: TokenId
-  initialSearch?: string
   allowUntransferable?: boolean
   tokenScope?: TokenPickerScope
   isInitializing?: boolean
@@ -523,7 +522,6 @@ type TokenPickerProps = {
 export const TokenPicker: FC<TokenPickerProps> = ({
   address,
   selected,
-  initialSearch = "",
   allowUntransferable,
   tokenScope,
   isInitializing,
@@ -539,7 +537,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const [search, setSearch] = useState(initialSearch)
+  const [search, setSearch] = useState("")
   const deferredSearch = useDeferredValue(search)
 
   const [selectedNetworkId, setSelectedNetworkId] = useState<string | null>(null)
@@ -566,8 +564,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
             <SearchInput
               onChange={setSearch}
               placeholder={t("Search by token or network name")}
-              initialValue={initialSearch}
-              autoFocus={!initialSearch}
+              autoFocus
               containerClassName="rounded-sm"
             />
           </div>

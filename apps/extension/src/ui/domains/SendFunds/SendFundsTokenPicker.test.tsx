@@ -19,27 +19,55 @@ const PICK = { searched: true, networkFiltered: true, position: 2 }
 
 const track = vi.hoisted(() => vi.fn())
 const set = vi.hoisted(() => vi.fn())
+const wizard = vi.hoisted(() => ({ tokenIds: [] as string[] }))
 vi.mock("@ui/api/track", () => ({ track }))
 vi.mock("@ui/apps/popup/pages/SendFunds/context", () => ({
-  useSendFundsWizard: () => ({ tokenSymbol: "ETH", set }),
+  useSendFundsWizard: () => ({ tokenIds: wizard.tokenIds, set }),
 }))
 vi.mock("@ui/state/chaindata", () => ({
   useTokensMap: () => TOKENS,
   useNetworksMapById: () => ({ "1": { id: "1", __isKnown: true } }),
 }))
 vi.mock("@ui/domains/Asset/TokenPicker", () => ({
-  TokenPicker: ({ onSelect }: { onSelect: (tokenId: string, pick: typeof PICK) => void }) =>
-    Object.values(TOKENS).map((token) => (
-      <button key={token.id} type="button" onClick={() => onSelect(token.id, PICK)}>
-        {token.symbol}
-      </button>
-    )),
+  TokenPicker: ({
+    onSelect,
+    tokenFilter = () => true,
+  }: {
+    onSelect: (tokenId: string, pick: typeof PICK) => void
+    tokenFilter?: (token: { id: string }) => boolean
+  }) =>
+    Object.values(TOKENS)
+      .filter(tokenFilter)
+      .map((token) => (
+        <button key={token.id} type="button" onClick={() => onSelect(token.id, PICK)}>
+          {token.symbol}
+        </button>
+      )),
 }))
 
 import { SendFundsTokenPicker } from "./SendFundsTokenPicker"
 
 describe("SendFundsTokenPicker", () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wizard.tokenIds = []
+  })
+
+  it("lists only the tokens the wizard was opened with", () => {
+    wizard.tokenIds = [CUSTOM_ID]
+
+    render(<SendFundsTokenPicker />)
+
+    expect(screen.getByText("MINE")).toBeTruthy()
+    expect(screen.queryByText("ETH")).toBeNull()
+  })
+
+  it("lists every token when the wizard was opened without tokens", () => {
+    render(<SendFundsTokenPicker />)
+
+    expect(screen.getByText("MINE")).toBeTruthy()
+    expect(screen.getByText("ETH")).toBeTruthy()
+  })
 
   it("tracks the pick and moves on with the token", () => {
     render(<SendFundsTokenPicker />)
