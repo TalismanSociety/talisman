@@ -1,5 +1,12 @@
 # @talismn/balances
 
+## 3.1.2
+
+### Patch Changes
+
+- 75ffec8: Balance changes above 0.01% emit immediately instead of being held back as drift
+- 75ffec8: substrate-dtao: every stake move emits immediately instead of being held back as drift
+
 ## 3.1.1
 
 ### Patch Changes
