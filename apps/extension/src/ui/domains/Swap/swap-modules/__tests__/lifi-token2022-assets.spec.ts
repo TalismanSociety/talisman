@@ -83,7 +83,9 @@ vi.mock("@ui/state/chaindata", () => ({
   ),
 }))
 
-const { lifiSwapModule } = await import("../lifi-swap-module")
+const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
+const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
+const lifiSwapModule = withSwapEnv(lifiPageModule, uiSwapEnv)
 
 const makeRoute = (): Route =>
   ({
@@ -166,6 +168,7 @@ describe("lifi-swap-module Token-2022 assets", () => {
         fromAmount: 1000n,
         fromAddress: "11111111111111111111111111111111",
         toAddress: "11111111111111111111111111111111",
+        input: "exact",
       },
       signal
     )

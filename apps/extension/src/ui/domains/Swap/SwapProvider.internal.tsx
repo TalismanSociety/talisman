@@ -5,13 +5,17 @@ import { type FlowStep, flows, useFlow } from "@ui/hooks/analytics/flows"
 import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import type { Hex } from "viem"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
 import { useSwapQuoteManager } from "./hooks/useSwapQuoteManager"
+import { useSwapRun } from "./hooks/useSwapRun"
 import type { BaseQuote, SupportedSwapProtocol, SwapView } from "./swap-modules/common.swap-module"
+import type { MinedApproval } from "./swap-modules/erc20-approval"
 import { getSwapFormState } from "./swapFormState"
 import { useSafeTokens, useSwapAssets } from "./swaps.api"
+import { clearUnfinishedSwapsHolding } from "./unfinishedSwaps"
 
 const EMPTY_SAFE_TOKENS = new Set<string>()
 const NATIVE_TOKEN_TYPES: Array<"evm-native" | "substrate-native" | "sol-native"> = [
@@ -107,17 +111,22 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
       networkId: string
       txInfo: WalletTransactionInfo
     }) => {
+      if (fromAddress && fromTokenId) clearUnfinishedSwapsHolding({ fromAddress, fromTokenId })
       setSubmittedTxHash(hash)
       setSubmittedNetworkId(networkId)
       setSubmittedTxInfo(txInfo)
       setSwapView("submitted")
     },
-    []
+    [fromAddress, fromTokenId]
   )
+
+  const { run, startRun, legSent } = useSwapRun()
 
   // -- Actions --
   const [approvalCounter, setApprovalCounter] = useState(0)
+  const [minedApproval, setMinedApproval] = useState<MinedApproval>()
   const incrementApprovalCounter = useCallback(() => setApprovalCounter((c) => c + 1), [])
+  const [approvalHash, setApprovalHash] = useState<Hex | null>(null)
 
   // -- Acknowledged unsafe tokens (in-memory only, survives modal open/close) --
   const [acknowledgedTokenVerdicts, setAcknowledgedTokenVerdicts] = useState<
@@ -141,6 +150,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setPickedQuote(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
+    setMinedApproval(undefined)
+    setApprovalHash(null)
     setAcknowledgedTokenVerdicts(new Map())
     resetFromAddressManuallySet()
     setSubmittedTxHash(null)
@@ -243,6 +254,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     selectedSubProtocol,
     selectedQuote,
     approvalCounter,
+    minedApproval,
   })
 
   const fromBalance = useBalanceByParams({ address: fromAddress, tokenId: fromTokenId })
@@ -316,6 +328,10 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     approvalCounter,
     setApprovalCounter,
     incrementApprovalCounter,
+    minedApproval,
+    setMinedApproval,
+    approvalHash,
+    setApprovalHash,
 
     sortedQuotes,
     selectedQuote,
@@ -335,5 +351,8 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     submittedNetworkId,
     submittedTxInfo,
     gotoSubmitted,
+    run,
+    startRun,
+    legSent,
   }
 }

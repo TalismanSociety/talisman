@@ -11,9 +11,12 @@ import { useMemo } from "react"
 import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
+import { withEntryHops, withSingleLegQuotes } from "./swap-modules/hops"
 import { simpleswapSwapModule } from "./swap-modules/simpleswap-swap-module"
 import { stealthexSwapModule } from "./swap-modules/stealthex-swap-module"
+import { getIntermediateCandidates } from "./swap-services/intermediateCandidates"
 import { buildAssetRegistry } from "./swap-services/token-filtering"
+import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
@@ -25,25 +28,32 @@ import {
 // ─── Constants ──────────────────────────────────────────────────────
 
 export const swapModules = [
-  simpleswapSwapModule,
-  stealthexSwapModule,
-  lifiSwapModule,
-  bittensorEvmSwapModule,
-  forevermoneySwapModule,
+  withSwapEnv(simpleswapSwapModule, uiSwapEnv),
+  withSwapEnv(stealthexSwapModule, uiSwapEnv),
+  withSwapEnv(lifiSwapModule, uiSwapEnv),
+  withSwapEnv(bittensorEvmSwapModule, uiSwapEnv),
+  withSwapEnv(forevermoneySwapModule, uiSwapEnv),
 ]
 
 export type SwapModuleEntry = (typeof swapModules)[number]
 
 export const useSwapModules = (): SwapModuleEntry[] => {
   const isForevermoneyEnabled = useFeatureFlag("SWAPS_FOREVERMONEY_TAO_BRIDGE_V2")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
 
-  return useMemo(
-    () =>
-      swapModules.filter(
-        (m) => m.protocol !== forevermoneySwapModule.protocol || isForevermoneyEnabled
-      ),
-    [isForevermoneyEnabled]
-  )
+  return useMemo(() => {
+    const enabled = swapModules.filter(
+      (m) => m.protocol !== "forevermoney" || isForevermoneyEnabled
+    )
+    return enabled.map((m) => {
+      const withHops = withEntryHops(m, {
+        enabled: (flag) => flag === "SWAPS_MULTI_HOP" && isMultiHopEnabled,
+        resolve: (protocol) => enabled.find((entry) => entry.protocol === protocol),
+        candidates: getIntermediateCandidates,
+      })
+      return isMultiHopEnabled ? withHops : withSingleLegQuotes(withHops)
+    })
+  }, [isForevermoneyEnabled, isMultiHopEnabled])
 }
 
 // ─── Asset-fetching helpers ─────────────────────────────────────────
@@ -79,7 +89,9 @@ export const useSwapAssets = (fromTokenId: string | null) => {
   const tokensMap = useTokensMap()
   const tokensCount = Object.keys(tokensMap).length
   const swapModules = useSwapModules()
-  const protocolsKey = swapModules.map((m) => m.protocol).join(",")
+  const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
+  // the entry hops add sources and targets to their module: a cached registry without them hides the routes
+  const protocolsKey = `${swapModules.map((m) => m.protocol).join(",")}${isMultiHopEnabled ? "+hops" : ""}`
 
   const fromAssetsQuery = useQuery({
     queryKey: ["swap-from-assets-v3", tokensCount, protocolsKey],

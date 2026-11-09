@@ -45,6 +45,7 @@ const TxNotification: FC<{ hash: string; label: string }> = ({ hash, label }) =>
         },
         autoClose: transaction.confirmed ? 5000 : false,
         closeButton: transaction.confirmed,
+        closeOnClick: false,
         onClose: () => {
           removeTransaction(hash)
         },

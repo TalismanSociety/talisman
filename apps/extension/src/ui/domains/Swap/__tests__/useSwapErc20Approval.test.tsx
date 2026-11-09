@@ -4,17 +4,19 @@ import type { PropsWithChildren } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const readContract = vi.fn()
+const getBlockNumber = vi.fn()
 
 vi.mock("@ui/state/chaindata", () => ({
   useNetworks: () => [{ id: "8453", platform: "ethereum" }],
 }))
 
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
-  getExtensionPublicClient: () => ({ readContract }),
+  getExtensionPublicClient: () => ({ readContract, getBlockNumber }),
 }))
 
 import { useSwapErc20Approval } from "../hooks/useSwapErc20Approval"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
+import type { MinedApproval } from "../swap-modules/erc20-approval"
 import type { SwapModuleEntry } from "../swaps.api"
 
 const AMOUNT = 10n ** 18n
@@ -34,6 +36,13 @@ const selectedModule = {
 
 const selectedQuote = { protocol: "forevermoney" } as unknown as BaseQuote
 
+const minedOn = (networkId: string, blockNumber: bigint): MinedApproval => ({
+  networkId,
+  from: FROM,
+  nonce: 377,
+  blockNumber,
+})
+
 // a zero-delay timer created while the clock ticks is due one millisecond later
 const elapse = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms + 1))
 
@@ -43,6 +52,7 @@ describe("useSwapErc20Approval", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     readContract.mockReset()
+    getBlockNumber.mockReset()
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   })
 
@@ -51,7 +61,7 @@ describe("useSwapErc20Approval", () => {
     vi.useRealTimers()
   })
 
-  const render = (approvalCounter: number) =>
+  const render = (approvalCounter: number, minedApproval?: MinedApproval) =>
     renderHook(
       () =>
         useSwapErc20Approval({
@@ -64,6 +74,7 @@ describe("useSwapErc20Approval", () => {
           selectedSubProtocol: undefined,
           selectedQuote,
           approvalCounter,
+          minedApproval,
         }),
       {
         wrapper: ({ children }: PropsWithChildren) => (
@@ -72,7 +83,44 @@ describe("useSwapErc20Approval", () => {
       }
     )
 
-  it("reads the allowance again when a lagging node still reports the previous one after approval", async () => {
+  it("never reports an approval that mined as still needed, even from a node behind its block", async () => {
+    const MINED_AT = 100n
+    getBlockNumber.mockResolvedValue(MINED_AT - 1n)
+    readContract.mockImplementation(async ({ blockNumber }: { blockNumber?: bigint }) =>
+      blockNumber !== undefined && blockNumber >= MINED_AT ? AMOUNT : 0n
+    )
+
+    const { result } = render(1, minedOn("8453", MINED_AT))
+
+    await elapse(0)
+    expect(result.current.loading).toBe(false)
+    expect(result.current.data).toBeNull()
+  })
+
+  it("reads the allowance of another network at its own latest block", async () => {
+    readContract.mockResolvedValue(0n)
+
+    const { result } = render(1, minedOn("56", 50_000_000n))
+
+    await elapse(0)
+    expect(readContract).toHaveBeenCalledWith(expect.objectContaining({ blockNumber: undefined }))
+    expect(result.current.data).not.toBeNull()
+  })
+
+  it("keeps checking, and reads again, while the allowance read fails", async () => {
+    readContract.mockRejectedValueOnce(new Error("header not found")).mockResolvedValue(0n)
+
+    const { result } = render(1, minedOn("8453", 100n))
+
+    await elapse(0)
+    expect(result.current.loading).toBe(true)
+
+    await elapse(ALLOWANCE_RECHECK_MS)
+    expect(result.current.loading).toBe(false)
+    expect(result.current.data).not.toBeNull()
+  })
+
+  it("reads the allowance again until an approval sent without its receipt shows", async () => {
     readContract.mockResolvedValueOnce(0n).mockResolvedValue(AMOUNT)
 
     const { result } = render(1)
@@ -82,7 +130,6 @@ describe("useSwapErc20Approval", () => {
 
     await elapse(ALLOWANCE_RECHECK_MS)
     expect(result.current.data).toBeNull()
-    expect(result.current.approveTx).toBeNull()
   })
 
   it("does not poll before any approval was confirmed", async () => {
@@ -95,5 +142,14 @@ describe("useSwapErc20Approval", () => {
 
     await elapse(ALLOWANCE_RECHECK_MS + 500)
     expect(readContract).toHaveBeenCalledTimes(1)
+  })
+
+  it("revokes a short non-zero allowance before it approves", async () => {
+    readContract.mockResolvedValue(AMOUNT / 2n)
+
+    const { result } = render(0)
+
+    await elapse(0)
+    expect(result.current.needsRevoke).toBe(true)
   })
 })

@@ -3,31 +3,66 @@ import BigNumber from "bignumber.js"
 import { describe, expect, it } from "vitest"
 import {
   attachFees,
+  attachShortfalls,
   calculateQuoteFees,
   flattenQuotes,
+  getLaterLegHoldingKeys,
+  getShortfall,
+  isSelectionAvailable,
   type QuoteWithFees,
   selectQuote,
   sortQuotes,
 } from "../hooks/quote-sorting"
-import type { BaseQuote, SupportedSwapProtocol } from "../swap-modules/common.swap-module"
+import type {
+  BaseQuote,
+  QuoteFee,
+  QuoteLeg,
+  SupportedSwapProtocol,
+} from "../swap-modules/common.swap-module"
+import { quoteFromLegs } from "../swap-modules/helpers"
 
 // ---------------------------------------------------------------------------
 // Helpers to build mock quotes
 // ---------------------------------------------------------------------------
 
-const makeQuote = (overrides: Partial<BaseQuote> = {}): BaseQuote => ({
-  decentralisationScore: 1,
-  protocol: "simpleswap",
-  outputAmountBN: 1000n,
-  inputAmountBN: 500n,
-  fees: [],
-  timeInSec: 60,
-  providerLogo: "",
-  providerName: "SimpleSwap",
-  ...overrides,
-})
+const account = "0x8eb8a3b98659cce290402893d0123abb75e3ab28"
 
-const wrap = (quote: BaseQuote, fees = 0): QuoteWithFees => ({ quote, fees })
+const makeQuote = ({
+  inputAmountBN = 500n,
+  outputAmountBN = 1000n,
+  fees = [],
+  timeInSec = 60,
+  ...presentation
+}: Partial<BaseQuote> = {}): BaseQuote =>
+  quoteFromLegs(
+    [
+      {
+        protocol: presentation.protocol ?? "simpleswap",
+        fromTokenId: "from-token",
+        toTokenId: "to-token",
+        signer: account,
+        recipient: null,
+        inputAmount: inputAmountBN,
+        outputAmount: outputAmountBN,
+        fees,
+        timeInSec,
+      },
+    ],
+    {
+      decentralisationScore: 1,
+      protocol: "simpleswap",
+      providerLogo: "",
+      providerName: "SimpleSwap",
+      ...presentation,
+    }
+  )
+
+const wrap = (quote: BaseQuote, fees = 0, netUsd: number | null = null): QuoteWithFees => ({
+  quote,
+  fees,
+  netUsd,
+  shortfall: null,
+})
 
 /** Cast a partial rate map to TokenRatesList – tests only need the `usd.price` path. */
 const mockRates = (map: Record<string, { usd?: { price: number } | undefined }>): TokenRatesList =>
@@ -123,6 +158,70 @@ describe("sortQuotes – bestRate", () => {
     // Array.sort is stable in V8 – order should be preserved
     const sorted = sortQuotes([a, b], "bestRate")
     expect(sorted.map((s) => s.quote.providerName)).toEqual(["A", "B"])
+  })
+
+  it("ranks by the USD value delivered less the fees paid on top, when the output has a rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("0.0195"), tokenId: "eth", additional: true }],
+    })
+    const stargate = makeQuote({
+      outputAmountBN: 795n,
+      providerName: "Stargate",
+      fees: [{ name: "Gas", amount: BigNumber("0.0001"), tokenId: "eth", gas: true }],
+    })
+    const across = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Across",
+      fees: [{ name: "LIFI Fixed Fee", amount: BigNumber("0.01"), tokenId: "eth" }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([glacis, stargate, across], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Across", "Stargate", "Glacis"])
+  })
+
+  it("falls back to the output amount when the output token has no rate", () => {
+    const glacis = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Glacis",
+      fees: [{ name: "Bridge Fee", amount: BigNumber("1"), tokenId: "eth", additional: true }],
+    })
+    const across = makeQuote({ outputAmountBN: 790n, providerName: "Across" })
+    const rates = mockRates({ eth: { usd: { price: 2300 } } })
+
+    const sorted = sortQuotes(
+      attachFees([across, glacis], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Glacis", "Across"])
+  })
+
+  it("falls back to the output amount when a fee paid on top has no rate", () => {
+    const unpricedFee = makeQuote({
+      outputAmountBN: 790n,
+      providerName: "Unpriced fee",
+      fees: [{ name: "Gas", amount: BigNumber("1"), tokenId: "unpriced", gas: true }],
+    })
+    const pricedFee = makeQuote({
+      outputAmountBN: 800n,
+      providerName: "Priced fee",
+      fees: [{ name: "Gas", amount: BigNumber("0.0005"), tokenId: "eth", gas: true }],
+    })
+    const rates = mockRates({ eth: { usd: { price: 2300 } }, "to-token": { usd: { price: 2.9 } } })
+
+    const sorted = sortQuotes(
+      attachFees([unpricedFee, pricedFee], rates, { id: "to-token", decimals: 3 }),
+      "bestRate"
+    )
+
+    expect(sorted.map((s) => s.quote.providerName)).toEqual(["Priced fee", "Unpriced fee"])
   })
 
   it("handles very large bigint differences", () => {
@@ -284,7 +383,7 @@ describe("full sorting pipeline", () => {
     const flat = flattenQuotes([lowOutput, [highOutput, zeroOutput], null])
     expect(flat).toHaveLength(2) // zero output filtered out
 
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "bestRate")
 
     expect(sorted[0]!.quote.providerName).toBe("LI.FI")
@@ -312,11 +411,222 @@ describe("full sorting pipeline", () => {
 
     const r = mockRates({ eth: { usd: { price: 3000 } } })
     const flat = flattenQuotes([highOutputHighFee, lowOutputLowFee])
-    const withFees = attachFees(flat, r)
+    const withFees = attachFees(flat, r, null)
     const sorted = sortQuotes(withFees, "cheapest")
 
     expect(sorted[0]!.quote.providerName).toBe("SimpleSwap")
     expect(sorted[0]!.fees).toBe(3)
     expect(sorted[1]!.fees).toBe(30)
+  })
+})
+
+describe("attachShortfalls", () => {
+  const additionalFee = (amount: string, tokenId = "from-token") => ({
+    amount: BigNumber(amount),
+    name: "Bridge Fee",
+    tokenId,
+    additional: true,
+  })
+  const holding = (transferable: bigint, tokenId = "from-token", address = account) => ({
+    address,
+    tokenId,
+    decimals: 0,
+    transferable,
+  })
+  const shortfallOf = (quote: QuoteWithFees, transferable: bigint, tokenId?: string) =>
+    attachShortfalls([quote], [holding(transferable, tokenId)])[0]?.shortfall
+
+  it("records what the account lacks to pay the input and the fees on top", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))
+    expect(shortfallOf(quote, 40n)).toEqual({
+      tokenId: "from-token",
+      required: 205n,
+      available: 40n,
+    })
+  })
+
+  it("records nothing when the account holds enough", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("5")] }))
+    expect(shortfallOf(quote, 15n)).toBeNull()
+  })
+
+  it("counts only the fees on top when the input is another token", () => {
+    const quote = wrap(makeQuote({ inputAmountBN: 1000n, fees: [additionalFee("5", "native")] }))
+    expect(shortfallOf(quote, 5n, "native")).toBeNull()
+  })
+
+  it("ignores fees taken from the swapped amount and fees in other tokens", () => {
+    const quote = wrap(
+      makeQuote({
+        inputAmountBN: 10n,
+        fees: [
+          { amount: BigNumber("500"), name: "LIFI Fixed Fee", tokenId: "from-token" },
+          additionalFee("500", "10:evm-native"),
+        ],
+      })
+    )
+    expect(shortfallOf(quote, 10n)).toBeNull()
+  })
+
+  it("records nothing while the balance is unknown", () => {
+    const quotes = [wrap(makeQuote({ inputAmountBN: 10n, fees: [additionalFee("195")] }))]
+    expect(attachShortfalls(quotes, [])).toEqual(quotes)
+  })
+
+  describe("on a later leg", () => {
+    const twoLegQuote = (
+      laterLeg: Pick<QuoteLeg, "fromTokenId" | "toTokenId" | "fees">,
+      firstLegFees: QuoteFee[] = []
+    ) =>
+      wrap(
+        quoteFromLegs(
+          [
+            {
+              protocol: "lifi",
+              fromTokenId: "8453:evm-native",
+              toTokenId: laterLeg.fromTokenId,
+              signer: account,
+              recipient: account,
+              inputAmount: 100n,
+              outputAmount: 90n,
+              fees: firstLegFees,
+              timeInSec: 60,
+            },
+            {
+              protocol: "lifi",
+              signer: account,
+              recipient: account,
+              inputAmount: 90n,
+              outputAmount: 80n,
+              timeInSec: 30,
+              ...laterLeg,
+            },
+          ],
+          { decentralisationScore: 2, protocol: "lifi", providerLogo: "", providerName: "LI.FI" }
+        )
+      )
+    const laterLegGas = (amount: string, tokenId = "10:evm-native") => ({
+      amount: BigNumber(amount),
+      name: "Gas",
+      tokenId,
+      gas: true,
+    })
+    const bridgedToOptimismWeth = (fees: QuoteFee[]) =>
+      twoLegQuote({
+        fromTokenId: "10:evm-erc20:0x4200000000000000000000000000000000000006",
+        toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+        fees,
+      })
+    const sourceHolding = holding(1000n, "8453:evm-native", account)
+
+    it("records what the account lacks on that leg's network to pay its gas", () => {
+      const quote = bridgedToOptimismWeth([laterLegGas("3")])
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(1n, "10:evm-native", account)]
+      )
+      expect(checked?.shortfall).toEqual({ tokenId: "10:evm-native", required: 3n, available: 1n })
+    })
+
+    it("records nothing when the account holds enough on that leg's network", () => {
+      const quote = bridgedToOptimismWeth([laterLegGas("3"), additionalFee("2", "10:evm-native")])
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(5n, "10:evm-native", account)]
+      )
+      expect(checked?.shortfall).toBeNull()
+    })
+
+    it("lets a later leg pay its fees from the native token the previous leg delivers", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "964:evm-native",
+        toTokenId: "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        fees: [laterLegGas("4", "964:evm-native"), additionalFee("6", "964:evm-native")],
+      })
+      const [checked] = attachShortfalls(
+        [quote],
+        [sourceHolding, holding(0n, "964:evm-native", account)]
+      )
+      expect(checked?.shortfall).toBeNull()
+    })
+
+    it("asks for the balance a later leg pays its fees from, not for the token it receives", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "964:evm-native",
+        toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+        fees: [
+          laterLegGas("4", "964:evm-native"),
+          laterLegGas("3", "10:evm-native"),
+          { amount: BigNumber("1"), name: "LIFI Fixed Fee", tokenId: "10:evm-native" },
+        ],
+      })
+      expect(getLaterLegHoldingKeys(quote.quote)).toEqual([
+        { address: account, tokenId: "10:evm-native" },
+      ])
+    })
+
+    it("does not count the first leg's gas, which the confirm screen estimates", () => {
+      const quote = twoLegQuote(
+        {
+          fromTokenId: "10:evm-erc20:0x4200000000000000000000000000000000000006",
+          toTokenId: "10:evm-erc20:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
+          fees: [],
+        },
+        [laterLegGas("5000", "8453:evm-native")]
+      )
+      expect(attachShortfalls([quote], [sourceHolding])[0]?.shortfall).toBeNull()
+    })
+
+    it("adds the first leg's live gas to a later leg's gas on the same network", () => {
+      const quote = twoLegQuote({
+        fromTokenId: "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        toTokenId: "10:evm-native",
+        fees: [laterLegGas("600", "8453:evm-native")],
+      }).quote
+      const firstLegGas = { tokenId: "8453:evm-native", planck: 500n }
+
+      expect(getShortfall(quote, [sourceHolding])).toBeNull()
+      expect(getShortfall(quote, [sourceHolding], firstLegGas)).toEqual({
+        tokenId: "8453:evm-native",
+        required: 1200n,
+        available: 1000n,
+      })
+    })
+  })
+
+  it("sorts the routes the account cannot pay for after the ones it can", () => {
+    const glacis = {
+      ...wrap(makeQuote({ providerName: "Glacis", outputAmountBN: 3000n })),
+      shortfall: { tokenId: "from-token", required: 1n, available: 0n },
+    }
+    const across = wrap(makeQuote({ providerName: "Across", outputAmountBN: 2000n }))
+    expect(sortQuotes([glacis, across], "bestRate").map(({ quote }) => quote.providerName)).toEqual(
+      ["Across", "Glacis"]
+    )
+  })
+})
+
+describe("isSelectionAvailable", () => {
+  const short = (quote: BaseQuote): QuoteWithFees => ({
+    ...wrap(quote),
+    shortfall: { tokenId: "from-token", required: 1n, available: 0n },
+  })
+  const across = makeQuote({ protocol: "lifi", subProtocol: "across" })
+  const glacis = makeQuote({ protocol: "lifi", subProtocol: "glacis" })
+
+  it("keeps a route the account can pay for", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "across")).toBe(true)
+  })
+
+  it("drops a route the account can no longer pay for when another one fits", () => {
+    expect(isSelectionAvailable([wrap(across), short(glacis)], "lifi", "glacis")).toBe(false)
+  })
+
+  it("keeps a route the account cannot pay for when none fits, so the confirm screen names the shortfall", () => {
+    expect(isSelectionAvailable([short(across), short(glacis)], "lifi", "glacis")).toBe(true)
+  })
+
+  it("drops a route that is no longer quoted", () => {
+    expect(isSelectionAvailable([wrap(across)], "lifi", "glacis")).toBe(false)
   })
 })

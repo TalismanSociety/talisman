@@ -86,6 +86,7 @@ const NATIVE_FILENAMES: ReadonlySet<string | undefined> = new Set([
 const FUNCTION_NAME =
   /^(?:async |new |get |set )?[A-Za-z_$<][\w$.<>]{0,79}(?: \[as [\w$]{1,40}\])?$/
 const CHUNK_ID = /^[\w-]+$/
+const UNNAMED_FUNCTION = "?"
 
 const isCodeName = (name: string | undefined): name is string =>
   name !== undefined && FUNCTION_NAME.test(name) && redactSecrets(name) === name
@@ -105,7 +106,7 @@ export const ownFrames = (frames: readonly RawFrame[], extensionOrigin: string):
       {
         platform,
         ...(own && { filename }),
-        ...(isCodeName(name) && { function: name }),
+        function: isCodeName(name) ? name : UNNAMED_FUNCTION,
         ...(own && lineno !== undefined && { lineno }),
         ...(own && colno !== undefined && { colno }),
         ...(own && chunk_id !== undefined && CHUNK_ID.test(chunk_id) && { chunk_id }),

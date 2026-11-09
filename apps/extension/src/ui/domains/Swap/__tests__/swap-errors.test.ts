@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
-
 import {
   classifyFeeEstimationError,
   classifySwapError,
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
+import { SwapRouteUnbuildableError } from "../swap-modules/errors"
 import { InsufficientGasBalanceError } from "../swap-modules/evm-gas-check"
 
 const mockT = ((key: string, opts?: Record<string, string>) => {
@@ -55,6 +55,12 @@ describe("classifySwapError", () => {
       available: 2_653_076_276_816n,
     })
   })
+
+  it("maps a route the provider cannot build to route-unbuildable", () => {
+    expect(classifySwapError(new SwapRouteUnbuildableError("Mayan cannot run this swap"))).toEqual({
+      type: "route-unbuildable",
+    })
+  })
 })
 
 describe("classifyFeeEstimationError", () => {
@@ -97,6 +103,20 @@ describe("getSwapErrorMessage", () => {
     }
     const msg = getSwapErrorMessage(error, mockT, { feeTokenSymbol: "SOL" })
     expect(msg).toBe("Insufficient SOL to pay for transaction fees")
+  })
+
+  it("names the network of a fee paid on another network than the source", () => {
+    const error: SwapConfirmError = {
+      type: "insufficient-fee-balance",
+      feeTokenId: "42161:evm-native",
+      required: 20000n,
+      available: 0n,
+    }
+    const msg = getSwapErrorMessage(error, mockT, {
+      feeTokenSymbol: "ETH",
+      feeNetworkName: "Arbitrum One",
+    })
+    expect(msg).toBe("Insufficient ETH on Arbitrum One to pay for transaction fees")
   })
 
   it("formats insufficient-fee-balance without symbol", () => {

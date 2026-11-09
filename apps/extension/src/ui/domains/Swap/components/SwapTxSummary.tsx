@@ -1,0 +1,102 @@
+import { networkIdFromTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { ArrowDownIcon } from "@talismn/icons"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
+import { useNetworkById, useToken } from "@ui/state/chaindata"
+import type { FC, ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+
+const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) => {
+  const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
+
+  if (!token || !network) return null
+
+  return (
+    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
+      <div className="relative shrink-0">
+        <TokenLogo tokenId={tokenId} className="size-16 shrink-0 rounded-full" />
+        <NetworkLogo
+          className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-900 text-xs"
+          networkId={token.networkId}
+        />
+      </div>
+      <div className="flex w-full flex-col gap-1 overflow-hidden">
+        <TokensAndFiat
+          tokenId={tokenId}
+          planck={value}
+          className="text-body-secondary text-sm"
+          tokensClassName="text-body font-bold"
+          noCountUp
+        />
+        <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
+          <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
+          <div className="flex shrink-0 items-center gap-2.5 rounded-full bg-grey-800 py-2 pr-4 pl-2.5">
+            <NetworkLogo className="text-base" networkId={network.id} />
+            <span className="truncate text-xs opacity-60">{network.name}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const AddressRow: FC<{ label: ReactNode; address: string; networkId: string }> = ({
+  label,
+  address,
+  networkId,
+}) => (
+  <div className="flex h-11 items-center justify-between gap-4">
+    <div className="text-body-secondary">{label}</div>
+    <AddressDisplay
+      address={address}
+      networkId={networkId}
+      className="text-xs"
+      accountIconClassName="text-md!"
+    />
+  </div>
+)
+
+type SwapSummary = {
+  fromTokenId: TokenId
+  toTokenId: TokenId
+  fromAmount: bigint
+  toAmount: bigint
+  fromAddress: string
+  toAddress: string
+}
+
+export const SwapTxSummary: FC<SwapSummary> = ({
+  fromTokenId,
+  toTokenId,
+  fromAmount,
+  toAmount,
+  fromAddress,
+  toAddress,
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <div className="flex w-full flex-col gap-2 overflow-hidden pl-6">
+        <TokenRow tokenId={fromTokenId} value={fromAmount} />
+        <ArrowDownIcon className="ml-3 text-[20px] opacity-60" />
+        <TokenRow tokenId={toTokenId} value={toAmount} />
+      </div>
+      <div className="flex w-full flex-col gap-2 rounded bg-grey-850 px-8 py-6 text-xs">
+        <AddressRow
+          label={t("Sender")}
+          address={fromAddress}
+          networkId={networkIdFromTokenId(fromTokenId)}
+        />
+        <AddressRow
+          label={t("Recipient")}
+          address={toAddress}
+          networkId={networkIdFromTokenId(toTokenId)}
+        />
+      </div>
+    </>
+  )
+}

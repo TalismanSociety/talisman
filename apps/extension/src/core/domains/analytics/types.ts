@@ -40,7 +40,7 @@ export type Consent = {
 export type ExceptionFrame = {
   platform: "web:javascript"
   filename?: string
-  function?: string
+  function: string
   lineno?: number
   colno?: number
   in_app: boolean

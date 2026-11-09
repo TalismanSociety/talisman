@@ -4,31 +4,27 @@ import {
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
 } from "@core/domains/accounts/helpers"
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { planckToTokens } from "@talismn/util"
-import { accounts$ } from "@ui/state/accounts"
-import { getNetworks$, getNetworksMapById$, getTokensMap$ } from "@ui/state/chaindata"
-import { gandalfFetch } from "@ui/util/gandalfFetch"
 import BigNumber from "bignumber.js"
-import createClient from "openapi-fetch"
-import { firstValueFrom } from "rxjs"
 import { parseUserInputToPlanck } from "../swap-utils"
+import type {
+  BaseQuote,
+  BuiltLeg,
+  QuoteFee,
+  QuoteParams,
+  SupportedSwapProtocol,
+} from "./common.swap-module"
 import {
-  type BaseQuote,
   type ExchangeParams,
-  type GetTransactionParams,
   getTokenIdForSwappableAsset,
   platformFromTokenId,
-  type QuoteFee,
-  type QuoteParams,
-  type SupportedSwapProtocol,
+  type SwapBuildLegParams,
+  type SwapEnv,
   type SwapExchange,
-  type SwapModule,
-  type SwapModuleTransaction,
+  type SwapModuleDefinition,
   type SwappableAssetBaseType,
-  TALISMAN_FEE_NAME,
 } from "./common.swap-module"
 import {
   buildDepositTransaction,
@@ -40,15 +36,15 @@ import {
   getStealthexAdditionalFeePercent,
   getStealthexTalismanTotalFee,
 } from "./fee-utils"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
 import { assertDepositAmountWithinInput } from "./provider-transaction-guards"
 import type {
-  paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
   SchemaExchange as StealthexExchange,
 } from "./stealthex.api.gen"
+import { stealthexSdk } from "./stealthex-api"
 import stealthexLogo from "./stealthex-logo.svg?url"
 
-const apiUrl = "https://stealthex.talisman.xyz"
 const PROTOCOL: SupportedSwapProtocol = "stealthex" as const
 const PROTOCOL_NAME = "StealthEX"
 const DECENTRALISATION_SCORE = 1.5
@@ -70,152 +66,6 @@ const getAdditionalFeePercent = (feeProps: FeeProps) => getStealthexAdditionalFe
 
 const LOGO = stealthexLogo
 
-const api = createClient<StealthexApi>({ baseUrl: apiUrl, fetch: gandalfFetch })
-const stealthexSdk = {
-  getAllCurrencies: async (): Promise<StealthexCurrency[]> => {
-    const allCurrencies: StealthexCurrency[] = []
-
-    // TODO: When worker cache isn't warm, this takes too long to fetch all requests.
-    const limit = 250
-    for (let offset = 0; ; offset += limit) {
-      const { data: currencies } = await api.GET("/v4/currencies", {
-        params: { query: { limit, offset } },
-      })
-      if (!Array.isArray(currencies)) break
-
-      allCurrencies.push(...currencies)
-      if (currencies.length !== 250) break
-    }
-
-    return allCurrencies
-  },
-  getPairs: async ({
-    symbol,
-    network,
-  }: {
-    symbol: string
-    network: string
-  }): Promise<StealthexCurrency["available_routes"]> => {
-    const { data: currency, error } = await api.GET("/v4/currencies/{symbol}/{network}", {
-      params: { path: { symbol, network }, query: { include_available_routes: "true" } },
-    })
-    if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
-    return currency?.available_routes
-  },
-  getRange: async ({
-    route,
-    estimation,
-    rate,
-    additional_fee_percent,
-  }: {
-    route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    estimation?: "direct" | "reversed"
-    rate?: "floating" | "fixed"
-    additional_fee_percent?: number
-  }): Promise<{ min: BigNumber }> => {
-    // default values
-    estimation ||= "direct"
-    rate ||= "floating"
-
-    const params = {
-      route,
-      estimation,
-      rate,
-      additional_fee_percent,
-    }
-    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
-    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
-
-    const { data: range, error } = await api.POST("/v4/rates/range", { body: params })
-    if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
-    return { min: BigNumber(range?.min_amount ?? 0) }
-  },
-  getEstimate: async ({
-    route,
-    amount,
-    estimation,
-    rate,
-    additional_fee_percent,
-  }: {
-    route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    amount: number
-    estimation?: "direct" | "reversed"
-    rate?: "floating" | "fixed"
-    additional_fee_percent?: number
-  }): Promise<number> => {
-    // default values
-    estimation ||= "direct"
-    rate ||= "floating"
-
-    const params = {
-      route,
-      amount,
-      estimation,
-      rate,
-      additional_fee_percent,
-    }
-    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
-    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
-
-    const { data: estimate, error } = await api.POST("/v4/rates/estimated-amount", { body: params })
-    if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
-    return estimate?.estimated_amount
-  },
-  createExchange: async ({
-    route,
-    amount,
-    estimation,
-    rate,
-    address,
-    extra_id,
-    refund_address,
-    refund_extra_id,
-    additional_fee_percent,
-  }: {
-    route: { from: { network: string; symbol: string }; to: { network: string; symbol: string } }
-    amount: number
-    estimation?: "direct" | "reversed"
-    rate?: "floating" | "fixed"
-    address: string
-    extra_id?: string
-    refund_address?: string
-    refund_extra_id?: string
-    additional_fee_percent?: number
-  }): Promise<StealthexExchange> => {
-    // default values
-    estimation ||= "direct"
-    rate ||= "floating"
-
-    const params = {
-      route,
-      amount,
-      estimation,
-      rate,
-      address,
-      extra_id,
-      refund_address,
-      refund_extra_id,
-      additional_fee_percent,
-    }
-    if (extra_id === undefined) delete params.extra_id
-    if (refund_address === undefined) delete params.refund_address
-    if (refund_extra_id === undefined) delete params.refund_extra_id
-    if (params.additional_fee_percent === undefined) delete params.additional_fee_percent
-    if (params.additional_fee_percent === 0.0) delete params.additional_fee_percent
-
-    const { data: exchange, error } = await api.POST("/v4/exchanges", { body: params })
-    if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
-    return exchange
-  },
-  getExchange: async (id: string): Promise<StealthexExchange> => {
-    const { data: exchange, error } = await api.GET("/v4/exchanges/{id}", {
-      params: { path: { id } },
-    })
-    if (error) throw new Error(`${error.err.kind}: ${error.err.details}`)
-    return exchange
-  },
-}
-
 // --- Internal lookup cache keyed by tokenId ---
 const assetsByTokenId = new Map<string, StealthexInternalAsset>()
 
@@ -225,9 +75,12 @@ const resolveAsset = (tokenId: string): StealthexInternalAsset | undefined =>
 // --- Cached assets (promise-based to deduplicate concurrent calls) ---
 let cachedAssetsPromise: Promise<StealthexInternalAsset[]> | null = null
 
-const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexInternalAsset[]> => {
+const getStealthexAssets = async (
+  env: SwapEnv,
+  _signal: AbortSignal
+): Promise<StealthexInternalAsset[]> => {
   if (!cachedAssetsPromise) {
-    cachedAssetsPromise = fetchStealthexAssets().catch((err) => {
+    cachedAssetsPromise = fetchStealthexAssets(env).catch((err) => {
       cachedAssetsPromise = null // clear on failure so retries work
       throw err
     })
@@ -235,13 +88,13 @@ const getStealthexAssets = async (_signal: AbortSignal): Promise<StealthexIntern
   return cachedAssetsPromise
 }
 
-const fetchStealthexAssets = async (): Promise<StealthexInternalAsset[]> => {
+const fetchStealthexAssets = async (env: SwapEnv): Promise<StealthexInternalAsset[]> => {
   const [allCurrencies, { stealthex: mappings }, knownEvmNetworks, knownTokens] = await Promise.all(
     [
       stealthexSdk.getAllCurrencies(),
-      remoteConfigStore.get("swaps"),
-      firstValueFrom(getNetworksMapById$({ platform: "ethereum" })),
-      firstValueFrom(getTokensMap$()),
+      env.getSwapsConfig(),
+      env.getNetworksMap("ethereum"),
+      env.getTokensMap(),
     ]
   )
   const { networks, tokens } = mappings
@@ -348,13 +201,17 @@ const getRouteHasCustomFee = async (
   return !!pair.features.includes("custom_fee")
 }
 
-const getFromAssets = async (signal: AbortSignal): Promise<string[]> => {
-  const assets = await getStealthexAssets(signal)
+const getFromAssets = async (env: SwapEnv, signal: AbortSignal): Promise<string[]> => {
+  const assets = await getStealthexAssets(env, signal)
   return assets.map((a) => a.id)
 }
 
-const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Promise<string[]> => {
-  const allAssets = await getStealthexAssets(signal)
+const getToAssets = async (
+  fromTokenId: string | null,
+  env: SwapEnv,
+  signal: AbortSignal
+): Promise<string[]> => {
+  const allAssets = await getStealthexAssets(env, signal)
   if (!fromTokenId) return allAssets.map((a) => a.id)
 
   const pairs = await getPairs(fromTokenId)
@@ -368,8 +225,12 @@ const getToAssets = async (fromTokenId: string | null, signal: AbortSignal): Pro
   return [fromTokenId, ...validDestAssets.map((a) => a.id)]
 }
 
-const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<BaseQuote | null> => {
-  const { fromTokenId, toTokenId, fromAmount, fromAddress } = params
+const getQuote = async (
+  params: QuoteParams,
+  env: SwapEnv,
+  _signal: AbortSignal
+): Promise<BaseQuote | null> => {
+  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
   if (!fromTokenId || !toTokenId) return null
 
   const fromAsset = resolveAsset(fromTokenId)
@@ -396,7 +257,7 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       additional_fee_percent,
     })
 
-    const gasFee = fromAddress ? await estimateDepositGas(fromAsset, fromAddress) : null
+    const gasFee = fromAddress ? await estimateDepositGas(env, fromAsset, fromAddress) : null
     // relative fee, multiply by fromAmount to get planck fee
     const talismanFee = Math.max(getTalismanTotalFee({ fromAsset, toAsset }), BUILT_IN_FEE)
     // add talisman fee
@@ -408,35 +269,45 @@ const getQuote = async (params: QuoteParams, _signal: AbortSignal): Promise<Base
       tokenId: fromAsset.id,
     })
 
-    return {
-      decentralisationScore: DECENTRALISATION_SCORE,
-      protocol: PROTOCOL,
-      inputAmountBN: fromAmount,
-      outputAmountBN: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
-      // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
-      timeInSec: 5 * 60,
-      fees,
-      providerLogo: LOGO,
-      providerName: PROTOCOL_NAME,
-      talismanFee,
-    }
+    return quoteFromLegs(
+      [
+        {
+          protocol: PROTOCOL,
+          fromTokenId,
+          toTokenId,
+          signer: fromAddress,
+          recipient: toAddress,
+          inputAmount: fromAmount,
+          outputAmount: parseUserInputToPlanck(BigNumber(estimate).toFixed(), toAsset.decimals),
+          fees,
+          // simpleswap swaps take about 5mins, assuming here that stealthex takes a similar amount of time
+          timeInSec: 5 * 60,
+        },
+      ],
+      {
+        decentralisationScore: DECENTRALISATION_SCORE,
+        protocol: PROTOCOL,
+        providerLogo: LOGO,
+        providerName: PROTOCOL_NAME,
+        talismanFee,
+      }
+    )
   } catch (cause) {
     log.error(`Failed to get StealthEX quote`, cause)
     return null
   }
 }
 
-/** @knipignore Used by swap-protocols.ts via dynamic import type to avoid circular deps. */
 export type { StealthexExchange }
 
-const createExchange = async (params: ExchangeParams): Promise<SwapExchange | null> => {
+const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
     const fromAsset = resolveAsset(fromTokenId)
     const toAsset = resolveAsset(toTokenId)
 
-    const substrateChains = await firstValueFrom(getNetworks$({ platform: "polkadot" }))
+    const substrateChains = await env.getNetworks("polkadot")
     const formatAddress = (address: string | null, asset: StealthexInternalAsset | undefined) => {
       if (!address) return address
       if (asset?.platform !== "polkadot") return address
@@ -451,7 +322,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
     if (!fromAsset) throw new Error("Missing from asset")
     if (!toAsset) throw new Error("Missing to asset")
 
-    const allAccounts = await firstValueFrom(accounts$)
+    const allAccounts = await env.getAccounts()
 
     const formattedFromAddress = formatAddress(fromAddress, fromAsset)
     const formattedToAddress = formatAddress(toAddress, toAsset)
@@ -463,7 +334,7 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
     if (!from) throw new Error("Missing route from")
     if (!to) throw new Error("Missing route to")
 
-    const allNetworks = await firstValueFrom(getNetworks$())
+    const allNetworks = await env.getNetworks()
 
     // validate from address for the source chain
     const fromAccount = allAccounts.find((account) =>
@@ -535,40 +406,56 @@ const createExchange = async (params: ExchangeParams): Promise<SwapExchange | nu
   }
 }
 
-const getTransaction = async (
-  params: GetTransactionParams
-): Promise<SwapModuleTransaction | null> => {
-  const fromAsset = resolveAsset(params.fromTokenId)
+const buildLeg = async (
+  { leg, input, context, exchange }: SwapBuildLegParams,
+  env: SwapEnv
+): Promise<BuiltLeg> => {
+  const fromAsset = resolveAsset(leg.fromTokenId)
   if (!fromAsset) throw new Error("Missing from asset")
 
-  const exchange = params.exchange as StealthexExchange | undefined
-  if (!exchange?.deposit?.address) throw new Error("Missing exchange")
+  if (exchange?.protocol !== "stealthex" || !exchange.data.deposit?.address)
+    throw new Error("Missing exchange")
+  if (!leg.signer) throw new Error("Missing from address")
+  if (!leg.recipient) throw new Error("Missing to address")
 
   assertDepositAmountWithinInput({
-    depositAmount: exchange.deposit.expected_amount,
-    fromAmount: params.fromAmount,
+    depositAmount: exchange.data.deposit.expected_amount,
+    fromAmount: input,
     decimals: fromAsset.decimals,
   })
 
   const deposit: DepositInfo = {
-    depositAddress: exchange.deposit.address,
-    depositAmount: BigNumber(exchange.deposit.expected_amount).toFixed(),
+    depositAddress: exchange.data.deposit.address,
+    depositAmount: BigNumber(exchange.data.deposit.expected_amount).toFixed(),
   }
 
-  return buildDepositTransaction({
-    fromAsset,
-    fromAddress: params.fromAddress,
-    deposit,
-    context: params.context,
-  })
+  return {
+    transaction: await buildDepositTransaction(env, {
+      fromAsset,
+      fromAddress: leg.signer,
+      deposit,
+      context,
+    }),
+    fees: leg.fees,
+    expectedOutput: leg.outputAmount,
+    txInfo: {
+      type: "swap-stealthex",
+      exchangeId: exchange.data.id,
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: leg.outputAmount.toString(),
+      to: leg.recipient,
+    },
+  }
 }
 
-export const stealthexSwapModule: SwapModule = {
+export const stealthexSwapModule: SwapModuleDefinition = {
   protocol: PROTOCOL,
   decentralisationScore: DECENTRALISATION_SCORE,
   getFromAssets: getFromAssets,
   getToAssets: getToAssets,
   getQuote: getQuote,
-  createExchange: createExchange,
-  getTransaction: getTransaction,
+  createExchange,
+  buildLeg,
 }

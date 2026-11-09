@@ -21,7 +21,14 @@ export const SEND_ENTRIES = [
 ] as const
 export type SendEntry = (typeof SEND_ENTRIES)[number]
 
-export const SWAP_ENTRIES = ["dashboard", "bottom_nav", "get_started", "seek"] as const
+export const SWAP_ENTRIES = [
+  "dashboard",
+  "bottom_nav",
+  "get_started",
+  "seek",
+  "swap_plan",
+  "finish_prompt",
+] as const
 export type SwapEntry = (typeof SWAP_ENTRIES)[number]
 
 export const BUY_ENTRIES = [
@@ -92,6 +99,7 @@ export const SWAP_FORM_STATES = [
   "ready",
 ] as const
 export type SwapFormState = (typeof SWAP_FORM_STATES)[number]
+export const MAX_SWAP_PLAN_LEGS = 4
 
 export const FEE_PRIORITIES = ["low", "medium", "high", "recommended", "custom"] as const
 export const GAS_TYPES = ["eip1559", "legacy"] as const

@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 2.3.2
+
+### Patch Changes
+
+- 9b12c38: generate init data
+
 ## 2.3.1
 
 ### Patch Changes

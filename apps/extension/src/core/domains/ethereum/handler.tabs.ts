@@ -30,7 +30,6 @@ import {
   http,
   type PublicClient,
   type RpcError,
-  recoverMessageAddress,
   toHex,
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
@@ -67,6 +66,7 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { decodePersonalSignMessageOrThrow } from "./personalSignMessage"
+import { recoverMessageSigner } from "./recoverSigner"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { assertTypedDataTargetsChain } from "./typedData"
 import type {
@@ -924,7 +924,7 @@ export class EthTabsHandler extends TabsHandler {
         const {
           params: [message, signature],
         } = request
-        return recoverMessageAddress({ message, signature })
+        return recoverMessageSigner(message, signature)
       }
 
       case "eth_sendTransaction":

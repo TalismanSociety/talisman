@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223), or in a git worktree's own browser, the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), or run manual QA before a PR.
+description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223), or in a git worktree's own browser, the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), test a swap, or run manual QA before a PR.
 ---
 
 # Verify the Talisman extension
@@ -14,6 +14,13 @@ The host dev build has one instance per machine: the dev server has a fixed port
 ## 1. Launch
 
 Run every command from the repo root.
+
+Set the run folder first. The steps below write to it, and it does not last between agent tool calls either: keep the path and set `RUN` again in each call.
+
+```sh
+RUN=.tmp/verify/$(date +%Y%m%d-%H%M%S)-<feature>
+mkdir -p "$RUN"
+```
 
 Each checkout drives the browser that serves its own build. The helpers find its CDP port in this order: `VERIFY_CDP_PORT`, then the port in `.tmp/verify/cdp-port`, then 9223 in the main checkout. In a worktree they exit with an error when they find no port or find 9223, because 9223 is the main checkout's browser. A shell variable does not last from one agent tool call to the next, so a worktree keeps its port in the file.
 
@@ -79,7 +86,6 @@ Pick the feature file in [`features/`](features/README.md). Each recipe lists it
 Set up the run:
 
 ```sh
-RUN=.tmp/verify/$(date +%Y%m%d-%H%M%S)-<feature>
 .claude/skills/verify/bin/tabs.sh baseline "$RUN"
 ab() { .claude/skills/verify/bin/ab "$@"; }
 ```

@@ -8,8 +8,6 @@ import { POSTHOG_API_HOST, POSTHOG_PROJECT_ID } from "../src/core/domains/analyt
 /** `pnpm dlx` runs outside the workspace, so `minimumReleaseAge` does not vet a bump: pin it. */
 export const POSTHOG_CLI = "@posthog/cli@0.18.3"
 
-const RELEASE_NAME = "talisman-extension"
-
 export const CLI_STEP_TIMEOUT_MS = 5 * 60_000
 
 /**
@@ -26,21 +24,17 @@ const MUST_NOT_BE_INJECTED = ["page.js", "content-scripts/content.js"]
 export type SourcemapPlan =
   | { action: "skip"; reason: "firefox" | "no_sourcemaps" | "dry_run" }
   | { action: "fail"; reason: string }
-  | { action: "inject_and_upload"; host: string; apiKey: string; version: string; build: string }
+  | { action: "inject_and_upload"; host: string; apiKey: string }
 
 /** Read `env` in the hook, after WXT loaded `.env`. */
 export const planSourcemapUpload = ({
   browser,
   buildType,
   env,
-  version,
-  build,
 }: {
   browser: string
   buildType: string | undefined
   env: Readonly<Record<string, string | undefined>>
-  version: string
-  build: string
 }): SourcemapPlan => {
   if (browser === "firefox") return { action: "skip", reason: "firefox" }
   if (buildType !== "production" && buildType !== "canary")
@@ -56,8 +50,6 @@ export const planSourcemapUpload = ({
     action: "inject_and_upload",
     host: env.POSTHOG_CLI_HOST?.trim() || POSTHOG_API_HOST,
     apiKey,
-    version: buildType === "canary" ? `${version}-canary` : version,
-    build,
   }
 }
 
@@ -98,15 +90,14 @@ export const preflightSourcemapPlan = async (
 }
 
 /**
- * `symbol-set` stamps the release on the uploaded maps: the other mode puts it in the chunks, for
- * an SDK we do not run to read. Each build is its own release, `<version>+<build>`, and a chunk that
- * an earlier build uploaded keeps that build's release and map. Chunk ids hash the bundle only, so
- * an identical bundle can come with a different map (a comment edit, another output dir): the
- * stored map still resolves it, hence `--skip-on-conflict`.
+ * No release: chunk ids resolve the maps, and a chunk that an earlier build uploaded under a release
+ * makes PostHog refuse any other release. Chunk ids hash the bundle only, so an identical bundle can
+ * come with a different map (a comment edit, another output dir): the stored map still resolves it,
+ * hence `--skip-on-conflict`, which the CLI honours in `symbol-set` mode only.
  */
 export const cliSteps = (
   outDir: string,
-  { host, version, build }: { host: string; version: string; build: string }
+  { host }: { host: string }
 ): readonly (readonly string[])[] => {
   const global = ["dlx", POSTHOG_CLI, "--host", host]
   const selection = [
@@ -121,12 +112,6 @@ export const cliSteps = (
       "sourcemap",
       "upload",
       ...selection,
-      "--release-name",
-      RELEASE_NAME,
-      "--release-version",
-      version,
-      "--build",
-      build,
       "--release-mode",
       "symbol-set",
       "--skip-on-conflict",
@@ -227,10 +212,7 @@ const runCli: RunCli = (args, { cwd, apiKey }) =>
     )
   })
 
-/**
- * The CLI runs from the temp dir: in a git checkout it derives a release from git and calls the
- * releases API.
- */
+/** The CLI runs from the temp dir: in a git checkout it would derive a release from git. */
 export const runSourcemapPlan = async (
   plan: SourcemapPlan,
   { outDir, warn, run = runCli }: { outDir: string; warn: (message: string) => void; run?: RunCli }

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-
 import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import {
   deserializeAssetRegistry,

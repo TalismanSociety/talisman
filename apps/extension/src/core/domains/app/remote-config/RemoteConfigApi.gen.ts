@@ -332,6 +332,8 @@ export class RemoteConfigApi<
             BLOCKAID_DAPP_SCAN_V2: boolean;
             /** Enables token scanning via Blockaid */
             BLOCKAID_TOKEN_SCAN: boolean;
+            /** Shows swap routes that take more than one transaction */
+            SWAPS_MULTI_HOP: boolean;
           };
           /** CoinGecko price data proxy configuration */
           coingecko: {
@@ -514,8 +516,6 @@ export class RemoteConfigApi<
             BITTENSOR_STAKE: boolean;
             /** Enables Bittensor settings in the mobile wallet */
             BITTENSOR_SETTINGS: boolean;
-            /** Enables Bittensor dTAO staking in the mobile wallet */
-            BITTENSOR_DTAO_STAKE: boolean;
             /** Enables Bittensor Root Reborn claim, claim + unstake, and claim activity history in the mobile wallet */
             BITTENSOR_ROOT_CLAIM: boolean;
             /** Enables Bittensor MEV shield in the mobile wallet */
@@ -524,6 +524,8 @@ export class RemoteConfigApi<
             SWAPS: boolean;
             /** Enables the Earn tab with Bittensor subnet trading (buy/sell alpha) in the mobile wallet */
             SUBNET_TRADING: boolean;
+            /** Enables the PnL figures (unrealized and realized PnL, average entry, total cost) on a subnet position in the mobile wallet, and the cost basis reads behind them */
+            SUBNET_PNL: boolean;
           };
           /** Anonymous product analytics configuration for the mobile wallet. The app queues events until this section is fetched and drops everything when the user opts out in Settings. */
           analytics: {
@@ -535,7 +537,7 @@ export class RemoteConfigApi<
              */
             posthogUrl: string;
           };
-          /** Token swap feature configuration including LI.FI, SimpleSwap, and StealthEX integrations. Sourced from the shared config's swaps section (minus deprecated fields) — see src/mobile-remote-config/loader.ts */
+          /** Token swap feature configuration including LI.FI, SimpleSwap, StealthEX and ChangeNOW integrations. Sourced from the shared config's swaps section (minus deprecated fields), plus the mobile-only providers from mobile-remote-config.yaml — see src/mobile-remote-config/loader.ts */
           swaps: {
             /** Additional token IDs to enable in LI.FI that may not be available by default. Format: 'chainId:evm-erc20:contractAddress' */
             lifiTalismanTokens: string[];
@@ -583,6 +585,19 @@ export class RemoteConfigApi<
                */
               feeBps: number;
             };
+            /** ChangeNOW network and token ID mappings, and the partner commission shown on its quotes */
+            changenow: {
+              /** Maps provider network identifiers to Talisman network IDs (e.g. 'arbitrum' → '42161', 'sol' → 'solana-mainnet') */
+              networks: Record<string, string>;
+              /** Maps provider asset keys to Talisman token IDs for tokens that cannot be auto-resolved (native tokens, substrate tokens). E.g. 'dot' → 'polkadot-asset-hub:substrate-native' */
+              tokens: Record<string, string>;
+              /**
+               * The partner commission configured on Talisman's ChangeNOW account, as a fraction (0.006 = 0.6%). ChangeNOW deducts it from the quoted amount on its side; the app only displays it as the Talisman fee, so keep it in step with the ChangeNOW partner dashboard
+               * @min 0
+               * @max 0.05
+               */
+              affiliateFee: number;
+            };
           };
           /** Per-platform, per-provider gating of the swaps feature: each listed provider carries App Store storefront and IP-region denylists. Region groups named in the YAML (EU, EEA) are expanded to country codes here. */
           swapAccess: {
@@ -595,6 +610,12 @@ export class RemoteConfigApi<
             ios: {
               /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. When no listed provider passes its region rules, the app shows the Swap screen disabled, with a notice that swaps are unavailable in the user's region. */
               providers: {
+                changenow?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
                 lifi?: {
                   /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
                   storefrontRegionDenylist: string[];
@@ -619,6 +640,12 @@ export class RemoteConfigApi<
             android: {
               /** Swap providers the app may quote and execute through on this platform, each with its own region denylists. A provider not listed is disabled on this platform. When no listed provider passes its region rules, the app shows the Swap screen disabled, with a notice that swaps are unavailable in the user's region. */
               providers: {
+                changenow?: {
+                  /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
+                  storefrontRegionDenylist: string[];
+                  /** Regions (ISO 3166-1 alpha-2, from the connecting IP) where this provider is hidden by the app and rejected by its Talisman API proxy for mobile clients. Extension traffic is never subject to this list. */
+                  ipRegionDenylist: string[];
+                };
                 lifi?: {
                   /** App Store storefront regions (ISO 3166-1 alpha-2) where this provider is hidden. iOS reads the StoreKit storefront; Android has no readable Play storefront, so any non-empty list hides the provider for every Android user (unknown storefront is treated as denied). */
                   storefrontRegionDenylist: string[];

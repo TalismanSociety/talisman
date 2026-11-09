@@ -2,8 +2,10 @@ import { log } from "@common/log"
 import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { isAccountPlatformEthereum } from "@core/domains/keyring/exports"
 import { getErrorMessage } from "@talismn/util"
+import { useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { notify } from "@ui/components/Notifications"
+import { invalidateNonceQueries } from "@ui/domains/Ethereum/useEthTransaction"
 import { useReportPayloadLock } from "@ui/hooks/useReportPayloadLock"
 import { useAccountByAddress } from "@ui/state/accounts"
 import { cn } from "@ui/util/cn"
@@ -27,6 +29,25 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   const { t } = useTranslation()
   const reportPayloadLock = useReportPayloadLock(onPayloadLockChange)
   const account = useAccountByAddress(tx.payload.from)
+  const queryClient = useQueryClient()
+
+  const handleSubmitError = useCallback(
+    async (cause: unknown) => {
+      log.error("Failed to submit tx", { cause, tx })
+      notify({
+        title: `Failed to submit`,
+        type: "error",
+        subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
+        cause,
+      })
+      await invalidateNonceQueries(queryClient, {
+        address: tx.payload.from,
+        networkId: tx.networkId,
+      })
+      onError?.(cause)
+    },
+    [onError, queryClient, tx, t]
+  )
 
   const handleLedgerSignature = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -38,17 +59,10 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
 
         onSubmit(hash)
       } catch (cause) {
-        log.error("Failed to submit tx", { cause, tx })
-        notify({
-          title: `Failed to submit`,
-          type: "error",
-          subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
-          cause,
-        })
-        onError?.(cause)
+        await handleSubmitError(cause)
       }
     },
-    [onSubmit, onError, tx, t]
+    [onSubmit, handleSubmitError, tx]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -63,18 +77,11 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
 
       onSubmit(hash)
     } catch (cause) {
-      log.error("Failed to submit tx", { cause, tx })
-      notify({
-        title: `Failed to submit`,
-        type: "error",
-        subtitle: (cause as BaseError).shortMessage ?? getErrorMessage(cause, t("Unknown error")),
-        cause,
-      })
-      onError?.(cause)
+      await handleSubmitError(cause)
     } finally {
       setIsSubmitting(false)
     }
-  }, [onSubmit, onError, tx, t])
+  }, [onSubmit, handleSubmitError, tx])
 
   if (!isAccountPlatformEthereum(account))
     return <TxSubmitButtonFallback label={label} className={className} />

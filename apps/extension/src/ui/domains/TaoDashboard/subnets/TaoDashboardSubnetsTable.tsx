@@ -44,6 +44,7 @@ import { useTaoDashboardNetworkId } from "../shared/TaoDashboardNetworkProvider"
 import type { TimePeriod } from "../shared/types"
 import { formatCompactNumber, getTaoDashboardUrl } from "../shared/util"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
+import type { StakeTarget } from "./stakeTarget"
 import {
   type TaoDashboardSubnet,
   type TaoDashboardSubnetsErrors,
@@ -164,7 +165,7 @@ export const TaoDashboardSubnetsTable: FC<{
   period: TimePeriod
   hideHeader?: boolean
 }> = ({ search = "", period, hideHeader = false }) => {
-  const { subnets, stakeAddress, isLoading, loading, errors } = useTaoDashboardSubnets(period)
+  const { subnets, stakeTarget, isLoading, loading, errors } = useTaoDashboardSubnets(period)
   const sortSetting = useSortSetting()
   const setSortSetting = useSetSortSetting()
 
@@ -311,7 +312,7 @@ export const TaoDashboardSubnetsTable: FC<{
                 rowIndex={item.index + 1}
                 loading={loading}
                 errors={errors}
-                stakeAddress={stakeAddress}
+                stakeTarget={stakeTarget}
               />
             </div>
           )
@@ -475,14 +476,14 @@ const SubnetRow: FC<{
   rowIndex: number
   loading: TaoDashboardSubnetsLoading
   errors: TaoDashboardSubnetsErrors
-  stakeAddress: string | undefined
-}> = memo(({ subnet, rowIndex, loading, errors, stakeAddress }) => {
+  stakeTarget: StakeTarget | null
+}> = memo(({ subnet, rowIndex, loading, errors, stakeTarget }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const networkId = useTaoDashboardNetworkId()
   const { open: openBondModal } = useBittensorBondModal()
   const isRoot = subnet.netuid === 0
-  const canStake = !!stakeAddress
+  const canStake = !!stakeTarget
   const canUnstake = !!subnet.unstakeAddress
 
   // Compare last price to first price in 7d data to determine chart color
@@ -499,16 +500,16 @@ const SubnetRow: FC<{
   const handleStakeClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
-      if (!canStake) return
+      if (!stakeTarget) return
       openBondModal({
         entry: "tao_dashboard",
         stakeDirection: "bond",
         networkId: subnet.token.networkId,
         netuid: subnet.netuid,
-        address: stakeAddress,
+        address: stakeTarget.address,
       })
     },
-    [openBondModal, subnet.token.networkId, subnet.netuid, stakeAddress, canStake]
+    [openBondModal, subnet.token.networkId, subnet.netuid, stakeTarget]
   )
 
   const handleUnstakeClick = useCallback(
