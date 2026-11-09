@@ -35,7 +35,7 @@ export type SendFundsOpenRequest = {
   entry: SendEntry
   from?: Address
   tokenId?: TokenId
-  tokenSymbol?: string
+  tokenIds?: TokenId[]
   to?: Address
 }
 
