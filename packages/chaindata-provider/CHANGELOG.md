@@ -1,5 +1,13 @@
 # @talismn/chaindata-provider
 
+## 2.3.3
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- Updated dependencies [74350e8]
+  - @talismn/util@2.1.2
+
 ## 2.3.2
 
 ### Patch Changes
