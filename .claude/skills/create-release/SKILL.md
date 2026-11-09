@@ -157,8 +157,8 @@ Tag before the merge. The PR is squash-merged, so the commit it creates on `dev`
 
 Once the release PR has merged, add the release to the docs site page https://docs.talisman.xyz/talisman/about/wallet-release-notes. Its source is `about/wallet-release-notes.md` in `TalismanSociety/docs.talisman.xyz`, branch `main`. GitBook publishes each push to `main`.
 
-1. Work in a checkout of that repo: use the user's checkout if they have one, else `gh repo clone TalismanSociety/docs.talisman.xyz .tmp/docs.talisman.xyz`. Be on `main`, working tree clean, pulled.
-2. Take the changelog from `.tmp/release-vX.Y.Z-changelog.md`, else from the merged PR: `gh pr view <n> --json body -q .body`. Keep the wording. Drop the `**Talisman vX.Y.Z**` title.
+1. From the wallet repo root, read the changelog from `.tmp/release-vX.Y.Z-changelog.md`, else from the merged PR: `gh pr view <n> --repo TalismanSociety/talisman --json body -q .body`. Keep the wording. Drop the `**Talisman vX.Y.Z**` title.
+2. Work in a checkout of the docs repo: use the user's checkout if they have one, else `gh repo clone TalismanSociety/docs.talisman.xyz .tmp/docs.talisman.xyz`. Be on `main`, working tree clean, pulled.
 3. Under `## Latest Release`, add `### vX.Y.Z - Mon D, YYYY`, dated the day the builds were submitted to the stores (ask when unsure). Move the `## Release History` heading up, so the previous latest release becomes its first entry.
 4. Write the entry as one blockquote, in the page's own section headings, not the Discord ones:
 
