@@ -1,14 +1,14 @@
 ---
 name: create-release
-description: Cut a Talisman extension release with changelog, version bump, RC builds and PR.
+description: Cut a Talisman extension release with changelog, version bump, RC builds and PR, then tag it, merge it and publish its release notes.
 disable-model-invocation: true
 ---
 
 # Release the Talisman extension
 
-A release is a `chore/bump-version-vX.Y.Z` branch with one commit, `🔖 bump version vX.Y.Z`, production zips in `apps/extension/dist/` named `…-chrome_RC<N>.zip` and `…-firefox_RC<N>.zip`, and a PR to `dev` whose description is the changelog.
+A release is a `chore/bump-version-vX.Y.Z` branch with one commit, `🔖 bump version vX.Y.Z`, production zips in `apps/extension/dist/` named `…-chrome_RC<N>.zip` and `…-firefox_RC<N>.zip`, and a PR to `dev` whose description is the changelog. Once the user has submitted the zips to the stores, the release gets a `vX.Y.Z` tag on the commit the zips were built from, its PR merges, and its changelog goes on the docs site.
 
-Run every command from the repo root of the main checkout. Helpers live in `.claude/skills/create-release/bin/`.
+Run every command from the repo root of the main checkout, except in step 8. Helpers live in `.claude/skills/create-release/bin/`.
 
 ## 1. Pre-flight
 
@@ -22,6 +22,8 @@ Check these before you read any history, so the changelog matches what ships:
 Report every failed check and wait for the user. Do not work around one.
 
 On a `chore/bump-version-v*` branch that has the bump commit, the user wants another RC. Run the same checks, but expect that branch instead of `dev`. The working tree must still be clean: fixes go in commits before the build. Then go to step 5.
+
+When the user says the builds are submitted to the stores, or asks to tag or merge the release, go to step 7. When the release PR has merged, go to step 8.
 
 ## 2. Propose the bump and the changelog
 
@@ -138,4 +140,50 @@ When a build or a rename fails, show the output and stop. `rename-build.sh` refu
 
    When the changelog file is missing (a new session, for example), go back to step 2 for the changelog only, get it approved, and save it.
 
-Finish with the PR URL, and the two RC zips and the sources zip with their SHA256 (`shasum -a 256 <file>`). Do not tag and do not merge.
+Finish with the PR URL, and the two RC zips and the sources zip with their SHA256 (`shasum -a 256 <file>`). Do not tag and do not merge: the user submits the zips to the stores first, then step 7 runs.
+
+## 7. Tag, then merge
+
+Tag before the merge. The PR is squash-merged, so the commit it creates on `dev` matches no build. The tag goes on the branch commit the submitted zips were built from, and it keeps that commit reachable after the branch is deleted.
+
+1. On `chore/bump-version-vX.Y.Z`, working tree clean, level with its remote branch (`git fetch origin`, then `git status -sb`).
+2. `git log -1 --format=%h` must equal the sha in the names of the zips the user submitted (`talisman-X.Y.Z-production-<sha>-chrome_RC<N>.zip`). When `apps/extension/dist/` holds several RCs, ask which one was submitted. When the shas differ, stop: the tag would name a commit no submitted build came from.
+3. `git push --tags --dry-run origin` must print no tag. `tag-release.sh` runs `git push --tags`, which pushes every local tag. When a stray local tag is listed, show it and ask.
+4. `(cd scripts && ./tag-release.sh)`. It reads `../apps/extension/package.json`, so it only works from `scripts/`. It creates the annotated tag `vX.Y.Z` on HEAD and pushes it.
+5. Check that `git ls-remote --tags origin "vX.Y.Z^{}"` prints the HEAD sha.
+6. Merge only when the user asks: `gh pr merge <n> --squash`. Otherwise say the PR is ready to merge.
+
+## 8. Publish the release notes
+
+Once the release PR has merged, add the release to the docs site page https://docs.talisman.xyz/talisman/about/wallet-release-notes. Its source is `about/wallet-release-notes.md` in `TalismanSociety/docs.talisman.xyz`, branch `main`. GitBook publishes each push to `main`.
+
+1. Work in a checkout of that repo: use the user's checkout if they have one, else `gh repo clone TalismanSociety/docs.talisman.xyz .tmp/docs.talisman.xyz`. Be on `main`, working tree clean, pulled.
+2. Take the changelog from `.tmp/release-vX.Y.Z-changelog.md`, else from the merged PR: `gh pr view <n> --json body -q .body`. Keep the wording. Drop the `**Talisman vX.Y.Z**` title.
+3. Under `## Latest Release`, add `### vX.Y.Z - Mon D, YYYY`, dated the day the builds were submitted to the stores (ask when unsure). Move the `## Release History` heading up, so the previous latest release becomes its first entry.
+4. Write the entry as one blockquote, in the page's own section headings, not the Discord ones:
+
+   | Discord | Docs page |
+   | --- | --- |
+   | `✨ **New**` | `> :nazar\_amulet: Additions` |
+   | `⚡️ **Improvements**` | `> :tools: Improvements` |
+   | `🐛 **Fixes**` | `> :bug: Fixes` |
+
+   A `>` line follows each heading and separates the sections, and each item is a `> * ` bullet. Drop empty sections, and drop inline code backticks:
+
+   ```md
+   ### v3.13.0 - Nov 9, 2026
+
+   > :nazar\_amulet: Additions
+   >
+   > * Multi-step swaps, starting with Bittensor TAO to Base
+   >
+   > :tools: Improvements
+   >
+   > * Root staking yield shown as APR
+   >
+   > :bug: Fixes
+   >
+   > * Balances freezing after a network outage
+   ```
+
+5. Show the diff and wait for approval. Then commit `📝 extension vX.Y.Z release notes` and push to `main`.
