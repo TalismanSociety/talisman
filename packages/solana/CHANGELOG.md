@@ -1,5 +1,11 @@
 # @talismn/solana
 
+## 1.0.6
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+
 ## 1.0.5
 
 ### Patch Changes

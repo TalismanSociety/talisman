@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 2.1.2
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+
 ## 2.1.1
 
 ### Patch Changes
