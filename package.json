@@ -6,7 +6,7 @@
   "engines": {
     "node": ">=22"
   },
-  "packageManager": "pnpm@11.24.0+sha512.bd27e345e976dcb0be0b7a1228217b049a817e21b1f355c90dbe7dc46671895a8bc1e6d06c24554505ea93ea0b45f489a27ec1bfbc8de6a9659fca0f16fa0000",
+  "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "scripts": {
     "postinstall": "pnpm papi:once",
     "prepare": "[ \"$(git config core.hooksPath)\" != .husky/_ ] || git config --unset core.hooksPath; simple-git-hooks",
@@ -63,21 +63,21 @@
     "pre-commit": "./node_modules/.bin/biome check --staged --error-on-warnings --no-errors-on-unmatched"
   },
   "dependencies": {
-    "polkadot-api": "3.2.2"
+    "polkadot-api": "3.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
+    "@biomejs/biome": "~2.5.15",
     "@changesets/cli": "^3.0.3",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.1",
     "@svgr/rollup": "8.1.0",
-    "@types/node": "^24.13.3",
-    "@vitest/coverage-v8": "^5.0.1",
-    "@vitest/ui": "5.0.1",
-    "dotenv": "17.4.2",
-    "knip": "6.36.0",
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/ui": "5.0.5",
+    "dotenv": "18.0.9",
+    "knip": "6.44.1",
     "simple-git-hooks": "2.14.0",
-    "tsdown": "0.23.0",
+    "tsdown": "0.23.4",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.5"
   }
 }
