@@ -144,14 +144,11 @@ Finish with the PR URL, and the two RC zips and the sources zip with their SHA25
 
 ## 7. Tag, then merge
 
-Tag before the merge. The PR is squash-merged, so the commit it creates on `dev` matches no build. The tag goes on the branch commit the submitted zips were built from, and it keeps that commit reachable after the branch is deleted.
+Tag the released commit before the merge: the squash merge creates a commit on `dev` that no build came from.
 
-1. On `chore/bump-version-vX.Y.Z`, working tree clean, level with its remote branch (`git fetch origin`, then `git status -sb`).
-2. `git log -1 --format=%h` must equal the sha in the names of the zips the user submitted (`talisman-X.Y.Z-production-<sha>-chrome_RC<N>.zip`). When `apps/extension/dist/` holds several RCs, ask which one was submitted. When the shas differ, stop: the tag would name a commit no submitted build came from.
-3. `git push --tags --dry-run origin` must print no tag. `tag-release.sh` runs `git push --tags`, which pushes every local tag. When a stray local tag is listed, show it and ask.
-4. `(cd scripts && ./tag-release.sh)`. It reads `../apps/extension/package.json`, so it only works from `scripts/`. It creates the annotated tag `vX.Y.Z` on HEAD and pushes it.
-5. Check that `git ls-remote --tags origin "vX.Y.Z^{}"` prints the HEAD sha.
-6. Merge only when the user asks: `gh pr merge <n> --squash`. Otherwise say the PR is ready to merge.
+1. Check out the commit whose sha is in the submitted zip names (`…-production-<sha>-…`), usually the head of `chore/bump-version-vX.Y.Z`.
+2. `(cd scripts && ./tag-release.sh)`. It tags HEAD `vX.Y.Z` and pushes the tag. It reads `../apps/extension/package.json`, so it only works from `scripts/`.
+3. Merge only when the user asks: `gh pr merge <n> --squash`.
 
 ## 8. Publish the release notes
 
