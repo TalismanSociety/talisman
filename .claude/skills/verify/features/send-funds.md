@@ -33,5 +33,6 @@ Preconditions:
 - Real funds on mainnet. Use testnets and test accounts only.
 - The amount input is React-controlled. If `fill` leaves the review button disabled, set the value with the `HTMLInputElement.prototype.value` setter and dispatch `input`.
 - Solana token ids read `solana-mainnet:sol-native` or `solana-mainnet:sol-spl:<mint>`. When unsure of an id, go through the token picker.
+- The picker lists only tokens with a transferable balance. With Bittensor Testnet on, it still reads "No token matches your search" for `testTAO` until the wallet has loaded that balance, and the dashboard portfolio has no `testTAO` row either. Seen on 2026-11-10 for over 20 minutes: both testnet RPCs took 8 to 14 seconds per request, and the service worker console repeated "MiniMetadata is required for fetching substrate-dtao balances on bittensor-testnet". Time one request before you blame the recipe: `curl -s -o /dev/null -w '%{time_total}\n' -H 'content-type: application/json' -d '{"id":1,"jsonrpc":"2.0","method":"chain_getHeader","params":[]}' https://test.finney.opentensor.ai`. When it takes seconds, record the recipe as unreachable.
 - The local subtensor devnet (`BITTENSOR_DEVNET_RPC`) loses its state when its container stops. No balance there means the node restarted.
 - Hardware accounts (Ledger, Polkadot Vault) need a device. Leave them out of automated runs.
