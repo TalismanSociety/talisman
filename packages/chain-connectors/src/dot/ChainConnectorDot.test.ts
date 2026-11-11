@@ -229,6 +229,26 @@ describe("ChainConnectorDot after a suspension", () => {
     expect(provider.switches).toEqual([])
   })
 
+  it("keeps the endpoint for every socket failure while the host marks a suspension", async () => {
+    const { setSuspended } = await import("@talismn/util")
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    setSuspended(true)
+    // the provider's heartbeat and connection timeouts keep running with no traffic
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://b.example" })
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example", "wss://b.example"])
+
+    await run(20_000)
+    setSuspended(false)
+    // after 15s or more, the resume reconnects once more, to the same endpoint
+    expect(provider.switches).toEqual(["wss://b.example", "wss://b.example", "wss://b.example"])
+  })
+
   it("doesn't time a request out across a suspension", async () => {
     const connector = new Connector(chaindata)
     await subscribe(connector)
