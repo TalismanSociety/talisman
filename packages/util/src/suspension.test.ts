@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { getLastResumedAt, onResume, setAwakeTimeout } from "./suspension"
+import { getLastResumedAt, onResume, setAwakeTimeout, setSuspended } from "./suspension"
 
 // Date.now is driven by hand: while the runtime is suspended no timer runs, and on resume all
 // the timers that came due run at once, each seeing the resume time
@@ -139,6 +139,63 @@ describe("suspension", () => {
       remove()
       remove()
       expect(vi.getTimerCount()).toBe(0)
+    })
+  })
+
+  describe("setSuspended", () => {
+    it("holds the timeouts while the host marks the runtime suspended", () => {
+      const callback = vi.fn()
+      setAwakeTimeout(callback, 30_000)
+
+      run(5_000)
+      setSuspended(true)
+      // the runtime keeps running, but its time doesn't count
+      run(60_000)
+      expect(callback).not.toHaveBeenCalled()
+
+      setSuspended(false)
+      run(29_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(200)
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
+    it("reports the resume with the time since the runtime was marked suspended", () => {
+      const listener = vi.fn()
+      const remove = onResume(listener)
+
+      setSuspended(true)
+      run(20_000)
+      // a second mark keeps the first one's time
+      setSuspended(true)
+      run(20_000)
+      expect(listener).not.toHaveBeenCalled()
+
+      setSuspended(false)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith(40_000)
+      expect(getLastResumedAt()).toBe(now)
+
+      // nothing to resume from
+      setSuspended(false)
+      expect(listener).toHaveBeenCalledTimes(1)
+      remove()
+    })
+
+    it("reports a freeze during the marked time once, at the end of the mark", () => {
+      const listener = vi.fn()
+      const remove = onResume(listener)
+
+      setSuspended(true)
+      run(1_000)
+      suspend(60_000)
+      run(1_000)
+      expect(listener).not.toHaveBeenCalled()
+
+      setSuspended(false)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith(62_000)
+      remove()
     })
   })
 })
