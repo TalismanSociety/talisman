@@ -2,6 +2,13 @@ import type { Rpc, RpcTransport, SolanaRpcApi } from "@solana/kit"
 import { createDefaultRpcTransport, createSolanaRpcFromTransport, isSolanaError } from "@solana/kit"
 import type { SolNetworkId } from "@talismn/chaindata-provider"
 
+import {
+  genesisHashMatches,
+  getIdentityVerdict,
+  recordIdentityVerdict,
+  withTimeout,
+} from "../rpcIdentity"
+
 export type SolRpc = Rpc<SolanaRpcApi>
 
 // Public Solana RPC nodes rate-limit aggressively with HTTP 429. kit's default transport is
@@ -122,6 +129,62 @@ const withoutPreflight = (config: RpcTransportConfig): RpcTransportConfig => {
 export type SolTransportOptions = {
   /** Called with the url of the RPC that answered, after every successful request */
   onRpcSuccess?: (url: string) => void
+  /**
+   * The network's genesis hash. An RPC is sent nothing until it has answered `getGenesisHash`
+   * with it, and is skipped when it serves another chain. Without one, the RPCs are used
+   * unverified.
+   */
+  genesisHash?: string
+}
+
+/** How long the `getGenesisHash` probe of an RPC may take */
+const IDENTITY_PROBE_TIMEOUT_MS = 5_000
+
+/** In-flight probes, shared by every transport of the network */
+const probes = new Map<string, Promise<boolean>>()
+
+const GET_GENESIS_HASH = { jsonrpc: "2.0", id: 0, method: "getGenesisHash", params: [] }
+
+/**
+ * Whether the RPC serves the chain with `genesisHash`; throws when it could not be asked. The
+ * verdict is kept for the process (see `rpcIdentity`), and concurrent requests share one probe.
+ */
+const servesChain = (
+  networkId: string,
+  genesisHash: string,
+  url: string,
+  transport: RpcTransport,
+  signal: AbortSignal | undefined
+): Promise<boolean> => {
+  const verdict = getIdentityVerdict(networkId, url)
+  if (verdict) return Promise.resolve(verdict === "match")
+
+  const key = `${networkId}|${url}`
+  let probe = probes.get(key)
+  if (!probe) {
+    probe = withTimeout(
+      transport<{ result?: unknown }>({ payload: GET_GENESIS_HASH }),
+      IDENTITY_PROBE_TIMEOUT_MS,
+      `getGenesisHash ${url}`
+    )
+      .then((response) => {
+        if (typeof response?.result !== "string")
+          throw new Error(`RPC ${url} did not report a genesis hash`)
+        const matches = genesisHashMatches(genesisHash, response.result)
+        recordIdentityVerdict(networkId, url, matches ? "match" : "mismatch")
+        return matches
+      })
+      .finally(() => probes.delete(key))
+    probes.set(key, probe)
+  }
+  if (!signal) return probe
+
+  // the probe is shared, so a caller's abort stops its own wait, not the probe
+  return new Promise<boolean>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason)
+    signal.addEventListener("abort", onAbort, { once: true })
+    probe.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort))
+  })
 }
 
 /**
@@ -129,12 +192,20 @@ export type SolTransportOptions = {
  * the next when the request fails. A transport only throws for connection, timeout and HTTP errors:
  * JSON-RPC errors come back in the response body and are returned as is.
  *
+ * With a `genesisHash`, each RPC is asked for `getGenesisHash` before its first use. One of another
+ * chain is skipped; one whose probe fails counts as failing this request and is probed again on its
+ * next use.
+ *
  * A failed RPC other than a rate limited one may still have forwarded a transaction. Resending it is
  * safe, as the network processes a signature once, but its preflight simulation on the next RPC
  * could then fail although it landed. So after such a failure, every resend of that transaction,
  * including the retries after a rate limit, skips preflight.
  */
-const withFailover = (urls: string[], options: SolTransportOptions): RpcTransport => {
+const withFailover = (
+  networkId: SolNetworkId,
+  urls: string[],
+  options: SolTransportOptions
+): RpcTransport => {
   const transports = urls.map((url) => createDefaultRpcTransport({ url }))
   let preferred = 0
   const mayHaveBeenProcessed = new WeakSet<RpcTransportConfig>()
@@ -151,6 +222,22 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
       const transport = transports[index] as RpcTransport
       const isLastAttempt = attempt === transports.length - 1
       const request = mayHaveBeenProcessed.has(config) ? withoutPreflight(config) : config
+
+      // nothing has been sent to this RPC yet, so a failure here leaves preflight as it is
+      if (options.genesisHash) {
+        const url = urls[index] as string
+        try {
+          if (!(await servesChain(networkId, options.genesisHash, url, transport, config.signal))) {
+            lastError = new Error(`RPC ${url} does not serve network ${networkId}`)
+            continue
+          }
+        } catch (error) {
+          if (config.signal?.aborted) throw error
+          lastError = error
+          if (getRateLimitContext(error)) rateLimitError ??= error
+          continue
+        }
+      }
 
       try {
         const response = isLastAttempt
@@ -174,14 +261,15 @@ const withFailover = (urls: string[], options: SolTransportOptions): RpcTranspor
 /**
  * Returns a transport over all of the network's RPCs, in the given order. A request fails over to
  * the next RPC on error, and the RPC that answered is tried first for the next request. When every
- * RPC fails and one of them answered HTTP 429, the whole list is retried with backoff.
+ * RPC fails and one of them answered HTTP 429, the whole list is retried with backoff. With a
+ * `genesisHash`, an RPC of another chain is skipped.
  */
 export const getSolTransport = (
-  _networkId: SolNetworkId,
+  networkId: SolNetworkId,
   rpcs: string[],
   options: SolTransportOptions = {}
 ): RpcTransport => {
-  return withRetryOn429(withFailover(rpcs, options))
+  return withRetryOn429(withFailover(networkId, rpcs, options))
 }
 
 export const getSolRpc = (

@@ -10,8 +10,10 @@ export class ChainConnectorSolStub implements IChainConnectorSol {
   #transport: RpcTransport
   #rpc: SolRpc
 
-  constructor(network: Pick<SolNetwork, "id" | "rpcs">) {
-    this.#transport = getSolTransport(network.id, network.rpcs)
+  constructor(network: Pick<SolNetwork, "id" | "rpcs"> & Partial<Pick<SolNetwork, "genesisHash">>) {
+    this.#transport = getSolTransport(network.id, network.rpcs, {
+      genesisHash: network.genesisHash,
+    })
     this.#rpc = createSolanaRpcFromTransport(this.#transport)
   }
 

@@ -254,3 +254,151 @@ describe("getSolTransport", () => {
     await expect(transport({ payload: PAYLOAD })).rejects.toThrow("No RPCs found")
   })
 })
+
+describe("getSolTransport chain identity", () => {
+  const GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+  const OTHER_GENESIS = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"
+
+  // verdicts last for the process: each test gets a network of its own
+  let n = 0
+  const nextNetworkId = () => `solana-identity-test-${n++}`
+
+  type Rpc = { genesisHash: string | "down"; answer?: () => Response | Promise<Response> }
+
+  /** Stubs fetch with the genesis hash and answer of each RPC, and records (url, method) */
+  const stubChains = (rpcs: Record<string, Rpc>) => {
+    const requests: [string, string, unknown][] = []
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const { method, params } = JSON.parse(String(init?.body))
+        requests.push([url, method, params])
+        const rpc = rpcs[url]
+        if (!rpc) throw new TypeError(`no handler for ${url}`)
+        if (method === "getGenesisHash") {
+          if (rpc.genesisHash === "down") throw new TypeError("fetch failed")
+          return ok(rpc.genesisHash)
+        }
+        if (!rpc.answer) throw new TypeError("fetch failed")
+        return rpc.answer()
+      })
+    )
+    return requests
+  }
+
+  it("sends nothing but getGenesisHash to an rpc of another chain", async () => {
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: OTHER_GENESIS, answer: () => ok(1) },
+      [RPC_B]: { genesisHash: GENESIS, answer: () => ok(42) },
+    })
+    const transport = getSolTransport(nextNetworkId(), [RPC_A, RPC_B], { genesisHash: GENESIS })
+
+    await expect(transport({ payload: PAYLOAD })).resolves.toMatchObject({ result: 42n })
+    await expect(transport({ payload: PAYLOAD })).resolves.toMatchObject({ result: 42n })
+    expect(requests.map(([url, method]) => [url, method])).toEqual([
+      [RPC_A, "getGenesisHash"],
+      [RPC_B, "getGenesisHash"],
+      [RPC_B, "getSlot"],
+      [RPC_B, "getSlot"],
+    ])
+  })
+
+  it("skips an rpc of another chain on a new transport without probing it again", async () => {
+    const networkId = nextNetworkId()
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: OTHER_GENESIS, answer: () => ok(1) },
+      [RPC_B]: { genesisHash: GENESIS, answer: () => ok(42) },
+    })
+    await getSolTransport(networkId, [RPC_A, RPC_B], { genesisHash: GENESIS })({
+      payload: PAYLOAD,
+    })
+    await getSolTransport(networkId, [RPC_A, RPC_B], { genesisHash: GENESIS })({
+      payload: PAYLOAD,
+    })
+    expect(requests.filter(([url]) => url === RPC_A).map(([, method]) => method)).toEqual([
+      "getGenesisHash",
+    ])
+  })
+
+  it("shares one probe between concurrent requests", async () => {
+    const requests = stubChains({ [RPC_A]: { genesisHash: GENESIS, answer: () => ok(42) } })
+    const transport = getSolTransport(nextNetworkId(), [RPC_A], { genesisHash: GENESIS })
+
+    // distinct params, else kit coalesces both requests into one
+    const second = { ...PAYLOAD, params: [{ commitment: "finalized" }] }
+    await Promise.all([transport({ payload: PAYLOAD }), transport({ payload: second })])
+    expect(requests.filter(([, method]) => method === "getGenesisHash")).toHaveLength(1)
+  })
+
+  it("treats a failed probe as the rpc failing, and probes it again on the next request", async () => {
+    let callsToB = 0
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: "down", answer: () => ok(1) },
+      [RPC_B]: {
+        genesisHash: GENESIS,
+        answer: () => {
+          if (callsToB++) throw new TypeError("fetch failed")
+          return ok(42)
+        },
+      },
+    })
+    const transport = getSolTransport(nextNetworkId(), [RPC_A, RPC_B], { genesisHash: GENESIS })
+
+    await expect(transport({ payload: PAYLOAD })).resolves.toMatchObject({ result: 42n })
+    // B now fails, so the request comes back round to A
+    await expect(transport({ payload: PAYLOAD })).rejects.toThrow()
+    expect(requests.filter(([url]) => url === RPC_A).map(([, method]) => method)).toEqual([
+      "getGenesisHash",
+      "getGenesisHash",
+    ])
+  })
+
+  it("keeps preflight on for a transaction after an rpc failed its probe", async () => {
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: "down" },
+      [RPC_B]: { genesisHash: GENESIS, answer: () => ok("signature") },
+    })
+    const transport = getSolTransport(nextNetworkId(), [RPC_A, RPC_B], { genesisHash: GENESIS })
+
+    await transport({
+      payload: {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "sendTransaction",
+        params: ["AQID", { encoding: "base64" }],
+      },
+    })
+    expect(requests.filter(([, method]) => method === "sendTransaction")).toEqual([
+      [RPC_B, "sendTransaction", ["AQID", { encoding: "base64" }]],
+    ])
+  })
+
+  it("fails when no rpc serves the chain", async () => {
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: OTHER_GENESIS, answer: () => ok(1) },
+      [RPC_B]: { genesisHash: OTHER_GENESIS, answer: () => ok(2) },
+    })
+    const transport = getSolTransport(nextNetworkId(), [RPC_A, RPC_B], { genesisHash: GENESIS })
+
+    await expect(transport({ payload: PAYLOAD })).rejects.toThrow("does not serve network")
+    expect(requests.every(([, method]) => method === "getGenesisHash")).toBe(true)
+  })
+
+  it("gives up on a probe that does not answer in time", async () => {
+    vi.useFakeTimers()
+    const requests = stubChains({
+      [RPC_A]: { genesisHash: GENESIS },
+      [RPC_B]: { genesisHash: GENESIS, answer: () => ok(42) },
+    })
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise(() => {}))
+    const transport = getSolTransport(nextNetworkId(), [RPC_A, RPC_B], { genesisHash: GENESIS })
+
+    const request = transport({ payload: PAYLOAD })
+    await vi.advanceTimersByTimeAsync(5_000)
+    await expect(request).resolves.toMatchObject({ result: 42n })
+    expect(requests.map(([url, method]) => [url, method])).toEqual([
+      [RPC_B, "getGenesisHash"],
+      [RPC_B, "getSlot"],
+    ])
+  })
+})
