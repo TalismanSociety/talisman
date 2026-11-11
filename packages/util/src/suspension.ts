@@ -99,6 +99,9 @@ export const setSuspended = (suspended: boolean): void => {
   resume(now, suspendedMs)
 }
 
+/** Whether the host has marked the runtime suspended (`setSuspended(true)`) */
+export const isSuspended = (): boolean => suspendedSince !== null
+
 /**
  * When the JS runtime last resumed from a suspension (`Date.now()` time), or -Infinity when
  * no suspension has been seen. Suspensions are only seen while something is watching: an
