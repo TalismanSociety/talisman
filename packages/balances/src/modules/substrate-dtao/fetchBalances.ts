@@ -22,16 +22,21 @@ import { getBalanceDefs } from "../shared/types"
 import { CLAIMABLE_REWARDS_LABEL, fetchBasketClaims, ROOT_NETUID } from "./basketClaims"
 import { MODULE_TYPE } from "./config"
 import { fetchConvictionLocks, getConvictionLockLabel } from "./convictionLocks"
-import { fetchRootStakeHolds } from "./rootStakeHold"
+import { fetchRootStakeHolds, fetchRootStakeUnlockInterval } from "./rootStakeHold"
 import type { GetStakeInfosResult, SubDTaoBalance, SubDTaoBalanceMeta } from "./types"
 
-export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
-  networkId,
-  tokensWithAddresses,
-  connector,
-  miniMetadata,
-  signal,
-}) => {
+type FetchBalances = IBalanceModule<typeof MODULE_TYPE>["fetchBalances"]
+
+export const fetchBalances: FetchBalances = (args) => fetchBalancesAt(args)
+
+/**
+ * Fetches the balances as of block `at`, or as of the best block when `at` is not given.
+ * Every read of the fetch is pinned to that one block.
+ */
+export const fetchBalancesAt = async (
+  { networkId, tokensWithAddresses, connector, miniMetadata, signal }: Parameters<FetchBalances>[0],
+  at?: `0x${string}`
+): ReturnType<FetchBalances> => {
   if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
@@ -76,24 +81,33 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const addresses = uniq(balanceDefs.map((def) => def.address))
 
+  const metadataRpc = miniMetadata.data
   try {
     // pre-parse once (memoized) — parsing the raw metadataRpc per call is expensive
-    const { builder } = parseMetadataRpcCached(miniMetadata.data!)
+    const { builder } = parseMetadataRpcCached(metadataRpc)
 
     // every read below is pinned to this block: stake, basket claims and hold windows are
     // combined with each other, and unpinned reads land on whatever block is best when they
     // arrive — mixing blocks reports state that never existed
-    const at = await fetchBestBlockHash(connector, networkId)
+    const blockHash = at ?? (await fetchBestBlockHash(connector, networkId))
 
-    const stakeInfos = await fetchRuntimeCallResult<GetStakeInfosResult>(
-      connector,
-      networkId,
-      builder,
-      "StakeInfoRuntimeApi",
-      "get_stake_info_for_coldkeys",
-      [addresses],
-      at
-    )
+    // the reads that don't depend on each other go out together, so a poll takes two round
+    // trips (one while the coldkeys have no conviction lock and no root stake hold is running)
+    const [stakeInfos, convictionLocks, basketClaims] = await Promise.all([
+      fetchRuntimeCallResult<GetStakeInfosResult>(
+        connector,
+        networkId,
+        builder,
+        "StakeInfoRuntimeApi",
+        "get_stake_info_for_coldkeys",
+        [addresses],
+        blockHash
+      ),
+      fetchConvictionLocks(connector, networkId, metadataRpc, addresses, blockHash),
+      fetchBasketClaims(connector, networkId, metadataRpc, addresses, blockHash),
+      // cached for the runtime: the hold read below then knows whether it has anything to do
+      fetchRootStakeUnlockInterval(connector, networkId, metadataRpc, blockHash),
+    ])
 
     // unique (coldkey, hotkey) root staking pairs: hold windows are per pair. (Basket claims
     // discover their own pairs chain-side, including fully-unstaked validators.)
@@ -109,13 +123,13 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
     }
 
-    const [convictionLocks, basketClaims, rootStakeHolds] = miniMetadata.data
-      ? await Promise.all([
-          fetchConvictionLocks(connector, networkId, miniMetadata.data, addresses, at),
-          fetchBasketClaims(connector, networkId, miniMetadata.data, addresses, at),
-          fetchRootStakeHolds(connector, networkId, miniMetadata.data, rootPairs, at),
-        ])
-      : [[], [], []]
+    const rootStakeHolds = await fetchRootStakeHolds(
+      connector,
+      networkId,
+      metadataRpc,
+      rootPairs,
+      blockHash
+    )
 
     // Upserts a balance into the accumulator: stakes add up, other fields are overwritten
     // when the incoming balance defines them (mergeWith skips undefined source fields)
