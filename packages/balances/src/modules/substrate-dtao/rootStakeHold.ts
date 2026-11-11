@@ -30,6 +30,57 @@ export type FetchedRootStakeHold = {
   unlockAtBlock: number
 }
 
+const hasRootStakeHoldStorage = (unifiedMetadata: UnifiedMetadata): boolean =>
+  hasStorageItems(unifiedMetadata, "SubtensorModule", [
+    "RootStakeUnlockInterval",
+    "LastColdkeyHotkeyStakeBlock",
+  ])
+
+/**
+ * How long a `RootStakeUnlockInterval` read is reused. The chain has no extrinsic that sets
+ * it: it changes with a runtime upgrade, which brings new metadata and so a new cache entry,
+ * or through root's `set_storage`, which this bounds.
+ */
+const UNLOCK_INTERVAL_CACHE_MS = 10 * 60_000
+
+/** cached reads by network, per parsed runtime metadata */
+const unlockIntervalCache = new WeakMap<object, Map<string, { interval: bigint; readAt: number }>>()
+
+/**
+ * The chain's `RootStakeUnlockInterval`: how many blocks root stake stays held after the
+ * pair's last root stake operation. 0 (disabled) unless governance enables it, either by
+ * setting the storage entry or with a runtime default that leaves it unset (metadata
+ * fallback). Null on chains without root stake holds.
+ *
+ * Read at most once per `UNLOCK_INTERVAL_CACHE_MS` for each runtime, so that the 6s balance
+ * polls don't spend a request on a value that hardly ever changes.
+ */
+export const fetchRootStakeUnlockInterval = async (
+  connector: IChainConnectorDot,
+  networkId: string,
+  metadataRpc: `0x${string}`,
+  at?: `0x${string}`
+): Promise<bigint | null> => {
+  const { unifiedMetadata, builder } = parseMetadataRpcCached(metadataRpc)
+  if (!hasRootStakeHoldStorage(unifiedMetadata)) return null
+
+  const byNetwork = unlockIntervalCache.get(builder) ?? new Map()
+  unlockIntervalCache.set(builder, byNetwork)
+  const cached = byNetwork.get(networkId)
+  if (cached && Date.now() - cached.readAt < UNLOCK_INTERVAL_CACHE_MS) return cached.interval
+
+  try {
+    const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder, at)
+    byNetwork.set(networkId, { interval, readAt: Date.now() })
+    return interval
+  } catch (cause) {
+    // an unknown interval reads as "no hold" — transient failures must fail the poll
+    // (balances go stale) instead of silently dropping an active hold
+    log.warn(`Failed to fetch root stake unlock interval on ${networkId}`, { cause })
+    throw cause
+  }
+}
+
 /**
  * Fetches active root-stake hold windows (spec 441): when `RootStakeUnlockInterval` is
  * non-zero, root stake cannot leave root (remove/move/swap/transfer) until `interval`
@@ -37,9 +88,8 @@ export type FetchedRootStakeHold = {
  * Pairs already past their window are omitted — a returned hold means the pair's root
  * stake is currently unremovable.
  *
- * The interval is 0 (disabled) unless governance enables it — either by setting the
- * storage entry or via a runtime default that leaves it unset (metadata fallback). The
- * per-pair queries only run when it is non-zero.
+ * The per-pair queries only run when the interval (`fetchRootStakeUnlockInterval`, cached)
+ * is non-zero.
  */
 export const fetchRootStakeHolds = async (
   connector: IChainConnectorDot,
@@ -50,19 +100,11 @@ export const fetchRootStakeHolds = async (
 ): Promise<FetchedRootStakeHold[]> => {
   if (!rootPairs.length) return []
 
-  const { unifiedMetadata, builder } = parseMetadataRpcCached(metadataRpc)
-  if (
-    !hasStorageItems(unifiedMetadata, "SubtensorModule", [
-      "RootStakeUnlockInterval",
-      "LastColdkeyHotkeyStakeBlock",
-    ])
-  )
-    return []
+  const interval = await fetchRootStakeUnlockInterval(connector, networkId, metadataRpc, at)
+  if (!interval) return []
 
+  const { builder } = parseMetadataRpcCached(metadataRpc)
   try {
-    const interval = await fetchUnlockInterval(connector, networkId, unifiedMetadata, builder, at)
-    if (interval === 0n) return []
-
     const { currentBlock, lastStakeBlocks } = await fetchLastStakeBlocks(
       connector,
       networkId,
