@@ -13,6 +13,16 @@ import { vi } from "vitest"
 import { erc20BalancesAggregatorAbi } from "../../abis"
 
 const FAKE_RPC_URL = "https://rpc.fixture.test"
+const FAKE_FORK_RPC_URL = "https://fork.rpc.fixture.test"
+
+/**
+ * The chain id each fake RPC answers `eth_chainId` with: the connector checks
+ * it before sending an RPC anything else
+ */
+const CHAIN_ID_BY_URL: Record<string, string> = {
+  [new URL(FAKE_RPC_URL).href]: "0x1",
+  [new URL(FAKE_FORK_RPC_URL).href]: "0x539",
+}
 export const MULTICALL3 = "0xca11bde05977b3631167028862be2a173976ca11"
 export const ERC20_AGGREGATOR = "0x2e556284556ecEe5754d201bBB6E2cb47fB95DFd"
 
@@ -37,6 +47,7 @@ export const FORK: EthNetwork = {
   ...ethereum,
   id: "1337",
   nativeTokenId: "1337:evm-native",
+  rpcs: [FAKE_FORK_RPC_URL],
   contracts: { Multicall3: MULTICALL3 },
 }
 
@@ -156,10 +167,16 @@ export const stubEvmNode = (state: FakeEvmNodeState) => {
   }
 
   vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
-    if (new URL(url).href !== new URL(FAKE_RPC_URL).href)
-      throw new Error(`unexpected fetch to ${url}`)
+    const chainId = CHAIN_ID_BY_URL[new URL(url).href]
+    if (!chainId) throw new Error(`unexpected fetch to ${url}`)
     const body = JSON.parse(String(init.body)) as JsonRpcRequest | JsonRpcRequest[]
-    const response = Array.isArray(body) ? body.map(respond) : respond(body)
+    // the chain id probe is answered but not recorded: it is sent once per process, so whether a
+    // test sees it would depend on the tests before it
+    const answer = (request: JsonRpcRequest) =>
+      request.method === "eth_chainId"
+        ? { jsonrpc: "2.0", id: request.id, result: chainId }
+        : respond(request)
+    const response = Array.isArray(body) ? body.map(answer) : answer(body)
     return new Response(JSON.stringify(response), {
       headers: { "Content-Type": "application/json" },
     })

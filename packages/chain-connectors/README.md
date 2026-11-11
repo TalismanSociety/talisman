@@ -6,6 +6,8 @@ RPC connections to the networks that the Talisman wallet supports, one connector
 - `ChainConnectorEth`: EVM networks, viem clients per network (`getPublicClientForEvmNetwork`, cached; `getWalletClientForEvmNetwork`)
 - `ChainConnectorSol`: Solana networks, `@solana/kit` RPC and transport per network (`getRpc`, `getTransport`, cached). The transport fails over through the network's RPCs in order and sends the next request to the RPC that answered last.
 
+Each RPC is checked against the network record before it is sent anything: `chain_getBlockHash(0)` (Polkadot SDK, falling back to `chainSpec_v1_genesisHash`) and `getGenesisHash` (Solana) must return the network's genesis hash, and `eth_chainId` (EVM) the chain id in the network id. An RPC of another chain is skipped and the request fails over to the next one; one whose check fails or times out (10 s on a new Polkadot SDK connection, 5 s for EVM and Solana) counts as failing and is checked again on its next use. Verdicts are kept per network and RPC for the life of the process. A Solana transport from `getSolTransport` is only checked when given a `genesisHash`, and an EVM network whose id is not a chain id is used unchecked.
+
 The `*Stub` variants connect to a single network from its RPC list, without chaindata.
 
 `ChainConnectorDotPapi` runs over a dapp's polkadot-api clients instead of opening sockets of its own. A dapp that uses `@talismn/balances` next to polkadot-api then has one socket per chain:

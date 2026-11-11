@@ -19,19 +19,18 @@ export class ChainConnectorSol implements IChainConnectorSol {
     this.#chaindataProvider = chaindataProvider
   }
 
-  async #getNetworkRpcs(networkId: SolNetworkId): Promise<string[]> {
+  async #getNetwork(networkId: SolNetworkId) {
     const network = await this.#chaindataProvider.getNetworkById(networkId, "solana")
     if (!network) throw new Error(`Network not found: ${networkId}`)
 
-    return network.rpcs
+    return network
   }
 
   async getTransport(networkId: SolNetworkId): Promise<RpcTransport> {
-    if (!this.#transports.has(networkId))
-      this.#transports.set(
-        networkId,
-        getSolTransport(networkId, await this.#getNetworkRpcs(networkId))
-      )
+    if (!this.#transports.has(networkId)) {
+      const { rpcs, genesisHash } = await this.#getNetwork(networkId)
+      this.#transports.set(networkId, getSolTransport(networkId, rpcs, { genesisHash }))
+    }
 
     return this.#transports.get(networkId)!
   }

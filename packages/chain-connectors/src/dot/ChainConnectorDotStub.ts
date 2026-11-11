@@ -1,8 +1,8 @@
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
-import { getWsProvider } from "@polkadot-api/ws-provider"
 import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 
+import { getVerifiedWsProvider } from "./getVerifiedWsProvider"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
 
 const TIMEOUT = 10_000
@@ -11,7 +11,13 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
   #client: SubstrateClient
 
   constructor(network: DotNetwork) {
-    this.#client = createClient(getWsProvider(network.rpcs.concat()))
+    this.#client = createClient(
+      getVerifiedWsProvider({
+        networkId: network.id,
+        rpcs: network.rpcs,
+        genesisHash: network.genesisHash,
+      })
+    )
   }
 
   async send<T = unknown>(

@@ -124,4 +124,20 @@ describe("ChainConnectorDot connection timeout", () => {
     )
     expect(sockets.timeouts).toEqual([15_000])
   })
+
+  it("passes it on when the network's RPCs are identity-checked too", async () => {
+    const verified = {
+      getNetworkById: async () => ({
+        id: "bittensor",
+        genesisHash: "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
+        rpcs: ["wss://a.example"],
+      }),
+    } as unknown as IChaindataNetworkProvider
+    await new ChainConnectorDot(verified, { connectionTimeout: 15_000 }).send(
+      "bittensor",
+      "system_health",
+      []
+    )
+    expect(sockets.timeouts).toEqual([15_000])
+  })
 })

@@ -1,10 +1,12 @@
 import z from "zod/v4"
 
+import { DecimalsSchema } from "../shared"
+
 export const TokenBaseSchema = z.strictObject({
   id: z.string(),
   networkId: z.string(),
   isDefault: z.boolean().optional(),
-  decimals: z.int().min(0),
+  decimals: DecimalsSchema,
   symbol: z.string().nonempty(),
   name: z.string().optional(),
   logo: z.string().optional(),

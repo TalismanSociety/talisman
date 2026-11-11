@@ -69,10 +69,13 @@ export const changeEncryptedDataPassword = async (
   oldPassword: string,
   newPassword: string
 ) => {
+  let decrypted: Uint8Array | undefined
   try {
-    const decrypted = await decryptData(encryptedData, oldPassword)
+    decrypted = await decryptData(encryptedData, oldPassword)
     return await encryptData(decrypted, newPassword)
   } catch (cause) {
     throw new Error("Failed to change password on encrypted data", { cause })
+  } finally {
+    decrypted?.fill(0)
   }
 }
