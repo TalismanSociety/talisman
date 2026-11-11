@@ -12,6 +12,10 @@
  * A one-second ticker runs while anything is watching. A gap between two ticks longer than
  * `SUSPENSION_GAP_MS` is taken to be a suspension. Timer callbacks call `checkSuspension()`
  * first, because on resume a due timer can run before the ticker does.
+ *
+ * A runtime can also be cut off while it keeps running: a webview whose network traffic goes
+ * through its app's native code stays alive while the app is frozen in the background. Its
+ * host marks that time with `setSuspended()`.
  */
 
 const TICK_MS = 1_000
@@ -30,6 +34,8 @@ let holds = 0
 let ticker: ReturnType<typeof setInterval> | null = null
 let lastRunAt = 0
 let lastResumedAt = Number.NEGATIVE_INFINITY
+/** when the host marked the runtime suspended (`setSuspended(true)`), or null */
+let suspendedSince: number | null = null
 
 const hold = () => {
   holds++
@@ -54,8 +60,12 @@ export const checkSuspension = (): void => {
   const now = Date.now()
   const suspendedMs = ticker ? now - lastRunAt : 0
   lastRunAt = now
-  if (suspendedMs <= SUSPENSION_GAP_MS) return
+  // while the host holds the runtime suspended, the resume comes from `setSuspended(false)`
+  if (suspendedSince !== null || suspendedMs <= SUSPENSION_GAP_MS) return
+  resume(now, suspendedMs)
+}
 
+const resume = (now: number, suspendedMs: number) => {
   lastResumedAt = now
   for (const listener of [...listeners]) {
     try {
@@ -67,6 +77,26 @@ export const checkSuspension = (): void => {
       })
     }
   }
+}
+
+/**
+ * Marks the JS runtime suspended (`true`) or running again (`false`), for a host that knows
+ * the runtime is cut off although it keeps running. While suspended, `setAwakeTimeout`
+ * timeouts don't fire. `setSuspended(false)` is a resume: the timeouts start over, and the
+ * resume listeners run with the time since `setSuspended(true)`.
+ */
+export const setSuspended = (suspended: boolean): void => {
+  if (suspended) {
+    suspendedSince ??= Date.now()
+    return
+  }
+  if (suspendedSince === null) return
+
+  const now = Date.now()
+  const suspendedMs = now - suspendedSince
+  suspendedSince = null
+  lastRunAt = now
+  resume(now, suspendedMs)
 }
 
 /**
@@ -116,6 +146,10 @@ export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) 
 
   const fire = () => {
     checkSuspension()
+    if (suspendedSince !== null) {
+      token = setTimeout(fire, ms)
+      return
+    }
     const countedFrom = Math.max(startedAt, lastResumedAt)
     const remaining = ms - (Date.now() - countedFrom)
     if (remaining > 0) {
