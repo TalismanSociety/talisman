@@ -33,6 +33,13 @@ const getMevShieldOuterPayload = async (
   return payload
 }
 
+/** The network fee of the MEV Shield wrapper, which the signer pays on top of the inner transaction's */
+export const getMevShieldFeeEstimate = async (
+  sapi: ScaleApi,
+  address: string,
+  innerPayload: SignerPayloadJSON
+) => sapi.getFeeEstimate(await getMevShieldOuterPayload(sapi, address, innerPayload))
+
 export const useMevShieldFeeEstimate = ({
   sapi,
   address,

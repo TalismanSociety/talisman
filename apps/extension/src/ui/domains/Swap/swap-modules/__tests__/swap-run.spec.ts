@@ -11,6 +11,7 @@ import type {
   SwapModule,
 } from "../common.swap-module"
 import {
+  type LegChain,
   legInput,
   legSent,
   legSettled,
@@ -140,6 +141,8 @@ const fakeClient = ({ usdc = 0n, allowance = 0n, native = 0n }: FakeChain) =>
     getBalance: vi.fn(async () => native),
   }) as unknown as PublicClient & { readContract: ReturnType<typeof vi.fn> }
 
+const evm = (client: PublicClient): LegChain => ({ platform: "ethereum", client })
+
 const BUILT = { expectedOutput: 1n } as BuiltLeg
 
 const fakeModule = (approve: boolean) =>
@@ -163,7 +166,12 @@ describe("nextLegStep", () => {
   it("asks for the allowance first and builds nothing", async () => {
     const module = fakeModule(true)
     const client = fakeClient({ usdc: 2_000_000n, allowance: 0n })
-    const step = await nextLegStep({ run: readyRun(900_000n), index: 1, module, client })
+    const step = await nextLegStep({
+      run: readyRun(900_000n),
+      index: 1,
+      module,
+      chain: evm(client),
+    })
     expect(step).toMatchObject({ signs: "approval", allowance: "approve" })
     expect(module.buildLeg).not.toHaveBeenCalled()
   })
@@ -174,7 +182,7 @@ describe("nextLegStep", () => {
       run: readyRun(900_000n),
       index: 1,
       module: fakeModule(true),
-      client,
+      chain: evm(client),
       allowanceAt: 42n,
     })
     expect(client.readContract).toHaveBeenCalledWith(
@@ -185,7 +193,12 @@ describe("nextLegStep", () => {
   it("builds the leg on what landed, with the run's slippage and no exchange", async () => {
     const module = fakeModule(true)
     const client = fakeClient({ usdc: 2_000_000n, allowance: 1_000_000n })
-    const step = await nextLegStep({ run: readyRun(900_000n), index: 1, module, client })
+    const step = await nextLegStep({
+      run: readyRun(900_000n),
+      index: 1,
+      module,
+      chain: evm(client),
+    })
     expect(step).toEqual({ signs: "leg", input: 900_000n, built: BUILT })
     expect(module.buildLeg).toHaveBeenCalledWith({
       leg: bridgeLeg,
@@ -199,7 +212,7 @@ describe("nextLegStep", () => {
   it("refuses a leg whose previous leg has not landed", async () => {
     const run = startRun(twoLegs, 0.005, { hash: HASH_0, input: 1n })
     await expect(
-      nextLegStep({ run, index: 1, module: fakeModule(false), client: fakeClient({}) })
+      nextLegStep({ run, index: 1, module: fakeModule(false), chain: evm(fakeClient({})) })
     ).rejects.toThrow("This leg is not ready to sign")
   })
 })
@@ -207,13 +220,13 @@ describe("nextLegStep", () => {
 describe("readLegBalance", () => {
   it("keeps the existential deposit back on Bittensor EVM", async () => {
     const leg = { ...bridgeLeg, fromTokenId: "964:evm-native" }
-    expect(await readLegBalance(fakeClient({ native: 10n ** 18n }), leg)).toBe(
+    expect(await readLegBalance(evm(fakeClient({ native: 10n ** 18n })), leg)).toBe(
       10n ** 18n - 500n * WEI_PER_RAO
     )
   })
 
   it("reads an ERC20 balance whole", async () => {
-    expect(await readLegBalance(fakeClient({ usdc: 7n }), bridgeLeg)).toBe(7n)
+    expect(await readLegBalance(evm(fakeClient({ usdc: 7n })), bridgeLeg)).toBe(7n)
   })
 })
 
