@@ -225,15 +225,18 @@ const SwapTxCard: FC<{
         </button>
       </div>
       {isExpanded ? <div className="flex flex-col gap-2">{children}</div> : null}
-      {card.error ? (
-        <div role="alert" className="flex items-start gap-4 text-orange-500 text-xs">
-          <AlertCircleIcon className="mt-px shrink-0 text-sm" />
-          <div>{card.error}</div>
-        </div>
-      ) : null}
+      <SwapTxCardError error={card.error} />
     </section>
   )
 }
+
+export const SwapTxCardError: FC<{ error: ReactNode }> = ({ error }) =>
+  error ? (
+    <div role="alert" className="flex items-start gap-4 text-orange-500 text-xs">
+      <AlertCircleIcon className="mt-px shrink-0 text-sm" />
+      <div>{error}</div>
+    </div>
+  ) : null
 
 export const SwapTxCards: FC<{
   cards: readonly SwapTxCardModel[]

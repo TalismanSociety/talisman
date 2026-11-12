@@ -148,6 +148,15 @@ vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
   },
 }))
 vi.mock("../components/SwapOtherFees", () => ({ SwapOtherFees: () => null }))
+vi.mock("../components/BittensorLegDetails", () => ({
+  BittensorLegDetails: () => null,
+  useLegMevShield: () => ({
+    txMode: "default",
+    feePlanck: 0n,
+    isFeeLoading: false,
+    feeError: null,
+  }),
+}))
 vi.mock("../components/SwapSlippageDrawer", () => ({ SwapSlippageDrawer: () => null }))
 vi.mock("../hooks/useQuoteApproval", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../hooks/useQuoteApproval")>()
