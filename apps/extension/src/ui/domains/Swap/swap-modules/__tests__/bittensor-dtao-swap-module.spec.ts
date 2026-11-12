@@ -2,11 +2,22 @@ import type { Balance, Balances } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import { TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "@ui/domains/Staking/Bittensor/utils/constants"
+import type { Hex } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { quoteLegsKey } from "../../buildSwapTransaction"
 import { bittensorDTaoSwapModule, getDTaoLegData } from "../bittensor-dtao-swap-module"
+import { bittensorEvmSwapModule } from "../bittensor-evm-swap-module"
 import bittensorLogo from "../bittensor-logo.svg?url"
-import type { BaseQuote, BittensorSwapConfig, QuoteParams, SwapEnv } from "../common.swap-module"
+import type {
+  BaseQuote,
+  BittensorSwapConfig,
+  QuoteParams,
+  SwapEnv,
+  SwapModule,
+  SwapModuleDefinition,
+} from "../common.swap-module"
+import { type IntermediateCandidate, withEntryHops } from "../hops"
+import { type LegChain, legSettled, nextLegStep, startRun } from "../swap-run"
 
 const ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const OTHER_ADDRESS = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
@@ -16,6 +27,8 @@ const HELD = "5Hddm3iBFD2GLT5ik7LZnT3XJUnRnN8PoeCFgGQgawUVKNm8"
 const PICKED = "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"
 
 const TAO = "bittensor:substrate-native"
+const EVM_TAO = "964:evm-native"
+const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 const SN64 = "bittensor:substrate-dtao:64"
 const SN64_HELD = `bittensor:substrate-dtao:64:${HELD}`
 const ROOT = "bittensor:substrate-dtao:0"
@@ -51,6 +64,7 @@ const ONE_TAO = 1_000_000_000n
 const GAS_FEE = 100_000n
 const MIN_STAKE = 2_000_000n
 const EXISTENTIAL_DEPOSIT = 500n
+const WEI_PER_RAO = 1_000_000_000n
 
 let alphaPerTao = 50n
 const config: BittensorSwapConfig = {
@@ -554,5 +568,255 @@ describe("bittensorDTaoSwapModule root", () => {
     expect(quote.outputAmountBN).toBe(ONE_TAO)
     expect(methods).toEqual(["SubtensorModule.remove_stake", "System.remark_with_event"])
     expect(calls[0].args).toEqual({ hotkey: HELD, netuid: 0, amount_unstaked: ONE_TAO })
+  })
+})
+
+describe("EVM TAO to a subnet, through TAO", () => {
+  const HASH: Hex = `0x${"aa".repeat(32)}`
+  const EVM_INPUT = ONE_TAO * WEI_PER_RAO + 123n
+
+  const withEnv = ({
+    getFromAssets,
+    getToAssets,
+    getQuote,
+    buildLeg,
+    settleLeg,
+    createExchange: _,
+    ...module
+  }: SwapModuleDefinition): SwapModule => ({
+    ...module,
+    getFromAssets: (signal) => getFromAssets(env, signal),
+    getToAssets: (fromTokenId, signal) => getToAssets(fromTokenId, env, signal),
+    getQuote: (params, signal) => getQuote(params, env, signal),
+    buildLeg: (params) => buildLeg(params, env),
+    ...(settleLeg && { settleLeg: (params, signal) => settleLeg(params, env, signal) }),
+  })
+  const bridge = withEnv(bittensorEvmSwapModule)
+  const staking = withEnv(bittensorDTaoSwapModule)
+
+  const owned = (address: string, type: IntermediateCandidate["type"] = "keypair") => ({
+    address,
+    type,
+    hubBalance: 0n,
+  })
+  const routed = (candidates: IntermediateCandidate[] = [owned(EVM_ADDRESS), owned(ADDRESS)]) =>
+    withEntryHops(staking, {
+      enabled: (flag) => flag === "SWAPS_MULTI_HOP",
+      resolve: (protocol) => (protocol === "bittensor-evm" ? bridge : undefined),
+      candidates: async () => candidates,
+    })
+
+  const quoteRoute = async (params: Partial<QuoteParams> = {}, module = routed()) =>
+    (await module.getQuote(
+      {
+        fromTokenId: EVM_TAO,
+        toTokenId: SN64,
+        fromAmount: EVM_INPUT,
+        fromAddress: EVM_ADDRESS,
+        toAddress: ADDRESS,
+        input: "exact",
+        ...params,
+      },
+      signal
+    )) as BaseQuote | null
+
+  const routeOrThrow = async (params?: Partial<QuoteParams>) => {
+    const quote = await quoteRoute(params)
+    if (!quote) throw new Error("expected a route")
+    return quote
+  }
+
+  const runWaitingOnStake = async (slippage = 0.01) => {
+    const quote = await routeOrThrow()
+    const sent = startRun(quote, slippage, { hash: HASH, input: EVM_INPUT })
+    env.waitForTransaction = async () => ({ landed: true, hash: HASH })
+    const outcome = await bridge.settleLeg?.(
+      { leg: quote.legs[0], hash: HASH, input: EVM_INPUT },
+      signal
+    )
+    if (!outcome) throw new Error("Bittensor EVM must settle its legs")
+    return legSettled(sent, 0, outcome)
+  }
+
+  const substrate = (feeOnTop?: () => Promise<bigint>): LegChain => ({
+    platform: "polkadot",
+    sapi,
+    feeOnTop,
+  })
+
+  const stakeStep = async (chain = substrate(), slippage?: number) => {
+    const step = await nextLegStep({
+      run: await runWaitingOnStake(slippage),
+      index: 1,
+      module: staking,
+      chain,
+    })
+    if (step.signs !== "leg" || step.built.transaction.platform !== "polkadot")
+      throw new Error("expected a substrate leg")
+    const batch = step.built.transaction.payload as unknown as Call & { address: string }
+    return { ...step, signer: batch.address, calls: batch.args.calls as Call[] }
+  }
+
+  it("offers EVM TAO as a source for every subnet of its network, behind the multi-hop flag", async () => {
+    expect(await routed().getFromAssets(signal)).toEqual([
+      TAO,
+      SN64_HELD,
+      ROOT_HELD,
+      EVM_TAO,
+      "945:evm-native",
+    ])
+    expect(await routed().getToAssets(EVM_TAO, signal)).toEqual([SN64, SN64_HELD, ROOT, ROOT_HELD])
+    expect(await routed().getToAssets("945:evm-native", signal)).toEqual([])
+
+    const unflagged = withEntryHops(staking, {
+      enabled: () => false,
+      resolve: () => bridge,
+      candidates: async () => [owned(ADDRESS)],
+    })
+    expect(await unflagged.getToAssets(EVM_TAO, signal)).toEqual([])
+    expect(await quoteRoute({}, unflagged)).toBeNull()
+  })
+
+  it("quotes two legs that chain: the TAO lands on the recipient, who stakes it", async () => {
+    const quote = await routeOrThrow()
+
+    expect(quote.legs.map((leg) => [leg.protocol, leg.fromTokenId, leg.toTokenId])).toEqual([
+      ["bittensor-evm", EVM_TAO, TAO],
+      ["bittensor-dtao", TAO, SN64],
+    ])
+    expect(quote.legs.map((leg) => [leg.signer, leg.recipient])).toEqual([
+      [EVM_ADDRESS, ADDRESS],
+      [ADDRESS, ADDRESS],
+    ])
+    expect(quote.inputAmountBN).toBe(EVM_INPUT)
+    expect(quote.legs[0].outputAmount).toBe(ONE_TAO)
+    expect(quote.legs[1].inputAmount).toBe(ONE_TAO)
+    expect(quote.outputAmountBN).toBe(997_000_000n * 50n)
+  })
+
+  it("is shown as Bittensor, with the Talisman fee and the gas of both legs", async () => {
+    const quote = await routeOrThrow()
+
+    expect(quote.protocol).toBe("bittensor-dtao")
+    expect(quote.subProtocol).toBe("via-bittensor-evm")
+    expect(quote.providerName).toBe("Bittensor")
+    expect(quote.providerLogo).toBe(bittensorLogo)
+    expect(quote.fees.map((fee) => [fee.name, fee.tokenId, fee.amount.toString()])).toEqual([
+      ["Est. Gas Fees", EVM_TAO, "0.00021"],
+      ["Talisman Fee", TAO, "0.003"],
+      ["Est. Gas Fees", TAO, "0.0001"],
+    ])
+    expect(JSON.parse(JSON.stringify(quote.legs[1].data))).toEqual(quote.legs[1].data)
+  })
+
+  it("stakes to the validator the user picked", async () => {
+    const quote = await routeOrThrow({ stakeHotkey: PICKED })
+
+    expect(getDTaoLegData(quote.legs[1])).toMatchObject({ hotkey: PICKED, validator: "pickable" })
+  })
+
+  it("offers no route to a recipient the wallet cannot sign for: the stake belongs to who signs", async () => {
+    expect(await quoteRoute({ toAddress: OTHER_ADDRESS })).toBeNull()
+    expect(await quoteRoute({ toAddress: EVM_ADDRESS })).toBeNull()
+    expect(await quoteRoute({}, routed([owned(EVM_ADDRESS)]))).toBeNull()
+  })
+
+  it("routes through a hardware or Vault recipient", async () => {
+    const quote = await quoteRoute(
+      {},
+      routed([owned(OTHER_ADDRESS), owned(ADDRESS, "polkadot-vault")])
+    )
+
+    expect(quote?.legs[1].signer).toBe(ADDRESS)
+  })
+
+  it("previews the route before a recipient is chosen", async () => {
+    const quote = await routeOrThrow({ toAddress: null })
+
+    expect(quote.legs.map((leg) => [leg.signer, leg.recipient])).toEqual([
+      [EVM_ADDRESS, ADDRESS],
+      [ADDRESS, null],
+    ])
+  })
+
+  it("stakes what landed once the EVM leg did, at the run's slippage", async () => {
+    freeTao = 5n * ONE_TAO
+
+    const { input, built, fee, signer, calls } = await stakeStep()
+
+    expect(input).toBe(ONE_TAO)
+    expect(signer).toBe(ADDRESS)
+    expect(calls.map((call) => `${call.pallet}.${call.method}`)).toEqual([
+      "Balances.transfer_keep_alive",
+      "SubtensorModule.add_stake_limit",
+      "System.remark_with_event",
+    ])
+    expect(calls[0].args).toEqual({
+      dest: { type: "Id", value: TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR },
+      value: 3_000_000n,
+    })
+    expect(calls[1].args).toEqual({
+      hotkey: YUMA,
+      netuid: 64,
+      amount_staked: 997_000_000n,
+      limit_price: 20_200_000n,
+      allow_partial: false,
+    })
+    expect(remarkOf(calls[2])).toBe("garlic002")
+    expect(fee).toBe(GAS_FEE)
+    expect(built.expectedOutput).toBe(997_000_000n * 50n)
+    expect(built.acceptedOutput).toBeUndefined()
+    expect(built.txInfo).toMatchObject({ type: "bittensor-staking", fromAmount: `${ONE_TAO}` })
+  })
+
+  it("leaves the fee and the existential deposit on an account that holds only what landed", async () => {
+    freeTao = ONE_TAO
+
+    const { input, built, calls } = await stakeStep(substrate(), 0)
+
+    expect(input).toBe(ONE_TAO - EXISTENTIAL_DEPOSIT - GAS_FEE)
+    expect((calls[0].args.value as bigint) + (calls[1].args.amount_staked as bigint)).toBe(input)
+    expect(built.acceptedOutput).toBeUndefined()
+  })
+
+  it("leaves room for what the MEV shield charges on top", async () => {
+    freeTao = ONE_TAO
+
+    const { input, fee } = await stakeStep(substrate(async () => 40_000n))
+
+    expect(fee).toBe(GAS_FEE + 40_000n)
+    expect(input).toBe(ONE_TAO - EXISTENTIAL_DEPOSIT - GAS_FEE - 40_000n)
+  })
+
+  it("never spends the TAO a lock holds", async () => {
+    freeTao = 3n * ONE_TAO
+    vi.spyOn(sapi, "getStorage").mockResolvedValueOnce({
+      data: { free: freeTao, frozen: 3n * ONE_TAO - 400_000_000n },
+    })
+
+    expect((await stakeStep()).input).toBe(400_000_000n - GAS_FEE)
+  })
+
+  it("warns of a pool that moved since the quote, on the TAO it stakes now", async () => {
+    freeTao = ONE_TAO
+    const run = await runWaitingOnStake(0.005)
+    alphaPerTao = 40n
+
+    const step = await nextLegStep({ run, index: 1, module: staking, chain: substrate() })
+    if (step.signs !== "leg") throw new Error("expected a leg")
+
+    const quotedForInput = (run.quote.outputAmountBN * step.input) / ONE_TAO
+    expect(step.built.expectedOutput).toBeLessThan(quotedForInput)
+    expect(step.built.acceptedOutput).toBe((quotedForInput * 995n) / 1000n)
+  })
+
+  it("refuses a stake the chain would reject as too small, before any fee is paid", async () => {
+    freeTao = EXISTENTIAL_DEPOSIT + GAS_FEE + 1_000_000n
+
+    await expect(stakeStep()).rejects.toThrow("Bittensor minimum is 0.002006018 TAO")
+  })
+
+  it("has nothing to stake until the TAO shows on the account", async () => {
+    await expect(stakeStep()).rejects.toThrow("Nothing arrived from the previous leg")
   })
 })

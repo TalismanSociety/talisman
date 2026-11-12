@@ -1,6 +1,8 @@
 import { log } from "@common/log"
+import { BITTENSOR_EVM_PAIRS } from "@core/domains/bittensor/constants"
 import { taoToAlphaCeil } from "@talismn/balances"
 import {
+  evmNativeTokenId,
   type NetworkId,
   parseSubDTaoTokenId,
   parseTokenId,
@@ -36,6 +38,7 @@ import type {
   BittensorSwapConfig,
   BuildLegParams,
   BuiltLeg,
+  EntryHop,
   QuoteFee,
   QuoteLeg,
   QuoteParams,
@@ -464,4 +467,12 @@ export const bittensorDTaoSwapModule: SwapModuleDefinition = {
   getToAssets,
   getQuote,
   buildLeg,
+  entryHops: BITTENSOR_EVM_PAIRS.map(
+    (pair): EntryHop => ({
+      from: evmNativeTokenId(pair.evmNetworkId),
+      hub: subNativeTokenId(pair.substrateNetworkId),
+      via: "bittensor-evm",
+      flag: "SWAPS_MULTI_HOP",
+    })
+  ),
 }
