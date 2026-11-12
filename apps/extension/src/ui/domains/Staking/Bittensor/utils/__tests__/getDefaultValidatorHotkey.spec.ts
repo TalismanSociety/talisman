@@ -21,6 +21,7 @@ const remoteConfig = {
       "1": "5RemoteDefault1",
       "3": "5RemoteDefault3",
     },
+    featuredValidators: ["5Featured1", "5Featured2"],
   },
 }
 
@@ -139,5 +140,44 @@ describe("getDefaultValidatorHotkey", () => {
     expect(getDefaultValidatorHotkey("bittensor", 1, remoteConfig, balances, "5AddrNone")).toBe(
       "5RemoteDefault1"
     )
+  })
+
+  describe("featured fallback", () => {
+    const featured = (netuid: number, balances?: Balances, networkId = "bittensor") =>
+      getDefaultValidatorHotkey(networkId, netuid, remoteConfig, balances, "5Default", "featured")
+
+    test("returns the first featured validator when the address holds no stake on the subnet", () => {
+      expect(featured(1, mockBalances([]))).toBe("5Featured1")
+    })
+
+    test("never reads the subnet default", () => {
+      expect(featured(3)).toBe("5Featured1")
+      expect(featured(99)).toBe("5Featured1")
+    })
+
+    test("the largest stake on the subnet still wins", () => {
+      const balances = mockBalances([
+        mockBalance({ type: "substrate-dtao", netuid: 1, hotkey: "5Small" }, 100n),
+        mockBalance({ type: "substrate-dtao", netuid: 1, hotkey: "5Large" }, 9999n),
+      ])
+
+      expect(featured(1, balances)).toBe("5Large")
+    })
+
+    test("covers root like any subnet", () => {
+      expect(featured(0)).toBe("5Featured1")
+    })
+
+    test("returns undefined on testnet", () => {
+      expect(featured(1, undefined, "bittensor-testnet")).toBeUndefined()
+    })
+
+    test("returns undefined when no validator is featured", () => {
+      const config = { bittensor: { defaultValidatorsBySubnet: { "1": "5RemoteDefault1" } } }
+
+      expect(
+        getDefaultValidatorHotkey("bittensor", 1, config, undefined, null, "featured")
+      ).toBeUndefined()
+    })
   })
 })
