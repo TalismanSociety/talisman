@@ -86,6 +86,7 @@ export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopO
           fromAddress: intermediate,
           toAddress: params.toAddress,
           selectedSubProtocol: params.selectedSubProtocol,
+          stakeHotkey: params.stakeHotkey,
           input: "upTo",
         },
         signal

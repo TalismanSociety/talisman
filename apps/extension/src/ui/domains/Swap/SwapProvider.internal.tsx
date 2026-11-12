@@ -61,6 +61,19 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     pickedQuote.protocol === selectedProtocol &&
     pickedQuote.subProtocol === selectedSubProtocol
 
+  const [stakeHotkeyChoice, setStakeHotkeyChoice] = useState<{
+    toTokenId: string
+    hotkey: string
+  } | null>(null)
+  const stakeHotkey =
+    stakeHotkeyChoice?.toTokenId === toTokenId ? stakeHotkeyChoice.hotkey : undefined
+  const chooseStakeHotkey = useCallback(
+    (hotkey: string) => {
+      if (toTokenId) setStakeHotkeyChoice({ toTokenId, hotkey })
+    },
+    [toTokenId]
+  )
+
   const pickQuote = useCallback(({ protocol, subProtocol }: BaseQuote) => {
     setPickedQuote({ protocol, subProtocol })
     setSelectedProtocol(protocol)
@@ -148,6 +161,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setQuoteSorting("bestRate")
     setReversed(false)
     setPickedQuote(null)
+    setStakeHotkeyChoice(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
     setMinedApproval(undefined)
@@ -219,6 +233,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     fromAmount,
     fromAddress,
     toAddress,
+    stakeHotkey,
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
@@ -311,6 +326,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     pickQuote,
     autoSelectQuote,
     isQuotePicked,
+    chooseStakeHotkey,
     resetForm,
     fromAssetIds,
     toAssetIds,

@@ -74,6 +74,7 @@ export const useSwapQuoteManager = (params: {
   fromAmount: bigint | null
   fromAddress: string | null
   toAddress: string | null
+  stakeHotkey?: string
   selectedProtocol: SupportedSwapProtocol | null
   selectedSubProtocol: string | undefined
   quoteSorting: "decentalised" | "cheapest" | "fastest" | "bestRate"
@@ -89,6 +90,7 @@ export const useSwapQuoteManager = (params: {
     fromAmount,
     fromAddress,
     toAddress,
+    stakeHotkey,
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
@@ -129,8 +131,9 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString() ?? "",
         fromAddress ?? "",
         toAddress ?? "",
+        stakeHotkey ?? "",
       ].join("|"),
-    [fromAmount, fromAddress, fromTokenId, toAddress, toTokenId]
+    [fromAmount, fromAddress, fromTokenId, stakeHotkey, toAddress, toTokenId]
   )
 
   const swapModules = useSwapModules()
@@ -157,6 +160,7 @@ export const useSwapQuoteManager = (params: {
         fromAmount?.toString(),
         fromAddress,
         toAddress,
+        stakeHotkey,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         module.getQuote(
@@ -167,6 +171,7 @@ export const useSwapQuoteManager = (params: {
             fromAddress,
             toAddress,
             selectedSubProtocol,
+            stakeHotkey,
             input: "exact",
           },
           signal

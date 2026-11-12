@@ -104,6 +104,8 @@ export type QuoteParams = {
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
+  /** the validator a TAO to dTAO stake goes to, when the user picked one. Other modules ignore it */
+  stakeHotkey?: string
   /** exact: the sender holds fromAmount now. upTo: a later leg, the sender holds at most fromAmount once the previous leg lands */
   input: "exact" | "upTo"
 }

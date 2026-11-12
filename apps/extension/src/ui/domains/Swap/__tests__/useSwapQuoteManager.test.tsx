@@ -347,6 +347,52 @@ describe("useSwapQuoteManager", () => {
     })
   })
 
+  it("requotes for a validator picked on the confirm screen, though the quote is frozen", async () => {
+    const pendingQuotes: Deferred<BaseQuote[] | null>[] = []
+    getQuoteMock.mockImplementation(() => {
+      const pending = createDeferred<BaseQuote[] | null>()
+      pendingQuotes.push(pending)
+      return pending.promise
+    })
+
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    let params: Parameters<typeof useSwapQuoteManager>[0] = {
+      fromTokenId: "from-token",
+      toTokenId: "to-token",
+      fromSupportMap,
+      toSupportMap,
+      fromAmount: 1n,
+      fromAddress: account,
+      toAddress: "0x222",
+      selectedProtocol: null,
+      selectedSubProtocol: undefined,
+      quoteSorting: "bestRate" as const,
+      freezeQuote: true,
+    }
+    const { result, rerender } = renderHook(() => useSwapQuoteManager(params), { wrapper })
+
+    await waitFor(() => expect(getQuoteMock).toHaveBeenCalledTimes(1))
+    pendingQuotes[0]?.resolve([makeQuote(100n)])
+    await waitFor(() => expect(result.current.isQuoteDataCurrent).toBe(true))
+
+    params = { ...params, stakeHotkey: "5Picked" }
+    rerender()
+
+    await waitFor(() => expect(getQuoteMock).toHaveBeenCalledTimes(2))
+    expect(getQuoteMock.mock.calls[1][0]).toMatchObject({ stakeHotkey: "5Picked" })
+    expect(result.current.isQuoteDataCurrent).toBe(false)
+    expect(result.current.selectedQuote?.outputAmountBN).toBe(100n)
+
+    pendingQuotes[1]?.resolve([makeQuote(101n)])
+
+    await waitFor(() => {
+      expect(result.current.selectedQuote?.outputAmountBN).toBe(101n)
+      expect(result.current.isQuoteDataCurrent).toBe(true)
+    })
+  })
+
   it("reports quotes once per amount and token pair, not on a refresh", async () => {
     track.mockClear()
     getQuoteMock.mockResolvedValueOnce([makeQuote(100n)])
