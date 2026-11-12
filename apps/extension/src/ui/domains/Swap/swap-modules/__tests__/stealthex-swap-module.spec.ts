@@ -37,6 +37,8 @@ vi.mock("@ui/state/chaindata", async () => {
   }
 })
 
+vi.mock("@ui/state/balances", () => ({ getBalances$: vi.fn() }))
+
 vi.mock("@ui/state/accounts", async () => {
   const { of } = await import("rxjs")
   return { accounts$: of([]) }
