@@ -1,3 +1,4 @@
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { SettingsIcon } from "@talismn/icons"
 import { Modal } from "@ui/components/Modal"
 import { ModalDialog } from "@ui/components/ModalDialog"
@@ -9,16 +10,15 @@ import { useOpenClose } from "@ui/hooks/useOpenClose"
 import { cn } from "@ui/util/cn"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { BittensorValidatorPicker } from "./BittensorValidatorPicker"
 
 export const SelectValidatorPill: FC<{
+  networkId: DotNetworkId
   netuid: number
   hotkey: string | null
   onSelect: (hotkey: string) => void
-}> = ({ netuid, hotkey, onSelect }) => {
+}> = ({ networkId, netuid, hotkey, onSelect }) => {
   const { t } = useTranslation()
-  const networkId = useTaoDashboardNetworkId()
 
   // preload validator + yield data so the picker doesn't flicker on open
   useCombinedBittensorValidatorsData(networkId, netuid)
