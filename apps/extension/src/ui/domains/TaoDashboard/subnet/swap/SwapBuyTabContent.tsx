@@ -1,5 +1,9 @@
 import { Button } from "@ui/components/Button"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import {
+  BittensorConfirmMevShieldLabel,
+  BittensorConfirmMevShieldValue,
+} from "@ui/domains/Staking/Bittensor/components/BittensorConfirmFields"
 import { useBalances } from "@ui/state/balances"
 import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,7 +13,6 @@ import { SwapBuyConfirmModal } from "./SwapBuyConfirmModal"
 import { SwapBuyInput } from "./SwapBuyInput"
 import { SwapBuyOutput } from "./SwapBuyOutput"
 import { SwapBuyProvider, useSwapBuy } from "./SwapBuyProvider"
-import { SwapConfirmMevShieldLabel, SwapConfirmMevShieldValue } from "./SwapConfirmShared"
 import {
   SwapDetailsRow,
   SwapFeeEstimate,
@@ -114,7 +117,7 @@ const FeeEstimate = () => {
 }
 
 const MevShieldLabel = () => {
-  return <SwapConfirmMevShieldLabel containerId={SWAP_TAB_CONTAINER_ID} />
+  return <BittensorConfirmMevShieldLabel containerId={SWAP_TAB_CONTAINER_ID} />
 }
 
 const MevShieldToggle = () => {
@@ -126,7 +129,7 @@ const MevShieldToggle = () => {
   } = useSwapBuy()
 
   return (
-    <SwapConfirmMevShieldValue
+    <BittensorConfirmMevShieldValue
       withMevShield={withMevShield}
       isMevShieldDisabled={isMevShieldDisabled}
       isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
