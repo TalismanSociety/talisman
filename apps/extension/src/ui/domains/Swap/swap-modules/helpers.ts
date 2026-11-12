@@ -1,9 +1,31 @@
-import type { NetworkId } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import type { BaseQuote, NonEmpty, QuoteLeg, SwapEnv } from "./common.swap-module"
+import type { NetworkId, NetworkPlatform } from "@talismn/chaindata-provider"
+import { isAddressEqual, isEthereumAddress, isSs58Address } from "@talismn/crypto"
+import {
+  type BaseQuote,
+  type NonEmpty,
+  platformFromTokenId,
+  type QuoteLeg,
+  type SwapEnv,
+} from "./common.swap-module"
 
 /** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
 export const TALISMAN_FEE_NAME = "Talisman Fee"
+
+type LaterLegAccounts = { isAddress: (address: string) => boolean; name: string }
+
+export const LATER_LEG_ACCOUNTS: Record<NetworkPlatform, LaterLegAccounts | null> = {
+  ethereum: { isAddress: isEthereumAddress, name: "an EVM" },
+  polkadot: { isAddress: isSs58Address, name: "a substrate" },
+  solana: null,
+}
+
+const assertLaterLegSigner = ({ signer, fromTokenId }: QuoteLeg) => {
+  if (!signer) return
+  const accounts = LATER_LEG_ACCOUNTS[platformFromTokenId(fromTokenId)]
+  if (!accounts) throw new Error("No account signs a later leg on this network")
+  if (!accounts.isAddress(signer))
+    throw new Error(`Only ${accounts.name} account signs a later leg`)
+}
 
 type QuoteSummary = "legs" | "inputAmountBN" | "outputAmountBN" | "fees" | "timeInSec"
 
@@ -16,8 +38,7 @@ export const quoteFromLegs = (
     if (leg.fromTokenId !== previous.toTokenId) throw new Error("Quote legs do not chain")
     if (leg.signer && previous.recipient && !isAddressEqual(leg.signer, previous.recipient))
       throw new Error("Quote legs do not chain")
-    if (leg.signer && !isEthereumAddress(leg.signer))
-      throw new Error("Only an EVM account signs a later leg")
+    assertLaterLegSigner(leg)
   })
 
   return {

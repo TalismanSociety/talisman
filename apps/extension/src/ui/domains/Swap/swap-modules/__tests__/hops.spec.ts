@@ -34,21 +34,61 @@ describe("pickIntermediateAccount", () => {
   ]
 
   it("picks the recipient when it is one of the owned EVM accounts", () => {
-    expect(pickIntermediateAccount(candidates, KEYPAIR_RICH.toLowerCase())).toBe(KEYPAIR_RICH)
-    expect(pickIntermediateAccount(candidates, LEDGER)).toBe(LEDGER)
+    expect(pickIntermediateAccount(candidates, KEYPAIR_RICH.toLowerCase(), "ethereum")).toBe(
+      KEYPAIR_RICH
+    )
+    expect(pickIntermediateAccount(candidates, LEDGER, "ethereum")).toBe(LEDGER)
   })
 
   it("otherwise picks the keypair holding the least of the hub token", () => {
-    expect(pickIntermediateAccount(candidates, EXTERNAL)).toBe(KEYPAIR_POOR)
-    expect(pickIntermediateAccount(candidates, SUB_ADDRESS)).toBe(KEYPAIR_POOR)
-    expect(pickIntermediateAccount(candidates, null)).toBe(KEYPAIR_POOR)
+    expect(pickIntermediateAccount(candidates, EXTERNAL, "ethereum")).toBe(KEYPAIR_POOR)
+    expect(pickIntermediateAccount(candidates, SUB_ADDRESS, "ethereum")).toBe(KEYPAIR_POOR)
+    expect(pickIntermediateAccount(candidates, null, "ethereum")).toBe(KEYPAIR_POOR)
   })
 
   it("falls back to a Ledger account, then to nothing", () => {
-    expect(pickIntermediateAccount([candidate(LEDGER, "ledger-ethereum", 0n)], EXTERNAL)).toBe(
-      LEDGER
-    )
-    expect(pickIntermediateAccount([], EXTERNAL)).toBe(null)
+    expect(
+      pickIntermediateAccount([candidate(LEDGER, "ledger-ethereum", 0n)], EXTERNAL, "ethereum")
+    ).toBe(LEDGER)
+    expect(pickIntermediateAccount([], EXTERNAL, "ethereum")).toBe(null)
+  })
+})
+
+describe("pickIntermediateAccount on a substrate hub", () => {
+  const SUB_OTHER = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const SUB_VAULT = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+  const candidates = [
+    candidate(KEYPAIR_POOR, "keypair", 0n),
+    candidate(SUB_ADDRESS, "keypair", 5n),
+    candidate(SUB_OTHER, "keypair", 1n),
+    candidate(SUB_VAULT, "polkadot-vault", 0n),
+  ]
+
+  it("picks the recipient when it is one of the owned substrate accounts", () => {
+    expect(pickIntermediateAccount(candidates, SUB_ADDRESS, "polkadot")).toBe(SUB_ADDRESS)
+    expect(pickIntermediateAccount(candidates, SUB_VAULT, "polkadot")).toBe(SUB_VAULT)
+  })
+
+  it("otherwise picks the substrate keypair holding the least of the hub token, never an EVM account", () => {
+    expect(pickIntermediateAccount(candidates, KEYPAIR_POOR, "polkadot")).toBe(SUB_OTHER)
+    expect(pickIntermediateAccount(candidates, null, "polkadot")).toBe(SUB_OTHER)
+  })
+
+  it("falls back to a device account, then to nothing", () => {
+    expect(
+      pickIntermediateAccount(
+        [candidate(KEYPAIR_RICH, "keypair", 0n), candidate(SUB_VAULT, "polkadot-vault", 0n)],
+        null,
+        "polkadot"
+      )
+    ).toBe(SUB_VAULT)
+    expect(
+      pickIntermediateAccount([candidate(KEYPAIR_RICH, "keypair", 0n)], null, "polkadot")
+    ).toBe(null)
+  })
+
+  it("holds nothing between two legs on Solana", () => {
+    expect(pickIntermediateAccount(candidates, null, "solana")).toBe(null)
   })
 })
 

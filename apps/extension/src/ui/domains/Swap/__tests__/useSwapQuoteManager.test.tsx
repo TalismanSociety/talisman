@@ -194,7 +194,7 @@ describe("useSwapQuoteManager", () => {
         {
           protocol: "lifi",
           fromTokenId: "from-token",
-          toTokenId: "dest-erc20",
+          toTokenId: "10:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
           signer: account,
           recipient: account,
           inputAmount: 1n,
@@ -204,7 +204,7 @@ describe("useSwapQuoteManager", () => {
         },
         {
           protocol: "lifi",
-          fromTokenId: "dest-erc20",
+          fromTokenId: "10:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
           toTokenId: "to-token",
           signer: account,
           recipient: null,

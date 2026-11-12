@@ -1,17 +1,18 @@
 import type { FeatureFlag } from "@core/domains/app/types"
-import type { TokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import type { NetworkPlatform, TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import type { AccountType } from "@talismn/keyring"
-import type {
-  BaseQuote,
-  EntryHop,
-  QuoteParams,
-  SupportedSwapProtocol,
-  SwapModule,
+import {
+  type BaseQuote,
+  type EntryHop,
+  platformFromTokenId,
+  type QuoteParams,
+  type SupportedSwapProtocol,
+  type SwapModule,
 } from "./common.swap-module"
-import { quoteFromLegs } from "./helpers"
+import { LATER_LEG_ACCOUNTS, quoteFromLegs } from "./helpers"
 
-/** an owned EVM account that could hold the funds between two legs */
+/** an owned account that could hold the funds between two legs */
 export type IntermediateCandidate = {
   address: string
   type: AccountType
@@ -21,21 +22,24 @@ export type IntermediateCandidate = {
 
 export const pickIntermediateAccount = (
   candidates: readonly IntermediateCandidate[],
-  recipient: string | null
+  recipient: string | null,
+  hubPlatform: NetworkPlatform
 ): string | null => {
-  const evm = candidates.filter((candidate) => isEthereumAddress(candidate.address))
+  const accounts = LATER_LEG_ACCOUNTS[hubPlatform]
+  if (!accounts) return null
+  const signers = candidates.filter((candidate) => accounts.isAddress(candidate.address))
   const own =
-    recipient && isEthereumAddress(recipient)
-      ? evm.find((candidate) => isAddressEqual(candidate.address, recipient))
+    recipient && accounts.isAddress(recipient)
+      ? signers.find((candidate) => isAddressEqual(candidate.address, recipient))
       : undefined
   if (own) return own.address
 
-  const keypair = evm
+  const keypair = signers
     .filter((candidate) => candidate.type === "keypair")
     .sort((a, b) => (a.hubBalance < b.hubBalance ? -1 : a.hubBalance > b.hubBalance ? 1 : 0))[0]
   if (keypair) return keypair.address
 
-  return evm.find((candidate) => candidate.type === "ledger-ethereum")?.address ?? null
+  return signers.find((candidate) => candidate.type !== "keypair")?.address ?? null
 }
 
 export type HopModule = Pick<
@@ -66,7 +70,8 @@ export const withEntryHops = <T extends HopModule>(module: T, options: EntryHopO
     if (!via?.settleLeg) return null
     const intermediate = pickIntermediateAccount(
       await options.candidates(hop.hub),
-      params.toAddress
+      params.toAddress,
+      platformFromTokenId(hop.hub)
     )
     if (!intermediate) return null
 
