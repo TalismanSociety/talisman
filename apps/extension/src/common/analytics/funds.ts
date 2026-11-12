@@ -70,6 +70,7 @@ export const SWAP_PROTOCOLS = [
   "stealthex",
   "lifi",
   "bittensor-evm",
+  "bittensor-dtao",
   "forevermoney",
 ] as const
 export type SwapProtocol = (typeof SWAP_PROTOCOLS)[number]

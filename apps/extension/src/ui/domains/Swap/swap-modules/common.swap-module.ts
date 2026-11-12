@@ -36,6 +36,7 @@ export type SupportedSwapProtocol =
   | "stealthex"
   | "lifi"
   | "bittensor-evm"
+  | "bittensor-dtao"
   | "forevermoney"
 
 export type QuoteFee = {
