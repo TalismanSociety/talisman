@@ -285,4 +285,62 @@ describe("Bittensor EVM settleLeg", () => {
       stop: "failed",
     })
   })
+
+  describe("from Bittensor EVM", () => {
+    const withdrawLeg: QuoteLeg = {
+      ...depositLeg,
+      fromTokenId: depositLeg.toTokenId,
+      toTokenId: depositLeg.fromTokenId,
+      signer: EVM_ADDRESS,
+      recipient: SUB_ADDRESS,
+      data: undefined,
+    }
+    const settleWithdrawal = async (settled: SettledTransaction, input: bigint) => {
+      const waitForTransaction = vi.fn(async () => settled)
+      const outcome = await bittensorEvmSwapModule.settleLeg?.(
+        { leg: withdrawLeg, hash: HASH_0, input },
+        { waitForTransaction } as unknown as SwapEnv,
+        new AbortController().signal
+      )
+      return { outcome, waitForTransaction }
+    }
+
+    it("delivers the rao the precompile credits, once the EVM transaction landed", async () => {
+      const { outcome, waitForTransaction } = await settleWithdrawal(
+        { landed: true, hash: HASH_1 },
+        1_500_000_000n * WEI_PER_RAO + 999_999_999n
+      )
+
+      expect(outcome).toEqual(landed(HASH_1, 1_500_000_000n))
+      expect(waitForTransaction).toHaveBeenCalledWith("964", HASH_0, expect.any(AbortSignal))
+    })
+
+    it("delivers what its quote promised for the same input", async () => {
+      const input = 2n * 10n ** 18n + 7n
+      const quote = (await bittensorEvmSwapModule.getQuote(
+        {
+          fromTokenId: withdrawLeg.fromTokenId,
+          toTokenId: withdrawLeg.toTokenId,
+          fromAmount: input,
+          fromAddress: null,
+          toAddress: SUB_ADDRESS,
+          input: "exact",
+        },
+        {} as SwapEnv,
+        new AbortController().signal
+      )) as BaseQuote
+      const { outcome } = await settleWithdrawal({ landed: true, hash: HASH_0 }, input)
+
+      expect(outcome).toEqual(landed(HASH_0, quote.outputAmountBN))
+    })
+
+    it("passes a withdrawal that did not land through", async () => {
+      const { outcome } = await settleWithdrawal(
+        { landed: false, hash: HASH_0, stop: "cancelled" },
+        10n ** 18n
+      )
+
+      expect(outcome).toEqual({ landed: false, hash: HASH_0, stop: "cancelled" })
+    })
+  })
 })

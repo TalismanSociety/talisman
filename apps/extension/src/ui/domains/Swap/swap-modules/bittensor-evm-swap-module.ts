@@ -159,6 +159,9 @@ const estimateEvmFeeWei = async (
 
 // --- Quote ---
 
+/** the precompile credits whole rao: the wei under one rao never leave the EVM account */
+const evmToSubOutputRao = (inputWei: bigint) => inputWei / BITTENSOR_WEI_PER_RAO
+
 const toQuoteFee = (tokenId: TokenId, planck: bigint, decimals: number): QuoteFee => ({
   name: "Est. Gas Fees",
   gas: true,
@@ -262,7 +265,7 @@ const getEvmToSubQuote = async (
 ): Promise<BaseQuote> => {
   const { evmNetworkId } = route.pair
 
-  const outputRao = fromAmount / BITTENSOR_WEI_PER_RAO
+  const outputRao = evmToSubOutputRao(fromAmount)
   const value = outputRao * BITTENSOR_WEI_PER_RAO
 
   // gas is paid on top by the sender, the confirmation screen checks it against the balance
@@ -317,7 +320,7 @@ const buildTransaction = async (
   if (context.platform !== "ethereum") throw new Error("Missing EVM context")
   if (!isEthereumAddress(signer)) throw new Error("Invalid sender address")
 
-  const value = (input / BITTENSOR_WEI_PER_RAO) * BITTENSOR_WEI_PER_RAO
+  const value = evmToSubOutputRao(input) * BITTENSOR_WEI_PER_RAO
   assertNativeValueWithinInput({ value, fromAmount: input, isNativeInput: true })
 
   const [network, publicClient] = await Promise.all([
@@ -373,12 +376,20 @@ const settleLeg = async (
   signal: AbortSignal
 ): Promise<LegOutcome> => {
   const route = findRoute(leg.fromTokenId, leg.toTokenId)
-  if (route?.direction !== "sub-to-evm")
-    throw new Error("Only a deposit to Bittensor EVM hands over")
-  const settled = await env.waitForTransaction(route.pair.substrateNetworkId, hash, signal)
-  return settled.landed
-    ? { ...settled, amount: (input - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO }
-    : settled
+  if (!route) throw new Error("Not a Bittensor EVM leg")
+  const isDeposit = route.direction === "sub-to-evm"
+  const settled = await env.waitForTransaction(
+    isDeposit ? route.pair.substrateNetworkId : route.pair.evmNetworkId,
+    hash,
+    signal
+  )
+  if (!settled.landed) return settled
+  return {
+    ...settled,
+    amount: isDeposit
+      ? (input - edHeldRaoOf(leg)) * BITTENSOR_WEI_PER_RAO
+      : evmToSubOutputRao(input),
+  }
 }
 
 export const bittensorEvmSwapModule: SwapModuleDefinition = {
