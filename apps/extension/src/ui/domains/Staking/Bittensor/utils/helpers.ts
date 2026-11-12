@@ -1,5 +1,5 @@
 import { Binary, Enum } from "@polkadot-api/substrate-bindings"
-import { TAO_DECIMALS } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE, TAO_DECIMALS } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 
 import type { StakeDirection } from "../hooks/types"
@@ -30,6 +30,24 @@ export const getSwapSimulation = async (
     netuid,
     amount,
   ])
+}
+
+/** rao per alpha at the pool's spot price, root is 1:1 */
+export const getAlphaPrice = async (sapi: ScaleApi, netuid: number): Promise<bigint> =>
+  netuid === ROOT_NETUID
+    ? ALPHA_PRICE_SCALE
+    : sapi.getRuntimeCallValue<bigint>("SwapRuntimeApi", "current_alpha_price", [netuid])
+
+const SUBTENSOR_DEFAULT_MIN_STAKE = 2_000_000n
+
+export const getDefaultMinStake = (sapi: ScaleApi | null | undefined): bigint => {
+  try {
+    return (
+      sapi?.getConstant<bigint>("SubtensorModule", "InitialMinStake") ?? SUBTENSOR_DEFAULT_MIN_STAKE
+    )
+  } catch {
+    return SUBTENSOR_DEFAULT_MIN_STAKE
+  }
 }
 
 export const getLimitPrice = (

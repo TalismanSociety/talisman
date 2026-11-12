@@ -8,6 +8,8 @@ export const TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR =
 
 export const TALISMAN_FEE_BITTENSOR = 0.3
 
+export const FEE_ESTIMATE_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
+
 /** which UI a staking operation originates from: the staking wizard, or the TAO dashboard's buy/sell wizard */
 export type RemarkType = "stake" | "swap"
 
