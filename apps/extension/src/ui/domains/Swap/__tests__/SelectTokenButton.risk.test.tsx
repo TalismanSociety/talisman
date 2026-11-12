@@ -116,6 +116,9 @@ vi.mock("@ui/components/ModalDialog", () => ({
 
 vi.mock("@ui/domains/Asset/TokenLogo", () => ({ TokenLogo: () => null }))
 vi.mock("@ui/domains/Networks/NetworkLogo", () => ({ NetworkLogo: () => null }))
+vi.mock("@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName", () => ({
+  BittensorValidatorName: () => null,
+}))
 
 vi.mock("@ui/domains/Asset/TokenPicker", () => ({
   TokenPicker: ({
