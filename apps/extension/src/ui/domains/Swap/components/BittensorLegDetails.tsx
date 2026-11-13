@@ -131,6 +131,7 @@ export const BittensorLegDetails: FC<{
           netuid={data.netuid}
           hotkey={data.hotkey}
           onSelect={isValidatorPickable ? chooseStakeHotkey : undefined}
+          containerId={containerId}
           variant={layout === "cards" ? "tx" : "default"}
         />
       </SwapTxRow>

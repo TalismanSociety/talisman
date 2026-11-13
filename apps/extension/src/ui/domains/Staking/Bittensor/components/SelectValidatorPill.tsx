@@ -22,9 +22,11 @@ export const SelectValidatorPill: FC<{
   netuid: number
   hotkey: string | null
   onSelect?: (hotkey: string) => void
+  /** the element the picker opens in, the page when omitted */
+  containerId?: string
   /** "tx" sizes it for a transaction's detail rows */
   variant?: "default" | "tx"
-}> = ({ networkId, netuid, hotkey, onSelect, variant = "default" }) => {
+}> = ({ networkId, netuid, hotkey, onSelect, containerId, variant = "default" }) => {
   const { t } = useTranslation()
 
   // preload validator + yield data so the picker doesn't flicker on open
@@ -73,7 +75,12 @@ export const SelectValidatorPill: FC<{
           </div>
         </PillButton>
       )}
-      <Modal analyticsId="select_validator" isOpen={isOpen} onDismiss={close}>
+      <Modal
+        analyticsId="select_validator"
+        containerId={containerId}
+        isOpen={isOpen}
+        onDismiss={close}
+      >
         <PopupSizeModalContainer id="select-validator-picker-modal">
           <ModalDialog
             variant="wizard"
