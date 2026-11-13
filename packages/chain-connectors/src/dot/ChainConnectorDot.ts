@@ -6,13 +6,7 @@ import {
   type WsJsonRpcProvider,
 } from "@polkadot-api/ws-provider"
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
-import {
-  checkSuspension,
-  getLastResumedAt,
-  isSuspended,
-  onResume,
-  setAwakeTimeout,
-} from "@talismn/util"
+import { getLastResumedAt, isSuspended, onResume, setAwakeTimeout } from "@talismn/util"
 
 import log from "../log"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
@@ -56,8 +50,9 @@ const RECONNECT_AFTER_SUSPENSION_MS = 15_000
  * A socket that fails within this long after a resume reconnects to the same endpoint. On
  * resume the provider's own timers (the connection timeout, the 40s heartbeat) fire at once
  * and drop the socket, and the provider would move to the next endpoint although the current
- * one is fine. While the host marks the runtime suspended (`setSuspended`), every failing
- * socket reconnects to the same endpoint: those timers keep running, with no traffic.
+ * one is fine. While the runtime is held suspended (`isSuspended`), every failing socket
+ * reconnects to the same endpoint: the host has marked it suspended, or it is a hidden page
+ * whose timers have stopped or slowed down.
  */
 const RESUME_GRACE_MS = 10_000
 
@@ -501,12 +496,12 @@ export class ChainConnectorDot implements IChainConnectorDot {
    * on as usual.
    */
   private keepEndpointAfterResume(connection: Connection) {
+    // the provider's timers can fire before the resume listener: `isSuspended()` and
+    // `getLastResumedAt()` detect the resume now
     if (isSuspended()) {
       if (connection.uri) connection.provider.switch(connection.uri)
       return
     }
-    // the provider's timers can fire before the resume listener: detect the resume now
-    checkSuspension()
     const resumedAt = getLastResumedAt()
     if (!connection.uri || Date.now() - resumedAt > RESUME_GRACE_MS) return
     if (connection.keptEndpointAfterResumeAt === resumedAt) return

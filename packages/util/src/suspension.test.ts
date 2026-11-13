@@ -198,4 +198,111 @@ describe("suspension", () => {
       remove()
     })
   })
+
+  describe("in a page", () => {
+    type Suspension = typeof import("./suspension")
+    let suspension: Suspension
+    let page: EventTarget & { visibilityState: DocumentVisibilityState }
+
+    const setVisible = (visible: boolean) => {
+      page.visibilityState = visible ? "visible" : "hidden"
+      page.dispatchEvent(new Event("visibilitychange"))
+    }
+
+    /** a hidden tab whose timers run once a minute */
+    const throttle = (ms: number) => {
+      for (let left = ms; left > 0; left -= 60_000) suspend(Math.min(60_000, left))
+    }
+
+    beforeEach(async () => {
+      page = Object.assign(new EventTarget(), { visibilityState: "visible" as const })
+      vi.stubGlobal("document", page)
+      vi.resetModules()
+      suspension = await import("./suspension")
+    })
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it("runs timeouts on time while a hidden page's timers keep running", () => {
+      const callback = vi.fn()
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      setVisible(false)
+      run(30_100)
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
+    it("holds timeouts while a hidden page is throttled, and resumes once when it is shown", () => {
+      const callback = vi.fn()
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      setVisible(false)
+      throttle(10 * 60_000)
+      expect(callback).not.toHaveBeenCalled()
+      expect(listener).not.toHaveBeenCalled()
+      expect(suspension.isSuspended()).toBe(true)
+
+      setVisible(true)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith(60_000)
+      expect(suspension.isSuspended()).toBe(false)
+
+      run(29_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(200)
+      expect(callback).toHaveBeenCalledTimes(1)
+      remove()
+    })
+
+    it("holds a timeout that comes due while a frozen page resumes, before it is shown", () => {
+      const callback = vi.fn()
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      run(5_000)
+      setVisible(false)
+      suspend(90_000)
+      expect(callback).not.toHaveBeenCalled()
+      expect(listener).not.toHaveBeenCalled()
+
+      setVisible(true)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(89_000)
+      run(30_100)
+      expect(callback).toHaveBeenCalledTimes(1)
+      remove()
+    })
+
+    it("doesn't report a resume when a hidden page's timers kept running", () => {
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+
+      setVisible(false)
+      run(60_000)
+      setVisible(true)
+      expect(listener).not.toHaveBeenCalled()
+      remove()
+    })
+
+    it("resumes once both the host and the page let go", () => {
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+
+      suspension.setSuspended(true)
+      setVisible(false)
+      throttle(120_000)
+      suspension.setSuspended(false)
+      expect(listener).not.toHaveBeenCalled()
+      expect(suspension.isSuspended()).toBe(true)
+
+      setVisible(true)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith(120_000)
+      remove()
+    })
+  })
 })
