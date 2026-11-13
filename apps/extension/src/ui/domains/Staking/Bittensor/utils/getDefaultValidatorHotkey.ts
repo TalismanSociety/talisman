@@ -16,7 +16,8 @@ type RemoteConfig = {
  * If the user has existing substrate-dtao stake balances on this network and subnet,
  * returns the hotkey with the largest balance.
  * Otherwise falls back to remote config, on mainnet only: remote-config hotkeys don't exist on
- * testnet. "subnet-default" reads the subnet's default validator, "featured" the first featured one.
+ * testnet. "subnet-default" reads the subnet's default validator. "featured" only picks among the
+ * featured validators: the subnet's default when it is one of them, else the first.
  */
 export const getDefaultValidatorHotkey = (
   networkId: NetworkId,
@@ -45,7 +46,9 @@ export const getDefaultValidatorHotkey = (
 
   if (networkId !== BITTENSOR_NETWORK_ID) return undefined
 
-  if (fallback === "featured") return remoteConfig.bittensor.featuredValidators?.[0]
+  const subnetDefault = remoteConfig.bittensor.defaultValidatorsBySubnet[netuid] ?? undefined
+  if (fallback === "subnet-default") return subnetDefault
 
-  return remoteConfig.bittensor.defaultValidatorsBySubnet[netuid] ?? undefined
+  const featured = remoteConfig.bittensor.featuredValidators ?? []
+  return subnetDefault && featured.includes(subnetDefault) ? subnetDefault : featured[0]
 }

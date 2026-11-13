@@ -150,9 +150,23 @@ describe("getDefaultValidatorHotkey", () => {
       expect(featured(1, mockBalances([]))).toBe("5Featured1")
     })
 
-    test("never reads the subnet default", () => {
+    test("ignores a subnet default that is not featured", () => {
       expect(featured(3)).toBe("5Featured1")
       expect(featured(99)).toBe("5Featured1")
+    })
+
+    test("prefers the subnet's own default when it is one of the featured validators", () => {
+      const config = {
+        bittensor: {
+          defaultValidatorsBySubnet: { "84": "5Featured2" },
+          featuredValidators: ["5Featured1", "5Featured2"],
+        },
+      }
+      const pick = (netuid: number) =>
+        getDefaultValidatorHotkey("bittensor", netuid, config, undefined, null, "featured")
+
+      expect(pick(84)).toBe("5Featured2")
+      expect(pick(1)).toBe("5Featured1")
     })
 
     test("the largest stake on the subnet still wins", () => {
@@ -173,11 +187,19 @@ describe("getDefaultValidatorHotkey", () => {
     })
 
     test("returns undefined when no validator is featured", () => {
-      const config = { bittensor: { defaultValidatorsBySubnet: { "1": "5RemoteDefault1" } } }
+      const defaults = { defaultValidatorsBySubnet: { "1": "5RemoteDefault1" } }
+      const pick = (bittensor: { featuredValidators?: string[] }) =>
+        getDefaultValidatorHotkey(
+          "bittensor",
+          1,
+          { bittensor: { ...defaults, ...bittensor } },
+          undefined,
+          null,
+          "featured"
+        )
 
-      expect(
-        getDefaultValidatorHotkey("bittensor", 1, config, undefined, null, "featured")
-      ).toBeUndefined()
+      expect(pick({})).toBeUndefined()
+      expect(pick({ featuredValidators: [] })).toBeUndefined()
     })
   })
 })
