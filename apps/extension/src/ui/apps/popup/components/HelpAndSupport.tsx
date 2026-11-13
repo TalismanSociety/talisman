@@ -2,13 +2,12 @@ import { DISCORD_TALISMAN_URL, SUPPORT_EMAIL_URL } from "@common/constants"
 import { ChevronLeftIcon, DiscordIcon, LockIcon, MailIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { IconButton } from "@ui/components/IconButton"
-import { openMailto } from "@ui/util/openMailto"
 import { useTranslation } from "react-i18next"
 
 import { PopupContent, PopupFooter } from "../Layout/PopupLayout"
 
 const openDiscord = () => window.open(DISCORD_TALISMAN_URL, "_blank")
-const openSupportEmail = () => openMailto(SUPPORT_EMAIL_URL)
+const openSupportEmail = () => window.open(SUPPORT_EMAIL_URL, "_blank")
 
 export const HelpAndSupport = ({ onBack }: { onBack: () => void }) => {
   const { t } = useTranslation()

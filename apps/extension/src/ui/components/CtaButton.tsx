@@ -1,5 +1,4 @@
 import { cn } from "@ui/util/cn"
-import { openMailto } from "@ui/util/openMailto"
 import {
   type DetailedHTMLProps,
   type FC,
@@ -61,8 +60,7 @@ export const CtaButton: FC<CtaButton> = ({
   const navigate = useNavigate()
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
-      if (to?.startsWith("http")) window.open(to, "_blank")
-      else if (to?.startsWith("mailto:")) openMailto(to)
+      if (to?.startsWith("http") || to?.startsWith("mailto:")) window.open(to, "_blank")
       else if (to) navigate(to)
       else if (onClick) onClick(e)
     },
