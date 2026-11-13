@@ -22,7 +22,7 @@ const getSwapProgressTrackerUrl = (
   txHash: string,
   network: Network | undefined | null
 ): string | null =>
-  txInfo.type === "swap-bittensor-evm"
+  txInfo.type === "swap-bittensor-evm" || txInfo.type === "bittensor-staking"
     ? getBlockExplorerUrl(network, { type: "transaction", id: txHash })
     : getSwapTrackerUrl(txInfo, txHash)
 

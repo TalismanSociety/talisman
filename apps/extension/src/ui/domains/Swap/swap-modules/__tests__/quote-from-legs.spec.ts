@@ -114,4 +114,31 @@ describe("quoteFromLegs", () => {
       quoteFromLegs([{ ...moveToEvm, recipient: SUB_ADDRESS }, backToFinney], presentation)
     ).toThrow("Only an EVM account signs a later leg")
   })
+
+  it("lets a substrate account sign a later leg that spends a substrate token", () => {
+    const toFinney: QuoteLeg = {
+      ...moveToEvm,
+      fromTokenId: moveToEvm.toTokenId,
+      toTokenId: moveToEvm.fromTokenId,
+      signer: RECIPIENT,
+      recipient: SUB_ADDRESS,
+    }
+    const stake: QuoteLeg = {
+      ...moveToEvm,
+      protocol: "bittensor-dtao",
+      toTokenId: "bittensor:substrate-dtao:64",
+      recipient: SUB_ADDRESS,
+    }
+
+    expect(quoteFromLegs([toFinney, stake], presentation).legs).toEqual([toFinney, stake])
+    expect(() =>
+      quoteFromLegs(
+        [
+          { ...toFinney, recipient: RECIPIENT },
+          { ...stake, signer: RECIPIENT },
+        ],
+        presentation
+      )
+    ).toThrow("Only a substrate account signs a later leg")
+  })
 })

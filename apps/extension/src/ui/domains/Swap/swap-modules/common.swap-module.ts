@@ -4,6 +4,7 @@ import type { FeatureFlag, RemoteConfigStoreData } from "@core/domains/app/types
 import type { Account } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
+import type { Balances } from "@talismn/balances"
 import type { SolRpc } from "@talismn/chain-connectors"
 import {
   evmErc20TokenId,
@@ -35,6 +36,7 @@ export type SupportedSwapProtocol =
   | "stealthex"
   | "lifi"
   | "bittensor-evm"
+  | "bittensor-dtao"
   | "forevermoney"
 
 export type QuoteFee = {
@@ -103,6 +105,8 @@ export type QuoteParams = {
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
+  /** the validator a TAO to dTAO stake goes to, when the user picked one. Other modules ignore it */
+  stakeHotkey?: string
   /** exact: the sender holds fromAmount now. upTo: a later leg, the sender holds at most fromAmount once the previous leg lands */
   input: "exact" | "upTo"
 }
@@ -204,6 +208,12 @@ export type SwapBuildLegParams = BuildLegParams & {
 
 export type SwapsConfig = RemoteConfigStoreData["swaps"]
 
+export type BittensorSwapConfig = {
+  remote: RemoteConfigStoreData["bittensor"]
+  /** decimal, 0.05 takes 5% off the Talisman fee */
+  seekDiscount: number
+}
+
 /** Everything a swap module reads from the wallet that runs it */
 export type SwapEnv = {
   getNetwork: (networkId: NetworkId) => Promise<Network | null>
@@ -216,6 +226,8 @@ export type SwapEnv = {
   proxyFetch: typeof fetch
   fetch: typeof fetch
   getSwapsConfig: () => Promise<SwapsConfig>
+  getBittensorConfig: () => Promise<BittensorSwapConfig>
+  getBalances: () => Promise<Balances>
   getTokensMap: <P extends NetworkPlatform>(
     platform?: P
   ) => Promise<Record<TokenId, TokenOfPlatform<P>>>

@@ -1,10 +1,10 @@
-import { BittensorValidatorPicker } from "@ui/domains/TaoDashboard/subnet/swap/BittensorValidatorPicker"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
+import { BittensorValidatorPicker } from "../../components/BittensorValidatorPicker"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 

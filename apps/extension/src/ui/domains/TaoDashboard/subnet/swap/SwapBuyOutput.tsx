@@ -2,11 +2,12 @@ import { ChevronDownIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { PillButton } from "@ui/components/PillButton"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { SelectValidatorPill } from "@ui/domains/Staking/Bittensor/components/SelectValidatorPill"
 import { cn } from "@ui/util/cn"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import { useTaoDashboardSubnetPickerModal } from "../TaoDashboardSubnetPickerModal"
-import { SelectValidatorPill } from "./SelectValidatorPill"
 import { useSwapBuy } from "./SwapBuyProvider"
 
 export const SwapBuyOutput = () => (
@@ -26,9 +27,17 @@ export const SwapBuyOutput = () => (
 )
 
 const TokenOutValidatorPill = () => {
+  const networkId = useTaoDashboardNetworkId()
   const { netuid, hotkey, onHotkeyChange } = useSwapBuy()
 
-  return <SelectValidatorPill netuid={netuid} hotkey={hotkey} onSelect={onHotkeyChange} />
+  return (
+    <SelectValidatorPill
+      networkId={networkId}
+      netuid={netuid}
+      hotkey={hotkey}
+      onSelect={onHotkeyChange}
+    />
+  )
 }
 
 const ValueOutEstimate = () => {

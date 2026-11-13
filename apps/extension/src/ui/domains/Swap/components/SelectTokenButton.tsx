@@ -17,6 +17,8 @@ import { ModalDialog } from "@ui/components/ModalDialog"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { type TokenPick, TokenPicker, type TokenPickerScope } from "@ui/domains/Asset/TokenPicker"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorHotkeyAvatar } from "@ui/domains/Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { TokenSecurityCard } from "@ui/domains/TokenRisk/TokenSecurityCard"
 import {
   getFreshTokenRiskScan,
@@ -278,8 +280,19 @@ const OpenSelectorButton = ({
         />
       </div>
       <div className="flex flex-col items-start gap-1 overflow-hidden">
-        <div className="w-full truncate text-left text-body text-sm">{token.symbol}</div>
-        <div className="w-full truncate text-left text-body-secondary text-xs">{network?.name}</div>
+        <div className="w-full truncate text-left text-body text-sm">
+          {token.type === "substrate-dtao" ? token.subnetName || token.symbol : token.symbol}
+        </div>
+        {token.type === "substrate-dtao" && token.hotkey ? (
+          <div className="flex w-full items-center gap-2 text-body-secondary text-xs">
+            <BittensorHotkeyAvatar hotkey={token.hotkey} />
+            <BittensorValidatorName hotkey={token.hotkey} noTooltip className="min-w-0 truncate" />
+          </div>
+        ) : (
+          <div className="w-full truncate text-left text-body-secondary text-xs">
+            {network?.name}
+          </div>
+        )}
       </div>
       <ChevronDownIcon className="shrink-0" />
     </BaseButton>

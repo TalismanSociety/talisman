@@ -7,7 +7,7 @@ import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRatesMap } from "@ui/state/tokenRates"
 import BigNumber from "bignumber.js"
-import type { ComponentProps, FC } from "react"
+import type { ComponentProps, FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { toPlanck } from "../hooks/quote-sorting"
 import type { QuoteFee } from "../swap-modules/common.swap-module"
@@ -18,28 +18,34 @@ const isTalismanFee = (fee: QuoteFee) => fee.name === TALISMAN_FEE_NAME && fee.a
 const getOtherFees = (fees: QuoteFee[]) =>
   fees.filter((fee) => fee.additional || isTalismanFee(fee))
 
-export const SwapOtherFees: FC<{ fees: QuoteFee[]; isLoading: boolean }> = ({
-  fees,
-  isLoading,
-}) => {
+export const SwapOtherFees: FC<{
+  fees: QuoteFee[]
+  isLoading: boolean
+  /** replaces the "Other Fees" label and its breakdown tooltip */
+  label?: ReactNode
+}> = ({ fees, isLoading, label }) => {
   const { t } = useTranslation()
   const otherFees = getOtherFees(fees)
   if (!otherFees.length) return null
 
   return (
-    <div className="flex h-11 items-center justify-between gap-8">
+    <div className="flex min-h-11 items-center justify-between gap-8">
       <div className="whitespace-nowrap text-body-secondary text-xs">
-        {t("Other Fees")}
-        <Tooltip placement="top">
-          <TooltipTrigger asChild>
-            <span className="ml-2">
-              <InfoIcon className="inline align-text-top" />
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <OtherFeesBreakdown fees={otherFees} />
-          </TooltipContent>
-        </Tooltip>
+        {label ?? (
+          <>
+            {t("Other Fees")}
+            <Tooltip placement="top">
+              <TooltipTrigger asChild>
+                <span className="ml-2">
+                  <InfoIcon className="inline align-text-top" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <OtherFeesBreakdown fees={otherFees} />
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
       </div>
       {isLoading ? (
         <Skeleton className="text-xs">0.0000 TKN ($0.00)</Skeleton>
@@ -71,7 +77,7 @@ const OtherFeesTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
         ...firstFee,
         amount: fees.reduce((total, fee) => total.plus(fee.amount), BigNumber(0)),
       }}
-      className="text-body-secondary text-xs"
+      className="text-right text-body-secondary text-xs"
       tokensClassName="text-body"
       fiatClassName="text-body-secondary"
     />

@@ -42,6 +42,8 @@ vi.mock("@ui/state/accounts", async () => {
   return { accounts$: of([]) }
 })
 
+vi.mock("@ui/state/balances", () => ({ getBalances$: vi.fn() }))
+
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   getExtensionPublicClient: vi.fn(() => ({
     getGasPrice: async () => 10_000_000_000n,

@@ -54,6 +54,13 @@ export const getSwapProgressDetails = (
     }
   }
 
+  if (tx.txInfo?.type === "bittensor-staking")
+    return {
+      title: t("Swap complete"),
+      subtitle: t("Your swap was successful!"),
+      animStatus: "success",
+    }
+
   // Phase 2: On-chain tx succeeded — track exchange/protocol status
   switch (tx.swapStatus) {
     case "waiting":

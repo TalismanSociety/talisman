@@ -59,6 +59,12 @@ const {
 
 const { lifiBuildLeg } = vi.hoisted(() => ({ lifiBuildLeg: vi.fn() }))
 
+const { shield, substrate, stakeBuildLeg } = vi.hoisted(() => ({
+  shield: { withMevShield: false, txMode: "default" },
+  substrate: { free: 0n, fee: 100n, shieldFee: 40n, existentialDeposit: 500n },
+  stakeBuildLeg: vi.fn(),
+}))
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) =>
@@ -102,6 +108,19 @@ vi.mock("@ui/domains/Sign/TxSubmitButton/TxSubmitButton", () => ({
         {label}
       </button>
     )
+  },
+}))
+vi.mock("../components/BittensorLegDetails", () => ({ useLegMevShield: () => shield }))
+vi.mock("@ui/domains/Staking/Bittensor/hooks/useMevShieldFeeEstimate", () => ({
+  getMevShieldFeeEstimate: async () => substrate.shieldFee,
+}))
+vi.mock("../swapEnv.ui", () => ({
+  uiSwapEnv: {
+    substrateApi: async () => ({
+      getStorage: async () => ({ data: { free: substrate.free } }),
+      getConstant: () => substrate.existentialDeposit,
+      getFeeEstimate: async () => substrate.fee,
+    }),
   },
 }))
 vi.mock("../swap-modules/evm-network", () => ({
@@ -157,6 +176,7 @@ vi.mock("../swaps.api", () => ({
           destinationStartBlock: "1",
         }),
     },
+    { protocol: "bittensor-dtao", buildLeg: stakeBuildLeg },
     {
       protocol: "lifi",
       getApprovalInfo: ({
@@ -227,6 +247,40 @@ const runWaitingOn = (leg: QuoteLeg, landed = LEG0_OUTPUT): SwapRun => ({
   legs: [{ at: "landed", hash: `0x${"11".repeat(32)}`, amount: landed }, { at: "ready" }],
 })
 
+const TAO_LANDED = 2_000_000_000n
+const STAKE_PAYLOAD = { method: "0x0102", address: SUB_ADDRESS }
+
+const STAKE_LEG: QuoteLeg = {
+  protocol: "bittensor-dtao",
+  fromTokenId: "bittensor:substrate-native",
+  toTokenId: "bittensor:substrate-dtao:64",
+  signer: SUB_ADDRESS,
+  recipient: SUB_ADDRESS,
+  inputAmount: TAO_LANDED,
+  outputAmount: 100_000_000_000n,
+  fees: [],
+  timeInSec: 12,
+}
+
+const STAKE_RUN: SwapRun = {
+  id: "run-2",
+  quote: quoteFromLegs(
+    [
+      {
+        ...LEG0,
+        fromTokenId: "964:evm-native",
+        toTokenId: STAKE_LEG.fromTokenId,
+        signer: EVM_ADDRESS,
+        recipient: SUB_ADDRESS,
+      },
+      STAKE_LEG,
+    ],
+    { protocol: "bittensor-dtao", decentralisationScore: 3, providerLogo: "", providerName: "" }
+  ),
+  slippage: 0.005,
+  legs: [{ at: "landed", hash: `0x${"11".repeat(32)}`, amount: TAO_LANDED }, { at: "ready" }],
+}
+
 const FOREVERMONEY_RUN = runWaitingOn(FOREVERMONEY_LEG)
 const LIFI_RUN = runWaitingOn(LIFI_LEG)
 
@@ -286,6 +340,82 @@ describe("useLegSigning", () => {
     legSent.mockClear()
     lifiBuildLeg.mockClear()
     lifiBuildLeg.mockImplementation(async () => lifiBuilt())
+    submitted.mockClear()
+    Object.assign(shield, { withMevShield: false, txMode: "default" })
+    substrate.free = 10n * TAO_LANDED
+    stakeBuildLeg.mockClear()
+    stakeBuildLeg.mockImplementation(
+      async ({ input }: { input: bigint }): Promise<BuiltLeg> => ({
+        transaction: {
+          platform: "polkadot",
+          payload: STAKE_PAYLOAD as never,
+          txMetadata: new Uint8Array([1]),
+        },
+        fees: [],
+        expectedOutput: input * 50n,
+        txInfo: {
+          type: "bittensor-staking",
+          fromTokenId: STAKE_LEG.fromTokenId,
+          toTokenId: STAKE_LEG.toTokenId,
+          fromAmount: input.toString(),
+          toAmount: (input * 50n).toString(),
+          hotkey: "5Yuma",
+        },
+      })
+    )
+  })
+
+  it("signs a substrate leg as built on what landed, with the fee read at the build and no EVM pricing", async () => {
+    signer.type = "keypair"
+    const Leg = () => {
+      const { button, fee, ethTx } = useLegSigning(STAKE_RUN, 1, legSent)
+      return (
+        <>
+          <output>{`${fee.tokenId} ${fee.planck} ${ethTx ? "priced" : "unpriced"}`}</output>
+          <LegSignButton button={button} />
+        </>
+      )
+    }
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <Leg />
+      </QueryClientProvider>
+    )
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    expect(submitted.mock.lastCall?.[0]).toEqual({
+      platform: "polkadot",
+      payload: STAKE_PAYLOAD,
+      txMetadata: new Uint8Array([1]),
+      mode: "default",
+      txInfo: expect.objectContaining({
+        type: "bittensor-staking",
+        fromAmount: TAO_LANDED.toString(),
+        swapRun: { firstLegHash: `0x${"11".repeat(32)}`, isLastLeg: true },
+      }),
+    })
+    expect(screen.getByRole("status").textContent).toBe("bittensor:substrate-native 100 unpriced")
+    expect(ethGetTransactionsCount).not.toHaveBeenCalled()
+    expect(buttonLabel()).toBe("Sign")
+
+    await act(async () => {
+      button.submit?.(LEG_HASH)
+    })
+    expect(legSent).toHaveBeenCalledWith(1, LEG_HASH, TAO_LANDED)
+  })
+
+  it("submits a substrate leg through the MEV shield when it is on, leaving room for the shield's fee", async () => {
+    Object.assign(shield, { withMevShield: true, txMode: "bittensor-mev-shield" })
+    substrate.free = TAO_LANDED
+    renderSign(STAKE_RUN)
+
+    await waitFor(() => expect(submitted).toHaveBeenCalled())
+    const input = TAO_LANDED - substrate.existentialDeposit - substrate.fee - substrate.shieldFee
+    expect(stakeBuildLeg).toHaveBeenLastCalledWith(expect.objectContaining({ input }))
+    expect(submitted.mock.lastCall?.[0]).toMatchObject({
+      mode: "bittensor-mev-shield",
+      txInfo: { fromAmount: input.toString() },
+    })
   })
 
   it("shows a processing button until it knows what the user signs", () => {

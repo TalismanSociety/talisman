@@ -36,6 +36,8 @@ vi.mock("@ui/state/chaindata", async () => {
   return { getNetworkById$: vi.fn((id: string) => of(NETWORKS[id] ?? null)) }
 })
 
+vi.mock("@ui/state/balances", () => ({ getBalances$: vi.fn() }))
+
 vi.mock("@ui/domains/Ethereum/usePublicClient", () => ({
   getExtensionPublicClient: vi.fn((network: { id: string }) => ({
     readContract: (args: unknown) => mockReadContract(network.id, args),

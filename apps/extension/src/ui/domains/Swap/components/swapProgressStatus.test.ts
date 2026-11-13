@@ -41,6 +41,31 @@ describe("getSwapProgressDetails", () => {
     expect(details.pillLabel).toBe("Depositing funds")
   })
 
+  it("completes a staking swap as soon as its transaction lands: no exchange follows", () => {
+    const staking = {
+      ...makeTx("success"),
+      txInfo: {
+        type: "bittensor-staking" as const,
+        fromTokenId: "bittensor:substrate-native",
+        toTokenId: "bittensor:substrate-dtao:64",
+        fromAmount: "1",
+        toAmount: "1",
+        hotkey: "5Hotkey",
+      },
+    }
+
+    expect(getSwapProgressDetails(t, staking, false)).toMatchObject({
+      title: "Swap complete",
+      animStatus: "success",
+    })
+    expect(getSwapProgressDetails(t, { ...staking, status: "pending" }, false).pillLabel).toBe(
+      "Submitting"
+    )
+    expect(getSwapProgressDetails(t, { ...staking, status: "error" }, false).animStatus).toBe(
+      "failure"
+    )
+  })
+
   it("shows Depositing funds while the exchange hasn't seen the deposit (not_found)", () => {
     const details = getSwapProgressDetails(t, makeTx("success", "not_found"), false)
     expect(details.animStatus).toBe("processing")

@@ -13,9 +13,11 @@ import type { Hex } from "viem"
 
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useSwapModal } from "../hooks/useSwapModal"
+import { getDTaoLegData } from "../swap-modules/bittensor-dtao-swap-module"
 import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import { readyLeg, type SwapRun } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
+import { BittensorLegDetails } from "./BittensorLegDetails"
 import { SwapOtherFees } from "./SwapOtherFees"
 import { LegSignButton, type LegSigningState, useLegSigning } from "./SwapRunLegSigning"
 import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
@@ -151,9 +153,10 @@ export const SwapRunView: FC<{
   )
 
   const signRequest = legSigning.button.request
+  const ethSignTx = signRequest?.tx.platform === "ethereum" ? signRequest.tx : undefined
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    networkId: signRequest?.tx.networkId,
-    tx: signRequest?.tx.payload,
+    networkId: ethSignTx?.networkId,
+    tx: ethSignTx?.payload,
     disableCriticalPane: true,
     subjectId: signing ? `${signing.leg}:${signing.signs}` : undefined,
   })
@@ -179,7 +182,7 @@ export const SwapRunView: FC<{
 
   const renderBody = (card: SwapTxCardModel) => {
     const signs = card.kind === "approval" ? "approval" : "leg"
-    const isSigned = signing?.leg === card.leg && signing.signs === signs && !!legSigning.ethTx
+    const isSigned = signing?.leg === card.leg && signing.signs === signs
     const leg =
       isSigned && legSigning.built ? { ...legs[card.leg], ...legSigning.built } : legs[card.leg]
     const isRetried = isSigned && card.status === "failed"
@@ -189,10 +192,10 @@ export const SwapRunView: FC<{
       ) : isSigned ? (
         <SwapTxFeeRows
           address={leg.signer}
-          feeTokenId={legSigning.feeTokenId}
-          feePlanck={legSigning.ethTx?.txDetails?.estimatedFee ?? null}
-          isLoading={!!legSigning.ethTx?.isLoading}
-          hasError={!!legSigning.ethTx?.error && !legSigning.ethTx.txDetails}
+          feeTokenId={legSigning.fee.tokenId}
+          feePlanck={legSigning.fee.planck}
+          isLoading={legSigning.fee.isLoading}
+          hasError={legSigning.fee.hasError}
           ethTx={legSigning.ethTx}
           containerId={containerId}
         />
@@ -223,17 +226,13 @@ export const SwapRunView: FC<{
     const pendingRow = pendingEvmLegRow(input, card.leg)
     const trackerUrl = legTrackerUrl(input, card.leg)
     const acceptedOutput = isSigned ? legSigning.built?.acceptedOutput : undefined
-    return (
-      <SwapLegDetails
-        leg={leg}
-        provider={card.leg === providerLeg ? provider : undefined}
-        received={state.at === "landed" && card.leg < lastIndex ? state.amount : undefined}
-      >
-        {leg.protocol === quote.protocol && supportsSlippage(leg.protocol) ? (
-          <SwapSlippageRow percent={run.slippage * 100} />
-        ) : null}
-        {feeRows}
-        <SwapOtherFees fees={leg.fees} isLoading={false} />
+    const slippageRow =
+      leg.protocol === quote.protocol && supportsSlippage(leg.protocol) ? (
+        <SwapSlippageRow percent={run.slippage * 100} />
+      ) : null
+    const legProvider = card.leg === providerLeg ? provider : undefined
+    const footnotes = (
+      <>
         {pendingRow ? (
           <TxReplaceActions tx={pendingRow} className="mt-0" containerId={containerId} />
         ) : null}
@@ -256,12 +255,47 @@ export const SwapRunView: FC<{
             accepted={acceptedOutput}
           />
         ) : null}
+      </>
+    )
+
+    const dTaoData = getDTaoLegData(leg)
+    if (dTaoData)
+      return (
+        <BittensorLegDetails
+          leg={leg}
+          data={dTaoData}
+          fees={leg.fees}
+          feesLoading={false}
+          provider={legProvider}
+          shield={state.at === "ready" ? legSigning.shield : undefined}
+          canPickValidator={false}
+          feeRows={feeRows}
+          slippageRow={slippageRow}
+          containerId={containerId}
+        >
+          {footnotes}
+        </BittensorLegDetails>
+      )
+
+    return (
+      <SwapLegDetails
+        leg={leg}
+        provider={legProvider}
+        received={state.at === "landed" && card.leg < lastIndex ? state.amount : undefined}
+      >
+        {slippageRow}
+        {feeRows}
+        <SwapOtherFees fees={leg.fees} isLoading={false} />
+        {footnotes}
       </SwapLegDetails>
     )
   }
 
   return (
-    <RiskAnalysisProvider riskAnalysis={riskAnalysis} containerId={containerId}>
+    <RiskAnalysisProvider
+      riskAnalysis={signRequest?.tx.platform === "polkadot" ? undefined : riskAnalysis}
+      containerId={containerId}
+    >
       <SwapTxLayout
         footer={
           <RunFooter
