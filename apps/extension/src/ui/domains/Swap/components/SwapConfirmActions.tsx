@@ -846,7 +846,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     <SwapTxSubmitButton
       containerId={containerId}
       tx={swapTx}
-      label={isSingleDTaoSwap ? t("Approve") : t("Confirm Swap")}
+      label={t("Confirm Swap")}
       isRetry={!!signFailure}
       onSubmit={handleSwapSubmitted}
       onError={onSwapFailed}
