@@ -202,7 +202,7 @@ describe("suspension", () => {
   describe("in a page", () => {
     type Suspension = typeof import("./suspension")
     let suspension: Suspension
-    let page: EventTarget & { visibilityState: DocumentVisibilityState }
+    let page: EventTarget & { visibilityState: "visible" | "hidden" }
 
     const setVisible = (visible: boolean) => {
       page.visibilityState = visible ? "visible" : "hidden"
@@ -215,7 +215,9 @@ describe("suspension", () => {
     }
 
     beforeEach(async () => {
-      page = Object.assign(new EventTarget(), { visibilityState: "visible" as const })
+      page = Object.assign(new EventTarget(), {
+        visibilityState: "visible" as "visible" | "hidden",
+      })
       vi.stubGlobal("document", page)
       vi.resetModules()
       suspension = await import("./suspension")
