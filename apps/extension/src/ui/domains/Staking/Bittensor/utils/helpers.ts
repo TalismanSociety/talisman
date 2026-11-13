@@ -50,6 +50,16 @@ export const getDefaultMinStake = (sapi: ScaleApi | null | undefined): bigint =>
   }
 }
 
+const TOLERANCE_SCALE = 10_000n // don't expect more than 4 decimal places in tolerance
+
+/** the worst price a trade accepts: `price` moved against the trader by `tolerance`, 0.0005 = 0.05% */
+export const withPriceTolerance = (price: bigint, direction: StakeDirection, tolerance: number) => {
+  const scaledTolerance = BigInt(Math.round(tolerance * Number(TOLERANCE_SCALE)))
+  return direction === "taoToAlpha"
+    ? (price * (TOLERANCE_SCALE + scaledTolerance)) / TOLERANCE_SCALE
+    : (price * (TOLERANCE_SCALE - scaledTolerance)) / TOLERANCE_SCALE
+}
+
 export const getLimitPrice = (
   simulation: BittensorSwapSimulation,
   direction: StakeDirection,
@@ -58,20 +68,11 @@ export const getLimitPrice = (
   // prevent division by zero
   if (!simulation.alpha_amount) return 0n
 
-  const toleranceScaleFactor = 10_000n // dont expect more than 4 decimal places in tolerance
-  const scaledTolerance = BigInt(Math.round(tolerance * Number(toleranceScaleFactor)))
-
   // price based on the simulation result
   const unit = 10n ** BigInt(TAO_DECIMALS)
   const price = (simulation.tao_amount * unit) / simulation.alpha_amount
 
-  // limit price with tolerance
-  const limitPrice =
-    direction === "taoToAlpha"
-      ? (price * (toleranceScaleFactor + scaledTolerance)) / toleranceScaleFactor
-      : (price * (toleranceScaleFactor - scaledTolerance)) / toleranceScaleFactor
-
-  return limitPrice
+  return withPriceTolerance(price, direction, tolerance)
 }
 
 export const getBittensorStakingPayload = async ({

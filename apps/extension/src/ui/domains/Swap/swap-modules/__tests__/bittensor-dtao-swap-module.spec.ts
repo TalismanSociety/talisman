@@ -461,8 +461,51 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
     expect(calls[1].args.hotkey).toBe(HELD)
   })
 
-  it("prices the call on the pool as it is when built", async () => {
-    const quote = await stakeTao()
+  it("refuses a first leg once the pool moved past the slippage: the screen still shows the quote", async () => {
+    const stakeQuote = await stakeTao()
+    const unstakeQuote = await unstakeAlpha()
+    alphaPerTao = 40n
+    await expect(build(stakeQuote)).rejects.toThrow("please select the quote again")
+    alphaPerTao = 60n
+    await expect(build(unstakeQuote)).rejects.toThrow("please select the quote again")
+  })
+
+  it("bounds a first leg by the price it was quoted, after the pool moved against it", async () => {
+    const stakeQuote = await stakeTao()
+    const unstakeQuote = await unstakeAlpha()
+
+    alphaPerTao = 49n
+    const staked = await build(stakeQuote, { slippage: 0.05 })
+    expect(staked.calls[1].args.limit_price).toBe(21_000_000n)
+    expect(staked.built.expectedOutput).toBe(997_000_000n * 49n)
+    expect(staked.built.acceptedOutput).toBeUndefined()
+
+    alphaPerTao = 51n
+    const unstaked = await build(unstakeQuote, { slippage: 0.05 })
+    expect(unstaked.calls[0].args.limit_price).toBe(19_000_000n)
+    expect(unstaked.built.acceptedOutput).toBeUndefined()
+  })
+
+  it("signs the quoted price even when the pool moved in the user's favour", async () => {
+    const stakeQuote = await stakeTao()
+    alphaPerTao = 60n
+
+    expect((await build(stakeQuote)).calls[1].args.limit_price).toBe(20_100_000n)
+  })
+
+  it("refuses a first leg that was quoted no price: its limit would bound nothing", async () => {
+    const quote = await unstakeAlpha()
+    const [leg] = quote.legs
+    const unpriced = {
+      ...quote,
+      legs: [{ ...leg, data: { ...(leg.data as object), swapPrice: "0" } }],
+    }
+
+    await expect(build(unpriced as BaseQuote)).rejects.toThrow("Please select the quote again")
+  })
+
+  it("prices a later leg on the pool as it is when built", async () => {
+    const quote = await stakeTao({ input: "upTo" })
     alphaPerTao = 40n
 
     const { calls, built } = await build(quote)

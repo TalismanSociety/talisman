@@ -23,6 +23,7 @@ import {
   getBittensorUnbondPayload,
   getDefaultMinStake,
   getSwapSimulation,
+  withPriceTolerance,
 } from "@ui/domains/Staking/Bittensor/utils/helpers"
 import {
   getMinimumStakeInput,
@@ -63,6 +64,8 @@ const LegDataBaseSchema = z.object({
   swapPrice: z.string(),
   /** percent */
   priceImpact: z.number().nullable(),
+  /** a later leg: it stakes what the previous leg lands, at the pool's price when built */
+  input: z.literal("upTo").optional(),
 })
 
 const DTaoLegDataSchema = z.discriminatedUnion("direction", [
@@ -356,6 +359,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
     alphaPrice: alphaPrice.toString(),
     swapPrice: math.swapPrice.toString(),
     priceImpact: math.priceImpact,
+    ...(params.input === "upTo" && { input: "upTo" as const }),
   }
 
   return quoteFromLegs(
@@ -401,6 +405,11 @@ const buildLeg = async (
   const terms = getFeeTerms(route, await env.getBittensorConfig())
   const direction = STAKE_DIRECTION[route.direction]
 
+  const isUpTo = data.input === "upTo"
+  const quotedPrice = BigInt(data.swapPrice)
+  // a limit of zero bounds nothing on an unstake
+  if (!isUpTo && quotedPrice === 0n) throw new Error("Please select the quote again")
+
   // a later leg can hold less than the quote checked: the chain would take its fee and refuse the stake
   if (input < leg.inputAmount)
     await assertMinimumInput(
@@ -427,6 +436,14 @@ const buildLeg = async (
     slippage,
   })
 
+  const floor = scaleDown((leg.outputAmount * input) / leg.inputAmount, slippage)
+  const isBelowFloor = math.amountOut < floor
+  // the confirm screen shows a first leg's quote, so its build must not sign less than that
+  if (isBelowFloor && !isUpTo)
+    throw new Error("The rate has moved too far, please select the quote again")
+
+  const priceLimit = isUpTo ? math.priceLimit : withPriceTolerance(quotedPrice, direction, slippage)
+
   const { payload, txMetadata } = await buildCall({
     sapi,
     route,
@@ -434,11 +451,9 @@ const buildLeg = async (
     hotkey: data.hotkey,
     input,
     terms,
-    priceLimit: math.priceLimit,
+    priceLimit,
     talismanFee: math.talismanFee,
   })
-
-  const floor = scaleDown((leg.outputAmount * input) / leg.inputAmount, slippage)
 
   return {
     transaction: { platform: "polkadot", payload, txMetadata },
@@ -447,7 +462,7 @@ const buildLeg = async (
       ...leg.fees.filter((fee) => fee.name !== TALISMAN_FEE_NAME),
     ],
     expectedOutput: math.amountOut,
-    ...(math.amountOut < floor && { acceptedOutput: floor }),
+    ...(isBelowFloor && { acceptedOutput: floor }),
     txInfo: {
       type: "bittensor-staking",
       fromTokenId: leg.fromTokenId,
