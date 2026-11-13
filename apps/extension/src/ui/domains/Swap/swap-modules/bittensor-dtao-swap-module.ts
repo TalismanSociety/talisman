@@ -14,6 +14,7 @@ import type { ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
 import type { StakeDirection } from "@ui/domains/Staking/Bittensor/hooks/types"
 import { FEE_ESTIMATE_HOTKEY, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { getDTaoSubnetUnstakeInfo } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
 import { calculateEffectiveFeeRate } from "@ui/domains/Staking/Bittensor/utils/feeCalculations"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import {
@@ -22,9 +23,15 @@ import {
   getBittensorStakingPayload,
   getBittensorUnbondPayload,
   getDefaultMinStake,
+  getNominatorMinStake,
   getSwapSimulation,
   withPriceTolerance,
 } from "@ui/domains/Staking/Bittensor/utils/helpers"
+import {
+  formatUpperBound,
+  getRemainderFloorPrice,
+  getSweepableRemainder,
+} from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
 import {
   getMinimumStakeInput,
   getPoolInput,
@@ -79,6 +86,8 @@ const DTaoLegDataSchema = z.discriminatedUnion("direction", [
   LegDataBaseSchema.extend({
     direction: z.literal("unstake"),
     hotkey: z.string(),
+    /** the quote emptied the position: its build also takes what the stake earned since */
+    fullExit: z.boolean().optional(),
   }),
 ])
 
@@ -217,6 +226,75 @@ const assertMinimumInput = async (
   )
 }
 
+type UnstakeCheck = {
+  address: string
+  tokenId: TokenId
+  amount: bigint
+  alphaPrice: bigint
+  /** decimal, 0.005 = 0.5% */
+  slippage: number
+  /** the lowest price the unstake accepts */
+  priceLimit: bigint
+  /** the quote already emptied the position */
+  quotedAsFullExit?: boolean
+}
+
+/**
+ * An unstake the position cannot give fails on chain, and the user pays its fees. One that leaves
+ * less than a nomination is worse: the chain sells the remainder with no price limit, and removes
+ * it with no payout when a conviction lock holds it. Only a full exit may leave that little.
+ * Returns whether the unstake empties the position.
+ */
+const checkUnstake = async (
+  env: SwapEnv,
+  sapi: ScaleApi,
+  route: Route,
+  { address, tokenId, amount, alphaPrice, slippage, priceLimit, quotedAsFullExit }: UnstakeCheck
+): Promise<boolean> => {
+  const balances = await env.getBalances()
+  const stake = balances.each.find(
+    (balance) => balance.tokenId === tokenId && isAddressEqual(balance.address, address)
+  )?.free.planck
+  if (!stake) return false
+
+  const symbol = (await env.getToken(tokenId))?.symbol ?? ""
+  const { available } = getDTaoSubnetUnstakeInfo(balances, address, route.networkId, route.netuid)
+  const unlocked = stake < available ? stake : available
+  if (amount > unlocked)
+    throw new Error(
+      `${PROVIDER_NAME} can unstake at most ${formatUpperBound(unlocked, TOKEN_DECIMALS)} ${symbol}`
+    )
+  if (amount === stake || quotedAsFullExit) return true
+
+  const minTao = await getNominatorMinStake(sapi).catch((err) => {
+    log.warn("Failed to read the Bittensor nominator minimum", err)
+    return null
+  })
+  if (minTao === null) return false
+
+  // root trades one for one: neither the slippage nor the limit moves what its remainder is worth
+  const floorPrice =
+    route.netuid === ROOT_NETUID
+      ? alphaPrice
+      : getRemainderFloorPrice({ alphaPrice, slippage: slippage * 100, priceLimit })
+  const remainder = getSweepableRemainder({
+    stake,
+    amount,
+    maxAmount: stake,
+    minKeep: taoToAlphaCeil(minTao, floorPrice),
+    minAmount: taoToAlphaCeil(getDefaultMinStake(sapi), alphaPrice),
+  })
+  if (!remainder) return false
+
+  const taoSymbol = (await env.getToken(route.taoTokenId))?.symbol ?? ""
+  const closes = `${PROVIDER_NAME} closes stakes worth less than ${planckToTokens(minTao.toString(), TOKEN_DECIMALS)} ${taoSymbol}. Unstake everything`
+  throw new Error(
+    remainder.kind === "partial"
+      ? `${closes}, or at most ${formatUpperBound(remainder.maxPartial, TOKEN_DECIMALS)} ${symbol}.`
+      : `${closes}.`
+  )
+}
+
 const taoFee = (route: Route, planck: bigint, kind: Pick<QuoteFee, "name" | "gas">): QuoteFee => ({
   ...kind,
   tokenId: route.taoTokenId,
@@ -339,6 +417,19 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
     slippage: 0,
   })
 
+  let fullExit = false
+  if (route.direction === "unstake" && fromAddress) {
+    const slippage = await env.getSlippageDecimal()
+    fullExit = await checkUnstake(env, sapi, route, {
+      address: fromAddress,
+      tokenId: fromTokenId,
+      amount: fromAmount,
+      alphaPrice,
+      slippage,
+      priceLimit: withPriceTolerance(math.swapPrice, direction, slippage),
+    })
+  }
+
   const gasFee = fromAddress
     ? await estimateGasFee({
         sapi,
@@ -360,6 +451,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
     swapPrice: math.swapPrice.toString(),
     priceImpact: math.priceImpact,
     ...(params.input === "upTo" && { input: "upTo" as const }),
+    ...(validator.direction === "unstake" && fullExit && { fullExit }),
   }
 
   return quoteFromLegs(
@@ -410,17 +502,10 @@ const buildLeg = async (
   // a limit of zero bounds nothing on an unstake
   if (!isUpTo && quotedPrice === 0n) throw new Error("Please select the quote again")
 
+  const alphaPrice = await getAlphaPrice(sapi, route.netuid)
   // a later leg can hold less than the quote checked: the chain would take its fee and refuse the stake
   if (input < leg.inputAmount)
-    await assertMinimumInput(
-      env,
-      sapi,
-      route,
-      terms,
-      await getAlphaPrice(sapi, route.netuid),
-      leg.fromTokenId,
-      input
-    )
+    await assertMinimumInput(env, sapi, route, terms, alphaPrice, leg.fromTokenId, input)
 
   const simulation = await simulate(
     sapi,
@@ -443,6 +528,17 @@ const buildLeg = async (
     throw new Error("The rate has moved too far, please select the quote again")
 
   const priceLimit = isUpTo ? math.priceLimit : withPriceTolerance(quotedPrice, direction, slippage)
+
+  if (data.direction === "unstake")
+    await checkUnstake(env, sapi, route, {
+      address: leg.signer,
+      tokenId: leg.fromTokenId,
+      amount: input,
+      alphaPrice,
+      slippage,
+      priceLimit,
+      quotedAsFullExit: data.fullExit,
+    })
 
   const { payload, txMetadata } = await buildCall({
     sapi,

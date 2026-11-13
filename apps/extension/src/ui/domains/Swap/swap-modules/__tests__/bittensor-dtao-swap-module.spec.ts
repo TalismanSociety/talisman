@@ -2,6 +2,8 @@ import type { Balance, Balances } from "@talismn/balances"
 import type { Token } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import { TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "@ui/domains/Staking/Bittensor/utils/constants"
+import { getSweepableRemainderError } from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
+import type { TFunction } from "i18next"
 import type { Hex } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { quoteLegsKey } from "../../buildSwapTransaction"
@@ -64,9 +66,12 @@ const ONE_TAO = 1_000_000_000n
 const GAS_FEE = 100_000n
 const MIN_STAKE = 2_000_000n
 const EXISTENTIAL_DEPOSIT = 500n
+/** per million of the minimum stake: a nomination under 0.02 TAO is closed */
+const NOMINATOR_MIN_FACTOR = 10_000_000n
 const WEI_PER_RAO = 1_000_000_000n
 
 let alphaPerTao = 50n
+let nominatorMinFactor: bigint | null = NOMINATOR_MIN_FACTOR
 const config: BittensorSwapConfig = {
   remote: {
     fee: { buy: null, sell: null },
@@ -95,7 +100,11 @@ const sapi = {
   getRuntimeCallValue,
   getConstant: (_pallet: string, constant: string) =>
     constant === "ExistentialDeposit" ? EXISTENTIAL_DEPOSIT : MIN_STAKE,
-  getStorage: async () => ({ data: { free: freeTao } }),
+  getStorage: async (_pallet: string, item: string) => {
+    if (item !== "NominatorMinRequiredStake") return { data: { free: freeTao } }
+    if (nominatorMinFactor === null) throw new Error("storage unavailable")
+    return nominatorMinFactor
+  },
   getFeeEstimate: vi.fn(async () => GAS_FEE),
   getDecodedCall: (pallet: string, method: string, args: unknown) => ({ pallet, method, args }),
   getExtrinsicPayload: vi.fn(
@@ -117,13 +126,31 @@ const env = {
   })) as unknown as SwapEnv["evmClient"],
   getBittensorConfig: async () => config,
   getBalances: async () => ({ each: heldStake }) as unknown as Balances,
+  getSlippageDecimal: async () => 0.005,
 } satisfies Partial<SwapEnv> as unknown as SwapEnv
 
 const stake = (netuid: number, hotkey: string, free: bigint, address = ADDRESS) =>
   ({
+    tokenId: `bittensor:substrate-dtao:${netuid}:${hotkey}`,
     token: { type: "substrate-dtao", networkId: "bittensor", netuid, hotkey },
     address,
     free: { planck: free },
+    locks: [],
+  }) as unknown as Balance
+
+/** the chain reports a conviction lock on the subnet's own token, not on a position */
+const convictionLock = (netuid: number, hotkey: string, locked: bigint, address = ADDRESS) =>
+  ({
+    tokenId: `bittensor:substrate-dtao:${netuid}`,
+    token: { type: "substrate-dtao", networkId: "bittensor", netuid },
+    address,
+    free: { planck: 0n },
+    locks: [
+      {
+        amount: { planck: locked },
+        meta: { convictionLock: { type: "conviction-lock", hotkey, lockType: "decaying" } },
+      },
+    ],
   }) as unknown as Balance
 
 const signal = new AbortController().signal
@@ -188,6 +215,7 @@ const remarkOf = (call: Call) => new TextDecoder().decode(call.args.remark as Ui
 beforeEach(() => {
   vi.clearAllMocks()
   alphaPerTao = 50n
+  nominatorMinFactor = NOMINATOR_MIN_FACTOR
   config.remote.fee = { buy: null, sell: null }
   config.remote.featuredValidators = [YUMA]
   config.seekDiscount = 0
@@ -861,5 +889,131 @@ describe("EVM TAO to a subnet, through TAO", () => {
 
   it("has nothing to stake until the TAO shows on the account", async () => {
     await expect(stakeStep()).rejects.toThrow("Nothing arrived from the previous leg")
+  })
+})
+
+describe("unstaking part of a position", () => {
+  const ALPHA = ONE_TAO
+
+  it("refuses to leave a remainder the chain would close at any price", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+
+    await expect(unstakeAlpha({ fromAmount: 49_500_000_000n })).rejects.toThrow(
+      "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything, or at most 48.99 α."
+    )
+    await expect(unstakeAlpha({ fromAmount: 50n * ALPHA - 1000n })).rejects.toThrow(
+      "at most 48.99 α"
+    )
+    await expect(unstakeAlpha({ fromAmount: 48_990_000_000n })).resolves.toBeTruthy()
+    await expect(unstakeAlpha({ fromAmount: 50n * ALPHA })).resolves.toBeTruthy()
+  })
+
+  it("asks for a full exit when no part of the position can be unstaked alone", async () => {
+    heldStake = [stake(64, HELD, ALPHA)]
+
+    await expect(unstakeAlpha({ fromAmount: 500_000_000n })).rejects.toThrow(
+      "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything."
+    )
+    await expect(unstakeAlpha({ fromAmount: ALPHA })).resolves.toBeTruthy()
+  })
+
+  it("refuses the alpha a conviction lock holds", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA), convictionLock(64, HELD, 10n * ALPHA)]
+
+    await expect(unstakeAlpha({ fromAmount: 50n * ALPHA })).rejects.toThrow(
+      "Bittensor can unstake at most 40 α"
+    )
+    await expect(unstakeAlpha({ fromAmount: 40n * ALPHA })).resolves.toBeTruthy()
+  })
+
+  it("refuses to leave a locked remainder: the chain would remove it with no payout", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA), convictionLock(64, HELD, 500_000_000n)]
+
+    await expect(unstakeAlpha({ fromAmount: 49_500_000_000n })).rejects.toThrow("at most 48.99 α")
+  })
+
+  it("checks again when built, at the slippage it signs", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+    const quote = await unstakeAlpha({ fromAmount: 48_990_000_000n })
+
+    await expect(build(quote)).resolves.toBeTruthy()
+    await expect(build(quote, { slippage: 0.05 })).rejects.toThrow("at most 48.94 α")
+  })
+
+  it("checks nothing for a position the wallet has no balance record of", async () => {
+    await expect(unstakeAlpha({ fromAmount: 49_500_000_000n })).resolves.toBeTruthy()
+  })
+
+  it("words its refusal as the dashboard does", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+    const plain = ((key: string, values: Record<string, string>) =>
+      key.replace(/{{(\w+)}}/g, (_, name: string) => values[name])) as unknown as TFunction
+    const tokens = { tao: { decimals: 9, symbol: "TAO" }, alpha: { decimals: 9, symbol: "α" } }
+
+    await expect(unstakeAlpha({ fromAmount: 49_500_000_000n })).rejects.toThrow(
+      getSweepableRemainderError(
+        plain,
+        { kind: "partial", maxPartial: 48_994_974_874n },
+        { minTao: 20_000_000n, ...tokens }
+      ).message
+    )
+    heldStake = [stake(64, HELD, ALPHA)]
+    await expect(unstakeAlpha({ fromAmount: 500_000_000n })).rejects.toThrow(
+      getSweepableRemainderError(plain, { kind: "exit-only" }, { minTao: 20_000_000n, ...tokens })
+        .message
+    )
+  })
+
+  it("lets a full exit through when the stake grew since the quote", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+    const quote = await unstakeAlpha({ fromAmount: 50n * ALPHA })
+    heldStake = [stake(64, HELD, 50n * ALPHA + 1000n)]
+
+    await expect(build(quote)).resolves.toBeTruthy()
+  })
+
+  it("refuses at build time a lock that appeared after the quote", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+    const quote = await unstakeAlpha({ fromAmount: 50n * ALPHA })
+    heldStake = [stake(64, HELD, 50n * ALPHA), convictionLock(64, HELD, 10n * ALPHA)]
+
+    await expect(build(quote)).rejects.toThrow("Bittensor can unstake at most 40 α")
+  })
+
+  it("counts a lock against every position of the subnet", async () => {
+    heldStake = [
+      stake(64, HELD, 30n * ALPHA),
+      stake(64, PICKED, 30n * ALPHA),
+      convictionLock(64, HELD, 40n * ALPHA),
+    ]
+
+    await expect(unstakeAlpha({ fromAmount: 30n * ALPHA })).rejects.toThrow(
+      "Bittensor can unstake at most 20 α"
+    )
+  })
+
+  it("values a root remainder at one TAO, whatever the slippage", async () => {
+    heldStake = [stake(0, HELD, ONE_TAO)]
+    const quote = await unstakeAlpha({ fromTokenId: ROOT_HELD, fromAmount: 970_000_000n })
+
+    await expect(build(quote, { slippage: 0.5 })).resolves.toBeTruthy()
+    await expect(
+      unstakeAlpha({ fromTokenId: ROOT_HELD, fromAmount: 990_000_000n })
+    ).rejects.toThrow("at most 0.98 TAO")
+  })
+
+  it("skips the remainder check when the chain's minimum cannot be read", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+    nominatorMinFactor = null
+
+    await expect(unstakeAlpha({ fromAmount: 49_500_000_000n })).resolves.toBeTruthy()
+  })
+
+  it("checks nothing before a sending account is chosen", async () => {
+    heldStake = [stake(64, HELD, 50n * ALPHA)]
+
+    await expect(
+      unstakeAlpha({ fromAddress: null, toAddress: null, fromAmount: 49_500_000_000n })
+    ).resolves.toBeTruthy()
   })
 })

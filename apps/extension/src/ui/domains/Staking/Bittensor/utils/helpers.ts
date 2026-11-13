@@ -50,6 +50,20 @@ export const getDefaultMinStake = (sapi: ScaleApi | null | undefined): bigint =>
   }
 }
 
+const NOMINATOR_MIN_SCALE = 1_000_000n
+
+/**
+ * What a nomination must stay worth, in rao, on every subnet: an unstake that leaves less has the
+ * chain sweep the rest. The storage holds a per-million factor of the minimum stake, not an amount.
+ * null when the chain does not have it.
+ */
+export const getNominatorMinStake = async (sapi: ScaleApi): Promise<bigint | null> => {
+  const factor = await sapi.getStorage<bigint>("SubtensorModule", "NominatorMinRequiredStake", [])
+  return typeof factor === "bigint"
+    ? (getDefaultMinStake(sapi) * factor) / NOMINATOR_MIN_SCALE
+    : null
+}
+
 const TOLERANCE_SCALE = 10_000n // don't expect more than 4 decimal places in tolerance
 
 /** the worst price a trade accepts: `price` moved against the trader by `tolerance`, 0.0005 = 0.05% */
