@@ -176,13 +176,16 @@ describe("fetchBalances root stake hold", () => {
         throw new Error(`unexpected runtime call ${method}`)
       }
     )
-    vi.mocked(fetchRpcQueryPack).mockClear()
+    // holds are enabled: the interval alone doesn't rule out the per-pair queries
+    vi.mocked(fetchRpcQueryPack).mockClear().mockResolvedValue([100n])
 
     const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
 
     expect(result.errors).toEqual([])
-    // hold windows only restrict live root stake: no per-pair queries for unstaked validators
-    expect(fetchRpcQueryPack).not.toHaveBeenCalled()
+    // hold windows only restrict live root stake: no per-pair queries for unstaked validators,
+    // only the read of the interval itself
+    expect(fetchRpcQueryPack).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(fetchRpcQueryPack).mock.calls[0]?.[2]).toHaveLength(1)
     const values = result.success.flatMap((balance) => balance.values)
     expect(values).toContainEqual(
       expect.objectContaining({ type: "locked", label: "Claimable rewards", amount: "50" })

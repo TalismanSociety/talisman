@@ -6,6 +6,7 @@ import {
   type WsJsonRpcProvider,
 } from "@polkadot-api/ws-provider"
 import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
+import { getLastResumedAt, isSuspended, onResume, setAwakeTimeout } from "@talismn/util"
 
 import log from "../log"
 import type { IChainConnectorDot, SubscriptionCallback } from "./IChainConnectorDot"
@@ -17,7 +18,12 @@ const BAD_RPC_ERRORS: Record<string, string> = {
   "-32098": "Capacity exceeded",
 }
 
-const RESPONSE_TIMEOUT = 30_000 // max wait for an rpc response (including connection time)
+/**
+ * Max wait for an rpc response, including connection time. Like the other timeouts here it
+ * counts only the time the JS runtime is running (`setAwakeTimeout`): a timeout that came due
+ * while the app was in the background says nothing about the endpoint.
+ */
+const RESPONSE_TIMEOUT = 30_000
 const KEEP_ALIVE_INTERVAL = 20_000 // periodic system_health to keep idle sockets alive (ws-provider kills quiet sockets after its 40s heartbeat)
 /**
  * How long a connection stays open once its last user releases it. A one-off request is
@@ -30,6 +36,25 @@ const IDLE_CLOSE_DELAY = 30_000
 const isDestroyedError = (error: unknown): boolean =>
   error instanceof Error && error.name === "DestroyedError"
 const STALE_NOTIFY_TIMEOUT = 30_000 // how long a chain can be disconnected before subscribers are notified
+
+/**
+ * After a suspension at least this long (an app in the background), each socket is replaced
+ * with a new one to the same endpoint. The old one has been silent for longer than a server or
+ * a NAT keeps an idle connection, and a request sent on a half-closed socket would wait out
+ * RESPONSE_TIMEOUT. The provider sends the requests in flight again on the new socket, and
+ * the subscriptions are re-established when it connects.
+ */
+const RECONNECT_AFTER_SUSPENSION_MS = 15_000
+
+/**
+ * A socket that fails within this long after a resume reconnects to the same endpoint. On
+ * resume the provider's own timers (the connection timeout, the 40s heartbeat) fire at once
+ * and drop the socket, and the provider would move to the next endpoint although the current
+ * one is fine. While the runtime is held suspended (`isSuspended`), every failing socket
+ * reconnects to the same endpoint: the host has marked it suspended, or it is a hidden page
+ * whose timers have stopped or slowed down.
+ */
+const RESUME_GRACE_MS = 10_000
 
 export class ChainConnectionError extends Error {
   type: "CHAIN_CONNECTION_ERROR"
@@ -77,11 +102,16 @@ type Connection = {
   chainId: DotNetworkId
   provider: WsJsonRpcProvider
   client: SubstrateClient
+  /** the endpoint the provider last connected or tried to connect to */
+  uri: string | null
+  /** the resume (`getLastResumedAt()`) after which this connection last kept its endpoint */
+  keptEndpointAfterResumeAt: number
   users: Set<SocketUserId>
   subscriptions: Set<Subscription>
   wasConnected: boolean
   keepAliveInterval: ReturnType<typeof setInterval> | null
-  staleTimeout: ReturnType<typeof setTimeout> | null
+  /** cancels the pending stale notification */
+  staleTimeout: (() => void) | null
   /** closes the connection once it has had no users for IDLE_CLOSE_DELAY */
   idleTimeout: ReturnType<typeof setTimeout> | null
 }
@@ -116,6 +146,8 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
   #connections: Record<DotNetworkId, Connection> = {}
   #pendingConnections: Record<DotNetworkId, Promise<Connection>> = {}
+  /** removes the resume listener, which is registered while any connection exists */
+  #stopWatchingResume: (() => void) | null = null
 
   constructor(
     chaindataChainProvider: IChaindataNetworkProvider,
@@ -250,11 +282,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     // if the chain can't be reached at all, let the caller know after a while (the provider keeps retrying)
     if (timeout && !connection.wasConnected) {
-      const staleWarning = setTimeout(() => {
+      const clear = setAwakeTimeout(() => {
         if (!subscription.unsubscribed && !connection.wasConnected)
           callback(new StaleRpcError(chainId), null)
       }, timeout)
-      const clear = () => clearTimeout(staleWarning)
       // piggyback on the follow setup to clear the warning once anything happens
       const originalCallback = subscription.callback
       subscription.callback = (error, result) => {
@@ -302,6 +333,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     this.destroyConnection(connection)
     delete this.#connections[chainId]
+    this.stopWatchingResumeWhenUnused()
 
     // recreate a connection for the active subscriptions, if any
     if (connection.subscriptions.size) {
@@ -329,18 +361,18 @@ export class ChainConnectorDot implements IChainConnectorDot {
     timeoutMs = RESPONSE_TIMEOUT
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      const timer = setTimeout(() => {
+      const clearTimer = setAwakeTimeout(() => {
         cancel()
         reject(new Error("TIMEOUT"))
       }, timeoutMs)
 
       const cancel = connection.client._request<T, unknown>(method, params, {
         onSuccess: (result) => {
-          clearTimeout(timer)
+          clearTimer()
           resolve(result)
         },
         onError: (error) => {
-          clearTimeout(timer)
+          clearTimer()
           reject(error)
         },
       })
@@ -428,6 +460,8 @@ export class ChainConnectorDot implements IChainConnectorDot {
       chainId,
       provider,
       client,
+      uri: null,
+      keptEndpointAfterResumeAt: Number.NEGATIVE_INFINITY,
       users: new Set(),
       subscriptions: new Set(),
       wasConnected: false,
@@ -436,7 +470,44 @@ export class ChainConnectorDot implements IChainConnectorDot {
       idleTimeout: null,
     }
 
+    this.#stopWatchingResume ??= onResume((suspendedMs) => this.handleResume(suspendedMs))
+
     return connection
+  }
+
+  /** Replaces the sockets that sat through a long suspension, keeping their endpoints */
+  private handleResume(suspendedMs: number) {
+    if (suspendedMs < RECONNECT_AFTER_SUSPENSION_MS) return
+
+    const resumedAt = getLastResumedAt()
+    for (const connection of Object.values(this.#connections)) {
+      if (!connection.uri) continue
+      log.debug(
+        `ChainConnector reconnecting ${connection.chainId} to ${connection.uri} after a ${Math.round(suspendedMs / 1000)}s suspension`
+      )
+      connection.keptEndpointAfterResumeAt = resumedAt
+      connection.provider.switch(connection.uri)
+    }
+  }
+
+  /**
+   * Keeps the endpoint for a socket that failed while the runtime is marked suspended, or
+   * just after a resume. Once per resume: when the endpoint fails again, the provider moves
+   * on as usual.
+   */
+  private keepEndpointAfterResume(connection: Connection) {
+    // the provider's timers can fire before the resume listener: `isSuspended()` and
+    // `getLastResumedAt()` detect the resume now
+    if (isSuspended()) {
+      if (connection.uri) connection.provider.switch(connection.uri)
+      return
+    }
+    const resumedAt = getLastResumedAt()
+    if (!connection.uri || Date.now() - resumedAt > RESUME_GRACE_MS) return
+    if (connection.keptEndpointAfterResumeAt === resumedAt) return
+
+    connection.keptEndpointAfterResumeAt = resumedAt
+    connection.provider.switch(connection.uri)
   }
 
   private handleStatusChange(connection: Connection, status: StatusChange) {
@@ -445,9 +516,14 @@ export class ChainConnectorDot implements IChainConnectorDot {
     // ignore events from a connection that has been reset/destroyed
     if (this.#connections[connection.chainId] !== connection) return
 
+    if (status.type === WsEvent.CONNECTING) connection.uri = status.uri
+    // the provider picks the endpoint of its next socket after this handler returns, so a
+    // `switch()` made here decides where it reconnects
+    if (status.type === WsEvent.ERROR) this.keepEndpointAfterResume(connection)
+
     if (status.type === WsEvent.CONNECTED) {
       if (connection.staleTimeout) {
-        clearTimeout(connection.staleTimeout)
+        connection.staleTimeout()
         connection.staleTimeout = null
       }
 
@@ -481,7 +557,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
       // notify subscribers if the chain stays unreachable for too long
       if (!connection.staleTimeout && connection.subscriptions.size) {
-        connection.staleTimeout = setTimeout(() => {
+        connection.staleTimeout = setAwakeTimeout(() => {
           connection.staleTimeout = null
           for (const subscription of connection.subscriptions)
             if (!subscription.unsubscribed)
@@ -503,12 +579,20 @@ export class ChainConnectorDot implements IChainConnectorDot {
       if (connection.users.size > 0 || this.#connections[chainId] !== connection) return
       this.destroyConnection(connection)
       delete this.#connections[chainId]
+      this.stopWatchingResumeWhenUnused()
     }, IDLE_CLOSE_DELAY)
+  }
+
+  private stopWatchingResumeWhenUnused() {
+    if (Object.keys(this.#connections).length || Object.keys(this.#pendingConnections).length)
+      return
+    this.#stopWatchingResume?.()
+    this.#stopWatchingResume = null
   }
 
   private destroyConnection(connection: Connection): void {
     if (connection.keepAliveInterval) clearInterval(connection.keepAliveInterval)
-    if (connection.staleTimeout) clearTimeout(connection.staleTimeout)
+    connection.staleTimeout?.()
     if (connection.idleTimeout) clearTimeout(connection.idleTimeout)
     connection.keepAliveInterval = null
     connection.staleTimeout = null
