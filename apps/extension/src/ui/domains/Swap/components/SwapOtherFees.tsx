@@ -29,7 +29,7 @@ export const SwapOtherFees: FC<{
   if (!otherFees.length) return null
 
   return (
-    <div className="flex h-11 items-center justify-between gap-8">
+    <div className="flex min-h-11 items-center justify-between gap-8">
       <div className="whitespace-nowrap text-body-secondary text-xs">
         {label ?? (
           <>
@@ -77,7 +77,7 @@ const OtherFeesTotal: FC<{ fees: QuoteFee[] }> = ({ fees }) => {
         ...firstFee,
         amount: fees.reduce((total, fee) => total.plus(fee.amount), BigNumber(0)),
       }}
-      className="text-body-secondary text-xs"
+      className="text-right text-body-secondary text-xs"
       tokensClassName="text-body"
       fiatClassName="text-body-secondary"
     />
