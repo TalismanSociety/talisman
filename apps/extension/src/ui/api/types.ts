@@ -141,7 +141,6 @@ export default interface MessageTypes {
 
   // app message types -------------------------------------------------------
   sendFundsOpen: (request: SendFundsOpenRequest) => Promise<boolean>
-  resetWallet: () => Promise<boolean>
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------

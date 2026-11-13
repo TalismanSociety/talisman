@@ -41,7 +41,6 @@ import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
-import { ResetWallet } from "./ResetWallet"
 
 const reportUnlockFailed = (method: (typeof UNLOCK_METHODS)[number], category: ErrorCategory) =>
   track("app_unlock_failed", {
@@ -266,15 +265,8 @@ const QuickUnlockButton = ({
   )
 }
 
-const Login = ({
-  setShowResetWallet,
-  autoTriggerQuickUnlock,
-}: {
-  setShowResetWallet: () => void
-  autoTriggerQuickUnlock: boolean
-}) => {
+const Login = ({ autoTriggerQuickUnlock }: { autoTriggerQuickUnlock: boolean }) => {
   const { t } = useTranslation()
-  const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
   const [quickUnlockError, setQuickUnlockError] = useState<string>()
 
   const {
@@ -378,25 +370,11 @@ const Login = ({
           >
             {t("Unlock")}
           </Button>
-          {/* both entry points share a row, so enrolling doesn't move the form up */}
-          <div
-            className={cn("mt-2 grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}
-          >
+          <div className="mt-2 grid w-full grid-cols-1">
             <QuickUnlockButton
               autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
               onError={handleQuickUnlockError}
             />
-            <button
-              type="button"
-              className={cn(
-                "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
-                // the column edge is the separator, so it can't drift off centre
-                quickUnlockEnrolled && "border-grey-700 border-l"
-              )}
-              onClick={setShowResetWallet}
-            >
-              {t("Forgot Password?")}
-            </button>
           </div>
         </form>
       </PopupFooter>
@@ -410,16 +388,9 @@ export const LoginViewManager = ({
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
   autoTriggerQuickUnlock: boolean
 }) => {
-  const [showResetWallet, setShowResetWallet] = useState(false)
   useVirtualScreen("/login")
 
-  if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
-  return (
-    <Login
-      setShowResetWallet={() => setShowResetWallet(true)}
-      autoTriggerQuickUnlock={autoTriggerQuickUnlock}
-    />
-  )
+  return <Login autoTriggerQuickUnlock={autoTriggerQuickUnlock} />
 }
 
 /** autologin, for developers only */

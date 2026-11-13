@@ -106,17 +106,6 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     await chrome.alarms.create(ALARM_NAME, { delayInMinutes })
   }
 
-  async reset() {
-    // use with caution
-    return this.set({
-      isTrimmed: false,
-      isHashed: true,
-      salt: undefined,
-      secret: undefined,
-      check: undefined,
-    })
-  }
-
   async createAuthSecret(password: string) {
     const secret = crypto.randomUUID()
     const check = await encrypt(password, { secret })

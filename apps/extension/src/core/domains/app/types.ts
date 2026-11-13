@@ -121,7 +121,6 @@ export interface AppMessages {
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.promptLogin)": [null, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
-  "pri(app.resetWallet)": [null, boolean]
   "pri(app.requests)": [null, boolean, ValidRequests[]]
 
   // quick unlock
