@@ -133,6 +133,7 @@ export const useScreenRegistration = (joined: JoinedPattern | null, depth: numbe
 
 export type VirtualScreen =
   | "/login"
+  | "/login/help-and-support"
   | "/quick-unlock-offer"
   | "/locked"
   | "/migrating"

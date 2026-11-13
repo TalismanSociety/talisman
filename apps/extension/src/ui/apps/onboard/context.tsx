@@ -15,23 +15,15 @@ export type OnboardingWizardData = {
 
 const DEFAULT_DATA: OnboardingWizardData = {}
 
-const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
+const useAppOnboardProvider = () => {
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
   const [stage, setStage] = useState<number>(0)
   const [passwordExists, setPasswordExists] = useState(false)
   const [onboarded, updateOnboarded] = useAppState("onboarded")
-  const [sawOnboarded, setSawOnboarded] = useState(onboarded === "TRUE")
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (onboarded === "TRUE") setSawOnboarded(true)
-  }, [onboarded])
-
-  useFlow(flows.onboarding, {
-    active: onboarded !== "TRUE",
-    entry: isResettingWallet || sawOnboarded ? "reset" : "install",
-  })
+  useFlow(flows.onboarding, { active: onboarded !== "TRUE", entry: "install" })
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
     setData((prev) => ({ ...prev, ...fields }))
@@ -92,7 +84,6 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     createPassword,
     passwordExists,
     reset,
-    isResettingWallet,
     data,
     updateData,
     stage,
@@ -102,13 +93,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
 
 const [AppOnboardProvider, useAppOnboardContext] = provideContext(useAppOnboardProvider)
 
-const Provider = ({
-  children,
-  resetWallet = false,
-}: {
-  children?: ReactNode
-  resetWallet?: boolean
-}) => {
+const Provider = ({ children }: { children?: ReactNode }) => {
   const isOnboarded = useIsOnboarded()
   const [checked, setChecked] = useState(false)
   // if user is already onboarded when he opens onboarding page, redirect to dashboard page
@@ -121,7 +106,7 @@ const Provider = ({
     setChecked(true)
   }, [checked, isOnboarded])
 
-  return <AppOnboardProvider isResettingWallet={resetWallet}>{children}</AppOnboardProvider>
+  return <AppOnboardProvider>{children}</AppOnboardProvider>
 }
 
 export const useOnboard = useAppOnboardContext

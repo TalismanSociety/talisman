@@ -1,5 +1,5 @@
 import { Subscribe } from "@react-rxjs/core"
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import type { FC, ReactNode } from "react"
 import { MemoryRouter } from "react-router-dom"
@@ -21,6 +21,9 @@ vi.mock("@ui/api", () => ({ api }))
 vi.mock("@ui/components/Drawer", () => ({
   Drawer: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
     isOpen ? <div>{children}</div> : null,
+}))
+vi.mock("@ui/components/ScrollContainer", () => ({
+  ScrollContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
 vi.mock("@ui/domains/Build/BuildVersionPill", () => ({ BuildVersionPill: () => null }))
 vi.mock("@ui/domains/Ramps/useRampsModal", () => ({
@@ -114,5 +117,54 @@ describe("NavigationDrawer", () => {
 
     expect(api.dashboardOpen).toHaveBeenCalledWith("/portfolio")
     expect(closeWindow).toHaveBeenCalledOnce()
+  })
+
+  test("Lock Wallet and Fullscreen sit together in the footer", () => {
+    openMenuIn("popout")
+
+    const footer = within(screen.getByRole("contentinfo"))
+    expect(footer.getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "Lock Wallet",
+      "Fullscreen",
+    ])
+  })
+
+  describe("Help & Support", () => {
+    let openWindow: ReturnType<typeof vi.spyOn>
+
+    beforeEach(() => {
+      openWindow = vi.spyOn(window, "open").mockImplementation(() => null)
+      openMenuIn("embedded")
+      select("Help & Support")
+    })
+
+    afterEach(() => {
+      if (screen.queryByRole("button", { name: "Back" })) select("Back")
+      openWindow.mockRestore()
+    })
+
+    test("offers Discord and email support without leaving the menu", () => {
+      expect(screen.getByRole("heading", { name: "Need help?" })).toBeTruthy()
+      expect(screen.getByRole("button", { name: "Discord" })).toBeTruthy()
+      expect(screen.getByRole("button", { name: "Email" })).toBeTruthy()
+      expect(api.dashboardOpen).not.toHaveBeenCalled()
+      expect(closeWindow).not.toHaveBeenCalled()
+    })
+
+    test.each([
+      ["Discord", "https://discord.gg/EF3Zf4R5bD"],
+      ["Email", "mailto:support@talisman.xyz"],
+    ])("%s opens %s", (action, url) => {
+      select(action)
+
+      expect(openWindow).toHaveBeenCalledWith(url, "_blank")
+    })
+
+    test("Back returns to the menu", () => {
+      select("Back")
+
+      expect(screen.queryByRole("heading", { name: "Need help?" })).toBeNull()
+      expect(screen.getByRole("button", { name: "All Settings" })).toBeTruthy()
+    })
   })
 })

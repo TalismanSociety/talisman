@@ -2,14 +2,17 @@ import {
   DISCORD_TALISMAN_URL,
   PRIVACY_POLICY_URL,
   RELEASE_NOTES_URL,
+  SUPPORT_EMAIL,
+  SUPPORT_EMAIL_URL,
   TALISMAN_DOCS_URL_PREFIX,
   TERMS_OF_USE_URL,
 } from "@common/constants"
 import {
   CodeIcon,
+  DiscordIcon,
   ExternalLinkIcon,
   GitPullRequestIcon,
-  HelpCircleIcon,
+  HeadsetIcon,
   MapIcon,
   TalismanHandIcon,
 } from "@talismn/icons"
@@ -77,10 +80,19 @@ const Content = () => {
           iconRight={ExternalLinkIcon}
         />
         <CtaButton
-          title={t("Help and Support")}
-          subtitle={t("For help and support please visit our Discord")}
+          title={t("Connect with Us")}
+          subtitle={t("Join Discord to connect with the Talisman community")}
           to={DISCORD_TALISMAN_URL}
-          iconLeft={HelpCircleIcon}
+          iconLeft={DiscordIcon}
+          iconRight={ExternalLinkIcon}
+        />
+        <CtaButton
+          title={t("Email Support")}
+          subtitle={t("For help, support, and feature requests please email {{email}}", {
+            email: SUPPORT_EMAIL,
+          })}
+          to={SUPPORT_EMAIL_URL}
+          iconLeft={HeadsetIcon}
           iconRight={ExternalLinkIcon}
         />
       </div>
