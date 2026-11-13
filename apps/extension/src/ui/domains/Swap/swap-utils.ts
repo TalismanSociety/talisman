@@ -95,3 +95,10 @@ export function parseUserInputToPlanckOrUndefined(
     return undefined
   }
 }
+
+/**
+ * What a provider says about the amount it accepts ("Bittensor can unstake at most 40 α", or
+ * "… Unstake everything."), as it wrote it: the route exists, only the amount is wrong.
+ */
+export const getAmountRefusal = (quoteErrorMessages: readonly string[]): string | null =>
+  quoteErrorMessages.find((message) => /\bat most\b|\bUnstake everything\b/.test(message)) ?? null

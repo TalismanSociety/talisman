@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { isSelectionAvailable } from "../hooks/quote-sorting"
 import { useSwap } from "../SwapProvider"
 import type { BaseQuote } from "../swap-modules/common.swap-module"
-import { formatSwapExchangeRate } from "../swap-utils"
+import { formatSwapExchangeRate, getAmountRefusal } from "../swap-utils"
 import { SwapProviderPickerModal } from "./SwapProviderPickerModal"
 
 export const SwapProviderPickerButton = () => {
@@ -107,6 +107,8 @@ const Details = () => {
 
   if (sortedQuotes.length === 0 && (isAllQuotesSettled || hasQuoteError)) {
     if (minimumHint) return <SwapProviderErrorAmountTooLow minimumHint={minimumHint} />
+    const amountRefusal = getAmountRefusal(quoteErrorMessages)
+    if (amountRefusal) return <SwapProviderError message={amountRefusal} />
     return <SwapProviderError message={t("No route found for this pair.")} />
   }
 
