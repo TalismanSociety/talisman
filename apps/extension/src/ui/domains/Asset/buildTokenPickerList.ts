@@ -10,6 +10,10 @@ type BuildTokenPickerListOptions = SortTokenDataOptions & {
   showEmptyBalances?: boolean
 }
 
+/** the token of a dTAO position outlives its stake, and the subnet's own row already stands for it */
+const isEmptyDTaoPosition = ({ token, balances }: { token: Token; balances: Balances }) =>
+  token.type === "substrate-dtao" && !!token.hotkey && balances.sum.planck.transferable <= 0n
+
 export const buildTokenPickerList = <T extends { token: Token }>(
   tokens: T[],
   balances: Balances,
@@ -25,7 +29,7 @@ export const buildTokenPickerList = <T extends { token: Token }>(
   })
 
   const listedTokens = showEmptyBalances
-    ? withBalances
+    ? withBalances.filter((data) => !isEmptyDTaoPosition(data))
     : withBalances.filter((data) => data.balances.sum.planck.transferable > 0n)
 
   return sortTokenData(listedTokens, sortOptions)
