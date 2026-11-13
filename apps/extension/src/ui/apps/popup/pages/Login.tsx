@@ -6,10 +6,11 @@ import {
 import type { UNLOCK_METHODS } from "@common/analytics/properties"
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EyeIcon, EyeOffIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon, HeadsetIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { track } from "@ui/api/track"
+import { HelpAndSupport } from "@ui/apps/popup/components/HelpAndSupport"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
@@ -265,8 +266,15 @@ const QuickUnlockButton = ({
   )
 }
 
-const Login = ({ autoTriggerQuickUnlock }: { autoTriggerQuickUnlock: boolean }) => {
+const Login = ({
+  showHelpAndSupport,
+  autoTriggerQuickUnlock,
+}: {
+  showHelpAndSupport: () => void
+  autoTriggerQuickUnlock: boolean
+}) => {
   const { t } = useTranslation()
+  const quickUnlockEnrolled = useIsQuickUnlockEnrolled()
   const [quickUnlockError, setQuickUnlockError] = useState<string>()
 
   const {
@@ -370,11 +378,26 @@ const Login = ({ autoTriggerQuickUnlock }: { autoTriggerQuickUnlock: boolean }) 
           >
             {t("Unlock")}
           </Button>
-          <div className="mt-2 grid w-full grid-cols-1">
+          {/* both entry points share a row, so enrolling doesn't move the form up */}
+          <div
+            className={cn("mt-2 grid w-full", quickUnlockEnrolled ? "grid-cols-2" : "grid-cols-1")}
+          >
             <QuickUnlockButton
               autoTrigger={autoTriggerQuickUnlock && !isDirty && !IS_DEV_AUTOLOGIN}
               onError={handleQuickUnlockError}
             />
+            <button
+              type="button"
+              className={cn(
+                "flex cursor-pointer items-center justify-center gap-2 text-body-disabled text-sm transition-colors hover:text-white",
+                // the column edge is the separator, so it can't drift off centre
+                quickUnlockEnrolled && "border-grey-700 border-l"
+              )}
+              onClick={showHelpAndSupport}
+            >
+              <HeadsetIcon />
+              {t("Help & Support")}
+            </button>
           </div>
         </form>
       </PopupFooter>
@@ -388,9 +411,26 @@ export const LoginViewManager = ({
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
   autoTriggerQuickUnlock: boolean
 }) => {
+  const [showHelpAndSupport, setShowHelpAndSupport] = useState(false)
   useVirtualScreen("/login")
 
-  return <Login autoTriggerQuickUnlock={autoTriggerQuickUnlock} />
+  if (showHelpAndSupport) return <LoginHelpAndSupport onBack={() => setShowHelpAndSupport(false)} />
+  return (
+    <Login
+      showHelpAndSupport={() => setShowHelpAndSupport(true)}
+      autoTriggerQuickUnlock={autoTriggerQuickUnlock}
+    />
+  )
+}
+
+const LoginHelpAndSupport = ({ onBack }: { onBack: () => void }) => {
+  useVirtualScreen("/login/help-and-support")
+
+  return (
+    <PopupLayout>
+      <HelpAndSupport onBack={onBack} />
+    </PopupLayout>
+  )
 }
 
 /** autologin, for developers only */
