@@ -13,6 +13,12 @@
  * `SUSPENSION_GAP_MS` is taken to be a suspension. Timer callbacks call `checkSuspension()`
  * first, because on resume a due timer can run before the ticker does.
  *
+ * A page that is hidden can't tell a freeze from timer throttling: browsers run the timers of
+ * a hidden tab once a second, and Chrome once a minute after five minutes. Both leave gaps
+ * between ticks while socket messages keep arriving. In a hidden page, the first gap starts a
+ * suspension that lasts until the page is shown again. Taking each gap for a resume would
+ * restart every timeout once a minute, so that none ever fires.
+ *
  * A runtime can also be cut off while it keeps running: a webview whose network traffic goes
  * through its app's native code stays alive while the app is frozen in the background. Its
  * host marks that time with `setSuspended()`.
@@ -36,10 +42,60 @@ let lastRunAt = 0
 let lastResumedAt = Number.NEGATIVE_INFINITY
 /** when the host marked the runtime suspended (`setSuspended(true)`), or null */
 let suspendedSince: number | null = null
+/** whether the page (when there is one) is hidden */
+let pageHidden = false
+/** the longest gap between ticks since the page was hidden */
+let hiddenGapMs = 0
+/** a suspension that has ended for the host or the page while the other still holds it */
+let pending: { ms: number; byHost: boolean } | null = null
+let watchingPage = false
+
+const isHeld = () => suspendedSince !== null || (pageHidden && hiddenGapMs > SUSPENSION_GAP_MS)
+
+/** Ends the host's or the page's part of a suspension, and resumes once neither holds it */
+const endHold = (now: number, ms: number, byHost: boolean) => {
+  pending = {
+    ms: Math.max(pending?.ms ?? 0, ms),
+    byHost: (pending?.byHost ?? false) || byHost,
+  }
+  if (isHeld()) return
+
+  const ended = pending
+  pending = null
+  lastRunAt = now
+  if (ended.byHost || ended.ms > SUSPENSION_GAP_MS) resume(now, ended.ms)
+}
+
+const handleVisibilityChange = () => {
+  const hidden = document.visibilityState === "hidden"
+  if (hidden === pageHidden) return
+
+  if (hidden) {
+    // a gap from before the page was hidden is a suspension of its own
+    checkSuspension()
+    pageHidden = true
+    hiddenGapMs = 0
+    return
+  }
+
+  const now = Date.now()
+  const ms = Math.max(hiddenGapMs, ticker ? now - lastRunAt : 0)
+  pageHidden = false
+  hiddenGapMs = 0
+  endHold(now, ms, false)
+}
+
+const watchPage = () => {
+  if (watchingPage || typeof document === "undefined") return
+  watchingPage = true
+  pageHidden = document.visibilityState === "hidden"
+  document.addEventListener("visibilitychange", handleVisibilityChange)
+}
 
 const hold = () => {
   holds++
   if (ticker) return
+  watchPage()
   lastRunAt = Date.now()
   ticker = setInterval(checkSuspension, TICK_MS)
 }
@@ -60,7 +116,12 @@ export const checkSuspension = (): void => {
   const now = Date.now()
   const suspendedMs = ticker ? now - lastRunAt : 0
   lastRunAt = now
-  // while the host holds the runtime suspended, the resume comes from `setSuspended(false)`
+  // a hidden page resumes when it is shown, and a runtime the host holds suspended on
+  // `setSuspended(false)`
+  if (pageHidden) {
+    hiddenGapMs = Math.max(hiddenGapMs, suspendedMs)
+    return
+  }
   if (suspendedSince !== null || suspendedMs <= SUSPENSION_GAP_MS) return
   resume(now, suspendedMs)
 }
@@ -83,7 +144,8 @@ const resume = (now: number, suspendedMs: number) => {
  * Marks the JS runtime suspended (`true`) or running again (`false`), for a host that knows
  * the runtime is cut off although it keeps running. While suspended, `setAwakeTimeout`
  * timeouts don't fire. `setSuspended(false)` is a resume: the timeouts start over, and the
- * resume listeners run with the time since `setSuspended(true)`.
+ * resume listeners run with the time since `setSuspended(true)`. When the page is also held
+ * suspended (hidden, with a gap between ticks), the resume waits until it is shown.
  */
 export const setSuspended = (suspended: boolean): void => {
   if (suspended) {
@@ -95,12 +157,17 @@ export const setSuspended = (suspended: boolean): void => {
   const now = Date.now()
   const suspendedMs = now - suspendedSince
   suspendedSince = null
-  lastRunAt = now
-  resume(now, suspendedMs)
+  endHold(now, suspendedMs, true)
 }
 
-/** Whether the host has marked the runtime suspended (`setSuspended(true)`) */
-export const isSuspended = (): boolean => suspendedSince !== null
+/**
+ * Whether the runtime is held suspended until a later resume: marked by the host
+ * (`setSuspended(true)`), or a hidden page whose timers have stopped or been throttled
+ */
+export const isSuspended = (): boolean => {
+  checkSuspension()
+  return isHeld()
+}
 
 /**
  * When the JS runtime last resumed from a suspension (`Date.now()` time), or -Infinity when
@@ -149,7 +216,7 @@ export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) 
 
   const fire = () => {
     checkSuspension()
-    if (suspendedSince !== null) {
+    if (isHeld()) {
       token = setTimeout(fire, ms)
       return
     }
