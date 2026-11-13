@@ -50,6 +50,14 @@ let hiddenGapMs = 0
 let pending: { ms: number; byHost: boolean } | null = null
 let watchingPage = false
 
+/** The part of `document` used here: runtimes without a DOM have no `document` */
+type PageDocument = {
+  visibilityState: string
+  addEventListener: (type: "visibilitychange", listener: () => void) => void
+}
+
+const getPage = () => (globalThis as { document?: PageDocument }).document
+
 const isHeld = () => suspendedSince !== null || (pageHidden && hiddenGapMs > SUSPENSION_GAP_MS)
 
 /** Ends the host's or the page's part of a suspension, and resumes once neither holds it */
@@ -67,7 +75,7 @@ const endHold = (now: number, ms: number, byHost: boolean) => {
 }
 
 const handleVisibilityChange = () => {
-  const hidden = document.visibilityState === "hidden"
+  const hidden = getPage()?.visibilityState === "hidden"
   if (hidden === pageHidden) return
 
   if (hidden) {
@@ -86,10 +94,11 @@ const handleVisibilityChange = () => {
 }
 
 const watchPage = () => {
-  if (watchingPage || typeof document === "undefined") return
+  const page = getPage()
+  if (watchingPage || !page) return
   watchingPage = true
-  pageHidden = document.visibilityState === "hidden"
-  document.addEventListener("visibilitychange", handleVisibilityChange)
+  pageHidden = page.visibilityState === "hidden"
+  page.addEventListener("visibilitychange", handleVisibilityChange)
 }
 
 const hold = () => {
