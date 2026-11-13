@@ -500,6 +500,10 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   }, [quoteAsBuilt, laterLegHoldings, activeFeeTokenId, feePlanck])
   const isLaterLegBalanceLoading = laterLegHoldings === null
 
+  const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
+  // a later leg is built only once the first has landed, too late to pick its validator
+  const isValidatorMissing = legs.some((leg) => getDTaoLegData(leg)?.hotkey === null)
+
   const swapError = useMemo<SwapConfirmError | null>(() => {
     // 1. Balance errors — most actionable for the user
     if (isInsufficientBalance === true && fromTokenId) {
@@ -523,6 +527,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     }
 
     // 2. Exchange / transaction crafting errors
+    if (isValidatorMissing)
+      return { type: "transaction-craft-error", message: t("Select a validator") }
     if (exchangeError) return classifySwapError(exchangeError)
 
     // 3. Fee estimation / simulation errors (only relevant when not in approval phase)
@@ -540,6 +546,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromTokenId,
     feeBalanceCheck,
     laterLegShortfall,
+    isValidatorMissing,
+    t,
     exchangeError,
     needsApproval,
     approvalEthTx.errorDetails,
@@ -686,7 +694,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const legFailure = signFailure ?? (isBuildFailed && errorMessage ? errorMessage : undefined)
 
   const ctx = useSwapTxContext()
-  const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
   const approvalChecks = useMemo(() => legs.map((leg) => ({ leg, enabled: true })), [legs])
   const laterLegApprovals = useLaterLegApprovals(approvalChecks)
 
@@ -830,7 +837,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         feeBalanceCheck.status === "insufficient" ||
         feeBalanceCheck.status === "loading" ||
         isLaterLegBalanceLoading ||
-        !!laterLegShortfall
+        !!laterLegShortfall ||
+        isValidatorMissing
       }
       isProcessing={approval.isPending}
     />

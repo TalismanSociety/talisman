@@ -322,6 +322,18 @@ const quoteWithSameNetworkLaterLeg = quoteFromLegs(
   }
 )
 
+/** the data of a dTAO stake leg quoted with no validator */
+const unpickedStake = {
+  direction: "stake",
+  hotkey: null,
+  validator: "pickable",
+  networkId: "bittensor",
+  netuid: 64,
+  alphaPrice: "20000000",
+  swapPrice: "20000000",
+  priceImpact: 0,
+}
+
 const renderConfirmActions = () =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -369,6 +381,27 @@ describe("SwapConfirmActions approval", () => {
     expect(screen.getByRole("alert").textContent).toBe(
       "Insufficient ETH on OP Mainnet to pay for transaction fees"
     )
+  })
+
+  it("holds the first signature when a later leg stakes with no validator: it could not be built", () => {
+    const [first, later] = quoteWithLaterLegGas.legs
+    feeCheck.available = APPROVAL_GAS
+    held.set({ [OP_ETH]: 10n ** 18n })
+    swap.selectedQuote = quoteFromLegs(
+      [
+        first,
+        {
+          ...later,
+          protocol: "bittensor-dtao",
+          data: unpickedStake,
+        },
+      ],
+      quoteWithLaterLegGas
+    )
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("alert").textContent).toBe("Select a validator")
   })
 
   it("holds the first signature until the balances a later leg pays its gas from are known", () => {
@@ -444,6 +477,38 @@ describe("SwapConfirmActions approval", () => {
         "Insufficient ETH to pay for transaction fees"
       )
     )
+    expect(screen.getByRole("button", { name: "Confirm Swap" }).hasAttribute("disabled")).toBe(true)
+  })
+
+  it("holds Confirm Swap when a later leg stakes with no validator", async () => {
+    const [first, later] = quoteWithLaterLegGas.legs
+    const quote = quoteFromLegs(
+      [first, { ...later, protocol: "bittensor-dtao", data: unpickedStake }],
+      quoteWithLaterLegGas
+    )
+    feeCheck.available = APPROVAL_GAS
+    held.set({ [OP_ETH]: 10n ** 18n })
+    swap.selectedQuote = quote
+    swap.built = {
+      quote,
+      leg: {
+        transaction: { platform: "ethereum", transaction: { to: ACCOUNT, data: "0x" } },
+        fees: [],
+        expectedOutput: 1n,
+        txInfo: {
+          type: "swap-lifi",
+          protocolName: "glacis",
+          fromTokenId: USDC,
+          toTokenId: OP_ETH,
+          fromAmount: "1000000",
+          toAmount: "1",
+          to: ACCOUNT,
+        },
+      },
+    }
+    renderConfirmActions()
+
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Select a validator"))
     expect(screen.getByRole("button", { name: "Confirm Swap" }).hasAttribute("disabled")).toBe(true)
   })
 
