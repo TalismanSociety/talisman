@@ -27,7 +27,10 @@ export const pickIntermediateAccount = (
 ): string | null => {
   const accounts = LATER_LEG_ACCOUNTS[hubPlatform]
   if (!accounts) return null
-  const signers = candidates.filter((candidate) => accounts.isAddress(candidate.address))
+  const signers = candidates.filter(
+    (candidate) =>
+      accounts.isAddress(candidate.address) && accounts.signerTypes.includes(candidate.type)
+  )
   const own =
     recipient && accounts.isAddress(recipient)
       ? signers.find((candidate) => isAddressEqual(candidate.address, recipient))

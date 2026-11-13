@@ -52,6 +52,20 @@ describe("pickIntermediateAccount", () => {
     ).toBe(LEDGER)
     expect(pickIntermediateAccount([], EXTERNAL, "ethereum")).toBe(null)
   })
+
+  it("never holds the funds on an account that cannot sign on the hub", () => {
+    const ledgerPolkadot = candidate(KEYPAIR_RICH, "ledger-polkadot", 0n)
+
+    expect(pickIntermediateAccount([ledgerPolkadot], null, "ethereum")).toBe(null)
+    expect(pickIntermediateAccount([ledgerPolkadot], KEYPAIR_RICH, "ethereum")).toBe(null)
+    expect(
+      pickIntermediateAccount(
+        [ledgerPolkadot, candidate(LEDGER, "ledger-ethereum", 0n)],
+        KEYPAIR_RICH,
+        "ethereum"
+      )
+    ).toBe(LEDGER)
+  })
 })
 
 describe("pickIntermediateAccount on a substrate hub", () => {
@@ -72,6 +86,19 @@ describe("pickIntermediateAccount on a substrate hub", () => {
   it("otherwise picks the substrate keypair holding the least of the hub token, never an EVM account", () => {
     expect(pickIntermediateAccount(candidates, KEYPAIR_POOR, "polkadot")).toBe(SUB_OTHER)
     expect(pickIntermediateAccount(candidates, null, "polkadot")).toBe(SUB_OTHER)
+  })
+
+  it("never holds the funds on an account the wallet cannot sign with", () => {
+    expect(
+      pickIntermediateAccount(
+        [candidate(SUB_ADDRESS, "watch-only", 0n), candidate(SUB_OTHER, "signet", 0n)],
+        SUB_ADDRESS,
+        "polkadot"
+      )
+    ).toBe(null)
+    expect(
+      pickIntermediateAccount([candidate(SUB_ADDRESS, "ledger-polkadot", 0n)], null, "polkadot")
+    ).toBe(SUB_ADDRESS)
   })
 
   it("falls back to a device account, then to nothing", () => {

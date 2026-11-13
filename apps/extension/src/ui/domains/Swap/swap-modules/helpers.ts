@@ -1,5 +1,6 @@
 import type { NetworkId, NetworkPlatform } from "@talismn/chaindata-provider"
 import { isAddressEqual, isEthereumAddress, isSs58Address } from "@talismn/crypto"
+import type { AccountType } from "@talismn/keyring"
 import {
   type BaseQuote,
   type NonEmpty,
@@ -11,11 +12,24 @@ import {
 /** Charged by Talisman out of the input amount, shown as its own row on the confirm screen */
 export const TALISMAN_FEE_NAME = "Talisman Fee"
 
-type LaterLegAccounts = { isAddress: (address: string) => boolean; name: string }
+type LaterLegAccounts = {
+  isAddress: (address: string) => boolean
+  name: string
+  /** the account types the wallet signs a later leg with: an address of the right format is not enough */
+  signerTypes: readonly AccountType[]
+}
 
 export const LATER_LEG_ACCOUNTS: Record<NetworkPlatform, LaterLegAccounts | null> = {
-  ethereum: { isAddress: isEthereumAddress, name: "an EVM" },
-  polkadot: { isAddress: isSs58Address, name: "a substrate" },
+  ethereum: {
+    isAddress: isEthereumAddress,
+    name: "an EVM",
+    signerTypes: ["keypair", "ledger-ethereum"],
+  },
+  polkadot: {
+    isAddress: isSs58Address,
+    name: "a substrate",
+    signerTypes: ["keypair", "ledger-polkadot", "polkadot-vault"],
+  },
   solana: null,
 }
 
