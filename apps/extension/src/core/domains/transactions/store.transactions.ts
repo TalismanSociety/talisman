@@ -264,6 +264,7 @@ export const getTransactionStatus = async (hash: string) => {
 }
 
 export const updateTransactionsRestart = async () => {
+  const startedAt = Date.now()
   try {
     // for all successful tx, mark the pending ones with the same nonce as failed
     for (const successfulTx of await db.transactionsV2
@@ -284,8 +285,13 @@ export const updateTransactionsRestart = async () => {
       publish(facts)
     }
 
-    // mark all other pending transactions as unknown
-    await db.transactionsV2.where("status").equals("pending").modify({ status: "unknown" })
+    // mark the other transactions a previous service worker left pending as unknown; one signed
+    // since this sweep started has a live watcher, and its dapp may not have broadcast it yet
+    await db.transactionsV2
+      .where("status")
+      .equals("pending")
+      .filter((row) => row.timestamp < startedAt)
+      .modify({ status: "unknown" })
 
     // keep only the last 100 transactions
     const deleted = await db.transactionsV2.orderBy("timestamp").reverse().offset(100).delete()

@@ -115,7 +115,7 @@ export const properties = {
   sign_only: p.bool("The wallet signed it and the dapp broadcasts it."),
   status: p.enum(
     SETTLED_STATUSES,
-    "Final status of the transaction on chain. replaced: another transaction with the same nonce settled. dropped: the chain never saw it."
+    "Final status of the transaction on chain. replaced: another transaction with the same nonce settled. dropped: the chain never saw it. A dapp Polkadot transaction is sign-only, so dropped or replaced there mostly means the dapp never broadcast the signature, such as after the user refused its next request."
   ),
   time_to_settle_ms: p.durationMs(
     "From the stored transaction to its final status, rounded to the second. The start is set before the broadcast for wallet Polkadot transactions, after it for Ethereum, and at signing for dapp Polkadot and Solana transactions. swap_completed: until the exchange's final status when the wallet watched one."
