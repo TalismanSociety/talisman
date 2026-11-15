@@ -2,6 +2,8 @@ import type { Balances } from "@talismn/balances"
 
 const DUST_THRESHOLD_USD = 1
 
+const isPriced = (balances: Balances) =>
+  balances.each.some((b) => !!b.token?.coingeckoId || b.total.fiat("usd") !== null)
+
 export const isDust = (balances: Balances) =>
-  balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length > 0 &&
-  balances.sum.fiat("usd").total < DUST_THRESHOLD_USD
+  isPriced(balances) && balances.sum.fiat("usd").total < DUST_THRESHOLD_USD
