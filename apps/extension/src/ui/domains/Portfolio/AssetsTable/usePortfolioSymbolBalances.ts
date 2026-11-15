@@ -5,6 +5,7 @@ import { getSettingValue$, selectedCurrency$ } from "@ui/state/settings"
 import { combineLatest, map } from "rxjs"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
+import { isDust } from "./isDust"
 
 type SymbolBalances = [string, Balances]
 
@@ -138,13 +139,7 @@ const [usePortfolioSymbolBalancesByFilter, _getPortfolioSymbolBalancesByFilter$]
           tokensSortBy === "name"
             ? [...grouped].sort(sortSymbolBalancesByName)
             : sortSymbolBalancesBy(grouped, tokensSortBy, currency)
-        ).filter(
-          hideDust
-            ? ([, balances]) =>
-                balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
-                balances.sum.fiat("usd").total >= 1
-            : () => true
-        )
+        ).filter(([, balances]) => !hideDust || !isDust(balances))
 
         const available = sortSymbolBalancesBy(
           symbolBalances
