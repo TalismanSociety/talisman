@@ -64,7 +64,7 @@ const HOSTNAME =
 
 const CONTENT_ADDRESSED_SCHEMES = ["ipfs", "ipns"] as const
 
-export const isPrivateHost = (host: string): boolean =>
+const isPrivateHost = (host: string): boolean =>
   host === "localhost" ||
   !host.includes(".") ||
   host.startsWith("[") ||
