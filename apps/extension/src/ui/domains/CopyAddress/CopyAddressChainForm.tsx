@@ -145,7 +145,7 @@ const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
 )
 
 export const CopyAddressChainForm = () => {
-  const { address } = useCopyAddressWizard()
+  const { address, inputs, goToAddressPage } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const chains = useNetworks({ platform: "polkadot", activeOnly: false, includeTestnets: true })
   const { t } = useTranslation()
@@ -243,7 +243,10 @@ export const CopyAddressChainForm = () => {
   }, [formats, search])
 
   return (
-    <CopyAddressLayout title={t("Select network")}>
+    <CopyAddressLayout
+      title={t("Select network")}
+      onBack={inputs.address ? undefined : goToAddressPage}
+    >
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
