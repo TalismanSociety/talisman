@@ -3,9 +3,10 @@ import type { PropsOfEvent } from "@common/analytics/schema"
 import { describe, expect, it } from "vitest"
 
 /**
- * A hostname reaches analytics only as `dapp_domain`, only on dapp signing events, and only in
- * the form `toDappDomain` gives it. A transaction event carries it exactly when a dapp submitted
- * the transaction, so a wallet transaction or a connection event can never hold a dapp's domain.
+ * A hostname reaches analytics only as `dapp_domain`, only on dapp request, dapp transaction and
+ * signing-screen error events, and only in the form `toDappDomain` gives it. A transaction event
+ * carries it exactly when a dapp submitted the transaction, so a wallet transaction or a
+ * `dapp_connection_*` event can never hold a dapp's domain.
  */
 const DAPP_SIGNING_EVENTS = [
   "dapp_request_received",
@@ -104,8 +105,8 @@ describe("dapp_domain stays on dapp signing events", () => {
     "https://app.example.com",
     "app.example.com/swap",
   ])("rejects %j, a value toDappDomain never returns, on every event that declares it", (value) => {
-    for (const event of ["dapp_request_resolved", "error_shown"] as const) {
-      const { shape } = catalogue[event].schema as unknown as {
+    for (const event of DAPP_SIGNING_EVENTS) {
+      const { shape } = catalogue[event as keyof Catalogue].schema as unknown as {
         shape: Record<string, { safeParse: (v: unknown) => { success: boolean } }>
       }
       expect(shape.dapp_domain.safeParse(value).success, event).toBe(false)

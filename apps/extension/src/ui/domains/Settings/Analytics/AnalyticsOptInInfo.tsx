@@ -36,7 +36,7 @@ export const AnalyticsOptInInfo: FC<{
           </li>
           <li>
             <TickYes />
-            {t("The domains of dapps that ask you to sign, and whether requests succeed")}
+            {t("The domains of dapps that send you requests, and whether the requests succeed")}
           </li>
         </ul>
       </div>

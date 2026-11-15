@@ -55,9 +55,36 @@ const REQUEST_TYPE_OF_METHOD: Record<DappMethod, DappRequestType> = {
 export const isSigningRequestType = (type: DappRequestType) =>
   type === "transaction" || type === "message"
 
-const PRIVATE_SUFFIXES = [".local", ".lan", ".home", ".internal", ".localhost", ".onion", ".arpa"]
+const PRIVATE_SUFFIXES = [
+  ".local",
+  ".lan",
+  ".home",
+  ".internal",
+  ".intranet",
+  ".corp",
+  ".localhost",
+  ".test",
+  ".example",
+  ".invalid",
+  ".onion",
+  ".arpa",
+  ".ts.net",
+]
 
-const HOSTING_PLATFORM_DOMAINS = ["vercel.app", "netlify.app", "pages.dev", "github.io"]
+const HOSTING_PLATFORM_DOMAINS = [
+  "vercel.app",
+  "netlify.app",
+  "pages.dev",
+  "github.io",
+  "app.github.dev",
+  "workers.dev",
+  "web.app",
+  "firebaseapp.com",
+  "ngrok.app",
+  "ngrok-free.app",
+  "ngrok.io",
+  "trycloudflare.com",
+]
 
 const HOSTNAME =
   /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/

@@ -597,7 +597,7 @@ LIMIT 100`),
         {
           name: "Signing errors by dapp",
           description:
-            "Errors shown on a dapp's signing request and requests that failed on an error, per dapp and error category.",
+            "Errors shown on a dapp's signing request, and signing requests that failed on an error, per dapp and error category. Dapps on a local or private host (null) are left out.",
           size: "full",
           query: hogql(`
 SELECT
@@ -608,7 +608,12 @@ SELECT
 FROM events
 WHERE (
     (event = 'error_shown' AND properties.dapp_domain IS NOT NULL)
-    OR (event = 'dapp_request_resolved' AND properties.outcome = 'failed')
+    OR (
+      event = 'dapp_request_resolved'
+      AND properties.outcome = 'failed'
+      AND properties.request_type IN ('transaction', 'message')
+      AND properties.dapp_domain IS NOT NULL
+    )
   ) AND {filters}
 GROUP BY dapp, category
 ORDER BY shown + failed_requests DESC

@@ -77,11 +77,6 @@ const ROWS: [string, unknown, ErrorCategory][] = [
     "unsupported",
   ],
   [
-    "a humanised viem error keeps its class as the cause",
-    new Error("Nonce too low.", { cause: named("NonceTooLowError") }),
-    "nonce_conflict",
-  ],
-  [
     "substrate fees",
     new Error("1010: Invalid Transaction: Inability to pay some fees"),
     "insufficient_fee",

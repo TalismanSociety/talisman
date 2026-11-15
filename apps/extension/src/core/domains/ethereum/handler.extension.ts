@@ -97,9 +97,7 @@ export class EthHandler extends ExtensionHandler {
       if (result.val === "Unauthorised") {
         reject(Error(result.val))
       } else {
-        throw new Error(getHumanReadableErrorMessage(result.val) || "Failed to send transaction", {
-          cause: result.val,
-        })
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
       return false
     }
@@ -172,9 +170,7 @@ export class EthHandler extends ExtensionHandler {
       if (result.val === "Unauthorised") {
         throw new Error("Unauthorized")
       } else {
-        throw new Error(getHumanReadableErrorMessage(result.val) || "Failed to send transaction", {
-          cause: result.val,
-        })
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
     }
   }
@@ -241,9 +237,9 @@ export class EthHandler extends ExtensionHandler {
     if (val === "Unauthorised") {
       reject(Error(val))
     } else {
-      throw new Error(getHumanReadableErrorMessage(val) || "Unable to complete transaction", {
-        cause: val,
-      })
+      const msg = getHumanReadableErrorMessage(val)
+      if (msg) throw new Error(msg)
+      else throw new Error("Unable to complete transaction")
     }
     return false
   }
