@@ -1,7 +1,28 @@
 import { properties } from "../properties"
-import { defineEventGroup } from "../schema"
+import { defineEventGroup, type EventDef, type PropertyValueOf } from "../schema"
+import type { SubmittedBy } from "../transactions"
 
-export const transactionEvents = defineEventGroup(properties, {
+type DappDomain = PropertyValueOf<typeof properties.dapp_domain>
+
+type BySubmitter<P> = Omit<P, "submitted_by" | "dapp_domain"> &
+  (
+    | { submitted_by: "wallet"; dapp_domain?: never }
+    | { submitted_by: "dapp"; dapp_domain: DappDomain }
+  )
+
+type SubmittedProps = { submitted_by: SubmittedBy; dapp_domain?: DappDomain }
+
+const domainWhenDappSubmitted = <P extends SubmittedProps>(
+  def: EventDef<P>
+): EventDef<BySubmitter<P>> => ({
+  ...def,
+  schema: def.schema.refine(
+    (props) => (props.submitted_by === "dapp") === (props.dapp_domain !== undefined),
+    { path: ["dapp_domain"], message: "dapp_domain goes with submitted_by dapp, and only with it" }
+  ) as unknown as EventDef<BySubmitter<P>>["schema"],
+})
+
+const events = defineEventGroup(properties, {
   tx_signed: {
     description:
       "The wallet signed a transaction the user approved: with a local key, or a Ledger or Vault signature reached it. sign_only: the dapp broadcasts it. Sent once the background finished the request, so a failed broadcast still follows it with tx_broadcast_failed.",
@@ -11,6 +32,7 @@ export const transactionEvents = defineEventGroup(properties, {
       tx_type: "required",
       signer: "required",
       submitted_by: "required",
+      dapp_domain: "optional",
       sign_only: "required",
     },
   },
@@ -21,6 +43,7 @@ export const transactionEvents = defineEventGroup(properties, {
       network_id: "required",
       tx_type: "required",
       submitted_by: "required",
+      dapp_domain: "optional",
       signer: "required",
     },
   },
@@ -32,6 +55,7 @@ export const transactionEvents = defineEventGroup(properties, {
       network_id: "required",
       tx_type: "required",
       submitted_by: "required",
+      dapp_domain: "optional",
       signer: "required",
       error_category: "required",
     },
@@ -46,7 +70,15 @@ export const transactionEvents = defineEventGroup(properties, {
       tx_type: "required",
       time_to_settle_ms: "required",
       submitted_by: "required",
+      dapp_domain: "optional",
       signer: "optional",
     },
   },
 })
+
+export const transactionEvents = {
+  tx_signed: domainWhenDappSubmitted(events.tx_signed),
+  tx_broadcast: domainWhenDappSubmitted(events.tx_broadcast),
+  tx_broadcast_failed: domainWhenDappSubmitted(events.tx_broadcast_failed),
+  tx_settled: domainWhenDappSubmitted(events.tx_settled),
+}

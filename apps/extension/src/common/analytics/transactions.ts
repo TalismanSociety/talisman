@@ -1,6 +1,8 @@
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { AccountType } from "@talismn/keyring"
 
+import { toDappDomain } from "./dapp"
+
 export const CHAIN_PLATFORMS = ["ethereum", "polkadot", "solana"] as const
 export type ChainPlatform = (typeof CHAIN_PLATFORMS)[number]
 
@@ -44,6 +46,20 @@ export const txTypeOf = (txInfo: Pick<WalletTransactionInfo, "type"> | undefined
 
 export const SUBMITTERS = ["wallet", "dapp"] as const
 export type SubmittedBy = (typeof SUBMITTERS)[number]
+
+export type Submitter =
+  | { submitted_by: "wallet" }
+  | { submitted_by: "dapp"; dapp_domain: string | null }
+
+export const WALLET_SUBMITTER: Submitter = { submitted_by: "wallet" }
+
+export const dappSubmitter = (url: string | undefined): Submitter => ({
+  submitted_by: "dapp",
+  dapp_domain: toDappDomain(url),
+})
+
+export const submitterOfStoredTransaction = (siteUrl: string | undefined): Submitter =>
+  siteUrl ? dappSubmitter(siteUrl) : WALLET_SUBMITTER
 
 export const SETTLED_STATUSES = ["success", "error", "replaced", "dropped"] as const
 export type SettledStatus = (typeof SETTLED_STATUSES)[number]

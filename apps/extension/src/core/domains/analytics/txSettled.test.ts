@@ -43,8 +43,13 @@ const DAY_MS = 24 * 60 * 60_000
 const makeEvmTx = (
   nonce: number,
   status: TransactionStatus = "pending",
-  { suffix = "", timestamp = Date.now() }: { suffix?: string; timestamp?: number } = {}
+  {
+    suffix = "",
+    timestamp = Date.now(),
+    siteUrl,
+  }: { suffix?: string; timestamp?: number; siteUrl?: string } = {}
 ): WalletTransactionEth => ({
+  ...(siteUrl && { siteUrl }),
   id: `tx-${nonce}${suffix}`,
   platform: "ethereum",
   networkId: "1",
@@ -282,5 +287,21 @@ describe("tx_settled from the transaction store", () => {
     expect(trackedCalls()).toEqual([
       ["tx_settled", expect.objectContaining({ status: "success", time_to_settle_ms: 7 * DAY_MS })],
     ])
+  })
+
+  it("settles a dapp transaction with the dapp's domain, kept on the stored transaction", async () => {
+    await db.transactionsV2.bulkPut([
+      makeEvmTx(5, "pending", { siteUrl: "https://App.Example.com:8443/swap?ref=secret" }),
+      makeEvmTx(6),
+    ])
+
+    await updateTransactionStatus("tx-5", "success")
+    await updateTransactionStatus("tx-6", "success")
+    await reportFacts()
+
+    const [[, dapp], [, wallet]] = trackedCalls()
+    expect(dapp).toMatchObject({ submitted_by: "dapp", dapp_domain: "app.example.com" })
+    expect(wallet).toMatchObject({ submitted_by: "wallet" })
+    expect(wallet).not.toHaveProperty("dapp_domain")
   })
 })

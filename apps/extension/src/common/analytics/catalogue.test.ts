@@ -100,6 +100,10 @@ describe("property builders", () => {
     ["slug", p.slug("."), "polkadot-asset-hub", "two words"],
     ["slug", p.slug("."), "eth_signTypedData_v4", "-leading-dash"],
     ["symbol", p.symbol("."), "USDC.e", "not a symbol"],
+    ["dappDomain", p.dappDomain("."), "app.uniswap.org", "https://app.uniswap.org"],
+    ["dappDomain", p.dappDomain("."), "app.uniswap.org", "App.Uniswap.org"],
+    ["dappDomain", p.dappDomain("."), "vercel.app", "my-dapp.vercel.app"],
+    ["dappDomain", p.dappDomain("."), "ipfs", "localhost"],
     ["tokenId", p.tokenId("."), "1:evm-erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "a b"],
     ["tokenId", p.tokenId("."), "kusama-asset-hub:substrate-foreignassets:N4Ig+Dg", "a/b"],
     ["routePattern", p.routePattern("."), "/portfolio/tokens/:symbol", "/portfolio?tab=nfts"],
@@ -119,6 +123,7 @@ describe("property builders", () => {
       [
         "bool",
         "count",
+        "dappDomain",
         "durationMs",
         "enum",
         "int",

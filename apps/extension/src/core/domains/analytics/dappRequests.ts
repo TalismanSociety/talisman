@@ -1,12 +1,11 @@
 import {
-  type DappMethod,
+  type DappRequestKind,
   describeDappRequest,
   type RequestOutcome,
   type RiskVerdict,
 } from "@common/analytics/dapp"
 import { classifyError, type ErrorCategory } from "@common/analytics/errorCategory"
 import { toDurationMs } from "@common/analytics/schema"
-import type { ChainPlatform } from "@common/analytics/transactions"
 
 import type { RequestEnding, RequestFact } from "../../libs/requests/store"
 import { isBlockaidMalicious } from "../app/protector/blockaidSiteScan"
@@ -14,11 +13,11 @@ import { passwordStore } from "../app/store.password"
 import type { RequestDecision } from "./observeMessage"
 import { track } from "./track"
 
-export type Decision = { outcome: RequestDecision; at: number; errorCategory?: ErrorCategory }
+export type Decision =
+  | { outcome: RequestDecision; at: number }
+  | { outcome: "failed"; at: number; errorCategory: ErrorCategory }
 
-type Pending = {
-  method: DappMethod
-  platform: ChainPlatform
+type Pending = DappRequestKind & {
   createdAt: number
   siteFlagged: boolean
   decision?: Decision
@@ -33,7 +32,9 @@ export const outcomeOf = (
     case "resolved":
       return "approved"
     case "rejected":
-      return "rejected"
+      return decision?.outcome === "approved" || decision?.outcome === "failed"
+        ? "failed"
+        : "rejected"
     case "window_closed":
       return decision?.outcome ?? "closed"
     case "port_disconnected":
@@ -50,9 +51,9 @@ export const failureCategoryOf = (
   decision: Decision | undefined,
   error: Error | undefined
 ): ErrorCategory | undefined => {
-  if (outcome !== "rejected") return undefined
-  if (decision?.errorCategory) return decision.errorCategory
-  return decision?.outcome === "approved" && error ? classifyError(error) : undefined
+  if (outcome !== "failed") return undefined
+  if (decision?.outcome === "failed") return decision.errorCategory
+  return error ? classifyError(error) : "unknown"
 }
 
 export const verdictOf = ({ verdict, siteFlagged }: Pick<Pending, "verdict" | "siteFlagged">) =>
@@ -67,17 +68,14 @@ export const createDappRequestTracker = () => {
   return {
     onFact(fact: RequestFact): void {
       if (fact.type === "created") {
-        const { method, platform } = describeDappRequest(fact.request)
+        const kind = describeDappRequest(fact.request)
         const siteFlagged = isFlaggedSite(fact.request.url)
-        pending.set(fact.request.id, {
-          method,
-          platform,
-          createdAt: fact.at,
-          siteFlagged,
-        })
+        pending.set(fact.request.id, { ...kind, createdAt: fact.at, siteFlagged })
         track("dapp_request_received", {
-          method,
-          platform,
+          method: kind.method,
+          platform: kind.platform,
+          request_type: kind.requestType,
+          dapp_domain: kind.dappDomain,
           wallet_locked: passwordStore.isLoggedIn.value !== "TRUE",
           site_flagged: siteFlagged,
         })
@@ -94,6 +92,8 @@ export const createDappRequestTracker = () => {
       track("dapp_request_resolved", {
         method: request.method,
         platform: request.platform,
+        request_type: request.requestType,
+        dapp_domain: request.dappDomain,
         outcome,
         time_to_decision_ms: toDurationMs((decision?.at ?? fact.at) - request.createdAt),
         risk_verdict: verdictOf(request),
@@ -109,7 +109,7 @@ export const createDappRequestTracker = () => {
     noteApprovalFailure(id: string, errorCategory: ErrorCategory): void {
       const request = pending.get(id)
       if (request?.decision)
-        request.decision = { ...request.decision, outcome: "rejected", errorCategory }
+        request.decision = { outcome: "failed", at: request.decision.at, errorCategory }
     },
 
     noteRisk(id: string, verdict: RiskVerdict): void {

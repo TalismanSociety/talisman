@@ -37,15 +37,15 @@ vi.mock("./txContext", () => ({
       network,
       address,
       txType,
-      submittedBy,
+      submitter,
     }: TxAttempt): Promise<TxContext | null> =>
       address === owned.eth || address === owned.polkadot
         ? {
             platform,
             network_id: "networkId" in network ? network.networkId : "polkadot",
             tx_type: txType,
-            submitted_by: submittedBy,
             signer: "local",
+            ...submitter,
           }
         : null
   ),
@@ -214,6 +214,7 @@ describe("observeExtensionMessage", () => {
       expect(propsOf("tx_signed")).toMatchObject({
         platform: "polkadot",
         submitted_by: "dapp",
+        dapp_domain: "app.example.com",
         sign_only: true,
       })
     })
@@ -230,7 +231,7 @@ describe("observeExtensionMessage", () => {
 
       expect(txEvents()).toEqual([])
       expect(propsOf("dapp_request_resolved")).toMatchObject({
-        outcome: "rejected",
+        outcome: "failed",
         error_category: "wrong_password",
       })
     })
@@ -276,6 +277,7 @@ describe("observeExtensionMessage", () => {
         platform: "ethereum",
         network_id: "137",
         submitted_by: "dapp",
+        dapp_domain: "app.example.com",
         signer: "local",
       })
     })

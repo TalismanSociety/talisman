@@ -2,7 +2,13 @@ import { z } from "zod/v4"
 
 import { ACCOUNT_METHODS, ACCOUNT_MOVES, ACCOUNT_ORIGINS, ACCOUNT_TREES } from "./accounts"
 import { AMOUNT_BUCKETS, COUNT_BUCKETS, DAY_BUCKETS, HELD_BUCKETS, SHARE_BUCKETS } from "./buckets"
-import { DAPP_METHODS, PROTECTION_SOURCES, REQUEST_OUTCOMES, RISK_VERDICTS } from "./dapp"
+import {
+  DAPP_METHODS,
+  DAPP_REQUEST_TYPES,
+  PROTECTION_SOURCES,
+  REQUEST_OUTCOMES,
+  RISK_VERDICTS,
+} from "./dapp"
 import { ERROR_CATEGORIES } from "./errorCategory"
 import { FORM_STATES } from "./formState"
 import {
@@ -121,10 +127,19 @@ export const properties = {
   ),
   outcome: p.enum(
     REQUEST_OUTCOMES,
-    "approved, rejected: the user decided, or the wallet refused the approval (error_category is then set). closed: the request window closed without a decision, by the user, by ignoring it, or by another request's approval closing every window. expired: the dapp tab closed or navigated away, or the window failed to open."
+    "approved, rejected: the user decided. failed: the request ended in an error rather than a decision, such as an approval the wallet could not complete (error_category is then set). A request that failed and was then approved again reads approved. closed: the request window closed without a decision, by the user, by ignoring it, or by another request's approval closing every window. expired: the dapp tab closed or navigated away, or the window failed to open."
   ),
   time_to_decision_ms: p.durationMs(
     "From the request reaching the wallet to the decision, or to its end without one. An unlock first is included."
+  ),
+  request_type: p.enum(
+    DAPP_REQUEST_TYPES,
+    "What the dapp request asks for, derived from its method: a transaction to sign or send, a message to sign (sign in included), a connection, a network to add or an asset to watch."
+  ),
+  dapp_domain: p.nullable(
+    p.dappDomain(
+      "The domain of the dapp that sent the request: its lowercased hostname without port, path or query. ipfs or ipns for those schemes. A subdomain of a hosting platform reads as the platform (vercel.app, netlify.app, pages.dev, github.io). Null for an IP address, localhost or a private host. Only on dapp signing events: the dapp request events, transaction events submitted by a dapp, and errors shown on a dapp signing screen."
+    )
   ),
   risk_verdict: p.enum(
     RISK_VERDICTS,

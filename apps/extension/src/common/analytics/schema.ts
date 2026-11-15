@@ -1,5 +1,6 @@
 import { z } from "zod/v4"
 
+import { isDappDomain } from "./dapp"
 import { isRoutePattern } from "./screenPattern"
 
 export type PropertyScalar = string | number | boolean | null
@@ -87,6 +88,9 @@ export const p = {
   symbol: (description: string) => string(z.string().regex(SYMBOL), description),
 
   tokenId: (description: string) => string(z.string().regex(TOKEN_ID), description),
+
+  /** The only property that may hold a hostname: what `toDappDomain` returns, nothing else. */
+  dappDomain: (description: string) => string(z.string().refine(isDappDomain), description),
 
   routePattern: (description: string) => string(z.string().refine(isRoutePattern), description),
 
