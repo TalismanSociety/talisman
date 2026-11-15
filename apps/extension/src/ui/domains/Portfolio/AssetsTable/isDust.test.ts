@@ -43,4 +43,11 @@ describe("isDust", () => {
   ] satisfies Array<{ rule: string; holding: Holding }>)("keeps $rule", ({ holding }) => {
     expect(isDust(balancesOf(holding))).toBe(false)
   })
+
+  it("keeps a group that mixes a priced token without a coingecko id and an unpriced one", () => {
+    const priced = makeBalance(makeToken("priced", "ζ"), 1, { address: "a", usdPrice: 0.4 })
+    const unpriced = makeBalance(makeToken("unpriced", "ζ"), 1000, { address: "b" })
+
+    expect(isDust(new Balances([priced, unpriced]))).toBe(false)
+  })
 })
