@@ -25,6 +25,15 @@ Events, properties and flows are values in `apps/extension/src/common/analytics/
 
 Screens, modals, error toasts, transactions and dapp requests are tracked centrally. Do not add events for them.
 
+## The dapp's domain
+
+`dapp_domain` is the only property that holds a hostname. Only dapp signing events carry it: the `dapp_request_*` events, `tx_signed`, `tx_broadcast`, `tx_broadcast_failed` and `tx_settled` when `submitted_by` is `dapp`, and `error_shown` on a signing request. `src/__tests__/analytics-dapp-domain-scope.test.ts` fails when another event declares it.
+
+- Compute it with `toDappDomain(url)` or `describeDappRequest(request).dappDomain`, never from `new URL(...).hostname`. Its schema rejects any value `toDappDomain` would not return.
+- A transaction event takes `dappSubmitter(url)`, `WALLET_SUBMITTER` or `submitterOfStoredTransaction(row.siteUrl)` from `common/analytics/transactions.ts`. The types reject `dapp_domain` on a wallet transaction and require it on a dapp one.
+- `error_shown` takes the domain from the signing request on screen: `useRequest` registers it. Do not pass it by hand.
+- Hosting platforms reduce to their own domain (`*.vercel.app` reads `vercel.app`). Add a platform to `HOSTING_PLATFORM_DOMAINS` in `common/analytics/dapp.ts`.
+
 ## Add a flow
 
 1. Create `common/analytics/flow/definitions/<name>.ts` with `defineFlow("<name>", { subject, steps, … })`. Add it to `FLOWS` in `flow/registry.ts`. The options are in `references/define-flow.md`.
@@ -50,7 +59,7 @@ Rules that the types do not catch:
 2. Send it with `track("name", { … })`. Write the name as a string literal, or the liveness test cannot see it.
 3. Do not write `<flow>_started` or any other flow event by hand. `defineFlow` generates them.
 4. If mobile sends an event of the same name, give it mobile's properties, and add a row to `MOBILE_SHARED`.
-5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`CHANGE_OBSERVERS` in `core/domains/analytics/observeMessage.ts`: `accountMessages.ts` for accounts and contacts, `dappMessages.ts` for dapp connections and the networks and tokens dapps add, `chaindataMessages.ts` for the networks and tokens of settings, `nftMessages.ts`), not in the handler: domain code never imports analytics. A dapp request's decision needs a message too: a page that only calls `window.close()` reads `outcome: closed`, never `rejected`.
+5. An event that a `pri(...)` message causes in the background goes in a table that `observeExtensionMessage` reads (`CHANGE_OBSERVERS` in `core/domains/analytics/observeMessage.ts`: `accountMessages.ts` for accounts and contacts, `dappMessages.ts` for dapp connections and the networks and tokens dapps add, `chaindataMessages.ts` for the networks and tokens of settings, `nftMessages.ts`), not in the handler: domain code never imports analytics. A dapp request's decision needs a message too: a page that only calls `window.close()` reads `outcome: closed`, never `rejected`. An approval whose message fails reads `outcome: failed` with its `error_category`, unless the user then decides again.
 6. A setting the user changes needs no `track()`: the `useSetting` and `useAppState` setters send `setting_changed` for a classified key whose value changed. A write the user did not make (an effect that clears a stale value) goes through `settingsStore.set` or `appStore.set`, which send nothing.
 
 ## Add an exemption
