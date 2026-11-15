@@ -1,4 +1,4 @@
-type SigningDapp = { dappDomain: string | null }
+export type SigningDapp = { dappDomain: string | null }
 
 type PageContext = {
   screen: string | null

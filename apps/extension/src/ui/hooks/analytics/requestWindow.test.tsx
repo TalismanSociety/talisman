@@ -2,6 +2,7 @@ import type { ValidRequests } from "@core/libs/requests/types"
 import { render, renderHook, waitFor } from "@testing-library/react"
 import { api } from "@ui/api"
 import { pageContext } from "@ui/api/pageContext"
+import { TalismanErrorBoundary } from "@ui/components/TalismanErrorBoundary"
 import { describe, expect, it, vi } from "vitest"
 
 import { reportErrorShown, useErrorShown } from "./errorShown"
@@ -13,6 +14,8 @@ import {
 
 const track = vi.hoisted(() => vi.fn())
 vi.mock("@ui/api/track", () => ({ track }))
+vi.mock("@ui/api/errorReporting", () => ({ reportError: async () => null }))
+vi.mock("@talismn/icons", () => ({ TalismanDeadHandIcon: () => null }))
 
 const request = {
   type: "eth-sign",
@@ -146,5 +149,36 @@ describe("errors shown on a dapp request", () => {
       expect.objectContaining({ error_category: "unsupported", dapp_domain: "app.example.com" })
     )
     unmount()
+  })
+
+  it("name the dapp on the crash screen of its signing request", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const Screen = ({ crash }: { crash: boolean }) => {
+      if (crash) throw new Error("signing view crashed")
+      return null
+    }
+    const Page = ({ crash }: { crash: boolean }) => {
+      useReportRequestRendered(signRequest("substrate-sign.7", "https://app.example.com/"))
+      return <Screen crash={crash} />
+    }
+    const ui = render(
+      <TalismanErrorBoundary>
+        <Page crash={false} />
+      </TalismanErrorBoundary>
+    )
+    track.mockClear()
+
+    ui.rerender(
+      <TalismanErrorBoundary>
+        <Page crash={true} />
+      </TalismanErrorBoundary>
+    )
+
+    expect(track).toHaveBeenCalledWith(
+      "error_shown",
+      expect.objectContaining({ surface: "boundary", dapp_domain: "app.example.com" })
+    )
+    expect(pageContext.signingDapps).toEqual([])
+    ui.unmount()
   })
 })

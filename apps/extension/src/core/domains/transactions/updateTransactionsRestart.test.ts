@@ -21,11 +21,20 @@ import type { WalletTransactionDot } from "./types"
 
 const ACCOUNT = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const HASH = `0x${"ab".repeat(32)}` as const
-const PAYLOAD = {
-  genesisHash: `0x${"11".repeat(32)}`,
-  nonce: "0x00000007",
+const PAYLOAD: WalletTransactionDot["payload"] = {
   address: ACCOUNT,
-} as WalletTransactionDot["payload"]
+  blockHash: `0x${"22".repeat(32)}`,
+  blockNumber: "0x00000393",
+  era: "0x3601",
+  genesisHash: `0x${"11".repeat(32)}`,
+  method: "0x0000",
+  nonce: "0x00000007",
+  signedExtensions: ["CheckNonce"],
+  specVersion: "0x00000026",
+  tip: "0x00000000000000000000000000000000",
+  transactionVersion: "0x00000005",
+  version: 4,
+}
 
 const storedSuccess = (nonce: number): WalletTransactionDot => ({
   id: `old-${nonce}`,
