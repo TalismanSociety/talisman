@@ -26,8 +26,7 @@ export const HelpAndSupport = ({ onBack }: { onBack: () => void }) => {
           <h2 className="mt-8 font-bold text-white text-xl">{t("Need help?")}</h2>
           <div className="text-body-secondary">
             <p>{t("Talisman does not store your password.")}</p>
-            <p>{t("Never share your keys.")}</p>
-            <p>{t("Try again or contact support.")}</p>
+            <p>{t("The Talisman team will never ask for your private keys or recovery phrase.")}</p>
           </div>
         </div>
       </PopupContent>
