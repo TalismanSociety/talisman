@@ -13,7 +13,7 @@ A user sees their staking and DeFi positions across accounts, finds opportunitie
 
 ## How to get to it (user POV)
 
-- Dashboard: `Earn` in the side nav. `#/earn` settles on `#/earn/positions`, with the tabs `Positions`, `Discover` and `Bittensor`.
+- Dashboard: `Earn` in the nav bar at the top of the page. `#/earn` settles on `#/earn/positions`, with the tabs `Positions`, `Discover` and `Bittensor`.
 - `Bittensor` opens `#/bittensor/subnets`, and a subnet row opens `#/bittensor/subnets/<netuid>`.
 
 ## Driving it with agent-browser
