@@ -97,11 +97,13 @@ type ExplorerHost =
   | "bittensor.ai"
   | "evm.taostats.io"
   | "bittensor.ai/evm"
+  | "explorer.vara.network"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
   const hostname = explorerUrl.hostname.toLowerCase()
 
+  if (hostname === "explorer.vara.network") return "explorer.vara.network"
   if (explorerUrl.hostname.endsWith("polkadot.js.org")) return "polkadot.js"
   // the Bittensor EVM explorers use different routes than their substrate counterparts
   if (hostname === "evm.taostats.io") return "evm.taostats.io"
@@ -133,6 +135,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           // bittensor.ai resolves extrinsics by hash (a substrate tx "hash"
           // is the extrinsic hash); chaindata carries the /explorer base path
           return `/extrinsic/${query.id}`
+        case "explorer.vara.network":
+          return `/extrinsic/${query.id}`
         case "bittensor.ai/evm":
           return `/transactions/${query.id}`
         default:
@@ -148,6 +152,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "subscan.io":
         case "taostats.io":
         case "bittensor.ai":
+        case "explorer.vara.network":
           return `/account/${query.address}`
         case "bittensor.ai/evm":
           return `/contracts/${query.address}`
@@ -176,6 +181,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           return isNumber ? `/blocks/${query.id}` : null
         case "taostats.io":
           return isNumber ? `/block/${query.id}/extrinsics` : null
+        case "explorer.vara.network":
+          return `/block/${query.id}`
         case "bittensor.ai/evm":
           return isNumber ? `/blocks/${query.id}` : null
         default:
@@ -200,6 +207,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
       switch (host) {
         case "subscan.io":
         case "bittensor.ai":
+        case "explorer.vara.network":
           return `/extrinsic/${query.hash}`
         default:
           return null

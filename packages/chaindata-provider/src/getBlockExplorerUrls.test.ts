@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Network } from "./chaindata"
 import {
+  type BlockExplorerQuery,
   getBlockExplorerLabel,
   getBlockExplorerUrl,
   getBlockExplorerUrls,
@@ -14,6 +15,51 @@ const ETHEREUM = {
     "https://eth.blockscout.com/",
   ],
 } as unknown as Network
+
+const VARA = {
+  id: "vara",
+  blockExplorerUrls: ["https://explorer.vara.network/"],
+} as unknown as Network
+
+describe("Vara Explorer", () => {
+  const hash = `0x${"ab".repeat(32)}` as const
+  const address = "13xTKARCtSSTtveDMuTz6s3t9nb1cU1Qasi3iA7BiHobxUdy"
+  const cases: { query: BlockExplorerQuery; path: string }[] = [
+    { query: { type: "address", address }, path: `/account/${address}` },
+    { query: { type: "account", address }, path: `/account/${address}` },
+    { query: { type: "transaction", id: hash }, path: `/extrinsic/${hash}` },
+    { query: { type: "extrinsic-unknown", hash }, path: `/extrinsic/${hash}` },
+    {
+      query: { type: "extrinsic", blockNumber: 37242384, extrinsicIndex: 1 },
+      path: "/extrinsic/37242384-1",
+    },
+    { query: { type: "block", id: 37242384 }, path: "/block/37242384" },
+    { query: { type: "block", id: "37242384" }, path: "/block/37242384" },
+    { query: { type: "block", id: hash }, path: `/block/${hash}` },
+  ]
+
+  it.each(cases)("maps $query to $path", ({ query, path }) => {
+    expect(getBlockExplorerUrl(VARA, query)).toBe(`https://explorer.vara.network${path}`)
+  })
+
+  it("recognises the explorer hostname without depending on the network id", () => {
+    expect(
+      getBlockExplorerUrl(
+        { ...VARA, id: "custom-vara", blockExplorerUrls: ["https://EXPLORER.VARA.NETWORK"] },
+        { type: "address", address }
+      )
+    ).toBe(`https://explorer.vara.network/account/${address}`)
+  })
+
+  it.each(["https://other.vara.network/", "https://explorer.vara.network.example.com/"])(
+    "preserves generic routes for unrelated hosts: %s",
+    (url) => {
+      expect(
+        getBlockExplorerUrl({ ...VARA, blockExplorerUrls: [url] }, { type: "address", address })
+      ).toBe(`${url}address/${address}`)
+    }
+  )
+})
 
 const POLKADOT = {
   id: "polkadot",
