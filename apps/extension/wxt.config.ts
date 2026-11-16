@@ -820,6 +820,10 @@ export default defineConfig({
             if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
               return
             }
+            // apg-js (unmaintained) writes 'use strict;' with the semicolon inside the quotes: a no-op string, safe to drop
+            if (warning.code === "MODULE_LEVEL_DIRECTIVE" && warning.id?.includes("/apg-js/")) {
+              return
+            }
             // These imports only run on code paths that never run in a browser
             if (warning.message?.includes("externalized for browser compatibility")) {
               const isNodeOnlyPath =
