@@ -1,4 +1,5 @@
-import { isNativeToken, isNetworkOfPlatform } from "@talismn/chaindata-provider"
+import { isNativeToken, isNetworkOfPlatform, subDTaoTokenId } from "@talismn/chaindata-provider"
+import { isSs58Address } from "@talismn/crypto"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -8,7 +9,9 @@ import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
+import { buildDTaoPositionToken } from "./dTaoPosition"
 import { customChaindataStore } from "./store.customChaindata"
+import type { RequestRegisterDTaoPosition } from "./types"
 
 export class ChaindataHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -71,10 +74,28 @@ export class ChaindataHandler extends ExtensionHandler {
         return true
       }
 
+      case "pri(chaindata.tokens.registerDTaoPosition)": {
+        const position = request as RequestTypes["pri(chaindata.tokens.registerDTaoPosition)"]
+        return registerDTaoPosition(position)
+      }
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
   }
+}
+
+const registerDTaoPosition = async ({ networkId, netuid, hotkey }: RequestRegisterDTaoPosition) => {
+  const subnet = await chaindataProvider.getTokenById(
+    subDTaoTokenId(networkId, netuid),
+    "substrate-dtao"
+  )
+  if (!subnet) throw new Error(`Unknown subnet ${netuid} on ${networkId}`)
+  if (!isSs58Address(hotkey)) throw new Error("A validator's hotkey is a substrate address")
+
+  const position = buildDTaoPositionToken(subnet, hotkey)
+  await chaindataProvider.registerDynamicTokens([position])
+  return position.id
 }
 
 const clearRpcProviderCache = async (networkId: string) => {

@@ -33,7 +33,10 @@ import type {
   RequestBalance,
 } from "@core/domains/balances/types"
 import type { BittensorValidator } from "@core/domains/bittensor/exports"
-import type { RequestNetworkUpsert } from "@core/domains/chaindata/types"
+import type {
+  RequestNetworkUpsert,
+  RequestRegisterDTaoPosition,
+} from "@core/domains/chaindata/types"
 import type { DefiPosition } from "@core/domains/defi/exports"
 import type {
   YieldDto,
@@ -235,6 +238,7 @@ export default interface MessageTypes {
   tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
   tokenUpsert: (token: Token) => Promise<boolean>
   tokenRemove: (id: TokenId) => Promise<boolean>
+  registerDTaoPosition: (position: RequestRegisterDTaoPosition) => Promise<TokenId>
 
   // tokenRates message types
   tokenRates: (cb: (rates: TokenRatesStorage) => void) => UnsubscribeFn
