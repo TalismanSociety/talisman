@@ -16,12 +16,10 @@ import { staking } from "./definitions/staking"
 import { swap } from "./definitions/swap"
 import { taoTrade } from "./definitions/taoTrade"
 import { vaultSign } from "./definitions/vaultSign"
-import { walletReset } from "./definitions/walletReset"
 
 export const FLOWS = flowRegistry(
   recoveryPhraseBackup,
   onboarding,
-  walletReset,
   passwordChange,
   passwordMigration,
   quickUnlockSetup,

@@ -7,7 +7,7 @@ export const onboarding = defineFlow("onboarding", {
     { name: "password", screen: "/password" },
     { name: "privacy", screen: "/privacy" },
   ],
-  entries: ["install", "reset"],
+  entries: ["install"],
   extras: { submitted: { biometrics_offered: "required" } },
   rename: { submitted: "password_set", completed: "onboarding_setup_completed" },
 })

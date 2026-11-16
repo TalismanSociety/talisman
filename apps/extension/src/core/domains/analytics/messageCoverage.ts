@@ -54,7 +54,6 @@ export const MESSAGE_COVERAGE = {
   "pri(app.sendFunds.open)": { flow: "send" },
   "pri(app.promptLogin)": { exempt: "navigation" },
   "pri(app.phishing.addException)": { event: "phishing_site_trusted" },
-  "pri(app.resetWallet)": { flow: "wallet_reset" },
   "pri(app.quickUnlock.enroll)": { flow: "quick_unlock_setup" },
   "pri(app.quickUnlock.unenroll)": { event: "quick_unlock_disabled" },
   "pri(app.quickUnlock.getCredentialInfo)": "read",

@@ -45,7 +45,6 @@ export const api: MessageTypes = {
 
   // app messages -------------------------------------------------------
   sendFundsOpen: (request) => messageService.sendMessage("pri(app.sendFunds.open)", request),
-  resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
   subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
   // quick unlock messages -------------------------------------------------------

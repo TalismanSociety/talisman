@@ -39,9 +39,9 @@ const Probe = () => {
   return null
 }
 
-const Onboarding = ({ path = "/", reset = false }: { path?: string; reset?: boolean }) => (
+const Onboarding = ({ path = "/" }: { path?: string }) => (
   <MemoryRouter initialEntries={[path]}>
-    <Provider resetWallet={reset}>
+    <Provider>
       <Probe />
       <OnboardingRoutes />
     </Provider>
@@ -75,34 +75,6 @@ describe("onboarding analytics", () => {
     ])
     expect(flowEvents()[0]).toMatchObject({ entry: "install" })
     expect(app.update).toHaveBeenCalledWith("TRUE")
-  })
-
-  it("tells a reset from a first install", () => {
-    render(<Onboarding reset />)
-
-    expect(flowEvents()).toEqual([
-      expect.objectContaining({ event: "onboarding_started", entry: "reset" }),
-    ])
-  })
-
-  it("restarts as a reset when a mounted page sees the wallet onboarded, then wiped", () => {
-    const { rerender } = render(<Onboarding />)
-    act(() => onboard.setOnboarded())
-    act(() => {
-      app.onboarded = "TRUE"
-      rerender(<Onboarding />)
-    })
-    act(() => {
-      app.onboarded = "FALSE"
-      rerender(<Onboarding />)
-    })
-
-    expect(flowEvents()).toEqual([
-      expect.objectContaining({ event: "onboarding_started", entry: "install" }),
-      expect.objectContaining({ event: "onboarding_setup_completed" }),
-      expect.objectContaining({ event: "onboarding_started", entry: "reset" }),
-    ])
-    expect(flowEvents()[2].flow_id).not.toBe(flowEvents()[0].flow_id)
   })
 
   it("starts nothing when the wallet is already onboarded", () => {

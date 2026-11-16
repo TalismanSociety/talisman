@@ -3,6 +3,7 @@ import {
   CreditCardIcon,
   ExpandIcon,
   GlobeIcon,
+  HeadsetIcon,
   KeyIcon,
   LockIcon,
   PlusIcon,
@@ -26,6 +27,11 @@ import { TalismanWhiteLogo } from "@ui/theme/logos"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+
+import { HelpAndSupportDrawer, useHelpAndSupportDrawerOpenClose } from "./HelpAndSupportDrawer"
+
+const FOOTER_BUTTON_CLASSNAME =
+  "flex flex-1 items-center justify-center gap-4 p-10 text-body-secondary hover:bg-grey-800 hover:text-body"
 
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
@@ -74,6 +80,7 @@ export const NavigationDrawer: FC = () => {
   }, [closeAfterNavigating])
 
   const handleFullscreenClick = useOpenFullscreen()
+  const { open: openHelpAndSupport } = useHelpAndSupportDrawerOpenClose()
 
   const showBuySell = useFeatureFlag("BUY_CRYPTO")
   const { open: openRampsModal } = useRampsModal()
@@ -83,73 +90,78 @@ export const NavigationDrawer: FC = () => {
   }, [openRampsModal, close])
 
   return (
-    <Drawer
-      analyticsId="navigation"
-      className="h-full"
-      containerId="main"
-      anchor="bottom"
-      isOpen={isOpen}
-      onDismiss={close}
-    >
-      <div className="flex h-full w-full flex-col bg-black">
-        <header className="box-border flex h-36 w-full items-center justify-between gap-6 border-grey-800 border-b px-12">
-          <TalismanWhiteLogo className="h-6.25 w-auto" />
-          <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
-          <div className="grow"></div>
-          <IconButton onClick={close} aria-label={t("Close menu")}>
-            <XIcon />
-          </IconButton>
-        </header>
-        <div className="w-full grow overflow-hidden">
-          {/* buttons must shrink height if necessary */}
-          <Nav className="flex size-full flex-col overflow-hidden p-4">
-            <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
-              {t("Add Account")}
-            </NavItem>
-            {!!ownedAccounts.length && (
-              <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
-                {t("Send Funds")}
+    <>
+      <Drawer
+        analyticsId="navigation"
+        className="h-full"
+        containerId="main"
+        anchor="bottom"
+        isOpen={isOpen}
+        onDismiss={close}
+      >
+        <div className="flex h-full w-full flex-col bg-black">
+          <header className="box-border flex h-36 w-full items-center justify-between gap-6 border-grey-800 border-b px-12">
+            <TalismanWhiteLogo className="h-6.25 w-auto" />
+            <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
+            <div className="grow"></div>
+            <IconButton onClick={close} aria-label={t("Close menu")}>
+              <XIcon />
+            </IconButton>
+          </header>
+          <div className="w-full grow overflow-hidden">
+            {/* buttons must shrink height if necessary */}
+            <Nav className="flex size-full flex-col overflow-hidden p-4">
+              <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
+                {t("Add Account")}
               </NavItem>
-            )}
-            {!!showBuySell && (
-              <NavItem icon={<CreditCardIcon />} onClick={handleBuySellClick}>
-                {t("Buy/Sell")}
+              {!!ownedAccounts.length && (
+                <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
+                  {t("Send Funds")}
+                </NavItem>
+              )}
+              {!!showBuySell && (
+                <NavItem icon={<CreditCardIcon />} onClick={handleBuySellClick}>
+                  {t("Buy/Sell")}
+                </NavItem>
+              )}
+              <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
+                {t("Address Book")}
               </NavItem>
-            )}
-            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
-              {t("Address Book")}
-            </NavItem>
-            <NavItem icon={<GlobeIcon />} onClick={handleManageNetworksClick}>
-              {t("Manage Networks")}
-            </NavItem>
-            <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
-              <span className="flex items-center">
-                {t("Backup Wallet")}
-                {!allBackedUp && <AlertCircleIcon className="ml-2 inline text-primary text-sm" />}
-              </span>
-            </NavItem>
-            <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
-              {t("All Settings")}
-            </NavItem>
-            <NavItem icon={<ExpandIcon />} onClick={handleFullscreenClick}>
-              {t("Fullscreen")}
-            </NavItem>
-          </Nav>
-        </div>
-        <footer>
-          <button
-            type="button"
-            className="flex w-full flex-col items-center text-body-secondary hover:bg-grey-800 hover:text-body"
-            onClick={handleLock}
-          >
-            <div className="h-0 w-11/12 border border-grey-800 border-t" />
-            <div className="flex w-full items-center justify-center gap-4 p-10">
+              <NavItem icon={<GlobeIcon />} onClick={handleManageNetworksClick}>
+                {t("Manage Networks")}
+              </NavItem>
+              <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
+                <span className="flex items-center">
+                  {t("Backup Wallet")}
+                  {!allBackedUp && <AlertCircleIcon className="ml-2 inline text-primary text-sm" />}
+                </span>
+              </NavItem>
+              <NavItem icon={<HeadsetIcon />} onClick={openHelpAndSupport}>
+                {t("Help & Support")}
+              </NavItem>
+              <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
+                {t("All Settings")}
+              </NavItem>
+            </Nav>
+          </div>
+          <footer className="flex items-center border-grey-800 border-t">
+            <button type="button" className={FOOTER_BUTTON_CLASSNAME} onClick={handleLock}>
               <LockIcon className="text-md" />
               <span>{t("Lock Wallet")}</span>
-            </div>
-          </button>
-        </footer>
-      </div>
-    </Drawer>
+            </button>
+            <div className="h-12 w-px shrink-0 bg-grey-800" />
+            <button
+              type="button"
+              className={FOOTER_BUTTON_CLASSNAME}
+              onClick={handleFullscreenClick}
+            >
+              <ExpandIcon className="text-md" />
+              <span>{t("Fullscreen")}</span>
+            </button>
+          </footer>
+        </div>
+      </Drawer>
+      <HelpAndSupportDrawer />
+    </>
   )
 }

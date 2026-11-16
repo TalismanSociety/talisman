@@ -39,11 +39,11 @@ describe("AnalyticsHandler pri(analytics.track)", () => {
     const track = (event: EventName, properties: EventProperties) =>
       handler.handle("1", "pri(analytics.track)", { event, properties }, port)
 
-    await track("wallet_reset_started", { flow_id: "r" })
-    const completed = track("wallet_reset_completed", { flow_id: "r", duration_ms: 1 })
+    await track("password_change_started", { flow_id: "r" })
+    const completed = track("password_changed", { flow_id: "r", duration_ms: 1 })
     disconnect()
     await completed
 
-    expect(captured()).toEqual(["wallet_reset_started", "wallet_reset_completed"])
+    expect(captured()).toEqual(["password_change_started", "password_changed"])
   })
 })

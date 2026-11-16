@@ -6,10 +6,11 @@ import {
 import type { UNLOCK_METHODS } from "@common/analytics/properties"
 import { log } from "@common/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EyeIcon, EyeOffIcon } from "@talismn/icons"
+import { EyeIcon, EyeOffIcon, HeadsetIcon } from "@talismn/icons"
 import { getErrorMessage } from "@talismn/util"
 import { api } from "@ui/api"
 import { track } from "@ui/api/track"
+import { HelpAndSupport } from "@ui/apps/popup/components/HelpAndSupport"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { Button } from "@ui/components/Button"
 import { CapsLockWarningIcon } from "@ui/components/CapsLockWarningIcon"
@@ -41,7 +42,6 @@ import { useTranslation } from "react-i18next"
 import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
-import { ResetWallet } from "./ResetWallet"
 
 const reportUnlockFailed = (method: (typeof UNLOCK_METHODS)[number], category: ErrorCategory) =>
   track("app_unlock_failed", {
@@ -267,10 +267,10 @@ const QuickUnlockButton = ({
 }
 
 const Login = ({
-  setShowResetWallet,
+  showHelpAndSupport,
   autoTriggerQuickUnlock,
 }: {
-  setShowResetWallet: () => void
+  showHelpAndSupport: () => void
   autoTriggerQuickUnlock: boolean
 }) => {
   const { t } = useTranslation()
@@ -389,13 +389,14 @@ const Login = ({
             <button
               type="button"
               className={cn(
-                "cursor-pointer text-body-disabled text-sm transition-colors hover:text-white",
+                "flex cursor-pointer items-center justify-center gap-2 text-body-disabled text-sm transition-colors hover:text-white",
                 // the column edge is the separator, so it can't drift off centre
                 quickUnlockEnrolled && "border-grey-700 border-l"
               )}
-              onClick={setShowResetWallet}
+              onClick={showHelpAndSupport}
             >
-              {t("Forgot Password?")}
+              <HeadsetIcon />
+              {t("Help & Support")}
             </button>
           </div>
         </form>
@@ -410,15 +411,25 @@ export const LoginViewManager = ({
   /** false when the login screen replaced an unlocked session, ie the user didn't come here to unlock */
   autoTriggerQuickUnlock: boolean
 }) => {
-  const [showResetWallet, setShowResetWallet] = useState(false)
+  const [showHelpAndSupport, setShowHelpAndSupport] = useState(false)
   useVirtualScreen("/login")
 
-  if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
+  if (showHelpAndSupport) return <LoginHelpAndSupport onBack={() => setShowHelpAndSupport(false)} />
   return (
     <Login
-      setShowResetWallet={() => setShowResetWallet(true)}
+      showHelpAndSupport={() => setShowHelpAndSupport(true)}
       autoTriggerQuickUnlock={autoTriggerQuickUnlock}
     />
+  )
+}
+
+const LoginHelpAndSupport = ({ onBack }: { onBack: () => void }) => {
+  useVirtualScreen("/login/help-and-support")
+
+  return (
+    <PopupLayout>
+      <HelpAndSupport onBack={onBack} />
+    </PopupLayout>
   )
 }
 

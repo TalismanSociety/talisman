@@ -9,7 +9,6 @@ import { windowManager } from "../../libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type { Port } from "../../types/base"
 import { authenticateLegacyMethod } from "../accounts/legacy"
-import { analyticsEngine } from "../analytics/engine"
 import { keyringStore } from "../keyring/store"
 import { addException } from "./protector"
 import { decryptPassword, encryptPassword, isUsablePrfOutput } from "./quickUnlockCrypto"
@@ -188,26 +187,6 @@ export default class AppHandler extends ExtensionHandler {
 
   private async checkPassword({ password }: RequestTypes["pri(app.checkPassword)"]) {
     await this.stores.password.checkPassword(password)
-    return true
-  }
-
-  private async resetWallet() {
-    await analyticsEngine
-      .endSession()
-      .catch((cause) => log.error("[analytics] failed to end the session on reset", { cause }))
-    this.stores.app.set({ onboarded: "FALSE" })
-
-    await this.stores.password.reset()
-    await this.stores.quickUnlock.unenroll()
-
-    await keyringStore.reset()
-
-    await windowManager.openOnboarding("/import?resetWallet=true")
-    // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
-    await this.stores.sites.clear()
-    // since all accounts are being wiped, account catalog also needs to be wiped.
-    await this.stores.accountsCatalog.clear()
-
     return true
   }
 
@@ -419,9 +398,6 @@ export default class AppHandler extends ExtensionHandler {
       case "pri(app.phishing.addException)": {
         return addException((request as RequestTypes["pri(app.phishing.addException)"]).url)
       }
-
-      case "pri(app.resetWallet)":
-        return this.resetWallet()
 
       case "pri(app.requests)":
         return requestStore.subscribe(id, port)

@@ -49,7 +49,7 @@ const schema = yup
 export const PasswordPage = () => {
   const { t } = useTranslation()
 
-  const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()
+  const { data, createPassword, passwordExists, setOnboarded } = useOnboard()
 
   const navigate = useNavigate()
 
@@ -83,9 +83,9 @@ export const PasswordPage = () => {
   }, [setValue])
 
   const navigateNext = useCallback(() => {
-    if (isResettingWallet || IS_FIREFOX) setOnboarded()
+    if (IS_FIREFOX) setOnboarded()
     else navigate("/privacy")
-  }, [isResettingWallet, setOnboarded, navigate])
+  }, [setOnboarded, navigate])
 
   const submit = useCallback(
     async (fields: FormData) => {

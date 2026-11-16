@@ -1,3 +1,4 @@
+import { DISCORD_TALISMAN_URL } from "@common/constants"
 import { appStore } from "@core/domains/app/store.app"
 import { TalismanHandIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
@@ -46,8 +47,8 @@ export const MigrationProgress = () => {
                   values={migration}
                   components={{
                     Link: (
-                      <a className="text-body underline" href={"https://discord.gg/talisman"}>
-                        https://discord.gg/talisman
+                      <a className="text-body underline" href={DISCORD_TALISMAN_URL}>
+                        {DISCORD_TALISMAN_URL}
                       </a>
                     ),
                   }}
