@@ -1,6 +1,7 @@
 import { IS_FIREFOX } from "@common/constants"
 import {
   isTxInfoApproval,
+  isTxInfoBittensorStake,
   isTxInfoSwap,
   isTxInfoTransfer,
 } from "@core/domains/transactions/exports"
@@ -400,8 +401,8 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, onSelectTx }) => {
   const toToken = useToken(txSwap?.toTokenId)
   const toNetwork = useNetworkById(toToken?.networkId)
 
-  // bittensor-staking swaps use regular tx status, not exchange status
-  const isExternalSwap = txSwap && txSwap.type !== "bittensor-staking"
+  // staking through Bittensor settles on chain: its transaction status is the swap's
+  const isExternalSwap = txSwap && !isTxInfoBittensorStake(txSwap)
 
   const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 

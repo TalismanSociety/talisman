@@ -45,12 +45,12 @@ describe("getSwapProgressDetails", () => {
     const staking = {
       ...makeTx("success"),
       txInfo: {
-        type: "bittensor-staking" as const,
+        type: "swap-bittensor-dtao" as const,
         fromTokenId: "bittensor:substrate-native",
         toTokenId: "bittensor:substrate-dtao:64",
         fromAmount: "1",
         toAmount: "1",
-        hotkey: "5Hotkey",
+        to: "5Recipient",
       },
     }
 

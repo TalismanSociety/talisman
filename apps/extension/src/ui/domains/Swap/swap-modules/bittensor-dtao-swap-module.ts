@@ -473,12 +473,12 @@ const buildLeg = async (
     expectedOutput: math.amountOut,
     ...(isBelowFloor && { acceptedOutput: floor }),
     txInfo: {
-      type: "bittensor-staking",
+      type: "swap-bittensor-dtao",
       fromTokenId: leg.fromTokenId,
       toTokenId: leg.toTokenId,
       fromAmount: input.toString(),
       toAmount: math.amountOut.toString(),
-      hotkey,
+      to: leg.signer,
     },
   }
 }

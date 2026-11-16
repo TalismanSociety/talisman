@@ -1,6 +1,8 @@
+import { isTxInfoBittensorStake } from "@core/domains/transactions/exports"
 import type { WalletTransactionDot, WalletTransactionInfo } from "@core/domains/transactions/types"
-import { parseTokenId, subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
+import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
+import { parseDTaoTokenId } from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { useAccounts } from "@ui/state/accounts"
 import { useTransactions } from "@ui/state/transactions"
 import { useEffect, useMemo, useRef } from "react"
@@ -9,6 +11,12 @@ import { useSubnetStakeEvents } from "../../hooks/useSn45Api"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
 import type { LocalTransactionEntry, TransactionEntry } from "../../shared/types"
 import type { RealtimeStakeEvent } from "./realtime/types"
+
+/** a swap names its validator in the position's token id */
+const getHotkey = (txInfo: Extract<WalletTransactionInfo, { fromTokenId: string }>) =>
+  txInfo.type === "bittensor-staking"
+    ? txInfo.hotkey
+    : ((parseDTaoTokenId(txInfo.fromTokenId) ?? parseDTaoTokenId(txInfo.toTokenId))?.hotkey ?? "")
 
 export const useSubnetTransactions = (
   netuid: number,
@@ -61,29 +69,31 @@ export const useSubnetTransactions = (
     return localTransactions
       .filter((tx): tx is WalletTransactionDot => {
         if (tx.platform !== "polkadot" || tx.networkId !== networkId) return false
-        if (tx.txInfo?.type !== "bittensor-staking") return false
-        return [tx.txInfo.fromTokenId, tx.txInfo.toTokenId]
-          .map(parseTokenId)
-          .some((parsed) => parsed.type === "substrate-dtao" && parsed.netuid === netuid)
+        if (!isTxInfoBittensorStake(tx.txInfo)) return false
+        return [tx.txInfo.fromTokenId, tx.txInfo.toTokenId].some(
+          (tokenId) => parseDTaoTokenId(tokenId)?.netuid === netuid
+        )
       })
-      .map((tx): LocalTransactionEntry => {
-        const txInfo = tx.txInfo as Extract<WalletTransactionInfo, { type: "bittensor-staking" }>
-        const tokenIn = parseTokenId(txInfo.fromTokenId)
-        const isBuy = tokenIn.type === "substrate-native"
+      .flatMap((tx): LocalTransactionEntry[] => {
+        const txInfo = tx.txInfo
+        if (!isTxInfoBittensorStake(txInfo)) return []
+        const isBuy = !parseDTaoTokenId(txInfo.fromTokenId)
 
-        return {
-          hash: tx.hash,
-          account: tx.account,
-          direction: isBuy ? "buy" : "sell",
-          hotkey: txInfo.hotkey,
-          tokenIdIn: txInfo.fromTokenId,
-          tokenIdOut: txInfo.toTokenId,
-          tokenValueIn: BigInt(txInfo.fromAmount),
-          tokenValueOut: BigInt(txInfo.toAmount), // estimate for local txs
-          status: mapLocalTxStatus(tx),
-          timestamp: tx.timestamp,
-          blockHeight: tx.blockNumber ? Number(tx.blockNumber) : undefined,
-        }
+        return [
+          {
+            hash: tx.hash,
+            account: tx.account,
+            direction: isBuy ? "buy" : "sell",
+            hotkey: getHotkey(txInfo),
+            tokenIdIn: txInfo.fromTokenId,
+            tokenIdOut: txInfo.toTokenId,
+            tokenValueIn: BigInt(txInfo.fromAmount),
+            tokenValueOut: BigInt(txInfo.toAmount), // estimate for local txs
+            status: mapLocalTxStatus(tx),
+            timestamp: tx.timestamp,
+            blockHeight: tx.blockNumber ? Number(tx.blockNumber) : undefined,
+          },
+        ]
       })
       .slice(0, limit)
   }, [networkId, netuid, localTransactions, limit])

@@ -30,6 +30,14 @@ describe("swapOfTransaction", () => {
         ...swap,
       })
     ).toEqual({ protocol: "lifi", cross_chain: false })
+    expect(
+      swapOfTransaction({
+        type: "swap-bittensor-dtao",
+        fromTokenId: "bittensor:substrate-native",
+        toTokenId: "bittensor:substrate-dtao:64:5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+        ...swap,
+      })
+    ).toEqual({ protocol: "bittensor-dtao", cross_chain: false })
   })
 
   it("is null for any other transaction", () => {

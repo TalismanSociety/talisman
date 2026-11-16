@@ -452,7 +452,7 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
   it("records the position it stakes into for the transaction history", async () => {
     const { built } = await build(await stakeTao({ toTokenId: SN64_PICKED }))
 
-    expect(built.txInfo).toMatchObject({ toTokenId: SN64_PICKED, hotkey: PICKED })
+    expect(built.txInfo).toMatchObject({ toTokenId: SN64_PICKED, to: ADDRESS })
   })
 
   it("refuses a first leg once the pool moved past the slippage: the screen still shows the quote", async () => {
@@ -525,12 +525,12 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
     const { built } = await build(await unstakeAlpha())
 
     expect(built.txInfo).toEqual({
-      type: "bittensor-staking",
+      type: "swap-bittensor-dtao",
       fromTokenId: SN64_HELD,
       toTokenId: TAO,
       fromAmount: (50n * ONE_TAO).toString(),
       toAmount: "997000000",
-      hotkey: HELD,
+      to: ADDRESS,
     })
   })
 
@@ -796,7 +796,7 @@ describe("EVM TAO to a subnet, through TAO", () => {
     expect(fee).toBe(GAS_FEE)
     expect(built.expectedOutput).toBe(997_000_000n * 50n)
     expect(built.acceptedOutput).toBeUndefined()
-    expect(built.txInfo).toMatchObject({ type: "bittensor-staking", fromAmount: `${ONE_TAO}` })
+    expect(built.txInfo).toMatchObject({ type: "swap-bittensor-dtao", fromAmount: `${ONE_TAO}` })
   })
 
   it("leaves the fee and the existential deposit on an account that holds only what landed", async () => {

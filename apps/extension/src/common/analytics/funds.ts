@@ -144,6 +144,7 @@ const SWAP_TX_PROTOCOLS: Partial<Record<WalletTransactionInfo["type"], SwapProto
   "swap-lifi": "lifi",
   "swap-bittensor-evm": "bittensor-evm",
   "swap-forevermoney": "forevermoney",
+  "swap-bittensor-dtao": "bittensor-dtao",
 }
 
 export const swapOfTransaction = (

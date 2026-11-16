@@ -354,12 +354,12 @@ describe("useLegSigning", () => {
         fees: [],
         expectedOutput: input * 50n,
         txInfo: {
-          type: "bittensor-staking",
+          type: "swap-bittensor-dtao",
           fromTokenId: STAKE_LEG.fromTokenId,
           toTokenId: STAKE_LEG.toTokenId,
           fromAmount: input.toString(),
           toAmount: (input * 50n).toString(),
-          hotkey: "5Yuma",
+          to: "5Signer",
         },
       })
     )
@@ -389,7 +389,7 @@ describe("useLegSigning", () => {
       txMetadata: new Uint8Array([1]),
       mode: "default",
       txInfo: expect.objectContaining({
-        type: "bittensor-staking",
+        type: "swap-bittensor-dtao",
         fromAmount: TAO_LANDED.toString(),
         swapRun: { firstLegHash: `0x${"11".repeat(32)}`, isLastLeg: true },
       }),

@@ -54,7 +54,7 @@ export const getSwapProgressDetails = (
     }
   }
 
-  if (tx.txInfo?.type === "bittensor-staking")
+  if (tx.txInfo?.type === "swap-bittensor-dtao")
     return {
       title: t("Swap complete"),
       subtitle: t("Your swap was successful!"),
