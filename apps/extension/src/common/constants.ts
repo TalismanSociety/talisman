@@ -24,7 +24,7 @@ export const COINS_API_URL = "https://coins.talisman.xyz"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
 // Wallet-specific invite link
-export const DISCORD_TALISMAN_URL = "https://discord.gg/EF3Zf4R5bD"
+export const DISCORD_TALISMAN_URL = "https://talisman.xyz/discord"
 export const SUPPORT_EMAIL = "support@talisman.xyz"
 export const SUPPORT_EMAIL_URL = `mailto:${SUPPORT_EMAIL}`
 

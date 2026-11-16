@@ -152,7 +152,7 @@ describe("NavigationDrawer", () => {
     })
 
     test.each([
-      ["Discord", "https://discord.gg/EF3Zf4R5bD"],
+      ["Discord", "https://talisman.xyz/discord"],
       ["Email", "mailto:support@talisman.xyz"],
     ])("%s opens %s", (action, url) => {
       select(action)
