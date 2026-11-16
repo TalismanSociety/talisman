@@ -501,7 +501,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const isLaterLegBalanceLoading = laterLegHoldings === null
 
   const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
-  // a later leg is built only once the first has landed, too late to pick its validator
+  // a stake with no validator quotes but cannot be built: say so before anything is signed
   const isValidatorMissing = legs.some(
     (leg) => parseDTaoLeg(leg.fromTokenId, leg.toTokenId)?.hotkey === null
   )

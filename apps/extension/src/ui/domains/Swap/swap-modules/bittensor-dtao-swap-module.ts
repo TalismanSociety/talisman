@@ -1,7 +1,6 @@
 import { log } from "@common/log"
-import { BITTENSOR_EVM_PAIRS } from "@core/domains/bittensor/constants"
 import { taoToAlphaCeil } from "@talismn/balances"
-import { evmNativeTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
@@ -43,7 +42,6 @@ import type {
   BittensorSwapConfig,
   BuildLegParams,
   BuiltLeg,
-  EntryHop,
   QuoteFee,
   QuoteLeg,
   QuoteParams,
@@ -63,8 +61,6 @@ const TOKEN_DECIMALS = 9
 const DTaoLegDataSchema = z.object({
   /** rao per alpha this trade pays with no slippage, when quoted */
   swapPrice: z.string(),
-  /** a later leg: it stakes what the previous leg lands, at the pool's price when built */
-  input: z.literal("upTo").optional(),
   /** the quote emptied the position: its build also takes what the stake earned since */
   fullExit: z.boolean().optional(),
 })
@@ -303,12 +299,12 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
 
   const route = parseRoute(fromTokenId, toTokenId)
   if (!route || !fromTokenId || !toTokenId || !fromAmount || fromAmount <= 0n) return null
-  if (fromAddress && toAddress && !isAddressEqual(fromAddress, toAddress)) {
-    if (params.input === "upTo") return null
+  // a stake after another provider's leg would need the two to settle as one swap: not supported
+  if (params.input === "upTo") return null
+  if (fromAddress && toAddress && !isAddressEqual(fromAddress, toAddress))
     throw new Error(
       `${PROVIDER_NAME} stakes and unstakes on the sending account. Choose it as the recipient.`
     )
-  }
 
   const [sapi, config] = await Promise.all([
     env.substrateApi(route.networkId),
@@ -362,7 +358,6 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
 
   const data: DTaoLegData = {
     swapPrice: math.swapPrice.toString(),
-    ...(params.input === "upTo" && { input: "upTo" as const }),
     ...(fullExit && { fullExit }),
   }
 
@@ -410,15 +405,9 @@ const buildLeg = async (
   const terms = getFeeTerms(route, await env.getBittensorConfig())
   const direction = STAKE_DIRECTION[route.direction]
 
-  const isUpTo = data.input === "upTo"
   const quotedPrice = BigInt(data.swapPrice)
   // a limit of zero bounds nothing on an unstake
-  if (!isUpTo && quotedPrice === 0n) throw new Error("Please select the quote again")
-
-  const alphaPrice = await getAlphaPrice(sapi, route.netuid)
-  // a later leg can hold less than the quote checked: the chain would take its fee and refuse the stake
-  if (input < leg.inputAmount)
-    await assertMinimumInput(env, sapi, route, terms, alphaPrice, leg.fromTokenId, input)
+  if (quotedPrice === 0n) throw new Error("Please select the quote again")
 
   const simulation = await simulate(
     sapi,
@@ -434,20 +423,18 @@ const buildLeg = async (
     slippage,
   })
 
-  const floor = scaleDown((leg.outputAmount * input) / leg.inputAmount, slippage)
-  const isBelowFloor = math.amountOut < floor
-  // the confirm screen shows a first leg's quote, so its build must not sign less than that
-  if (isBelowFloor && !isUpTo)
+  // the confirm screen shows the quote, so the build must not sign less than that
+  if (math.amountOut < scaleDown((leg.outputAmount * input) / leg.inputAmount, slippage))
     throw new Error("The rate has moved too far, please select the quote again")
 
-  const priceLimit = isUpTo ? math.priceLimit : withPriceTolerance(quotedPrice, direction, slippage)
+  const priceLimit = withPriceTolerance(quotedPrice, direction, slippage)
 
   if (route.direction === "unstake")
     await checkUnstake(env, sapi, route, {
       address: leg.signer,
       tokenId: leg.fromTokenId,
       amount: input,
-      alphaPrice,
+      alphaPrice: await getAlphaPrice(sapi, route.netuid),
       slippage,
       priceLimit,
       quotedAsFullExit: data.fullExit,
@@ -471,7 +458,6 @@ const buildLeg = async (
       ...leg.fees.filter((fee) => fee.name !== TALISMAN_FEE_NAME),
     ],
     expectedOutput: math.amountOut,
-    ...(isBelowFloor && { acceptedOutput: floor }),
     txInfo: {
       type: "swap-bittensor-dtao",
       fromTokenId: leg.fromTokenId,
@@ -491,12 +477,4 @@ export const bittensorDTaoSwapModule: SwapModuleDefinition = {
   getToAssets,
   getQuote,
   buildLeg,
-  entryHops: BITTENSOR_EVM_PAIRS.map(
-    (pair): EntryHop => ({
-      from: evmNativeTokenId(pair.evmNetworkId),
-      hub: subNativeTokenId(pair.substrateNetworkId),
-      via: "bittensor-evm",
-      flag: "SWAPS_MULTI_HOP",
-    })
-  ),
 }
