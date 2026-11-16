@@ -36,6 +36,7 @@ export type SupportedSwapProtocol =
   | "lifi"
   | "bittensor-evm"
   | "forevermoney"
+  | "chainflip"
 
 export type QuoteFee = {
   name: string

@@ -69,6 +69,7 @@ export const SWAP_PROTOCOLS = [
   "simpleswap",
   "stealthex",
   "lifi",
+  "chainflip",
   "bittensor-evm",
   "forevermoney",
 ] as const
@@ -136,6 +137,7 @@ const SWAP_TX_PROTOCOLS: Partial<Record<WalletTransactionInfo["type"], SwapProto
   "swap-simpleswap": "simpleswap",
   "swap-stealthex": "stealthex",
   "swap-lifi": "lifi",
+  "swap-chainflip": "chainflip",
   "swap-bittensor-evm": "bittensor-evm",
   "swap-forevermoney": "forevermoney",
 }

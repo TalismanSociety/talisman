@@ -80,6 +80,20 @@ export type WalletTransactionInfo = PricingInfo &
         to: Address
       }
     | {
+        type: "swap-chainflip"
+        /**
+         * The deposit channel key, "{issuedBlock}-{network}-{channelId}" — the same identifier
+         * the Chainflip explorer uses in its channel urls. Chainflip's own swap id is nullable
+         * until the swap row is saved, so the channel is what this is keyed on.
+         */
+        exchangeId: string
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
         type: "swap-lifi"
         protocolName: string
         fromTokenId: TokenId

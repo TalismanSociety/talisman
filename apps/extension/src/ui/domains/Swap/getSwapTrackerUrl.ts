@@ -1,3 +1,4 @@
+import { chainflipChannelUrl } from "@common/chainflip"
 import { getCcipExplorerTxUrl } from "@core/domains/forevermoney/constants"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 
@@ -12,6 +13,8 @@ export const getSwapTrackerUrl = (
       return txInfo.exchangeId ? `https://stealthex.io/exchange?id=${txInfo.exchangeId}` : null
     case "swap-lifi":
       return `https://scan.li.fi/tx/${txId}`
+    case "swap-chainflip":
+      return chainflipChannelUrl(txInfo.exchangeId)
     case "swap-forevermoney":
       return getCcipExplorerTxUrl(txId)
     default:

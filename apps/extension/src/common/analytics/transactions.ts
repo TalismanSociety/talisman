@@ -28,6 +28,7 @@ export const TX_TYPES = [
   "swap-simpleswap",
   "swap-stealthex",
   "swap-lifi",
+  "swap-chainflip",
   "swap-bittensor-evm",
   "swap-forevermoney",
   "bittensor-staking",

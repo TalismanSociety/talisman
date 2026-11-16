@@ -9,6 +9,7 @@ import { useTokensMap } from "@ui/state/chaindata"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
+import { chainflipSwapModule } from "./swap-modules/chainflip-swap-module"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
 import { withEntryHops, withSingleLegQuotes } from "./swap-modules/hops"
@@ -33,6 +34,7 @@ export const swapModules = [
   withSwapEnv(lifiSwapModule, uiSwapEnv),
   withSwapEnv(bittensorEvmSwapModule, uiSwapEnv),
   withSwapEnv(forevermoneySwapModule, uiSwapEnv),
+  withSwapEnv(chainflipSwapModule, uiSwapEnv),
 ]
 
 export type SwapModuleEntry = (typeof swapModules)[number]
