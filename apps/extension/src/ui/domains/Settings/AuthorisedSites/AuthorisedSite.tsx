@@ -121,7 +121,7 @@ export const AuthorisedSite: FC<{
       <Modal analyticsId="authorised_site_forget" isOpen={showForget} onDismiss={hideForget}>
         <ModalDialog className="h-auto" title={t("Forget Site")} onCloseClick={hideForget}>
           <ConfirmForgetDialog
-            siteLabel={origin ?? id}
+            siteLabel={origin || id}
             onConfirm={confirmForget}
             onCancel={hideForget}
           />
