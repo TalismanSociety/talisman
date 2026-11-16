@@ -102,13 +102,9 @@ class WindowManager {
   }
 
   async popupClose(id?: number) {
-    if (id) {
-      await chrome.windows.remove(id)
-      this.#windows = this.#windows.filter((wid) => wid !== id)
-    } else {
-      await Promise.all(this.#windows.map((wid) => chrome.windows.remove(wid)))
-      this.#windows = []
-    }
+    const closing = id ? [id] : this.#windows
+    this.#windows = this.#windows.filter((wid) => !closing.includes(wid))
+    await Promise.allSettled(closing.map(async (wid) => chrome.windows.remove(wid)))
   }
 
   async popupOpen(argument?: string, onClose?: () => void) {
