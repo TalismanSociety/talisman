@@ -68,7 +68,9 @@ export type QuoteLeg = {
   outputAmount: bigint
   fees: QuoteFee[]
   timeInSec: number
-  /** module specific, handed back to the module that quoted the leg when it builds the leg */
+  /** percent the trade's price is above the spot price, negative when below: set when the module knows it */
+  priceImpact?: number
+  /** private to the module that quoted the leg, which reads it back to build the leg. Screens never read it */
   data?: unknown
 }
 
@@ -105,8 +107,6 @@ export type QuoteParams = {
   fromAddress: string | null
   toAddress: string | null
   selectedSubProtocol?: string
-  /** the validator a TAO to dTAO stake goes to, when the user picked one. Other modules ignore it */
-  stakeHotkey?: string
   /** exact: the sender holds fromAmount now. upTo: a later leg, the sender holds at most fromAmount once the previous leg lands */
   input: "exact" | "upTo"
 }

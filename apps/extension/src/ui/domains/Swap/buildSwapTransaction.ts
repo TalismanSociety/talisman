@@ -31,7 +31,6 @@ export const quoteLegsKey = (quote: BaseQuote | null | undefined) =>
     leg.recipient,
     leg.inputAmount.toString(),
     leg.outputAmount.toString(),
-    JSON.stringify(leg.data ?? null),
   ]) ?? []
 
 const isSameAddress = (address: string | null, expected: string) =>

@@ -1,22 +1,19 @@
 import { log } from "@common/log"
 import { BITTENSOR_EVM_PAIRS } from "@core/domains/bittensor/constants"
 import { taoToAlphaCeil } from "@talismn/balances"
-import {
-  evmNativeTokenId,
-  type NetworkId,
-  parseSubDTaoTokenId,
-  parseTokenId,
-  subNativeTokenId,
-  type TokenId,
-} from "@talismn/chaindata-provider"
+import { evmNativeTokenId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import type { ScaleApi } from "@talismn/sapi"
 import { planckToTokens } from "@talismn/util"
 import type { StakeDirection } from "@ui/domains/Staking/Bittensor/hooks/types"
 import { FEE_ESTIMATE_HOTKEY, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import {
+  type DTaoLeg,
+  parseDTaoLeg,
+  parseDTaoTokenId,
+} from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { getDTaoSubnetUnstakeInfo } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
 import { calculateEffectiveFeeRate } from "@ui/domains/Staking/Bittensor/utils/feeCalculations"
-import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import {
   type BittensorSwapSimulation,
   getAlphaPrice,
@@ -62,80 +59,30 @@ const DECENTRALISATION_SCORE = 3
 const ESTIMATED_DURATION_SEC = 12
 const TOKEN_DECIMALS = 9
 
-const LegDataBaseSchema = z.object({
-  networkId: z.string(),
-  netuid: z.number().int().nonnegative(),
-  /** rao per alpha at the pool's spot price, when quoted */
-  alphaPrice: z.string(),
+/** What a dTAO leg hands from its quote to its build. JSON-safe: a swap run persists it */
+const DTaoLegDataSchema = z.object({
   /** rao per alpha this trade pays with no slippage, when quoted */
   swapPrice: z.string(),
-  /** percent */
-  priceImpact: z.number().nullable(),
   /** a later leg: it stakes what the previous leg lands, at the pool's price when built */
   input: z.literal("upTo").optional(),
+  /** the quote emptied the position: its build also takes what the stake earned since */
+  fullExit: z.boolean().optional(),
 })
 
-const DTaoLegDataSchema = z.discriminatedUnion("direction", [
-  LegDataBaseSchema.extend({
-    direction: z.literal("stake"),
-    /** null when the network has no default validator and the user picked none: the leg cannot be built */
-    hotkey: z.string().nullable(),
-    /** pinned: the target is a held position, its validator is the only one possible */
-    validator: z.enum(["pickable", "pinned"]),
-  }),
-  LegDataBaseSchema.extend({
-    direction: z.literal("unstake"),
-    hotkey: z.string(),
-    /** the quote emptied the position: its build also takes what the stake earned since */
-    fullExit: z.boolean().optional(),
-  }),
-])
-
-/** What a dTAO leg carries from its quote to its build and to the confirm screen. JSON-safe: a swap run persists it */
-export type DTaoLegData = z.infer<typeof DTaoLegDataSchema>
+type DTaoLegData = z.infer<typeof DTaoLegDataSchema>
 
 /** null for a leg of another module, or one whose data does not parse */
-export const getDTaoLegData = (leg: QuoteLeg): DTaoLegData | null =>
+const getDTaoLegData = (leg: QuoteLeg): DTaoLegData | null =>
   leg.protocol === PROTOCOL ? (DTaoLegDataSchema.safeParse(leg.data).data ?? null) : null
 
-type Route = { networkId: NetworkId; netuid: number; taoTokenId: TokenId } & (
-  | {
-      direction: "stake"
-      positionHotkey: string | undefined
-    }
-  | { direction: "unstake"; positionHotkey: string }
-)
+type Route = DTaoLeg
 
 const STAKE_DIRECTION: Record<Route["direction"], StakeDirection> = {
   stake: "taoToAlpha",
   unstake: "alphaToTao",
 }
 
-const parseDTao = (tokenId: TokenId) => {
-  try {
-    return parseTokenId(tokenId).type === "substrate-dtao" ? parseSubDTaoTokenId(tokenId) : null
-  } catch {
-    return null
-  }
-}
-
-const parseRoute = (fromTokenId: TokenId | null, toTokenId: TokenId | null): Route | null => {
-  if (!fromTokenId || !toTokenId) return null
-  const [from, to] = [parseDTao(fromTokenId), parseDTao(toTokenId)]
-  const dtao = from ?? to
-  if (!dtao || (from && to)) return null
-
-  const taoTokenId = subNativeTokenId(dtao.networkId)
-  const route = { networkId: dtao.networkId, netuid: dtao.netuid, taoTokenId }
-  if (to) {
-    return fromTokenId === taoTokenId
-      ? { ...route, direction: "stake", positionHotkey: to.hotkey }
-      : null
-  }
-  return toTokenId === taoTokenId && dtao.hotkey
-    ? { ...route, direction: "unstake", positionHotkey: dtao.hotkey }
-    : null
-}
+const parseRoute = parseDTaoLeg
 
 const getDTaoTokens = async (env: SwapEnv) =>
   Object.values(await env.getTokensMap("polkadot")).filter(
@@ -159,7 +106,7 @@ const getToAssets = async (fromTokenId: TokenId | null, env: SwapEnv): Promise<T
       ...dtaoTokens.map((token) => token.id),
     ]
 
-  const position = parseDTao(fromTokenId)
+  const position = parseDTaoTokenId(fromTokenId)
   if (position) return position.hotkey ? [subNativeTokenId(position.networkId)] : []
 
   return dtaoTokens
@@ -351,33 +298,6 @@ const estimateGasFee = async (params: CallParams): Promise<QuoteFee | null> => {
   }
 }
 
-type Validator =
-  | Pick<Extract<DTaoLegData, { direction: "stake" }>, "direction" | "hotkey" | "validator">
-  | Pick<Extract<DTaoLegData, { direction: "unstake" }>, "direction" | "hotkey">
-
-const getValidator = async (
-  route: Route,
-  { stakeHotkey, fromAddress }: QuoteParams,
-  { remote }: BittensorSwapConfig,
-  env: SwapEnv
-): Promise<Validator> => {
-  if (route.direction === "unstake") return { direction: "unstake", hotkey: route.positionHotkey }
-  if (route.positionHotkey)
-    return { direction: "stake", hotkey: route.positionHotkey, validator: "pinned" }
-
-  const hotkey =
-    stakeHotkey ??
-    getDefaultValidatorHotkey(
-      route.networkId,
-      route.netuid,
-      { bittensor: remote },
-      await env.getBalances(),
-      fromAddress,
-      "featured"
-    )
-  return { direction: "stake", hotkey: hotkey ?? null, validator: "pickable" }
-}
-
 const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | null> => {
   const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
 
@@ -400,14 +320,11 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
   const alphaPrice = await getAlphaPrice(sapi, route.netuid)
   await assertMinimumInput(env, sapi, route, terms, alphaPrice, fromTokenId, fromAmount)
 
-  const [simulation, validator] = await Promise.all([
-    simulate(
-      sapi,
-      route,
-      getPoolInput({ ...terms, direction, netuid: route.netuid, amountIn: fromAmount })
-    ),
-    getValidator(route, params, config, env),
-  ])
+  const simulation = await simulate(
+    sapi,
+    route,
+    getPoolInput({ ...terms, direction, netuid: route.netuid, amountIn: fromAmount })
+  )
   const math = getStakingQuoteMath({
     ...terms,
     direction,
@@ -435,7 +352,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
         sapi,
         route,
         address: fromAddress,
-        hotkey: validator.hotkey ?? FEE_ESTIMATE_HOTKEY,
+        hotkey: route.hotkey ?? FEE_ESTIMATE_HOTKEY,
         input: fromAmount,
         terms,
         priceLimit: math.priceLimit,
@@ -444,14 +361,9 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
     : null
 
   const data: DTaoLegData = {
-    ...validator,
-    networkId: route.networkId,
-    netuid: route.netuid,
-    alphaPrice: alphaPrice.toString(),
     swapPrice: math.swapPrice.toString(),
-    priceImpact: math.priceImpact,
     ...(params.input === "upTo" && { input: "upTo" as const }),
-    ...(validator.direction === "unstake" && fullExit && { fullExit }),
+    ...(fullExit && { fullExit }),
   }
 
   return quoteFromLegs(
@@ -466,6 +378,7 @@ const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | 
         outputAmount: math.amountOut,
         fees: [...talismanQuoteFees(route, math.talismanFee), ...(gasFee ? [gasFee] : [])],
         timeInSec: ESTIMATED_DURATION_SEC,
+        ...(math.priceImpact !== null && { priceImpact: math.priceImpact }),
         data,
       },
     ],
@@ -488,10 +401,10 @@ const buildLeg = async (
 ): Promise<BuiltLeg> => {
   const route = parseRoute(leg.fromTokenId, leg.toTokenId)
   const data = getDTaoLegData(leg)
-  if (!route || !data || data.direction !== route.direction || !leg.signer)
-    throw new Error("Please select the quote again")
+  if (!route || !data || !leg.signer) throw new Error("Please select the quote again")
   if (context.platform !== "polkadot") throw new Error("Missing substrate context")
-  if (!data.hotkey) throw new Error("Select a validator")
+  const hotkey = route.hotkey
+  if (!hotkey) throw new Error("Select a validator")
 
   const { sapi } = context
   const terms = getFeeTerms(route, await env.getBittensorConfig())
@@ -529,7 +442,7 @@ const buildLeg = async (
 
   const priceLimit = isUpTo ? math.priceLimit : withPriceTolerance(quotedPrice, direction, slippage)
 
-  if (data.direction === "unstake")
+  if (route.direction === "unstake")
     await checkUnstake(env, sapi, route, {
       address: leg.signer,
       tokenId: leg.fromTokenId,
@@ -544,7 +457,7 @@ const buildLeg = async (
     sapi,
     route,
     address: leg.signer,
-    hotkey: data.hotkey,
+    hotkey,
     input,
     terms,
     priceLimit,
@@ -565,7 +478,7 @@ const buildLeg = async (
       toTokenId: leg.toTokenId,
       fromAmount: input.toString(),
       toAmount: math.amountOut.toString(),
-      hotkey: data.hotkey,
+      hotkey,
     },
   }
 }

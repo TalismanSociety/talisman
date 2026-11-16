@@ -124,7 +124,10 @@ const fromSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
   ["from-token", new Set(["lifi"])],
 ])
 
-const toSupportMap = new Map<string, Set<SupportedSwapProtocol>>([["to-token", new Set(["lifi"])]])
+const toSupportMap = new Map<string, Set<SupportedSwapProtocol>>([
+  ["to-token", new Set(["lifi"])],
+  ["to-position", new Set(["lifi"])],
+])
 
 const pair = {
   from_network_id: "polkadot",
@@ -377,11 +380,11 @@ describe("useSwapQuoteManager", () => {
     pendingQuotes[0]?.resolve([makeQuote(100n)])
     await waitFor(() => expect(result.current.isQuoteDataCurrent).toBe(true))
 
-    params = { ...params, stakeHotkey: "5Picked" }
+    params = { ...params, toTokenId: "to-position" }
     rerender()
 
     await waitFor(() => expect(getQuoteMock).toHaveBeenCalledTimes(2))
-    expect(getQuoteMock.mock.calls[1][0]).toMatchObject({ stakeHotkey: "5Picked" })
+    expect(getQuoteMock.mock.calls[1][0]).toMatchObject({ toTokenId: "to-position" })
     expect(result.current.isQuoteDataCurrent).toBe(false)
     expect(result.current.selectedQuote?.outputAmountBN).toBe(100n)
 

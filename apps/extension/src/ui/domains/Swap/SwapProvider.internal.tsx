@@ -6,6 +6,7 @@ import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Hex } from "viem"
+import { useDTaoStakeValidator } from "./hooks/useDTaoStakeValidator"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
@@ -60,19 +61,6 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     !!pickedQuote &&
     pickedQuote.protocol === selectedProtocol &&
     pickedQuote.subProtocol === selectedSubProtocol
-
-  const [stakeHotkeyChoice, setStakeHotkeyChoice] = useState<{
-    toTokenId: string
-    hotkey: string
-  } | null>(null)
-  const stakeHotkey =
-    stakeHotkeyChoice?.toTokenId === toTokenId ? stakeHotkeyChoice.hotkey : undefined
-  const chooseStakeHotkey = useCallback(
-    (hotkey: string) => {
-      if (toTokenId) setStakeHotkeyChoice({ toTokenId, hotkey })
-    },
-    [toTokenId]
-  )
 
   const pickQuote = useCallback(({ protocol, subProtocol }: BaseQuote) => {
     setPickedQuote({ protocol, subProtocol })
@@ -161,7 +149,6 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     setQuoteSorting("bestRate")
     setReversed(false)
     setPickedQuote(null)
-    setStakeHotkeyChoice(null)
     setFromAddressRaw(null)
     setApprovalCounter(0)
     setMinedApproval(undefined)
@@ -183,6 +170,13 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     isLoadingFromAssets,
     isLoadingToAssets,
   } = useSwapAssets(fromTokenId)
+
+  const { chooseValidator, isChoosingValidator } = useDTaoStakeValidator({
+    toTokenId,
+    address: toAddress,
+    toAssetIds,
+    setToTokenId,
+  })
 
   // -- Initialize form from stateInit (one-shot per mount) --
   const fromInitDone = useRef(false)
@@ -216,7 +210,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
 
   const {
     isLoadingQuotes,
-    isQuoteDataCurrent,
+    isQuoteDataCurrent: isQuoteCurrentForPair,
     isAllQuotesSettled,
     hasQuoteError,
     quoteErrorMessages,
@@ -233,13 +227,15 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     fromAmount,
     fromAddress,
     toAddress,
-    stakeHotkey,
     selectedProtocol,
     selectedSubProtocol,
     quoteSorting,
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })
+
+  // the quote on screen is for the destination the validator choice is about to replace
+  const isQuoteDataCurrent = isQuoteCurrentForPair && !isChoosingValidator
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
   const isInitializing = Boolean(
@@ -326,7 +322,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     pickQuote,
     autoSelectQuote,
     isQuotePicked,
-    chooseStakeHotkey,
+    chooseValidator,
     resetForm,
     fromAssetIds,
     toAssetIds,

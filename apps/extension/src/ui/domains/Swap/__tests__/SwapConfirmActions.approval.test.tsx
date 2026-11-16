@@ -322,16 +322,27 @@ const quoteWithSameNetworkLaterLeg = quoteFromLegs(
   }
 )
 
-/** the data of a dTAO stake leg quoted with no validator */
-const unpickedStake = {
-  direction: "stake",
-  hotkey: null,
-  validator: "pickable",
-  networkId: "bittensor",
-  netuid: 64,
-  alphaPrice: "20000000",
-  swapPrice: "20000000",
-  priceImpact: 0,
+const TAO = "bittensor:substrate-native"
+const STAKER = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+
+/** a route whose later leg stakes into a subnet's own token: no validator is chosen */
+const quoteWithUnpickedStake = () => {
+  const [first, later] = quoteWithLaterLegGas.legs
+  return quoteFromLegs(
+    [
+      { ...first, toTokenId: TAO, recipient: STAKER },
+      {
+        ...later,
+        protocol: "bittensor-dtao",
+        fromTokenId: TAO,
+        toTokenId: "bittensor:substrate-dtao:64",
+        signer: STAKER,
+        recipient: STAKER,
+        fees: [],
+      },
+    ],
+    quoteWithLaterLegGas
+  )
 }
 
 const renderConfirmActions = () =>
@@ -384,20 +395,9 @@ describe("SwapConfirmActions approval", () => {
   })
 
   it("holds the first signature when a later leg stakes with no validator: it could not be built", () => {
-    const [first, later] = quoteWithLaterLegGas.legs
     feeCheck.available = APPROVAL_GAS
     held.set({ [OP_ETH]: 10n ** 18n })
-    swap.selectedQuote = quoteFromLegs(
-      [
-        first,
-        {
-          ...later,
-          protocol: "bittensor-dtao",
-          data: unpickedStake,
-        },
-      ],
-      quoteWithLaterLegGas
-    )
+    swap.selectedQuote = quoteWithUnpickedStake()
     renderConfirmActions()
 
     expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
@@ -481,11 +481,7 @@ describe("SwapConfirmActions approval", () => {
   })
 
   it("holds Confirm Swap when a later leg stakes with no validator", async () => {
-    const [first, later] = quoteWithLaterLegGas.legs
-    const quote = quoteFromLegs(
-      [first, { ...later, protocol: "bittensor-dtao", data: unpickedStake }],
-      quoteWithLaterLegGas
-    )
+    const quote = quoteWithUnpickedStake()
     feeCheck.available = APPROVAL_GAS
     held.set({ [OP_ETH]: 10n ** 18n })
     swap.selectedQuote = quote

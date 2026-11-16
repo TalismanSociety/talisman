@@ -1,6 +1,5 @@
 import type { Account } from "@core/domains/keyring/exports"
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
-import { subNativeTokenId } from "@talismn/chaindata-provider"
 import type { ScaleApi } from "@talismn/sapi"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import {
@@ -14,13 +13,17 @@ import { SelectValidatorPill } from "@ui/domains/Staking/Bittensor/components/Se
 import { useMevShield } from "@ui/domains/Staking/Bittensor/hooks/useMevShield"
 import { useMevShieldFeeEstimate } from "@ui/domains/Staking/Bittensor/hooks/useMevShieldFeeEstimate"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import {
+  type DTaoLeg,
+  getLegAlphaRate,
+  parseDTaoLeg,
+} from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useSwapModal } from "../hooks/useSwapModal"
 import { useSwap } from "../SwapProvider"
-import { type DTaoLegData, getDTaoLegData } from "../swap-modules/bittensor-dtao-swap-module"
 import type { QuoteFee, QuoteLeg } from "../swap-modules/common.swap-module"
 import { SwapOtherFees } from "./SwapOtherFees"
 import { SwapTxRow } from "./SwapTxCard"
@@ -44,11 +47,11 @@ export const useLegMevShield = ({
   sapi: ScaleApi | null | undefined
   payload: SignerPayloadJSON | undefined
 }): LegMevShield => {
-  const data = leg ? getDTaoLegData(leg) : null
+  const dTao = leg ? parseDTaoLeg(leg.fromTokenId, leg.toTokenId) : null
   const shield = useMevShield({
-    netuid: data?.netuid ?? ROOT_NETUID,
+    netuid: dTao?.netuid ?? ROOT_NETUID,
     account,
-    direction: data?.direction === "unstake" ? "sell" : "buy",
+    direction: dTao?.direction === "unstake" ? "sell" : "buy",
   })
   const fee = useMevShieldFeeEstimate({
     sapi,
@@ -67,11 +70,11 @@ export const useLegMevShield = ({
 
 const Separator = () => <hr className="my-2 text-grey-800" />
 
-const Subnet: FC<{ data: DTaoLegData; tokenId: string }> = ({ data, tokenId }) => {
-  const token = useToken(tokenId, "substrate-dtao")
+const Subnet: FC<{ dTao: DTaoLeg }> = ({ dTao }) => {
+  const token = useToken(dTao.dTaoTokenId, "substrate-dtao")
   return (
     <span className="truncate">
-      {`SN${data.netuid} | ${[token?.subnetName, token?.symbol].filter(Boolean).join(" ")}`}
+      {`SN${dTao.netuid} | ${[token?.subnetName, token?.symbol].filter(Boolean).join(" ")}`}
     </span>
   )
 }
@@ -84,7 +87,7 @@ const Card: FC<{ children: ReactNode; className?: string }> = ({ children, class
 
 export const BittensorLegDetails: FC<{
   leg: QuoteLeg
-  data: DTaoLegData
+  dTao: DTaoLeg
   fees: QuoteFee[]
   feesLoading: boolean
   provider?: SwapTxProvider
@@ -98,7 +101,7 @@ export const BittensorLegDetails: FC<{
   children?: ReactNode
 }> = ({
   leg,
-  data,
+  dTao,
   fees,
   feesLoading,
   provider,
@@ -111,26 +114,22 @@ export const BittensorLegDetails: FC<{
   children,
 }) => {
   const { t } = useTranslation()
-  const { chooseStakeHotkey } = useSwap()
+  const { chooseValidator } = useSwap()
   const { close } = useSwapModal()
-  const isRoot = data.netuid === ROOT_NETUID
-  const isValidatorPickable =
-    canPickValidator && data.direction === "stake" && data.validator === "pickable"
+  const isRoot = dTao.netuid === ROOT_NETUID
+  const isValidatorPickable = canPickValidator && dTao.direction === "stake"
 
   const position = (
     <>
       <SwapTxRow label={t("Subnet")}>
-        <Subnet
-          data={data}
-          tokenId={data.direction === "stake" ? leg.toTokenId : leg.fromTokenId}
-        />
+        <Subnet dTao={dTao} />
       </SwapTxRow>
       <SwapTxRow label={t("Validator")}>
         <SelectValidatorPill
-          networkId={data.networkId}
-          netuid={data.netuid}
-          hotkey={data.hotkey}
-          onSelect={isValidatorPickable ? chooseStakeHotkey : undefined}
+          networkId={dTao.networkId}
+          netuid={dTao.netuid}
+          hotkey={dTao.hotkey}
+          onSelect={isValidatorPickable ? chooseValidator : undefined}
           containerId={containerId}
           variant={layout === "cards" ? "tx" : "default"}
         />
@@ -151,12 +150,12 @@ export const BittensorLegDetails: FC<{
     <>
       <SwapTxRow label={t("Alpha Price")}>
         <BittensorConfirmAlphaPriceValue
-          swapPrice={data.swapPrice}
-          tokenId={subNativeTokenId(data.networkId)}
+          swapPrice={getLegAlphaRate(dTao, leg)}
+          tokenId={dTao.taoTokenId}
         />
       </SwapTxRow>
       <SwapTxRow label={t("Price Impact")}>
-        <BittensorConfirmPriceImpactValue priceImpact={data.priceImpact ?? undefined} />
+        <BittensorConfirmPriceImpactValue priceImpact={leg.priceImpact} />
       </SwapTxRow>
       {isRoot ? null : slippageRow}
       {shield ? (
@@ -180,9 +179,9 @@ export const BittensorLegDetails: FC<{
         isLoading={feesLoading}
         label={
           <BittensorConfirmTalismanFeeLabel
-            netuid={data.netuid}
+            netuid={dTao.netuid}
             containerId={containerId}
-            direction={data.direction === "stake" ? "taoToAlpha" : "alphaToTao"}
+            direction={dTao.direction === "stake" ? "taoToAlpha" : "alphaToTao"}
             onCloseModal={close}
           />
         }

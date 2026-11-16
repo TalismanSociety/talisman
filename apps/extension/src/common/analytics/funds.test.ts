@@ -99,6 +99,21 @@ describe("tokenIdForAnalytics", () => {
     expect(tokenIdForAnalytics(token(foreignAsset, true))).toBe(foreignAsset)
   })
 
+  it("reports the subnet of a dTAO position, never the validator's address in its id", () => {
+    const position = {
+      ...token(
+        "bittensor:substrate-dtao:64:5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+        true
+      ),
+      type: "substrate-dtao",
+      networkId: "bittensor",
+      netuid: 64,
+      hotkey: "5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+    } as unknown as Token
+
+    expect(tokenIdForAnalytics(position)).toBe("bittensor:substrate-dtao:64")
+  })
+
   it("hides a user-added token and a missing one", () => {
     expect(
       tokenIdForAnalytics(token("1:evm-erc20:0x1111111111111111111111111111111111111111", false))

@@ -15,6 +15,7 @@ import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { parseDTaoLeg } from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { flows } from "@ui/hooks/analytics/flows"
@@ -48,7 +49,6 @@ import {
   getSwapErrorMessage,
   type SwapConfirmError,
 } from "../swap-errors"
-import { getDTaoLegData } from "../swap-modules/bittensor-dtao-swap-module"
 import type {
   BaseQuote,
   SwapModule,
@@ -502,7 +502,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
   // a later leg is built only once the first has landed, too late to pick its validator
-  const isValidatorMissing = legs.some((leg) => getDTaoLegData(leg)?.hotkey === null)
+  const isValidatorMissing = legs.some(
+    (leg) => parseDTaoLeg(leg.fromTokenId, leg.toTokenId)?.hotkey === null
+  )
 
   const swapError = useMemo<SwapConfirmError | null>(() => {
     // 1. Balance errors — most actionable for the user
@@ -737,11 +739,12 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     : t("This token requires approval before it can be swapped.")
 
   // a lone dTAO swap shows its details as flat cards, like TaoDashboard
-  const isSingleDTaoSwap = cards.length === 1 && !!legs[0] && !!getDTaoLegData(legs[0])
+  const isSingleDTaoSwap =
+    cards.length === 1 && !!legs[0] && !!parseDTaoLeg(legs[0].fromTokenId, legs[0].toTokenId)
 
   const renderBody = (card: SwapTxCardModel) => {
     const leg = legs[card.leg]
-    const dTaoData = getDTaoLegData(leg)
+    const dTao = parseDTaoLeg(leg.fromTokenId, leg.toTokenId)
     const isSigned = card.key === signedCardKey
     const isRetried = isSigned && card.status === "failed"
     const feeRows =
@@ -757,7 +760,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           ethTx={fromToken?.platform === "ethereum" ? activeEthTx : undefined}
           isPriorityLocked={approval.isPending}
           containerId={containerId}
-          label={dTaoData ? t("Estimated Fee") : undefined}
+          label={dTao ? t("Estimated Fee") : undefined}
         />
       ) : null
     const riskRow = isSigned ? <SwapRiskRow /> : null
@@ -788,11 +791,11 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         />
       ) : null
 
-    if (dTaoData)
+    if (dTao)
       return (
         <BittensorLegDetails
           leg={leg}
-          data={dTaoData}
+          dTao={dTao}
           fees={legFees}
           feesLoading={isFirstLeg && isExchangeLoading}
           provider={legProvider}

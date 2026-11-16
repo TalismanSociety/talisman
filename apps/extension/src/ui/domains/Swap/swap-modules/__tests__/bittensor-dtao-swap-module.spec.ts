@@ -7,7 +7,7 @@ import type { TFunction } from "i18next"
 import type { Hex } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { quoteLegsKey } from "../../buildSwapTransaction"
-import { bittensorDTaoSwapModule, getDTaoLegData } from "../bittensor-dtao-swap-module"
+import { bittensorDTaoSwapModule } from "../bittensor-dtao-swap-module"
 import { bittensorEvmSwapModule } from "../bittensor-evm-swap-module"
 import bittensorLogo from "../bittensor-logo.svg?url"
 import type {
@@ -33,7 +33,10 @@ const EVM_TAO = "964:evm-native"
 const EVM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 const SN64 = "bittensor:substrate-dtao:64"
 const SN64_HELD = `bittensor:substrate-dtao:64:${HELD}`
+const SN64_YUMA = `bittensor:substrate-dtao:64:${YUMA}`
+const SN64_PICKED = `bittensor:substrate-dtao:64:${PICKED}`
 const ROOT = "bittensor:substrate-dtao:0"
+const ROOT_YUMA = `bittensor:substrate-dtao:0:${YUMA}`
 const ROOT_HELD = `bittensor:substrate-dtao:0:${HELD}`
 
 const dtao = (id: string, netuid: number, hotkey?: string) => ({
@@ -159,7 +162,7 @@ const getQuote = async (params: Partial<QuoteParams> = {}) => {
   const quote = await bittensorDTaoSwapModule.getQuote(
     {
       fromTokenId: TAO,
-      toTokenId: SN64,
+      toTokenId: SN64_YUMA,
       fromAmount: ONE_TAO,
       fromAddress: ADDRESS,
       toAddress: ADDRESS,
@@ -350,74 +353,44 @@ describe("bittensorDTaoSwapModule getQuote", () => {
     await expect(unstakeAlpha({ fromAmount: 100_000_000n })).resolves.toBeTruthy()
   })
 
-  it("carries the prices of the trade for the confirm screen", async () => {
+  it("shows the price impact, and keeps data a swap run can persist", async () => {
     const [leg] = (await stakeTao()).legs
 
-    expect(getDTaoLegData(leg)).toMatchObject({
-      networkId: "bittensor",
-      netuid: 64,
-      alphaPrice: "20000000",
-      swapPrice: "20000000",
-      priceImpact: 0,
-    })
+    expect(leg.priceImpact).toBe(0)
     expect(JSON.parse(JSON.stringify(leg.data))).toEqual(leg.data)
   })
 })
 
 describe("bittensorDTaoSwapModule validator", () => {
-  const validatorOf = async (params?: Partial<QuoteParams>) => {
-    const data = getDTaoLegData((await quoteOrThrow(params)).legs[0])
-    if (data?.direction !== "stake") throw new Error("expected a stake")
-    return { hotkey: data.hotkey, validator: data.validator }
+  const stakedTo = async (toTokenId: string) => {
+    const { calls } = await build(await stakeTao({ toTokenId }))
+    return calls[1].args.hotkey
   }
 
-  it("defaults to the first featured validator, never the subnet's default", async () => {
-    expect(await validatorOf()).toEqual({ hotkey: YUMA, validator: "pickable" })
+  it("stakes to the validator its destination token names", async () => {
+    expect(await stakedTo(SN64_YUMA)).toBe(YUMA)
+    expect(await stakedTo(SN64_PICKED)).toBe(PICKED)
+    expect(await stakedTo(SN64_HELD)).toBe(HELD)
   })
 
-  it("defaults to the sender's largest stake on the subnet", async () => {
-    heldStake = [
-      stake(64, SUBNET_DEFAULT, 10n),
-      stake(64, HELD, 500n),
-      stake(64, PICKED, 9_999n, OTHER_ADDRESS),
-      stake(1, PICKED, 9_999n),
-    ]
-
-    expect(await validatorOf()).toEqual({ hotkey: HELD, validator: "pickable" })
-  })
-
-  it("takes the validator the user picked over any default", async () => {
+  it("picks no validator itself: a subnet's own token quotes, and cannot be built", async () => {
     heldStake = [stake(64, HELD, 500n)]
+    const quote = await stakeTao({ toTokenId: SN64 })
 
-    expect(await validatorOf({ stakeHotkey: PICKED })).toEqual({
-      hotkey: PICKED,
-      validator: "pickable",
-    })
+    expect(quote.outputAmountBN).toBe((await stakeTao()).outputAmountBN)
+    await expect(build(quote)).rejects.toThrow("Select a validator")
   })
 
-  it("pins the validator of a held position, whatever was picked", async () => {
-    expect(await validatorOf({ toTokenId: SN64_HELD, stakeHotkey: PICKED })).toEqual({
-      hotkey: HELD,
-      validator: "pinned",
-    })
-  })
+  it("unstakes from the validator its source token names", async () => {
+    const { calls } = await build(await unstakeAlpha())
 
-  it("has none when nothing is featured and the sender holds no stake", async () => {
-    config.remote.featuredValidators = []
-
-    expect(await validatorOf()).toEqual({ hotkey: null, validator: "pickable" })
-  })
-
-  it("unstakes from the position's validator", async () => {
-    const [leg] = (await unstakeAlpha({ stakeHotkey: PICKED })).legs
-
-    expect(getDTaoLegData(leg)).toMatchObject({ direction: "unstake", hotkey: HELD })
+    expect(calls[0].args.hotkey).toBe(HELD)
   })
 
   it("a new validator makes a new quote to build from", async () => {
     expect(quoteLegsKey(await stakeTao())).toEqual(quoteLegsKey(await stakeTao()))
     expect(quoteLegsKey(await stakeTao())).not.toEqual(
-      quoteLegsKey(await stakeTao({ stakeHotkey: PICKED }))
+      quoteLegsKey(await stakeTao({ toTokenId: SN64_PICKED }))
     )
   })
 })
@@ -476,17 +449,10 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
     expect((await build(quote, { slippage: 0 })).calls[1].args.limit_price).toBe(20_000_000n)
   })
 
-  it("stakes to the validator the user picked", async () => {
-    const { calls, built } = await build(await stakeTao({ stakeHotkey: PICKED }))
+  it("records the position it stakes into for the transaction history", async () => {
+    const { built } = await build(await stakeTao({ toTokenId: SN64_PICKED }))
 
-    expect(calls[1].args.hotkey).toBe(PICKED)
-    expect(built.txInfo).toMatchObject({ hotkey: PICKED })
-  })
-
-  it("stakes to the validator of a held position", async () => {
-    const { calls } = await build(await stakeTao({ toTokenId: SN64_HELD, stakeHotkey: PICKED }))
-
-    expect(calls[1].args.hotkey).toBe(HELD)
+    expect(built.txInfo).toMatchObject({ toTokenId: SN64_PICKED, hotkey: PICKED })
   })
 
   it("refuses a first leg once the pool moved past the slippage: the screen still shows the quote", async () => {
@@ -577,12 +543,6 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
     expect(calls[1].args.amount_staked).toBe(999_000_000n)
   })
 
-  it("refuses to build without a validator", async () => {
-    config.remote.featuredValidators = []
-
-    await expect(build(await stakeTao())).rejects.toThrow("Select a validator")
-  })
-
   it("refuses a leg whose data is not its own", async () => {
     const quote = await stakeTao()
     const [leg] = quote.legs
@@ -590,9 +550,9 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
     await expect(
       build({ ...quote, legs: [{ ...leg, data: { netuid: 64, hotkey: YUMA } }] })
     ).rejects.toThrow("Please select the quote again")
-    await expect(
-      build({ ...quote, legs: [{ ...leg, data: (await unstakeAlpha()).legs[0].data }] })
-    ).rejects.toThrow("Please select the quote again")
+    await expect(build({ ...quote, legs: [{ ...leg, protocol: "lifi" }] })).rejects.toThrow(
+      "Please select the quote again"
+    )
   })
 
   it("refuses a context that is not substrate", async () => {
@@ -615,17 +575,16 @@ describe("bittensorDTaoSwapModule buildLeg", () => {
 
 describe("bittensorDTaoSwapModule root", () => {
   it("quotes root 1:1 with no Talisman fee and without asking the pool", async () => {
-    const quote = await stakeTao({ toTokenId: ROOT })
+    const quote = await stakeTao({ toTokenId: ROOT_YUMA })
 
     expect(quote.outputAmountBN).toBe(ONE_TAO)
     expect(feesOf(quote)).toEqual({ "Est. Gas Fees": "0.0001" })
     expect(quote.talismanFee).toBe(0)
-    expect(getDTaoLegData(quote.legs[0])).toMatchObject({ netuid: 0, hotkey: YUMA })
     expect(getRuntimeCallValue).not.toHaveBeenCalled()
   })
 
   it("stakes to root with add_stake and the swap remark only", async () => {
-    const { calls, methods } = await build(await stakeTao({ toTokenId: ROOT }))
+    const { calls, methods } = await build(await stakeTao({ toTokenId: ROOT_YUMA }))
 
     expect(methods).toEqual(["SubtensorModule.add_stake", "System.remark_with_event"])
     expect(calls[0].args).toEqual({ hotkey: YUMA, netuid: 0, amount_staked: ONE_TAO })
@@ -681,7 +640,7 @@ describe("EVM TAO to a subnet, through TAO", () => {
     (await module.getQuote(
       {
         fromTokenId: EVM_TAO,
-        toTokenId: SN64,
+        toTokenId: SN64_YUMA,
         fromAmount: EVM_INPUT,
         fromAddress: EVM_ADDRESS,
         toAddress: ADDRESS,
@@ -753,7 +712,7 @@ describe("EVM TAO to a subnet, through TAO", () => {
 
     expect(quote.legs.map((leg) => [leg.protocol, leg.fromTokenId, leg.toTokenId])).toEqual([
       ["bittensor-evm", EVM_TAO, TAO],
-      ["bittensor-dtao", TAO, SN64],
+      ["bittensor-dtao", TAO, SN64_YUMA],
     ])
     expect(quote.legs.map((leg) => [leg.signer, leg.recipient])).toEqual([
       [EVM_ADDRESS, ADDRESS],
@@ -780,10 +739,10 @@ describe("EVM TAO to a subnet, through TAO", () => {
     expect(JSON.parse(JSON.stringify(quote.legs[1].data))).toEqual(quote.legs[1].data)
   })
 
-  it("stakes to the validator the user picked", async () => {
-    const quote = await routeOrThrow({ stakeHotkey: PICKED })
+  it("routes to the position the destination names, so its last leg stakes to that validator", async () => {
+    const quote = await routeOrThrow({ toTokenId: SN64_PICKED })
 
-    expect(getDTaoLegData(quote.legs[1])).toMatchObject({ hotkey: PICKED, validator: "pickable" })
+    expect(quote.legs.map((leg) => leg.toTokenId)).toEqual([TAO, SN64_PICKED])
   })
 
   it("offers no route to a recipient the wallet cannot sign for: the stake belongs to who signs", async () => {

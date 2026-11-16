@@ -3,6 +3,7 @@ import { ExternalLinkIcon } from "@talismn/icons"
 import { Button } from "@ui/components/Button"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
+import { parseDTaoLeg } from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { getCanonicalTransaction } from "@ui/domains/Transactions/getCanonicalTransaction"
 import { TxReplaceActions } from "@ui/domains/Transactions/TxProgress"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -13,7 +14,6 @@ import type { Hex } from "viem"
 
 import { useLaterLegApprovals } from "../hooks/useLegApprovals"
 import { useSwapModal } from "../hooks/useSwapModal"
-import { getDTaoLegData } from "../swap-modules/bittensor-dtao-swap-module"
 import type { SupportedSwapProtocol } from "../swap-modules/common.swap-module"
 import { readyLeg, type SwapRun } from "../swap-modules/swap-run"
 import { swapModules } from "../swaps.api"
@@ -258,12 +258,12 @@ export const SwapRunView: FC<{
       </>
     )
 
-    const dTaoData = getDTaoLegData(leg)
-    if (dTaoData)
+    const dTao = parseDTaoLeg(leg.fromTokenId, leg.toTokenId)
+    if (dTao)
       return (
         <BittensorLegDetails
           leg={leg}
-          data={dTaoData}
+          dTao={dTao}
           fees={leg.fees}
           feesLoading={false}
           provider={legProvider}
