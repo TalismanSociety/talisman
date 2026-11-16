@@ -24,10 +24,9 @@ export const HelpAndSupport = ({ onBack }: { onBack: () => void }) => {
         <div className="flex h-full flex-col items-center justify-center gap-8 text-center">
           <LockIcon className="text-[3rem] text-primary-500" />
           <h2 className="mt-8 font-bold text-white text-xl">{t("Need help?")}</h2>
-          <div className="text-body-secondary">
-            <p>{t("Talisman does not store your password.")}</p>
-            <p>{t("The Talisman team will never ask for your private keys or recovery phrase.")}</p>
-          </div>
+          <p className="text-body-secondary">
+            {t("The Talisman team will never ask for your private keys or recovery phrase.")}
+          </p>
         </div>
       </PopupContent>
       <PopupFooter className="grid grid-cols-2 gap-8">
