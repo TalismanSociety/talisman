@@ -20,13 +20,13 @@ A user sees their staking and DeFi positions across accounts, finds opportunitie
 
 Preconditions:
 
-- The wallet is unlocked. The positions steps need an account with a staking position, and `Stake` needs a TAO balance.
+- The wallet is unlocked. The positions steps need an account that stakes TAO on the root subnet: its row is `TAO Staking`, and its page shows "Claimable Rewards". From source, not driven: a stake on another subnet is a row named after that subnet, and its page has no "Claimable Rewards". `Stake` needs a TAO balance.
 - For the risk drawer of the stake step: `sw-eval.mjs 'chrome.storage.local.get("app").then(({app}) => app.hideBittensorSubnetStakeWarning ?? false)'` prints `false`. With `true`, `Stake` opens the dialog with no drawer.
 
 Steps:
 
 - **Open the positions.** `ab tab new "$EXT/dashboard.html#/earn"`, `ab wait --text "All Accounts"`. The first render takes 15 seconds or more. The hash settles on `#/earn/positions`, and "DeFi Positions" lists the rows. Screenshot.
-- **Open a position.** Click `TAO Staking` by its ref. The hash becomes `#/earn/positions/bittensor/<tokenId>/<address>`, and the page shows "Staked balance" and "Claimable Rewards". `Claim` shows when the account can sign and has rewards to claim. Do not click `Claim`: it leads to a signature.
+- **Open a position.** Click `TAO Staking` by its ref. The hash becomes `#/earn/positions/bittensor/<tokenId>/<address>`, where `<tokenId>` is `bittensor%3Asubstrate-dtao%3A0%3A<validator>` (subnet `0`, root), and the page shows "Staked balance" and "Claimable Rewards". `Claim` shows when the account can sign and has rewards to claim. Do not click `Claim`: it leads to a signature.
 - **Discover.** Go back, `ab find role button click --name "Discover"`. The hash becomes `#/earn/discover`. The tokens the wallet holds come first, under the headers `Token`, `Eligible Assets` and `APY up to`: each row reads a token, a network, the balance and a bare `<rate>%`. The cards under "Discover Opportunities" follow, each with a token, a network and "Up to <rate>%".
 - **Subnets.** `ab tab new "$EXT/dashboard.html#/bittensor/subnets"`, `ab wait --text "Teutonic"`. The table has the columns `SUBNET`, `PRICE`, `BALANCE`, `SCORE`, `STAKED`, `VOLUME`, `MCAP`, `EM.` and `7D PRICE`, and `Root` comes first. Screenshot.
 - **Stake dialog.** `ab find role row hover --name "View subnet Teutonic"`, then click the row's `Stake` by its ref from a new snapshot. `#StakingModalDialog` opens with the drawer "Subnet Alpha Price Risk" over it: a `Don't show this again` checkbox, `Close` and `I Understand`. Leave the checkbox unticked: it hides the drawer for good. Press `Escape` once: the drawer closes, and the dialog shows "Staking", with `Account`, `Select Subnet`, `Select Validator`, `Estimated Fee` and `Review`. Screenshot. Press `Escape` again to close the dialog.

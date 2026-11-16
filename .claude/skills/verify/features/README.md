@@ -52,13 +52,14 @@ Each feature file has an H1 title, one paragraph on the user-visible behaviour, 
 
 ## Features
 
-- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-11-10.
-- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-11-10, popup coachmark included. The popup bottom nav `Swap` was last driven on 2026-11-06.
-- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-11-10 (EVM, Substrate and Solana connect, EVM sign and reject, sign-in domain refusal on all three, the Developer mode warning on EVM, and the invalid `createTransaction` payload). The Developer mode warning on Substrate and the signed `createTransaction` remark were last driven on 2026-11-06.
-- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-11-06 with a testTAO transfer.
-- [Swap](./swap.md): the swap modal, from token choice to a settled swap. Driven on 2026-11-06 with a signed testnet route and a signed mainnet route. The two-step plan up to its Confirm step, and its `Escape`, were driven again on 2026-11-10.
-- [Earn and TAO dashboard](./earn.md): positions, opportunities, subnets and the staking dialog. Driven read-only on 2026-11-10: nothing staked or claimed.
-- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-11-10, one-account toggle and Solana forget included.
-- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-11-10 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
+- [Watched account](./watched-account.md): add and remove a watch-only account. Driven end to end on 2026-11-16.
+- [Portfolio](./portfolio.md): balances per account and in total, in the dashboard and the popup. Driven on 2026-11-16, popup coachmark included. The popup bottom nav `Swap` was last driven on 2026-11-06.
+- [Dapp connect and sign](./dapp-connect-sign.md): a web page asks for accounts and a signature through the injected providers. Driven on 2026-11-16 (EVM, Substrate and Solana connect, EVM sign and reject, sign-in domain refusal on all three, the Developer mode warning on EVM, and `createTransaction`: invalid payload, signed remark and cancel). The Developer mode warning on Substrate was last driven on 2026-11-06.
+- [Send funds](./send-funds.md): the popup send wizard, from token choice to a submitted transaction. Driven on 2026-11-16 with a testTAO transfer.
+- [Swap](./swap.md): the swap modal, from token choice to a settled swap. Driven on 2026-11-16 with a signed testnet route, and the two-step plan up to its Confirm step and its `Escape`. A signed mainnet route was last driven on 2026-11-06.
+- [Earn and TAO dashboard](./earn.md): positions, opportunities, subnets and the staking dialog. Driven read-only on 2026-11-16: nothing staked or claimed.
+- [Connected sites](./connected-sites.md): review, disconnect and forget dapp connections in Settings. Driven on 2026-11-16, one-account toggle and Solana forget included.
+- [Copy address](./copy-address.md): copy an address or show its QR code in a network's format, with `Back` from the network picker. Driven on 2026-11-16.
+- [Analytics events](./analytics-events.md): read the dev event log through the service worker and trace a flow attempt, including `_abandoned` after the page closes. Driven on 2026-11-16 with the recovery phrase backup flow and the exception probes, all but the error boundary step.
 
 Every recipe has been driven live. A step that fails on a later run is drift: correct the recipe.
