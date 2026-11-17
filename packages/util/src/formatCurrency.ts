@@ -1,7 +1,9 @@
-const SYMBOLS_UNKNOWN_TO_INTL: Partial<Record<string, string>> = {
-  btc: "₿",
-  eth: "Ξ",
-  tao: "τ",
+const CURRENCIES_UNKNOWN_TO_INTL: Partial<
+  Record<string, { symbol: string; fractionDigits?: number }>
+> = {
+  btc: { symbol: "₿", fractionDigits: 6 },
+  eth: { symbol: "Ξ" },
+  tao: { symbol: "τ" },
 }
 
 const INTL_MAX_FRACTION_DIGITS = 20
@@ -10,6 +12,35 @@ type FormatCurrencyOptions = Omit<Intl.NumberFormatOptions, "style" | "currency"
 
 const clampFractionDigits = (digits: number | undefined) =>
   digits === undefined ? undefined : Math.min(digits, INTL_MAX_FRACTION_DIGITS)
+
+const fractionDigitsByCurrency = new Map<string, number>()
+
+export const getCurrencyFractionDigits = (currency: string) => {
+  const currencyId = currency.toLowerCase()
+  const cached = fractionDigitsByCurrency.get(currencyId)
+  if (cached !== undefined) return cached
+
+  const { maximumFractionDigits: intlFractionDigits = 2 } = new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+  }).resolvedOptions()
+  const fractionDigits =
+    CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.fractionDigits ?? intlFractionDigits
+  fractionDigitsByCurrency.set(currencyId, fractionDigits)
+  return fractionDigits
+}
+
+const getDefaultFractionDigits = (currencyId: string, options: FormatCurrencyOptions) => {
+  const callerSetDigits = [
+    options.minimumFractionDigits,
+    options.maximumFractionDigits,
+    options.minimumSignificantDigits,
+    options.maximumSignificantDigits,
+  ].some((digits) => digits !== undefined)
+  if (callerSetDigits || options.notation === "compact") return undefined
+
+  return CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.fractionDigits
+}
 
 const isSpacing = (part: Intl.NumberFormatPart | undefined) =>
   part?.type === "literal" && part.value.trim() === ""
@@ -37,13 +68,18 @@ export const formatCurrencyToParts = (
   const currencyId = currency.toLowerCase()
   const currencyDisplay =
     options.currencyDisplay ?? (currencyId === "usd" ? "narrowSymbol" : "symbol")
+  const defaultFractionDigits = getDefaultFractionDigits(currencyId, options)
   const intlOptions: Intl.NumberFormatOptions = {
     ...options,
     style: "currency",
     currency,
     currencyDisplay,
-    minimumFractionDigits: clampFractionDigits(options.minimumFractionDigits),
-    maximumFractionDigits: clampFractionDigits(options.maximumFractionDigits),
+    minimumFractionDigits: clampFractionDigits(
+      options.minimumFractionDigits ?? defaultFractionDigits
+    ),
+    maximumFractionDigits: clampFractionDigits(
+      options.maximumFractionDigits ?? defaultFractionDigits
+    ),
   }
 
   if (currencyDisplay === "code")
@@ -52,7 +88,8 @@ export const formatCurrencyToParts = (
       currency.toUpperCase()
     )
 
-  const symbol = currencyDisplay === "name" ? undefined : SYMBOLS_UNKNOWN_TO_INTL[currencyId]
+  const symbol =
+    currencyDisplay === "name" ? undefined : CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.symbol
   if (!symbol) return new Intl.NumberFormat(undefined, intlOptions).formatToParts(amount)
 
   const formatAsDollars = new Intl.NumberFormat(undefined, {
