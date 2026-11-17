@@ -1,3 +1,5 @@
+import { formatCurrency } from "@talismn/util"
+
 // guess group separator and decimal separator from this number
 const testNumber = 1000.1
 const parts = new Intl.NumberFormat(undefined).formatToParts(testNumber)
@@ -20,8 +22,6 @@ export const formatFiat = (
 ) => {
   const formatOptions: Intl.NumberFormatOptions = {
     ...(currency !== undefined && {
-      style: "currency",
-      currency,
       currencyDisplay: currencyDisplay ?? (currency === "usd" ? "narrowSymbol" : "symbol"),
       notation: compact ? "compact" : "standard",
     }),
@@ -38,7 +38,10 @@ export const formatFiat = (
     }),
   }
 
-  const formatted = new Intl.NumberFormat(undefined, formatOptions).format(amount)
+  const formatted =
+    currency === undefined
+      ? new Intl.NumberFormat(undefined, formatOptions).format(amount)
+      : formatCurrency(amount, currency, formatOptions)
 
   // Hack to get trailing ISO code instead of leading
   if (currency !== undefined && currencyDisplay === "code") {

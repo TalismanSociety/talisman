@@ -3,7 +3,7 @@ import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { formatPrice, isNotNil, isTruthy } from "@talismn/util"
+import { formatCurrency, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { IconButton } from "@ui/components/IconButton"
 import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@ui/components/Popover"
@@ -601,13 +601,11 @@ const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const display = useMemo(
     () =>
       tokenRates?.[currency]?.marketCap
-        ? new Intl.NumberFormat(undefined, {
+        ? formatCurrency(tokenRates[currency].marketCap, currency, {
             maximumSignificantDigits: 4,
-            style: "currency",
-            currency,
             currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
             notation: "compact",
-          }).format(tokenRates[currency].marketCap)
+          })
         : t("unknown"),
     [tokenRates, currency, t]
   )

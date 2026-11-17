@@ -1,5 +1,5 @@
 import { AlertCircleIcon, ArrowUpDownIcon } from "@talismn/icons"
-import { isNotNil, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { formatCurrency, isNotNil, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { useToken } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
@@ -213,7 +213,7 @@ export const InputFromAmount = () => {
   }, [value, parsedAmount, fromBalance, fromToken, t])
 
   const formattedFiat = useMemo(
-    () => (fiatValue ?? 0).toLocaleString(undefined, { currency, style: "currency" }),
+    () => formatCurrency(fiatValue ?? 0, currency),
     [fiatValue, currency]
   )
 
