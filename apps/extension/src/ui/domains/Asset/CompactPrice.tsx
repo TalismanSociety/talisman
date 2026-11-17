@@ -9,7 +9,7 @@ export const CompactPrice: FC<{ price: number; currency: string }> = ({ price, c
   return (
     <>
       <span className="sr-only">{formatPrice(price, currency, true)}</span>
-      <span aria-hidden>
+      <span aria-hidden className="select-none">
         {parts.head}0<sub>{parts.zeroCount}</sub>
         {parts.tail}
       </span>
