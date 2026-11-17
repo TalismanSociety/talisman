@@ -42,7 +42,7 @@ const dtaoToken = (netuid: number, hotkey?: string, networkId = NETWORK_ID): Sub
   isTransferable: true,
   symbol: netuid === 0 ? "TAO" : "α",
   decimals: 9,
-  name: netuid === 0 ? "SN0 | Root" : `SN${netuid} | Affine`,
+  name: netuid === 0 ? "SN0 Root" : `SN${netuid} Affine`,
   subnetName: netuid === 0 ? "Root" : "Affine",
 })
 
@@ -243,7 +243,7 @@ describe("toEarnPosition", () => {
     })
 
     expect(earnPosition).toMatchObject({
-      title: "SN120 | Affine",
+      title: "SN120 Affine",
       tokenIds: [SUBNET_BASE.id],
       displayTokens: [{ tokenId: SUBNET_BASE.id, symbol: "α" }],
       apr: null,
