@@ -98,14 +98,22 @@ const DisplayValue = React.memo(
             currencyDisplay,
             notation: compact ? "compact" : "standard",
             minimumFractionDigits: decimalPlaces,
-            maximumFractionDigits: compact ? decimalPlaces : undefined,
+            maximumFractionDigits: isBalance || compact ? decimalPlaces : undefined,
           })
 
         if (isBelowSmallestBalance(amount)) return `< ${formatWithDecimals(smallestBalance)}`
 
         return formatWithDecimals(amount)
       },
-      [currency, currencyDisplay, decimalPlaces, compact, smallestBalance, isBelowSmallestBalance]
+      [
+        currency,
+        currencyDisplay,
+        decimalPlaces,
+        compact,
+        smallestBalance,
+        isBelowSmallestBalance,
+        isBalance,
+      ]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 

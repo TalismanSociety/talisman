@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, test, vi } from "vitest"
+import { afterEach, describe, expect, test, vi } from "vitest"
 import { Fiat } from "../Fiat"
 
 vi.mock("@ui/state/settings", () => ({
@@ -11,7 +11,23 @@ vi.mock("@ui/state/fiatFromUsd", () => ({
   useFiatFromUsd: (amount: number) => amount,
 }))
 
+const browserDigitsWiderThanCurrency = vi.hoisted(() => ({ currency: "" }))
+vi.mock("@talismn/util", async (importOriginal) => {
+  const util = await importOriginal<typeof import("@talismn/util")>()
+  return {
+    ...util,
+    getCurrencyFractionDigits: (currency: string) =>
+      currency === browserDigitsWiderThanCurrency.currency
+        ? 0
+        : util.getCurrencyFractionDigits(currency),
+  }
+})
+
 describe("Fiat balance", () => {
+  afterEach(() => {
+    browserDigitsWiderThanCurrency.currency = ""
+  })
+
   test.each([
     [19329819.44, "vnd", "₫19,329,819"],
     [115001.4, "jpy", "¥115,001"],
@@ -32,4 +48,14 @@ describe("Fiat balance", () => {
 
     expect(await screen.findByText(expected)).toBeTruthy()
   })
+
+  test.each([true, false])(
+    "rounds to the currency's digits when the browser allows more, noCountUp %s",
+    async (noCountUp) => {
+      browserDigitsWiderThanCurrency.currency = "eur"
+      render(<Fiat amount={1234.56} forceCurrency="eur" isBalance noCountUp={noCountUp} />)
+
+      expect(await screen.findByText("€1,235")).toBeTruthy()
+    }
+  )
 })
