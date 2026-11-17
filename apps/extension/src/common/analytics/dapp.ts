@@ -89,7 +89,7 @@ export const toDappDomain = (url: string | undefined): string | null => {
   const scheme = protocol.slice(0, -1)
   if ((CONTENT_ADDRESSED_SCHEMES as readonly string[]).includes(scheme)) return scheme
   if (protocol !== "http:" && protocol !== "https:") return null
-  const host = hostname.toLowerCase().replace(/\.+$/, "")
+  const host = hostname.toLowerCase().replace(/\.$/, "")
   if (!HOSTNAME.test(host) || isPrivateHost(host)) return null
   return host
 }

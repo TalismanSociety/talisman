@@ -84,6 +84,8 @@ describe("toDappDomain", () => {
     ["keeps a hosting platform subdomain", "https://my-dapp.vercel.app/", "my-dapp.vercel.app"],
     ["keeps a tunnel subdomain", "https://abcd-12-34.ngrok-free.app/", "abcd-12-34.ngrok-free.app"],
     ["hides localhost", "http://localhost:3000/", null],
+    ["hides a short-form IP behind trailing dots", "http://127.1../", null],
+    ["hides a host with several trailing dots", "https://app.example.com../", null],
     ["hides a localhost subdomain", "http://dapp.localhost:5173/", null],
     ["hides an IPv4 address", "http://127.0.0.1:8080", null],
     ["hides a private IPv4 address", "http://192.168.1.10/", null],
