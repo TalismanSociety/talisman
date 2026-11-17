@@ -60,27 +60,61 @@ export const removeHexPrefix = (secretKey: string) => {
   return secretKey
 }
 
-export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => {
+const SECRET_KEY_LENGTH = 32
+/** A Solana keypair: the 32-byte secret followed by the 32-byte public key. */
+const SOLANA_KEYPAIR_LENGTH = 64
+
+/**
+ * Bytes of a JSON-array secret key (the Solana CLI keypair file format). Every element must be
+ * an integer 0..255: `Uint8Array.from` would turn `null`, strings and fractions into 0 and wrap
+ * anything above 255, so `[null × 32]` would import the all-zero key.
+ */
+const bytesFromJsonArray = (json: string): Uint8Array => {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(json)
+  } catch {
+    throw new Error("Invalid secret key: not a JSON array")
+  }
+  if (!Array.isArray(parsed)) throw new Error("Invalid secret key: not a JSON array")
+  if (!parsed.every((b) => Number.isInteger(b) && b >= 0 && b <= 255))
+    throw new Error("Invalid secret key: array elements must be integers 0..255")
+  return Uint8Array.from(parsed as number[])
+}
+
+/**
+ * The 32 secret-key bytes behind a private key string that a user pasted, or a throw.
+ * Surrounding whitespace is ignored.
+ *
+ * - Ethereum: hex with an optional `0x` prefix, exactly 32 bytes. `hex.decode` rejects odd
+ *   lengths and non-hex characters.
+ * - Solana: base58 (Phantom) or a JSON byte array (Solflare, the Solana CLI), holding either the
+ *   32-byte secret or a 64-byte keypair whose embedded public key must match the one the secret
+ *   derives.
+ */
+export const parseSecretKey = (secretKey: string, platform: AccountPlatform): Uint8Array => {
+  const input = secretKey.trim()
   switch (platform) {
     case "ethereum": {
-      const privateKey = removeHexPrefix(secretKey)
-      return hex.decode(privateKey)
+      const bytes = hex.decode(removeHexPrefix(input))
+      if (bytes.length !== SECRET_KEY_LENGTH)
+        throw new Error(
+          `Invalid private key length: expected ${SECRET_KEY_LENGTH}, got ${bytes.length}`
+        )
+      return bytes
     }
     case "solana": {
-      const bytes = secretKey.startsWith("[")
-        ? // JSON bytes array (ex: solflare)
-          Uint8Array.from(JSON.parse(secretKey))
-        : // base58 encoded string (ex: phantom)
-          base58.decode(secretKey)
+      const bytes = input.startsWith("[") ? bytesFromJsonArray(input) : base58.decode(input)
 
-      if (bytes.length === 64) {
-        const privateKey = bytes.slice(0, 32)
-        const publicKey = bytes.slice(32, 64)
+      if (bytes.length === SOLANA_KEYPAIR_LENGTH) {
+        const privateKey = bytes.slice(0, SECRET_KEY_LENGTH)
+        const publicKey = bytes.slice(SECRET_KEY_LENGTH)
         const computedPublicKey = getPublicKeySolana(privateKey)
         if (!publicKey.every((b, i) => b === computedPublicKey[i]))
           throw new Error("Invalid Solana secret key: public key does not match")
         return privateKey
-      } else if (bytes.length === 32) return bytes
+      }
+      if (bytes.length === SECRET_KEY_LENGTH) return bytes
 
       throw new Error("Invalid Solana secret key length")
     }
