@@ -1,3 +1,4 @@
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { formatCurrency } from "@talismn/util"
 
 // guess group separator and decimal separator from this number
@@ -9,22 +10,19 @@ export const fiatDecimalSeparator = parts.find((p) => p.type === "decimal")?.val
 export const fiatGroupSeparator = parts.find((p) => p.type === "group")?.value ?? ","
 
 type FormatFiatProps = {
-  amount?: number
-  currency?: Intl.NumberFormatOptions["currency"]
+  currency: TokenRateCurrency
   currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   minimumDecimalPlaces?: number
   compact?: boolean
 }
 
 export const formatFiat = (
-  amount = 0,
-  { currency, currencyDisplay, minimumDecimalPlaces, compact }: FormatFiatProps = {}
+  amount: number,
+  { currency, currencyDisplay, minimumDecimalPlaces, compact }: FormatFiatProps
 ) => {
   const formatOptions: Intl.NumberFormatOptions = {
-    ...(currency !== undefined && {
-      currencyDisplay: currencyDisplay ?? (currency === "usd" ? "narrowSymbol" : "symbol"),
-      notation: compact ? "compact" : "standard",
-    }),
+    currencyDisplay: currencyDisplay ?? (currency === "usd" ? "narrowSymbol" : "symbol"),
+    notation: compact ? "compact" : "standard",
 
     ...(minimumDecimalPlaces !== undefined && {
       // NOTE: If minimumFractionDigits is set to an integer greater than `20` then it throws the error:
@@ -38,13 +36,10 @@ export const formatFiat = (
     }),
   }
 
-  const formatted =
-    currency === undefined
-      ? new Intl.NumberFormat(undefined, formatOptions).format(amount)
-      : formatCurrency(amount, currency, formatOptions)
+  const formatted = formatCurrency(amount, currency, formatOptions)
 
   // Hack to get trailing ISO code instead of leading
-  if (currency !== undefined && currencyDisplay === "code") {
+  if (currencyDisplay === "code") {
     return `${formatted.replace(`${currency.toUpperCase()}`, "").trim()} ${currency.toUpperCase()}`
   }
 

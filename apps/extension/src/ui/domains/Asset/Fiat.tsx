@@ -22,7 +22,7 @@ type FiatProps = {
 
 type DisplayValueProps = {
   amount: number
-  currency?: Intl.NumberFormatOptions["currency"]
+  currency: TokenRateCurrency
   currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
