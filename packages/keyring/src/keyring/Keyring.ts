@@ -183,14 +183,16 @@ export class Keyring {
   public updateMnemonic(id: string, { name, confirmed }: UpdateMnemonicOptions) {
     const mnemonic = this.#data.mnemonics.find((s) => s.id === id)
     if (!mnemonic) throw new Error("Mnemonic not found")
-    if (name !== undefined) {
-      if (typeof name !== "string" || !name) throw new Error("name must be a string")
-      mnemonic.name = name
-    }
-    if (confirmed !== undefined) {
-      if (typeof confirmed !== "boolean") throw new Error("confirmed must be a boolean")
-      mnemonic.confirmed = confirmed
-    }
+
+    // check every option before applying any, so an invalid one changes nothing
+    if (name !== undefined && (typeof name !== "string" || !name))
+      throw new Error("name must be a string")
+    if (confirmed !== undefined && typeof confirmed !== "boolean")
+      throw new Error("confirmed must be a boolean")
+
+    if (name !== undefined) mnemonic.name = name
+    if (confirmed !== undefined) mnemonic.confirmed = confirmed
+
     return mnemonicFromStorage(mnemonic)
   }
 
@@ -236,20 +238,24 @@ export class Keyring {
     const account = this.#data.accounts.find((s) => s.address === address)
     if (!account) throw new Error("Account not found")
 
-    if (name) {
-      if (typeof name !== "string" || !name) throw new Error("name is required")
-      account.name = name
-    }
-    if (account.type === "watch-only" && isPortfolio !== undefined) {
-      if (typeof isPortfolio !== "boolean") throw new Error("isPortfolio must be a boolean")
+    // check every option before applying any, so an invalid one changes nothing
+    if (name && typeof name !== "string") throw new Error("name is required")
+    if (
+      account.type === "watch-only" &&
+      isPortfolio !== undefined &&
+      typeof isPortfolio !== "boolean"
+    )
+      throw new Error("isPortfolio must be a boolean")
+    if (account.type === "contact" && genesisHash && !isHexString(genesisHash))
+      throw new Error("genesisHash must be a hex string")
+
+    if (name) account.name = name
+    if (account.type === "watch-only" && isPortfolio !== undefined)
       account.isPortfolio = isPortfolio
-    }
     // allow updating genesisHash only for contacts
     if (account.type === "contact") {
-      if (genesisHash) {
-        if (!isHexString(genesisHash)) throw new Error("genesisHash must be a hex string")
-        account.genesisHash = genesisHash
-      } else delete account.genesisHash
+      if (genesisHash) account.genesisHash = genesisHash
+      else delete account.genesisHash
     }
 
     return accountFromStorage(account)
@@ -351,6 +357,8 @@ export class Keyring {
       createdAt: Date.now(),
     }
 
+    // a concurrent call on this instance may have added the same account during the awaits
+    if (this.getAccount(account.address)) throw new Error("Account already exists")
     this.#data.accounts.push(account)
 
     return accountFromStorage(account)
@@ -377,6 +385,8 @@ export class Keyring {
       createdAt: Date.now(),
     }
 
+    // a concurrent call on this instance may have added the same account during the await
+    if (this.getAccount(account.address)) throw new Error("Account already exists")
     this.#data.accounts.push(account)
 
     return accountFromStorage(account)
