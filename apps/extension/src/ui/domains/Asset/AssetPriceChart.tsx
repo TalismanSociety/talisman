@@ -603,7 +603,6 @@ const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
       tokenRates?.[currency]?.marketCap
         ? formatCurrency(tokenRates[currency].marketCap, currency, {
             maximumSignificantDigits: 4,
-            currencyDisplay: currency === "usd" ? "narrowSymbol" : "symbol",
             notation: "compact",
           })
         : t("unknown"),
