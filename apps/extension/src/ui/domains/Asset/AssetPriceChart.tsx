@@ -3,7 +3,7 @@ import { fetchFromCoingecko } from "@core/util/coingecko/fetchFromCoingecko"
 import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { formatCurrency, formatPrice, isNotNil, isTruthy } from "@talismn/util"
+import { formatCurrency, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { IconButton } from "@ui/components/IconButton"
 import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "@ui/components/Popover"
@@ -22,6 +22,7 @@ import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "reac
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "./AssetPrice"
+import { CompactPrice } from "./CompactPrice"
 import { TokenDisplaySymbol } from "./TokenDisplaySymbol"
 import { TokenLogo } from "./TokenLogo"
 
@@ -96,9 +97,6 @@ export const AssetPriceChart: FC<{
   }, [coingeckoId])
 
   const [hoveredValue, setHoveredValue] = useState<number | null>(null)
-  const formattedHoveredValue = useMemo(() => {
-    return typeof hoveredValue === "number" ? formatPrice(hoveredValue, currency, true) : null
-  }, [hoveredValue, currency])
 
   // Note : if prices array has only 1 entry, the token is in preview mode and we should not render the chart nor the price
   const isValid = useMemo(() => !prices || prices.length > 1, [prices])
@@ -134,10 +132,12 @@ export const AssetPriceChart: FC<{
                 "font-bold text-body-secondary",
                 variant === "small" && "text-base",
                 variant === "large" && "text-[1.25rem]",
-                formattedHoveredValue && "text-body"
+                hoveredValue !== null && "text-body"
               )}
             >
-              {formattedHoveredValue ?? (
+              {hoveredValue !== null ? (
+                <CompactPrice price={hoveredValue} currency={currency} />
+              ) : (
                 <AssetPrice tokenId={selectedTokenId} balances={null} noChange />
               )}
             </div>

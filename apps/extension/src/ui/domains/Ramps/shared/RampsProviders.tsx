@@ -1,4 +1,5 @@
 import { formatPrice, isNotNil } from "@talismn/util"
+import { CompactPrice } from "@ui/domains/Asset/CompactPrice"
 import { cn } from "@ui/util/cn"
 import { capitalize } from "lodash-es"
 import { type FC, type ReactNode, useMemo } from "react"
@@ -80,11 +81,6 @@ const RampsProviderButtonAvailable: FC<
 }) => {
   const { t } = useTranslation()
 
-  const formattedTokenPrice = useMemo(() => {
-    if (!isNotNil(tokenPrice)) return null
-    return formatPrice(tokenPrice, currencyCode, true)
-  }, [tokenPrice, currencyCode])
-
   const formattedFee = useMemo(() => formatPrice(fee, currencyCode, true), [fee, currencyCode])
 
   return (
@@ -108,9 +104,9 @@ const RampsProviderButtonAvailable: FC<
         </div>
       </div>
       <div className="flex gap-8 text-tiny">
-        {formattedTokenPrice && (
+        {isNotNil(tokenPrice) && (
           <div>
-            1 {tokenSymbol} ≈ {formattedTokenPrice}
+            1 {tokenSymbol} ≈ <CompactPrice price={tokenPrice} currency={currencyCode} />
           </div>
         )}
         <div>
