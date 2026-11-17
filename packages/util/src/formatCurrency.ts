@@ -1,9 +1,10 @@
-const CURRENCIES_UNKNOWN_TO_INTL: Partial<
-  Record<string, { symbol: string; fractionDigits?: number }>
+const INTL_CURRENCY_OVERRIDES: Partial<
+  Record<string, { symbol?: string; fractionDigits?: number }>
 > = {
   btc: { symbol: "₿", fractionDigits: 6 },
   eth: { symbol: "Ξ" },
   tao: { symbol: "τ" },
+  idr: { fractionDigits: 0 },
 }
 
 const INTL_MAX_FRACTION_DIGITS = 20
@@ -24,8 +25,7 @@ export const getCurrencyFractionDigits = (currency: string) => {
     style: "currency",
     currency,
   }).resolvedOptions()
-  const fractionDigits =
-    CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.fractionDigits ?? intlFractionDigits
+  const fractionDigits = INTL_CURRENCY_OVERRIDES[currencyId]?.fractionDigits ?? intlFractionDigits
   fractionDigitsByCurrency.set(currencyId, fractionDigits)
   return fractionDigits
 }
@@ -39,7 +39,7 @@ const getDefaultFractionDigits = (currencyId: string, options: FormatCurrencyOpt
   ].some((digits) => digits !== undefined)
   if (callerSetDigits || options.notation === "compact") return undefined
 
-  return CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.fractionDigits
+  return INTL_CURRENCY_OVERRIDES[currencyId]?.fractionDigits
 }
 
 const isSpacing = (part: Intl.NumberFormatPart | undefined) =>
@@ -89,7 +89,7 @@ export const formatCurrencyToParts = (
     )
 
   const symbol =
-    currencyDisplay === "name" ? undefined : CURRENCIES_UNKNOWN_TO_INTL[currencyId]?.symbol
+    currencyDisplay === "name" ? undefined : INTL_CURRENCY_OVERRIDES[currencyId]?.symbol
   if (!symbol) return new Intl.NumberFormat(undefined, intlOptions).formatToParts(amount)
 
   const formatAsDollars = new Intl.NumberFormat(undefined, {
