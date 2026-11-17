@@ -99,7 +99,6 @@ describe("dapp_domain stays on dapp signing events", () => {
   it.each([
     "localhost",
     "192.168.1.10",
-    "my-dapp.vercel.app",
     "App.Example.com",
     "app.example.com:8443",
     "https://app.example.com",

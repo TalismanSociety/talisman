@@ -71,21 +71,6 @@ const PRIVATE_SUFFIXES = [
   ".ts.net",
 ]
 
-const HOSTING_PLATFORM_DOMAINS = [
-  "vercel.app",
-  "netlify.app",
-  "pages.dev",
-  "github.io",
-  "app.github.dev",
-  "workers.dev",
-  "web.app",
-  "firebaseapp.com",
-  "ngrok.app",
-  "ngrok-free.app",
-  "ngrok.io",
-  "trycloudflare.com",
-]
-
 const HOSTNAME =
   /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/
 
@@ -98,9 +83,6 @@ const isPrivateHost = (host: string): boolean =>
   /^\d+(\.\d+){3}$/.test(host) ||
   PRIVATE_SUFFIXES.some((suffix) => host.endsWith(suffix))
 
-const platformDomainOf = (host: string) =>
-  HOSTING_PLATFORM_DOMAINS.find((domain) => host.endsWith(`.${domain}`)) ?? host
-
 export const toDappDomain = (url: string | undefined): string | null => {
   if (!url || !URL.canParse(url)) return null
   const { protocol, hostname } = new URL(url)
@@ -109,7 +91,7 @@ export const toDappDomain = (url: string | undefined): string | null => {
   if (protocol !== "http:" && protocol !== "https:") return null
   const host = hostname.toLowerCase().replace(/\.+$/, "")
   if (!HOSTNAME.test(host) || isPrivateHost(host)) return null
-  return platformDomainOf(host)
+  return host
 }
 
 export const isDappDomain = (value: string): boolean =>

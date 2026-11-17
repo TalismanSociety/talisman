@@ -138,7 +138,7 @@ export const properties = {
   ),
   dapp_domain: p.nullable(
     p.dappDomain(
-      "The domain of the dapp that sent the request: its lowercased hostname without port, path or query. ipfs or ipns for those schemes. A subdomain of a hosting or tunnel platform reads as the platform, such as vercel.app or ngrok-free.app. Null for an IP address, localhost or a private host. Only on dapp request events (connect, sign, send, add a network, watch an asset), transaction events submitted by a dapp, and errors shown on a dapp's signing request. Never on dapp connection events."
+      "The domain of the dapp that sent the request: its lowercased hostname without port, path or query. ipfs or ipns for those schemes. Null for an IP address, localhost or a private host. Only on dapp request events (connect, sign, send, add a network, watch an asset), transaction events submitted by a dapp, and errors shown on a dapp's signing request. Never on dapp connection events."
     )
   ),
   risk_verdict: p.enum(

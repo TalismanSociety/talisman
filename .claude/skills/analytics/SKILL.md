@@ -32,7 +32,6 @@ Screens, modals, error toasts, transactions and dapp requests are tracked centra
 - Compute it with `toDappDomain(url)` or `describeDappRequest(request).dappDomain`, never from `new URL(...).hostname`. Its schema rejects any value `toDappDomain` would not return.
 - A transaction event takes `dappSubmitter(url)`, `WALLET_SUBMITTER` or `submitterOfStoredTransaction(row.siteUrl)` from `common/analytics/transactions.ts`. The types reject `dapp_domain` on a wallet transaction and require it on a dapp one.
 - `error_shown` takes the domain from the signing request on screen: `useRequest` registers it. Do not pass it by hand.
-- Hosting platforms reduce to their own domain (`*.vercel.app` reads `vercel.app`). Add a platform to `HOSTING_PLATFORM_DOMAINS` in `common/analytics/dapp.ts`.
 
 ## Add a flow
 
