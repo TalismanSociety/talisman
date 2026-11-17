@@ -1,6 +1,8 @@
 import { pbkdf2 } from "@talismn/crypto"
 
-// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption
+// Derive a key generated with PBKDF2 that will be used for AES-GCM encryption.
+// The PBKDF2 output is not zeroed after importKey: a native WebCrypto implementation, such as
+// react-native-quick-crypto in the mobile app, may keep a reference to the buffer, not a copy.
 const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> =>
   // Deriving 32-byte key using PBKDF2 with 100,000 iterations and SHA-256
   await crypto.subtle.importKey(
@@ -69,10 +71,13 @@ export const changeEncryptedDataPassword = async (
   oldPassword: string,
   newPassword: string
 ) => {
+  let decrypted: Uint8Array | undefined
   try {
-    const decrypted = await decryptData(encryptedData, oldPassword)
+    decrypted = await decryptData(encryptedData, oldPassword)
     return await encryptData(decrypted, newPassword)
   } catch (cause) {
     throw new Error("Failed to change password on encrypted data", { cause })
+  } finally {
+    decrypted?.fill(0)
   }
 }

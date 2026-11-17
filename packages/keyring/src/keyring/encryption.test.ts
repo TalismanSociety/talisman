@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { decryptData, encryptData } from "./encryption"
+import { describe, expect, it, vi } from "vitest"
+import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
 
 describe("encryption", () => {
   it("encrypt/decrypt short string", async () => {
@@ -27,6 +27,20 @@ describe("encryption", () => {
     const TEST_PASSWORD = "password"
 
     await expect(decryptData(TEST_STRING, TEST_PASSWORD)).rejects.toThrow("Failed to decrypt data")
+  })
+
+  it("changeEncryptedDataPassword zeroes the decrypted data once it is encrypted again", async () => {
+    const secret = new Uint8Array(32).fill(7)
+    const encrypted = await encryptData(secret, "old-password")
+
+    // the plaintext changeEncryptedDataPassword hands to encryption is the buffer it decrypted
+    const encrypt = vi.spyOn(crypto.subtle, "encrypt")
+    const reEncrypted = await changeEncryptedDataPassword(encrypted, "old-password", "new-password")
+    const plaintext = encrypt.mock.calls[0]?.[2] as Uint8Array
+    encrypt.mockRestore()
+
+    expect(plaintext.every((b) => b === 0)).toBe(true)
+    expect(await decryptData(reEncrypted, "new-password")).toEqual(secret)
   })
 })
 
