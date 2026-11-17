@@ -89,7 +89,7 @@ const DisplayValue = React.memo(
 
     const format = useCallback(
       (amount = 0) => {
-        const formatDecimals = (amount: number, decimals: number) =>
+        const formatWithDecimals = (amount: number, decimals: number) =>
           formatCurrency(amount, currency, {
             currencyDisplay,
             notation: compact ? "compact" : "standard",
@@ -97,9 +97,9 @@ const DisplayValue = React.memo(
             maximumFractionDigits: compact ? decimals : undefined,
           })
 
-        if (amount > 0 && isBalance && amount < 0.01) return `< ${formatDecimals(0.01, 2)}`
+        if (amount > 0 && isBalance && amount < 0.01) return `< ${formatWithDecimals(0.01, 2)}`
 
-        return formatDecimals(amount, decimalPlaces)
+        return formatWithDecimals(amount, decimalPlaces)
       },
       [currency, currencyDisplay, decimalPlaces, isBalance, compact]
     )
