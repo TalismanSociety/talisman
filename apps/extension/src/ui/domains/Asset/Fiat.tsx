@@ -85,6 +85,11 @@ const DisplayValue = React.memo(
     const decimalPlaces = isBalance
       ? getCurrencyFractionDigits(currency)
       : getPriceDecimalPlaces(amount)
+    const smallestBalance = 10 ** -decimalPlaces
+    const isBelowSmallestBalance = useCallback(
+      (value: number) => !!isBalance && value > 0 && value < smallestBalance,
+      [isBalance, smallestBalance]
+    )
 
     const format = useCallback(
       (amount = 0) => {
@@ -96,17 +101,15 @@ const DisplayValue = React.memo(
             maximumFractionDigits: compact ? decimalPlaces : undefined,
           })
 
-        const smallestBalance = 10 ** -decimalPlaces
-        if (isBalance && amount > 0 && amount < smallestBalance)
-          return `< ${formatWithDecimals(smallestBalance)}`
+        if (isBelowSmallestBalance(amount)) return `< ${formatWithDecimals(smallestBalance)}`
 
         return formatWithDecimals(amount)
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance, compact]
+      [currency, currencyDisplay, decimalPlaces, compact, smallestBalance, isBelowSmallestBalance]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 
-    if (noCountUp) return <>{formatted}</>
+    if (noCountUp || isBelowSmallestBalance(amount)) return <>{formatted}</>
     return (
       <CountUp
         end={amount}
