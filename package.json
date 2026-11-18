@@ -52,6 +52,7 @@
     "devnet:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "devnet:down": "docker compose -f docker-compose.test.yml down -v",
     "devnet:logs": "docker compose -f docker-compose.test.yml logs -f",
+    "ledger:emulator": "sh scripts/ledger-emulator.sh",
     "clean": "pnpm run -r --parallel clean & rm -rf .wxt dist coverage test-results playwright-report .turbo node_modules review & wait",
     "knip": "knip",
     "knip:fix": "knip --fix",
