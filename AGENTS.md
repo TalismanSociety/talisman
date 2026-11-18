@@ -82,6 +82,10 @@ Product analytics go to PostHog. Events, properties and flows are defined once, 
 - Do not commit while `pnpm dev` runs. The port names contain the git sha (`PORT_SUFFIX` in `apps/extension/src/common/constants.ts`), so the background rejects the pages and content scripts: pages stay blank with no error in their console, and dapp requests hang with no popup. Only the service worker console shows "Unknown connection from ...". Run `pnpm dev:kill && pnpm dev`, then reload the extension.
 - A change to the service worker banner in `wxt.config.ts` needs a `pnpm dev` restart.
 
+## Ledger emulator
+
+Ledger flows run without a device against Speculos, Ledger's emulator, in Docker. `pnpm ledger:emulator` starts and drives it, and dev builds connect to it when Settings → General → Ledger interface is "Speculos (emulator)". Read `.claude/skills/ledger-emulator/SKILL.md` before you use it, and `docs/ledger-emulator.md` for setup. `pnpm test:e2e:ledger` runs the Ledger e2e tests against it, after `pnpm build:extension`.
+
 ## Verify in the browser
 
 To verify a change or reproduce a bug in the running wallet, follow the `verify` skill in `.claude/skills/verify/SKILL.md`: a doctor check, helper scripts, and one recipe per feature.
