@@ -1,5 +1,7 @@
+import { str } from "scale-ts"
 import { describe, expect, it } from "vitest"
 
+import { createChainCode } from "./common"
 import { getLegacyDerivationPath } from "./legacyDerivationPath"
 import { addressFromMnemonic } from "./utils"
 
@@ -19,6 +21,8 @@ describe("getLegacyDerivationPath", () => {
     ["//0b11", "//3"],
     ["//1e3", "//1000"],
     ["//Infinity", "//0"],
+    ["//0x", "//7876616"],
+    ["//a/0x", "//a/7876616"],
   ])("substrate %j holds the key of %j", (path, legacyPath) => {
     expect(getLegacyDerivationPath(path, "sr25519")).toBe(legacyPath)
   })
@@ -39,9 +43,14 @@ describe("getLegacyDerivationPath", () => {
     }
   )
 
+  it("gives a bare 0x junction the decimal code with the chain code earlier versions used", () => {
+    // earlier versions encoded the text `0x` as a SCALE string, zero-padded to 32 bytes
+    const legacyChainCode = new Uint8Array(32)
+    legacyChainCode.set(str.enc("0x"))
+    expect(createChainCode("7876616")).toEqual(legacyChainCode)
+  })
+
   it("has no answer when no current path derives the earlier key", () => {
-    // earlier versions read `0x` as text, which the current syntax can't express
-    expect(getLegacyDerivationPath("//0x", "sr25519")).toBeUndefined()
     // ed25519 and ecdsa never derived soft junctions
     expect(getLegacyDerivationPath("//a-b/1", "ed25519")).toBeUndefined()
   })
