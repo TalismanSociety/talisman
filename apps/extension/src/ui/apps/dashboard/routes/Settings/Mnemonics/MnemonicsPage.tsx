@@ -1,5 +1,6 @@
 import type { AccountOfType, Mnemonic } from "@core/domains/keyring/exports"
 import { getAccountGenesisHash, isAccountOfType } from "@core/domains/keyring/exports"
+import { getLegacyDerivationPath } from "@talismn/crypto"
 import {
   AlertCircleIcon,
   CornerDownRightIcon,
@@ -90,6 +91,14 @@ const useMnemonicAccounts = (mnemonicId: string) => {
   )
 }
 
+// An account stored with a path that the parser now rejects holds the key that earlier versions
+// derived from it, which is the key of another path: show that one, the path that restores the
+// account in another wallet (`//hard//password` for an account stored as `//hard///password`).
+const getDisplayedDerivationPath = ({ derivationPath, curve }: AccountOfType<"keypair">) =>
+  derivationPath === undefined
+    ? undefined
+    : (getLegacyDerivationPath(derivationPath, curve) ?? derivationPath)
+
 const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
   <div className="mt-4 flex h-24 w-full items-center gap-6 overflow-hidden rounded-sm bg-grey-900 px-8 text-body-secondary">
     <AccountIcon
@@ -104,7 +113,7 @@ const AccountRow: FC<{ account: AccountOfType<"keypair"> }> = ({ account }) => (
       </div>
     </div>
     <div className="flex flex-col font-mono text-body-secondary text-xs">
-      {account.derivationPath}
+      {getDisplayedDerivationPath(account)}
     </div>
   </div>
 )
