@@ -59,7 +59,9 @@ const getSeedDerivationType = (curve: KeypairCurve): SeedDerivationType => {
 }
 
 // when deriving keys from a mnemonic, we usually dont want a password here.
-// a password provided here would be used as a 25th mnemonic word.
+// a password provided here would be used as a 25th mnemonic word. For substrate curves it is
+// the password polkadot-js and subkey take as `///password` after the derivation path; the
+// keyring never passes one, and derivation paths reject that syntax.
 export const entropyToSeed = async (
   entropy: Uint8Array,
   curve: KeypairCurve,
