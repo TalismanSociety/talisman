@@ -6,10 +6,11 @@ import { blake2b256 } from "../hashing"
 // Inspired from MIT licensed @polkadot-labs/hdkd helpers
 // https://github.com/polkadot-labs/hdkd/blob/3ef6e02827212d934b59a4e566d8aa61d3ba7b27/packages/hdkd-helpers/src/parseDerivations.ts#L1
 
-// A path is a run of junctions, each `//code` (hard) or `/code` (soft). The empty path is the
-// root key. Codes are limited to [A-Za-z0-9_]: polkadot-js allows any character but `/`, and
-// for those codes it derives keys that this parser has never produced, so they are rejected
-// rather than derived to a key that differs from polkadot-js or from earlier Talisman versions.
+// A path is a run of junctions, each `//code` (hard) or `/code` (soft), and nothing else: it
+// takes no password. The empty path is the root key. Codes are limited to [A-Za-z0-9_]:
+// polkadot-js allows any character but `/`, and for those codes it derives keys that this
+// parser has never produced, so they are rejected rather than derived to a key that differs
+// from polkadot-js or from earlier Talisman versions.
 const DERIVATION_PATH_RE = /^(\/\/?\w+)*$/
 const DERIVATION_RE = /(\/{1,2})(\w+)/g
 
@@ -20,8 +21,13 @@ const NUMERIC_CODE_LIMIT = 2n ** BigInt(CHAIN_CODE_LENGTH * 8)
 type DerivationDescriptor = [type: "hard" | "soft", code: string]
 
 export const parseSubstrateDerivations = (derivationsStr: string): DerivationDescriptor[] => {
-  // `///password` is the polkadot-js syntax for a mnemonic password, which goes into the seed.
-  // The seed is computed before the path reaches this function, so it can't be honoured here.
+  // In polkadot-js and subkey, `<mnemonic>//hard///password` is not a junction named
+  // `password`: the password goes into the mnemonic-to-seed step (`entropyToSeed`), and every
+  // junction derives from that seed. This function receives the seed after that step, and the
+  // keyring computes it without a password. Earlier versions of this parser read `///password`
+  // as the hard junction `//password`, an account polkadot-js derives from `//hard//password`,
+  // not from `//hard///password`. Rejecting the syntax keeps a path written for polkadot-js
+  // from deriving another account without an error.
   if (derivationsStr.includes("///"))
     throw new Error("Passwords (///) are not supported in derivation paths")
   if (!DERIVATION_PATH_RE.test(derivationsStr))

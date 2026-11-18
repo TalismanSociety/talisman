@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 
+import { entropyToSeed, mnemonicToEntropy } from "../mnemonic"
 import type { KeypairCurve } from "../types"
-import { addressFromMnemonic, isValidDerivationPath } from "./utils"
+import { addressFromMnemonic, deriveKeypair, isValidDerivationPath } from "./utils"
 
 // Known answers for the paths the extension and the mobile app generate, and for edge cases of
 // the substrate parser. Every substrate address below equals @polkadot/keyring 13 and 14
@@ -122,6 +123,25 @@ describe("substrate derivation path parser", () => {
 
   it.each(["///password", "//Alice///pw", "///"])("rejects password syntax %j", async (path) => {
     await expect(sr25519(path)).rejects.toThrow("Passwords (///) are not supported")
+  })
+
+  // polkadot-js reads `<mnemonic>//hard///password` as the mnemonic with the password
+  // `password`, derived at `//hard`: the password changes the seed. Earlier versions of this
+  // parser derived the hard junction `//password` from the seed without a password, which is
+  // the account polkadot-js derives from `//hard//password`.
+  it("rejects //hard///password, which polkadot-js derives from a seed with the password", async () => {
+    const seed = await entropyToSeed(mnemonicToEntropy(POLKADOT_DEV), "sr25519", "password")
+    // @polkadot/keyring 13 addFromUri(`${POLKADOT_DEV}//hard///password`)
+    expect(deriveKeypair(seed, "//hard", "sr25519").address).toBe(
+      "5GTi1b5scpRJNh7b8MzmuoYHwHKAqEL4AJq55TTUocnPWmqg"
+    )
+    // @polkadot/keyring 13 addFromUri(`${POLKADOT_DEV}//hard//password`)
+    expect(await addressFromMnemonic(POLKADOT_DEV, "//hard//password", "sr25519")).toBe(
+      "5Cvf4R6qkEsSPeNrJS9PaynXEdPGM3ZBrwr2ubjJJ9C35jYS"
+    )
+    await expect(addressFromMnemonic(POLKADOT_DEV, "//hard///password", "sr25519")).rejects.toThrow(
+      "Passwords (///) are not supported"
+    )
   })
 
   // polkadot-js throws on these too

@@ -37,14 +37,19 @@ vi.setConfig({ testTimeout: 60_000 })
 
 const MNEMONIC = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 
-/** Stores an account the way the polkadot-js keyring did, before the keyring migration. */
+/**
+ * Stores an account the way the polkadot-js keyring did, before the keyring migration: the
+ * key derived at `keyPath` from the seed of the mnemonic with `seedPassword`, which is how
+ * polkadot-js applies the password of a `///password` path.
+ */
 const addLegacyDerivedAccount = async (
   password: string,
   legacyMnemonicId: string,
   derivationPath: string,
-  keyPath: string
+  keyPath: string,
+  seedPassword?: string
 ) => {
-  const seed = await entropyToSeed(mnemonicToEntropy(MNEMONIC), "sr25519")
+  const seed = await entropyToSeed(mnemonicToEntropy(MNEMONIC), "sr25519", seedPassword)
   const { address, publicKey, secretKey } = deriveKeypair(seed, keyPath, "sr25519")
   const json = encodePjsKeyringPairJson({ address, curve: "sr25519" }, secretKey, password)
   await chrome.storage.local.set({
@@ -98,19 +103,29 @@ describe("migrateFromPjsKeyring", () => {
     const rejected = await addLegacyDerivedAccount(password, legacyMnemonicId, "//Alice-Bob", "//3")
     // a valid path that derives another key than the one the account holds
     const mismatched = await addLegacyDerivedAccount(password, legacyMnemonicId, "//1", "//2")
+    // a password path, whose password polkadot-js applied to the seed
+    const withPassword = await addLegacyDerivedAccount(
+      password,
+      legacyMnemonicId,
+      "//hard///pw",
+      "//hard",
+      "pw"
+    )
 
     expect(await migrateFromPjsKeyring.forward.apply({ password })).toBe(true)
 
     const mnemonicId = await keyringStore.getExistingMnemonicId(MNEMONIC)
     const accounts = await keyringStore.getAccounts()
-    expect(accounts.map((a) => a.address).sort()).toEqual([matching, rejected, mismatched].sort())
+    expect(accounts.map((a) => a.address).sort()).toEqual(
+      [matching, rejected, mismatched, withPassword].sort()
+    )
 
     expect(await keyringStore.getAccount(matching)).toMatchObject({
       type: "keypair",
       mnemonicId,
       derivationPath: "//0",
     })
-    for (const address of [rejected, mismatched]) {
+    for (const address of [rejected, mismatched, withPassword]) {
       const account = await keyringStore.getAccount(address)
       expect(account?.type).toBe("keypair")
       expect(account).not.toHaveProperty("mnemonicId")
@@ -120,5 +135,6 @@ describe("migrateFromPjsKeyring", () => {
     // the paths that were not followed derive other accounts
     expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//1"))
     expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//Alice"))
+    expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//hard//pw"))
   })
 })
