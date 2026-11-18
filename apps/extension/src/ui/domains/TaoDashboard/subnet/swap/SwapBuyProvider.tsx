@@ -13,6 +13,8 @@ import {
 import { useBittensorCurrentHotkey } from "@ui/domains/Staking/Bittensor/hooks/useBittensorCurrentHotkey"
 import { useBittensorStakeInputError } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakeInputError"
 import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPayload"
+import { useMevShield } from "@ui/domains/Staking/Bittensor/hooks/useMevShield"
+import { useMevShieldFeeEstimate } from "@ui/domains/Staking/Bittensor/hooks/useMevShieldFeeEstimate"
 import { getDefaultValidatorHotkey } from "@ui/domains/Staking/Bittensor/utils/getDefaultValidatorHotkey"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useAmountSetByMax } from "@ui/hooks/analytics/amountSetByMax"
@@ -29,8 +31,7 @@ import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
-import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
-import { useSwapMevShield, useSwapSubmit } from "./useSwapSubmit"
+import { useSwapSubmit } from "./useSwapSubmit"
 
 // keep track of the last selected account globally, as the provider will be reset each time its unmounted
 const subjectLastSelectedAddress = new BehaviorSubject<string | null>(null)
@@ -223,7 +224,7 @@ const useSwapBuyProvider = ({ netuid }: { netuid: number }) => {
     withMevShield,
     setIsMevProtectionEnabled,
     txMode,
-  } = useSwapMevShield({ netuid, account, direction: "buy" })
+  } = useMevShield({ netuid, account, direction: "buy" })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)

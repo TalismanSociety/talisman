@@ -1,5 +1,5 @@
 import { Binary, Enum } from "@polkadot-api/substrate-bindings"
-import { TAO_DECIMALS } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE, TAO_DECIMALS } from "@talismn/balances"
 import type { ScaleApi } from "@talismn/sapi"
 
 import type { StakeDirection } from "../hooks/types"
@@ -32,6 +32,48 @@ export const getSwapSimulation = async (
   ])
 }
 
+/** rao per alpha at the pool's spot price, root is 1:1 */
+export const getAlphaPrice = async (sapi: ScaleApi, netuid: number): Promise<bigint> =>
+  netuid === ROOT_NETUID
+    ? ALPHA_PRICE_SCALE
+    : sapi.getRuntimeCallValue<bigint>("SwapRuntimeApi", "current_alpha_price", [netuid])
+
+const SUBTENSOR_DEFAULT_MIN_STAKE = 2_000_000n
+
+export const getDefaultMinStake = (sapi: ScaleApi | null | undefined): bigint => {
+  try {
+    return (
+      sapi?.getConstant<bigint>("SubtensorModule", "InitialMinStake") ?? SUBTENSOR_DEFAULT_MIN_STAKE
+    )
+  } catch {
+    return SUBTENSOR_DEFAULT_MIN_STAKE
+  }
+}
+
+const NOMINATOR_MIN_SCALE = 1_000_000n
+
+/**
+ * What a nomination must stay worth, in rao, on every subnet: an unstake that leaves less has the
+ * chain sweep the rest. The storage holds a per-million factor of the minimum stake, not an amount.
+ * null when the chain does not have it.
+ */
+export const getNominatorMinStake = async (sapi: ScaleApi): Promise<bigint | null> => {
+  const factor = await sapi.getStorage<bigint>("SubtensorModule", "NominatorMinRequiredStake", [])
+  return typeof factor === "bigint"
+    ? (getDefaultMinStake(sapi) * factor) / NOMINATOR_MIN_SCALE
+    : null
+}
+
+const TOLERANCE_SCALE = 10_000n // don't expect more than 4 decimal places in tolerance
+
+/** the worst price a trade accepts: `price` moved against the trader by `tolerance`, 0.0005 = 0.05% */
+export const withPriceTolerance = (price: bigint, direction: StakeDirection, tolerance: number) => {
+  const scaledTolerance = BigInt(Math.round(tolerance * Number(TOLERANCE_SCALE)))
+  return direction === "taoToAlpha"
+    ? (price * (TOLERANCE_SCALE + scaledTolerance)) / TOLERANCE_SCALE
+    : (price * (TOLERANCE_SCALE - scaledTolerance)) / TOLERANCE_SCALE
+}
+
 export const getLimitPrice = (
   simulation: BittensorSwapSimulation,
   direction: StakeDirection,
@@ -40,20 +82,11 @@ export const getLimitPrice = (
   // prevent division by zero
   if (!simulation.alpha_amount) return 0n
 
-  const toleranceScaleFactor = 10_000n // dont expect more than 4 decimal places in tolerance
-  const scaledTolerance = BigInt(Math.round(tolerance * Number(toleranceScaleFactor)))
-
   // price based on the simulation result
   const unit = 10n ** BigInt(TAO_DECIMALS)
   const price = (simulation.tao_amount * unit) / simulation.alpha_amount
 
-  // limit price with tolerance
-  const limitPrice =
-    direction === "taoToAlpha"
-      ? (price * (toleranceScaleFactor + scaledTolerance)) / toleranceScaleFactor
-      : (price * (toleranceScaleFactor - scaledTolerance)) / toleranceScaleFactor
-
-  return limitPrice
+  return withPriceTolerance(price, direction, tolerance)
 }
 
 export const getBittensorStakingPayload = async ({

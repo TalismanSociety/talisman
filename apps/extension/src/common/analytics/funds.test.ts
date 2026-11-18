@@ -30,6 +30,14 @@ describe("swapOfTransaction", () => {
         ...swap,
       })
     ).toEqual({ protocol: "lifi", cross_chain: false })
+    expect(
+      swapOfTransaction({
+        type: "swap-bittensor-dtao",
+        fromTokenId: "bittensor:substrate-native",
+        toTokenId: "bittensor:substrate-dtao:64:5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+        ...swap,
+      })
+    ).toEqual({ protocol: "bittensor-dtao", cross_chain: false })
   })
 
   it("is null for any other transaction", () => {
@@ -97,6 +105,21 @@ describe("tokenIdForAnalytics", () => {
     )
     const foreignAsset = `polkadot-asset-hub:substrate-foreignassets:N4Ig${"Dghg+".repeat(50)}`
     expect(tokenIdForAnalytics(token(foreignAsset, true))).toBe(foreignAsset)
+  })
+
+  it("reports the subnet of a dTAO position, never the validator's address in its id", () => {
+    const position = {
+      ...token(
+        "bittensor:substrate-dtao:64:5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+        true
+      ),
+      type: "substrate-dtao",
+      networkId: "bittensor",
+      netuid: 64,
+      hotkey: "5E2LP6EnZ54m3wS8s1yPvD5c3xo71kQroBw7aUVK32TKeZ5u",
+    } as unknown as Token
+
+    expect(tokenIdForAnalytics(position)).toBe("bittensor:substrate-dtao:64")
   })
 
   it("hides a user-added token and a missing one", () => {

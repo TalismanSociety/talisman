@@ -18,10 +18,7 @@ import { lineAt, listSourceFiles, REPO_ROOT } from "./listSourceFiles"
  */
 const UI_DIR = join(REPO_ROOT, "apps/extension/src/ui")
 
-const ALLOWED: Record<string, string> = {
-  "apps/extension/src/ui/domains/TaoDashboard/subnet/swap/useMevShieldFeeEstimate.ts":
-    "payload is only used for a fee estimate, never signed",
-}
+const ALLOWED: Record<string, string> = {}
 
 const QUERY_CALL = /\b(?:useQuery|useSuspenseQuery|queryOptions)\s*(?:<[^()]*>)?\s*\(/g
 

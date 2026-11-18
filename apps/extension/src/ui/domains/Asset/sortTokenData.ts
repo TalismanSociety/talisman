@@ -18,8 +18,16 @@ type TokenSortKey = {
   isPinned: boolean
   fiat: number
   hasBalance: boolean
-  symbol: string
+  title: string
 }
+
+const SUBNET_NUMBER_DIGITS = 5
+
+/** a dTAO row is titled by its subnet number: its symbol is a glyph that carries no order */
+const getTitle = (token: Token) =>
+  token.type === "substrate-dtao"
+    ? `SN${String(token.netuid).padStart(SUBNET_NUMBER_DIGITS, "0")}`
+    : token.symbol
 
 const getSortKey = (
   { token, balances }: SortableTokenData,
@@ -29,7 +37,7 @@ const getSortKey = (
   isPinned: token.id === pinnedTokenId,
   fiat: balances.count ? balances.sum.fiat(currency).transferable : 0,
   hasBalance: balances.each.some((balance) => balance.transferable.planck > 0n),
-  symbol: token.symbol,
+  title: getTitle(token),
 })
 
 const compareByCodeUnit = (a: string, b: string) => {
@@ -44,7 +52,7 @@ const compareSortKeys = (a: TokenSortKey, b: TokenSortKey) => {
   if (a.fiat > b.fiat) return -1
   if (a.fiat < b.fiat) return 1
   if (a.hasBalance !== b.hasBalance) return a.hasBalance ? -1 : 1
-  return compareByCodeUnit(a.symbol, b.symbol)
+  return compareByCodeUnit(a.title, b.title)
 }
 
 export const sortTokenData = <T extends SortableTokenData>(

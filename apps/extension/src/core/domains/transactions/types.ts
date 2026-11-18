@@ -107,6 +107,14 @@ export type WalletTransactionInfo = PricingInfo &
         destinationStartBlock: string
       }
     | {
+        type: "swap-bittensor-dtao"
+        fromTokenId: TokenId
+        toTokenId: TokenId
+        fromAmount: string
+        toAmount: string
+        to: Address
+      }
+    | {
         type: "bittensor-staking"
         fromTokenId: TokenId
         toTokenId: TokenId

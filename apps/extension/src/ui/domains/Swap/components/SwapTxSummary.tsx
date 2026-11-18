@@ -5,6 +5,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
+import { dTaoTokenLabel } from "@ui/util/dTaoTokenLabel"
 import type { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,12 +28,15 @@ const TokenRow: FC<{ value: bigint; tokenId: TokenId }> = ({ tokenId, value }) =
         <TokensAndFiat
           tokenId={tokenId}
           planck={value}
+          symbol={token.type === "substrate-dtao" ? dTaoTokenLabel(token) : undefined}
           className="text-body-secondary text-sm"
           tokensClassName="text-body font-bold"
           noCountUp
         />
         <div className="flex w-full items-center gap-4 overflow-hidden text-sm">
-          <div className="truncate text-body-secondary">{token.name || token.symbol}</div>
+          <div className="truncate text-body-secondary">
+            {token.type === "substrate-dtao" ? network.name : token.name || token.symbol}
+          </div>
           <div className="flex shrink-0 items-center gap-2.5 rounded-full bg-grey-800 py-2 pr-4 pl-2.5">
             <NetworkLogo className="text-base" networkId={network.id} />
             <span className="truncate text-xs opacity-60">{network.name}</span>

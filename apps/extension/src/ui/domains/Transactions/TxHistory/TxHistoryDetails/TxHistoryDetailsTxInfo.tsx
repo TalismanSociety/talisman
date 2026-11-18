@@ -31,6 +31,8 @@ export const TxHistoryDetailsTxInfo: FC<{
       return <SwapTxInfoCard txInfo={txInfo} protocolLabel="Bittensor EVM" />
     case "swap-forevermoney":
       return <SwapTxInfoCard txInfo={txInfo} protocolLabel="ForeverMoney" />
+    case "swap-bittensor-dtao":
+      return <SwapTxInfoCard txInfo={txInfo} protocolLabel="Bittensor" />
     case "bittensor-staking":
       return <BittensorStakingTxInfo txInfo={txInfo} />
     default:
@@ -103,6 +105,7 @@ type SwapTxInfo = Extract<
       | "swap-lifi"
       | "swap-bittensor-evm"
       | "swap-forevermoney"
+      | "swap-bittensor-dtao"
   }
 >
 

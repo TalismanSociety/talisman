@@ -148,6 +148,15 @@ vi.mock("@ui/hooks/useFeeBalanceCheck", () => ({
   },
 }))
 vi.mock("../components/SwapOtherFees", () => ({ SwapOtherFees: () => null }))
+vi.mock("../components/BittensorLegDetails", () => ({
+  BittensorLegDetails: () => null,
+  useLegMevShield: () => ({
+    txMode: "default",
+    feePlanck: 0n,
+    isFeeLoading: false,
+    feeError: null,
+  }),
+}))
 vi.mock("../components/SwapSlippageDrawer", () => ({ SwapSlippageDrawer: () => null }))
 vi.mock("../hooks/useQuoteApproval", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../hooks/useQuoteApproval")>()
@@ -313,6 +322,29 @@ const quoteWithSameNetworkLaterLeg = quoteFromLegs(
   }
 )
 
+const TAO = "bittensor:substrate-native"
+const STAKER = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+
+/** a route whose later leg stakes into a subnet's own token: no validator is chosen */
+const quoteWithUnpickedStake = () => {
+  const [first, later] = quoteWithLaterLegGas.legs
+  return quoteFromLegs(
+    [
+      { ...first, toTokenId: TAO, recipient: STAKER },
+      {
+        ...later,
+        protocol: "bittensor-dtao",
+        fromTokenId: TAO,
+        toTokenId: "bittensor:substrate-dtao:64",
+        signer: STAKER,
+        recipient: STAKER,
+        fees: [],
+      },
+    ],
+    quoteWithLaterLegGas
+  )
+}
+
 const renderConfirmActions = () =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -360,6 +392,16 @@ describe("SwapConfirmActions approval", () => {
     expect(screen.getByRole("alert").textContent).toBe(
       "Insufficient ETH on OP Mainnet to pay for transaction fees"
     )
+  })
+
+  it("holds the first signature when a later leg stakes with no validator: it could not be built", () => {
+    feeCheck.available = APPROVAL_GAS
+    held.set({ [OP_ETH]: 10n ** 18n })
+    swap.selectedQuote = quoteWithUnpickedStake()
+    renderConfirmActions()
+
+    expect(screen.getByRole("button", { name: "Approve USDC" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.getByRole("alert").textContent).toBe("Select a validator")
   })
 
   it("holds the first signature until the balances a later leg pays its gas from are known", () => {
@@ -435,6 +477,34 @@ describe("SwapConfirmActions approval", () => {
         "Insufficient ETH to pay for transaction fees"
       )
     )
+    expect(screen.getByRole("button", { name: "Confirm Swap" }).hasAttribute("disabled")).toBe(true)
+  })
+
+  it("holds Confirm Swap when a later leg stakes with no validator", async () => {
+    const quote = quoteWithUnpickedStake()
+    feeCheck.available = APPROVAL_GAS
+    held.set({ [OP_ETH]: 10n ** 18n })
+    swap.selectedQuote = quote
+    swap.built = {
+      quote,
+      leg: {
+        transaction: { platform: "ethereum", transaction: { to: ACCOUNT, data: "0x" } },
+        fees: [],
+        expectedOutput: 1n,
+        txInfo: {
+          type: "swap-lifi",
+          protocolName: "glacis",
+          fromTokenId: USDC,
+          toTokenId: OP_ETH,
+          fromAmount: "1000000",
+          toAmount: "1",
+          to: ACCOUNT,
+        },
+      },
+    }
+    renderConfirmActions()
+
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Select a validator"))
     expect(screen.getByRole("button", { name: "Confirm Swap" }).hasAttribute("disabled")).toBe(true)
   })
 

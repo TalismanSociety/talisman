@@ -20,6 +20,8 @@ vi.mock("@ui/state/chaindata", () => ({
   useTokensMap: () => mockUseTokensMap(),
 }))
 
+vi.mock("@ui/state/balances", () => ({ getBalances$: vi.fn() }))
+
 vi.mock("@ui/state/transactions", () => ({
   useTransactions: () => [],
 }))

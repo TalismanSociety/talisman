@@ -1,4 +1,5 @@
 import { Balances } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
 import { buildTokenPickerList } from "../buildTokenPickerList"
@@ -56,5 +57,22 @@ describe("buildTokenPickerList", () => {
     const list = buildTokenPickerList(rows, balances, { currency: "usd" })
 
     expect(list[0].chainNameSearch).toBe("funded")
+  })
+
+  it("hides a subnet position that holds nothing, and keeps the subnet itself", () => {
+    const subnet = (id: string, hotkey?: string) =>
+      ({ ...makeToken(id, "α"), type: "substrate-dtao", netuid: 1, hotkey }) as Token
+    const template = subnet("subnet")
+    const staked = subnet("staked", "validator-1")
+    const emptied = subnet("emptied", "validator-2")
+    const neverSynced = subnet("never-synced", "validator-3")
+
+    const list = buildTokenPickerList(
+      [template, staked, emptied, neverSynced].map((token) => ({ token })),
+      new Balances([makeBalance(staked, 2), makeBalance(emptied, 0)]),
+      { currency: "usd", showEmptyBalances: true }
+    )
+
+    expect(list.map((row) => row.token.id).sort()).toEqual(["staked", "subnet"])
   })
 })

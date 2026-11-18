@@ -15,6 +15,7 @@ import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { parseDTaoLeg } from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useErrorShown } from "@ui/hooks/analytics/errorShown"
 import { flows } from "@ui/hooks/analytics/flows"
@@ -57,9 +58,10 @@ import type {
 import { nonceAfter } from "../swap-modules/erc20-approval"
 import { getSwapRouteReport } from "../swapRouteReport"
 import { useSwapModules } from "../swaps.api"
+import { BittensorLegDetails, useLegMevShield } from "./BittensorLegDetails"
 import { SwapOtherFees } from "./SwapOtherFees"
 import { SwapSlippageDrawer } from "./SwapSlippageDrawer"
-import { SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
+import { SwapTxCardError, SwapTxCards, SwapTxLayout, useSwapTxContext } from "./SwapTxCard"
 import {
   SwapApprovalDetails,
   SwapLegDetails,
@@ -110,6 +112,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     selectedSubProtocol: subProtocol,
     reversed,
     isQuotePicked,
+    isQuoteDataCurrent,
     gotoSubmitted,
     approvalCounter,
     minedApproval,
@@ -250,6 +253,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       !needsApproval && transaction?.platform === "polkadot" ? transaction.payload : undefined,
   })
 
+  const fromAccount = useAccountByAddress(fromAddress)
+  const shield = useLegMevShield({
+    leg: selectedQuote?.legs[0],
+    account: fromAccount,
+    sapi,
+    payload: transaction?.platform === "polkadot" ? transaction.payload : undefined,
+  })
+
   const solanaFee = useGetSolanaFeeEstimate({
     networkId: fromToken?.platform === "solana" ? fromToken.networkId : null,
     transaction:
@@ -277,6 +288,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           payload: transaction.payload,
           txMetadata: transaction.txMetadata,
           txInfo,
+          mode: shield.txMode,
         }
       case "solana":
         if (!fromToken?.networkId) return null
@@ -291,6 +303,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     }
   }, [
     fromToken?.networkId,
+    shield.txMode,
     swapEthTx.priority,
     swapEthTx.transaction,
     swapEthTx.txDetails,
@@ -358,7 +371,9 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       case "ethereum":
         return (needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails)?.estimatedFee ?? null
       case "polkadot":
-        return substrateFee.data ?? null
+        return typeof substrateFee.data === "bigint" && shield.feePlanck !== null
+          ? substrateFee.data + shield.feePlanck
+          : null
       case "solana": {
         if (solanaFee.data === null || solanaFee.data === undefined) return null
         // Network fee from `getFeeForMessage` only covers signature/priority
@@ -388,6 +403,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromToken,
     needsApproval,
     selectedQuote?.maxNativeTokenGasBuffer,
+    shield.feePlanck,
     solanaFee.data,
     substrateFee.data,
     swapEthTx.txDetails,
@@ -399,7 +415,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       case "ethereum":
         return (needsApproval ? approvalEthTx.isLoading : swapEthTx.isLoading) || isExchangeLoading
       case "polkadot":
-        return substrateFee.isLoading || isExchangeLoading
+        return substrateFee.isLoading || shield.isFeeLoading || isExchangeLoading
       case "solana":
         return solanaFee.isLoading || isExchangeLoading
       default:
@@ -410,6 +426,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     approvalEthTx.isLoading,
     isExchangeLoading,
     needsApproval,
+    shield.isFeeLoading,
     solanaFee.isLoading,
     substrateFee.isLoading,
     swapEthTx.isLoading,
@@ -425,7 +442,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         return !(needsApproval ? approvalEthTx.txDetails : swapEthTx.txDetails)
       }
       case "polkadot":
-        return Boolean(substrateFee.error || exchangeError)
+        return Boolean(substrateFee.error || shield.feeError || exchangeError)
       case "solana":
         return Boolean(solanaFee.error || exchangeError)
       default:
@@ -437,6 +454,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     approvalEthTx.txDetails,
     exchangeError,
     needsApproval,
+    shield.feeError,
     solanaFee.error,
     substrateFee.error,
     swapEthTx.error,
@@ -482,6 +500,12 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   }, [quoteAsBuilt, laterLegHoldings, activeFeeTokenId, feePlanck])
   const isLaterLegBalanceLoading = laterLegHoldings === null
 
+  const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
+  // a stake with no validator quotes but cannot be built: say so before anything is signed
+  const isValidatorMissing = legs.some(
+    (leg) => parseDTaoLeg(leg.fromTokenId, leg.toTokenId)?.hotkey === null
+  )
+
   const swapError = useMemo<SwapConfirmError | null>(() => {
     // 1. Balance errors — most actionable for the user
     if (isInsufficientBalance === true && fromTokenId) {
@@ -505,6 +529,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     }
 
     // 2. Exchange / transaction crafting errors
+    if (isValidatorMissing)
+      return { type: "transaction-craft-error", message: t("Select a validator") }
     if (exchangeError) return classifySwapError(exchangeError)
 
     // 3. Fee estimation / simulation errors (only relevant when not in approval phase)
@@ -522,6 +548,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     fromTokenId,
     feeBalanceCheck,
     laterLegShortfall,
+    isValidatorMissing,
+    t,
     exchangeError,
     needsApproval,
     approvalEthTx.errorDetails,
@@ -548,7 +576,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
 
   useErrorShown({ shown: swapError?.type, surface: "alert", category: classifyError(swapError) })
 
-  const fromAccount = useAccountByAddress(fromAddress)
   const toNetwork = useNetworkById(toToken?.networkId)
   const fromTokenRates = useTokenRates(fromTokenId ?? undefined)
   const feeTokenRates = useTokenRates(activeFeeTokenId ?? undefined)
@@ -640,11 +667,13 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       feeBalanceCheck.status === "loading" ||
       isLaterLegBalanceLoading ||
       isExchangeLoading ||
+      !isQuoteDataCurrent ||
       !swapTx ||
       !!swapError,
     [
       fromAddress,
       isExchangeLoading,
+      isQuoteDataCurrent,
       isInsufficientBalance,
       feeBalanceCheck.status,
       isLaterLegBalanceLoading,
@@ -667,7 +696,6 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
   const legFailure = signFailure ?? (isBuildFailed && errorMessage ? errorMessage : undefined)
 
   const ctx = useSwapTxContext()
-  const legs = useMemo(() => selectedQuote?.legs ?? [], [selectedQuote])
   const approvalChecks = useMemo(() => legs.map((leg) => ({ leg, enabled: true })), [legs])
   const laterLegApprovals = useLaterLegApprovals(approvalChecks)
 
@@ -710,8 +738,13 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       )
     : t("This token requires approval before it can be swapped.")
 
+  // a lone dTAO swap shows its details as flat cards, like TaoDashboard
+  const isSingleDTaoSwap =
+    cards.length === 1 && !!legs[0] && !!parseDTaoLeg(legs[0].fromTokenId, legs[0].toTokenId)
+
   const renderBody = (card: SwapTxCardModel) => {
     const leg = legs[card.leg]
+    const dTao = parseDTaoLeg(leg.fromTokenId, leg.toTokenId)
     const isSigned = card.key === signedCardKey
     const isRetried = isSigned && card.status === "failed"
     const feeRows =
@@ -727,6 +760,7 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
           ethTx={fromToken?.platform === "ethereum" ? activeEthTx : undefined}
           isPriorityLocked={approval.isPending}
           containerId={containerId}
+          label={dTao ? t("Estimated Fee") : undefined}
         />
       ) : null
     const riskRow = isSigned ? <SwapRiskRow /> : null
@@ -746,16 +780,41 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
     }
 
     const isFirstLeg = card.leg === 0
-    return (
-      <SwapLegDetails leg={leg} provider={card.leg === providerLeg ? provider : undefined}>
-        {supportsSlippage && leg.protocol === selectedQuote?.protocol ? (
-          <SwapSlippageRow percent={slippagePercent} onEdit={slippageDrawer.open} />
-        ) : null}
-        {feeRows}
-        <SwapOtherFees
-          fees={isFirstLeg ? (exchangeAndTransactionQuery.data?.leg.fees ?? leg.fees) : leg.fees}
-          isLoading={isFirstLeg && isExchangeLoading}
+    const legProvider = card.leg === providerLeg ? provider : undefined
+    const legFees = isFirstLeg ? (exchangeAndTransactionQuery.data?.leg.fees ?? leg.fees) : leg.fees
+    const slippageRow =
+      supportsSlippage && leg.protocol === selectedQuote?.protocol ? (
+        <SwapSlippageRow
+          percent={slippagePercent}
+          onEdit={slippageDrawer.open}
+          pill={isSingleDTaoSwap}
         />
+      ) : null
+
+    if (dTao)
+      return (
+        <BittensorLegDetails
+          leg={leg}
+          dTao={dTao}
+          fees={legFees}
+          feesLoading={isFirstLeg && isExchangeLoading}
+          provider={legProvider}
+          shield={isFirstLeg && !card.hash ? shield : undefined}
+          canPickValidator={!card.hash}
+          feeRows={feeRows}
+          slippageRow={slippageRow}
+          containerId={containerId}
+          layout={isSingleDTaoSwap ? "cards" : "rows"}
+        >
+          {riskRow}
+        </BittensorLegDetails>
+      )
+
+    return (
+      <SwapLegDetails leg={leg} provider={legProvider}>
+        {slippageRow}
+        {feeRows}
+        <SwapOtherFees fees={legFees} isLoading={isFirstLeg && isExchangeLoading} />
         {riskRow}
       </SwapLegDetails>
     )
@@ -781,7 +840,8 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
         feeBalanceCheck.status === "insufficient" ||
         feeBalanceCheck.status === "loading" ||
         isLaterLegBalanceLoading ||
-        !!laterLegShortfall
+        !!laterLegShortfall ||
+        isValidatorMissing
       }
       isProcessing={approval.isPending}
     />
@@ -811,7 +871,14 @@ export const SwapConfirmActions: FC<{ containerId: string; children?: ReactNode 
       <SwapTxLayout footer={footer}>
         {children}
         {legs[1] ? <SwapRunNotice secondLeg={legs[1]} /> : null}
-        <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
+        {isSingleDTaoSwap ? (
+          <>
+            {renderBody(cards[0])}
+            <SwapTxCardError error={cards[0].error} />
+          </>
+        ) : (
+          <SwapTxCards cards={cards} legs={legs} renderBody={renderBody} />
+        )}
       </SwapTxLayout>
       {supportsSlippage ? (
         <SwapSlippageDrawer

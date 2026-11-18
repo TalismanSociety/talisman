@@ -8,6 +8,7 @@ import { createQueryStoragePersister, PERSIST_AGE_ONE_YEAR } from "@ui/hooks/que
 import { useTokensMap } from "@ui/state/chaindata"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
+import { bittensorDTaoSwapModule } from "./swap-modules/bittensor-dtao-swap-module"
 import { bittensorEvmSwapModule } from "./swap-modules/bittensor-evm-swap-module"
 import type { SupportedSwapProtocol } from "./swap-modules/common.swap-module"
 import { forevermoneySwapModule } from "./swap-modules/forevermoney-swap-module"
@@ -32,6 +33,7 @@ export const swapModules = [
   withSwapEnv(stealthexSwapModule, uiSwapEnv),
   withSwapEnv(lifiSwapModule, uiSwapEnv),
   withSwapEnv(bittensorEvmSwapModule, uiSwapEnv),
+  withSwapEnv(bittensorDTaoSwapModule, uiSwapEnv),
   withSwapEnv(forevermoneySwapModule, uiSwapEnv),
 ]
 

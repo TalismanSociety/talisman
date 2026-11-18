@@ -52,6 +52,10 @@ vi.mock("../hooks/useSwapQuoteManager", () => ({
   }),
 }))
 
+vi.mock("../hooks/useDTaoStakeValidator", () => ({
+  useDTaoStakeValidator: () => ({ chooseValidator: vi.fn(), isChoosingValidator: false }),
+}))
+
 vi.mock("../hooks/useSwapErc20Approval", () => ({
   useSwapErc20Approval: () => ({}),
 }))

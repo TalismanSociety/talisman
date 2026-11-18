@@ -3,22 +3,24 @@ import { ModalDialog } from "@ui/components/ModalDialog"
 import { PopupSizeModalContainer } from "@ui/components/PopupSizeModalContainer"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import {
+  BittensorConfirmAlphaPriceValue,
+  BittensorConfirmMevShieldLabel,
+  BittensorConfirmMevShieldValue,
+  BittensorConfirmPriceImpactValue,
+  BittensorConfirmTalismanFeeLabel,
+} from "@ui/domains/Staking/Bittensor/components/BittensorConfirmFields"
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  SwapConfirmAlphaPriceValue,
   SwapConfirmAmountInValue,
   SwapConfirmContainer,
   SwapConfirmEstimatedOutputValue,
   SwapConfirmFeeEstimateValue,
   SwapConfirmFieldRow,
   SwapConfirmFieldSeparator,
-  SwapConfirmMevShieldLabel,
-  SwapConfirmMevShieldValue,
-  SwapConfirmPriceImpactValue,
   SwapConfirmSendButton,
   SwapConfirmSlippageToleranceValue,
-  SwapConfirmTalismanFeeLabel,
   SwapConfirmTalismanFeeValue,
 } from "./SwapConfirmShared"
 import { useSwapSell } from "./SwapSellProvider"
@@ -138,13 +140,13 @@ const EstimatedOutputValue: FC = () => {
 const AlphaPriceValue = () => {
   const { swapPrice, taoToken } = useSwapSell()
 
-  return <SwapConfirmAlphaPriceValue swapPrice={swapPrice} tokenId={taoToken?.id} />
+  return <BittensorConfirmAlphaPriceValue swapPrice={swapPrice} tokenId={taoToken?.id} />
 }
 
 const PriceImpactValue = () => {
   const { priceImpact } = useSwapSell()
 
-  return <SwapConfirmPriceImpactValue priceImpact={priceImpact ?? undefined} />
+  return <BittensorConfirmPriceImpactValue priceImpact={priceImpact ?? undefined} />
 }
 
 const SlippageToleranceValue = () => {
@@ -160,7 +162,7 @@ const SlippageToleranceValue = () => {
 }
 
 const MevShieldLabel = () => {
-  return <SwapConfirmMevShieldLabel containerId={CONTAINER_ID} />
+  return <BittensorConfirmMevShieldLabel containerId={CONTAINER_ID} />
 }
 
 const MevShieldValue = () => {
@@ -172,7 +174,7 @@ const MevShieldValue = () => {
   } = useSwapSell()
 
   return (
-    <SwapConfirmMevShieldValue
+    <BittensorConfirmMevShieldValue
       withMevShield={withMevShield}
       isMevShieldDisabled={isMevShieldDisabled}
       isMevShieldFeatureDisabled={isMevShieldFeatureDisabled}
@@ -208,7 +210,7 @@ const FeeEstimateValue = () => {
 const TalismanFeeLabel = () => {
   const { netuid, confirm } = useSwapSell()
   return (
-    <SwapConfirmTalismanFeeLabel
+    <BittensorConfirmTalismanFeeLabel
       netuid={netuid}
       containerId={CONTAINER_ID}
       direction="alphaToTao"

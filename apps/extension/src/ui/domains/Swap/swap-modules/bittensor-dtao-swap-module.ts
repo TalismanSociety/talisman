@@ -1,0 +1,480 @@
+import { log } from "@common/log"
+import { taoToAlphaCeil } from "@talismn/balances"
+import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
+import type { ScaleApi } from "@talismn/sapi"
+import { planckToTokens } from "@talismn/util"
+import type { StakeDirection } from "@ui/domains/Staking/Bittensor/hooks/types"
+import { FEE_ESTIMATE_HOTKEY, ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
+import {
+  type DTaoLeg,
+  parseDTaoLeg,
+  parseDTaoTokenId,
+} from "@ui/domains/Staking/Bittensor/utils/dTaoLeg"
+import { getDTaoSubnetUnstakeInfo } from "@ui/domains/Staking/Bittensor/utils/dtaoSubnetUnstakeInfo"
+import { calculateEffectiveFeeRate } from "@ui/domains/Staking/Bittensor/utils/feeCalculations"
+import {
+  type BittensorSwapSimulation,
+  getAlphaPrice,
+  getBittensorStakingPayload,
+  getBittensorUnbondPayload,
+  getDefaultMinStake,
+  getNominatorMinStake,
+  getSwapSimulation,
+  withPriceTolerance,
+} from "@ui/domains/Staking/Bittensor/utils/helpers"
+import {
+  formatUpperBound,
+  getRemainderFloorPrice,
+  getSweepableRemainder,
+} from "@ui/domains/Staking/Bittensor/utils/nominationRemainder"
+import {
+  getMinimumStakeInput,
+  getPoolInput,
+  getStakingQuoteMath,
+  getSubnetFeePercent,
+} from "@ui/domains/Staking/Bittensor/utils/stakingQuote"
+import BigNumber from "bignumber.js"
+import z from "zod/v4"
+import bittensorLogo from "./bittensor-logo.svg?url"
+import type {
+  BaseQuote,
+  BittensorSwapConfig,
+  BuildLegParams,
+  BuiltLeg,
+  QuoteFee,
+  QuoteLeg,
+  QuoteParams,
+  SupportedSwapProtocol,
+  SwapEnv,
+  SwapModuleDefinition,
+} from "./common.swap-module"
+import { quoteFromLegs, TALISMAN_FEE_NAME } from "./helpers"
+
+const PROTOCOL: SupportedSwapProtocol = "bittensor-dtao"
+const PROVIDER_NAME = "Bittensor"
+const DECENTRALISATION_SCORE = 3
+const ESTIMATED_DURATION_SEC = 12
+const TOKEN_DECIMALS = 9
+
+/** What a dTAO leg hands from its quote to its build. JSON-safe: a swap run persists it */
+const DTaoLegDataSchema = z.object({
+  /** rao per alpha this trade pays with no slippage, when quoted */
+  swapPrice: z.string(),
+  /** the quote emptied the position: its build also takes what the stake earned since */
+  fullExit: z.boolean().optional(),
+})
+
+type DTaoLegData = z.infer<typeof DTaoLegDataSchema>
+
+/** null for a leg of another module, or one whose data does not parse */
+const getDTaoLegData = (leg: QuoteLeg): DTaoLegData | null =>
+  leg.protocol === PROTOCOL ? (DTaoLegDataSchema.safeParse(leg.data).data ?? null) : null
+
+type Route = DTaoLeg
+
+const STAKE_DIRECTION: Record<Route["direction"], StakeDirection> = {
+  stake: "taoToAlpha",
+  unstake: "alphaToTao",
+}
+
+const parseRoute = parseDTaoLeg
+
+const getDTaoTokens = async (env: SwapEnv) =>
+  Object.values(await env.getTokensMap("polkadot")).filter(
+    (token) => token.type === "substrate-dtao"
+  )
+
+const getFromAssets = async (env: SwapEnv): Promise<TokenId[]> => {
+  const dtaoTokens = await getDTaoTokens(env)
+  const networkIds = new Set(dtaoTokens.map((token) => token.networkId))
+  return [
+    ...[...networkIds].map((networkId) => subNativeTokenId(networkId)),
+    ...dtaoTokens.filter((token) => token.hotkey).map((token) => token.id),
+  ]
+}
+
+const getToAssets = async (fromTokenId: TokenId | null, env: SwapEnv): Promise<TokenId[]> => {
+  const dtaoTokens = await getDTaoTokens(env)
+  if (!fromTokenId)
+    return [
+      ...new Set(dtaoTokens.map((token) => subNativeTokenId(token.networkId))),
+      ...dtaoTokens.map((token) => token.id),
+    ]
+
+  const position = parseDTaoTokenId(fromTokenId)
+  if (position) return position.hotkey ? [subNativeTokenId(position.networkId)] : []
+
+  return dtaoTokens
+    .filter((token) => subNativeTokenId(token.networkId) === fromTokenId)
+    .map((token) => token.id)
+}
+
+type FeeTerms = { feePercent: number; seekDiscount: number }
+
+const getFeeTerms = (route: Route, { remote, seekDiscount }: BittensorSwapConfig): FeeTerms => ({
+  feePercent:
+    route.netuid === ROOT_NETUID
+      ? 0
+      : getSubnetFeePercent(remote.fee, route.netuid, STAKE_DIRECTION[route.direction]),
+  seekDiscount,
+})
+
+const simulate = async (
+  sapi: ScaleApi,
+  route: Route,
+  amount: bigint
+): Promise<BittensorSwapSimulation> =>
+  route.netuid === ROOT_NETUID
+    ? { tao_amount: amount, alpha_amount: amount, tao_fee: 0n, alpha_fee: 0n }
+    : getSwapSimulation(sapi, route.netuid, STAKE_DIRECTION[route.direction], amount)
+
+const getMinimumInput = async (
+  sapi: ScaleApi,
+  route: Route,
+  terms: FeeTerms,
+  alphaPrice: bigint
+): Promise<bigint> => {
+  const minTaoStake = getDefaultMinStake(sapi)
+  if (route.direction === "unstake") return taoToAlphaCeil(minTaoStake, alphaPrice)
+
+  return (
+    getMinimumStakeInput({
+      netuid: route.netuid,
+      baseMinimum: minTaoStake,
+      minStakeSimulation: await simulate(sapi, route, minTaoStake),
+      effectiveFeeRate: calculateEffectiveFeeRate(
+        route.netuid,
+        terms.feePercent,
+        terms.seekDiscount
+      ),
+    }) ?? minTaoStake
+  )
+}
+
+const assertMinimumInput = async (
+  env: SwapEnv,
+  sapi: ScaleApi,
+  route: Route,
+  terms: FeeTerms,
+  alphaPrice: bigint,
+  fromTokenId: TokenId,
+  amount: bigint
+) => {
+  const minimum = await getMinimumInput(sapi, route, terms, alphaPrice)
+  if (amount >= minimum) return
+  const symbol = (await env.getToken(fromTokenId))?.symbol ?? ""
+  throw new Error(
+    `${PROVIDER_NAME} minimum is ${planckToTokens(minimum.toString(), TOKEN_DECIMALS)} ${symbol}`
+  )
+}
+
+type UnstakeCheck = {
+  address: string
+  tokenId: TokenId
+  amount: bigint
+  alphaPrice: bigint
+  /** decimal, 0.005 = 0.5% */
+  slippage: number
+  /** the lowest price the unstake accepts */
+  priceLimit: bigint
+  /** the quote already emptied the position */
+  quotedAsFullExit?: boolean
+}
+
+/**
+ * An unstake the position cannot give fails on chain, and the user pays its fees. One that leaves
+ * less than a nomination is worse: the chain sells the remainder with no price limit, and removes
+ * it with no payout when a conviction lock holds it. Only a full exit may leave that little.
+ * Returns whether the unstake empties the position.
+ */
+const checkUnstake = async (
+  env: SwapEnv,
+  sapi: ScaleApi,
+  route: Route,
+  { address, tokenId, amount, alphaPrice, slippage, priceLimit, quotedAsFullExit }: UnstakeCheck
+): Promise<boolean> => {
+  const balances = await env.getBalances()
+  const stake = balances.each.find(
+    (balance) => balance.tokenId === tokenId && isAddressEqual(balance.address, address)
+  )?.free.planck
+  if (!stake) return false
+
+  const symbol = (await env.getToken(tokenId))?.symbol ?? ""
+  const { available } = getDTaoSubnetUnstakeInfo(balances, address, route.networkId, route.netuid)
+  const unlocked = stake < available ? stake : available
+  if (amount > unlocked)
+    throw new Error(
+      `${PROVIDER_NAME} can unstake at most ${formatUpperBound(unlocked, TOKEN_DECIMALS)} ${symbol}`
+    )
+  if (amount === stake || quotedAsFullExit) return true
+
+  const minTao = await getNominatorMinStake(sapi).catch((err) => {
+    log.warn("Failed to read the Bittensor nominator minimum", err)
+    return null
+  })
+  if (minTao === null) return false
+
+  // root trades one for one: neither the slippage nor the limit moves what its remainder is worth
+  const floorPrice =
+    route.netuid === ROOT_NETUID
+      ? alphaPrice
+      : getRemainderFloorPrice({ alphaPrice, slippage: slippage * 100, priceLimit })
+  const remainder = getSweepableRemainder({
+    stake,
+    amount,
+    maxAmount: stake,
+    minKeep: taoToAlphaCeil(minTao, floorPrice),
+    minAmount: taoToAlphaCeil(getDefaultMinStake(sapi), alphaPrice),
+  })
+  if (!remainder) return false
+
+  const taoSymbol = (await env.getToken(route.taoTokenId))?.symbol ?? ""
+  const closes = `${PROVIDER_NAME} closes stakes worth less than ${planckToTokens(minTao.toString(), TOKEN_DECIMALS)} ${taoSymbol}. Unstake everything`
+  throw new Error(
+    remainder.kind === "partial"
+      ? `${closes}, or at most ${formatUpperBound(remainder.maxPartial, TOKEN_DECIMALS)} ${symbol}.`
+      : `${closes}.`
+  )
+}
+
+const taoFee = (route: Route, planck: bigint, kind: Pick<QuoteFee, "name" | "gas">): QuoteFee => ({
+  ...kind,
+  tokenId: route.taoTokenId,
+  amount: BigNumber(planckToTokens(planck.toString(), TOKEN_DECIMALS)),
+})
+
+const talismanQuoteFees = (route: Route, planck: bigint): QuoteFee[] =>
+  planck > 0n ? [taoFee(route, planck, { name: TALISMAN_FEE_NAME })] : []
+
+type CallParams = {
+  sapi: ScaleApi
+  route: Route
+  address: string
+  hotkey: string
+  input: bigint
+  terms: FeeTerms
+  priceLimit: bigint
+  talismanFee: bigint
+}
+
+const buildCall = ({
+  sapi,
+  route,
+  address,
+  hotkey,
+  input,
+  terms,
+  priceLimit,
+  talismanFee,
+}: CallParams) => {
+  const call = { sapi, address, hotkey, priceLimit, talismanFee, netuid: route.netuid }
+  return route.direction === "stake"
+    ? getBittensorStakingPayload({
+        ...call,
+        amount: getPoolInput({
+          ...terms,
+          direction: "taoToAlpha",
+          netuid: route.netuid,
+          amountIn: input,
+        }),
+        remarkType: "swap",
+      })
+    : getBittensorUnbondPayload({ ...call, amount: input, remarkType: "swap" })
+}
+
+const estimateGasFee = async (params: CallParams): Promise<QuoteFee | null> => {
+  try {
+    const { payload } = await buildCall(params)
+    const planck = await params.sapi.getFeeEstimate(payload)
+    return taoFee(params.route, planck, { name: "Est. Gas Fees", gas: true })
+  } catch (err) {
+    log.error(new Error("Failed to estimate Bittensor staking fee", { cause: err }))
+    return null
+  }
+}
+
+const getQuote = async (params: QuoteParams, env: SwapEnv): Promise<BaseQuote | null> => {
+  const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
+
+  const route = parseRoute(fromTokenId, toTokenId)
+  if (!route || !fromTokenId || !toTokenId || !fromAmount || fromAmount <= 0n) return null
+  // a stake after another provider's leg would need the two to settle as one swap: not supported
+  if (params.input === "upTo") return null
+  if (fromAddress && toAddress && !isAddressEqual(fromAddress, toAddress))
+    throw new Error(
+      `${PROVIDER_NAME} stakes and unstakes on the sending account. Choose it as the recipient.`
+    )
+
+  const [sapi, config] = await Promise.all([
+    env.substrateApi(route.networkId),
+    env.getBittensorConfig(),
+  ])
+  const terms = getFeeTerms(route, config)
+  const direction = STAKE_DIRECTION[route.direction]
+
+  const alphaPrice = await getAlphaPrice(sapi, route.netuid)
+  await assertMinimumInput(env, sapi, route, terms, alphaPrice, fromTokenId, fromAmount)
+
+  const simulation = await simulate(
+    sapi,
+    route,
+    getPoolInput({ ...terms, direction, netuid: route.netuid, amountIn: fromAmount })
+  )
+  const math = getStakingQuoteMath({
+    ...terms,
+    direction,
+    amountIn: fromAmount,
+    simulation,
+    alphaPrice,
+    slippage: 0,
+  })
+
+  let fullExit = false
+  if (route.direction === "unstake" && fromAddress) {
+    const slippage = await env.getSlippageDecimal()
+    fullExit = await checkUnstake(env, sapi, route, {
+      address: fromAddress,
+      tokenId: fromTokenId,
+      amount: fromAmount,
+      alphaPrice,
+      slippage,
+      priceLimit: withPriceTolerance(math.swapPrice, direction, slippage),
+    })
+  }
+
+  const gasFee = fromAddress
+    ? await estimateGasFee({
+        sapi,
+        route,
+        address: fromAddress,
+        hotkey: route.hotkey ?? FEE_ESTIMATE_HOTKEY,
+        input: fromAmount,
+        terms,
+        priceLimit: math.priceLimit,
+        talismanFee: math.talismanFee,
+      })
+    : null
+
+  const data: DTaoLegData = {
+    swapPrice: math.swapPrice.toString(),
+    ...(fullExit && { fullExit }),
+  }
+
+  return quoteFromLegs(
+    [
+      {
+        protocol: PROTOCOL,
+        fromTokenId,
+        toTokenId,
+        signer: fromAddress,
+        recipient: toAddress,
+        inputAmount: fromAmount,
+        outputAmount: math.amountOut,
+        fees: [...talismanQuoteFees(route, math.talismanFee), ...(gasFee ? [gasFee] : [])],
+        timeInSec: ESTIMATED_DURATION_SEC,
+        ...(math.priceImpact !== null && { priceImpact: math.priceImpact }),
+        data,
+      },
+    ],
+    {
+      protocol: PROTOCOL,
+      decentralisationScore: DECENTRALISATION_SCORE,
+      providerLogo: bittensorLogo,
+      providerName: PROVIDER_NAME,
+      talismanFee: calculateEffectiveFeeRate(route.netuid, terms.feePercent, terms.seekDiscount),
+    }
+  )
+}
+
+const scaleDown = (amount: bigint, slippage: number) =>
+  (amount * BigInt(Math.round((1 - slippage) * 10_000))) / 10_000n
+
+const buildLeg = async (
+  { leg, input, context, slippage }: BuildLegParams,
+  env: SwapEnv
+): Promise<BuiltLeg> => {
+  const route = parseRoute(leg.fromTokenId, leg.toTokenId)
+  const data = getDTaoLegData(leg)
+  if (!route || !data || !leg.signer) throw new Error("Please select the quote again")
+  if (context.platform !== "polkadot") throw new Error("Missing substrate context")
+  const hotkey = route.hotkey
+  if (!hotkey) throw new Error("Select a validator")
+
+  const { sapi } = context
+  const terms = getFeeTerms(route, await env.getBittensorConfig())
+  const direction = STAKE_DIRECTION[route.direction]
+
+  const quotedPrice = BigInt(data.swapPrice)
+  // a limit of zero bounds nothing on an unstake
+  if (quotedPrice === 0n) throw new Error("Please select the quote again")
+
+  const simulation = await simulate(
+    sapi,
+    route,
+    getPoolInput({ ...terms, direction, netuid: route.netuid, amountIn: input })
+  )
+  const math = getStakingQuoteMath({
+    ...terms,
+    direction,
+    amountIn: input,
+    simulation,
+    alphaPrice: null,
+    slippage,
+  })
+
+  // the confirm screen shows the quote, so the build must not sign less than that
+  if (math.amountOut < scaleDown((leg.outputAmount * input) / leg.inputAmount, slippage))
+    throw new Error("The rate has moved too far, please select the quote again")
+
+  const priceLimit = withPriceTolerance(quotedPrice, direction, slippage)
+
+  if (route.direction === "unstake")
+    await checkUnstake(env, sapi, route, {
+      address: leg.signer,
+      tokenId: leg.fromTokenId,
+      amount: input,
+      alphaPrice: await getAlphaPrice(sapi, route.netuid),
+      slippage,
+      priceLimit,
+      quotedAsFullExit: data.fullExit,
+    })
+
+  const { payload, txMetadata } = await buildCall({
+    sapi,
+    route,
+    address: leg.signer,
+    hotkey,
+    input,
+    terms,
+    priceLimit,
+    talismanFee: math.talismanFee,
+  })
+
+  return {
+    transaction: { platform: "polkadot", payload, txMetadata },
+    fees: [
+      ...talismanQuoteFees(route, math.talismanFee),
+      ...leg.fees.filter((fee) => fee.name !== TALISMAN_FEE_NAME),
+    ],
+    expectedOutput: math.amountOut,
+    txInfo: {
+      type: "swap-bittensor-dtao",
+      fromTokenId: leg.fromTokenId,
+      toTokenId: leg.toTokenId,
+      fromAmount: input.toString(),
+      toAmount: math.amountOut.toString(),
+      to: leg.signer,
+    },
+  }
+}
+
+export const bittensorDTaoSwapModule: SwapModuleDefinition = {
+  protocol: PROTOCOL,
+  decentralisationScore: DECENTRALISATION_SCORE,
+  supportsSlippageSetting: true,
+  getFromAssets,
+  getToAssets,
+  getQuote,
+  buildLeg,
+}

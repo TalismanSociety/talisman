@@ -1,4 +1,3 @@
-import { log } from "@common/log"
 import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
@@ -8,7 +7,7 @@ import { useToken } from "@ui/state/chaindata"
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 import { useMemo } from "react"
 
-import seekSinglePoolStakingAbi from "../seekSinglePoolStakingAbi"
+import { readSeekStaked } from "../utils/seekDiscount"
 
 export const useGetSeekStaked = (): {
   data: {
@@ -36,23 +35,11 @@ export const useGetSeekStaked = (): {
     queryFn: async () => {
       if (!publicClient || ethAccounts.length === 0) return []
 
-      // Batch all balanceOf calls using Promise.all
-      const balancePromises = ethAccounts.map(async (account) => {
-        try {
-          const balance = await publicClient.readContract({
-            address: stakingContractAddress as `0x${string}`,
-            abi: seekSinglePoolStakingAbi,
-            functionName: "balanceOf",
-            args: [account.address],
-          })
-          return balance as bigint
-        } catch (error) {
-          log.error(`Failed to fetch balance for ${account.address}:`, error)
-          return 0n
-        }
-      })
-
-      return Promise.all(balancePromises)
+      return readSeekStaked(
+        publicClient,
+        stakingContractAddress,
+        ethAccounts.map((account) => account.address)
+      )
     },
     enabled: !!publicClient && ethAccounts.length > 0,
     refetchInterval: 60_000,

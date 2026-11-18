@@ -1,8 +1,9 @@
 import { type EthNetworkId, evmNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
-import { EditIcon, InfoIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon, SettingsIcon } from "@talismn/icons"
 import { formatDecimals, planckToTokens } from "@talismn/util"
 import { Skeleton } from "@ui/components/Skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
+import { TX_PILL_CLASS_NAME } from "@ui/components/txPillClassName"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
@@ -172,9 +173,10 @@ export const SwapApprovalDetails: FC<{
   )
 }
 
-export const SwapSlippageRow: FC<{ percent: number; onEdit?: () => void }> = ({
+export const SwapSlippageRow: FC<{ percent: number; onEdit?: () => void; pill?: boolean }> = ({
   percent,
   onEdit,
+  pill,
 }) => {
   const { t } = useTranslation()
   const value = (
@@ -183,7 +185,12 @@ export const SwapSlippageRow: FC<{ percent: number; onEdit?: () => void }> = ({
 
   return (
     <SwapTxRow label={t("Slippage Tolerance")}>
-      {onEdit ? (
+      {onEdit && pill ? (
+        <button type="button" onClick={onEdit} className={TX_PILL_CLASS_NAME}>
+          <SettingsIcon className="shrink-0" />
+          {value}
+        </button>
+      ) : onEdit ? (
         <button
           type="button"
           onClick={onEdit}
@@ -208,6 +215,7 @@ export const SwapTxFeeRows: FC<{
   ethTx?: EthTransactionState
   isPriorityLocked?: boolean
   containerId?: string
+  label?: string
 }> = ({
   address,
   feeTokenId,
@@ -217,6 +225,7 @@ export const SwapTxFeeRows: FC<{
   ethTx,
   isPriorityLocked,
   containerId,
+  label,
 }) => {
   const { t } = useTranslation()
   const balance = useBalance(address ?? undefined, feeTokenId)
@@ -249,7 +258,7 @@ export const SwapTxFeeRows: FC<{
       <SwapTxRow
         label={
           <>
-            {t("Estimated TX Fee")}
+            {label ?? t("Estimated TX Fee")}
             {feeTokenId && (feePlanck || balance) ? (
               <Tooltip placement="top">
                 <TooltipTrigger asChild>

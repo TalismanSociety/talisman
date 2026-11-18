@@ -30,6 +30,7 @@ export const TX_TYPES = [
   "swap-lifi",
   "swap-bittensor-evm",
   "swap-forevermoney",
+  "swap-bittensor-dtao",
   "bittensor-staking",
   "other",
 ] as const satisfies readonly (WalletTransactionInfo["type"] | "other")[]

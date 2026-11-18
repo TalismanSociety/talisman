@@ -15,6 +15,7 @@ import { useBalances, useIsBalanceInitializing } from "@ui/state/balances"
 import { useNetworksMapById, useTokens } from "@ui/state/chaindata"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
+import { dTaoTokenLabel } from "@ui/util/dTaoTokenLabel"
 import { getSameNetworkMirrorTokenIds } from "@ui/util/getSameNetworkMirrorTokenIds"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash-es/sortBy"
@@ -23,6 +24,7 @@ import { useTranslation } from "react-i18next"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
 import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { BittensorHotkeyAvatar } from "../Staking/Bittensor/components/BittensorHotkeyAvatar"
 import { buildTokenPickerList } from "./buildTokenPickerList"
 import { Fiat } from "./Fiat"
 import { NetworkFilterPicker } from "./NetworkFilterPicker"
@@ -185,10 +187,14 @@ const TokenRow: FC<TokenRowProps> = ({
           >
             <div className="flex grow items-center gap-2 overflow-hidden">
               <div data-testid="picker-token-name" className="truncate">
-                {token.symbol}
+                {token.type === "substrate-dtao" ? dTaoTokenLabel(token) : token.symbol}
               </div>
-              <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
-              {!!token.name && token.name !== token.symbol && (
+              <TokenTypePill
+                // a subnet's alpha is native to Bittensor; bridged alpha keeps its own type
+                type={token.type === "substrate-dtao" ? "substrate-native" : token.type}
+                className="shrink-0 rounded-xs px-1 py-0.5"
+              />
+              {token.type !== "substrate-dtao" && !!token.name && token.name !== token.symbol && (
                 // shrink-9999 makes it so token.name is the primary thing that truncates, instead of the symbol
                 <div className="min-w-0 shrink-9999 truncate font-normal text-body-inactive">
                   {token.name}
@@ -211,11 +217,23 @@ const TokenRow: FC<TokenRowProps> = ({
           </div>
           <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-right font-light text-body-secondary text-xs">
             <div className="flex grow items-center overflow-hidden">
-              <div className="truncate" data-testid="picker-token-network">
-                <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
-                <NetworkName networkId={token.networkId} />
-                {token.type === "substrate-dtao" && (
-                  <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+              <div className="flex min-w-0 items-center gap-3" data-testid="picker-token-network">
+                <div className="flex shrink-0 items-center">
+                  <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
+                  <NetworkName networkId={token.networkId} />
+                </div>
+                {token.type === "substrate-dtao" && !!token.hotkey && (
+                  <>
+                    <div className="h-2.5 w-px shrink-0 bg-grey-700" />
+                    <div className="flex min-w-0 items-center gap-2">
+                      <BittensorHotkeyAvatar hotkey={token.hotkey} className="text-sm" />
+                      <BittensorValidatorName
+                        hotkey={token.hotkey}
+                        noTooltip
+                        className="min-w-0 truncate"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -338,7 +356,11 @@ const TokensList: FC<TokensListProps> = ({
     const tokens = allTokens
       .filter(tokenFilter)
       .filter(filterAccountCompatibleTokens)
-      .filter(isTransferableToken)
+      // a subnet that disables transfers still stakes and unstakes
+      .filter(
+        (token) =>
+          isTransferableToken(token) || (allowUntransferable && token.type === "substrate-dtao")
+      )
     const mirrorTokenIds = hideSameNetworkMirrors
       ? getSameNetworkMirrorTokenIds(tokens)
       : new Set<TokenId>()
@@ -353,7 +375,14 @@ const TokensList: FC<TokensListProps> = ({
           chainNameSearch: network?.name,
         }
       })
-  }, [allTokens, filterAccountCompatibleTokens, hideSameNetworkMirrors, networksMap, tokenFilter])
+  }, [
+    allTokens,
+    allowUntransferable,
+    filterAccountCompatibleTokens,
+    hideSameNetworkMirrors,
+    networksMap,
+    tokenFilter,
+  ])
 
   const tokensWithBalances = useMemo<TokenData[]>(
     () =>

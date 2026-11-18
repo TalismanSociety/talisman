@@ -1,6 +1,7 @@
 import type { SignerPayloadJSON } from "@core/domains/signing/types"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { ScaleApiSubmitMode } from "@talismn/sapi"
 import type { SolTransaction } from "@talismn/solana"
 import type { PayloadLockListener } from "@ui/hooks/useReportPayloadLock"
 import type { TransactionRequest } from "viem"
@@ -10,6 +11,8 @@ export type TxSubmitButtonTransactionDot = {
   payload: SignerPayloadJSON
   txInfo?: WalletTransactionInfo
   txMetadata?: Uint8Array | `0x${string}`
+  /** how the wallet submits it, "default" when absent */
+  mode?: ScaleApiSubmitMode
 }
 
 export type TxSubmitButtonTransactionEth = {

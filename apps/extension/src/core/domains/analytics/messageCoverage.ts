@@ -126,6 +126,7 @@ export const MESSAGE_COVERAGE = {
   "pri(chaindata.networks.remove)": { event: "custom_network_deleted" },
   "pri(chaindata.tokens.upsert)": { event: ["custom_token_added", "custom_token_edited"] },
   "pri(chaindata.tokens.remove)": { event: "custom_token_deleted" },
+  "pri(chaindata.tokens.registerDTaoPosition)": { exempt: "housekeeping" },
   "pri(sendFunds.confirmedAddresses.add)": { flow: "send" },
   "pri(queryCache.get)": "read",
   "pri(queryCache.set)": { exempt: "transport" },

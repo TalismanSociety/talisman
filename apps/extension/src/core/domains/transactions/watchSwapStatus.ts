@@ -11,7 +11,7 @@ import {
   fetchStealthexStatus,
   type SwapStatusEnv,
 } from "../swaps/status"
-import { isTxInfoSwap } from "./exports"
+import { isTxInfoBittensorStake, isTxInfoSwap } from "./exports"
 import { updateSwapStatus } from "./store.transactions"
 import {
   FINAL_SWAP_STATUSES,
@@ -63,8 +63,7 @@ export const watchSwapStatus = async (txId: string): Promise<void> => {
     const tx = await db.transactionsV2.get(txId)
     if (!tx?.txInfo || !isTxInfoSwap(tx.txInfo)) return
 
-    // bittensor-staking is purely on-chain — no exchange status to track
-    if (tx.txInfo.type === "bittensor-staking") return
+    if (isTxInfoBittensorStake(tx.txInfo)) return
 
     // Already in a terminal state — nothing to do
     if (tx.swapStatus && isFinalSwapStatus(tx, tx.swapStatus)) return
@@ -186,7 +185,7 @@ export const resumeSwapWatchers = async () => {
       .equals("success")
       .filter((tx) => {
         if (!tx.txInfo || !isTxInfoSwap(tx.txInfo)) return false
-        if (tx.txInfo.type === "bittensor-staking") return false
+        if (isTxInfoBittensorStake(tx.txInfo)) return false
         // Resume if swapStatus hasn't reached a terminal state
         return !tx.swapStatus || !isFinalSwapStatus(tx, tx.swapStatus)
       })

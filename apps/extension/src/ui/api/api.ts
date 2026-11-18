@@ -192,6 +192,8 @@ export const api: MessageTypes = {
   tokens: (cb) => messageService.subscribe("pri(chaindata.tokens.subscribe)", null, cb),
   tokenUpsert: (token) => messageService.sendMessage("pri(chaindata.tokens.upsert)", token),
   tokenRemove: (id) => messageService.sendMessage("pri(chaindata.tokens.remove)", { id }),
+  registerDTaoPosition: (position) =>
+    messageService.sendMessage("pri(chaindata.tokens.registerDTaoPosition)", position),
 
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),

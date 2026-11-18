@@ -5,6 +5,7 @@ import {
   isTokenKnown,
   type Network,
   networkIdFromTokenId,
+  subDTaoTokenId,
   type Token,
 } from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
@@ -70,6 +71,7 @@ export const SWAP_PROTOCOLS = [
   "stealthex",
   "lifi",
   "bittensor-evm",
+  "bittensor-dtao",
   "forevermoney",
 ] as const
 export type SwapProtocol = (typeof SWAP_PROTOCOLS)[number]
@@ -117,8 +119,12 @@ export const networkIdForAnalytics = (network: Network | null | undefined): stri
 export const tokenSymbolForAnalytics = (token: Token | null | undefined): string =>
   token && !isTokenCustom(token) ? symbolForAnalytics(token.symbol) : "unknown"
 
+/** a dTAO position's id ends with its validator's address: only its subnet is reported */
+const reportedTokenId = (token: Token) =>
+  token.type === "substrate-dtao" ? subDTaoTokenId(token.networkId, token.netuid) : token.id
+
 export const tokenIdForAnalytics = (token: Token | null | undefined): string =>
-  token && isTokenKnown(token) ? tokenIdStringForAnalytics(token.id) : "custom"
+  token && isTokenKnown(token) ? tokenIdStringForAnalytics(reportedTokenId(token)) : "custom"
 
 export const copiedNetworkId = (network: Network | null | undefined): string =>
   network ? networkIdForAnalytics(network) : "generic"
@@ -138,6 +144,7 @@ const SWAP_TX_PROTOCOLS: Partial<Record<WalletTransactionInfo["type"], SwapProto
   "swap-lifi": "lifi",
   "swap-bittensor-evm": "bittensor-evm",
   "swap-forevermoney": "forevermoney",
+  "swap-bittensor-dtao": "bittensor-dtao",
 }
 
 export const swapOfTransaction = (

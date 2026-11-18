@@ -5,19 +5,15 @@ import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSignerPayloadQuery } from "@ui/hooks/sapi/useSignerPayloadQuery"
 import { useMemo } from "react"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
-import type { RemarkType } from "../utils/constants"
-import {
-  calculateEffectiveFeeRate,
-  calculateFee,
-  calculateMinimumStakeInput,
-} from "../utils/feeCalculations"
+import { FEE_ESTIMATE_HOTKEY, type RemarkType } from "../utils/constants"
+import { calculateEffectiveFeeRate } from "../utils/feeCalculations"
 import {
   getBittensorStakingPayload,
   getBittensorUnbondPayload,
-  getLimitPrice,
   getSwapSimulation,
 } from "../utils/helpers"
 import { getRemainderFloorPrice } from "../utils/nominationRemainder"
+import { getMinimumStakeInput, getPoolInput, getStakingQuoteMath } from "../utils/stakingQuote"
 import type { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
@@ -39,8 +35,6 @@ type UseBittensorStakingPayloadProps = {
   /** whole position exits and the hold window is off: claim-first + remove_stake_full_limit */
   fullExit?: boolean
 }
-
-const MOCKED_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
 
 export const useBittensorStakingPayload = ({
   networkId,
@@ -94,39 +88,37 @@ export const useBittensorStakingPayload = ({
   )
 
   // minimum input that accounts for swap fee and talisman fee
-  const minTaoStakeForInput = useMemo(() => {
-    if (typeof minTaoStake !== "bigint") return null
-    if (netuid === 0 || netuid === null) return minTaoStake
-    if (!minStakeSwapSimulation) return null
+  const minTaoStakeForInput = useMemo(
+    () =>
+      getMinimumStakeInput({
+        netuid,
+        baseMinimum: minTaoStake,
+        minStakeSimulation: minStakeSwapSimulation,
+        effectiveFeeRate,
+      }),
+    [minTaoStake, netuid, minStakeSwapSimulation, effectiveFeeRate]
+  )
 
-    return calculateMinimumStakeInput(minTaoStake, minStakeSwapSimulation.tao_fee, effectiveFeeRate)
-  }, [minTaoStake, netuid, minStakeSwapSimulation, effectiveFeeRate])
+  const minTaoBondForInput = useMemo(
+    () =>
+      getMinimumStakeInput({
+        netuid,
+        baseMinimum: minTaoBond,
+        minStakeSimulation: minStakeSwapSimulation,
+        effectiveFeeRate,
+      }),
+    [minTaoBond, netuid, minStakeSwapSimulation, effectiveFeeRate]
+  )
 
-  const minTaoBondForInput = useMemo(() => {
-    if (typeof minTaoBond !== "bigint") return null
-    if (netuid === 0 || netuid === null) return minTaoBond
-    if (!minStakeSwapSimulation) return null
-
-    return calculateMinimumStakeInput(minTaoBond, minStakeSwapSimulation.tao_fee, effectiveFeeRate)
-  }, [minTaoBond, netuid, minStakeSwapSimulation, effectiveFeeRate])
-
-  // amount to be swapped. in case of taoToAlpha on a subnet, we need to subtract the talisman fee first or it will invalidate the simulation.
   const amount = useMemo(() => {
     if (typeof netuid !== "number" || typeof amountIn !== "bigint") return null
-    if (netuid === 0) return amountIn
-
-    switch (direction) {
-      case "taoToAlpha": {
-        const talismanFee = calculateFee({
-          amount: amountIn,
-          feePercent: subnetFee,
-          seekDiscount: tier.discount,
-        })
-        return amountIn - talismanFee
-      }
-      case "alphaToTao":
-        return amountIn
-    }
+    return getPoolInput({
+      direction,
+      netuid,
+      amountIn,
+      feePercent: subnetFee,
+      seekDiscount: tier.discount,
+    })
   }, [amountIn, direction, netuid, subnetFee, tier.discount])
 
   const {
@@ -140,17 +132,24 @@ export const useBittensorStakingPayload = ({
     amountIn: amount,
   })
 
-  // price that we will pay if no slippage occurs
-  const swapPrice = useMemo(() => {
-    if (!simulation) return null
-    return getLimitPrice(simulation, direction, 0)
-  }, [simulation, direction])
+  const math = useMemo(() => {
+    if (!simulation || typeof amountIn !== "bigint") return null
+    return getStakingQuoteMath({
+      direction,
+      amountIn,
+      feePercent: subnetFee,
+      seekDiscount: tier.discount,
+      simulation,
+      alphaPrice: alphaPrice ?? null,
+      slippage: slippage / 100, // percentage to decimal
+    })
+  }, [simulation, amountIn, direction, subnetFee, tier.discount, alphaPrice, slippage])
 
-  const priceLimit = useMemo(() => {
-    if (!simulation) return null
-    const tolerance = slippage / 100 // percentage to decimal
-    return getLimitPrice(simulation, direction, tolerance)
-  }, [simulation, direction, slippage])
+  const swapPrice = math?.swapPrice ?? null
+  const priceLimit = math?.priceLimit ?? null
+  const priceImpact = math?.priceImpact ?? null
+  const talismanFee = math?.talismanFee ?? null
+  const amountOut = math?.amountOut ?? 0n // TODO should be null
 
   const minAlphaBond = useMemo(() => {
     if (typeof minTaoBond !== "bigint" || typeof alphaPrice !== "bigint") return null
@@ -161,35 +160,6 @@ export const useBittensorStakingPayload = ({
     })
     return taoToAlphaCeil(minTaoBond, floorPrice)
   }, [minTaoBond, alphaPrice, slippage, direction, priceLimit])
-
-  const priceImpact = useMemo(() => {
-    if (!alphaPrice || !swapPrice) return null
-    const scaleFactor = 10_000n // to get 4 decimal places
-    const diff = swapPrice - alphaPrice // bigint
-    const scaledPriceImpact = (diff * scaleFactor) / alphaPrice
-    return Number(scaledPriceImpact) / 100
-  }, [alphaPrice, swapPrice])
-
-  const talismanFee = useMemo(() => {
-    if (typeof amountIn !== "bigint" || !simulation) return null
-    // WARNING: because of slippage it would make more sense to send alpha instead of tao when unstaking
-    return calculateFee({
-      amount: direction === "taoToAlpha" ? amountIn : simulation?.tao_amount,
-      feePercent: subnetFee,
-      seekDiscount: tier.discount,
-    })
-  }, [amountIn, direction, simulation, subnetFee, tier.discount])
-
-  const amountOut = useMemo(() => {
-    if (!simulation || typeof talismanFee !== "bigint") return 0n // TODO should be null
-
-    switch (direction) {
-      case "taoToAlpha":
-        return simulation.alpha_amount
-      case "alphaToTao":
-        return simulation.tao_amount - talismanFee
-    }
-  }, [direction, simulation, talismanFee])
 
   const {
     data: swapPayload,
@@ -219,7 +189,7 @@ export const useBittensorStakingPayload = ({
     direction,
     address,
     netuid,
-    hotkey: hotkey ?? MOCKED_HOTKEY,
+    hotkey: hotkey ?? FEE_ESTIMATE_HOTKEY,
     amount: amount ?? minTaoBond,
     // Use fallbacks >= 16384 to match real values' 4-byte SCALE compact encoding - less would provide a fee estimate that is 2 plancks short
     priceLimit: priceLimit ?? 100_000n,

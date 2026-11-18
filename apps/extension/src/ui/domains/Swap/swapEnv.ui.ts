@@ -1,4 +1,6 @@
+import { log } from "@common/log"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { isAccountAddressEthereum } from "@core/domains/keyring/exports"
 import { getMetadataRpcFromDef } from "@core/domains/metadata/helpers"
 import type { WalletTransaction } from "@core/domains/transactions/types"
 import type {
@@ -10,8 +12,10 @@ import type {
 } from "@talismn/chaindata-provider"
 import { getScaleApi, type ScaleApi } from "@talismn/sapi"
 import { api } from "@ui/api"
+import { getSeekDiscountTier, readSeekStaked } from "@ui/domains/Staking/Seek/utils/seekDiscount"
 import { getCanonicalTransaction } from "@ui/domains/Transactions/getCanonicalTransaction"
-import { accounts$ } from "@ui/state/accounts"
+import { accounts$, getAccountsByCategory$ } from "@ui/state/accounts"
+import { getBalances$ } from "@ui/state/balances"
 import {
   getNetworkById$,
   getNetworks$,
@@ -25,6 +29,7 @@ import { firstValueFrom } from "rxjs"
 import type { Hex } from "viem"
 import { getSwapSlippageDecimal } from "./hooks/useSwapSlippage"
 import type {
+  BittensorSwapConfig,
   ExchangeParams,
   SettledTransaction,
   SettleLegParams,
@@ -99,6 +104,43 @@ const waitForTransaction = (hash: Hex, signal: AbortSignal) =>
     )
   })
 
+const SEEK_STAKED_MAX_AGE_MS = 60_000
+let seekStaked: { at: number; total: Promise<bigint | null> } | undefined
+
+const getSeekStaked = (contractNetworkId: string, contractAddress: string) => {
+  if (seekStaked && Date.now() - seekStaked.at < SEEK_STAKED_MAX_AGE_MS) return seekStaked.total
+
+  const total = (async () => {
+    const accounts = await firstValueFrom(getAccountsByCategory$("owned"))
+    const holders = accounts.filter(isAccountAddressEthereum).map((account) => account.address)
+    if (!holders.length) return 0n
+    const client = await getEvmPublicClient(contractNetworkId)
+    const staked = await readSeekStaked(client, contractAddress, holders)
+    return staked.reduce((sum, amount) => sum + amount, 0n)
+  })().catch((err) => {
+    log.warn("Failed to read staked SEEK", { err })
+    return null
+  })
+  seekStaked = { at: Date.now(), total }
+  return total
+}
+
+const getBittensorConfig = async (): Promise<BittensorSwapConfig> => {
+  const [remote, seek, flags] = await Promise.all([
+    remoteConfigStore.get("bittensor"),
+    remoteConfigStore.get("seek"),
+    remoteConfigStore.get("featureFlags"),
+  ])
+  const isEnabled = !!flags.SEEK_TAO_DISCOUNT
+  const totalStaked = isEnabled
+    ? await getSeekStaked(seek.stakingContractNetworkId, seek.stakingContractAddress)
+    : null
+  return {
+    remote,
+    seekDiscount: getSeekDiscountTier(totalStaked, seek.discountTiers, isEnabled).discount,
+  }
+}
+
 export const uiSwapEnv: SwapEnv = {
   getNetwork: (networkId) => firstValueFrom(getNetworkById$(networkId)),
   getToken: (tokenId) => firstValueFrom(getToken$(tokenId)),
@@ -107,6 +149,8 @@ export const uiSwapEnv: SwapEnv = {
   proxyFetch: (...args) => gandalfFetch(...args),
   fetch: (...args) => fetch(...args),
   getSwapsConfig: () => remoteConfigStore.get("swaps"),
+  getBittensorConfig,
+  getBalances: () => firstValueFrom(getBalances$("owned")),
   getTokensMap: <P extends NetworkPlatform>(platform?: P) =>
     firstValueFrom(getTokensMap$({ platform })) as Promise<Record<TokenId, TokenOfPlatform<P>>>,
   getNetworksMap: <P extends NetworkPlatform>(platform?: P) =>

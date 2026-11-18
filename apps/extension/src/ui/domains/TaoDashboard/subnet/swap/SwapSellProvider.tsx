@@ -6,6 +6,8 @@ import { useBittensorStakingPayload } from "@ui/domains/Staking/Bittensor/hooks/
 import { useBittensorStakingPositions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorStakingPositions"
 import { useGetBittensorColdkeyLock } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorColdkeyLock"
 import { useGetBittensorTransferableBalance } from "@ui/domains/Staking/Bittensor/hooks/useGetBittensorTransferableBalance"
+import { useMevShield } from "@ui/domains/Staking/Bittensor/hooks/useMevShield"
+import { useMevShieldFeeEstimate } from "@ui/domains/Staking/Bittensor/hooks/useMevShieldFeeEstimate"
 import {
   effectiveLockedAmount,
   getDTaoSubnetUnstakeInfo,
@@ -27,8 +29,7 @@ import { merge } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useTaoDashboardNetworkId } from "../../shared/TaoDashboardNetworkProvider"
-import { useMevShieldFeeEstimate } from "./useMevShieldFeeEstimate"
-import { useSwapMevShield, useSwapSubmit } from "./useSwapSubmit"
+import { useSwapSubmit } from "./useSwapSubmit"
 
 type SwapSellInputs = {
   positionId: string | null
@@ -193,7 +194,7 @@ const useSwapSellProvider = ({ netuid }: { netuid: number }) => {
     withMevShield,
     setIsMevProtectionEnabled,
     txMode,
-  } = useSwapMevShield({ netuid, account, direction: "sell" })
+  } = useMevShield({ netuid, account, direction: "sell" })
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!tokenIdIn || typeof state.valueIn !== "bigint" || typeof valueOut !== "bigint" || !hotkey)

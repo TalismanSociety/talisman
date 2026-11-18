@@ -6,6 +6,7 @@ import { isNotNil } from "@talismn/util"
 type RemoteConfig = {
   bittensor: {
     defaultValidatorsBySubnet: Record<string, string>
+    featuredValidators?: string[]
   }
 }
 
@@ -14,15 +15,17 @@ type RemoteConfig = {
  *
  * If the user has existing substrate-dtao stake balances on this network and subnet,
  * returns the hotkey with the largest balance.
- * Otherwise falls back to the remote-config default for the subnet, on mainnet only:
- * remote-config hotkeys don't exist on testnet.
+ * Otherwise falls back to remote config, on mainnet only: remote-config hotkeys don't exist on
+ * testnet. "subnet-default" reads the subnet's default validator. "featured" only picks among the
+ * featured validators: the subnet's default when it is one of them, else the first.
  */
 export const getDefaultValidatorHotkey = (
   networkId: NetworkId,
   netuid: number,
   remoteConfig: RemoteConfig,
   balances?: Balances,
-  address?: string | null
+  address?: string | null,
+  fallback: "subnet-default" | "featured" = "subnet-default"
 ): string | undefined => {
   const dtaoBalances =
     balances?.each
@@ -43,5 +46,9 @@ export const getDefaultValidatorHotkey = (
 
   if (networkId !== BITTENSOR_NETWORK_ID) return undefined
 
-  return remoteConfig.bittensor.defaultValidatorsBySubnet[netuid] ?? undefined
+  const subnetDefault = remoteConfig.bittensor.defaultValidatorsBySubnet[netuid] ?? undefined
+  if (fallback === "subnet-default") return subnetDefault
+
+  const featured = remoteConfig.bittensor.featuredValidators ?? []
+  return subnetDefault && featured.includes(subnetDefault) ? subnetDefault : featured[0]
 }

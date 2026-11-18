@@ -1,4 +1,5 @@
 import { Balances } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { describe, expect, it } from "vitest"
 
 import { type SortTokenDataOptions, sortTokenData } from "../sortTokenData"
@@ -67,5 +68,25 @@ describe("sortTokenData", () => {
 
     expect(sortIds([none, zero])).toEqual(["none", "zero"])
     expect(sortIds([zero, none])).toEqual(["zero", "none"])
+  })
+
+  it("orders subnets without a balance by subnet number, not by their symbol", () => {
+    const subnet = (netuid: number, symbol: string) => ({
+      token: {
+        ...makeToken(`sn${netuid}`, symbol),
+        type: "substrate-dtao",
+        netuid,
+      } as Token,
+      balances: new Balances([]),
+    })
+
+    const sorted = sortTokenData(
+      [subnet(115, "A"), subnet(87, "C"), subnet(9, "D"), subnet(103, "B")],
+      {
+        currency: "usd",
+      }
+    )
+
+    expect(sorted.map((data) => data.token.id)).toEqual(["sn9", "sn87", "sn103", "sn115"])
   })
 })

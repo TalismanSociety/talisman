@@ -17,6 +17,8 @@ type TokensAndFiatProps = {
   noTooltip?: boolean
   noCountUp?: boolean
   noSymbol?: boolean
+  /** replaces the token's symbol after the amount */
+  symbol?: string
   isBalance?: boolean
   noFiat?: boolean
   withLogo?: boolean
@@ -32,6 +34,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
   noTooltip,
   noCountUp,
   noSymbol,
+  symbol,
   isBalance,
   noFiat,
   tokensClassName,
@@ -64,7 +67,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
       <Tokens
         amount={balance.tokens}
         decimals={token.decimals}
-        symbol={noSymbol ? undefined : token.symbol}
+        symbol={noSymbol ? undefined : (symbol ?? token.symbol)}
         noCountUp={noCountUp}
         noTooltip={noTooltip}
         isBalance={isBalance}

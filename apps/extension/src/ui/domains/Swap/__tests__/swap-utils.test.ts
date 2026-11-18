@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { parseUserInputToPlanck, parseUserInputToPlanckOrUndefined } from "../swap-utils"
+import {
+  getAmountRefusal,
+  parseUserInputToPlanck,
+  parseUserInputToPlanckOrUndefined,
+} from "../swap-utils"
 
 describe("parseUserInputToPlanck", () => {
   it("parses whole number", () => {
@@ -45,5 +49,31 @@ describe("parseUserInputToPlanckOrUndefined", () => {
 
   it("returns 0n for '0'", () => {
     expect(parseUserInputToPlanckOrUndefined("0", 18)).toBe(0n)
+  })
+})
+
+describe("getAmountRefusal", () => {
+  it("returns what a provider says about the amount it accepts, as written", () => {
+    expect(getAmountRefusal(["Bittensor can unstake at most 40 α"])).toBe(
+      "Bittensor can unstake at most 40 α"
+    )
+    expect(
+      getAmountRefusal([
+        "Failed to fetch",
+        "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything, or at most 48.99 α.",
+      ])
+    ).toBe(
+      "Bittensor closes stakes worth less than 0.02 TAO. Unstake everything, or at most 48.99 α."
+    )
+  })
+
+  it("keeps the full-exit refusal, which names no amount", () => {
+    expect(
+      getAmountRefusal(["Bittensor closes stakes worth less than 0.02 TAO. Unstake everything."])
+    ).toBe("Bittensor closes stakes worth less than 0.02 TAO. Unstake everything.")
+  })
+
+  it("has nothing to say about other errors", () => {
+    expect(getAmountRefusal(["Failed to fetch", "Bittensor minimum is 0.002 TAO"])).toBeNull()
   })
 })

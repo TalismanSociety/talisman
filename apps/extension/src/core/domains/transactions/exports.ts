@@ -28,8 +28,13 @@ export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =
     "swap-lifi",
     "swap-bittensor-evm",
     "swap-forevermoney",
+    "swap-bittensor-dtao",
     "bittensor-staking",
   ])
+
+/** a stake or an unstake of TAO, from a staking wizard or from Swap: it settles with its transaction */
+export const isTxInfoBittensorStake = (txInfo: WalletTransactionInfo | undefined | null) =>
+  isTxInfoInTypes(txInfo, ["bittensor-staking", "swap-bittensor-dtao"])
 
 export const isTxInfoTransfer = (txInfo: WalletTransactionInfo | undefined | null) =>
   isTxInfoOfType(txInfo, "transfer")

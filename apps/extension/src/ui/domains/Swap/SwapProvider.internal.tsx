@@ -6,6 +6,7 @@ import { useAdditionalTokenRates } from "@ui/hooks/useAdditionalTokenRates"
 import { useBalanceByParams } from "@ui/hooks/useBalancesByParams"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Hex } from "viem"
+import { useDTaoStakeValidator } from "./hooks/useDTaoStakeValidator"
 import { useSwapAddresses } from "./hooks/useSwapAddresses"
 import { useSwapErc20Approval } from "./hooks/useSwapErc20Approval"
 import type { SwapInit } from "./hooks/useSwapModal"
@@ -170,6 +171,13 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     isLoadingToAssets,
   } = useSwapAssets(fromTokenId)
 
+  const { chooseValidator, isChoosingValidator } = useDTaoStakeValidator({
+    toTokenId,
+    address: toAddress,
+    toAssetIds,
+    setToTokenId,
+  })
+
   // -- Initialize form from stateInit (one-shot per mount) --
   const fromInitDone = useRef(false)
   const toInitDone = useRef(false)
@@ -202,7 +210,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
 
   const {
     isLoadingQuotes,
-    isQuoteDataCurrent,
+    isQuoteDataCurrent: isQuoteCurrentForPair,
     isAllQuotesSettled,
     hasQuoteError,
     quoteErrorMessages,
@@ -225,6 +233,9 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     enabled: swapView !== "submitted",
     freezeQuote: swapView === "confirm",
   })
+
+  // the quote on screen is for the destination the validator choice is about to replace
+  const isQuoteDataCurrent = isQuoteCurrentForPair && !isChoosingValidator
 
   // True when stateInit requests token pre-selection but assets haven't loaded yet
   const isInitializing = Boolean(
@@ -311,6 +322,7 @@ export const useSwapContextProvider = ({ stateInit, isOpen = false }: SwapProvid
     pickQuote,
     autoSelectQuote,
     isQuotePicked,
+    chooseValidator,
     resetForm,
     fromAssetIds,
     toAssetIds,
