@@ -1,3 +1,5 @@
+import { str } from "scale-ts"
+
 import type { KeypairCurve } from "../types"
 import { deriveKeypair } from "./utils"
 
@@ -13,15 +15,26 @@ const isDerivable = (derivationPath: string, curve: KeypairCurve) => {
   }
 }
 
+// The decimal junction code whose chain code is `bytes`: this version reads a decimal as a
+// little-endian number of up to 256 bits.
+const littleEndianDecimal = (bytes: Uint8Array) =>
+  bytes.reduceRight((value, byte) => (value << 8n) | BigInt(byte), 0n).toString()
+
 // Earlier versions kept only the `/code` and `//code` junctions they found and skipped every
 // other character: `//hard///password` was `//hard//password`, `//Alice-Bob` was `//Alice`. A
 // code that `+code` reads as a number was that number, wrapped to a u32: `//0x1000` was
-// `//4096`, `//Infinity` was `//0`.
+// `//4096`, `//Infinity` was `//0`. Any other code was its SCALE-encoded text. This version
+// reads text the same way, except a bare `0x`, which it rejects; the decimal code with the same
+// chain code stands in for it (`//0x` was `//7876616`, the bytes `08 30 78`).
 const legacySubstratePath = (derivationPath: string) =>
   [...derivationPath.matchAll(/(\/{1,2})(\w+)/g)]
     .map(([, separator = "", code = ""]) => {
       const number = Number(code)
-      return separator + (Number.isNaN(number) ? code : String(number >>> 0))
+      if (!Number.isNaN(number)) return separator + String(number >>> 0)
+      return (
+        separator +
+        (isDerivable(`//${code}`, "sr25519") ? code : littleEndianDecimal(str.enc(code)))
+      )
     })
     .join("")
 
