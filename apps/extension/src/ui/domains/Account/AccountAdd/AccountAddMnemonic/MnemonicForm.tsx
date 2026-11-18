@@ -93,7 +93,11 @@ export const AccountAddMnemonicForm = () => {
           } catch {
             return ctx.createError({
               path: "derivationPath",
-              message: t("Invalid derivation path"),
+              // `///` is the polkadot-js password syntax, which @talismn/crypto rejects
+              message:
+                platform === "polkadot" && derivationPath.includes("///")
+                  ? t("Passwords (///) aren't supported in derivation paths")
+                  : t("Invalid derivation path"),
             })
           }
 
