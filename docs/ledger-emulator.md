@@ -6,8 +6,8 @@ Dev builds of the extension can connect to it in place of a USB or HID Ledger. U
 
 ## Prerequisites
 
-- **Docker**, running. The image `ghcr.io/ledgerhq/speculos` is published for amd64 and arm64.
-- **`gh`**, signed in, to download the app builds. The Polkadot and Solana builds are GitHub Actions artifacts, which GitHub serves only to signed-in users.
+- **Docker**, running. The script pins the image `ghcr.io/ledgerhq/speculos` by digest. The digest names a multi-platform image, for amd64 and arm64.
+- **`git`**, to fetch the source of the Polkadot and Solana apps, which `fetch-apps` builds in Docker.
 - **`curl`** and **`jq`**, for every command that talks to the emulator.
 
 Speculos serves its API on port 5000 inside the container. The script publishes it on host port **5001**, because macOS AirPlay Receiver listens on 5000. The extension connects to `http://127.0.0.1:5001` only, so keep the default port when you use the extension.
@@ -26,18 +26,18 @@ Speculos serves its API on port 5000 inside the container. The script publishes 
 
    An `export ` prefix and surrounding quotes are accepted. `LEDGER_TEST_MNEMONIC` in the environment takes precedence. The phrase must have 12, 18 or 24 words, or `start` fails without printing it. Leave it unset to use the public Speculos default phrase (`glory promote mansion …`). Everyone shares that phrase, so its testnet balances are not yours to rely on.
 
-3. Download the app builds:
+3. Get the app builds:
 
    ```sh
    pnpm ledger:emulator fetch-apps
    ```
 
-   They go to `~/.cache/talisman/ledger-apps/`, one `.elf` per device model:
+   They go to `~/.cache/talisman/ledger-apps/`, one `.elf` for the device model in `SPECULOS_MODEL`:
    - `ethereum-<version>/`: the Ethereum app release pinned in the script ([app-ethereum releases](https://github.com/LedgerHQ/app-ethereum/releases)).
-   - `polkadot/`: the Polkadot generic app from the newest CI build on `main` of [LedgerHQ/app-polkadot](https://github.com/LedgerHQ/app-polkadot).
-   - `solana/`: the Solana app from the newest CI build on `master` of [LedgerHQ/app-solana](https://github.com/LedgerHQ/app-solana).
+   - `polkadot-<commit>/`: the Polkadot generic app, built from the commit of [LedgerHQ/app-polkadot](https://github.com/LedgerHQ/app-polkadot) pinned in the script.
+   - `solana-<commit>/`: the Solana app, built from the commit of [LedgerHQ/app-solana](https://github.com/LedgerHQ/app-solana) pinned in the script.
 
-   Run it again to get newer Polkadot and Solana builds. It skips downloads it already has. See [CI-built apps](#ci-built-apps).
+   The first run pulls Ledger's builder image (4 GB) and builds the two apps, which takes a few seconds once the image is there. Later runs skip what is already built. See [App builds](#app-builds).
 
 4. Start the emulator and check it:
 
@@ -55,7 +55,7 @@ Speculos serves its API on port 5000 inside the container. The script publishes 
    pnpm ledger:emulator enable-blind-signing
    ```
 
-   The setting lasts until the container stops.
+   The setting lasts until the container stops, or until `disable-blind-signing`. EIP-712 typed data needs it too, unless the Ethereum app knows the contract. While the setting is off, the device answers such a request with a `Blind signing must be enabled in settings` warning, which stays until a button is pressed. With it on, the review starts with a `Blind signing ahead` warning that both buttons accept: `approve` does that.
 
 ## Connect the extension
 
@@ -73,29 +73,54 @@ This route exercises every APDU and every device screen. It does not exercise We
 
 ## E2E tests
 
-`playwright/e2e-tests/ledger-emulator.spec.ts` connects account 0 of each device app through the wallet UI and compares it with the address the app gives when asked directly. It also signs a personal message from a test dapp, approves it on the device, and compares the signature with one that the app makes directly.
+`playwright/e2e-tests/ledger/` has one spec per device app. Each spec is a table of cases, which `suite.ts` turns into tests that drive the wallet UI: connect account 0, send a request from a test dapp, click "Sign on Ledger", approve on the device.
+
+| Device app | Signing cases                                                                         | Error cases                                                                        |
+| ---------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Ethereum   | personal message, legacy transaction, EIP-1559 transaction, EIP-712 typed data        | rejected on the device, blind signing disabled, wrong app open, emulator stopped   |
+| Polkadot   | extrinsic (`signPayload`), raw message (`signRaw`)                                    | rejected on the device, wrong app open, emulator stopped                           |
+| Solana     | transaction, message                                                                  | rejected on the device, wrong app open, emulator stopped                           |
+
+A signing case verifies its result against the account's address or public key, with a crypto library: it recovers the signer of the Ethereum signature or of the mined transaction, and checks the ed25519 signature of the others over the bytes that the chain or a verifier checks. An error case asserts the error the wallet shows, then recovers and checks that the retry signs.
 
 ```sh
+pnpm ledger:emulator fetch-apps
 pnpm build:extension
 pnpm test:e2e:ledger
 ```
 
-The spec runs only with `E2E_LEDGER_EMULATOR=1`, which `pnpm test:e2e:ledger` sets, so the default e2e run and CI skip it. It skips with the reason when Docker is not running or the app builds are missing. It stops any running emulator before each test, and at the end. Set `E2E_HEADLESS=1` to run the browser without a window.
+The specs run only with `E2E_LEDGER_EMULATOR=1`, which `pnpm test:e2e:ledger` sets, so the default e2e run skips them. `pnpm test:e2e:ledger` also sets one worker: Speculos runs one app on one port. Outside CI the specs skip with the reason when Docker is not running or the app builds are missing. They stop any running emulator at the end, and after a failed test. Set `E2E_HEADLESS=1` to run the browser without a window.
+
+What the specs need at run time:
+
+- **Docker**, for Speculos and for Anvil. The Ethereum spec starts Anvil itself (`ghcr.io/foundry-rs/foundry`, container `talisman-ledger-anvil`, port 8546, chain id 31337) and adds it to the wallet from the dapp. It is a chain of its own because chaindata fixes the fee type of Ethereum mainnet: on a chain without a fee type the wallet sends a legacy transaction when the base fee is zero and an EIP-1559 transaction otherwise, so the spec sets the base fee to get each type.
+- **The live Polkadot network**, for the extrinsic case. The Polkadot app decodes a transaction with a proof of the runtime metadata, so the wallet downloads the metadata, and the test reads the runtime version and the metadata to rebuild the signed bytes.
+- **The live Solana network**, for the transaction case. The wallet lets the user sign only while the transaction's blockhash is valid, so the test asks for a recent one.
+
+The tests reach both networks over HTTP through the RPCs that the wallet ships with (`initChaindata.json`). No other case needs a network.
+
+The specs read the device directly only while the wallet does not talk to it. Speculos has one APDU channel, and two clients at once get each other's answers.
+
+### In CI
+
+`.github/workflows/ledger-e2e.yml` runs `pnpm test:e2e:ledger` with `E2E_HEADLESS=1`: on pull requests from this repository that change Ledger code, the script, the specs or the workflow, every night, and on demand. It is not a required check. It caches `~/.cache/talisman/ledger-apps`, keyed on `pnpm ledger:emulator apps-key`, so the builder image is pulled only when a pin changes. It uses the public Speculos recovery phrase, so it has no mnemonic secret.
 
 ## Commands
 
 | Command                                          | Effect                                                                                                                   |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `fetch-apps`                                     | Download the Ethereum, Polkadot and Solana app builds.                                                                   |
+| `fetch-apps`                                     | Download the pinned Ethereum app release, and build the Polkadot and Solana apps from their pinned commits.              |
+| `apps-key`                                       | Print the pins of the app builds, one per line. CI hashes them into the key of its cache of the builds.                   |
 | `start [ethereum\|polkadot\|solana\|<path>.elf]` | Start the emulator (default `ethereum`). Reuses a running emulator with the same app and model, and fails for any other. |
 | `stop`                                           | Remove the container. Prints `not running` when there is none.                                                           |
 | `status`                                         | Check Docker, the container and the API. Exits non-zero on any `FAIL`.                                                   |
 | `screen`                                         | Print the text on the device screen.                                                                                     |
 | `press <left\|right\|both>`                      | Press a button, then print the screen. `both` confirms.                                                                  |
 | `press-until <regex> [max]`                      | Press right until the screen text matches.                                                                               |
-| `approve`                                        | Step through a review to its Sign, Accept or Approve screen and confirm.                                                 |
+| `approve`                                        | Step through a review to its Sign, Accept or Approve screen and confirm. Accepts the blind signing warning first.        |
 | `reject`                                         | Step through a review to its Reject screen and confirm.                                                                  |
 | `enable-blind-signing`                           | Turn on blind signing in the Ethereum app.                                                                               |
+| `disable-blind-signing`                          | Turn it off again.                                                                                                       |
 | `apdu <hex>`                                     | Send one APDU. Prints the response hex, status word included.                                                            |
 | `eth-address [index]`                            | Print the Ethereum address at `m/44'/60'/0'/0/<index>`.                                                                  |
 | `screenshot <file.png>`                          | Save the device screen as a PNG.                                                                                         |
@@ -107,7 +132,8 @@ Settings, all optional, read from the environment:
 | `LEDGER_TEST_MNEMONIC` | from `apps/extension/.env`, else the Speculos default | Recovery phrase.                                                                                                                                 |
 | `SPECULOS_API_PORT`    | `5001`                                              | Host port of the API, bound to `127.0.0.1`. The extension uses 5001 only.                                                                        |
 | `SPECULOS_MODEL`       | `nanox`                                             | `nanox`, `nanosp`, `stax`, `flex` or `apex_p`. Stax, Flex and Apex are touch devices: drive them with `/finger` (see [The REST API](#the-rest-api)). |
-| `SPECULOS_IMAGE`       | `ghcr.io/ledgerhq/speculos:latest`                  | Docker image. Pin a tag such as `v0.27.4` for reproducible runs.                                                                                 |
+| `SPECULOS_IMAGE`       | `ghcr.io/ledgerhq/speculos@sha256:56c7ec84…`        | Docker image of the emulator, pinned by digest in the script.                                                                                    |
+| `LEDGER_APP_BUILDER_IMAGE` | `ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite@sha256:45ec491f…` | Docker image that `fetch-apps` builds the Polkadot and Solana apps in, pinned by digest in the script.                |
 | `SPECULOS_CONTAINER`   | `talisman-speculos`                                 | Container name.                                                                                                                                  |
 | `LEDGER_APPS_DIR`      | `~/.cache/talisman/ledger-apps`                     | Where `fetch-apps` stores app builds.                                                                                                            |
 
@@ -149,18 +175,15 @@ Connect Ledger offers three account types. Each is signed by its own device app.
 
 The Polkadot generic app derives `m/44'/354'/<account>'/0'/<index>'`. Solana offers Ledger Live (`44'/501'/<index>'`) and Classic (`44'/501'/<index>'/0'`) paths. The network-specific Substrate apps (the "Migration App" choice) have no build here.
 
-### CI-built apps
+### App builds
 
-The Ethereum app is a pinned GitHub release. The Polkadot generic app and the Solana app publish no release builds. Their CI uploads emulator builds on every push to the default branch, as GitHub Actions artifacts with one `<model>/bin/app.elf` per device model.
+The emulator and the device apps are pinned at the top of `scripts/ledger-emulator.sh`: the Speculos image and the builder image by digest, the Ethereum app by release version, the Polkadot and Solana apps by commit. A developer and CI get the same files from `fetch-apps`.
 
-| App      | Repository                                                        | Branch   | Artifacts                                                        |
-| -------- | ----------------------------------------------------------------- | -------- | ---------------------------------------------------------------- |
-| Polkadot | [LedgerHQ/app-polkadot](https://github.com/LedgerHQ/app-polkadot) | `main`   | `compiled_app_binaries`                                          |
-| Solana   | [LedgerHQ/app-solana](https://github.com/LedgerHQ/app-solana)     | `master` | `guidelines_enforcer_app_binaries`, else `compiled_app_binaries` |
+The Ethereum app is a GitHub release. The Polkadot generic app and the Solana app publish no release builds. Their CI uploads emulator builds as GitHub Actions artifacts, which GitHub deletes after 90 days, so a pinned artifact stops working. `fetch-apps` therefore fetches each repository at the pinned commit and runs `make` in Ledger's builder image, `ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite`. With the image pinned, the build of a commit gives the same `.elf` every time.
 
-`fetch-apps` downloads the newest unexpired artifact from a push to the upstream repository's branch, and writes its run id and artifact name to `<app>/ci-build`. It skips runs from forks and from other triggers: never run a fork's build in the emulator, which holds the recovery phrase. Solana's `compiled_app_binaries` is built with `TRUSTED_NAME_TEST_KEY=1`, so `fetch-apps` uses it only when no `guidelines_enforcer_app_binaries` artifact is left.
+To move to a newer app, change its pin in the script and run `fetch-apps`, then `pnpm test:e2e:ledger`. Take commits from the default branch of the upstream repository only: the emulator holds the recovery phrase, so never build a fork.
 
-GitHub deletes the artifacts after 90 days. If `fetch-apps` reports `no unexpired … artifact`, build the app with Ledger's builder image, `ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite`, as the repository's README describes. Then start the build by path:
+To try another build, start it by path:
 
 ```sh
 pnpm ledger:emulator start ~/src/app-solana/build/nanox/bin/app.elf
