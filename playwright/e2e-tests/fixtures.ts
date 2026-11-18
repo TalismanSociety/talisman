@@ -85,7 +85,12 @@ export const test = testWithExtensionBuild.extend<{
   context: async ({ extensionPath }, utilize) => {
     const context = await chromium.launchPersistentContext("", {
       headless: false,
-      args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
+      args: [
+        `--disable-extensions-except=${extensionPath}`,
+        `--load-extension=${extensionPath}`,
+        // Playwright's own headless shell cannot load extensions, Chromium's new headless can
+        ...(process.env.E2E_HEADLESS === "1" ? ["--headless=new"] : []),
+      ],
     })
 
     context.on("weberror", (err) => {
