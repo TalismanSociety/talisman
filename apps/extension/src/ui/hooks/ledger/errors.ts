@@ -199,7 +199,8 @@ export const getOpenLedgerAppError = (appName: string, cause?: unknown) => {
 
 const getErrorFromCode = (code: number | undefined, appName: string, cause: unknown) => {
   switch (code) {
-    case 27014:
+    case 27013: // 0x6985, the Ethereum and Solana apps
+    case 27014: // 0x6986, the Polkadot app
       return new TalismanLedgerError(
         "UserRejected",
         t("Transaction was rejected by the Ledger device."),
@@ -218,10 +219,12 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
         { cause }
       )
 
-    case 27264: // 0x6a80 ApduReplySolanaInvalidMessage
+    case 27264: // 0x6a80 ApduReplySolanaInvalidMessage, and invalid data in the Ethereum app
     case 27265: // 0x6a81 ApduReplySolanaInvalidMessageHeader
     case 27266: // 0x6a82 ApduReplySolanaInvalidMessageFormat
     case 27267: // 0x6a83 ApduReplySolanaInvalidMessageSize
+      // only the Solana app answers 0x6a81 to 0x6a83: for any other app, the Solana app is the one open
+      if (code !== 27264 && appName !== "Solana") return getOpenLedgerAppError(appName, cause)
       return new TalismanLedgerError(
         "InvalidRequest",
         t("The Ledger app rejected this message. Check for app updates in Ledger Live."),
