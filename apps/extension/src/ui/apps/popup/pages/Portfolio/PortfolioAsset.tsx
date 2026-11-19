@@ -12,6 +12,7 @@ import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDeta
 import { BittensorSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorSettingsToolbarButton"
 import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
 import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
+import { useAssetDetails } from "@ui/domains/Portfolio/AssetDetails/useAssetDetails"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -24,15 +25,16 @@ import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 
-const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
+const SendFundsButton: FC<{ symbol: string; balances: Balances }> = ({ symbol, balances }) => {
   const { t } = useTranslation()
   const { selectedAccount: account } = usePortfolioNavigation()
+  const { tokenIds } = useAssetDetails(balances)
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     "token_details",
     account,
     undefined,
-    symbol
+    tokenIds
   )
 
   return (
@@ -90,7 +92,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             <BittensorStakeToolbarButton balances={balancesToDisplay} />
             <BittensorUnstakeToolbarButton balances={balancesToDisplay} />
             <BittensorConvictionLockToolbarButton balances={balancesToDisplay} />
-            <SendFundsButton symbol={symbol} />
+            <SendFundsButton symbol={symbol} balances={balancesToDisplay} />
             <BittensorDashboardToolbarButton balances={balancesToDisplay} />
           </div>
         </div>

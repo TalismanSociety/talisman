@@ -45,5 +45,5 @@ export const useAssetDetails = (balances: Balances) => {
     [balances, currency, hydrate, tokenIds]
   )
 
-  return { balancesByToken }
+  return { tokenIds, balancesByToken }
 }

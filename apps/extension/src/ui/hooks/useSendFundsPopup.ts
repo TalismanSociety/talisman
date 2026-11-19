@@ -25,17 +25,20 @@ export const useSendFundsPopup = (
   entry: SendEntry,
   account: Account | null | undefined,
   tokenId?: TokenId,
-  tokenSymbol?: string,
+  tokenIds?: TokenId[],
   to?: Address
 ) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
+  const sendableTokenIds = useMemo(() => (tokenId ? [tokenId] : tokenIds), [tokenId, tokenIds])
   const transferableBalance = useMemo(() => {
-    const owned = new Balances(balances.each.filter((b) => !tokenId || b.tokenId === tokenId))
+    const owned = new Balances(
+      balances.each.filter((b) => !sendableTokenIds || sendableTokenIds.includes(b.tokenId))
+    )
     return owned.sum.planck.transferable
-  }, [balances, tokenId])
+  }, [balances, sendableTokenIds])
 
   const { canSendFunds, cannotSendFundsReason } = useMemo<{
     canSendFunds: boolean
@@ -52,7 +55,7 @@ export const useSendFundsPopup = (
         canSendFunds: false,
         cannotSendFundsReason: t("Please send funds on Signet: {{url}}", { url: account.url }),
       }
-    if (tokenId && transferableBalance === 0n)
+    if (sendableTokenIds && transferableBalance === 0n)
       return {
         canSendFunds: false,
         cannotSendFundsReason: t("No tokens available to send"),
@@ -78,12 +81,12 @@ export const useSendFundsPopup = (
     if (token && !isTransferableToken(token))
       return { canSendFunds: false, cannotSendFundsReason: t("This token is not transferable") }
     return { canSendFunds: true }
-  }, [account, accounts, t, to, tokenId, transferableBalance, token])
+  }, [account, accounts, t, to, sendableTokenIds, transferableBalance, token])
 
   const openSendFundsPopup = useCallback(() => {
     if (!canSendFunds) return
-    api.sendFundsOpen({ entry, from: account?.address, tokenId, tokenSymbol, to })
-  }, [account?.address, canSendFunds, entry, to, tokenId, tokenSymbol])
+    api.sendFundsOpen({ entry, from: account?.address, tokenId, tokenIds, to })
+  }, [account?.address, canSendFunds, entry, to, tokenId, tokenIds])
 
   return { canSendFunds, cannotSendFundsReason, openSendFundsPopup }
 }

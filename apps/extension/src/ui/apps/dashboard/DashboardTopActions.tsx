@@ -4,6 +4,8 @@ import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useAssetDetails } from "@ui/domains/Portfolio/AssetDetails/useAssetDetails"
+import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
@@ -13,6 +15,7 @@ import {
 } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
+import { usePortfolioBalances } from "@ui/state/portfolio"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
@@ -48,6 +51,12 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
   // not located in the asset details route, so we can't use useParams
   const match = useMatch("/portfolio/tokens/:symbol")
   const symbol = useMemo(() => match?.params.symbol, [match])
+  const { allBalances } = usePortfolioBalances()
+  const assetBalances = useMemo(
+    () => allBalances.find((b) => !!symbol && b.token?.symbol === symbol),
+    [allBalances, symbol]
+  )
+  const { tokenIds } = useAssetDetails(useDisplayBalances(assetBalances))
 
   const actions = useMemo<ActionDef[]>(
     () =>
@@ -59,7 +68,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
             api.sendFundsOpen({
               entry: "dashboard",
               from: selectedAddress,
-              tokenSymbol: symbol || undefined,
+              tokenIds,
             }),
           disabled: disableActions,
           disabledReason,
@@ -110,7 +119,7 @@ export const DashboardTopActions: FC<DashboardTopActionsProps> = ({ className })
       selectedAccounts.length,
       canBuy,
       selectedAddress,
-      symbol,
+      tokenIds,
       openCopyAddressModal,
       openSwapModal,
       openRampsModal,

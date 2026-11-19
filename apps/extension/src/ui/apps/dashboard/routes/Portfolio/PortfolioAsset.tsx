@@ -11,6 +11,7 @@ import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDeta
 import { BittensorSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorSettingsToolbarButton"
 import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
 import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
+import { useAssetDetails } from "@ui/domains/Portfolio/AssetDetails/useAssetDetails"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -83,15 +84,16 @@ const HeaderRow: FC<{
   )
 }
 
-const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
+const SendFundsButton: FC<{ symbol: string; balances: Balances }> = ({ symbol, balances }) => {
   const { selectedAccount: account } = usePortfolioNavigation()
+  const { tokenIds } = useAssetDetails(balances)
 
   // don't set the token id here because it could be one of many
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     "token_details",
     account,
     undefined,
-    symbol
+    tokenIds
   )
 
   return (
@@ -139,7 +141,7 @@ const TokenBreadcrumb: FC<{
         <BittensorStakeToolbarButton balances={balances} />
         <BittensorUnstakeToolbarButton balances={balances} />
         <BittensorConvictionLockToolbarButton balances={balances} />
-        <SendFundsButton symbol={symbol} />
+        <SendFundsButton symbol={symbol} balances={balances} />
         <BittensorDashboardToolbarButton balances={balances} />
       </div>
     </div>
