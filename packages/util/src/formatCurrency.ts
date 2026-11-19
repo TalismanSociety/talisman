@@ -2,8 +2,8 @@ const INTL_CURRENCY_OVERRIDES: Partial<
   Record<string, { symbol?: string; fractionDigits?: number }>
 > = {
   btc: { symbol: "₿", fractionDigits: 6 },
-  eth: { symbol: "Ξ" },
-  tao: { symbol: "τ" },
+  eth: { symbol: "Ξ", fractionDigits: 5 },
+  tao: { symbol: "τ", fractionDigits: 4 },
   idr: { fractionDigits: 0 },
 }
 
