@@ -180,6 +180,7 @@
   --animate-spin-once: spin 4s linear forwards;
   --animate-scale-in-out-once: scale-in-out 1.5s forwards;
   --animate-slide-in-up: slide-in-up 300ms ease-out;
+  --animate-marquee: marquee var(--marquee-duration, 40s) linear infinite;
 
   @keyframes fade-in {
     0% {
@@ -199,6 +200,15 @@
     }
     100% {
       transform: scale(0);
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
     }
   }
 

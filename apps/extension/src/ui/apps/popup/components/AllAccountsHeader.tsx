@@ -15,7 +15,10 @@ import { type FC, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => {
+export const AllAccountsHeader: FC<{ accounts: Account[]; hideActions?: boolean }> = ({
+  accounts,
+  hideActions,
+}) => {
   const navigate = useNavigate()
   const reportAccountSwitched = useReportAccountSwitched()
   const handleClick = useCallback(() => {
@@ -27,7 +30,7 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
   const disabled = useMemo(() => !accounts.length, [accounts.length])
 
   return (
-    <div ref={ref} className="relative h-35 w-full">
+    <div ref={ref} className={cn("relative w-full", hideActions ? "h-30" : "h-35")}>
       <button
         type="button"
         className={cn(
@@ -50,6 +53,7 @@ export const AllAccountsHeader: FC<{ accounts: Account[] }> = ({ accounts }) => 
         className="pointer-events-none absolute top-0 left-0 size-full p-6"
         mouseOver={isHovered}
         disabled={disabled}
+        hideActions={hideActions}
       />
       <div className="absolute top-3 right-3 flex">
         <FullscreenButton />

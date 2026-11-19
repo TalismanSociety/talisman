@@ -33,6 +33,9 @@ export interface SettingsStoreData {
   earnDiscoverTypeFilter: string | null
   earnDiscoverProviderFilter: string | null
   developerMode: boolean
+  aMode: boolean
+  /** shortcut ids pinned to the A mode Favourites group */
+  aModeFavourites: string[]
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
@@ -65,6 +68,17 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   earnDiscoverProviderFilter: null,
   nftsSortBy: "date",
   developerMode: false,
+  aMode: false,
+  aModeFavourites: [
+    "activity",
+    "earn-positions",
+    "add-account",
+    "manage-accounts",
+    "address-book",
+    "connected-sites",
+    "recovery-phrases",
+    "manage-networks",
+  ],
   polkadotVaultSignWithProof: true,
   ledgerTransportType: "hid",
   swapSlippage: 0.5,

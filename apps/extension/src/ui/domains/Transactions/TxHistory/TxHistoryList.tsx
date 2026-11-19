@@ -267,7 +267,7 @@ const TransactionLogo: FC<{
   )
 }
 
-const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
+export const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
   const { t } = useTranslation()
 
   switch (status) {

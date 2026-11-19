@@ -402,7 +402,7 @@ export const properties = {
 
   key: p.enum(
     SETTING_KEYS,
-    "The setting that changed, by mobile's name where mobile has the same setting: blurBalances is Hide balances, hideSmallBalance is Hide dust, currency is the fiat currency shown. The hide keys that are not mobile's are the extension's Don't show again choices."
+    "The setting that changed, by mobile's name where mobile has the same setting: blurBalances is Hide balances, hideSmallBalance is Hide dust, currency is the fiat currency shown. The hide keys that are not mobile's are the extension's Don't show again choices. aMode is the extension's denser A mode home screen."
   ),
   value: settingValue,
   language_code: p.slug("The language the user picked, such as en or zh-CN."),

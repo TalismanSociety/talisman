@@ -115,7 +115,11 @@ const SelectionScope: FC<{
   )
 }
 
-export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className }) => {
+export const DashboardPortfolioHeader: FC<{
+  className?: string
+  /** drops the action pills and the fixed height, for when another surface provides the actions */
+  compact?: boolean
+}> = ({ className, compact }) => {
   const { selectedAccount, selectedAccounts, selectedFolder } = usePortfolioNavigation()
   const balanceTotals = useBalanceTotals()
 
@@ -133,7 +137,8 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
     <div
       ref={headerRef}
       className={cn(
-        "relative z-0 flex h-96 flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
+        "relative z-0 flex flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
+        compact ? "gap-6" : "h-96",
         className
       )}
     >
@@ -174,7 +179,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           />
         </div>
       </div>
-      <DashboardTopActions className="z-1" />
+      {!compact && <DashboardTopActions className="z-1" />}
     </div>
   )
 }
