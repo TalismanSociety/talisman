@@ -33,6 +33,7 @@ export interface SettingsStoreData {
   earnDiscoverTypeFilter: string | null
   earnDiscoverProviderFilter: string | null
   developerMode: boolean
+  aMode: boolean
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
   dtaoSlippage?: number
@@ -65,6 +66,7 @@ const DEFAULT_SETTINGS: SettingsStoreData = {
   earnDiscoverProviderFilter: null,
   nftsSortBy: "date",
   developerMode: false,
+  aMode: false,
   polkadotVaultSignWithProof: true,
   ledgerTransportType: "hid",
   swapSlippage: 0.5,

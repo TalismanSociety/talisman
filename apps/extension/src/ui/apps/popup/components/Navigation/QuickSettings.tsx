@@ -66,6 +66,7 @@ export const QuickSettingsModal: FC = () => {
           <AutoLockRow />
           <HideBalancesRow />
           <HideSmallBalancesRow />
+          <AModeRow />
         </div>
       </TransitionChild>
     </Transition>
@@ -184,6 +185,17 @@ const HideSmallBalancesRow = () => {
         defaultChecked={hideDust}
         onChange={(e) => setHideDust(e.target.checked)}
       />
+    </SettingRow>
+  )
+}
+
+const AModeRow = () => {
+  const { t } = useTranslation()
+  const [aMode, setAMode] = useSetting("aMode")
+
+  return (
+    <SettingRow label={t("A mode")}>
+      <Toggle variant="sm" defaultChecked={aMode} onChange={(e) => setAMode(e.target.checked)} />
     </SettingRow>
   )
 }

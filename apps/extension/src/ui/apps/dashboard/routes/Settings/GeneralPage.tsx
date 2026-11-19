@@ -11,6 +11,7 @@ import {
   DollarSignIcon,
   EyeOffIcon,
   FlagIcon,
+  GridIcon,
   RefreshCwIcon,
   ToolIcon,
   UsbIcon,
@@ -49,6 +50,7 @@ const Content = () => {
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload()
   const [developerMode, setDeveloperMode] = useSetting("developerMode")
+  const [aMode, setAMode] = useSetting("aMode")
 
   return (
     <>
@@ -116,6 +118,13 @@ const Content = () => {
           subtitle={t("Select which connection type to use with Ledger hardware wallets")}
         >
           <LedgerTransportTypeSelect />
+        </Setting>
+        <Setting
+          iconLeft={GridIcon}
+          title={t("A mode")}
+          subtitle={t("Show every feature up front in a denser home screen")}
+        >
+          <Toggle checked={aMode} onChange={(e) => setAMode(e.target.checked)} />
         </Setting>
         <Setting
           iconLeft={ToolIcon}
