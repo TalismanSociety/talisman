@@ -166,6 +166,13 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
           const curve = getDefaultCurveForAccountPlatform(platform)
 
+          // the polkadot-js password syntax, which @talismn/crypto rejects
+          if (platform === "polkadot" && derivationPath.includes("///"))
+            return ctx.createError({
+              path: "derivationPath",
+              message: t("Passwords (///) aren't supported in derivation paths"),
+            })
+
           if (!(await isValidDerivationPathCached(derivationPath, curve)))
             return ctx.createError({
               path: "derivationPath",

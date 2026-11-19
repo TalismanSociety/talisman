@@ -1,5 +1,5 @@
 import { log } from "@common/log"
-import { isValidDerivationPath } from "@talismn/crypto"
+import { isAddressEqual, type KeypairCurve } from "@talismn/crypto"
 import type { AddAccountExternalOptions } from "@talismn/keyring"
 import type { HexString } from "@talismn/util"
 import { capitalize } from "lodash-es"
@@ -19,6 +19,32 @@ const MIGRATION_LABEL = "Updating keyring"
 export const migrateFromPjsKeyring: Migration = {
   forward: new MigrationFunction(({ password }) => executeMigrationFromPjsKeyring(password)),
   // no way back
+}
+
+/**
+ * Whether deriving `derivationPath` from the mnemonic gives back `address`. polkadot-js derived
+ * these accounts. @talismn/crypto rejects some of the paths it accepted (`//Alice-Bob`), and a
+ * path that the two derive to different keys would add another account than the user had. Such
+ * an account is imported from its own secret key instead.
+ */
+const derivesAddress = async (
+  address: string,
+  mnemonicId: string,
+  derivationPath: string,
+  curve: KeypairCurve,
+  password: string
+) => {
+  try {
+    const derived = await keyringStore.getDerivedAddress(
+      mnemonicId,
+      derivationPath,
+      curve,
+      password
+    )
+    return isAddressEqual(derived, address)
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -120,7 +146,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             if (
               mnemonicId &&
               typeof derivationPath === "string" && // allow empty string (substrate default)
-              (await isValidDerivationPath(derivationPath, curve))
+              (await derivesAddress(oldPair.address, mnemonicId, derivationPath, curve, password))
             ) {
               // keep the "link" to associated mnemonic by rederiving the account from it
               await keyringStore.addAccountDerive({
