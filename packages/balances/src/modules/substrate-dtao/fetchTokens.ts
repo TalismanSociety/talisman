@@ -56,8 +56,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       const subnetName =
         (info.subnet_identity?.subnet_name
           ? Binary.toText(info.subnet_identity.subnet_name)
-          : undefined) ?? (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
-      const name = `SN${info.netuid} | ${subnetName} ${symbol}`
+          : undefined) || (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
+      const name = `SN${info.netuid} ${subnetName}`
 
       // for root we want same symbol as native so they can be grouped together in portfolio
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
