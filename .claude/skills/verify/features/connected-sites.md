@@ -35,4 +35,3 @@ Preconditions:
 - `Connect All` is hidden on the Solana tab.
 - `wallet_revokePermissions` from the dapp leaves an empty entry that only `Forget Site` or `Forget All Sites` removes.
 - `Forget Site` appears twice: on the row and in the dialog. Click the dialog button last.
-- Product bug, seen on 2026-10-14, 2026-10-26, 2026-11-03 and 2026-11-06: after an EVM or Solana connect the dialog reads "Confirm to forget ." with no site name. Those connects store an empty `origin`, and the dialog shows `origin ?? id` (`AuthorisedSite.tsx`). Wait on "You can always reconnect" instead. Delete this line once the bug is fixed.
