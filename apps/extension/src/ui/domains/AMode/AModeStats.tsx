@@ -2,6 +2,7 @@ import { CheckCircleIcon, GlobeIcon, UsersIcon } from "@talismn/icons"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useNetworks } from "@ui/state/chaindata"
+import { cn } from "@ui/util/cn"
 import type { FC, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,14 +21,14 @@ const Stat: FC<{
   </li>
 )
 
-export const AModeStats: FC = () => {
+export const AModeStats: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { accounts } = usePortfolioAccounts()
   const networks = useNetworks({ activeOnly: true })
   const allBackedUp = useMnemonicsAllBackedUp()
 
   return (
-    <ul className="flex items-center gap-4 rounded-sm bg-grey-900 px-6 py-4">
+    <ul className={cn("flex items-center gap-4 rounded-sm bg-grey-900 px-6 py-4", className)}>
       <Stat
         icon={UsersIcon}
         value={accounts.length}
