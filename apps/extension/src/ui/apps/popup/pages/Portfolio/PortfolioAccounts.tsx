@@ -31,6 +31,7 @@ import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
+import { AModePanel } from "@ui/domains/AMode/AModePanel"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
@@ -38,6 +39,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useReportAccountSwitched } from "@ui/hooks/analytics/portfolio"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state/balances"
+import { useSettingValue } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
 import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -269,6 +271,7 @@ const Accounts = ({
   watchedOptions: AccountOption[]
 }) => {
   const { t } = useTranslation()
+  const aMode = useSettingValue("aMode")
 
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
@@ -280,8 +283,9 @@ const Accounts = ({
         <FolderHeader folder={folder} folderTotal={folderTotal} />
       ) : (
         <>
-          <AllAccountsHeader accounts={accounts} />
+          <AllAccountsHeader accounts={accounts} hideActions={aMode} />
           <PopupHomeBanners />
+          {aMode && <AModePanel />}
         </>
       )}
 

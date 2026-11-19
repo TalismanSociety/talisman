@@ -13,9 +13,11 @@ type Props = {
   className?: string
   mouseOver: boolean
   disabled?: boolean
+  /** hides the action pills, for when another surface provides the actions */
+  hideActions?: boolean
 }
 
-export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
+export const TotalFiatBalance = ({ className, mouseOver, disabled, hideActions }: Props) => {
   const { t } = useTranslation()
   const { portfolioTotal } = usePortfolioAccounts()
   const currency = useSelectedCurrency()
@@ -73,7 +75,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           />
         </div>
       </div>
-      <TopActions disabled={disabled} />
+      {!hideActions && <TopActions disabled={disabled} />}
     </div>
   )
 }
