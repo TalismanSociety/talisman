@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest"
 import { hasStorageItems } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
-import { fetchRootStakeHolds, findDTaoRootStakeHold } from "./rootStakeHold"
+import {
+  fetchRootStakeHolds,
+  fetchRootStakeUnlockInterval,
+  findDTaoRootStakeHold,
+} from "./rootStakeHold"
 
 vi.mock("../../log", () => ({
   default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
@@ -142,6 +146,77 @@ describe("fetchRootStakeHolds", () => {
     await expect(fetchRootStakeHolds(CONNECTOR, "bittensor", "0x00", PAIRS)).rejects.toThrow(
       "Failed to decode System.Number"
     )
+  })
+})
+
+describe("fetchRootStakeUnlockInterval", () => {
+  it("reads the interval once for a runtime and network", async () => {
+    const metadata = {
+      builder: {
+        buildStorage: vi.fn(() => ({
+          keys: { enc: vi.fn(() => "0xkey") },
+          value: { dec: vi.fn(() => 0n) },
+        })),
+      },
+      unifiedMetadata: { pallets: [] },
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>
+    vi.mocked(parseMetadataRpcCached).mockReturnValue(metadata)
+    vi.mocked(fetchRpcQueryPack).mockClear().mockResolvedValue([7n])
+
+    expect(await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")).toBe(7n)
+    expect(await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")).toBe(7n)
+    expect(fetchRpcQueryPack).toHaveBeenCalledTimes(1)
+
+    // another network running the same runtime reads its own
+    await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor-testnet", "0x00")
+    expect(fetchRpcQueryPack).toHaveBeenCalledTimes(2)
+
+    vi.mocked(parseMetadataRpcCached).mockReset()
+  })
+
+  it("reads the interval again once the cached read is old", async () => {
+    vi.useFakeTimers()
+    const metadata = {
+      builder: {
+        buildStorage: vi.fn(() => ({
+          keys: { enc: vi.fn(() => "0xkey") },
+          value: { dec: vi.fn(() => 0n) },
+        })),
+      },
+      unifiedMetadata: { pallets: [] },
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>
+    vi.mocked(parseMetadataRpcCached).mockReturnValue(metadata)
+    vi.mocked(fetchRpcQueryPack).mockClear().mockResolvedValue([0n])
+
+    await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")
+    vi.advanceTimersByTime(11 * 60_000)
+    await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")
+    expect(fetchRpcQueryPack).toHaveBeenCalledTimes(2)
+
+    vi.mocked(parseMetadataRpcCached).mockReset()
+    vi.useRealTimers()
+  })
+
+  it("doesn't keep a failed read", async () => {
+    const metadata = {
+      builder: {
+        buildStorage: vi.fn(() => ({
+          keys: { enc: vi.fn(() => "0xkey") },
+          value: { dec: vi.fn(() => 0n) },
+        })),
+      },
+      unifiedMetadata: { pallets: [] },
+    } as unknown as ReturnType<typeof parseMetadataRpcCached>
+    vi.mocked(parseMetadataRpcCached).mockReturnValue(metadata)
+    vi.mocked(fetchRpcQueryPack).mockClear().mockRejectedValueOnce(new Error("rpc down"))
+
+    await expect(fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")).rejects.toThrow(
+      "rpc down"
+    )
+    vi.mocked(fetchRpcQueryPack).mockResolvedValueOnce([3n])
+    expect(await fetchRootStakeUnlockInterval(CONNECTOR, "bittensor", "0x00")).toBe(3n)
+
+    vi.mocked(parseMetadataRpcCached).mockReset()
   })
 })
 
