@@ -33,7 +33,11 @@ const RECIPIENT = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 const GWEI = 10n ** 9n
 const ETHER = 10n ** 18n
 
-let anvil: Promise<void> | undefined
+test.beforeAll(async () => {
+  // a first run pulls the Anvil image
+  test.setTimeout(180_000)
+  await startAnvil()
+})
 
 test.afterAll(stopAnvil)
 
@@ -42,8 +46,6 @@ test.afterAll(stopAnvil)
  * The wallet sends a legacy transaction when the chain's base fee is zero, else an EIP-1559 one.
  */
 const useAnvil = async (session: Session, baseFeePerGas: bigint) => {
-  anvil ??= startAnvil()
-  await anvil
   await anvilRpc("anvil_setBalance", [session.address, toHex(ETHER)])
   await anvilRpc("anvil_setNextBlockBaseFeePerGas", [toHex(baseFeePerGas)])
   await anvilRpc("evm_mine")
@@ -61,6 +63,23 @@ const useAnvil = async (session: Session, baseFeePerGas: bigint) => {
   })
   await popup.getByRole("button", { name: "Approve" }).click()
   await dappResult(session.dapp)
+
+  // The wallet answers wallet_addEthereumChain before it can serve the chain: until then a
+  // request to it fails with "Network not supported", and a transaction opens no popup.
+  await expect
+    .poll(
+      () =>
+        session.dapp.evaluate(() =>
+          (window as LedgerDappWindow).ledgerDapp
+            ?.send({ method: "eth_blockNumber", params: [] })
+            .then(
+              () => true,
+              () => false
+            )
+        ),
+      { message: "the wallet serves the Anvil chain" }
+    )
+    .toBe(true)
 }
 
 type TransactionRequest = { from: string; to: string; value: Hex; data?: Hex }
