@@ -171,7 +171,9 @@ build_app() {
   git -C "$src" fetch -q --depth 1 "https://github.com/LedgerHQ/app-$app" "$commit" ||
     die "could not fetch LedgerHQ/app-$app at $commit"
   git -C "$src" checkout -q FETCH_HEAD
-  git -C "$src" submodule update -q --init --recursive --depth 1
+  # The Solana app names a submodule by its SSH URL, which needs a GitHub key: fetch it over HTTPS.
+  git -C "$src" -c url.https://github.com/.insteadOf=git@github.com: \
+    submodule update -q --init --recursive --depth 1
   # The builder runs as root by default, which would leave root-owned files in the cache.
   docker run --rm --user "$(id -u):$(id -g)" -v "$src":/app -w "/app/$3" "$BUILDER_IMAGE" \
     sh -c 'eval "make -j BOLOS_SDK=\$$1"' sh "$sdk" >"$src/build.log" 2>&1 ||
