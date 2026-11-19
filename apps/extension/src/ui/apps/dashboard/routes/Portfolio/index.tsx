@@ -1,12 +1,14 @@
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NavigateWithQuery } from "@ui/components/NavigateWithQuery"
 import { Routes } from "@ui/components/Routes"
+import { AModePanel } from "@ui/domains/AMode/AModePanel"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { PortfolioDefiContent } from "@ui/domains/Portfolio/PortfolioDefiContent"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useSettingValue } from "@ui/state/settings"
 import { Route } from "react-router-dom"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
@@ -47,6 +49,19 @@ const PortfolioToolbar = () => {
 const PortfolioHeader = () => (
   <Routes screen={false}>
     <Route path="tokens/:symbol" element={<PortfolioAssetHeader />} />
-    <Route path="*" element={<DashboardPortfolioHeader />} />
+    <Route path="*" element={<DefaultPortfolioHeader />} />
   </Routes>
 )
+
+const DefaultPortfolioHeader = () => {
+  const aMode = useSettingValue("aMode")
+
+  if (!aMode) return <DashboardPortfolioHeader />
+
+  return (
+    <>
+      <DashboardPortfolioHeader compact />
+      <AModePanel />
+    </>
+  )
+}
