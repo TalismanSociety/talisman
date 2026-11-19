@@ -1,5 +1,6 @@
 export const STAKING_ENTRIES = [
   "portfolio",
+  "a_mode",
   "token_details",
   "tao_dashboard",
   "earn",

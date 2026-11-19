@@ -1,40 +1,12 @@
+import { IS_FIREFOX } from "@common/constants"
 import { isAccountOwned } from "@core/domains/keyring/exports"
-import {
-  ActivityIcon,
-  ArrowDownIcon,
-  BookIcon,
-  ClockIcon,
-  CoinsIcon,
-  CreditCardIcon,
-  DollarSignIcon,
-  EyeIcon,
-  FlagIcon,
-  GlobeIcon,
-  HeadsetIcon,
-  ImageIcon,
-  InfoIcon,
-  KeyIcon,
-  LayersIcon,
-  LinkIcon,
-  LockIcon,
-  PencilIcon,
-  PlusIcon,
-  QrIcon,
-  RepeatIcon,
-  SendIcon,
-  SettingsIcon,
-  ShieldIcon,
-  StarsIcon,
-  TaoIcon,
-  UsbIcon,
-  UsersIcon,
-} from "@talismn/icons"
-import { isNotNil } from "@talismn/util"
 import { api } from "@ui/api"
 import { useHelpAndSupportDrawerOpenClose } from "@ui/apps/popup/components/Navigation/HelpAndSupportDrawer"
+import { useQuickSettingsOpenClose } from "@ui/apps/popup/components/Navigation/QuickSettings"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
+import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { useSwapModal } from "@ui/domains/Swap/hooks/useSwapModal"
 import {
   useDefaultTaoDashboardNetworkId,
@@ -42,21 +14,22 @@ import {
 } from "@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled"
 import { getTaoDashboardUrl } from "@ui/domains/TaoDashboard/shared/util"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import { useOpenFullscreen } from "@ui/hooks/useOpenFullscreen"
 import { BITTENSOR_NETWORK_ID } from "@ui/state/bittensor"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import type { AModeShortcut, AModeShortcutGroup, AModeShortcuts } from "./types"
-
-type RouteEntry = Pick<AModeShortcut, "id" | "label" | "icon" | "badge"> & {
-  dashboardPath: string
-  /** set when the popup has its own route for it, otherwise the popup opens the dashboard */
-  popupPath?: string
-}
+import {
+  type AModeLinkEntry,
+  type AModeRouteEntry,
+  buildAModeShortcuts,
+} from "./aModeShortcutTable"
+import type { AModeShortcut, AModeShortcuts } from "./types"
 
 export const useAModeShortcuts = (): AModeShortcuts => {
   const { t } = useTranslation()
@@ -65,7 +38,10 @@ export const useAModeShortcuts = (): AModeShortcuts => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { open: openSwapModal } = useSwapModal()
   const { open: openRampsModal } = useRampsModal()
+  const { open: openBondModal } = useBittensorBondModal()
   const { open: openHelpAndSupport } = useHelpAndSupportDrawerOpenClose()
+  const { open: openQuickSettings } = useQuickSettingsOpenClose()
+  const openFullscreen = useOpenFullscreen()
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const isBittensorEnabled = useIsBittensorEnabled()
   const taoDashboardNetworkId = useDefaultTaoDashboardNetworkId()
@@ -74,15 +50,10 @@ export const useAModeShortcuts = (): AModeShortcuts => {
   const hasOwned = selectedAccounts.some(isAccountOwned)
   const isWatchedSelected = !!selectedAccount && !isAccountOwned(selectedAccount)
   const selectedAddress = selectedAccount?.address
+  const hasSelectedAccounts = selectedAccounts.length > 0
 
   return useMemo(() => {
-    const fundsDisabledReason =
-      isWatchedSelected || !hasOwned
-        ? t("Cannot send or receive funds on accounts that you don't own")
-        : undefined
-    const fundsDisabled = !!fundsDisabledReason
-
-    const fromRoute = ({ dashboardPath, popupPath, ...entry }: RouteEntry): AModeShortcut => ({
+    const route = ({ dashboardPath, popupPath, ...entry }: AModeRouteEntry): AModeShortcut => ({
       ...entry,
       onClick: () => {
         if (!IS_POPUP) navigate(dashboardPath)
@@ -94,261 +65,63 @@ export const useAModeShortcuts = (): AModeShortcuts => {
       },
     })
 
-    const earn = fromRoute({
-      id: "earn",
-      label: t("Earn"),
-      icon: StarsIcon,
-      dashboardPath: "/earn",
-      popupPath: "/earn",
+    const link = ({ url, ...entry }: AModeLinkEntry): AModeShortcut => ({
+      ...entry,
+      onClick: () => window.open(url, "_blank"),
     })
 
-    const buyOrEarn: AModeShortcut = canBuy
-      ? {
-          id: "buy-sell",
-          label: t("Buy/Sell"),
-          icon: CreditCardIcon,
-          onClick: () => openRampsModal({ entry: "a_mode" }),
-          disabled: fundsDisabled,
-          disabledReason: fundsDisabledReason,
-        }
-      : earn
+    const bittensorNetworkId = taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID
 
-    const primary: AModeShortcut[] = [
-      {
-        id: "send",
-        label: t("Send"),
-        icon: SendIcon,
-        onClick: () => {
+    return buildAModeShortcuts({
+      t,
+      isPopup: IS_POPUP,
+      route,
+      link,
+      fundsDisabledReason:
+        isWatchedSelected || !hasOwned
+          ? t("Cannot send or receive funds on accounts that you don't own")
+          : undefined,
+      isWatchedSelected,
+      hasSelectedAccounts,
+      canBuy,
+      isBittensorEnabled,
+      taoDashboardPath: getTaoDashboardUrl(bittensorNetworkId),
+      allBackedUp,
+      isLedgerCapable: getIsLedgerCapable(),
+      isFirefox: IS_FIREFOX,
+      actions: {
+        send: () => {
           const opened = api.sendFundsOpen({ entry: "a_mode", from: selectedAddress })
           if (IS_POPUP) opened.then(() => window.close())
         },
-        disabled: fundsDisabled,
-        disabledReason: fundsDisabledReason,
+        receive: () => openCopyAddressModal({ entry: "a_mode", address: selectedAddress }),
+        swap: () => openSwapModal({ entry: "a_mode" }),
+        buy: () => openRampsModal({ entry: "a_mode" }),
+        stakeTao: () =>
+          openBondModal({ entry: "a_mode", networkId: bittensorNetworkId, stakeDirection: "bond" }),
+        helpSupport: openHelpAndSupport,
+        lock: () => {
+          api.lock()
+          window.close()
+        },
+        fullscreen: openFullscreen,
+        quickSettings: openQuickSettings,
       },
-      {
-        id: "receive",
-        label: isWatchedSelected ? t("Copy") : t("Receive"),
-        icon: ArrowDownIcon,
-        onClick: () => openCopyAddressModal({ entry: "a_mode", address: selectedAddress }),
-        disabled: !selectedAccounts.length,
-      },
-      {
-        id: "swap",
-        label: t("Swap"),
-        icon: RepeatIcon,
-        onClick: () => openSwapModal({ entry: "a_mode" }),
-        disabled: fundsDisabled,
-        disabledReason: fundsDisabledReason,
-      },
-      buyOrEarn,
-    ]
-
-    const taoPath = getTaoDashboardUrl(taoDashboardNetworkId ?? BITTENSOR_NETWORK_ID)
-
-    const groups: AModeShortcutGroup[] = [
-      {
-        id: "trade-earn",
-        title: t("Trade & earn"),
-        shortcuts: [
-          buyOrEarn === earn ? null : earn,
-          isBittensorEnabled
-            ? fromRoute({
-                id: "trade-tao",
-                label: t("Trade TAO"),
-                icon: TaoIcon,
-                dashboardPath: taoPath,
-              })
-            : null,
-          fromRoute({
-            id: "nfts",
-            label: t("NFTs"),
-            icon: ImageIcon,
-            dashboardPath: "/portfolio/nfts",
-            popupPath: "/portfolio/nfts",
-          }),
-          fromRoute({
-            id: "defi",
-            label: t("DeFi"),
-            icon: LayersIcon,
-            dashboardPath: "/portfolio/defi",
-            popupPath: "/portfolio/defi",
-          }),
-          fromRoute({
-            id: "activity",
-            label: t("Activity"),
-            icon: ActivityIcon,
-            dashboardPath: "/tx-history",
-            popupPath: "/tx-history",
-          }),
-        ].filter(isNotNil),
-      },
-      {
-        id: "accounts",
-        title: t("Accounts"),
-        shortcuts: [
-          fromRoute({
-            id: "add-account",
-            label: t("Add account"),
-            icon: PlusIcon,
-            dashboardPath: "/accounts/add",
-          }),
-          fromRoute({
-            id: "import-phrase",
-            label: t("Import recovery phrase"),
-            icon: KeyIcon,
-            dashboardPath: "/accounts/add/mnemonic",
-          }),
-          fromRoute({
-            id: "connect-ledger",
-            label: t("Connect Ledger"),
-            icon: UsbIcon,
-            dashboardPath: "/accounts/add/ledger",
-          }),
-          fromRoute({
-            id: "watch-account",
-            label: t("Watch account"),
-            icon: EyeIcon,
-            dashboardPath: "/accounts/add/watched",
-          }),
-          fromRoute({
-            id: "manage-accounts",
-            label: t("Manage accounts"),
-            icon: PencilIcon,
-            dashboardPath: "/settings/accounts",
-            popupPath: "/manage-accounts",
-          }),
-          fromRoute({
-            id: "address-book",
-            label: t("Address book"),
-            icon: UsersIcon,
-            dashboardPath: "/settings/address-book",
-          }),
-        ],
-      },
-      {
-        id: "networks-tokens",
-        title: t("Networks & tokens"),
-        shortcuts: [
-          fromRoute({
-            id: "manage-networks",
-            label: t("Manage networks"),
-            icon: GlobeIcon,
-            dashboardPath: "/settings/networks-tokens/networks",
-          }),
-          fromRoute({
-            id: "manage-tokens",
-            label: t("Manage tokens"),
-            icon: CoinsIcon,
-            dashboardPath: "/settings/networks-tokens/tokens",
-          }),
-          fromRoute({
-            id: "vault-metadata",
-            label: t("Polkadot Vault metadata"),
-            icon: QrIcon,
-            dashboardPath: "/settings/networks-tokens/qr-metadata",
-          }),
-        ],
-      },
-      {
-        id: "security",
-        title: t("Security"),
-        shortcuts: [
-          fromRoute({
-            id: "recovery-phrases",
-            label: t("Recovery phrases"),
-            icon: KeyIcon,
-            dashboardPath: "/settings/mnemonics",
-            badge: !allBackedUp,
-          }),
-          fromRoute({
-            id: "security-privacy",
-            label: t("Security & privacy"),
-            icon: ShieldIcon,
-            dashboardPath: "/settings/security-privacy-settings",
-          }),
-          fromRoute({
-            id: "connected-sites",
-            label: t("Connected sites"),
-            icon: LinkIcon,
-            dashboardPath: "/settings/connected-sites",
-          }),
-          fromRoute({
-            id: "auto-lock",
-            label: t("Auto-lock"),
-            icon: ClockIcon,
-            dashboardPath: "/settings/security-privacy-settings/autolock",
-          }),
-          IS_POPUP
-            ? {
-                id: "lock",
-                label: t("Lock wallet"),
-                icon: LockIcon,
-                onClick: () => {
-                  api.lock()
-                  window.close()
-                },
-              }
-            : null,
-        ].filter(isNotNil),
-      },
-      {
-        id: "settings-help",
-        title: t("Settings & help"),
-        shortcuts: [
-          fromRoute({
-            id: "general-settings",
-            label: t("General settings"),
-            icon: SettingsIcon,
-            dashboardPath: "/settings/general",
-          }),
-          fromRoute({
-            id: "language",
-            label: t("Language"),
-            icon: FlagIcon,
-            dashboardPath: "/settings/general/language",
-          }),
-          fromRoute({
-            id: "currency",
-            label: t("Currency"),
-            icon: DollarSignIcon,
-            dashboardPath: "/settings/general/currency",
-          }),
-          fromRoute({
-            id: "analytics",
-            label: t("Analytics"),
-            icon: BookIcon,
-            dashboardPath: "/settings/analytics",
-          }),
-          fromRoute({
-            id: "about",
-            label: t("About"),
-            icon: InfoIcon,
-            dashboardPath: "/settings/about",
-          }),
-          IS_POPUP
-            ? {
-                id: "help-support",
-                label: t("Help & support"),
-                icon: HeadsetIcon,
-                onClick: openHelpAndSupport,
-              }
-            : null,
-        ].filter(isNotNil),
-      },
-    ]
-
-    return { primary, groups }
+    })
   }, [
     t,
     navigate,
     hasOwned,
     isWatchedSelected,
-    selectedAccounts.length,
+    hasSelectedAccounts,
     selectedAddress,
     openCopyAddressModal,
     openSwapModal,
     openRampsModal,
+    openBondModal,
     openHelpAndSupport,
+    openQuickSettings,
+    openFullscreen,
     canBuy,
     isBittensorEnabled,
     taoDashboardNetworkId,

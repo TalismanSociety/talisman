@@ -27,6 +27,13 @@ vi.mock("@ui/domains/Ramps/useRampsModal", () => ({ useRampsModal: () => ({ open
 vi.mock("@ui/apps/popup/components/Navigation/HelpAndSupportDrawer", () => ({
   useHelpAndSupportDrawerOpenClose: () => ({ open: vi.fn() }),
 }))
+vi.mock("@ui/apps/popup/components/Navigation/QuickSettings", () => ({
+  useQuickSettingsOpenClose: () => ({ open: vi.fn() }),
+}))
+vi.mock("@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal", () => ({
+  useBittensorBondModal: () => ({ open: vi.fn() }),
+}))
+vi.mock("@ui/hooks/useOpenFullscreen", () => ({ useOpenFullscreen: () => vi.fn() }))
 vi.mock("@ui/domains/TaoDashboard/hooks/useIsBittensorEnabled", () => ({
   useIsBittensorEnabled: () => false,
   useDefaultTaoDashboardNetworkId: () => null,
@@ -78,6 +85,18 @@ describe("useAModeShortcuts", () => {
 
     expect(mocks.navigate).toHaveBeenCalledWith("/manage-accounts")
     expect(mocks.dashboardOpen).not.toHaveBeenCalled()
+  })
+
+  it("opens an external link shortcut in a new tab", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null)
+    const shortcut = findShortcut("changelog")
+    act(() => shortcut.onClick())
+
+    expect(open).toHaveBeenCalledWith(
+      "https://docs.talisman.xyz/talisman/about/wallet-release-notes",
+      "_blank"
+    )
+    expect(mocks.navigate).not.toHaveBeenCalled()
   })
 
   it("badges recovery phrases only while one is not backed up", () => {
