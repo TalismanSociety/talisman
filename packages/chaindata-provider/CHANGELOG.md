@@ -1,5 +1,17 @@
 # @talismn/chaindata-provider
 
+## 2.3.3
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- 534b1a0: Support Vara Explorer account, extrinsic and block links at explorer.vara.network.
+- Updated dependencies [74350e8]
+- Updated dependencies [bd18aa5]
+- Updated dependencies [4ab1154]
+- Updated dependencies [97bf27f]
+  - @talismn/util@2.2.0
+
 ## 2.3.2
 
 ### Patch Changes
