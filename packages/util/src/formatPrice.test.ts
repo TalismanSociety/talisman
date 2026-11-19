@@ -15,6 +15,12 @@ describe("formatPrice", () => {
     expect(formatPrice(609.325645498, "eth", false)).toEqual("Ξ609.325645498")
     expect(formatPrice(0.00518, "tao", true)).toEqual("τ0.00518")
     expect(formatPrice(1234.5678, "tao", true)).toEqual("τ1.235K")
+    expect(formatPrice(0.0000001, "btc", false)).toEqual("₿0.000000100")
+    expect(formatPrice(1, "btc", true)).toEqual("₿1.00")
+    expect(formatPrice(1.5, "btc", false)).toEqual("₿1.50")
+    expect(formatPrice(0.00518, "btc", true)).toEqual("₿0.00518")
+    expect(formatPrice(97156.156156485, "btc", true)).toEqual("₿97.16K")
+    expect(formatPrice(97156.156156485, "btc", false)).toEqual("₿97,156.156156485")
   })
 })
 

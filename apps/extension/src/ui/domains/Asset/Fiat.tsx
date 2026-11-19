@@ -1,6 +1,6 @@
 import type { BalanceFormatter } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import { formatCurrency, type Prettify } from "@talismn/util"
+import { formatCurrency, getCurrencyFractionDigits, type Prettify } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { useFiatFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
@@ -82,30 +82,42 @@ const DisplayValue = React.memo(
     noCountUp,
     compact,
   }: DisplayValueProps & { compact?: boolean }) => {
-    const decimalPlacesCount = getDecimalPlacesCount(amount)
-    // for non balances (ie: prices), display 3 meaningful digits starting from the first non-zero digit => decimalPlacesCount + 2
-    const decimalPlaces =
-      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 2 : 2
+    const decimalPlaces = isBalance
+      ? getCurrencyFractionDigits(currency)
+      : getPriceDecimalPlaces(amount)
+    const smallestBalance = 10 ** -decimalPlaces
+    const isBelowSmallestBalance = useCallback(
+      (value: number) => !!isBalance && value > 0 && value < smallestBalance,
+      [isBalance, smallestBalance]
+    )
 
     const format = useCallback(
       (amount = 0) => {
-        const formatWithDecimals = (amount: number, decimals: number) =>
+        const formatWithDecimals = (amount: number) =>
           formatCurrency(amount, currency, {
             currencyDisplay,
             notation: compact ? "compact" : "standard",
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: compact ? decimals : undefined,
+            minimumFractionDigits: decimalPlaces,
+            maximumFractionDigits: isBalance || compact ? decimalPlaces : undefined,
           })
 
-        if (amount > 0 && isBalance && amount < 0.01) return `< ${formatWithDecimals(0.01, 2)}`
+        if (isBelowSmallestBalance(amount)) return `< ${formatWithDecimals(smallestBalance)}`
 
-        return formatWithDecimals(amount, decimalPlaces)
+        return formatWithDecimals(amount)
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance, compact]
+      [
+        currency,
+        currencyDisplay,
+        decimalPlaces,
+        compact,
+        smallestBalance,
+        isBelowSmallestBalance,
+        isBalance,
+      ]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 
-    if (noCountUp) return <>{formatted}</>
+    if (noCountUp || isBelowSmallestBalance(amount)) return <>{formatted}</>
     return (
       <CountUp
         end={amount}
@@ -146,6 +158,11 @@ DisplayValue.displayName = "DisplayValue"
  */
 const getDecimalPlacesCount = (amount: number) =>
   Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
+
+const getPriceDecimalPlaces = (amount: number) => {
+  const decimalPlacesCount = getDecimalPlacesCount(amount)
+  return amount !== 0 && decimalPlacesCount > 1 ? decimalPlacesCount + 2 : 2
+}
 
 type FiatFromUsdProps = Prettify<Omit<FiatProps, "amount"> & { amount: number | null | undefined }>
 
