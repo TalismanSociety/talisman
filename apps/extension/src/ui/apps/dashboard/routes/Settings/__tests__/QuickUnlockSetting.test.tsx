@@ -221,9 +221,11 @@ describe("QuickUnlockSetting analytics", () => {
     fireEvent.click(await screen.findByRole("checkbox"))
     await screen.findByText(/doesn't allow quick unlock/i)
 
-    expect(track).toHaveBeenCalledWith(
-      "error_shown",
-      expect.objectContaining({ surface: "field", error_category: "unsupported" })
+    await waitFor(() =>
+      expect(track).toHaveBeenCalledWith(
+        "error_shown",
+        expect.objectContaining({ surface: "field", error_category: "unsupported" })
+      )
     )
   })
 
@@ -237,10 +239,12 @@ describe("QuickUnlockSetting analytics", () => {
     fireEvent.click(await screen.findByRole("checkbox"))
     await screen.findByText("Request timed out")
 
-    expect(track).toHaveBeenCalledWith("error_shown", {
-      surface: "field",
-      error_category: "timeout",
-    })
+    await waitFor(() =>
+      expect(track).toHaveBeenCalledWith("error_shown", {
+        surface: "field",
+        error_category: "timeout",
+      })
+    )
   })
 
   test("starts nothing while the user only looks at the setting", async () => {
