@@ -18,19 +18,30 @@ export const AModeShortcutGrid: FC<{ groups: AModeShortcutGroup[]; compact: bool
 
   return (
     <div className="flex flex-col gap-4">
-      <div className={cn("grid gap-4", !compact && "grid-cols-2")}>
+      <div className={cn("flex flex-col", compact ? "gap-4" : "rounded-sm bg-grey-900 px-6 py-2")}>
         {visibleGroups.map((group) => (
           <section
             key={group.id}
             aria-labelledby={`a-mode-group-${group.id}`}
-            className={cn("flex flex-col gap-2 rounded-sm", !compact && "bg-grey-900 p-6")}
+            className={cn(
+              compact
+                ? "flex flex-col gap-2"
+                : "grid grid-cols-[7rem_1fr] items-center gap-4 border-grey-800 border-b py-2 last:border-b-0"
+            )}
           >
-            <h3 id={`a-mode-group-${group.id}`} className="font-bold text-body-secondary text-tiny">
+            <h3
+              id={`a-mode-group-${group.id}`}
+              className={cn("font-bold text-body-secondary", compact ? "text-tiny" : "text-xs")}
+            >
               {group.title}
             </h3>
-            <div className={cn("grid gap-1", compact ? "grid-cols-4" : "grid-cols-3")}>
+            <div className={cn("grid gap-1", compact ? "grid-cols-4" : "grid-cols-6")}>
               {group.shortcuts.map((shortcut) => (
-                <AModeButton key={shortcut.id} shortcut={shortcut} variant="compact" />
+                <AModeButton
+                  key={shortcut.id}
+                  shortcut={shortcut}
+                  variant={compact ? "compact" : "regular"}
+                />
               ))}
             </div>
           </section>

@@ -14,9 +14,16 @@ const VARIANT_CLASSNAMES = {
     button: "min-h-20 flex-col gap-1 px-1 py-2 text-tiny leading-[1.2]",
     icon: "size-9",
   },
+  regular: {
+    button: "min-h-28 flex-col gap-2 px-2 py-4 text-xs leading-[1.2]",
+    icon: "size-10",
+  },
 } as const
 
-export const AModeButton: FC<{ shortcut: AModeShortcut; variant: "primary" | "compact" }> = ({
+export const AModeButton: FC<{
+  shortcut: AModeShortcut
+  variant: keyof typeof VARIANT_CLASSNAMES
+}> = ({
   shortcut: { id, label, icon: Icon, onClick, disabled, disabledReason, badge },
   variant,
 }) => {
