@@ -197,3 +197,29 @@ describe("solana derivation path parser", () => {
     await expect(solana(path)).rejects.toThrow("Only hardened derivation is supported")
   })
 })
+
+describe("derivation buffers", () => {
+  it.each<[KeypairCurve, string]>([
+    ["sr25519", ""],
+    ["sr25519", "//0/1"],
+    ["ed25519", ""],
+    ["ed25519", "//0"],
+    ["ecdsa", ""],
+    ["ecdsa", "//0"],
+    ["ethereum", "m/44'/60'/0'/0/0"],
+    ["solana", "m/44'/501'/0'/0'"],
+  ])("%s %j leaves the seed intact and returns a key the caller owns", async (curve, path) => {
+    const seed = await entropyToSeed(mnemonicToEntropy(ABANDON), curve)
+    const copy = seed.slice()
+
+    const first = deriveKeypair(seed, path, curve)
+    expect(seed).toEqual(copy)
+    expect(first.secretKey.buffer).not.toBe(seed.buffer)
+
+    // zeroing one result must not affect the seed or a later derivation
+    const { address } = first
+    first.secretKey.fill(0)
+    expect(seed).toEqual(copy)
+    expect(deriveKeypair(seed, path, curve).address).toBe(address)
+  })
+})
