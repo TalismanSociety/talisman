@@ -26,6 +26,7 @@ export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =
     "swap-simpleswap",
     "swap-stealthex",
     "swap-lifi",
+    "swap-chainflip",
     "swap-bittensor-evm",
     "swap-forevermoney",
     "swap-bittensor-dtao",
