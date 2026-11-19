@@ -75,6 +75,7 @@ const SETTINGS: { readonly [K in keyof SettingsStoreData]-?: SettingRule | NotAS
   earnDiscoverProviderFilter: enumOf("earnDiscoverProviderFilter"),
   developerMode: bool("developerMode"),
   aMode: bool("aMode"),
+  aModeFavourites: "a list, not one value",
   polkadotVaultSignWithProof: bool("polkadotVaultSignWithProof"),
   ledgerTransportType: enumOf("ledgerTransportType"),
   dtaoSlippage: "own event",
