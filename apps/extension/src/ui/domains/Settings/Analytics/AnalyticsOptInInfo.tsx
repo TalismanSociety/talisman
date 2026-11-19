@@ -34,6 +34,10 @@ export const AnalyticsOptInInfo: FC<{
             <TickYes />
             {t("Basic UI metrics")}
           </li>
+          <li>
+            <TickYes />
+            {t("The domains of dapps that send you requests, and whether the requests succeed")}
+          </li>
         </ul>
       </div>
       <div>

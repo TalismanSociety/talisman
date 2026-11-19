@@ -2,6 +2,7 @@ import { classifyError } from "@common/analytics/errorCategory"
 import { DEBUG, DISCORD_TALISMAN_URL } from "@common/constants"
 import { TalismanDeadHandIcon } from "@talismn/icons"
 import { reportError } from "@ui/api/errorReporting"
+import { currentSigningDapp, type SigningDapp } from "@ui/api/pageContext"
 import { Button } from "@ui/components/Button"
 import { reportErrorShown } from "@ui/hooks/analytics/errorShown"
 import type { DexieError } from "dexie"
@@ -15,6 +16,7 @@ type TalismanErrorBoundaryState = {
   hasError: boolean
   error?: unknown
   eventId?: string
+  signingDapp?: SigningDapp
 }
 
 export class TalismanErrorBoundary extends Component<
@@ -26,15 +28,20 @@ export class TalismanErrorBoundary extends Component<
     this.state = { hasError: false }
   }
 
-  // an explicit flag rather than gating on the error itself: thrown values may be falsy
+  // an explicit flag rather than gating on the error itself: thrown values may be falsy;
+  // the signing dapp is read here because the crashed request screen unmounts before componentDidCatch
   static getDerivedStateFromError(
     error: unknown
-  ): Pick<TalismanErrorBoundaryState, "hasError" | "error"> {
-    return { hasError: true, error }
+  ): Pick<TalismanErrorBoundaryState, "hasError" | "error" | "signingDapp"> {
+    return { hasError: true, error, signingDapp: currentSigningDapp() }
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    reportErrorShown({ surface: "boundary", category: classifyError(error) })
+    reportErrorShown({
+      surface: "boundary",
+      category: classifyError(error),
+      signingDapp: this.state.signingDapp,
+    })
 
     if (error instanceof Error && info.componentStack && !error.cause) {
       const boundaryError = new Error(error.message)

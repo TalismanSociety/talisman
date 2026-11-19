@@ -55,6 +55,28 @@ const ROWS: [string, unknown, ErrorCategory][] = [
   ["rate limit status", Object.assign(new Error(""), { status: 429 }), "rpc"],
   ["request window closed", new Error("Cancelled"), "user_rejected"],
   [
+    "metadata the wallet lacks for the payload's runtime",
+    new Error(
+      "Unable to find metadata for chain 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+    ),
+    "unsupported",
+  ],
+  [
+    "createTransaction on a chain without v4 transactions",
+    new Error("Unsupported chain: Talisman only creates v4 transactions"),
+    "unsupported",
+  ],
+  [
+    "createTransaction extension the wallet cannot rebuild",
+    new Error("Unsupported value for transaction extension CheckMortality"),
+    "unsupported",
+  ],
+  [
+    "createTransaction without a required extension",
+    new Error("Missing transaction extension CheckNonce"),
+    "unsupported",
+  ],
+  [
     "substrate fees",
     new Error("1010: Invalid Transaction: Inability to pay some fees"),
     "insufficient_fee",

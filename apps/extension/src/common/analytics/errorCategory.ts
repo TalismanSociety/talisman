@@ -169,6 +169,12 @@ export const CATEGORY_RULES: readonly CategoryRule[] = [
     pattern: /(incorrect|invalid|wrong) password|^unauthori[sz]ed$|^failed to decrypt data$/i,
     category: "wrong_password",
   },
+  {
+    match: "message",
+    pattern:
+      /unable to find metadata|unsupported chain|(unsupported value for|missing) transaction extension/i,
+    category: "unsupported",
+  },
   { match: "message", pattern: /^timeout$|timed? ?out/i, category: "timeout" },
   {
     match: "message",

@@ -14,6 +14,7 @@ import {
   outcomeOf,
   verdictOf,
 } from "./dappRequests"
+import type { RequestDecision } from "./observeMessage"
 
 type TrackedCall = [event: EventName, props?: EventProperties]
 
@@ -51,24 +52,30 @@ const expectTrackedPropsToParse = () => {
 }
 
 describe("outcomeOf", () => {
-  const decided = (outcome: Decision["outcome"]): Decision => ({ outcome, at: T0 })
+  const decided = (outcome: RequestDecision): Decision => ({ outcome, at: T0 })
+  const failed: Decision = { outcome: "failed", at: T0, errorCategory: "ledger_device_locked" }
 
-  const table: [RequestEnding, RequestOutcome, RequestOutcome, RequestOutcome, RequestOutcome][] = [
-    ["resolved", "approved", "approved", "approved", "approved"],
-    ["rejected", "rejected", "rejected", "rejected", "rejected"],
-    ["window_closed", "closed", "approved", "rejected", "closed"],
-    ["port_disconnected", "expired", "approved", "rejected", "closed"],
-    ["open_failed", "expired", "expired", "expired", "expired"],
-    ["ignored", "closed", "closed", "closed", "closed"],
+  const table: [
+    RequestEnding,
+    ...[none: RequestOutcome, approved: RequestOutcome, rejected: RequestOutcome],
+    ...[closed: RequestOutcome, failed: RequestOutcome],
+  ][] = [
+    ["resolved", "approved", "approved", "approved", "approved", "approved"],
+    ["rejected", "rejected", "failed", "rejected", "rejected", "failed"],
+    ["window_closed", "closed", "approved", "rejected", "closed", "failed"],
+    ["port_disconnected", "expired", "approved", "rejected", "closed", "failed"],
+    ["open_failed", "expired", "expired", "expired", "expired", "expired"],
+    ["ignored", "closed", "closed", "closed", "closed", "closed"],
   ]
 
   it.each(table)(
-    "%s: undecided %s, approved %s, rejected %s, closed %s",
-    (ending, none, approved, rejected, closed) => {
+    "%s: undecided %s, approved %s, rejected %s, closed %s, after a failed approval %s",
+    (ending, none, approved, rejected, closed, afterFailure) => {
       expect(outcomeOf(ending, undefined)).toBe(none)
       expect(outcomeOf(ending, decided("approved"))).toBe(approved)
       expect(outcomeOf(ending, decided("rejected"))).toBe(rejected)
       expect(outcomeOf(ending, decided("closed"))).toBe(closed)
+      expect(outcomeOf(ending, failed)).toBe(afterFailure)
     }
   )
 })
@@ -77,26 +84,22 @@ describe("failureCategoryOf", () => {
   const approved: Decision = { outcome: "approved", at: T0 }
   const unauthorised = new Error("Unauthorised")
 
-  it("classifies the error of an approval the wallet refused", () => {
-    expect(failureCategoryOf("rejected", approved, unauthorised)).toBe("wrong_password")
+  it("classifies the error that failed an approved request", () => {
+    expect(failureCategoryOf("failed", approved, unauthorised)).toBe("wrong_password")
   })
 
   it("prefers the category recorded when the approval failed", () => {
-    const failed: Decision = { outcome: "rejected", at: T0, errorCategory: "ledger_device_locked" }
-    expect(failureCategoryOf("rejected", failed, unauthorised)).toBe("ledger_device_locked")
+    const failed: Decision = { outcome: "failed", at: T0, errorCategory: "ledger_device_locked" }
+    expect(failureCategoryOf("failed", failed, unauthorised)).toBe("ledger_device_locked")
   })
 
-  it("gives no category to a rejection the user chose", () => {
-    expect(failureCategoryOf("rejected", { outcome: "rejected", at: T0 }, unauthorised)).toBe(
-      undefined
-    )
-    expect(failureCategoryOf("rejected", undefined, unauthorised)).toBe(undefined)
+  it("reads unknown when a failure carries no error", () => {
+    expect(failureCategoryOf("failed", approved, undefined)).toBe("unknown")
   })
 
-  it("gives no category to an outcome that is not a rejection", () => {
-    expect(failureCategoryOf("approved", approved, unauthorised)).toBe(undefined)
-    expect(failureCategoryOf("expired", approved, unauthorised)).toBe(undefined)
-    expect(failureCategoryOf("closed", approved, unauthorised)).toBe(undefined)
+  it("gives no category to an outcome that is not a failure", () => {
+    for (const outcome of ["approved", "rejected", "expired", "closed"] as const)
+      expect(failureCategoryOf(outcome, approved, unauthorised)).toBe(undefined)
   })
 })
 
@@ -181,7 +184,7 @@ describe("dapp request tracker on the request store", () => {
     ])
   })
 
-  it("reports an approval the wallet refused as rejected with its category", () => {
+  it("reports an approval the wallet refused as failed with its category", () => {
     const { id, request } = openRequest()
     tracker.noteDecision(id, "approved", T0)
 
@@ -190,7 +193,7 @@ describe("dapp request tracker on the request store", () => {
     expect(resolvedEvents()).toEqual([
       [
         "dapp_request_resolved",
-        expect.objectContaining({ outcome: "rejected", error_category: "wrong_password" }),
+        expect.objectContaining({ outcome: "failed", error_category: "wrong_password" }),
       ],
     ])
   })
@@ -206,7 +209,7 @@ describe("dapp request tracker on the request store", () => {
     expect(props).not.toHaveProperty("error_category")
   })
 
-  it("reports a failed approval followed by a window close as rejected with the failure's category", () => {
+  it("reports a failed approval followed by a window close as failed with the failure's category", () => {
     const { id } = openRequest()
     tracker.noteDecision(id, "approved", T0)
     tracker.noteApprovalFailure(id, "ledger_device_locked")
@@ -216,9 +219,35 @@ describe("dapp request tracker on the request store", () => {
     expect(resolvedEvents()).toEqual([
       [
         "dapp_request_resolved",
-        expect.objectContaining({ outcome: "rejected", error_category: "ledger_device_locked" }),
+        expect.objectContaining({ outcome: "failed", error_category: "ledger_device_locked" }),
       ],
     ])
+  })
+
+  it("reports a failed approval the user then cancels as rejected", () => {
+    const { id, request } = openRequest()
+    tracker.noteDecision(id, "approved", T0)
+    tracker.noteApprovalFailure(id, "ledger_device_locked")
+    tracker.noteDecision(id, "rejected", T0 + 1_000)
+
+    request.reject(new Error("Cancelled"))
+
+    const [[, props]] = resolvedEvents()
+    expect(props).toMatchObject({ outcome: "rejected" })
+    expect(props).not.toHaveProperty("error_category")
+  })
+
+  it("reports a failed approval that a retry completes as approved", () => {
+    const { id, request } = openRequest()
+    tracker.noteDecision(id, "approved", T0)
+    tracker.noteApprovalFailure(id, "ledger_device_locked")
+    tracker.noteDecision(id, "approved", T0 + 1_000)
+
+    request.resolve({ addresses: [] })
+
+    const [[, props]] = resolvedEvents()
+    expect(props).toMatchObject({ outcome: "approved" })
+    expect(props).not.toHaveProperty("error_category")
   })
 
   it("reports an undecided request whose tab disconnected as expired", () => {
@@ -254,18 +283,32 @@ describe("dapp request tracker on the request store", () => {
     ])
   })
 
-  it("receives a request with the lock state and the dapp hostname only", () => {
+  it("receives a request with the lock state, its request type and the dapp's domain, never its url", () => {
     passwordStore.isLoggedIn.next("TRUE")
     openRequest()
     passwordStore.isLoggedIn.next("FALSE")
     openRequest()
 
     const received = trackedCalls().filter(([event]) => event === "dapp_request_received")
+    const dapp = { request_type: "connect", dapp_domain: "app.example.com" }
     expect(received).toEqual([
-      ["dapp_request_received", expect.objectContaining({ wallet_locked: false })],
-      ["dapp_request_received", expect.objectContaining({ wallet_locked: true })],
+      ["dapp_request_received", expect.objectContaining({ ...dapp, wallet_locked: false })],
+      ["dapp_request_received", expect.objectContaining({ ...dapp, wallet_locked: true })],
     ])
     expect(JSON.stringify(trackedCalls())).not.toMatch(/swap|secret-ref|8443|pay/)
+  })
+
+  it("ends a request with its request type and the dapp's domain", () => {
+    const { id } = openRequest()
+
+    requestStore.deleteRequest(id)
+
+    expect(resolvedEvents()).toEqual([
+      [
+        "dapp_request_resolved",
+        expect.objectContaining({ request_type: "connect", dapp_domain: "app.example.com" }),
+      ],
+    ])
   })
 
   it("reports the risk verdict the popup noted, else unscanned", () => {

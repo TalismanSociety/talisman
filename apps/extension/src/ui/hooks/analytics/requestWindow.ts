@@ -1,23 +1,38 @@
-import { describeDappRequest, type RiskVerdict } from "@common/analytics/dapp"
+import { describeDappRequest, isSigningRequestType, type RiskVerdict } from "@common/analytics/dapp"
 import { toDurationMs } from "@common/analytics/schema"
 import type { ValidRequests } from "@core/libs/requests/types"
 import { api } from "@ui/api"
 import { pageContext } from "@ui/api/pageContext"
 import { track } from "@ui/api/track"
 import type { TokenRiskVerdict } from "@ui/domains/TokenRisk/tokenRiskScan"
-import { useEffect } from "react"
+import { useEffect, useLayoutEffect } from "react"
 
 import { pageStartedLocked } from "./performance"
 
 export const useReportRequestRendered = (request: ValidRequests | undefined) => {
+  const kind = request && describeDappRequest(request)
+  const signingDappDomain =
+    kind && isSigningRequestType(kind.requestType) ? kind.dappDomain : undefined
+
+  useLayoutEffect(() => {
+    if (signingDappDomain === undefined) return
+    const signingDapp = { dappDomain: signingDappDomain }
+    pageContext.signingDapps.push(signingDapp)
+    return () => {
+      pageContext.signingDapps.splice(pageContext.signingDapps.indexOf(signingDapp), 1)
+    }
+  }, [signingDappDomain])
+
   useEffect(() => {
     if (!request || pageContext.requestId) return
     pageContext.requestId = request.id
-    const { method, platform } = describeDappRequest(request)
+    const { method, platform, requestType, dappDomain } = describeDappRequest(request)
     requestAnimationFrame(() =>
       track("dapp_request_rendered", {
         method,
         platform,
+        request_type: requestType,
+        dapp_domain: dappDomain,
         render_ms: toDurationMs(performance.now()),
         after_unlock: pageStartedLocked(),
       })

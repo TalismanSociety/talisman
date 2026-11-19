@@ -527,12 +527,12 @@ LIMIT 100`),
       prefix: "Dapps",
       title: "Dapp requests",
       description:
-        "How users decide on dapp requests: latency, rejections and the risk verdict shown, by method. Phishing sites blocked, and those the user trusted anyway.",
+        "How users decide on dapp requests: latency, rejections, failures and the risk verdict shown, by method and by dapp. Whether dapp transactions settle, by dapp. Phishing sites blocked, and those the user trusted anyway.",
       tiles: [
         {
           name: "Decisions by method",
           description:
-            "Per method: requests ended, the share approved, rejected, closed without a decision and expired, and p50/p90 milliseconds to the decision.",
+            "Per method: requests ended, the share approved, rejected, failed on an error, closed without a decision and expired, and p50/p90 milliseconds to the decision.",
           size: "full",
           query: hogql(`
 SELECT
@@ -540,6 +540,7 @@ SELECT
   count() AS requests,
   round(100 * countIf(properties.outcome = 'approved') / requests, 1) AS approved_pct,
   round(100 * countIf(properties.outcome = 'rejected') / requests, 1) AS rejected_pct,
+  round(100 * countIf(properties.outcome = 'failed') / requests, 1) AS failed_pct,
   round(100 * countIf(properties.outcome = 'closed') / requests, 1) AS closed_pct,
   round(100 * countIf(properties.outcome = 'expired') / requests, 1) AS expired_pct,
   round(quantile(0.5)(toFloat(properties.time_to_decision_ms))) AS p50_ms,
@@ -548,6 +549,75 @@ FROM events
 WHERE event = 'dapp_request_resolved' AND {filters}
 GROUP BY method
 ORDER BY requests DESC`),
+        },
+        {
+          name: "Signing requests by dapp",
+          description:
+            "Per dapp and platform: signing requests ended (transactions and messages), and the share approved, rejected, failed on an error, closed and expired. A null dapp is a local or private host.",
+          size: "full",
+          query: hogql(`
+SELECT
+  properties.dapp_domain AS dapp,
+  properties.platform AS platform,
+  count() AS requests,
+  countIf(properties.request_type = 'transaction') AS transactions,
+  countIf(properties.request_type = 'message') AS messages,
+  round(100 * countIf(properties.outcome = 'approved') / requests, 1) AS approved_pct,
+  round(100 * countIf(properties.outcome = 'rejected') / requests, 1) AS rejected_pct,
+  round(100 * countIf(properties.outcome = 'failed') / requests, 1) AS failed_pct,
+  round(100 * countIf(properties.outcome = 'closed') / requests, 1) AS closed_pct,
+  round(100 * countIf(properties.outcome = 'expired') / requests, 1) AS expired_pct
+FROM events
+WHERE event = 'dapp_request_resolved' AND properties.request_type IN ('transaction', 'message') AND {filters}
+GROUP BY dapp, platform
+ORDER BY requests DESC
+LIMIT 100`),
+        },
+        {
+          name: "Dapp transactions by dapp",
+          description:
+            "Per dapp and platform: transactions a dapp submitted that the wallet watched to a final status, and the share that succeeded, failed on chain, were dropped or replaced, plus broadcasts that failed before any node accepted them.",
+          size: "full",
+          query: hogql(`
+SELECT
+  properties.dapp_domain AS dapp,
+  properties.platform AS platform,
+  countIf(event = 'tx_settled') AS settled,
+  round(100 * countIf(properties.status = 'success') / settled, 1) AS success_pct,
+  round(100 * countIf(properties.status = 'error') / settled, 1) AS error_pct,
+  round(100 * countIf(properties.status = 'dropped') / settled, 1) AS dropped_pct,
+  round(100 * countIf(properties.status = 'replaced') / settled, 1) AS replaced_pct,
+  countIf(event = 'tx_broadcast_failed') AS broadcast_failed
+FROM events
+WHERE event IN ('tx_settled', 'tx_broadcast_failed') AND properties.submitted_by = 'dapp' AND {filters}
+GROUP BY dapp, platform
+ORDER BY settled DESC
+LIMIT 100`),
+        },
+        {
+          name: "Signing errors by dapp",
+          description:
+            "Errors shown on a dapp's signing request, and signing requests that failed on an error, per dapp and error category. Dapps on a local or private host (null) are left out.",
+          size: "full",
+          query: hogql(`
+SELECT
+  properties.dapp_domain AS dapp,
+  properties.error_category AS category,
+  countIf(event = 'error_shown') AS shown,
+  countIf(event = 'dapp_request_resolved') AS failed_requests
+FROM events
+WHERE (
+    (event = 'error_shown' AND properties.dapp_domain IS NOT NULL)
+    OR (
+      event = 'dapp_request_resolved'
+      AND properties.outcome = 'failed'
+      AND properties.request_type IN ('transaction', 'message')
+      AND properties.dapp_domain IS NOT NULL
+    )
+  ) AND {filters}
+GROUP BY dapp, category
+ORDER BY shown + failed_requests DESC
+LIMIT 100`),
         },
         {
           name: "Rejection rate by method",

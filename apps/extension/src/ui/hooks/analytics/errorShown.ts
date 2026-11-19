@@ -1,5 +1,6 @@
 import { type ErrorCategory, isErrorCategory } from "@common/analytics/errorCategory"
 import type { ERROR_SURFACES } from "@common/analytics/properties"
+import { currentSigningDapp, type SigningDapp } from "@ui/api/pageContext"
 import { track } from "@ui/api/track"
 import { type RefObject, useEffect } from "react"
 import type { Id } from "react-toastify"
@@ -12,13 +13,19 @@ type ErrorShown = { surface: ErrorSurface; category: ErrorCategory; field?: stri
 
 export type InlineError = { message: string; category: ErrorCategory }
 
-export const reportErrorShown = ({ surface, category, field }: ErrorShown) => {
+export const reportErrorShown = ({
+  surface,
+  category,
+  field,
+  signingDapp = currentSigningDapp(),
+}: ErrorShown & { signingDapp?: SigningDapp }) => {
   const attempt = recordErrorOnInnermostFlow(category)
   track("error_shown", {
     surface,
     error_category: category,
     ...attempt,
     ...(field && { field }),
+    ...(signingDapp && { dapp_domain: signingDapp.dappDomain }),
   })
 }
 

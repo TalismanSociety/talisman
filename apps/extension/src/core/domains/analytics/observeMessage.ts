@@ -1,5 +1,5 @@
 import { classifyError } from "@common/analytics/errorCategory"
-import { txTypeOf } from "@common/analytics/transactions"
+import { dappSubmitter, txTypeOf, WALLET_SUBMITTER } from "@common/analytics/transactions"
 import { log } from "@common/log"
 import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
 
@@ -48,7 +48,7 @@ const storedEthSend = (id: string): TxAttempt | null => {
     network: { networkId: queued.ethChainId },
     address: queued.account.address,
     txType: "other",
-    submittedBy: "dapp",
+    submitter: dappSubmitter(queued.url),
     signOnly: false,
   }
 }
@@ -61,7 +61,7 @@ const storedSubstrateSign = (id: string): TxAttempt | null => {
     network: { genesisHash: queued.request.payload.genesisHash },
     address: queued.account.address,
     txType: "other",
-    submittedBy: "dapp",
+    submitter: dappSubmitter(queued.url),
     signOnly: true,
   }
 }
@@ -75,7 +75,7 @@ const TX_SUBMISSION_POLICY = {
             network: { networkId: evmNetworkId },
             address: unsigned.from,
             txType: txTypeOf(txInfo),
-            submittedBy: "wallet",
+            submitter: WALLET_SUBMITTER,
             signOnly: false,
           }
         : null,
@@ -89,7 +89,7 @@ const TX_SUBMISSION_POLICY = {
             network: { networkId: evmNetworkId },
             address: unsigned.from,
             txType: txTypeOf(txInfo),
-            submittedBy: "wallet",
+            submitter: WALLET_SUBMITTER,
             signOnly: false,
           }
         : null,
@@ -109,7 +109,7 @@ const TX_SUBMISSION_POLICY = {
       network: { genesisHash: payload.genesisHash },
       address: payload.address,
       txType: txTypeOf(txInfo),
-      submittedBy: "wallet",
+      submitter: WALLET_SUBMITTER,
       signOnly: false,
     }),
     succeeded: always,
@@ -120,7 +120,7 @@ const TX_SUBMISSION_POLICY = {
       network: { genesisHash: payload.genesisHash },
       address: payload.address,
       txType: txTypeOf(txInfo),
-      submittedBy: "wallet",
+      submitter: WALLET_SUBMITTER,
       signOnly: false,
     }),
     succeeded: always,
@@ -134,7 +134,7 @@ const TX_SUBMISSION_POLICY = {
             network: { networkId },
             address,
             txType: txTypeOf(txInfo),
-            submittedBy: "wallet",
+            submitter: WALLET_SUBMITTER,
             signOnly: false,
           }
         : null
@@ -151,7 +151,7 @@ const TX_SUBMISSION_POLICY = {
         network: { networkId: approval.networkId },
         address: queued.account.address,
         txType: "other",
-        submittedBy: "dapp",
+        submitter: dappSubmitter(queued.url),
         signOnly: !queued.request.send,
       }
     },

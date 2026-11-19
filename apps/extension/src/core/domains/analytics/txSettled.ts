@@ -1,6 +1,10 @@
 import { SWAP_OUTCOMES, type SwapOutcome, swapOfTransaction } from "@common/analytics/funds"
 import { toSettleMs } from "@common/analytics/schema"
-import { type SettledStatus, txTypeOf } from "@common/analytics/transactions"
+import {
+  type SettledStatus,
+  submitterOfStoredTransaction,
+  txTypeOf,
+} from "@common/analytics/transactions"
 
 import type { TxStatusFact, TxStatusReason } from "../transactions/store.transactions"
 import type { SwapStatus, TransactionStatus, WalletTransaction } from "../transactions/types"
@@ -42,7 +46,7 @@ export const trackTxSettled = async ({ row, from, to, reason, at }: TxStatusFact
     network_id: networkId,
     tx_type: txTypeOf(row.txInfo),
     time_to_settle_ms: timeToSettleMs,
-    submitted_by: row.siteUrl ? "dapp" : "wallet",
+    ...submitterOfStoredTransaction(row.siteUrl),
     ...(signer && { signer }),
   })
   const swap = swapOfTransaction(row.txInfo)

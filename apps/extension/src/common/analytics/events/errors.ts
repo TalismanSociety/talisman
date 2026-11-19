@@ -6,13 +6,14 @@ import { defineEventGroup } from "../schema"
 export const errorEvents = defineEventGroup(properties, {
   error_shown: {
     description:
-      "An error the user saw: an error toast, an inline field error appearing, an error sign alert, a blocking error screen, or the crash screen. Once per appearance, never its text. flow and flow_id name the flow attempt it happened in.",
+      "An error the user saw: an error toast, an inline field error appearing, an error sign alert, a blocking error screen, or the crash screen. Once per appearance, never its text. flow and flow_id name the flow attempt it happened in. dapp_domain is set when it appeared on a dapp's signing request.",
     props: {
       surface: { narrow: z.enum(ERROR_SURFACES) },
       error_category: "required",
       flow: "optional",
       flow_id: "optional",
       field: "optional",
+      dapp_domain: "optional",
     },
   },
 })

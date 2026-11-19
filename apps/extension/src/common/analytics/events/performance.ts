@@ -26,6 +26,8 @@ export const performanceEvents = defineEventGroup(properties, {
     props: {
       method: { narrow: z.enum(DAPP_METHODS) },
       platform: "required",
+      request_type: "required",
+      dapp_domain: "required",
       render_ms: "required",
       after_unlock: "required",
     },

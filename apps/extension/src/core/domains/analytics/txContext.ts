@@ -2,7 +2,7 @@ import { networkIdForAnalytics } from "@common/analytics/funds"
 import {
   type ChainPlatform,
   type Signer,
-  type SubmittedBy,
+  type Submitter,
   signerOf,
   type TxType,
 } from "@common/analytics/transactions"
@@ -17,7 +17,7 @@ export type TxAttempt = {
   network: NetworkRef
   address: string
   txType: TxType
-  submittedBy: SubmittedBy
+  submitter: Submitter
   signOnly: boolean
 }
 
@@ -25,9 +25,8 @@ export type TxContext = {
   platform: ChainPlatform
   network_id: string
   tx_type: TxType
-  submitted_by: SubmittedBy
   signer: Signer
-}
+} & Submitter
 
 export const analyticsNetworkId = async (network: NetworkRef): Promise<string> =>
   networkIdForAnalytics(
@@ -51,7 +50,7 @@ export const resolveTxContext = async (attempt: TxAttempt): Promise<TxContext | 
     platform: attempt.platform,
     network_id: networkId,
     tx_type: attempt.txType,
-    submitted_by: attempt.submittedBy,
     signer,
+    ...attempt.submitter,
   }
 }
