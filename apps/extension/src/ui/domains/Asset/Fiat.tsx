@@ -1,13 +1,16 @@
 import type { BalanceFormatter } from "@talismn/balances"
 import type { TokenRateCurrency } from "@talismn/token-rates"
-import type { Prettify } from "@talismn/util"
+import { formatCurrency, type Prettify } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { useFiatFromUsd } from "@ui/state/fiatFromUsd"
 import { useSelectedCurrency } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
-import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@ui/util/formatFiat"
 import React, { type FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
+
+const localeSeparators = new Intl.NumberFormat(undefined).formatToParts(1000.1)
+const decimalSeparator = localeSeparators.find((p) => p.type === "decimal")?.value ?? "."
+const groupSeparator = localeSeparators.find((p) => p.type === "group")?.value ?? ","
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
@@ -22,7 +25,7 @@ type FiatProps = {
 
 type DisplayValueProps = {
   amount: number
-  currency?: Intl.NumberFormatOptions["currency"]
+  currency: TokenRateCurrency
   currencyDisplay?: Intl.NumberFormatOptions["currencyDisplay"]
   isBalance?: boolean
   noCountUp?: boolean
@@ -86,15 +89,17 @@ const DisplayValue = React.memo(
 
     const format = useCallback(
       (amount = 0) => {
-        if (amount > 0 && isBalance && amount < 0.01)
-          return `< ${formatFiat(0.01, { currency, currencyDisplay, minimumDecimalPlaces: 2, compact })}`
+        const formatWithDecimals = (amount: number, decimals: number) =>
+          formatCurrency(amount, currency, {
+            currencyDisplay,
+            notation: compact ? "compact" : "standard",
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: compact ? decimals : undefined,
+          })
 
-        return formatFiat(amount, {
-          currency,
-          currencyDisplay,
-          minimumDecimalPlaces: decimalPlaces,
-          compact,
-        })
+        if (amount > 0 && isBalance && amount < 0.01) return `< ${formatWithDecimals(0.01, 2)}`
+
+        return formatWithDecimals(amount, decimalPlaces)
       },
       [currency, currencyDisplay, decimalPlaces, isBalance, compact]
     )
@@ -105,8 +110,8 @@ const DisplayValue = React.memo(
       <CountUp
         end={amount}
         decimals={decimalPlaces}
-        decimal={fiatDecimalSeparator}
-        separator={fiatGroupSeparator}
+        decimal={decimalSeparator}
+        separator={groupSeparator}
         duration={0.4}
         formattingFn={format}
         useEasing
