@@ -1,5 +1,18 @@
 # @talismn/chain-connectors
 
+## 1.1.3
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- Updated dependencies [74350e8]
+- Updated dependencies [bd18aa5]
+- Updated dependencies [4ab1154]
+- Updated dependencies [97bf27f]
+- Updated dependencies [534b1a0]
+  - @talismn/chaindata-provider@2.3.3
+  - @talismn/util@2.2.0
+
 ## 1.1.2
 
 ### Patch Changes
