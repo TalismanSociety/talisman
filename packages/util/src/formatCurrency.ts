@@ -14,25 +14,26 @@ const clampFractionDigits = (digits: number | undefined) =>
 const isSpacing = (part: Intl.NumberFormatPart | undefined) =>
   part?.type === "literal" && part.value.trim() === ""
 
-const withTrailingCode = (parts: Intl.NumberFormatPart[], code: string) => {
+const withTrailingCode = (
+  parts: Intl.NumberFormatPart[],
+  code: string
+): Intl.NumberFormatPart[] => {
   const currencyIndex = parts.findIndex((part) => part.type === "currency")
-  const number = parts
-    .filter(
-      (part, index) =>
-        index !== currencyIndex && !(isSpacing(part) && Math.abs(index - currencyIndex) === 1)
-    )
-    .map((part) => part.value)
-    .join("")
-    .trim()
+  const number = parts.filter(
+    (part, index) =>
+      index !== currencyIndex && !(isSpacing(part) && Math.abs(index - currencyIndex) === 1)
+  )
+  while (isSpacing(number[0])) number.shift()
+  while (isSpacing(number.at(-1))) number.pop()
 
-  return `${number} ${code}`
+  return [...number, { type: "literal", value: " " }, { type: "currency", value: code }]
 }
 
-export const formatCurrency = (
+export const formatCurrencyToParts = (
   amount: number,
   currency: string,
   options: FormatCurrencyOptions = {}
-) => {
+): Intl.NumberFormatPart[] => {
   const currencyId = currency.toLowerCase()
   const currencyDisplay =
     options.currencyDisplay ?? (currencyId === "usd" ? "narrowSymbol" : "symbol")
@@ -52,7 +53,7 @@ export const formatCurrency = (
     )
 
   const symbol = currencyDisplay === "name" ? undefined : SYMBOLS_UNKNOWN_TO_INTL[currencyId]
-  if (!symbol) return new Intl.NumberFormat(undefined, intlOptions).format(amount)
+  if (!symbol) return new Intl.NumberFormat(undefined, intlOptions).formatToParts(amount)
 
   const formatAsDollars = new Intl.NumberFormat(undefined, {
     ...intlOptions,
@@ -62,6 +63,14 @@ export const formatCurrency = (
 
   return formatAsDollars
     .formatToParts(amount)
-    .map((part) => (part.type === "currency" ? symbol : part.value))
-    .join("")
+    .map((part) => (part.type === "currency" ? { ...part, value: symbol } : part))
 }
+
+export const formatCurrency = (
+  amount: number,
+  currency: string,
+  options: FormatCurrencyOptions = {}
+) =>
+  formatCurrencyToParts(amount, currency, options)
+    .map((part) => part.value)
+    .join("")

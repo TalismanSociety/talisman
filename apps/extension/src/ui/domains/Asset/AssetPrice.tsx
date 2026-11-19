@@ -7,6 +7,7 @@ import { useSelectedCurrency } from "@ui/state/settings"
 import { useTokenRates } from "@ui/state/tokenRates"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
+import { CompactPrice } from "./CompactPrice"
 
 const getDisplayAssetPrice = (
   tokenId: TokenId | null | undefined,
@@ -22,8 +23,6 @@ const getDisplayAssetPrice = (
   if (!rate && balances) rate = balances.find({ tokenId })?.each[0]?.rates?.[currency]
 
   if (!rate) return null
-
-  const compact = formatPrice(rate.price, currency, true)
 
   const full = formatPrice(rate.price, currency, false)
 
@@ -45,7 +44,8 @@ const getDisplayAssetPrice = (
   const changeClassName = getPriceChangeClassName(change24h)
 
   return {
-    compact,
+    price: rate.price,
+    currency,
     full,
     change24h,
     changeClassName,
@@ -91,7 +91,9 @@ export const AssetPrice: FC<{
     <Tooltip placement="bottom-start">
       <TooltipTrigger asChild>
         <Container className={cn("whitespace-nowrap", className)}>
-          <span className={priceClassName}>{price.compact} </span>
+          <span className={priceClassName}>
+            <CompactPrice price={price.price} currency={price.currency} />{" "}
+          </span>
           {!noChange && price.change24h ? (
             <span className={cn(price.changeClassName, changeClassName)}>{price.change24h}</span>
           ) : null}
