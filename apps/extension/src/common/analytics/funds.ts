@@ -15,6 +15,7 @@ import { CUSTOM_NETWORK_ID } from "./transactions"
 
 export const SEND_ENTRIES = [
   "dashboard",
+  "a_mode",
   "nav_menu",
   "token_details",
   "address_book",
@@ -24,6 +25,7 @@ export type SendEntry = (typeof SEND_ENTRIES)[number]
 
 export const SWAP_ENTRIES = [
   "dashboard",
+  "a_mode",
   "bottom_nav",
   "get_started",
   "seek",
@@ -34,6 +36,7 @@ export type SwapEntry = (typeof SWAP_ENTRIES)[number]
 
 export const BUY_ENTRIES = [
   "dashboard",
+  "a_mode",
   "nav_menu",
   "get_started",
   "no_tokens",
@@ -43,6 +46,7 @@ export type BuyEntry = (typeof BUY_ENTRIES)[number]
 
 export const RECEIVE_ENTRIES = [
   "dashboard",
+  "a_mode",
   "account_header",
   "account_menu",
   "account_icon",
