@@ -9,13 +9,16 @@ import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { useCallback, useEffect, useRef } from "react"
 
 import { getTalismanLedgerError } from "./errors"
+import { LEDGER_EMULATOR_URL, SpeculosHttpTransport } from "./speculosTransport"
 
 const LEDGER_IN_PROGRESS_ERROR = "An operation that changes interface state is in progress."
 
 const IS_USB_SUPPORTED = getIsLedgerCapable("usb")
 const IS_HID_SUPPORTED = getIsLedgerCapable("hid")
 
-const safelyCreateTransport = async (type: LedgerTransportType, attempt = 1) => {
+type LedgerDeviceTransportType = Exclude<LedgerTransportType, "speculos">
+
+const safelyCreateTransport = async (type: LedgerDeviceTransportType, attempt = 1) => {
   if (attempt > 5) throw getTalismanLedgerError("Unable to connect to Ledger")
 
   try {
@@ -35,7 +38,7 @@ const safelyCreateTransport = async (type: LedgerTransportType, attempt = 1) => 
   }
 }
 
-const createTransport = async (type: LedgerTransportType): Promise<Transport> => {
+const createDeviceTransport = async (type: LedgerDeviceTransportType): Promise<Transport> => {
   try {
     if (IS_USB_SUPPORTED && IS_HID_SUPPORTED) {
       return await safelyCreateTransport(type)
@@ -49,6 +52,21 @@ const createTransport = async (type: LedgerTransportType): Promise<Transport> =>
   } catch (err) {
     throw getTalismanLedgerError(err)
   }
+}
+
+const openLedgerEmulator = async (): Promise<Transport> => {
+  try {
+    return await SpeculosHttpTransport.open(LEDGER_EMULATOR_URL)
+  } catch (err) {
+    throw getTalismanLedgerError(err)
+  }
+}
+
+export const createTransport = (type: LedgerTransportType): Promise<Transport> => {
+  if (type !== "speculos") return createDeviceTransport(type)
+  // Spelled out, not a shared constant: the bundler drops the emulator from canary and
+  // production builds only when the condition is a literal in the module that uses it.
+  return process.env.BUILD_TYPE === "dev" ? openLedgerEmulator() : createDeviceTransport("hid")
 }
 
 export const useLedgerTransport = () => {
