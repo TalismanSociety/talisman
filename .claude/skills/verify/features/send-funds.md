@@ -12,7 +12,7 @@ A user sends a token from one of their accounts to an address: pick the token, t
 
 ## How to get to it (user POV)
 
-- The `Send` button in the dashboard or popup portfolio header. On a token's page that has a price chart, the chart takes the header's place, with no `Send`.
+- The `Send` button in the dashboard or popup portfolio header. On a dashboard token's page that has a price chart, the chart takes the header's place, with no `Send`.
 - On a token's page (`#/portfolio/tokens/<symbol>`, dashboard or popup): the toolbar icon with the tooltip "Send <symbol>" opens the picker limited to that token. The icon with the tooltip "Send" on each network block of that page picks the token and skips the picker. Both icons have no accessible name, so hover them by ref and read the tooltip. A row of the portfolio token list has no Send.
 - The dashboard header `Send` and these icons open the wizard in a popup window at `popup.html#/send?entry=…`.
 - Direct routes in the popup: `popup.html#/send/token?from=<address>&to=<address>`, then `#/send/amount?from=…&to=…&tokenId=<tokenId>`.
@@ -35,7 +35,7 @@ Preconditions:
   curl -s "localhost:$(.claude/skills/verify/bin/cdp-port.mjs)/json/list" | node -e 'const before = new Set(require(process.argv[1]).map((t) => t.id)); for (const t of JSON.parse(require("fs").readFileSync(0))) if (!before.has(t.id) && t.url.includes("popup.html#/send")) console.log(t.url)' "$PWD/$RUN/targets-before.json"
   ```
 
-  No output means the click opened nothing. Open the URL with `ab tab new`. The URL has one `tokenIds=` per id, and with an account selected it also has `from=`. The tab moves to `#/send/token`, with the search box empty. Each row's `data-id` is one of those ids. Some ids have no row, because only tokens with a transferable balance are listed. Search a symbol of another token, such as `USDC`: the picker reads "No token matches your search". With no account selected, a network block's "Send" icon opens `#/send?…&tokenId=<id>` instead, which goes on to `#/send/from`. An icon whose tooltip reads "No tokens available to send" opens nothing.
+  No output means no new window yet: the extension opens it asynchronously, so print again before you conclude that the click opened nothing. Open the URL with `ab tab new`. The URL has one `tokenIds=` per id, and with an account selected it also has `from=`. The tab moves to `#/send/token`, with the search box empty. Each row's `data-id` is one of those ids. Some ids have no row, because only tokens with a transferable balance are listed. Search a symbol of another token, such as `USDC`: the picker reads "No token matches your search". With no account selected, a network block's "Send" icon opens `#/send?…&tokenId=<id>` instead, which goes on to `#/send/from`. An icon whose tooltip reads "No tokens available to send" opens nothing.
 
 ## Gotchas
 
