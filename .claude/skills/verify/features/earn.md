@@ -36,6 +36,6 @@ Steps:
 
 - `Stake` and `Unstake` on a subnet row exist only while the row is hovered. A click on the row itself opens the subnet page.
 - The `Root subnet` row is the exception: it always shows `Claim Rewards` and `More actions`, and a click on it leaves the hash on `#/bittensor/subnets`.
-- The `TAO Staking` row has a round icon with no name next to it, with the tooltip "Claim". Click the row's name, not the icon.
+- In the dashboard, when the account can sign and has rewards to claim, the `TAO Staking` row has a round icon with no name next to it, with the tooltip "Claim". Click the row's name, not the icon.
 - Real funds on mainnet: `Claim`, the row's "Claim" icon, `Claim Rewards`, `Buy`, `Sell` and the `Review` of the `Stake` dialog all lead to a signature on a later confirm step. No step here clicks them.
 - From source, not driven: staking or trading to a signature, Bittensor Testnet at `#/bittensor-testnet/subnets`, the popup Earn page, a group in the positions list that stays collapsed after you open a position, and `0.00%` for a validator without rewards.
