@@ -120,8 +120,10 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform): Ui
         const publicKey = bytes.slice(SECRET_KEY_LENGTH)
         bytes.fill(0)
         const computedPublicKey = getPublicKeySolana(privateKey)
-        if (!publicKey.every((b, i) => b === computedPublicKey[i]))
+        if (!publicKey.every((b, i) => b === computedPublicKey[i])) {
+          privateKey.fill(0)
           throw new Error("Invalid Solana secret key: public key does not match")
+        }
         return privateKey
       }
       if (bytes.length === SECRET_KEY_LENGTH) return bytes
