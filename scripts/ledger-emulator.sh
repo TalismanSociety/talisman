@@ -1,7 +1,8 @@
 #!/bin/sh
 # Runs a Ledger device emulator (Speculos) in Docker and drives it over its REST API.
 #
-#   ledger-emulator.sh fetch-apps             download the Ethereum, Polkadot and Solana app builds
+#   ledger-emulator.sh fetch-apps             get the pinned Ethereum, Polkadot and Solana app builds
+#   ledger-emulator.sh apps-key               print the pins, one per line (the key of a cache of the builds)
 #   ledger-emulator.sh start [app|elf]        start the emulator (ethereum, polkadot, solana or a path)
 #   ledger-emulator.sh stop                   remove the emulator container
 #   ledger-emulator.sh status                 check Docker, the container and the API
@@ -11,6 +12,7 @@
 #   ledger-emulator.sh approve                step through a review and sign it
 #   ledger-emulator.sh reject                 step through a review and reject it
 #   ledger-emulator.sh enable-blind-signing   turn on blind signing in the Ethereum app
+#   ledger-emulator.sh disable-blind-signing  turn it off again
 #   ledger-emulator.sh apdu <hex>             send one APDU, print the response hex
 #   ledger-emulator.sh eth-address [index]    print the address at m/44'/60'/0'/0/<index>
 #   ledger-emulator.sh screenshot <file.png>
@@ -21,8 +23,12 @@
 # See docs/ledger-emulator.md.
 set -eu
 
+# Pins. The device apps and both images change only when these lines do.
 ETH_APP_VERSION=1.23.0
-IMAGE=${SPECULOS_IMAGE:-ghcr.io/ledgerhq/speculos:latest}
+POLKADOT_APP_COMMIT=e36ced75060a7248903c4b1586839d2ddfe8021c
+SOLANA_APP_COMMIT=af6ed454f0ed39cad8a5e1bca544ced18350a403
+IMAGE=${SPECULOS_IMAGE:-ghcr.io/ledgerhq/speculos@sha256:56c7ec84c903147dac28e68706d3241218a3d9beb9562dd4a8c02947b2a24f47}
+BUILDER_IMAGE=${LEDGER_APP_BUILDER_IMAGE:-ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite@sha256:45ec491f28489aa0337eea8d50e9962a700ed41054081ee1b639bc1b128e6a32}
 MODEL=${SPECULOS_MODEL:-nanox}
 # macOS AirPlay Receiver listens on 5000, which is Speculos's default API port.
 PORT=${SPECULOS_API_PORT:-5001}
@@ -103,63 +109,79 @@ build_model() {
 elf_for() {
   case $1 in
     ethereum) echo "$APPS_DIR/ethereum-$ETH_APP_VERSION/app-$ETH_APP_VERSION-$(build_model).elf" ;;
-    polkadot | solana) echo "$APPS_DIR/$1/$(build_model)/bin/app.elf" ;;
+    polkadot) echo "$APPS_DIR/polkadot-$POLKADOT_APP_COMMIT/$(build_model).elf" ;;
+    solana) echo "$APPS_DIR/solana-$SOLANA_APP_COMMIT/$(build_model).elf" ;;
     *.elf) echo "$1" ;;
     *) die "unknown app '$1': pass ethereum, polkadot, solana or the path to an .elf" ;;
   esac
 }
 
-fetch_apps() {
-  need gh
-  dir=$APPS_DIR/ethereum-$ETH_APP_VERSION
-  mkdir -p "$dir"
-  gh release download "$ETH_APP_VERSION" -R LedgerHQ/app-ethereum -D "$dir" -p 'app-*.elf' --skip-existing
-  echo "ethereum $ETH_APP_VERSION: $dir"
-  fetch_ci_app polkadot LedgerHQ/app-polkadot main compiled_app_binaries
-  # compiled_app_binaries is built with TRUSTED_NAME_TEST_KEY=1, so it is the fallback.
-  fetch_ci_app solana LedgerHQ/app-solana master guidelines_enforcer_app_binaries compiled_app_binaries
+apps_key() {
+  echo "model $(build_model)"
+  echo "ethereum $ETH_APP_VERSION"
+  echo "polkadot $POLKADOT_APP_COMMIT"
+  echo "solana $SOLANA_APP_COMMIT"
+  echo "builder $BUILDER_IMAGE"
 }
 
-# fetch_ci_app <app> <repo> <branch> <artifact>...
+fetch_apps() {
+  elf=$(elf_for ethereum)
+  if [ ! -f "$elf" ]; then
+    need curl
+    mkdir -p "$(dirname "$elf")"
+    curl -fsSL -o "$elf.part" \
+      "https://github.com/LedgerHQ/app-ethereum/releases/download/$ETH_APP_VERSION/$(basename "$elf")" ||
+      die "could not download the Ethereum app $ETH_APP_VERSION for $(build_model)"
+    mv "$elf.part" "$elf"
+  fi
+  echo "ethereum $ETH_APP_VERSION: $elf"
+  # The Polkadot app builds in app/, the Solana app at the root of its repository.
+  build_app polkadot "$POLKADOT_APP_COMMIT" app
+  build_app solana "$SOLANA_APP_COMMIT" .
+}
+
+# build_app <app> <commit> <build directory>
 #
-# The Polkadot and Solana apps publish no release builds. Their CI uploads them on every push
-# to the default branch as artifacts holding one <model>/bin/app.elf per device model, which
-# GitHub deletes after 90 days. This takes the newest unexpired artifact of the first name
-# that has one, in the order given, and records which run and artifact it came from, to skip
-# an unchanged build.
-#
-# Only runs of the upstream repository's own push to the branch count: a pull request from a
-# fork can name its branch the same.
-fetch_ci_app() {
+# The Polkadot and Solana apps publish no release builds, and GitHub deletes the builds their
+# CI uploads after 90 days. So this compiles LedgerHQ/app-<app> at a pinned commit, in Ledger's
+# builder image, pinned by digest. It skips an app that is already built.
+build_app() {
   app=$1
-  repo=$2
-  branch=$3
-  shift 3
-  run=
-  artifact=
-  for name in "$@"; do
-    listing=$(gh api "repos/$repo/actions/artifacts?name=$name&per_page=30" \
-      --jq ".artifacts[] | select(.expired == false and .workflow_run.head_branch == \"$branch\" and .workflow_run.head_repository_id == .workflow_run.repository_id) | \"\\(.created_at) \\(.workflow_run.id)\"") ||
-      die "could not list the $name artifacts of $repo"
-    for id in $(printf '%s\n' "$listing" | sort -r | cut -d ' ' -f 2); do
-      if [ "$(gh api "repos/$repo/actions/runs/$id" --jq .event)" = push ]; then
-        run=$id
-        artifact=$name
-        break 2
-      fi
-    done
-  done
-  [ -n "$run" ] || die "no unexpired $* artifact from a push to $repo $branch"
-  dir=$APPS_DIR/$app
-  if [ "$(cat "$dir/ci-build" 2>/dev/null)" = "$run $artifact" ]; then
-    echo "$app (CI run $run, $artifact): $dir"
+  commit=$2
+  elf=$(elf_for "$app")
+  if [ -f "$elf" ]; then
+    echo "$app $commit: $elf"
     return
   fi
-  rm -rf "$dir"
-  mkdir -p "$dir"
-  gh run download "$run" -R "$repo" -n "$artifact" -D "$dir"
-  echo "$run $artifact" >"$dir/ci-build"
-  echo "$app (CI run $run, $artifact): $dir"
+  need git
+  need docker
+  docker info >/dev/null 2>&1 || die "Docker is not running"
+  case $(build_model) in
+    nanox) sdk=NANOX_SDK ;;
+    nanos2) sdk=NANOSP_SDK ;;
+    stax) sdk=STAX_SDK ;;
+    flex) sdk=FLEX_SDK ;;
+    apex_p) sdk=APEX_P_SDK ;;
+    *) die "no SDK in the builder image for model $MODEL" ;;
+  esac
+  src=$APPS_DIR/.build-$app
+  rm -rf "$src"
+  mkdir -p "$src" "$(dirname "$elf")"
+  echo "building the $app app at $commit for $(build_model) ..." >&2
+  git -C "$src" init -q
+  git -C "$src" fetch -q --depth 1 "https://github.com/LedgerHQ/app-$app" "$commit" ||
+    die "could not fetch LedgerHQ/app-$app at $commit"
+  git -C "$src" checkout -q FETCH_HEAD
+  # The Solana app names a submodule by its SSH URL, which needs a GitHub key: fetch it over HTTPS.
+  git -C "$src" -c url.https://github.com/.insteadOf=git@github.com: \
+    submodule update -q --init --recursive --depth 1
+  # The builder runs as root by default, which would leave root-owned files in the cache.
+  docker run --rm --user "$(id -u):$(id -g)" -v "$src":/app -w "/app/$3" "$BUILDER_IMAGE" \
+    sh -c 'eval "make -j BOLOS_SDK=\$$1"' sh "$sdk" >"$src/build.log" 2>&1 ||
+    die "the $app build failed, see $src/build.log"
+  mv "$src/$3/build/$(build_model)/bin/app.elf" "$elf"
+  rm -rf "$src"
+  echo "$app $commit: $elf"
 }
 
 start() {
@@ -244,13 +266,16 @@ eth_address() {
   printf '0x%s\n' "$(printf '%s' "$response" | cut -c"$offset"-"$((offset + 79))" | hex_to_text)"
 }
 
-enable_blind_signing() {
+# set_blind_signing <Enabled|Disabled>
+set_blind_signing() {
+  # A refused transaction leaves this warning up until a button is pressed.
+  if screen_text | grep -q 'Blind signing must'; then press both; fi
   press_until 'app is ready|App settings' 6 >/dev/null
   screen_text | grep -q 'App settings' || press right
   press both
-  if screen_text | grep -q 'Blind signing.*Disabled'; then press both; fi
-  screen_text | grep -q 'Blind signing.*Enabled' || die "blind signing did not turn on (now: $(screen_text))"
-  echo "blind signing enabled"
+  screen_text | grep -q "Blind signing.*$1" || press both
+  screen_text | grep -q "Blind signing.*$1" || die "blind signing did not become $1 (now: $(screen_text))"
+  echo "blind signing $1" | tr '[:upper:]' '[:lower:]'
   press_until '^Back$' 10 >/dev/null
   press both
   press left
@@ -258,7 +283,7 @@ enable_blind_signing() {
 }
 
 case ${1:-} in
-  start | status | screen | press | press-until | approve | reject | enable-blind-signing | apdu | eth-address | screenshot)
+  start | status | screen | press | press-until | approve | reject | enable-blind-signing | disable-blind-signing | apdu | eth-address | screenshot)
     need curl
     need jq
     ;;
@@ -266,6 +291,7 @@ esac
 
 case ${1:-} in
   fetch-apps) fetch_apps ;;
+  apps-key) apps_key ;;
   start) start "${2:-}" ;;
   stop) stop ;;
   status) status ;;
@@ -276,7 +302,15 @@ case ${1:-} in
     ;;
   press-until) press_until "${2:?press-until takes a regex}" "${3:-20}" ;;
   approve)
-    press_until '^(Sign|Accept|Approve)' 30
+    # The Ethereum app opens a blind-signed review with a warning that both buttons accept.
+    if screen_text | grep -q 'Blind signing ahead'; then press both; fi
+    press_until '^(Sign|Accept|Approve)' 30 >/dev/null
+    # The Polkadot app titles a screen inside its raw message review "Sign and Verify".
+    if screen_text | grep -q '^Sign and Verify'; then
+      press right
+      press_until '^(Sign|Accept|Approve)' 30 >/dev/null
+    fi
+    screen_text
     press both
     screen_text
     ;;
@@ -285,7 +319,8 @@ case ${1:-} in
     press both
     screen_text
     ;;
-  enable-blind-signing) enable_blind_signing ;;
+  enable-blind-signing) set_blind_signing Enabled ;;
+  disable-blind-signing) set_blind_signing Disabled ;;
   apdu) apdu "${2:-}" ;;
   eth-address) eth_address "${2:-0}" ;;
   screenshot) api GET /screenshot -o "${2:?screenshot takes an output .png path}" && echo "${2}" ;;

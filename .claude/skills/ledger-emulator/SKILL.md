@@ -13,7 +13,7 @@ Every command runs from the repo root through `scripts/ledger-emulator.sh` (`pnp
 
 Dev builds of the extension (`pnpm dev`, `pnpm build:extension`) connect to the emulator over HTTP in place of WebHID or WebUSB. Choose **Speculos (emulator)** in Settings → General → Ledger interface. The wallet then talks to `http://127.0.0.1:5001` only, so never change `SPECULOS_API_PORT` for a wallet run. Start the emulator with the app for the account type: it runs one app at a time. This path does not exercise WebHID or WebUSB, so a result from it says nothing about them. Canary and production builds have no emulator.
 
-A browser in a Docker container, such as the `verify` skill's worktree runner, reaches the emulator only if the container shares the host network: otherwise its `127.0.0.1` is its own. Check with `curl -s 127.0.0.1:5001/events` inside the container. If it fails, drive the wallet with Playwright on the host, as `playwright/e2e-tests/ledger-emulator.spec.ts` does.
+A browser in a Docker container, such as the `verify` skill's worktree runner, reaches the emulator only if the container shares the host network: otherwise its `127.0.0.1` is its own. Check with `curl -s 127.0.0.1:5001/events` inside the container. If it fails, drive the wallet with Playwright on the host, as the specs in `playwright/e2e-tests/ledger/` do.
 
 ## 1. Launch
 
@@ -32,11 +32,11 @@ sh scripts/ledger-emulator.sh start solana     # Solana app
 sh scripts/ledger-emulator.sh start <path>.elf # an app built locally
 ```
 
-A missing app build fails with `not found (run: pnpm ledger:emulator fetch-apps)`. Run `fetch-apps`, then start again.
+A missing app build fails with `not found (run: pnpm ledger:emulator fetch-apps)`. Run `fetch-apps`, then start again. It downloads the pinned Ethereum app and builds the Polkadot and Solana apps from their pinned commits in Docker. The first run pulls a 4 GB builder image.
 
 A `start` for another app or model than the running emulator fails and names the running one. Stop it only if this run started it. Otherwise ask the user.
 
-Record in your notes whether this run started the emulator. Stop it at the end only if it did. `pnpm test:e2e:ledger` stops any running emulator, so ask before you run it on an emulator you did not start.
+Record in your notes whether this run started the emulator. Stop it at the end only if it did. `pnpm test:e2e:ledger` stops any running emulator, so ask before you run it on an emulator you did not start. It also starts an Anvil container (`talisman-ledger-anvil`, port 8546) and removes it at the end, and its Polkadot extrinsic and Solana transaction cases need the live networks (doc, "E2E tests").
 
 ## 2. Recovery phrase
 
@@ -73,7 +73,7 @@ Walk the review with `press right` and check each field against the request (amo
 
 The response hex ends with the status word. `9000` is success. `6985` means the user rejected.
 
-EVM transactions with calldata (ERC-20 transfers, swaps, contract calls) need blind signing on: run `enable-blind-signing` once per container start. With it off, the device shows `Blind signing must be enabled in settings` and the APDU fails with `6a80`. Plain ETH transfers sign either way.
+EVM transactions with calldata (ERC-20 transfers, swaps, contract calls) and EIP-712 typed data for a contract the app does not know need blind signing on: run `enable-blind-signing` once per container start. With it off, the device shows `Blind signing must be enabled in settings` until a button is pressed, and the APDU fails with `6a80`. With it on, the review starts with `Blind signing ahead`, which `approve` accepts. `disable-blind-signing` turns it off again. Plain ETH transfers sign either way.
 
 When text is ambiguous, `screenshot .tmp/ledger.png` and read the image.
 
@@ -91,4 +91,5 @@ Only for an emulator this run started. Stopping drops device settings such as bl
 - **Device model.** `SPECULOS_MODEL` must match the build. Stax, Flex and Apex have touch screens and ignore `press`. Drive them with `POST /finger` (doc, "The REST API").
 - **No PIN or onboarding.** Speculos starts the app unlocked, so a task step that sets up a PIN does not apply.
 - **The device is deterministic.** The same phrase, path and payload give the same signature on every run. A changed signature means a changed input.
+- **One client at a time.** Speculos has one APDU channel. An `apdu` or `eth-address` sent while the wallet talks to the device gets the wallet's answer, and the wallet gets yours. Read the device directly before the wallet connects or after it is done.
 - **Speculos does not log APDUs.** To prove what reached it, watch the browser's requests to `127.0.0.1:5001`.
