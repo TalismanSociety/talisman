@@ -227,6 +227,7 @@ test.describe("Ledger emulator", () => {
       await approveOnDevice()
       const signature = (await dapp.evaluate(() => (window as EthereumWindow).pending)) as string
 
+      expect(signature).toMatch(/^0x[0-9a-fA-F]{130}$/)
       const signer = await recoverMessageAddress({
         message: { raw: `0x${message.toString("hex")}` },
         signature: signature as Hex,
