@@ -34,10 +34,10 @@ Speculos serves its API on port 5000 inside the container. The script publishes 
 
    They go to `~/.cache/talisman/ledger-apps/`, one `.elf` for the device model in `SPECULOS_MODEL`:
    - `ethereum-<version>/`: the Ethereum app release pinned in the script ([app-ethereum releases](https://github.com/LedgerHQ/app-ethereum/releases)).
-   - `polkadot-<commit>/`: the Polkadot generic app, built from the commit of [LedgerHQ/app-polkadot](https://github.com/LedgerHQ/app-polkadot) pinned in the script.
-   - `solana-<commit>/`: the Solana app, built from the commit of [LedgerHQ/app-solana](https://github.com/LedgerHQ/app-solana) pinned in the script.
+   - `polkadot-<commit>-builder-<id>/`: the Polkadot generic app, built from the commit of [LedgerHQ/app-polkadot](https://github.com/LedgerHQ/app-polkadot) pinned in the script.
+   - `solana-<commit>-builder-<id>/`: the Solana app, built from the commit of [LedgerHQ/app-solana](https://github.com/LedgerHQ/app-solana) pinned in the script.
 
-   The first run pulls Ledger's builder image (4 GB) and builds the two apps, which takes a few seconds once the image is there. Later runs skip what is already built. See [App builds](#app-builds).
+   The first run pulls Ledger's builder image (4 GB) and builds the two apps, which takes a few seconds once the image is there. Later runs skip what is already built. `<id>` is a checksum of the builder image, so a new image builds the two apps again. See [App builds](#app-builds).
 
 4. Start the emulator and check it:
 
@@ -110,7 +110,7 @@ The specs read the device directly only while the wallet does not talk to it. Sp
 | Command                                          | Effect                                                                                                                   |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | `fetch-apps`                                     | Download the pinned Ethereum app release, and build the Polkadot and Solana apps from their pinned commits.              |
-| `apps-key`                                       | Print the pins of the app builds, one per line. CI hashes them into the key of its cache of the builds.                   |
+| `apps-key`                                       | Print the paths of the app builds under the cache, one per line. CI hashes them into the key of its cache of the builds.                   |
 | `start [ethereum\|polkadot\|solana\|<path>.elf]` | Start the emulator (default `ethereum`). Reuses a running emulator with the same app and model, and fails for any other. |
 | `stop`                                           | Remove the container. Prints `not running` when there is none.                                                           |
 | `status`                                         | Check Docker, the container and the API. Exits non-zero on any `FAIL`.                                                   |

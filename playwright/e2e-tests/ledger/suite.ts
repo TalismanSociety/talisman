@@ -170,12 +170,13 @@ export const requestFromDapp = async ({ context, dapp }: Session, call: DappCall
 
 export const dappResult = (dapp: Page) => dapp.evaluate(() => (window as LedgerDappWindow).pending)
 
-// Ethereum addresses differ only in their checksum casing
-const sameAddress = (a: string, b: string) => a === b || a.toLowerCase() === b.toLowerCase()
-
 /** Registers the tests of one device app: connect account 0, each signing case, each error case. */
 export const ledgerSuite = (suite: DeviceAppSuite) => {
   const { app } = suite
+
+  // Ethereum addresses differ only in their checksum casing; a Solana or SS58 address is case-sensitive
+  const sameAddress = (a: string, b: string) =>
+    app === "ethereum" ? a.toLowerCase() === b.toLowerCase() : a === b
 
   type Fixtures = { onboardedPage: Page; extensionId: string; context: BrowserContext }
 

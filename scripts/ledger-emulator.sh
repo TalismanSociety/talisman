@@ -2,7 +2,7 @@
 # Runs a Ledger device emulator (Speculos) in Docker and drives it over its REST API.
 #
 #   ledger-emulator.sh fetch-apps             get the pinned Ethereum, Polkadot and Solana app builds
-#   ledger-emulator.sh apps-key               print the pins, one per line (the key of a cache of the builds)
+#   ledger-emulator.sh apps-key               print the app builds, one per line (the key of a cache of them)
 #   ledger-emulator.sh start [app|elf]        start the emulator (ethereum, polkadot, solana or a path)
 #   ledger-emulator.sh stop                   remove the emulator container
 #   ledger-emulator.sh status                 check Docker, the container and the API
@@ -106,22 +106,26 @@ build_model() {
   esac
 }
 
+# A build depends on the builder image as much as on the commit: the image holds the SDK.
+builder_id() {
+  printf '%s' "$BUILDER_IMAGE" | cksum | cut -d ' ' -f 1
+}
+
 elf_for() {
   case $1 in
     ethereum) echo "$APPS_DIR/ethereum-$ETH_APP_VERSION/app-$ETH_APP_VERSION-$(build_model).elf" ;;
-    polkadot) echo "$APPS_DIR/polkadot-$POLKADOT_APP_COMMIT/$(build_model).elf" ;;
-    solana) echo "$APPS_DIR/solana-$SOLANA_APP_COMMIT/$(build_model).elf" ;;
+    polkadot) echo "$APPS_DIR/polkadot-$POLKADOT_APP_COMMIT-builder-$(builder_id)/$(build_model).elf" ;;
+    solana) echo "$APPS_DIR/solana-$SOLANA_APP_COMMIT-builder-$(builder_id)/$(build_model).elf" ;;
     *.elf) echo "$1" ;;
     *) die "unknown app '$1': pass ethereum, polkadot, solana or the path to an .elf" ;;
   esac
 }
 
 apps_key() {
-  echo "model $(build_model)"
-  echo "ethereum $ETH_APP_VERSION"
-  echo "polkadot $POLKADOT_APP_COMMIT"
-  echo "solana $SOLANA_APP_COMMIT"
-  echo "builder $BUILDER_IMAGE"
+  for app in ethereum polkadot solana; do
+    elf=$(elf_for "$app")
+    echo "${elf#"$APPS_DIR"/}"
+  done
 }
 
 fetch_apps() {
