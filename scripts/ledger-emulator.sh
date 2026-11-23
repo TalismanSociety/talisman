@@ -16,8 +16,9 @@
 #   ledger-emulator.sh screenshot <file.png>
 #
 # The recovery phrase comes from LEDGER_TEST_MNEMONIC in the environment, else from
-# apps/extension/.env. Speculos takes it as an argument, so any local user can read it
-# with ps while the emulator runs: use a throwaway phrase. See docs/ledger-emulator.md.
+# apps/extension/.env. Speculos takes it as an argument, so it can be visible in the
+# Docker host's process listing while the emulator runs: use a throwaway phrase.
+# See docs/ledger-emulator.md.
 set -eu
 
 ETH_APP_VERSION=1.23.0
