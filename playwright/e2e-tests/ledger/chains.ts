@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 
-import { expect } from "../fixtures"
-import { run, runOrSkipWhenUnavailable } from "./emulator"
+import { expect, test } from "../fixtures"
+import { run } from "./emulator"
 
 type JsonRpcResponse = { result?: unknown; error?: { message: string } }
 
@@ -59,15 +59,24 @@ export const anvilRpc = <T>(method: string, params: unknown[] = []) =>
 
 export const stopAnvil = () => run("docker", "rm", "-f", ANVIL_CONTAINER).catch(() => undefined)
 
+const dockerAnswers = () =>
+  run("docker", "info").then(
+    () => true,
+    () => false
+  )
+
 export const startAnvil = async () => {
+  // CI must fail when Docker is missing: a skipped run there proves nothing
+  test.skip(
+    !process.env.CI && !(await dockerAnswers()),
+    "Ledger emulator unavailable: Docker is not running"
+  )
   await stopAnvil()
-  await runOrSkipWhenUnavailable(() =>
-    run(
-      "docker",
-      ...["run", "--rm", "-d", "--name", ANVIL_CONTAINER],
-      ...["-p", `127.0.0.1:${ANVIL_PORT}:8545`, ANVIL_IMAGE],
-      `anvil --host 0.0.0.0 --chain-id ${ANVIL.chainId}`
-    )
+  await run(
+    "docker",
+    ...["run", "--rm", "-d", "--name", ANVIL_CONTAINER],
+    ...["-p", `127.0.0.1:${ANVIL_PORT}:8545`, ANVIL_IMAGE],
+    `anvil --host 0.0.0.0 --chain-id ${ANVIL.chainId}`
   )
   await expect
     .poll(() => anvilRpc<string>("eth_chainId").catch(() => null), {

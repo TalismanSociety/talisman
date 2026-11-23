@@ -110,7 +110,7 @@ The specs read the device directly only while the wallet does not talk to it. Sp
 | Command                                          | Effect                                                                                                                   |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | `fetch-apps`                                     | Download the pinned Ethereum app release, and build the Polkadot and Solana apps from their pinned commits.              |
-| `apps-key`                                       | Print the paths of the app builds under the cache, one per line. CI hashes them into the key of its cache of the builds.                   |
+| `apps-key`                                       | Print the paths of the app builds under the cache, one per line. CI hashes them into the key of its cache of the builds. |
 | `start [ethereum\|polkadot\|solana\|<path>.elf]` | Start the emulator (default `ethereum`). Reuses a running emulator with the same app and model, and fails for any other. |
 | `stop`                                           | Remove the container. Prints `not running` when there is none.                                                           |
 | `status`                                         | Check Docker, the container and the API. Exits non-zero on any `FAIL`.                                                   |

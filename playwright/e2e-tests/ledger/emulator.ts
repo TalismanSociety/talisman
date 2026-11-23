@@ -11,13 +11,11 @@ const LAUNCHER = "scripts/ledger-emulator.sh"
 const SPECULOS_API = "http://127.0.0.1:5001"
 const launcherEnv = { ...process.env, SPECULOS_API_PORT: "5001" }
 
-// Errors that mean this machine cannot run the emulator, not that the launcher is broken.
+// Launcher errors that mean this machine cannot run the emulator, not that the launcher is broken.
 const UNAVAILABLE = [
   /docker is required/,
   /Docker is not running/,
   /not found \(run: pnpm ledger:emulator fetch-apps\)/,
-  /spawn docker ENOENT/,
-  /Cannot connect to the Docker daemon/,
 ]
 
 export type DeviceApp = "ethereum" | "polkadot" | "solana"
@@ -29,12 +27,16 @@ export const run = async (command: string, ...args: string[]) => {
 
 export const launcher = (...args: string[]) => run("sh", LAUNCHER, ...args)
 
-const stderrOf = (error: unknown) => String((error as { stderr?: string }).stderr || error)
+const stderrOf = (error: unknown) => String((error as { stderr?: string }).stderr ?? error)
 
-/** Runs a Docker command, or skips the test outside CI when this machine cannot run it. */
-export const runOrSkipWhenUnavailable = async (command: () => Promise<unknown>) => {
+/** Starts the app, or keeps the emulator that already runs it: a restart costs a few seconds. */
+export const startDeviceApp = async (app: DeviceApp) => {
   try {
-    await command()
+    await launcher("start", app).catch(async (error) => {
+      if (!/is running .*; run stop first/.test(stderrOf(error))) throw error
+      await launcher("stop")
+      await launcher("start", app)
+    })
   } catch (error) {
     const stderr = stderrOf(error)
     // CI must fail when the emulator is missing: a skipped run there proves nothing
@@ -43,16 +45,6 @@ export const runOrSkipWhenUnavailable = async (command: () => Promise<unknown>) 
     throw error
   }
 }
-
-/** Starts the app, or keeps the emulator that already runs it: a restart costs a few seconds. */
-export const startDeviceApp = (app: DeviceApp) =>
-  runOrSkipWhenUnavailable(() =>
-    launcher("start", app).catch(async (error) => {
-      if (!/is running .*; run stop first/.test(stderrOf(error))) throw error
-      await launcher("stop")
-      await launcher("start", app)
-    })
-  )
 
 export const restartDeviceApp = async (app: DeviceApp) => {
   await launcher("stop")
