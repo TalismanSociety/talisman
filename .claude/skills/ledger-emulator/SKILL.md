@@ -42,7 +42,7 @@ Record in your notes whether this run started the emulator. Stop it at the end o
 
 The phrase is `LEDGER_TEST_MNEMONIC`, from the environment or `apps/extension/.env`. When it is unset, the script uses the public Speculos default phrase and says so on stderr.
 
-- **Never print, echo, log or commit the phrase**, and never put it in a command line. It reaches the container by variable name only.
+- **Never print, echo, log or commit the phrase**, and never put it in a command line. The script passes it to the container by variable name, but the emulator process takes it as an argument: never copy it from `ps` or `docker inspect` output either.
 - **Never copy it into the extension**: not into a build variable, a source file, a test fixture or wallet storage.
 - To tell the user which accounts a run used, name the address (`eth-address <index>`), not the phrase.
 - Never write a phrase into `.env` yourself. Ask the user to add a throwaway, testnet-only phrase.
