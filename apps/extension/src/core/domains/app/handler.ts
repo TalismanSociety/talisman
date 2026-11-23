@@ -170,7 +170,12 @@ export default class AppHandler extends ExtensionHandler {
       if (newSalt) {
         pwStoreData.salt = newSalt
       }
-      await this.stores.password.set(pwStoreData)
+      try {
+        await this.stores.password.set(pwStoreData)
+      } catch (error) {
+        await keyringStore.changePassword(hashedNewPw, transformedPw)
+        throw error
+      }
       await this.stores.password.setPlaintextPassword(newPw)
 
       // invalidate quick unlock enrollment since password changed

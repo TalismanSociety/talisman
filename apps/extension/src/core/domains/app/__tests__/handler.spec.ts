@@ -337,3 +337,63 @@ describe("App handler when password is trimmed", () => {
     expect(await keyringStore.getMnemonicText(mnemonicId, hashedPw)).toEqual(mnemonic)
   })
 })
+
+describe("App handler when the password store write fails during a password change", () => {
+  let messageSender: ReturnType<typeof getMessageSenderFn>
+  const currentPw = "first-passw0rd"
+  const newPw = "second-passw0rd"
+
+  afterAll(async () => {
+    await chrome.storage.local.clear()
+  })
+
+  beforeAll(async () => {
+    await chrome.storage.local.clear()
+    await keyringStore.reset()
+
+    messageSender = getMessageSenderFn(
+      new Extension(extensionStores),
+      chrome.runtime.connect("talismanTest")
+    )
+
+    await messageSender("pri(app.onboardCreatePassword)", {
+      pass: currentPw,
+      passConfirm: currentPw,
+    })
+
+    await keyringStore.addAccountExternal({
+      type: "watch-only",
+      name: "Watched Account",
+      address: "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
+      isPortfolio: true,
+    })
+  })
+
+  test("leaves a wallet without secrets able to change its password and add a recovery phrase", async () => {
+    vi.spyOn(extensionStores.password, "set").mockRejectedValueOnce(
+      new Error("storage write failed")
+    )
+
+    const failedChange = await messageSender("pri(app.changePassword.subscribe)", {
+      currentPw,
+      newPw,
+      newPwConfirm: newPw,
+    })
+    expect(failedChange).toBe(false)
+
+    const retriedChange = await messageSender("pri(app.changePassword.subscribe)", {
+      currentPw,
+      newPw,
+      newPwConfirm: newPw,
+    })
+    expect(retriedChange).toBe(true)
+
+    await expect(
+      keyringStore.addMnemonic({
+        name: "Test Mnemonic",
+        mnemonic: "seed sock milk update focus rotate barely fade car face mechanic mercy",
+        confirmed: true,
+      })
+    ).resolves.toBeTruthy()
+  })
+})
