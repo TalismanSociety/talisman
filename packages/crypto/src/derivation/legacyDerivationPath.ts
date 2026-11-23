@@ -5,10 +5,14 @@ import { deriveKeypair } from "./utils"
 
 const HARDENED_OFFSET = 0x80000000
 
+// A valid secret key on every curve: secp256k1 rejects the scalar 0, so the all-zero seed would
+// make ecdsa reject the root path.
+const PLACEHOLDER_SEED = new Uint8Array(32).fill(1)
+
 /** Whether this version's parser accepts `derivationPath`; the placeholder seed is never used. */
 const isDerivable = (derivationPath: string, curve: KeypairCurve) => {
   try {
-    deriveKeypair(new Uint8Array(32), derivationPath, curve)
+    deriveKeypair(PLACEHOLDER_SEED, derivationPath, curve)
     return true
   } catch {
     return false
@@ -56,6 +60,15 @@ const legacySolanaPath = (derivationPath: string) => {
   return `m/${segments.join("/")}`
 }
 
+const legacyPathByCurve: Partial<
+  Record<KeypairCurve, (derivationPath: string) => string | undefined>
+> = {
+  sr25519: legacySubstratePath,
+  ed25519: legacySubstratePath,
+  ecdsa: legacySubstratePath,
+  solana: legacySolanaPath,
+}
+
 /**
  * For a derivation path that this version rejects, the path that derives the key earlier
  * versions of this package derived from it. Earlier versions parsed substrate and Solana paths
@@ -73,20 +86,9 @@ export const getLegacyDerivationPath = (
   derivationPath: string,
   curve: KeypairCurve
 ): string | undefined => {
-  if (isDerivable(derivationPath, curve)) return undefined
+  const legacyPathOf = legacyPathByCurve[curve]
+  if (!legacyPathOf || isDerivable(derivationPath, curve)) return undefined
 
-  const legacyPath = (() => {
-    switch (curve) {
-      case "sr25519":
-      case "ed25519":
-      case "ecdsa":
-        return legacySubstratePath(derivationPath)
-      case "solana":
-        return legacySolanaPath(derivationPath)
-      default:
-        return undefined
-    }
-  })()
-
+  const legacyPath = legacyPathOf(derivationPath)
   return legacyPath !== undefined && isDerivable(legacyPath, curve) ? legacyPath : undefined
 }
