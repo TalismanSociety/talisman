@@ -92,7 +92,7 @@ export const createChainCode = (code: string) => {
 
 const derivationCodec = /* @__PURE__ */ Tuple(str, Bytes(32), Bytes(32))
 const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode: Uint8Array) => {
-  const input = derivationCodec.enc([prefix, seed, chainCode])
+  const input = derivationCodec.enc([prefix, seed.subarray(0, 32), chainCode])
   try {
     return blake2b256(input)
   } finally {
