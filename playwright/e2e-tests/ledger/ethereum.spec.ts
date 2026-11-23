@@ -124,6 +124,7 @@ const personalMessage: SigningCase = {
   asksRiskAssessment: true,
   request: ({ address }) => ({ method: "personal_sign", params: [MESSAGE, address] }),
   verify: async (signature, _call, { address }) => {
+    expect(signature).toMatch(/^0x[0-9a-fA-F]{130}$/)
     const signer = await recoverMessageAddress({
       message: { raw: MESSAGE },
       signature: signature as Hex,

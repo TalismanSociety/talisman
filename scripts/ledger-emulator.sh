@@ -18,8 +18,9 @@
 #   ledger-emulator.sh screenshot <file.png>
 #
 # The recovery phrase comes from LEDGER_TEST_MNEMONIC in the environment, else from
-# apps/extension/.env. It reaches the container by variable name only, so it
-# never appears on a host command line. See docs/ledger-emulator.md.
+# apps/extension/.env. Speculos takes it as an argument, so it can be visible in the
+# Docker host's process listing while the emulator runs: use a throwaway phrase.
+# See docs/ledger-emulator.md.
 set -eu
 
 # Pins. The device apps and both images change only when these lines do.
