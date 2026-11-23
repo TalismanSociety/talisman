@@ -13,14 +13,14 @@ A user sees their staking and DeFi positions across accounts, finds opportunitie
 
 ## How to get to it (user POV)
 
-- Dashboard: `Earn` in the side nav. `#/earn` settles on `#/earn/positions`, with the tabs `Positions`, `Discover` and `Bittensor`.
+- Dashboard: `Earn` in the top nav. `#/earn` settles on `#/earn/positions`, with the tabs `Positions`, `Discover` and `Bittensor`.
 - `Bittensor` opens `#/bittensor/subnets`, and a subnet row opens `#/bittensor/subnets/<netuid>`.
 
 ## Driving it with agent-browser
 
 Preconditions:
 
-- The wallet is unlocked. The positions steps need an account that stakes TAO on the root subnet: its row is `TAO Staking`, and its page shows "Claimable Rewards". From source, not driven: a stake on another subnet is a row named after that subnet, and its page has no "Claimable Rewards". `Stake` needs a TAO balance.
+- The wallet is unlocked. The positions steps need an account that stakes TAO on the root subnet: its row is `TAO Staking`, and its page shows "Claimable Rewards". A stake on another subnet is a row named after the subnet's token (`SN3 | Teutonic γ` on 2026-11-23: token names come from network data), and its page has no "Claimable Rewards". `Stake` needs a TAO balance.
 - For the risk drawer of the stake step: `sw-eval.mjs 'chrome.storage.local.get("app").then(({app}) => app.hideBittensorSubnetStakeWarning ?? false)'` prints `false`. With `true`, `Stake` opens the dialog with no drawer.
 
 Steps:
@@ -36,5 +36,6 @@ Steps:
 
 - `Stake` and `Unstake` on a subnet row exist only while the row is hovered. A click on the row itself opens the subnet page.
 - The `Root subnet` row is the exception: it always shows `Claim Rewards` and `More actions`, and a click on it leaves the hash on `#/bittensor/subnets`.
-- Real funds on mainnet: `Claim`, `Claim Rewards`, `Buy`, `Sell` and the `Review` of the `Stake` dialog all lead to a signature on a later confirm step. No step here clicks them.
+- In the dashboard, when the account can sign and has rewards to claim, the `TAO Staking` row has a round icon with no name next to it, with the tooltip "Claim". Click the row's name, not the icon.
+- Real funds on mainnet: `Claim`, the row's "Claim" icon, `Claim Rewards`, `Buy`, `Sell` and the `Review` of the `Stake` dialog all lead to a signature on a later confirm step. No step here clicks them.
 - From source, not driven: staking or trading to a signature, Bittensor Testnet at `#/bittensor-testnet/subnets`, the popup Earn page, a group in the positions list that stays collapsed after you open a position, and `0.00%` for a validator without rewards.

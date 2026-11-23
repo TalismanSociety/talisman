@@ -6,7 +6,7 @@ A user sees the fiat total and token balances of all accounts, or of one account
 
 - `portfolio-total` shows the total over "All Accounts" and per account in the sidebar.
 - `portfolio-tokens` lists token balances for the selected account, with search and sort.
-- `portfolio-token-detail` opens one token with its per-network and per-account breakdown.
+- `portfolio-token-detail` opens one token with its per-network and per-account breakdown. Its Send icons are in [Send funds](./send-funds.md).
 - `portfolio-nfts` shows the NFTs tab.
 - `portfolio-defi`: the DeFi tab only reads "DeFi has moved to Earn", with a `Go to Earn` button. Positions live in Earn.
 
@@ -34,7 +34,7 @@ Preconditions:
 
 - Balances stream in: a total read in the first seconds is partial. Wait until the value stops changing between two screenshots. In a new runner container, totals kept rising for several minutes, so two equal screenshots can still be partial: when you compare totals, read them in the same moment.
 - The pool connects to chains only while a UI page is subscribed. A background read with no page open can be stale.
-- A lock row does not read its stored label: `democracy` reads "Governance" and `subtensor-staking` reads "Root Staking" (`getLockTitle`). Copy the text from a snapshot.
+- A lock row does not read its stored label: `democracy` reads "Governance" (`getLockTitle`). Copy the text from a snapshot. A TAO stake on the root subnet is not a lock row: it is a block of its own on the TAO page, named after its token (`SN0 | Root` on 2026-11-23).
 - A row that can be staked (`TAO`, `testTAO`) shows `Stake` and `Unstake` buttons on its right side while hovered, and its accessible name gets shorter. A click on `Stake` opens a staking dialog (`#StakingModalDialog`) that covers the page: press `Escape`. A click on the row ref with no hover first opens the token page.
 - Testnet tokens show under their account like mainnet tokens; they have no fiat value.
 - The popup `#/portfolio` can open under a coachmark, "Expand has moved here", that points at the `Fullscreen` icon button in the "Total Portfolio" card. It covers the page, and the first click only closes it. A new install starts with it dismissed, but a profile from before the change, or one restored from an older backup, shows it once. `Got it`, `Escape` or a backdrop click dismisses it, and `app.dismissedCoachmarks` in `chrome.storage.local` then holds `popup_fullscreen_moved`. To show it again in a dev build: `sw-eval.mjs '(setAppSettings({ dismissedCoachmarks: [] }), 0)'`, then open the popup in a new tab: a page that already dismissed it keeps it hidden.
