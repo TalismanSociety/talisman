@@ -53,8 +53,13 @@ vi.mock("@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorVali
 const NO_BALANCES_MESSAGE = "There are no tokens with balances in this account"
 const NO_MATCH_MESSAGE = "No token matches your search"
 
-const renderPicker = (props: { address?: string; initialSearch?: string } = {}) =>
+const renderPicker = (props: { address?: string } = {}) =>
   render(<TokenPicker tokenScope="all" {...props} />)
+
+const search = (value: string) =>
+  fireEvent.change(screen.getByPlaceholderText("Search by token or network name"), {
+    target: { value },
+  })
 
 describe("TokenPicker empty list", () => {
   beforeEach(() => {
@@ -85,7 +90,8 @@ describe("TokenPicker empty list", () => {
   })
 
   it("ignores a search of only spaces", () => {
-    renderPicker({ address: ADDRESS, initialSearch: "   " })
+    renderPicker({ address: ADDRESS })
+    search("   ")
 
     expect(screen.getByText(NO_BALANCES_MESSAGE)).toBeTruthy()
   })
@@ -94,19 +100,18 @@ describe("TokenPicker empty list", () => {
     mockBalances.mockReturnValue(new Balances([reservedOnly]))
     renderPicker({ address: ADDRESS })
 
-    fireEvent.change(screen.getByPlaceholderText("Search by token or network name"), {
-      target: { value: "dot" },
-    })
+    search("dot")
 
     expect(await screen.findByText(NO_MATCH_MESSAGE)).toBeTruthy()
   })
 
-  it("says no token matches a search that excludes every funded token", () => {
+  it("says no token matches a search that excludes every funded token", async () => {
     mockBalances.mockReturnValue(new Balances([makeBalance(dot, 5, { address: ADDRESS })]))
 
-    renderPicker({ address: ADDRESS, initialSearch: "ksm" })
+    renderPicker({ address: ADDRESS })
+    search("ksm")
 
-    expect(screen.getByText(NO_MATCH_MESSAGE)).toBeTruthy()
+    expect(await screen.findByText(NO_MATCH_MESSAGE)).toBeTruthy()
   })
 
   it("says no tokens were found when no account is picked", () => {
