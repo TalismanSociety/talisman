@@ -1,3 +1,4 @@
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 import { deriveKeypair, entropyToSeed, mnemonicToEntropy } from "@talismn/crypto"
 import { u8aToHex } from "@talismn/util"
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
@@ -36,6 +37,7 @@ vi.mock("@noble/hashes/scrypt.js", async (importOriginal) => {
 vi.setConfig({ testTimeout: 60_000 })
 
 const MNEMONIC = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+const ETHEREUM_PATH = "m/44'/60'/0'/0/0"
 
 /**
  * Stores an account the way the polkadot-js keyring did, before the keyring migration: the
@@ -73,6 +75,7 @@ const derivedAddress = async (path: string) => {
 
 describe("migrateFromPjsKeyring", () => {
   let password: string
+  let legacyMnemonicId: string
 
   beforeAll(async () => {
     await chrome.storage.local.clear()
@@ -87,6 +90,7 @@ describe("migrateFromPjsKeyring", () => {
       passConfirm: "passw0rd",
     })
     password = (await extensionStores.password.getPassword()) as string
+    legacyMnemonicId = (await mnemonicsStore.add("Legacy", MNEMONIC, password)).val as string
   })
 
   afterAll(async () => {
@@ -94,9 +98,6 @@ describe("migrateFromPjsKeyring", () => {
   })
 
   it("re-derives an account only when its path gives back its own address", async () => {
-    const legacy = await mnemonicsStore.add("Legacy", MNEMONIC, password)
-    const legacyMnemonicId = legacy.val as string
-
     // the path re-derives the account's key
     const matching = await addLegacyDerivedAccount(password, legacyMnemonicId, "//0", "//0")
     // a path that the parser rejects now
@@ -136,5 +137,35 @@ describe("migrateFromPjsKeyring", () => {
     expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//1"))
     expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//Alice"))
     expect(accounts.map((a) => a.address)).not.toContain(await derivedAddress("//hard//pw"))
+  })
+
+  it("keeps a derived ethereum account linked, though polkadot-js stores its public key as its address", async () => {
+    const seed = await entropyToSeed(mnemonicToEntropy(MNEMONIC), "ethereum")
+    const { address, publicKey, secretKey } = deriveKeypair(seed, ETHEREUM_PATH, "ethereum")
+    const compressedPublicKey = secp256k1.Point.fromBytes(publicKey).toBytes(true)
+    const json = encodePjsKeyringPairJson({ address, curve: "ethereum" }, secretKey, password)
+    await chrome.storage.local.set({
+      [`account:${address.toLowerCase()}`]: {
+        ...json,
+        address: u8aToHex(compressedPublicKey),
+        meta: {
+          name: "Ethereum",
+          origin: "DERIVED",
+          derivedMnemonicId: legacyMnemonicId,
+          derivationPath: `/${ETHEREUM_PATH}`,
+        },
+      },
+    })
+
+    expect(await migrateFromPjsKeyring.forward.apply({ password })).toBe(true)
+    // a later run, after an interrupted one, skips the accounts already migrated
+    expect(await migrateFromPjsKeyring.forward.apply({ password })).toBe(true)
+
+    expect(await keyringStore.getAccount(address)).toMatchObject({
+      type: "keypair",
+      curve: "ethereum",
+      mnemonicId: await keyringStore.getExistingMnemonicId(MNEMONIC),
+      derivationPath: ETHEREUM_PATH,
+    })
   })
 })
