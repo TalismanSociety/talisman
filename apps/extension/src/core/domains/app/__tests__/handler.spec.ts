@@ -370,8 +370,13 @@ describe("App handler when the password store write fails during a password chan
   })
 
   test("leaves a wallet without secrets able to change its password and add a recovery phrase", async () => {
-    vi.spyOn(extensionStores.password, "set").mockRejectedValueOnce(
-      new Error("storage write failed")
+    const setLocalStorageItems = vi.mocked(chrome.storage.local.set)
+    const storeItems = setLocalStorageItems.getMockImplementation()
+    assert(storeItems, "chrome.storage.local.set has no implementation")
+    setLocalStorageItems.mockImplementation((items, callback) =>
+      "password" in items
+        ? Promise.reject(new Error("storage write failed"))
+        : storeItems(items, callback)
     )
 
     const failedChange = await messageSender("pri(app.changePassword.subscribe)", {
@@ -379,6 +384,7 @@ describe("App handler when the password store write fails during a password chan
       newPw,
       newPwConfirm: newPw,
     })
+    setLocalStorageItems.mockImplementation(storeItems)
     expect(failedChange).toBe(false)
 
     const retriedChange = await messageSender("pri(app.changePassword.subscribe)", {
