@@ -4,6 +4,7 @@ import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 
 import type { Page } from "@playwright/test"
+import { type Hex, recoverMessageAddress } from "viem"
 
 import { expect, test } from "./fixtures"
 
@@ -101,24 +102,6 @@ const approveOnDevice = async () => {
     .poll(() => launcher("screen"), { message: "the device shows a review", timeout: 15_000 })
     .toMatch(/Review|Sign/)
   await launcher("approve")
-}
-
-const ETH_PATH_ACCOUNT_ZERO = [44, 60, 0, 0, 0].map((index, i) => (i < 3 ? hardened(index) : index))
-
-/** Signs with the Ethereum app directly: SIGN_PERSONAL_MESSAGE at m/44'/60'/0'/0/0, approved on the device. */
-const deviceSignPersonalMessage = async (message: Buffer) => {
-  const payload = Buffer.alloc(1 + 4 * 5 + 4)
-  payload[0] = 5
-  for (const [i, index] of ETH_PATH_ACCOUNT_ZERO.entries()) payload.writeUInt32BE(index, 1 + i * 4)
-  payload.writeUInt32BE(message.length, 21)
-  const data = Buffer.concat([payload, message])
-  const signing = exchange(
-    `e0080000${data.length.toString(16).padStart(2, "0")}${data.toString("hex")}`
-  )
-  await approveOnDevice()
-  const response = await signing
-  // v (1 byte), r (32), s (32)
-  return response.subarray(1, 65).toString("hex")
 }
 
 // Content scripts inject only on http(s) pages.
@@ -244,7 +227,12 @@ test.describe("Ledger emulator", () => {
       await approveOnDevice()
       const signature = (await dapp.evaluate(() => (window as EthereumWindow).pending)) as string
 
-      expect(signature.slice(2, 130)).toBe(await deviceSignPersonalMessage(message))
+      expect(signature).toMatch(/^0x[0-9a-fA-F]{130}$/)
+      const signer = await recoverMessageAddress({
+        message: { raw: `0x${message.toString("hex")}` },
+        signature: signature as Hex,
+      })
+      expect(signer.toLowerCase()).toBe(address?.toLowerCase())
     } finally {
       server.close()
     }

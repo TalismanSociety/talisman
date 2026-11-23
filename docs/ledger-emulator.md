@@ -16,7 +16,7 @@ Speculos serves its API on port 5000 inside the container. The script publishes 
 
 1. Choose a recovery phrase for testing. **Use a throwaway phrase that has never held mainnet funds and never will.** It is stored in plain text and passed to the emulator. Fund its accounts only from testnet faucets.
 
-   The script passes the phrase to the container as an environment variable, so it never appears on a host command line. Inside the container it is visible: `docker inspect` lists the container's environment.
+   The phrase is not secret while the emulator runs. The script passes it to `docker run` as an environment variable, but Speculos takes it as a `--seed` argument, so it can be visible in the Docker host's process listing. `docker inspect` also lists it in the container's environment.
 
 2. Add it to `apps/extension/.env` (see `apps/extension/.env.sample`):
 
@@ -73,7 +73,7 @@ This route exercises every APDU and every device screen. It does not exercise We
 
 ## E2E tests
 
-`playwright/e2e-tests/ledger-emulator.spec.ts` connects account 0 of each device app through the wallet UI and compares it with the address the app gives when asked directly. It also signs a personal message from a test dapp, approves it on the device, and compares the signature with one that the app makes directly.
+`playwright/e2e-tests/ledger-emulator.spec.ts` connects account 0 of each device app through the wallet UI and compares it with the address the app gives when asked directly. It also signs a personal message from a test dapp, approves it on the device, and checks that the signature recovers to the connected address.
 
 ```sh
 pnpm build:extension
