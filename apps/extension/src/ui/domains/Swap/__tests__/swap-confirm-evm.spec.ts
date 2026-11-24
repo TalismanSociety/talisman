@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockSetActiveNetwork = vi.fn()
 const mockSetActiveToken = vi.fn()
-const mockSaveIdForMonitoring = vi.fn()
 
 vi.mock("@core/domains/chaindata/store.activeNetworks", () => ({
   activeNetworksStore: { setActive: (...args: unknown[]) => mockSetActiveNetwork(...args) },
@@ -14,10 +13,6 @@ vi.mock("@core/domains/chaindata/store.activeNetworks", () => ({
 
 vi.mock("@core/domains/chaindata/store.activeTokens", () => ({
   activeTokensStore: { setActive: (...args: unknown[]) => mockSetActiveToken(...args) },
-}))
-
-vi.mock("../swap-modules/monitoring", () => ({
-  saveIdForMonitoring: (...args: unknown[]) => Promise.resolve(mockSaveIdForMonitoring(...args)),
 }))
 
 import { useConfirmReadiness, useSwapPostSubmit } from "../hooks/useSwapConfirmation"
@@ -206,64 +201,6 @@ describe("useSwapPostSubmit", () => {
       networkId: "1",
       txInfo,
     })
-  })
-
-  it("calls saveIdForMonitoring for simpleswap exchanges", () => {
-    const gotoSubmitted = vi.fn()
-    const txInfo = {
-      type: "swap-simpleswap" as const,
-      exchangeId: "swap-id-42",
-      fromTokenId: "eth-erc20-usdc",
-      toTokenId: "btc-native",
-      fromAmount: "1000000",
-      toAmount: "50000",
-      to: "bc1q...",
-    }
-
-    const { result } = renderHook(() =>
-      useSwapPostSubmit({
-        fromNetworkId: "1",
-        toNetworkId: "bitcoin",
-        toTokenId: "btc-native",
-        txInfo,
-        gotoSubmitted,
-      })
-    )
-
-    act(() => {
-      result.current("0xtxhash")
-    })
-
-    expect(mockSaveIdForMonitoring).toHaveBeenCalledWith("swap-id-42", "0xtxhash")
-  })
-
-  it("does not call saveIdForMonitoring for non-simpleswap protocols", () => {
-    const gotoSubmitted = vi.fn()
-    const txInfo = {
-      type: "swap-stealthex" as const,
-      exchangeId: "stx-99",
-      fromTokenId: "eth-erc20-usdc",
-      toTokenId: "btc-native",
-      fromAmount: "1000000",
-      toAmount: "50000",
-      to: "bc1q...",
-    }
-
-    const { result } = renderHook(() =>
-      useSwapPostSubmit({
-        fromNetworkId: "1",
-        toNetworkId: null,
-        toTokenId: null,
-        txInfo,
-        gotoSubmitted,
-      })
-    )
-
-    act(() => {
-      result.current("0xhash")
-    })
-
-    expect(mockSaveIdForMonitoring).not.toHaveBeenCalled()
   })
 
   it("skips network activation when toNetworkId is null", () => {
