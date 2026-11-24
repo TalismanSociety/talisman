@@ -50,6 +50,13 @@ describe("getLegacyDerivationPath", () => {
     expect(createChainCode("7876616")).toEqual(legacyChainCode)
   })
 
+  it.each(["//日本", "junk", "//", "/"])(
+    "gives the root path for the ecdsa path %j that earlier versions read as the root",
+    (path) => {
+      expect(getLegacyDerivationPath(path, "ecdsa")).toBe("")
+    }
+  )
+
   it("has no answer when no current path derives the earlier key", () => {
     // ed25519 and ecdsa never derived soft junctions
     expect(getLegacyDerivationPath("//a-b/1", "ed25519")).toBeUndefined()
