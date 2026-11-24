@@ -61,6 +61,58 @@ describe("Vara Explorer", () => {
   )
 })
 
+const HYDRATION = {
+  id: "hydradx",
+  blockExplorerUrls: ["https://hydration-explorer.neckwork.net/"],
+} as unknown as Network
+
+describe("Hydration Explorer", () => {
+  const hash = `0x${"ab".repeat(32)}` as const
+  const address = "7L53bUTBbfuj14UpdCNPwmgzzHSsrsTWBHX5pys32mVWM3C1"
+  const cases: { query: BlockExplorerQuery; path: string | null }[] = [
+    { query: { type: "address", address }, path: `/account/${address}` },
+    { query: { type: "account", address }, path: `/account/${address}` },
+    { query: { type: "transaction", id: hash }, path: `/extrinsic/${hash}` },
+    { query: { type: "extrinsic-unknown", hash }, path: `/extrinsic/${hash}` },
+    {
+      query: { type: "extrinsic", blockNumber: 8123456, extrinsicIndex: 2 },
+      path: "/extrinsic/8123456-2",
+    },
+    { query: { type: "block", id: 8123456 }, path: "/block/8123456" },
+    { query: { type: "block", id: "8123456" }, path: "/block/8123456" },
+    { query: { type: "block", id: hash }, path: null },
+  ]
+
+  it.each(cases)("maps $query to $path", ({ query, path }) => {
+    expect(getBlockExplorerUrl(HYDRATION, query)).toBe(
+      path && `https://hydration-explorer.neckwork.net${path}`
+    )
+  })
+
+  it("recognises the explorer hostname without depending on the network id", () => {
+    expect(
+      getBlockExplorerUrl(
+        {
+          ...HYDRATION,
+          id: "custom-hydration",
+          blockExplorerUrls: ["https://HYDRATION-EXPLORER.NECKWORK.NET"],
+        },
+        { type: "address", address }
+      )
+    ).toBe(`https://hydration-explorer.neckwork.net/account/${address}`)
+  })
+
+  it.each([
+    "https://hydration-data.neckwork.net/",
+    "https://not-hydration-explorer.neckwork.net/",
+    "https://hydration-explorer.neckwork.net.example.com/",
+  ])("preserves generic routes for unrelated hosts: %s", (url) => {
+    expect(
+      getBlockExplorerUrl({ ...HYDRATION, blockExplorerUrls: [url] }, { type: "address", address })
+    ).toBe(`${url}address/${address}`)
+  })
+})
+
 const POLKADOT = {
   id: "polkadot",
   blockExplorerUrls: [

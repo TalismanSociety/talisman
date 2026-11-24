@@ -98,12 +98,14 @@ type ExplorerHost =
   | "evm.taostats.io"
   | "bittensor.ai/evm"
   | "explorer.vara.network"
+  | "hydration-explorer.neckwork.net"
   | (string & {})
 
 const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
   const hostname = explorerUrl.hostname.toLowerCase()
 
   if (hostname === "explorer.vara.network") return "explorer.vara.network"
+  if (hostname === "hydration-explorer.neckwork.net") return "hydration-explorer.neckwork.net"
   if (explorerUrl.hostname.endsWith("polkadot.js.org")) return "polkadot.js"
   // the Bittensor EVM explorers use different routes than their substrate counterparts
   if (hostname === "evm.taostats.io") return "evm.taostats.io"
@@ -136,6 +138,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
           // is the extrinsic hash); chaindata carries the /explorer base path
           return `/extrinsic/${query.id}`
         case "explorer.vara.network":
+        case "hydration-explorer.neckwork.net":
           return `/extrinsic/${query.id}`
         case "bittensor.ai/evm":
           return `/transactions/${query.id}`
@@ -153,6 +156,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "taostats.io":
         case "bittensor.ai":
         case "explorer.vara.network":
+        case "hydration-explorer.neckwork.net":
           return `/account/${query.address}`
         case "bittensor.ai/evm":
           return `/contracts/${query.address}`
@@ -208,6 +212,7 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "subscan.io":
         case "bittensor.ai":
         case "explorer.vara.network":
+        case "hydration-explorer.neckwork.net":
           return `/extrinsic/${query.hash}`
         default:
           return null
