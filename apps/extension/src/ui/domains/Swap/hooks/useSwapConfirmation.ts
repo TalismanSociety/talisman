@@ -2,7 +2,6 @@ import { activeNetworksStore } from "@core/domains/chaindata/store.activeNetwork
 import { activeTokensStore } from "@core/domains/chaindata/store.activeTokens"
 import type { WalletTransactionInfo } from "@core/domains/transactions/types"
 import { useCallback, useEffect, useState } from "react"
-import { saveIdForMonitoring } from "../swap-modules/monitoring"
 
 /**
  * Delays readiness by 1 second after entering the confirm view,
@@ -23,7 +22,7 @@ export function useConfirmReadiness(swapView: string): boolean {
 
 /**
  * Returns a callback that handles post-submission side effects:
- * monitoring registration, network/token activation, and navigation.
+ * network/token activation and navigation.
  */
 export function useSwapPostSubmit({
   fromNetworkId,
@@ -44,8 +43,6 @@ export function useSwapPostSubmit({
 }): (hash: string) => void {
   return useCallback(
     (hash: string) => {
-      if (txInfo?.type === "swap-simpleswap")
-        saveIdForMonitoring(txInfo.exchangeId, hash).catch(() => {})
       if (toNetworkId) activeNetworksStore.setActive(toNetworkId, true)
       if (toTokenId) activeTokensStore.setActive(toTokenId, true)
       if (txInfo && fromNetworkId) gotoSubmitted({ hash, networkId: fromNetworkId, txInfo })
