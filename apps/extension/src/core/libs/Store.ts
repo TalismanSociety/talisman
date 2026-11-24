@@ -117,8 +117,11 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
     zip([currentValueReady, newMutationBuffer])
       .pipe(
         // run each mutation against the output of the previous mutation
-        map(([currentValue, mutations]): [T, Array<() => void>] => {
-          const callbacks = []
+        map(([currentValue, mutations]) => {
+          const appliedMutations: Array<{
+            onStored: () => void
+            onError: (error: unknown) => void
+          }> = []
           let newValue = currentValue
 
           for (const { mutation, callback, onError } of mutations) {
@@ -129,19 +132,23 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
               continue
             }
             const valueAfterThisMutation = newValue
-            if (callback) callbacks.push(() => callback(valueAfterThisMutation))
+            appliedMutations.push({ onStored: () => callback?.(valueAfterThisMutation), onError })
           }
 
-          return [newValue, callbacks]
+          return { newValue, appliedMutations }
         }),
 
         // store the result in browser storage, then notify the callbacks once stored
         // concatMap ensures that we wait before proceeding
-        concatMap(async ([newValue, callbacks]) => {
-          await chrome.storage.local.set({ [this.#prefix]: newValue })
+        concatMap(async ({ newValue, appliedMutations }) => {
+          try {
+            await chrome.storage.local.set({ [this.#prefix]: newValue })
+          } catch (error) {
+            for (const { onError } of appliedMutations) onError(error)
+            return
+          }
 
-          // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
-          callbacks.forEach((callback) => callback())
+          for (const { onStored } of appliedMutations) onStored()
         }),
 
         // set isMutating to false
