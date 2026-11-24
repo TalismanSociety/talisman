@@ -124,7 +124,7 @@ export const parseSecretKey = (secretKey: string, platform: AccountPlatform): Ui
   }
 }
 
-// @dev: didn't find a reliable source of information on which characters are valid => assume it s valid if a keypair can be generated from it
+// a path is valid when a keypair derives from it: each curve's parser throws on a malformed path
 export const isValidDerivationPath = async (derivationPath: string, curve: KeypairCurve) => {
   try {
     deriveKeypair(await getDevSeed(curve), derivationPath, curve)

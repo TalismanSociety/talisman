@@ -1,7 +1,12 @@
 import { log } from "@common/log"
-import { isValidDerivationPath } from "@talismn/crypto"
+import {
+  addressEncodingFromCurve,
+  addressFromPublicKey,
+  isAddressEqual,
+  type KeypairCurve,
+} from "@talismn/crypto"
 import type { AddAccountExternalOptions } from "@talismn/keyring"
-import type { HexString } from "@talismn/util"
+import { type HexString, hexToU8a, isHexString } from "@talismn/util"
 import { capitalize } from "lodash-es"
 
 import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
@@ -10,7 +15,11 @@ import { addressBookStore } from "../../app/legacy/store.addressBook"
 import { appStore } from "../../app/store.app"
 import { mnemonicsStore } from "../../mnemonics/legacy/store.mnemonics"
 import { getSecretKeyFromPjsJson } from "../getSecretKeyFromPjsJson"
-import { getLegacyPjsAccounts, getLegacyPjsAccountType } from "../legacyPjsAccounts"
+import {
+  getLegacyPjsAccounts,
+  getLegacyPjsAccountType,
+  type LegacyPjsAccountJson,
+} from "../legacyPjsAccounts"
 import { pjsKeypairTypeToCurve } from "../migration-utils"
 import { keyringStore } from "../store"
 
@@ -19,6 +28,49 @@ const MIGRATION_LABEL = "Updating keyring"
 export const migrateFromPjsKeyring: Migration = {
   forward: new MigrationFunction(({ password }) => executeMigrationFromPjsKeyring(password)),
   // no way back
+}
+
+const COMPRESSED_PUBLIC_KEY_LENGTH = 33
+
+/**
+ * polkadot-js stores the compressed public key, not the address, as the `address` of an ethereum
+ * or ecdsa keystore.
+ */
+const getLegacyPjsAccountAddress = (oldPair: LegacyPjsAccountJson) => {
+  const type = getLegacyPjsAccountType(oldPair)
+  if (type !== "ethereum" && type !== "ecdsa") return oldPair.address
+  if (!isHexString(oldPair.address)) return oldPair.address
+
+  const publicKey = hexToU8a(oldPair.address)
+  if (publicKey.length !== COMPRESSED_PUBLIC_KEY_LENGTH) return oldPair.address
+
+  return addressFromPublicKey(publicKey, addressEncodingFromCurve(type))
+}
+
+/**
+ * Whether deriving `derivationPath` from the mnemonic gives back `address`. polkadot-js derived
+ * these accounts. @talismn/crypto rejects some of the paths it accepted (`//Alice-Bob`), and a
+ * path that the two derive to different keys would add another account than the user had. Such
+ * an account is imported from its own secret key instead.
+ */
+const derivesAddress = async (
+  address: string,
+  mnemonicId: string,
+  derivationPath: string,
+  curve: KeypairCurve,
+  password: string
+) => {
+  try {
+    const derived = await keyringStore.getDerivedAddress(
+      mnemonicId,
+      derivationPath,
+      curve,
+      password
+    )
+    return isAddressEqual(derived, address)
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -93,8 +145,10 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
       const origin = oldPair.meta.origin as string
 
       try {
+        const address = getLegacyPjsAccountAddress(oldPair)
+
         // skip if already migrated in a previous attempt
-        if (await keyringStore.getAccount(oldPair.address)) continue
+        if (await keyringStore.getAccount(address)) continue
 
         switch (origin) {
           case "ROOT":
@@ -120,7 +174,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
             if (
               mnemonicId &&
               typeof derivationPath === "string" && // allow empty string (substrate default)
-              (await isValidDerivationPath(derivationPath, curve))
+              (await derivesAddress(address, mnemonicId, derivationPath, curve, password))
             ) {
               // keep the "link" to associated mnemonic by rederiving the account from it
               await keyringStore.addAccountDerive({
