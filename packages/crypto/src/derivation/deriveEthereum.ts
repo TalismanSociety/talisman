@@ -6,9 +6,19 @@ import type { Keypair } from "../types"
 export const deriveEthereum = (seed: Uint8Array, derivationPath: string): Keypair => {
   const hdkey = HDKey.fromMasterSeed(seed)
 
-  const childKey = hdkey.derive(derivationPath)
-  if (!childKey.privateKey) throw new Error("Invalid derivation path")
-  const secretKey = new Uint8Array(childKey.privateKey)
+  let secretKey: Uint8Array
+  try {
+    const childKey = hdkey.derive(derivationPath)
+    try {
+      const privateKey = childKey.privateKey
+      if (!privateKey) throw new Error("Invalid derivation path")
+      secretKey = privateKey
+    } finally {
+      childKey.wipePrivateData()
+    }
+  } finally {
+    hdkey.wipePrivateData()
+  }
 
   const publicKey = getPublicKeyEthereum(secretKey)
 
