@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223), or in a git worktree's own browser, the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), test a swap, or run manual QA before a PR.
+description: Drive the Talisman wallet extension in the dev Chrome (CDP 9223), or in a git worktree's own browser, the way a user does and capture proof. Use to verify a UI or background change, reproduce a bug in the running wallet, test a dapp request (connect, sign, send), test a swap, test a Ledger account on the Speculos emulator, or run manual QA before a PR.
 ---
 
 # Verify the Talisman extension
