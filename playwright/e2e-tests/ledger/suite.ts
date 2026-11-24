@@ -156,17 +156,23 @@ const connectLedgerAccount = async (page: Page, extensionId: string, app: Device
   return address
 }
 
+// The wallet opens its popup in a window larger than its content, which hides part of the
+// request from someone who watches the run. The size is the one `walletPopup` in fixtures.ts uses.
+const openWalletPopup = async (context: BrowserContext, trigger: () => Promise<unknown>) => {
+  const [popup] = await Promise.all([context.waitForEvent("page"), trigger()])
+  await popup.bringToFront()
+  await popup.setViewportSize({ width: 400, height: 600 })
+  return popup
+}
+
 /** Sends the call from the dapp and returns the wallet popup it opens. */
-export const requestFromDapp = async ({ context, dapp }: Session, call: DappCall) => {
-  const [popup] = await Promise.all([
-    context.waitForEvent("page"),
+export const requestFromDapp = ({ context, dapp }: Session, call: DappCall) =>
+  openWalletPopup(context, () =>
     dapp.evaluate((call) => {
       const w = window as LedgerDappWindow
       w.pending = w.ledgerDapp?.send(call)
-    }, call),
-  ])
-  return popup
-}
+    }, call)
+  )
 
 export const dappResult = (dapp: Page) => dapp.evaluate(() => (window as LedgerDappWindow).pending)
 
@@ -193,13 +199,12 @@ export const ledgerSuite = (suite: DeviceAppSuite) => {
     await dapp.goto(dappUrl)
     await dapp.waitForFunction(suite.installDapp)
 
-    const [popup] = await Promise.all([
-      context.waitForEvent("page"),
+    const popup = await openWalletPopup(context, () =>
       dapp.evaluate(() => {
         const w = window as LedgerDappWindow
         w.pending = w.ledgerDapp?.connect()
-      }),
-    ])
+      })
+    )
     if (!suite.connectPreselectsAccount)
       await popup.getByRole("button", { name: /^Ledger \w+ 1$/ }).click()
     await popup.getByTestId("connection-connect-button").click()
