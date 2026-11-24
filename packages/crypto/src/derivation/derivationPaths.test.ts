@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest"
 
 import { entropyToSeed, mnemonicToEntropy } from "../mnemonic"
 import type { KeypairCurve } from "../types"
-import { addressFromMnemonic, deriveKeypair, isValidDerivationPath } from "./utils"
+import {
+  addressFromMnemonic,
+  deriveKeypair,
+  getPublicKeyFromSecret,
+  isValidDerivationPath,
+} from "./utils"
 
 // Known answers for the paths the extension and the mobile app generate, and for edge cases of
 // the substrate parser. Every substrate address below equals @polkadot/keyring 13 and 14
@@ -199,27 +204,44 @@ describe("solana derivation path parser", () => {
 })
 
 describe("derivation buffers", () => {
-  it.each<[KeypairCurve, string]>([
-    ["sr25519", ""],
-    ["sr25519", "//0/1"],
-    ["ed25519", ""],
-    ["ed25519", "//0"],
-    ["ecdsa", ""],
-    ["ecdsa", "//0"],
-    ["ethereum", "m/44'/60'/0'/0/0"],
-    ["solana", "m/44'/501'/0'/0'"],
-  ])("%s %j leaves the seed intact and returns a key the caller owns", async (curve, path) => {
-    const seed = await entropyToSeed(mnemonicToEntropy(ABANDON), curve)
-    const copy = seed.slice()
+  const callerSeeds: [kind: string, toCallerSeed: (seed: Uint8Array) => Uint8Array][] = [
+    ["Uint8Array", (seed) => seed],
+    ["Buffer", (seed) => Buffer.from(seed)],
+  ]
 
-    const first = deriveKeypair(seed, path, curve)
-    expect(seed).toEqual(copy)
-    expect(first.secretKey.buffer).not.toBe(seed.buffer)
+  describe.each(callerSeeds)("from a %s seed", (_, toCallerSeed) => {
+    it.each<[KeypairCurve, string]>([
+      ["sr25519", ""],
+      ["sr25519", "//0/1"],
+      ["ed25519", ""],
+      ["ed25519", "//0"],
+      ["ecdsa", ""],
+      ["ecdsa", "//0"],
+      ["ethereum", "m/44'/60'/0'/0/0"],
+      ["solana", "m/44'/501'/0'/0'"],
+    ])("%s %j leaves the seed intact and returns a key the caller owns", async (curve, path) => {
+      const seed = toCallerSeed(await entropyToSeed(mnemonicToEntropy(ABANDON), curve))
+      const copy = Uint8Array.from(seed)
 
-    // zeroing one result must not affect the seed or a later derivation
-    const { address } = first
-    first.secretKey.fill(0)
-    expect(seed).toEqual(copy)
-    expect(deriveKeypair(seed, path, curve).address).toBe(address)
+      const first = deriveKeypair(seed, path, curve)
+      expect(Uint8Array.from(seed)).toEqual(copy)
+      expect(first.secretKey.buffer).not.toBe(seed.buffer)
+
+      // zeroing one result must not affect the seed or a later derivation
+      const { address } = first
+      first.secretKey.fill(0)
+      expect(Uint8Array.from(seed)).toEqual(copy)
+      expect(deriveKeypair(seed, path, curve).address).toBe(address)
+    })
+  })
+
+  it("leaves a 64-byte ed25519 Buffer key intact when computing its public key", async () => {
+    const seed = await entropyToSeed(mnemonicToEntropy(ABANDON), "ed25519")
+    const { secretKey, publicKey } = deriveKeypair(seed, "", "ed25519")
+    const keypair = Buffer.concat([secretKey, publicKey])
+    const copy = Uint8Array.from(keypair)
+
+    expect(getPublicKeyFromSecret(keypair, "ed25519")).toEqual(publicKey)
+    expect(Uint8Array.from(keypair)).toEqual(copy)
   })
 })

@@ -6,13 +6,17 @@ import { deriveSubstrateSecretKey } from "./common"
 export const deriveEd25519 = (seed: Uint8Array, derivationPath: string): Keypair => {
   const secretKey = deriveSubstrateSecretKey(seed, derivationPath, "Ed25519HDKD")
 
-  const publicKey = getPublicKeyEd25519(secretKey)
-
-  return {
-    type: "ed25519",
-    secretKey,
-    publicKey,
-    address: addressFromPublicKey(publicKey, "ss58"),
+  try {
+    const publicKey = getPublicKeyEd25519(secretKey)
+    return {
+      type: "ed25519",
+      secretKey,
+      publicKey,
+      address: addressFromPublicKey(publicKey, "ss58"),
+    }
+  } catch (error) {
+    secretKey.fill(0)
+    throw error
   }
 }
 
@@ -29,9 +33,8 @@ export const getPublicKeyEd25519 = (secretKey: Uint8Array) => {
   // When you compare the ed25519 publicKey of a given account produced by this function to the publicKey produced by
   // polkadot-js, you will find that they are the same as eachother.
   if (secretKey.length === 64) {
-    const [privateComponent, publicComponent] = [secretKey.slice(0, 32), secretKey.slice(32)]
+    const [privateComponent, publicComponent] = [secretKey.subarray(0, 32), secretKey.subarray(32)]
     const publicKey = ed25519.getPublicKey(privateComponent)
-    privateComponent.fill(0)
 
     // NOTE: We only accept a 64 byte secretKey when the first 32 bytes successfully produce a public key which equals the second 32 bytes of the secretKey.
     //

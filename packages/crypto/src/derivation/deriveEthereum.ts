@@ -10,8 +10,9 @@ export const deriveEthereum = (seed: Uint8Array, derivationPath: string): Keypai
   try {
     const childKey = hdkey.derive(derivationPath)
     try {
-      if (!childKey.privateKey) throw new Error("Invalid derivation path")
-      secretKey = new Uint8Array(childKey.privateKey)
+      const privateKey = childKey.privateKey
+      if (!privateKey) throw new Error("Invalid derivation path")
+      secretKey = privateKey
     } finally {
       childKey.wipePrivateData()
     }

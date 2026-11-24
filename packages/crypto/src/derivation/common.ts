@@ -91,8 +91,14 @@ export const createChainCode = (code: string) => {
 }
 
 const derivationCodec = /* @__PURE__ */ Tuple(str, Bytes(32), Bytes(32))
-const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode: Uint8Array) =>
-  blake2b256(derivationCodec.enc([prefix, seed, chainCode]))
+const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode: Uint8Array) => {
+  const input = derivationCodec.enc([prefix, seed.subarray(0, 32), chainCode])
+  try {
+    return blake2b256(input)
+  } finally {
+    input.fill(0)
+  }
+}
 
 /**
  * Derives a secret key from `seed` along a hard-only path. Always returns a new buffer, never
@@ -110,7 +116,7 @@ export const deriveSubstrateSecretKey = (
   // encode every junction before any key material exists, so a bad code throws first
   const chainCodes = derivations.map(([_, code]) => createChainCode(code))
   const derive = createSubstrateDeriveFn(prefix)
-  let secretKey = seed.slice()
+  let secretKey = Uint8Array.from(seed)
   for (const chainCode of chainCodes) {
     const next = derive(secretKey, chainCode)
     secretKey.fill(0)
