@@ -6,7 +6,8 @@ import { StorageProvider } from "../../libs/Store"
 import type { IdenticonType } from "../accounts/types"
 import { DEFAULT_AUTO_LOCK_MINUTES } from "./autoLock"
 
-export type LedgerTransportType = "usb" | "hid"
+// "speculos" is the Ledger emulator, in dev builds only: other builds treat it as "hid"
+export type LedgerTransportType = "usb" | "hid" | "speculos"
 
 export interface SettingsStoreData {
   useErrorTracking: boolean

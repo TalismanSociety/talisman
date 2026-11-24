@@ -28,6 +28,7 @@ import { ModalDialog } from "@ui/components/ModalDialog"
 import { Setting } from "@ui/components/Setting"
 import { Toggle } from "@ui/components/Toggle"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
+import { createTransport } from "@ui/hooks/ledger/useLedgerTransport"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state/settings"
 import { cn } from "@ui/util/cn"
@@ -144,6 +145,9 @@ const LedgerTransportTypeSelect = () => {
       [
         getIsLedgerCapable("hid") ? { value: "hid", label: t("HID") } : null,
         getIsLedgerCapable("usb") ? { value: "usb", label: t("USB") } : null,
+        process.env.BUILD_TYPE === "dev"
+          ? { value: "speculos", label: "Speculos (emulator)" }
+          : null,
       ].filter(isNotNil) as { value: LedgerTransportType; label: string }[],
     [t]
   )
@@ -166,6 +170,10 @@ const LedgerTransportTypeSelect = () => {
           break
         case "usb":
           refTransport.current = await TransportWebUSB.create()
+          setCheckStatus({ ok: true })
+          break
+        case "speculos":
+          refTransport.current = await createTransport("speculos")
           setCheckStatus({ ok: true })
           break
       }

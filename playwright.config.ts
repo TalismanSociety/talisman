@@ -29,7 +29,9 @@ export default defineConfig({
     // baseURL: 'http://127.0.0.1:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
+    // A trace records the arguments of every call, so it would hold the Gandalf credentials that
+    // the fixtures seed into the extension, and CI uploads traces in a public artifact.
+    trace: process.env.E2E_GANDALF_PRIVATE_KEY ? "off" : "on-first-retry",
   },
 
   /* Configure projects for major browsers */
