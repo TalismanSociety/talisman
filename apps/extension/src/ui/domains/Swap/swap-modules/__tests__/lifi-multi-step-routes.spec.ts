@@ -44,7 +44,14 @@ type StepSpec = {
   fromAddress: string
   toAddress: string
   gas: { amount: string; token: Token }
-  feeCosts?: { name: string; amount: string; included: boolean; token: Token }[]
+  feeCosts?: {
+    name: string
+    amount: string
+    included: boolean
+    token: Token
+    percentage?: string
+    feeSplit?: { lifiFee: string; integratorFee: string }
+  }[]
   executionDuration: number
 }
 
@@ -115,7 +122,15 @@ const usdtToTrump = (fromAddress = ALICE, toAddress = BOB) =>
         toAmountMin: "2819605417939463473599",
         fromAddress,
         toAddress: fromAddress,
-        feeCosts: [{ name: "LIFI Fixed Fee", amount: "250000", included: true, token: USDT }],
+        feeCosts: [
+          {
+            name: "LIFI Fixed Fee",
+            amount: "450000",
+            included: true,
+            token: USDT,
+            feeSplit: { lifiFee: "250000", integratorFee: "200000" },
+          },
+        ],
         gas: { amount: "27589130120000", token: ETH },
         executionDuration: 22,
       }),
@@ -371,7 +386,7 @@ describe("LI.FI multi-step routes", () => {
       outputAmount: 15_783_907_332_122n,
       timeInSec: 0,
     })
-    expect(bridge.fees.map((fee) => fee.name)).toEqual(["LIFI Fixed Fee", "Gas", TALISMAN_FEE_NAME])
+    expect(bridge.fees.map((fee) => fee.name)).toEqual([TALISMAN_FEE_NAME, "Gas"])
     expect(swap.fees.map((fee) => fee.name)).toEqual(["Gas"])
 
     expect(legData(bridge)).toMatchObject({ stepIndex: 0, stepCount: 2, toToken: SKYAI })
@@ -465,6 +480,40 @@ describe("LI.FI multi-step routes", () => {
     const { "56": _, ...withoutBnb } = networks
     mockGetNetworksMapById$.mockReturnValue(of(withoutBnb))
     expect(await quotesFor([usdtToTrump()])).toEqual([])
+  })
+})
+
+describe("LI.FI quote fees", () => {
+  it("lists LI.FI's fee, which holds the Talisman fee, once", async () => {
+    // Shape of a live li.quest quote for integrator "talisman" with fee 0.002 (2026-11-25): one
+    // included "LIFI Fixed Fee" of 0.45% of the input, 0.25% to LI.FI and 0.2% to Talisman
+    const [direct] = usdtToTrumpInOneStep().steps
+    direct.estimate.feeCosts = [
+      {
+        name: "LIFI Fixed Fee",
+        description: "Fixed LIFI fee, independent of any other fee",
+        percentage: "0.0045",
+        token: USDT,
+        amount: "450000",
+        amountUSD: "0.45",
+        included: true,
+        feeSplit: { lifiFee: "250000", integratorFee: "200000" },
+      },
+    ]
+    const [quote] = await quotesFor([route("direct", [direct], ALICE, BOB)])
+
+    expect(
+      quote.fees.map(({ name, tokenId, amount, additional }) => ({
+        name,
+        tokenId,
+        amount: amount.toString(),
+        additional,
+      }))
+    ).toEqual([
+      { name: TALISMAN_FEE_NAME, tokenId: USDT_ID, amount: "0.45", additional: false },
+      { name: "Gas", tokenId: "1:evm-native", amount: "0.00002758913012", additional: undefined },
+    ])
+    expect(quote.talismanFee).toBe(0.0045)
   })
 })
 
