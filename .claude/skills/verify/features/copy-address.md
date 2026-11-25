@@ -50,5 +50,6 @@ Preconditions:
 
 - The page behind the modal holds the same account names. `ab find role button --name "<sub2 name>"` can match the portfolio row and fail with "is covered by". Click refs from `ab snapshot -i -c -s '#copy-address-modal'`.
 - Product bug, seen on 2026-11-16: "Search by account name" finds nothing when the search has capitals. It lowercases the names but not the search (`CopyAddressAccountForm.tsx`). Search in lower case. Delete this line once the bug is fixed.
+- The clipboard read script brings an extension page to the front. Back in agent-browser, the tab you drive is then out of focus, and the clear before the next copy fails with "Document is not focused". Run `ab tab <id>` on that tab first: `ab tab list` prints the ids.
 - From source: the Polkadot row shows only for some accounts. Search for another network, such as Kusama.
 - From source, not driven: a copy on the "Substrate (Generic)" row opens the drawer "Receiving from an exchange?" with `Continue`, and a network whose address format changed opens "Select Address Format".
