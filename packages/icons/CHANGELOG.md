@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 1.2.0
+
+### Minor Changes
+
+- ea47a29: add DiscordIcon and HeadsetIcon
+
 ## 1.1.1
 
 ### Patch Changes

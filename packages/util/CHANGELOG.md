@@ -1,5 +1,17 @@
 # @talismn/util
 
+## 2.2.0
+
+### Minor Changes
+
+- bd18aa5: Add `formatCompactPrice`, which splits a compact price into parts so a long run of leading fraction zeros can be shown as a count, and `formatCurrencyToParts`, the parts form of `formatCurrency`
+- 97bf27f: add `getCurrencyFractionDigits`, the decimals of a currency's smallest unit, show bitcoin, ether and tao to 6, 5 and 4 decimals in `formatCurrency`, and the rupiah to 0 in every browser
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- 4ab1154: add `formatCurrency`: ₿, Ξ and τ symbols for BTC, ETH and TAO, `$` for USD in every locale, and the code after the value in code display. `formatPrice` uses it
+
 ## 2.1.1
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @talismn/crypto
 
+## 1.3.0
+
+### Minor Changes
+
+- 942e929: Reject malformed substrate derivation paths instead of deriving the root or another account: characters outside `[A-Za-z0-9_]`, numeric codes such as `0x1000` that earlier versions read differently from polkadot-js, and `///password`, which earlier versions derived as the hard junction `//password` (derivation paths take `//` and `/` junctions only; polkadot-js applies the password to the seed). Derive decimal junctions of 2^32 and above, and junction codes over 32 bytes, as polkadot-js does. Reject Solana path indexes that aren't decimal integers below 2^31.
+- 942e929: Add `getLegacyDerivationPath`: for a substrate or Solana derivation path that is now rejected, the path that derives the key earlier versions derived from it (`//hard//password` for `//hard///password`), so an account stored with the rejected path can show the path that restores it
+
+### Patch Changes
+
+- 942e929: `getLegacyDerivationPath` gives the root path for an ecdsa path that earlier versions read as the root
+- 59f54af: `parseSecretKey` ignores surrounding whitespace, requires an Ethereum key to be exactly 32 bytes, and rejects a Solana JSON array whose elements are not integers 0..255 instead of coercing them to bytes
+- aa26961: the derivation functions zero the intermediate keys, seeds and mnemonic bytes they allocate and don't return, and `deriveSubstrateSecretKey` returns a copy of the seed for an empty path instead of the seed itself
+- aa26961: the derivation functions leave a `Buffer` seed or key passed to them intact, and zero the copies of keys they hash or discard, also when they throw
+
 ## 1.2.0
 
 ### Minor Changes
