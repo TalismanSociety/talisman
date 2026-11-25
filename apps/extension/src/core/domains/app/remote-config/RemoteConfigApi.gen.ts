@@ -365,7 +365,7 @@ export class RemoteConfigApi<
             promotedBuyTokens: string[];
             /** Token IDs always shown at the top of the 'All tokens' and '🔥 Popular' sell sections */
             promotedSellTokens: string[];
-            /** Map from token ID to custom Talisman fee amount (e.g. 0.2 = 0.2%). Tokens not listed use the default 0.2% fee */
+            /** Map from token ID to the Talisman fee on LI.FI routes to or from that token, as a fraction (0.002 = 0.2%), passed to LI.FI as its integrator fee. Tokens not listed use the default 0.002 (0.2%). EVM token IDs are lower-case, as chaindata spells them */
             lifiCustomFeeTokens: Record<string, number>;
             /** SimpleSwap network and token ID mappings */
             simpleswap: {
@@ -526,6 +526,8 @@ export class RemoteConfigApi<
             SUBNET_TRADING: boolean;
             /** Enables the PnL figures (unrealized and realized PnL, average entry, total cost) on a subnet position in the mobile wallet, and the cost basis reads behind them */
             SUBNET_PNL: boolean;
+            /** Shows swap routes that take more than one transaction */
+            SWAPS_MULTI_HOP: boolean;
           };
           /** Anonymous product analytics configuration for the mobile wallet. The app queues events until this section is fetched and drops everything when the user opts out in Settings. */
           analytics: {
@@ -553,7 +555,7 @@ export class RemoteConfigApi<
             promotedBuyTokens: string[];
             /** Token IDs always shown at the top of the 'All tokens' and '🔥 Popular' sell sections */
             promotedSellTokens: string[];
-            /** Map from token ID to custom Talisman fee amount (e.g. 0.2 = 0.2%). Tokens not listed use the default 0.2% fee */
+            /** Map from token ID to the Talisman fee on LI.FI routes to or from that token, as a fraction (0.002 = 0.2%), passed to LI.FI as its integrator fee. Tokens not listed use the default 0.002 (0.2%). EVM token IDs are lower-case, as chaindata spells them */
             lifiCustomFeeTokens: Record<string, number>;
             /** SimpleSwap network and token ID mappings */
             simpleswap: {
@@ -680,6 +682,13 @@ export class RemoteConfigApi<
             featuredValidators: string[];
             /** Maps subnet netuid to a validator hotkey to use as the default for that subnet */
             defaultValidatorsBySubnet: Record<string, string>;
+          };
+          /** CheckMetadataHash for transactions signed by keypair accounts in the mobile wallet: a switch for every network, and the networks it stays off on */
+          checkMetadataHash: {
+            /** Whether keypair accounts sign Substrate transactions with CheckMetadataHash mode 1, which binds the signature to a digest of the runtime metadata, on runtimes that carry the extension. Off: they sign with mode 0. Ledger accounts always use mode 1, which their clear signing needs */
+            enabled: boolean;
+            /** Network IDs (chaindata, e.g. 'bittensor') where keypair accounts sign with CheckMetadataHash mode 0 even while enabled is true */
+            disabledNetworks: string[];
           };
         },
         any
