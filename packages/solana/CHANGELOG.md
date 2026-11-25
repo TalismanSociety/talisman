@@ -1,5 +1,18 @@
 # @talismn/solana
 
+## 1.0.6
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- Updated dependencies [942e929]
+- Updated dependencies [942e929]
+- Updated dependencies [942e929]
+- Updated dependencies [59f54af]
+- Updated dependencies [aa26961]
+- Updated dependencies [aa26961]
+  - @talismn/crypto@1.3.0
+
 ## 1.0.5
 
 ### Patch Changes

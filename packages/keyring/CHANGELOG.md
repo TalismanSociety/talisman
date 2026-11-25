@@ -1,5 +1,25 @@
 # @talismn/keyring
 
+## 2.1.0
+
+### Minor Changes
+
+- ed7481c: `Keyring.export` verifies the current password against `passwordCheck` before it re-encrypts anything, so it rejects a wrong password on a keyring without mnemonics or keypair accounts too
+
+### Patch Changes
+
+- 59f54af: document that `removeMnemonic` keeps the accounts derived from the mnemonic, and that adding the same mnemonic again links them to it
+- 942e929: an account stored with a derivation path that `@talismn/crypto` now rejects still loads, decrypts, renames and exports; only deriving from that path again throws, which the keyring never does for a stored account
+- 59f54af: `updateAccount` and `updateMnemonic` check every option before applying any, and `addAccountKeypair` and `addAccountDerive` check for an existing account again after they await, so concurrent calls on one keyring can't add the same account twice
+- aa26961: the keyring zeroes the decrypted entropy, seeds and derived secret keys it holds once it is done with them, including when a method throws. `getAccountSecretKey` still returns the key to the caller, who owns it
+- Updated dependencies [942e929]
+- Updated dependencies [942e929]
+- Updated dependencies [942e929]
+- Updated dependencies [59f54af]
+- Updated dependencies [aa26961]
+- Updated dependencies [aa26961]
+  - @talismn/crypto@1.3.0
+
 ## 2.0.4
 
 ### Patch Changes

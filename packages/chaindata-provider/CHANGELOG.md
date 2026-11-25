@@ -1,5 +1,23 @@
 # @talismn/chaindata-provider
 
+## 2.4.0
+
+### Minor Changes
+
+- 59f54af: networks in a chaindata file keep only their https:// and wss:// RPCs, and Solana addresses must decode to 32 bytes
+
+### Patch Changes
+
+- 74350e8: bump dependencies
+- 59f54af: the default chaindata file falls back to jsdelivr when raw.githubusercontent.com is unreachable or answers with a 5xx, 429 or 403, and no longer on a 404
+- 3466c0d: Support Hydration Explorer account, extrinsic and block links at hydration-explorer.neckwork.net.
+- 534b1a0: Support Vara Explorer account, extrinsic and block links at explorer.vara.network.
+- Updated dependencies [74350e8]
+- Updated dependencies [bd18aa5]
+- Updated dependencies [4ab1154]
+- Updated dependencies [97bf27f]
+  - @talismn/util@2.2.0
+
 ## 2.3.2
 
 ### Patch Changes
