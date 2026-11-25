@@ -112,6 +112,7 @@ type FeeCost = {
   amount: string
   included: boolean
   token: { address: string; chainId: number; decimals: number }
+  feeSplit?: { lifiFee: string; integratorFee: string }
 }
 
 const nativeFee = (amount: bigint, included: boolean, chainId = 1): FeeCost => ({
@@ -120,6 +121,15 @@ const nativeFee = (amount: bigint, included: boolean, chainId = 1): FeeCost => (
   included,
   token: { address: "0x0000000000000000000000000000000000000000", chainId, decimals: 18 },
 })
+
+/** LI.FI's own fee with the Talisman fee in it: 0.45% of one ETH, 0.25% to LI.FI, 0.2% to Talisman */
+const lifiFixedFee: FeeCost = {
+  name: "LIFI Fixed Fee",
+  amount: "4500000000000000",
+  included: true,
+  token: { address: "0x0000000000000000000000000000000000000000", chainId: 1, decimals: 18 },
+  feeSplit: { lifiFee: "2500000000000000", integratorFee: "2000000000000000" },
+}
 
 const makeRoute = (fromAmount: bigint, feeCosts: FeeCost[] = []): Route =>
   ({
@@ -387,7 +397,6 @@ describe("lifi getQuote — additional fees", () => {
     expect(quote?.fees.map((fee) => [fee.name, fee.additional])).toEqual([
       ["Bridge Fee", true],
       ["Protocol Fee", false],
-      ["Talisman Fee", undefined],
     ])
   })
 })
@@ -397,7 +406,7 @@ describe("lifi confirm screen", () => {
     await seedAssetCache()
     const quote = single(await getQuote([nativeFee(1_000n, false)]))
     if (!quote) throw new Error("expected a quote")
-    givenRoutes([makeRoute(ONE_ETH, [nativeFee(2_000n, false)])])
+    givenRoutes([makeRoute(ONE_ETH, [nativeFee(2_000n, false), lifiFixedFee])])
     givenProviderTransaction({ value: `0x${(ONE_ETH + 2_000n).toString(16)}` })
 
     expect(
@@ -431,7 +440,12 @@ describe("lifi confirm screen", () => {
           amount: BigNumber("0.000000000000002"),
           additional: true,
         },
-        { name: "Talisman Fee", tokenId: NATIVE_TOKEN_ID, amount: BigNumber("0.0045") },
+        {
+          name: "Talisman Fee",
+          tokenId: NATIVE_TOKEN_ID,
+          amount: BigNumber("0.0045"),
+          additional: false,
+        },
       ],
       txInfo: {
         type: "swap-lifi",
@@ -446,6 +460,7 @@ describe("lifi confirm screen", () => {
     expect(vi.mocked(lifiSdk.getRoutes).mock.lastCall?.[1].options?.slippage).toBe(0.005)
     expect(mockGetStepTransaction.mock.lastCall?.[0].estimate.feeCosts).toEqual([
       nativeFee(2_000n, false),
+      lifiFixedFee,
     ])
   })
 })

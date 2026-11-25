@@ -540,11 +540,21 @@ const getAdditionalNativeFeeWei = (
     .reduce((total, fee) => total + BigInt(fee.amount), 0n)
 }
 
-const stepFees = async (env: SwapEnv, step: lifiSdk.LiFiStep): Promise<QuoteFee[]> => {
+/**
+ * The step's fees and gas. LI.FI reports its own fee and the integrator fee passed to `getRoutes`
+ * together, as one `feeCosts` entry ("LIFI Fixed Fee": `percentage` is LIFI_FEE plus that fee, and
+ * `feeSplit` gives each recipient's share). The Talisman fee has no line of its own: when the quote
+ * charges it, that entry takes its name, which the confirm screen lists under "Other Fees".
+ */
+const stepFees = async (
+  env: SwapEnv,
+  step: lifiSdk.LiFiStep,
+  chargesTalismanFee: boolean
+): Promise<QuoteFee[]> => {
   const fees: QuoteFee[] = await Promise.all(
     step.estimate.feeCosts?.map(async (fee) => ({
       amount: BigNumber(fee.amount).times(10 ** -fee.token.decimals),
-      name: fee.name,
+      name: chargesTalismanFee && fee.feeSplit ? TALISMAN_FEE_NAME : fee.name,
       tokenId: await feeTokenId(env, fee.token),
       additional: !fee.included,
     })) ?? []
@@ -613,7 +623,7 @@ const getRouteQuote = async (
       recipient,
       inputAmount: BigInt(step.action.fromAmount),
       outputAmount: BigInt(step.estimate.toAmountMin),
-      fees: await stepFees(env, step),
+      fees: await stepFees(env, step, talismanFee !== null),
       timeInSec: step.estimate.executionDuration,
       data: stepRoute(route, step, index, fromAddress, recipient),
     }
@@ -621,14 +631,6 @@ const getRouteQuote = async (
 
   const feeRate = Math.round((LIFI_FEE + (talismanFee ?? 0)) * 10_000) / 10_000
   const firstLeg = await stepLeg(firstStep, 0)
-  if (talismanFee !== null)
-    firstLeg.fees.push({
-      amount: BigNumber(firstStep.action.fromAmount)
-        .times(10 ** -fromAsset.decimals)
-        .times(feeRate),
-      name: TALISMAN_FEE_NAME,
-      tokenId: fromTokenId,
-    })
   const laterLegs = await Promise.all(laterSteps.map((step, index) => stepLeg(step, index + 1)))
 
   const lifiSolanaChainId = await getLifiSolanaChainId(env)
