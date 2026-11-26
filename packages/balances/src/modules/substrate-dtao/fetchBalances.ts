@@ -106,8 +106,10 @@ export const fetchBalancesAt = async (
       ),
       fetchConvictionLocks(connector, networkId, metadataRpc, addresses, blockHash),
       fetchBasketClaims(connector, networkId, metadataRpc, addresses, blockHash),
-      // cached for the runtime: the hold read below then knows whether it has anything to do
-      fetchRootStakeUnlockInterval(connector, networkId, metadataRpc, blockHash),
+      // cached for the runtime: the hold read below then knows whether it has anything to do.
+      // Only coldkeys with root stake need it, and for them the hold read below reads it again
+      // and fails the poll when it can't, so a failure here doesn't fail the poll
+      fetchRootStakeUnlockInterval(connector, networkId, metadataRpc, blockHash).catch(() => null),
     ])
 
     // unique (coldkey, hotkey) root staking pairs: hold windows are per pair. (Basket claims

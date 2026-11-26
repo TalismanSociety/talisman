@@ -166,6 +166,35 @@ describe("fetchBalances root stake hold", () => {
     )
   })
 
+  it("doesn't fail a poll with no root stake when the interval can't be read", async () => {
+    mockMetadata()
+    vi.mocked(fetchRuntimeCallResult).mockImplementation(
+      async (_connector, _networkId, _builder, _apiName, method) => {
+        if (method === "get_stake_info_for_coldkeys")
+          return [[ADDRESS, [{ netuid: 5, hotkey: HOTKEY, stake: 100n }]]]
+        if (method === "get_root_basket_claim_previews") return []
+        throw new Error(`unexpected runtime call ${method}`)
+      }
+    )
+    vi.mocked(fetchRpcQueryPack).mockClear().mockRejectedValue(new Error("interval read failed"))
+
+    const result = await runFetchBalances([subDTaoTokenId(NETWORK_ID, 5, HOTKEY)])
+
+    expect(result.errors).toEqual([])
+    expect(result.success).toHaveLength(1)
+  })
+
+  it("fails a poll with root stake when the interval can't be read", async () => {
+    mockMetadata()
+    mockRuntimeCalls({ payout: 0n })
+    vi.mocked(fetchRpcQueryPack).mockClear().mockRejectedValue(new Error("interval read failed"))
+
+    const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
+
+    expect(result.success).toEqual([])
+    expect(result.errors).toHaveLength(1)
+  })
+
   it("keeps a fully-unstaked validator's claim without querying holds for it", async () => {
     mockMetadata()
     vi.mocked(fetchRuntimeCallResult).mockImplementation(
