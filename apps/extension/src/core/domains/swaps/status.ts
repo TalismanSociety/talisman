@@ -11,6 +11,33 @@ export type SwapStatusEnv = {
   getSwapsConfig: () => Promise<RemoteConfigStoreData["swaps"]>
 }
 
+/**
+ * The exchange statuses SimpleSwap's `get_exchange` and StealthEX's `/v4/exchanges/{id}` document.
+ * Both name them the same.
+ */
+const EXCHANGE_STATUSES: Record<string, SwapStatus> = {
+  waiting: "waiting",
+  confirming: "confirming",
+  exchanging: "exchanging",
+  sending: "sending",
+  verifying: "verifying",
+  finished: "finished",
+  failed: "failed",
+  refunded: "refunded",
+  expired: "expired",
+}
+
+/**
+ * The swap status of an exchange response. A status outside {@link EXCHANGE_STATUSES} is
+ * "unknown": stored as received it would never count as final, and its watcher would poll for
+ * good. A response with no status is an error, so the watcher asks again.
+ */
+const toExchangeStatus = (data: unknown, provider: string): SwapStatus => {
+  const status = (data as { status?: unknown } | null)?.status
+  if (typeof status !== "string" || !status) throw new Error(`${provider} API returned no status`)
+  return Object.hasOwn(EXCHANGE_STATUSES, status) ? EXCHANGE_STATUSES[status] : "unknown"
+}
+
 export async function fetchSimpleswapStatus(
   exchangeId: string,
   env: SwapStatusEnv
@@ -22,8 +49,7 @@ export async function fetchSimpleswapStatus(
   const res = await env.fetch(`https://api.simpleswap.io/get_exchange?${params}`)
   if (!res.ok) throw new Error(`SimpleSwap API error: ${res.status}`)
 
-  const data: { status: string } = await res.json()
-  return data.status as SwapStatus
+  return toExchangeStatus(await res.json(), "SimpleSwap")
 }
 
 export async function fetchStealthexStatus(
@@ -33,8 +59,7 @@ export async function fetchStealthexStatus(
   const res = await env.proxyFetch(`https://stealthex.talisman.xyz/v4/exchanges/${exchangeId}`)
   if (!res.ok) throw new Error(`StealthEX API error: ${res.status}`)
 
-  const data: { status: string } = await res.json()
-  return data.status as SwapStatus
+  return toExchangeStatus(await res.json(), "StealthEX")
 }
 
 const LIFI_STATUS_MAP: Record<string, SwapStatus> = {

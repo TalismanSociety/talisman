@@ -93,6 +93,7 @@ const { lifiSwapModule: lifiPageModule } = await import("../lifi-swap-module")
 const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
 const lifiSwapModule = withSwapEnv(lifiPageModule, uiSwapEnv)
 const { quoteFromLegs } = await import("../helpers")
+const { prepareTransactionRequestWithGasCheck } = await import("../evm-gas-check")
 const { confirmSwap } = await import("./confirmSwap")
 
 // --- Test helpers ---
@@ -358,6 +359,31 @@ describe("lifi buildLeg — provider transaction guards", () => {
     await expectRejection(buildLeg(), "Unexpected chain")
   })
 
+  it("signs with LI.FI's gas limit when it is above the node's estimate", async () => {
+    await seedAssetCache()
+    givenProviderTransaction({ value: `0x${ONE_ETH.toString(16)}`, gasLimit: "0x61a80" })
+    vi.mocked(prepareTransactionRequestWithGasCheck).mockImplementationOnce(
+      async (_client, _feeTokenId, request) => ({ ...request, gas: 300_000n })
+    )
+
+    const { transaction } = await buildLeg()
+
+    expect(transaction.platform === "ethereum" && transaction.transaction.gas).toBe(400_000n)
+    expect(transaction).not.toHaveProperty("transaction.gasLimit")
+  })
+
+  it("keeps the node's estimate when it is above LI.FI's gas limit", async () => {
+    await seedAssetCache()
+    givenProviderTransaction({ value: `0x${ONE_ETH.toString(16)}`, gasLimit: "0x61a80" })
+    vi.mocked(prepareTransactionRequestWithGasCheck).mockImplementationOnce(
+      async (_client, _feeTokenId, request) => ({ ...request, gas: 500_000n })
+    )
+
+    const { transaction } = await buildLeg()
+
+    expect(transaction.platform === "ethereum" && transaction.transaction.gas).toBe(500_000n)
+  })
+
   it("rejects a transaction for a different sender", async () => {
     await seedAssetCache()
     givenProviderTransaction({ value: "0x0", from: "0x0000000000000000000000000000000000000bad" })
@@ -429,7 +455,7 @@ describe("lifi confirm screen", () => {
           to: ROUTER_ADDRESS,
           value: ONE_ETH + 2_000n,
           data: "0x1234",
-          gasLimit: "0x5208",
+          gas: 21_000n,
           account: FROM_ADDRESS,
         },
       },

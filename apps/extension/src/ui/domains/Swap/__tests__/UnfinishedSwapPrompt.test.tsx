@@ -29,8 +29,11 @@ vi.mock("@ui/state/remoteConfig", () => ({
   useFeatureFlag: (flag: keyof typeof featureFlags) => featureFlags[flag],
 }))
 
+const ownedAccounts = { list: [{ address: EVM_ADDRESS, name: "Bridge account" }] }
+
 vi.mock("@ui/state/accounts", () => ({
   useAccountByAddress: () => ({ name: "Bridge account" }),
+  useAccounts: (category: string) => (category === "owned" ? ownedAccounts.list : []),
 }))
 
 vi.mock("@ui/state/chaindata", () => ({
@@ -85,6 +88,7 @@ describe("UnfinishedSwapPrompt", () => {
     featureFlags.SWAPS_MULTI_HOP = true
     held.planck = 10n ** 18n
     held.status = "live"
+    ownedAccounts.list = [{ address: EVM_ADDRESS, name: "Bridge account" }]
     await appStore.set({ unfinishedSwaps: [UNFINISHED] })
   })
 
@@ -110,6 +114,20 @@ describe("UnfinishedSwapPrompt", () => {
       await expectNoPrompt()
     }
   )
+
+  it("stays hidden when the wallet no longer signs with the account", async () => {
+    ownedAccounts.list = []
+    renderPrompt()
+
+    await expectNoPrompt()
+  })
+
+  it("offers the swap of an account stored in another address case", async () => {
+    ownedAccounts.list = [{ address: EVM_ADDRESS.toLowerCase(), name: "Bridge account" }]
+    renderPrompt()
+
+    expect(await screen.findByText("Finish your swap")).toBeTruthy()
+  })
 
   it("stays hidden when multi-hop swaps are off", async () => {
     featureFlags.SWAPS_MULTI_HOP = false

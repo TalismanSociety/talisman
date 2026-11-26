@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // --- Mocks ---
 
@@ -19,6 +19,7 @@ vi.mock("../forevermoney/deliveryStatus", async (importOriginal) => ({
 }))
 
 import { db } from "../../db"
+import { remoteConfigStore } from "../app/store.remoteConfig"
 import type { WalletTransactionEth } from "./types"
 import { resumeSwapWatchers, swapOutcomeFacts$, watchSwapStatus } from "./watchSwapStatus"
 
@@ -231,6 +232,63 @@ describe("watchSwapStatus forevermoney", () => {
     await watchSwapStatus(HASH)
 
     expect(await getSwapStatus()).toBe("finished")
+  })
+})
+
+describe("watchSwapStatus past a week", () => {
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1_000
+
+  const insertExchange = (swapStatus: WalletTransactionEth["swapStatus"]) =>
+    insertTransfer({
+      timestamp: Date.now() - WEEK_MS - 60_000,
+      swapStatus,
+      txInfo: {
+        type: "swap-simpleswap",
+        exchangeId: "exchange-1",
+        fromTokenId: "1:evm-native",
+        toTokenId: "polkadot:substrate-native",
+        fromAmount: "1000000000000000000",
+        toAmount: "10000000000",
+        to: "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu",
+      },
+    })
+
+  const providerReports = (status: string) =>
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ status }), { status: 200 }))
+    )
+
+  beforeEach(async () => {
+    await db.transactionsV2.clear()
+    vi.clearAllMocks()
+    mockSleep.mockResolvedValue(undefined)
+    vi.mocked(remoteConfigStore.get).mockResolvedValue({ simpleswapApiKey: "key" } as never)
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it("stores unknown for a swap the provider still reports in progress, and stops", async () => {
+    await insertExchange("exchanging")
+    providerReports("exchanging")
+    const outcomes: string[] = []
+    const subscription = swapOutcomeFacts$.subscribe(({ status }) => outcomes.push(status))
+
+    await watchSwapStatus(HASH)
+    subscription.unsubscribe()
+
+    expect(await getSwapStatus()).toBe("unknown")
+    expect(outcomes).toEqual(["unknown"])
+    expect(mockSleep).not.toHaveBeenCalled()
+  })
+
+  it("stores the final status the swap reached", async () => {
+    await insertExchange("exchanging")
+    providerReports("refunded")
+
+    await watchSwapStatus(HASH)
+
+    expect(await getSwapStatus()).toBe("refunded")
   })
 })
 

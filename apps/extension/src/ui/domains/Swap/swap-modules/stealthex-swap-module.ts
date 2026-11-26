@@ -300,6 +300,20 @@ const getQuote = async (
 
 export type { StealthexExchange }
 
+/** Significant digits a decimal keeps through a double and back to its shortest string */
+const DOUBLE_SAFE_DIGITS = 15
+
+/**
+ * The amount `createExchange` sends: StealthEX takes a JSON number. The input is rounded down to
+ * {@link DOUBLE_SAFE_DIGITS} significant digits, which parse back to the same decimal, at most
+ * the input, so an exchange that echoes it passes the deposit check against the exact input.
+ * The nearest double to a full-precision amount (18 decimals) is above it about half the time.
+ */
+const toSentAmount = (amount: bigint, decimals: number) =>
+  BigNumber(planckToTokens(amount.toString(), decimals) ?? "0")
+    .precision(DOUBLE_SAFE_DIGITS, BigNumber.ROUND_DOWN)
+    .toNumber()
+
 const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<SwapExchange> => {
   try {
     const { fromTokenId, toTokenId, fromAmount, fromAddress, toAddress } = params
@@ -371,11 +385,9 @@ const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<Swa
     const additional_fee_percent = routeHasCustomFee
       ? getAdditionalFeePercent({ fromAsset, toAsset })
       : undefined
-    const fromAmountNum = Number(planckToTokens(fromAmount.toString(), fromAsset.decimals) ?? "0")
-
     const exchange = await stealthexSdk.createExchange({
       route: { from, to },
-      amount: fromAmountNum,
+      amount: toSentAmount(fromAmount, fromAsset.decimals),
       address: formattedToAddress,
       additional_fee_percent,
     })
@@ -390,7 +402,9 @@ const createExchange = async (params: ExchangeParams, env: SwapEnv): Promise<Swa
     )
       throw new Error("Incorrect currencies from provider. Please try again later")
     // `deposit.expected_amount` is the amount we will actually send — `deposit.amount` is what
-    // StealthEX has received so far, which is always 0 before the deposit is made
+    // StealthEX has received so far, which is always 0 before the deposit is made. It is
+    // compared with the exact input, not the number sent: a comparison of doubles cannot see a
+    // difference below ~2^-53 of the amount.
     assertDepositAmountWithinInput({
       depositAmount: exchange.deposit.expected_amount,
       fromAmount,

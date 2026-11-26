@@ -21,7 +21,7 @@ import { uiSwapEnv, withSwapEnv } from "./swapEnv.ui"
 import {
   deserializeAssetRegistry,
   deserializeSafeTokens,
-  getUniswapSafeTokenKey,
+  getUniswapSafeTokenKeys,
   serializeAssetRegistry,
   serializeSafeTokens,
 } from "./swaps.api.serialization"
@@ -168,6 +168,8 @@ export const useSwapAssets = (fromTokenId: string | null) => {
   }
 }
 
+const SAFE_TOKENS_STALE_TIME = 24 * 60 * 60 * 1_000
+
 /**
  * Fetches safe token sets from Uniswap + Talisman remote config.
  */
@@ -177,11 +179,11 @@ export const useSafeTokens = () => {
     queryFn: async () => {
       const fetchTokenSet = (url: string) =>
         fetch(url)
-          .then((r) => r.json())
-          .then(
-            (data: { tokens: { chainId: number; address: string }[] }) =>
-              new Set(data.tokens.map(getUniswapSafeTokenKey))
-          )
+          .then((r) => {
+            if (!r.ok) throw new Error(`Token list request failed: ${r.status}`)
+            return r.json()
+          })
+          .then(getUniswapSafeTokenKeys)
 
       const results = await Promise.allSettled([
         fetchTokenSet("https://tokens.uniswap.org/"),
@@ -210,7 +212,9 @@ export const useSafeTokens = () => {
       return serializeSafeTokens(merged)
     },
     select: deserializeSafeTokens,
-    staleTime: Infinity,
+    // the lists change: a set fetched more than a day ago is served while it is fetched again,
+    // and stays when that fetch fails
+    staleTime: SAFE_TOKENS_STALE_TIME,
     persister: createQueryStoragePersister({ maxAge: PERSIST_AGE_ONE_YEAR }),
   })
 }

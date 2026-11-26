@@ -3,7 +3,7 @@ import { networkIdFromTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { Button } from "@ui/components/Button"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useAccountByAddress } from "@ui/state/accounts"
+import { useAccountByAddress, useAccounts } from "@ui/state/accounts"
 import { useAppState } from "@ui/state/app"
 import { useNetworkById, useToken } from "@ui/state/chaindata"
 import { useFeatureFlag } from "@ui/state/remoteConfig"
@@ -89,12 +89,28 @@ const FinishSwapPrompt: FC<{ swap: UnfinishedSwap }> = ({ swap }) => {
   )
 }
 
+/**
+ * The notes whose funds wait on an account the wallet signs with. The swap of an account
+ * removed since, or only watched, cannot be finished here.
+ */
+const useFinishableSwaps = (swaps: readonly UnfinishedSwap[]): readonly UnfinishedSwap[] => {
+  const ownedAccounts = useAccounts("owned")
+  return useMemo(
+    () =>
+      swaps.filter((swap) =>
+        ownedAccounts.some((account) => isAddressEqual(account.address, swap.fromAddress))
+      ),
+    [ownedAccounts, swaps]
+  )
+}
+
 export const UnfinishedSwapPrompt: FC<{ formFromTokenId: TokenId | null }> = ({
   formFromTokenId,
 }) => {
   const isMultiHopEnabled = useFeatureFlag("SWAPS_MULTI_HOP")
   const [unfinishedSwaps = NO_SWAPS] = useAppState("unfinishedSwaps")
-  const held = useLatestHeldSwap(isMultiHopEnabled ? unfinishedSwaps : NO_SWAPS, formFromTokenId)
+  const finishable = useFinishableSwaps(isMultiHopEnabled ? unfinishedSwaps : NO_SWAPS)
+  const held = useLatestHeldSwap(finishable, formFromTokenId)
 
   return held ? <FinishSwapPrompt swap={held} /> : null
 }

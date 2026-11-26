@@ -815,7 +815,7 @@ const buildRouteTransaction = async (
   const publicClient = await env.findEvmClient(evmNetwork.id)
   if (!publicClient || !evmNetwork.nativeTokenId) throw new Error("Missing public client")
 
-  const transaction = await prepareTransactionRequestWithGasCheck(
+  const prepared = await prepareTransactionRequestWithGasCheck(
     publicClient,
     evmNetwork.nativeTokenId,
     {
@@ -823,10 +823,17 @@ const buildRouteTransaction = async (
       to: txRequest.to as `0x${string}`,
       value: BigInt(txRequest.value),
       data: txRequest.data as `0x${string}`,
-      gasLimit: txRequest.gasLimit,
       account: txRequest.from as `0x${string}`,
     }
   )
+  // viem fills `gas` from eth_estimateGas, which the gas check needs, and has no `gasLimit`
+  // field. LI.FI's limit is padded for routes whose gas depends on pool state, so the
+  // transaction carries the larger of the two.
+  const providerGas = BigInt(txRequest.gasLimit)
+  const transaction = {
+    ...prepared,
+    gas: prepared.gas !== undefined && prepared.gas > providerGas ? prepared.gas : providerGas,
+  }
 
   return { transaction: { platform: "ethereum", transaction }, preparedStep: stepTransaction }
 }

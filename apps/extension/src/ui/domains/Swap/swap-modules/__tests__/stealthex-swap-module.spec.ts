@@ -107,22 +107,59 @@ beforeEach(() => {
   })
 })
 
+const quoteFor = async (fromAmount: bigint) => {
+  const signal = new AbortController().signal
+  await stealthexSwapModule.getFromAssets(signal)
+  const quote = await stealthexSwapModule.getQuote(
+    {
+      fromTokenId: ETH.id,
+      toTokenId: DOT.id,
+      fromAmount,
+      fromAddress: FROM_ADDRESS,
+      toAddress: TO_ADDRESS,
+      input: "exact",
+    },
+    signal
+  )
+  if (!quote || Array.isArray(quote)) throw new Error("expected a single quote")
+  return quote
+}
+
+const confirmFor = async (fromAmount: bigint) =>
+  confirmSwap({
+    module: stealthexSwapModule,
+    quote: await quoteFor(fromAmount),
+    fromTokenId: ETH.id,
+    toTokenId: DOT.id,
+    fromAddress: FROM_ADDRESS,
+    toAddress: TO_ADDRESS,
+    fromAmount,
+    context: { platform: "ethereum" },
+  })
+
+/** answers POST /v4/exchanges with an exchange whose deposit is `expectedAmount(body.amount)` */
+const exchangeEchoing = (expectedAmount: (sent: number) => number) => {
+  const answer = mockPost.getMockImplementation()
+  mockPost.mockImplementation(async (path: string, init?: { body: { amount: number } }) =>
+    path === "/v4/exchanges" && init
+      ? {
+          data: {
+            ...EXCHANGE,
+            deposit: { ...EXCHANGE.deposit, expected_amount: expectedAmount(init.body.amount) },
+          },
+        }
+      : answer?.(path, init)
+  )
+}
+
+const sentAmounts = () =>
+  mockPost.mock.calls
+    .filter(([path]) => path === "/v4/exchanges")
+    .map(([, init]) => (init as { body: { amount: number } }).body.amount)
+
 describe("stealthexSwapModule confirm screen", () => {
   it("creates one exchange and deposits its expected amount", async () => {
-    const signal = new AbortController().signal
-    await stealthexSwapModule.getFromAssets(signal)
-    const quote = await stealthexSwapModule.getQuote(
-      {
-        fromTokenId: ETH.id,
-        toTokenId: DOT.id,
-        fromAmount: ONE_ETH,
-        fromAddress: FROM_ADDRESS,
-        toAddress: TO_ADDRESS,
-        input: "exact",
-      },
-      signal
-    )
-    if (!quote || Array.isArray(quote)) throw new Error("expected a single quote")
+    const quote = await quoteFor(ONE_ETH)
     mockPost.mockClear()
 
     expect(
@@ -161,5 +198,37 @@ describe("stealthexSwapModule confirm screen", () => {
       },
     })
     expect(mockPost.mock.calls.filter(([path]) => path === "/v4/exchanges")).toHaveLength(1)
+  })
+
+  it("deposits the echoed amount, at most the input, for an input with more digits than a double holds", async () => {
+    exchangeEchoing((sent) => sent)
+
+    const confirmed = await confirmFor(123_456_789_012_345_678n)
+
+    // the nearest double, 0.12345678901234568, is above the input; the amount sent keeps 15
+    // significant digits, rounded down
+    expect(sentAmounts()).toEqual([0.123456789012345])
+    expect(confirmed.transaction).toMatchObject({
+      platform: "ethereum",
+      transaction: { to: DEPOSIT_ADDRESS, value: 123_456_789_012_345_000n },
+    })
+  })
+
+  it("refuses a deposit above the exact input that a comparison of doubles would accept", async () => {
+    // 0.123456789012345678 ETH parses to the double 0.12345678901234568, which is above it
+    exchangeEchoing(() => 0.12345678901234568)
+
+    await expect(confirmFor(123_456_789_012_345_678n)).rejects.toThrow(
+      "Quote changed. Please try again."
+    )
+  })
+
+  it("accepts a deposit below the exact input at full precision", async () => {
+    // the double just below 0.123456789012345678
+    exchangeEchoing(() => 0.12345678901234566)
+
+    await expect(confirmFor(123_456_789_012_345_678n)).resolves.toMatchObject({
+      transaction: { transaction: { value: 123_456_789_012_345_660n } },
+    })
   })
 })
