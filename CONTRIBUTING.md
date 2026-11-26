@@ -41,6 +41,10 @@ When submitting a pull request, please follow these guidelines:
 
 All pull requests will be reviewed by one or more maintainers. We aim to respond to all pull requests within one week. If your pull request is rejected, we will provide a clear explanation of why it was rejected.
 
+### Contributor Licence Agreement
+
+Before we can merge your first pull request, you must sign the [Talisman Contributor Licence Agreement](https://cla-assistant.io/TalismanSociety/talisman). If your pull request needs a signature, a bot comments with a link to it: sign in with GitHub and accept. The agreement covers all your contributions, so you sign it once. We ask you to sign again only if we publish a new version. A pull request cannot be merged until its CLA check passes.
+
 ### License
 
 By contributing to the Talisman Wallet, you agree to license your contributions under the [Talisman License](https://github.com/TalismanSociety/talisman/blob/dev/LICENSE). As set out in that license, you grant the Paraverse Foundation a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, copy, modify, distribute, sublicense, and otherwise exploit your contributions under any license terms it may choose.
