@@ -38,17 +38,22 @@ type LifiTransfer =
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null
 
-/** `/status` is a pointer to the receiving transaction, every fact about the delivery is read from the chain */
+/**
+ * `/status` is a pointer to the receiving transaction, every fact about the delivery is read
+ * from the chain. Only FAILED and INVALID end the delivery as failed, the statuses the swap
+ * status watcher treats as final too: any other status, one LI.FI adds later included, is
+ * polled again.
+ */
 const parseLifiTransfer = (body: unknown): LifiTransfer => {
   if (!isRecord(body)) throw new Error("Unexpected LI.FI status response")
   switch (body.status) {
-    case "NOT_FOUND":
-    case "PENDING":
-      return { outcome: "pending" }
     case "DONE":
       break
-    default:
+    case "FAILED":
+    case "INVALID":
       return { outcome: "failed" }
+    default:
+      return { outcome: "pending" }
   }
   if (body.substatus !== "COMPLETED") return { outcome: "failed" }
   const receiving = isRecord(body.receiving) ? body.receiving : null

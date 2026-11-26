@@ -140,6 +140,25 @@ describe("settleLifiLeg", () => {
     expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 
+  it("keeps polling on a status it does not know", async () => {
+    receipts.set(`56:${RECEIVING_HASH}`, receipt([transfer(SKYAI, BOB, ALICE, 880n)]))
+    status({ status: "PARTIALLY_INDEXED" })
+    status(delivered())
+
+    const settled = settle(BRIDGE_LEG)
+    await vi.advanceTimersByTimeAsync(5_000)
+    expect(await settled).toEqual({ landed: true, hash: SOURCE_HASH, amount: 880n })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it.each(["FAILED", "INVALID"])(
+    "is undelivered when LI.FI reports the transfer %s",
+    async (lifiStatus) => {
+      status({ status: lifiStatus })
+      expect(await settle(BRIDGE_LEG)).toEqual(undelivered)
+    }
+  )
+
   it("waits for a second block to confirm the receiving receipt", async () => {
     receipts.set(
       `56:${RECEIVING_HASH}`,
