@@ -7,6 +7,7 @@ export * from "./legacy/EvmNetwork"
 export * from "./legacy/TalismanChaindataDatabase"
 export * from "./provider/ChaindataProvider"
 export * from "./provider/ChaindataProviderInterface"
+export { getSyncedDynamicTokens } from "./provider/dynamicTokens"
 // make sure to export the strict minimum
 // db should definitely not be exported
 export {

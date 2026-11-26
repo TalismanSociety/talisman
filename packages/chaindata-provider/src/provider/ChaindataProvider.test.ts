@@ -7,9 +7,10 @@ import {
   makeEvmNativeToken,
   makeInvalidToken,
   makeLegacyPersistedData,
+  makeSubDTaoToken,
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
-import type { Token } from "../chaindata"
+import { subDTaoTokenId, type Token } from "../chaindata"
 import log from "../log"
 import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import type { Chaindata, CustomChaindata } from "../state/schema"
@@ -312,6 +313,82 @@ describe("ChaindataProvider", () => {
       const dynamicTokens = await firstValueFrom(dynamicTokens$)
       expect(dynamicTokens.some((t) => t.id === "42161-evm-native")).toBe(true)
       expect(dynamicTokens.some((t) => t.id === SOL_SPL_DYNAMIC_ID)).toBe(false)
+    })
+
+    const HOTKEY = "5FFApaS75bv5pJHfAp2FVLBj9ZaXuFDjEypsaBNc1wCfe52v"
+    const POSITION_ID = subDTaoTokenId("polkadot", 24, HOTKEY)
+
+    /** the subnet's token in chaindata */
+    const makeSubnetToken = (subnetName: string, logo?: string) =>
+      makeSubDTaoToken({
+        id: subDTaoTokenId("polkadot", 24),
+        netuid: 24,
+        symbol: "ω",
+        name: `SN24 | ${subnetName}`,
+        subnetName,
+        ...(logo ? { logo } : {}),
+      }) as Token
+
+    /** the per-hotkey copy the dtao balance module registers when it finds a position */
+    const makePosition = (subnetName: string, logo?: string) =>
+      ({ ...makeSubnetToken(subnetName, logo), id: POSITION_ID, hotkey: HOTKEY }) as Token
+
+    const makeProvider = (subnetToken: Token, position: Token) => {
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([position])
+      const writes: Token[][] = []
+      dynamicTokens$.subscribe((tokens) => writes.push(tokens))
+      const provider = new ChaindataProvider({
+        persistedStorage: makeChaindata({ tokens: [...makeChaindata().tokens, subnetToken] }),
+        dynamicTokens$,
+      })
+      // the first entry is the initial list
+      return { provider, writes: () => writes.slice(1) }
+    }
+
+    it("copies a renamed subnet's metadata to its per-hotkey dtao tokens", async () => {
+      const { provider, writes } = makeProvider(
+        makeSubnetToken("ms.computer", "https://example.com/new.svg"),
+        makePosition("Quasar", "https://example.com/old.svg")
+      )
+
+      await provider.syncDynamicTokens()
+
+      expect(writes()).toHaveLength(1)
+      const position = await firstValueFrom(provider.getTokenById$(POSITION_ID, "substrate-dtao"))
+      expect(position).toMatchObject({
+        id: POSITION_ID,
+        hotkey: HOTKEY,
+        name: "SN24 | ms.computer",
+        subnetName: "ms.computer",
+        logo: "https://example.com/new.svg",
+      })
+    })
+
+    it("doesn't write per-hotkey dtao tokens that match their subnet", async () => {
+      const withLogo = makeProvider(
+        makeSubnetToken("ms.computer", "https://example.com/logo.svg"),
+        makePosition("ms.computer", "https://example.com/logo.svg")
+      )
+      // a persisted copy of a logo-less subnet token has no logo key at all
+      const withoutLogo = makeProvider(makeSubnetToken("ms.computer"), makePosition("ms.computer"))
+
+      await withLogo.provider.syncDynamicTokens()
+      await withoutLogo.provider.syncDynamicTokens()
+
+      expect(withLogo.writes()).toEqual([])
+      expect(withoutLogo.writes()).toEqual([])
+    })
+
+    it("keeps a per-hotkey dtao token whose subnet isn't in chaindata", async () => {
+      const otherSubnet = makeSubDTaoToken({ id: subDTaoTokenId("polkadot", 65), netuid: 65 })
+      const { provider, writes } = makeProvider(otherSubnet as Token, makePosition("Quasar"))
+
+      await provider.syncDynamicTokens()
+
+      expect(writes()).toEqual([])
+      const position = await firstValueFrom(provider.getTokenById$(POSITION_ID, "substrate-dtao"))
+      expect(position?.subnetName).toBe("Quasar")
     })
   })
 
