@@ -9,7 +9,14 @@ import {
   TOKEN_PROGRAM_ADDRESS,
 } from "@solana-program/token"
 import type { SolRpc } from "@talismn/chain-connectors"
-import { isEthereumAddress } from "@talismn/crypto"
+import { isAccountPlatformCompatibleWithNetwork, type Network } from "@talismn/chaindata-provider"
+import {
+  type AccountPlatform,
+  encodeAnyAddress,
+  getAccountPlatformFromAddress,
+  isEthereumAddress,
+  isSs58Address,
+} from "@talismn/crypto"
 import { buildUnsignedTransaction, type SolTransaction } from "@talismn/solana"
 import BigNumber from "bignumber.js"
 import { encodeFunctionData, erc20Abi, type TransactionRequest } from "viem"
@@ -217,11 +224,63 @@ export type DepositTransactionParams = {
   context: SwapTransactionContext
 }
 
+const INVALID_DEPOSIT_ADDRESS = "Invalid deposit address from provider. Please try again later"
+
+/**
+ * The deposit address comes from the provider's response, and it is where the user's funds go.
+ * It has to be an address the from token's chain can pay: one of another platform's encoding,
+ * or of no known encoding, is refused. A substrate address must also suit the network's account
+ * type, and an ss58 address comes back re-encoded to the network's own prefix.
+ *
+ * `network` is read for polkadot assets only: their account type and prefix decide which
+ * address fits. EVM and Solana assets are checked from the address alone.
+ */
+export const resolveDepositAddress = (
+  fromAsset: Pick<DepositSwapAsset, "platform">,
+  depositAddress: string,
+  network: Network | undefined
+): string => {
+  let addressPlatform: AccountPlatform
+  try {
+    addressPlatform = getAccountPlatformFromAddress(depositAddress)
+  } catch {
+    throw new Error(INVALID_DEPOSIT_ADDRESS)
+  }
+
+  switch (fromAsset.platform) {
+    case "ethereum":
+      if (addressPlatform !== "ethereum" || !isEthereumAddress(depositAddress))
+        throw new Error(INVALID_DEPOSIT_ADDRESS)
+      return depositAddress
+    case "solana":
+      if (addressPlatform !== "solana") throw new Error(INVALID_DEPOSIT_ADDRESS)
+      return depositAddress
+    case "polkadot": {
+      if (network?.platform !== "polkadot") throw new Error("Network not supported")
+      if (!isAccountPlatformCompatibleWithNetwork(network, addressPlatform))
+        throw new Error(INVALID_DEPOSIT_ADDRESS)
+      // secp256k1 chains take H160 addresses, which have no ss58 form
+      if (!isSs58Address(depositAddress)) return depositAddress
+      return encodeAnyAddress(depositAddress, { ss58Format: network.prefix })
+    }
+    default:
+      throw new Error(INVALID_DEPOSIT_ADDRESS)
+  }
+}
+
 export async function buildDepositTransaction(
   env: DepositTransactionsEnv,
-  params: DepositTransactionParams
+  input: DepositTransactionParams
 ): Promise<SwapModuleTransaction> {
-  const { fromAsset, context } = params
+  const { fromAsset, context } = input
+
+  // checked, and on substrate re-encoded, before any branch puts it into a transfer
+  const network =
+    fromAsset.platform === "polkadot"
+      ? (await env.getNetworksMap("polkadot"))[fromAsset.chainId.toString()]
+      : undefined
+  const depositAddress = resolveDepositAddress(fromAsset, input.deposit.depositAddress, network)
+  const params = { ...input, deposit: { ...input.deposit, depositAddress } }
 
   switch (fromAsset.platform) {
     case "ethereum": {
