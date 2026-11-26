@@ -10,8 +10,9 @@
  * although the answer may already be waiting.
  *
  * A one-second ticker runs while anything is watching. A gap between two ticks longer than
- * `SUSPENSION_GAP_MS` is taken to be a suspension. Timer callbacks call `checkSuspension()`
- * first, because on resume a due timer can run before the ticker does.
+ * `SUSPENSION_GAP_MS` (`HOST_SUSPENSION_GAP_MS` once a host marks suspensions) is taken to be
+ * a suspension. Timer callbacks call `checkSuspension()` first, because on resume a due timer
+ * can run before the ticker does.
  *
  * A page that is hidden can't tell a freeze from timer throttling: browsers run the timers of
  * a hidden tab once a second, and Chrome once a minute after five minutes. Both leave gaps
@@ -23,7 +24,8 @@
  *
  * A runtime can also be cut off while it keeps running: a webview whose network traffic goes
  * through its app's native code stays alive while the app is frozen in the background. Its
- * host marks that time with `setSuspended()`.
+ * host marks that time with `setSuspended()`. An app can mark its own runtime the same way
+ * from the OS's background and foreground events.
  */
 
 const TICK_MS = 1_000
@@ -34,6 +36,15 @@ const TICK_MS = 1_000
  * one.
  */
 const SUSPENSION_GAP_MS = 5_000
+
+/**
+ * A gap between ticks longer than this is a suspension once a host has marked suspensions
+ * (`setSuspended`). The marks cover the freezes the host knows of, and a gap only has to
+ * catch one whose mark arrived too late, such as a webview frozen before its app's message
+ * reached it. A stall of the JS thread under this long (a metadata parse on a slow phone)
+ * then doesn't restart the timeouts.
+ */
+const HOST_SUSPENSION_GAP_MS = 15_000
 
 /**
  * A tick that comes `TICK_MS / 2` to this long after the one before is on time. Browsers
@@ -66,6 +77,10 @@ let hiddenGapMs = 0
 /** a suspension that has ended for the host or the page while the other still holds it */
 let pending: { ms: number; byHost: boolean } | null = null
 let watchingPage = false
+/** whether a host has marked suspensions (`setSuspended`) */
+let hostMarksSuspensions = false
+
+const suspensionGapMs = () => (hostMarksSuspensions ? HOST_SUSPENSION_GAP_MS : SUSPENSION_GAP_MS)
 
 /** The part of `document` used here: runtimes without a DOM have no `document` */
 type PageDocument = {
@@ -75,7 +90,7 @@ type PageDocument = {
 
 const getPage = () => (globalThis as { document?: PageDocument }).document
 
-const isHeld = () => suspendedSince !== null || (pageHidden && hiddenGapMs > SUSPENSION_GAP_MS)
+const isHeld = () => suspendedSince !== null || (pageHidden && hiddenGapMs > suspensionGapMs())
 
 /** Ends the host's or the page's part of a suspension, and resumes once neither holds it */
 const endHold = (now: number, ms: number, byHost: boolean) => {
@@ -88,7 +103,7 @@ const endHold = (now: number, ms: number, byHost: boolean) => {
   const ended = pending
   pending = null
   lastRunAt = now
-  if (ended.byHost || ended.ms > SUSPENSION_GAP_MS) resume(now, ended.ms)
+  if (ended.byHost || ended.ms > suspensionGapMs()) resume(now, ended.ms)
 }
 
 const handleVisibilityChange = () => {
@@ -127,7 +142,7 @@ const tick = () => {
   const sinceLastTick = now - lastTickAt
   lastTickAt = now
   checkSuspension()
-  if (!pageHidden || hiddenGapMs <= SUSPENSION_GAP_MS) return
+  if (!pageHidden || hiddenGapMs <= suspensionGapMs()) return
 
   if (sinceLastTick > ON_TIME_TICK_GAP_MS) onTimeTicks = 0
   else if (sinceLastTick >= TICK_MS / 2) onTimeTicks++
@@ -176,7 +191,7 @@ const followClock = (now: number) => {
 
 /**
  * Records that the JS runtime is running now. When it last ran longer than
- * `SUSPENSION_GAP_MS` ago, it was suspended in between, and the resume listeners run before
+ * `SUSPENSION_GAP_MS` (or `HOST_SUSPENSION_GAP_MS`) ago, it was suspended in between, and the resume listeners run before
  * this returns. When the host or a hidden page holds the suspension, they run once it ends.
  * Cheap enough to call at the start of every timer callback that measures time.
  */
@@ -191,7 +206,7 @@ export const checkSuspension = (): void => {
     hiddenGapMs = Math.max(hiddenGapMs, suspendedMs)
     return
   }
-  if (suspendedSince !== null || suspendedMs <= SUSPENSION_GAP_MS) return
+  if (suspendedSince !== null || suspendedMs <= suspensionGapMs()) return
   resume(now, suspendedMs)
 }
 
@@ -211,11 +226,15 @@ const resume = (now: number, suspendedMs: number) => {
 
 /**
  * Marks the JS runtime suspended (`true`) or running again (`false`), for a host that knows
- * the runtime is cut off although it keeps running. While suspended, `setAwakeTimeout`
- * timeouts don't fire. `setSuspended(false)` is a resume: the timeouts start over, and the
- * resume listeners run with the time since `setSuspended(true)`. When the page is also held
- * suspended (hidden, with a gap between ticks), the resume waits until it is shown or its
- * ticks run on time again.
+ * when the runtime is frozen or cut off (it may keep running). While suspended,
+ * `setAwakeTimeout` timeouts don't fire. `setSuspended(false)` is a resume: the timeouts start
+ * over, and the resume listeners run with the time since `setSuspended(true)`. When the page
+ * is also held suspended (hidden, with a gap between ticks), the resume waits until it is
+ * shown or its ticks run on time again.
+ *
+ * From the first call on, a gap between ticks counts as a suspension only from
+ * `HOST_SUSPENSION_GAP_MS` (15s), so that a stall of the JS thread doesn't restart the
+ * timeouts. A host calls it at startup with the runtime's state, for that to apply from then.
  *
  * The state is global to the module: the mark reaches the code that reads it (such as
  * `ChainConnectorDot`) only when both load the same copy of `@talismn/util`. A second copy in
@@ -223,6 +242,7 @@ const resume = (now: number, suspendedMs: number) => {
  * keeps a state of its own, without an error.
  */
 export const setSuspended = (suspended: boolean): void => {
+  hostMarksSuspensions = true
   if (suspended) {
     // a gap before the mark is a suspension of its own
     checkSuspension()

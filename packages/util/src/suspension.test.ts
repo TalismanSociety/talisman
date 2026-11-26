@@ -248,6 +248,39 @@ describe("suspension", () => {
     })
   })
 
+  describe("once a host marks suspensions", () => {
+    let suspension: typeof import("./suspension")
+    beforeEach(async () => {
+      vi.resetModules()
+      suspension = await import("./suspension")
+      suspension.setSuspended(false)
+    })
+
+    it("counts a stall shorter than 15s as running time", () => {
+      const callback = vi.fn()
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      run(25_000)
+      // the thread was busy for 10s
+      suspend(10_000)
+      expect(listener).not.toHaveBeenCalled()
+      expect(callback).toHaveBeenCalledTimes(1)
+      remove()
+    })
+
+    it("still takes a longer gap for a suspension the host didn't mark", () => {
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+      run(1_000)
+      suspend(20_000)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(20_000)
+      remove()
+    })
+  })
+
   describe("in a page", () => {
     type Suspension = typeof import("./suspension")
     let suspension: Suspension
