@@ -106,6 +106,11 @@ type Connection = {
   uri: string | null
   /** the resume (`getLastResumedAt()`) after which this connection last kept its endpoint */
   keptEndpointAfterResumeAt: number
+  /**
+   * Set while the connector moves the provider off a failing endpoint, until the provider
+   * opens its next socket. The ERROR that the switch causes must not keep the endpoint.
+   */
+  leaving: boolean
   users: Set<SocketUserId>
   subscriptions: Set<Subscription>
   wasConnected: boolean
@@ -204,14 +209,14 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
       if (error?.message === "TIMEOUT") {
         log.error(`ChainConnector timeout`, { chainId, error })
-        connection.provider.switch()
+        this.leaveEndpoint(connection)
         throw new Error("Timeout")
       }
 
       const badRpcError = BAD_RPC_ERRORS[error?.code?.toString() ?? ""]
       if (badRpcError) {
         log.error(`ChainConnector ${badRpcError}`, { error, chainId })
-        connection.provider.switch()
+        this.leaveEndpoint(connection)
         throw new Error(badRpcError)
       }
 
@@ -462,6 +467,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       client,
       uri: null,
       keptEndpointAfterResumeAt: Number.NEGATIVE_INFINITY,
+      leaving: false,
       users: new Set(),
       subscriptions: new Set(),
       wasConnected: false,
@@ -490,12 +496,19 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
   }
 
+  /** Moves the provider to its next endpoint */
+  private leaveEndpoint(connection: Connection) {
+    connection.leaving = true
+    connection.provider.switch()
+  }
+
   /**
    * Keeps the endpoint for a socket that failed while the runtime is marked suspended, or
    * just after a resume. Once per resume: when the endpoint fails again, the provider moves
-   * on as usual.
+   * on as usual. A socket the connector closed to leave its endpoint moves on in any case.
    */
   private keepEndpointAfterResume(connection: Connection) {
+    if (connection.leaving) return
     // the provider's timers can fire before the resume listener: `isSuspended()` and
     // `getLastResumedAt()` detect the resume now
     if (isSuspended()) {
@@ -516,7 +529,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
     // ignore events from a connection that has been reset/destroyed
     if (this.#connections[connection.chainId] !== connection) return
 
-    if (status.type === WsEvent.CONNECTING) connection.uri = status.uri
+    if (status.type === WsEvent.CONNECTING) {
+      connection.uri = status.uri
+      connection.leaving = false
+    }
     // the provider picks the endpoint of its next socket after this handler returns, so a
     // `switch()` made here decides where it reconnects
     if (status.type === WsEvent.ERROR) this.keepEndpointAfterResume(connection)

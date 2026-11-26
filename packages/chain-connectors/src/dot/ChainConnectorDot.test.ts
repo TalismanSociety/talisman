@@ -17,6 +17,8 @@ const sockets = vi.hoisted(() => ({
   providers: [] as MockProvider[],
   /** methods whose requests are never answered */
   unanswered: new Set<string>(),
+  /** methods whose requests fail, with the error code they fail with */
+  failing: new Map<string, number>(),
 }))
 
 vi.mock("@polkadot-api/ws-provider", async (importOriginal) => ({
@@ -46,9 +48,20 @@ vi.mock("@polkadot-api/substrate-client", () => ({
     _request: (
       method: string,
       _params: unknown[],
-      { onSuccess }: { onSuccess: (result: unknown, follow: () => () => void) => void }
+      {
+        onSuccess,
+        onError,
+      }: {
+        onSuccess: (result: unknown, follow: () => () => void) => void
+        onError: (error: Error & { code: number }) => void
+      }
     ) => {
       if (sockets.unanswered.has(method)) return () => {}
+      const code = sockets.failing.get(method)
+      if (code !== undefined) {
+        queueMicrotask(() => onError(Object.assign(new Error("rpc error"), { code })))
+        return () => {}
+      }
       // a subscribe's success also hands over the function that routes its notifications
       queueMicrotask(() => onSuccess("0x01", () => () => {}))
       return () => {}
@@ -174,6 +187,7 @@ describe("ChainConnectorDot after a suspension", () => {
     vi.spyOn(Date, "now").mockImplementation(() => now)
     sockets.providers = []
     sockets.unanswered.clear()
+    sockets.failing.clear()
     Connector = (await import("./ChainConnectorDot")).ChainConnectorDot
   })
   afterEach(() => {
@@ -247,6 +261,46 @@ describe("ChainConnectorDot after a suspension", () => {
     setSuspended(false)
     // after 15s or more, the resume reconnects once more, to the same endpoint
     expect(provider.switches).toEqual(["wss://b.example", "wss://b.example", "wss://b.example"])
+  })
+
+  it("leaves an endpoint that rate-limits it while the host marks a suspension", async () => {
+    const { setSuspended } = await import("@talismn/util")
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    setSuspended(true)
+    sockets.failing.set("state_call", -32097)
+    await expect(connector.send("bittensor", "state_call", [])).rejects.toThrow(
+      "Rate limit exceeded"
+    )
+    expect(provider.switches).toEqual([undefined])
+
+    // the switch closes the socket, and the provider moves to the next endpoint
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual([undefined])
+
+    // a socket to the next endpoint that fails is held on to again
+    provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://a.example" })
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual([undefined, "wss://a.example"])
+  })
+
+  it("leaves an endpoint that rate-limits it just after a resume", async () => {
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    await run(2_000)
+    await suspend(8_000)
+    sockets.failing.set("state_call", -32097)
+    await expect(connector.send("bittensor", "state_call", [])).rejects.toThrow(
+      "Rate limit exceeded"
+    )
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual([undefined])
   })
 
   it("doesn't time a request out across a suspension", async () => {
