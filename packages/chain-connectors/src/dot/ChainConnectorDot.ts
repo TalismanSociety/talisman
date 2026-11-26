@@ -19,7 +19,7 @@ const BAD_RPC_ERRORS: Record<string, string> = {
 }
 
 /**
- * Max wait for an rpc response, including connection time. Like the other timeouts here it
+ * Max wait for an rpc response, including connection time. Like the stale-chain warnings, it
  * counts only the time the JS runtime is running (`setAwakeTimeout`): a timeout that came due
  * while the app was in the background says nothing about the endpoint.
  */

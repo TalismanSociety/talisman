@@ -182,8 +182,8 @@ export const checkSuspension = (): void => {
   followClock(now)
   const suspendedMs = ticker ? now - lastRunAt : 0
   lastRunAt = now
-  // a hidden page resumes when it is shown, and a runtime the host holds suspended on
-  // `setSuspended(false)`
+  // a hidden page resumes when it is shown or its ticks run on time again (`tick`), and a
+  // runtime the host holds suspended on `setSuspended(false)`
   if (pageHidden) {
     hiddenGapMs = Math.max(hiddenGapMs, suspendedMs)
     return
@@ -211,7 +211,8 @@ const resume = (now: number, suspendedMs: number) => {
  * the runtime is cut off although it keeps running. While suspended, `setAwakeTimeout`
  * timeouts don't fire. `setSuspended(false)` is a resume: the timeouts start over, and the
  * resume listeners run with the time since `setSuspended(true)`. When the page is also held
- * suspended (hidden, with a gap between ticks), the resume waits until it is shown.
+ * suspended (hidden, with a gap between ticks), the resume waits until it is shown or its
+ * ticks run on time again.
  */
 export const setSuspended = (suspended: boolean): void => {
   if (suspended) {

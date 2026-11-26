@@ -91,8 +91,9 @@ export const fetchBalancesAt = async (
     // arrive — mixing blocks reports state that never existed
     const blockHash = at ?? (await fetchBestBlockHash(connector, networkId))
 
-    // the reads that don't depend on each other go out together, so a poll takes two round
-    // trips (one while the coldkeys have no conviction lock and no root stake hold is running)
+    // the reads that don't depend on each other go out together. The root stake hold read
+    // below needs the stake infos, and goes out only for coldkeys with root stake on a chain
+    // whose unlock interval is not 0
     const [stakeInfos, convictionLocks, basketClaims] = await Promise.all([
       fetchRuntimeCallResult<GetStakeInfosResult>(
         connector,
