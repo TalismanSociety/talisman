@@ -63,6 +63,7 @@ const { simpleswapSwapModule: simpleswapPageModule } = await import("../simplesw
 const { uiSwapEnv, withSwapEnv } = await import("../../swapEnv.ui")
 const simpleswapSwapModule = withSwapEnv(simpleswapPageModule, uiSwapEnv)
 const { confirmSwap } = await import("./confirmSwap")
+const { getExtensionPublicClient } = await import("@ui/domains/Ethereum/usePublicClient")
 
 const FROM_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 const TO_ADDRESS = "5GW7UHZ9tLocJUaMXFWkr48QHgVoq5tVR1az62mknFacM3cu"
@@ -134,6 +135,21 @@ const quoteEthToDot = async (toAddress = TO_ADDRESS) => {
 
 const createExchangeRequests = () =>
   mockFetch.mock.calls.filter(([url]) => new URL(url).pathname === "/create_exchange")
+
+describe("simpleswapSwapModule quote", () => {
+  it("keeps the quote, without a gas fee, when the deposit gas estimate fails", async () => {
+    vi.mocked(getExtensionPublicClient).mockReturnValueOnce({
+      getGasPrice: async () => 10_000_000_000n,
+      estimateGas: async () => {
+        throw new Error("execution reverted")
+      },
+    } as unknown as ReturnType<typeof getExtensionPublicClient>)
+
+    const quote = await quoteEthToDot()
+
+    expect(quote.fees.map((fee) => fee.name)).toEqual(["Talisman Fee"])
+  })
+})
 
 describe("simpleswapSwapModule confirm screen", () => {
   it("creates one exchange and deposits its expected amount", async () => {

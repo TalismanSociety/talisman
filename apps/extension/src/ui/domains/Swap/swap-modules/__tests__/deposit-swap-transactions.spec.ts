@@ -9,6 +9,7 @@ import {
   type DepositSwapAsset,
   type DepositTransactionParams,
   type DepositTransactionsEnv,
+  estimateDepositGas,
   resolveDepositAddress,
 } from "../deposit-swap-transactions"
 
@@ -179,5 +180,61 @@ describe("resolveDepositAddress", () => {
     expect(() => resolveDepositAddress({ platform: "ethereum" }, "0x1234", undefined)).toThrow(
       "Invalid deposit address from provider"
     )
+  })
+})
+
+describe("estimateDepositGas (ethereum)", () => {
+  const envWith = (client: Partial<PublicClient>) =>
+    ({
+      getNetworksMap: async () => ({
+        "1": { id: "1", platform: "ethereum", nativeTokenId: "1:evm-native" },
+      }),
+      getToken: async () => ({ id: "1:evm-native", decimals: 18 }),
+      findEvmClient: async () => client as PublicClient,
+    }) as unknown as DepositTransactionsEnv
+
+  it("prices a transfer at the node's gas price", async () => {
+    const fee = await estimateDepositGas(
+      envWith({ getGasPrice: async () => 10_000_000_000n, estimateGas: async () => 21_000n }),
+      ETH,
+      EVM_FROM
+    )
+
+    expect(fee && { ...fee, amount: fee.amount.toString() }).toEqual({
+      name: "Est. Gas Fees",
+      gas: true,
+      tokenId: "1:evm-native",
+      amount: "0.00021",
+    })
+  })
+
+  it("has no fee when the node cannot estimate the transfer", async () => {
+    const fee = await estimateDepositGas(
+      envWith({
+        getGasPrice: async () => 10_000_000_000n,
+        estimateGas: async () => {
+          throw new Error("execution reverted")
+        },
+      }),
+      USDT,
+      EVM_FROM
+    )
+
+    expect(fee).toBeNull()
+  })
+
+  it("has no fee when the gas price cannot be read", async () => {
+    const fee = await estimateDepositGas(
+      envWith({
+        getGasPrice: async () => {
+          throw new Error("rate limited")
+        },
+        estimateGas: async () => 21_000n,
+      }),
+      ETH,
+      EVM_FROM
+    )
+
+    expect(fee).toBeNull()
   })
 })

@@ -77,18 +77,28 @@ export async function estimateDepositGas(
     if (network && nativeToken) {
       const client = await env.findEvmClient(network.id)
       if (!client) return null
-      const gasPrice = await client.getGasPrice()
-      // the to address and amount dont matter, we just need to place any address here for the estimation
-      const gasLimit = await client.estimateGas({
-        account: fromAddress as `0x${string}`,
-        data,
-        to: fromAsset.contractAddress ? (fromAsset.contractAddress as `0x${string}`) : fromAddress,
-        value: 0n,
-      })
-      const amount = BigNumber(gasPrice.toString())
-        .times(gasLimit.toString())
-        .times(10 ** -(nativeToken.decimals ?? 0))
-      return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
+      // The estimate only adds a fee row to the quote: a failed RPC call or a token that refuses
+      // the zero transfer leaves the row out, not the quote. The deposit itself is estimated and
+      // checked for gas again when it is built.
+      try {
+        const gasPrice = await client.getGasPrice()
+        // the to address and amount dont matter, we just need to place any address here for the estimation
+        const gasLimit = await client.estimateGas({
+          account: fromAddress as `0x${string}`,
+          data,
+          to: fromAsset.contractAddress
+            ? (fromAsset.contractAddress as `0x${string}`)
+            : fromAddress,
+          value: 0n,
+        })
+        const amount = BigNumber(gasPrice.toString())
+          .times(gasLimit.toString())
+          .times(10 ** -(nativeToken.decimals ?? 0))
+        return { name: "Est. Gas Fees", gas: true, tokenId: nativeToken.id, amount }
+      } catch (cause) {
+        log.warn("Failed to estimate the deposit gas", { cause })
+        return null
+      }
     }
 
     return null
