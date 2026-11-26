@@ -216,6 +216,11 @@ const resume = (now: number, suspendedMs: number) => {
  * resume listeners run with the time since `setSuspended(true)`. When the page is also held
  * suspended (hidden, with a gap between ticks), the resume waits until it is shown or its
  * ticks run on time again.
+ *
+ * The state is global to the module: the mark reaches the code that reads it (such as
+ * `ChainConnectorDot`) only when both load the same copy of `@talismn/util`. A second copy in
+ * the bundle, from mismatched `@talismn/*` versions or from CJS and ESM builds side by side,
+ * keeps a state of its own, without an error.
  */
 export const setSuspended = (suspended: boolean): void => {
   if (suspended) {
