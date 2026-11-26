@@ -286,11 +286,13 @@ export class ChainConnectorDot implements IChainConnectorDot {
     connection.subscriptions.add(subscription)
 
     // if the chain can't be reached at all, let the caller know after a while (the provider keeps retrying)
+    let clearStaleWarning: (() => void) | null = null
     if (timeout && !connection.wasConnected) {
       const clear = setAwakeTimeout(() => {
         if (!subscription.unsubscribed && !connection.wasConnected)
           callback(new StaleRpcError(chainId), null)
       }, timeout)
+      clearStaleWarning = clear
       // piggyback on the follow setup to clear the warning once anything happens
       const originalCallback = subscription.callback
       subscription.callback = (error, result) => {
@@ -306,6 +308,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       if (subscription.unsubscribed) return
       subscription.unsubscribed = true
 
+      clearStaleWarning?.()
       subscription.cancelRequest?.()
       subscription.stopFollow?.()
 

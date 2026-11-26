@@ -303,6 +303,26 @@ describe("ChainConnectorDot after a suspension", () => {
     expect(provider.switches).toEqual([undefined])
   })
 
+  it("cancels a subscription's stale warning when it unsubscribes", async () => {
+    const { setSuspended } = await import("@talismn/util")
+    const connector = new Connector(chaindata)
+    // held suspended, the warning would wait for a resume that never comes
+    setSuspended(true)
+    const unsubscribe = await connector.subscribe(
+      "bittensor",
+      "state_subscribeStorage",
+      "state_storage",
+      [[]],
+      () => {},
+      30_000
+    )
+    unsubscribe("state_unsubscribeStorage")
+
+    // the socket closes once idle, and no timer is left behind
+    await run(31_000)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it("doesn't time a request out across a suspension", async () => {
     const connector = new Connector(chaindata)
     await subscribe(connector)
