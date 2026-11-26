@@ -209,6 +209,20 @@ describe("ChainConnectorDot after a suspension", () => {
     await run(2_000)
     await suspend(90_000)
     expect(provider.switches).toEqual(["wss://b.example"])
+
+    // the reconnect closes the old socket
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example"])
+
+    // the network isn't back yet: the new socket fails, and the endpoint is kept once more
+    provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://b.example" })
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example", "wss://b.example"])
+
+    // when it fails again, the provider moves on as usual
+    provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://b.example" })
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example", "wss://b.example"])
   })
 
   it("keeps the endpoint when the socket fails just after a short suspension", async () => {

@@ -47,12 +47,13 @@ const STALE_NOTIFY_TIMEOUT = 30_000 // how long a chain can be disconnected befo
 const RECONNECT_AFTER_SUSPENSION_MS = 15_000
 
 /**
- * A socket that fails within this long after a resume reconnects to the same endpoint. On
- * resume the provider's own timers (the connection timeout, the 40s heartbeat) fire at once
- * and drop the socket, and the provider would move to the next endpoint although the current
- * one is fine. While the runtime is held suspended (`isSuspended`), every failing socket
- * reconnects to the same endpoint: the host has marked it suspended, or it is a hidden page
- * whose timers have stopped or slowed down.
+ * A socket that fails within this long after a resume reconnects to the same endpoint, once
+ * per resume. On resume the provider's own timers (the connection timeout, the 40s heartbeat)
+ * fire at once and drop the socket, or the first new socket fails because the network isn't
+ * back yet. The provider would move to the next endpoint although the current one is fine.
+ * The reconnect after a long suspension doesn't count as that once. While the runtime is held
+ * suspended (`isSuspended`), every failing socket reconnects to the same endpoint: the host
+ * has marked it suspended, or it is a hidden page whose timers have stopped or slowed down.
  */
 const RESUME_GRACE_MS = 10_000
 
@@ -107,10 +108,11 @@ type Connection = {
   /** the resume (`getLastResumedAt()`) after which this connection last kept its endpoint */
   keptEndpointAfterResumeAt: number
   /**
-   * Set while the connector moves the provider off a failing endpoint, until the provider
-   * opens its next socket. The ERROR that the switch causes must not keep the endpoint.
+   * Set while the connector switches the provider itself (off a failing endpoint, or to a new
+   * socket after a long suspension), until the provider opens its next socket. The ERROR that
+   * the switch causes is not a failure of the endpoint.
    */
-  leaving: boolean
+  switching: boolean
   users: Set<SocketUserId>
   subscriptions: Set<Subscription>
   wasConnected: boolean
@@ -470,7 +472,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       client,
       uri: null,
       keptEndpointAfterResumeAt: Number.NEGATIVE_INFINITY,
-      leaving: false,
+      switching: false,
       users: new Set(),
       subscriptions: new Set(),
       wasConnected: false,
@@ -488,30 +490,29 @@ export class ChainConnectorDot implements IChainConnectorDot {
   private handleResume(suspendedMs: number) {
     if (suspendedMs < RECONNECT_AFTER_SUSPENSION_MS) return
 
-    const resumedAt = getLastResumedAt()
     for (const connection of Object.values(this.#connections)) {
       if (!connection.uri) continue
       log.debug(
         `ChainConnector reconnecting ${connection.chainId} to ${connection.uri} after a ${Math.round(suspendedMs / 1000)}s suspension`
       )
-      connection.keptEndpointAfterResumeAt = resumedAt
+      connection.switching = true
       connection.provider.switch(connection.uri)
     }
   }
 
   /** Moves the provider to its next endpoint */
   private leaveEndpoint(connection: Connection) {
-    connection.leaving = true
+    connection.switching = true
     connection.provider.switch()
   }
 
   /**
    * Keeps the endpoint for a socket that failed while the runtime is marked suspended, or
    * just after a resume. Once per resume: when the endpoint fails again, the provider moves
-   * on as usual. A socket the connector closed to leave its endpoint moves on in any case.
+   * on as usual. A socket the connector closed itself goes where the connector sent it.
    */
   private keepEndpointAfterResume(connection: Connection) {
-    if (connection.leaving) return
+    if (connection.switching) return
     // the provider's timers can fire before the resume listener: `isSuspended()` and
     // `getLastResumedAt()` detect the resume now
     if (isSuspended()) {
@@ -534,7 +535,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     if (status.type === WsEvent.CONNECTING) {
       connection.uri = status.uri
-      connection.leaving = false
+      connection.switching = false
     }
     // the provider picks the endpoint of its next socket after this handler returns, so a
     // `switch()` made here decides where it reconnects
