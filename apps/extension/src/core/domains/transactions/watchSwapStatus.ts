@@ -25,6 +25,11 @@ const MAX_RETRIES = 10
 const RETRY_DELAY_MS = 5_000
 const NOT_FOUND_GRACE_PERIOD_MS = 10 * 60 * 1_000 // 10 minutes
 const UNKNOWN_MAX_AGE_MS = 60 * 60 * 1_000 // 1 hour
+/**
+ * A swap is not watched past this age, whatever its status: a provider that holds a swap in
+ * progress for good would otherwise be polled for good, and again after every restart.
+ */
+const SWAP_WATCH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000 // 7 days
 
 const swapStatusEnv: SwapStatusEnv = {
   fetch: (...args) => fetch(...args),
@@ -86,6 +91,13 @@ async function pollSwapStatus(tx: WalletTransaction, txInfo: WalletTransactionIn
     await updateSwapStatus(txId, status)
 
     if (isFinalSwapStatus(tx, status)) return publishOutcome(tx, status)
+
+    // the last check of a swap past the age it is watched for: what it has not reached by now is
+    // stored as unknown, so the activity list stops showing it in progress
+    if (Date.now() - tx.timestamp >= SWAP_WATCH_MAX_AGE_MS) {
+      await updateSwapStatus(txId, "unknown")
+      return publishOutcome(tx, "unknown")
+    }
 
     // Allow a grace period for not_found — the tx may still be in the mempool
     if (status === "not_found") {
