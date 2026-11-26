@@ -20,7 +20,6 @@ type PrepareRequest = {
   data?: `0x${string}`
   value?: bigint
   chain: null
-  gasLimit?: string
   gas?: bigint
   maxFeePerGas?: bigint
   maxPriorityFeePerGas?: bigint
