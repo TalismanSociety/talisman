@@ -67,6 +67,19 @@ describe("suspension", () => {
       expect(callback).toHaveBeenCalledTimes(1)
     })
 
+    it("fires on time when the clock moves back", () => {
+      const callback = vi.fn()
+      setAwakeTimeout(callback, 30_000)
+
+      run(10_000)
+      now -= 60 * 60_000
+      // the move back is seen from the last tick, so up to a tick of running time is lost
+      run(19_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(1_200)
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
     it("doesn't fire once cancelled", () => {
       const callback = vi.fn()
       const cancel = setAwakeTimeout(callback, 30_000)
@@ -179,6 +192,26 @@ describe("suspension", () => {
       // nothing to resume from
       setSuspended(false)
       expect(listener).toHaveBeenCalledTimes(1)
+      remove()
+    })
+
+    it("keeps counting the marked time when the clock moves back", () => {
+      const listener = vi.fn()
+      const remove = onResume(listener)
+
+      setSuspended(true)
+      run(20_000)
+      now -= 60 * 60_000
+      setSuspended(false)
+      // up to a tick of the marked time can be lost: the move back is seen from the last tick
+      expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(19_000)
+      expect(listener.mock.calls[0]?.[0]).toBeLessThanOrEqual(20_000)
+      expect(getLastResumedAt()).toBe(now)
+
+      run(2_000)
+      now -= 60 * 60_000
+      expect(Date.now() - getLastResumedAt()).toBeGreaterThanOrEqual(1_000)
+      expect(Date.now() - getLastResumedAt()).toBeLessThanOrEqual(2_000)
       remove()
     })
 

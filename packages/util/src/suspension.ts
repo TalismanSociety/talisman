@@ -54,6 +54,8 @@ let lastRunAt = 0
 let lastTickAt = 0
 /** on-time ticks in a row since a hidden page's suspension started */
 let onTimeTicks = 0
+/** how far the clock has moved back in all, for the timeouts to shift their start by */
+let clockMovedBackMs = 0
 let lastResumedAt = Number.NEGATIVE_INFINITY
 /** when the host marked the runtime suspended (`setSuspended(true)`), or null */
 let suspendedSince: number | null = null
@@ -156,6 +158,20 @@ const release = () => {
 }
 
 /**
+ * Shifts the times kept here when the clock has moved back since the runtime last ran, so that
+ * time since a resume, or since the host marked a suspension, keeps counting from where it was
+ */
+const followClock = (now: number) => {
+  if (now >= lastRunAt) return
+  const movedBackMs = lastRunAt - now
+  clockMovedBackMs += movedBackMs
+  lastRunAt = now
+  lastTickAt -= movedBackMs
+  lastResumedAt -= movedBackMs
+  if (suspendedSince !== null) suspendedSince -= movedBackMs
+}
+
+/**
  * Records that the JS runtime is running now. When it last ran longer than
  * `SUSPENSION_GAP_MS` ago, it was suspended in between, and the resume listeners run before
  * this returns. When the host or a hidden page holds the suspension, they run once it ends.
@@ -163,6 +179,7 @@ const release = () => {
  */
 export const checkSuspension = (): void => {
   const now = Date.now()
+  followClock(now)
   const suspendedMs = ticker ? now - lastRunAt : 0
   lastRunAt = now
   // a hidden page resumes when it is shown, and a runtime the host holds suspended on
@@ -204,6 +221,7 @@ export const setSuspended = (suspended: boolean): void => {
   if (suspendedSince === null) return
 
   const now = Date.now()
+  followClock(now)
   const suspendedMs = now - suspendedSince
   suspendedSince = null
   endHold(now, suspendedMs, true)
@@ -252,7 +270,8 @@ export const onResume = (listener: ResumeListener): (() => void) => {
  */
 export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) => {
   hold()
-  const startedAt = Date.now()
+  let startedAt = Date.now()
+  let clockMovedBackAtStartMs = clockMovedBackMs
   let token: ReturnType<typeof setTimeout> | null = null
   let done = false
 
@@ -270,8 +289,12 @@ export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) 
       token = setTimeout(fire, ms)
       return
     }
+    // the clock may have moved back since the timeout started
+    startedAt -= clockMovedBackMs - clockMovedBackAtStartMs
+    clockMovedBackAtStartMs = clockMovedBackMs
     const countedFrom = Math.max(startedAt, lastResumedAt)
-    const remaining = ms - (Date.now() - countedFrom)
+    // a move back too small to be seen (`followClock`) never makes the wait longer than `ms`
+    const remaining = Math.min(ms, ms - (Date.now() - countedFrom))
     if (remaining > 0) {
       token = setTimeout(fire, remaining)
       return
