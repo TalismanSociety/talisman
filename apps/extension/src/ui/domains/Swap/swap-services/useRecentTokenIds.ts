@@ -11,6 +11,7 @@ const getTokenIdsFromTxInfo = (txInfo: WalletTransactionInfo): string[] => {
     case "swap-simpleswap":
     case "swap-stealthex":
     case "swap-lifi":
+    case "swap-chainflip":
     case "swap-bittensor-evm":
     case "swap-forevermoney":
     case "swap-bittensor-dtao":

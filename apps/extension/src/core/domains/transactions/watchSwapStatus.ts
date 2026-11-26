@@ -6,6 +6,7 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { fetchForevermoneyStatus, isForevermoneyStatusFinal } from "../forevermoney/deliveryStatus"
 import { gandalfFetch } from "../gandalf/fetch"
 import {
+  fetchChainflipStatus,
   fetchLifiStatus,
   fetchSimpleswapStatus,
   fetchStealthexStatus,
@@ -129,6 +130,8 @@ async function fetchSwapStatus(txId: string, txInfo: WalletTransactionInfo): Pro
       return fetchStealthexStatus(txInfo.exchangeId, swapStatusEnv)
     case "swap-lifi":
       return fetchLifiStatus(txId, txInfo, swapStatusEnv)
+    case "swap-chainflip":
+      return fetchChainflipStatus(txInfo.exchangeId, swapStatusEnv)
     case "swap-bittensor-evm":
       return fetchBittensorEvmStatus(txId)
     case "swap-forevermoney":

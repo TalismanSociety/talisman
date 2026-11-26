@@ -38,6 +38,7 @@ export type SupportedSwapProtocol =
   | "bittensor-evm"
   | "bittensor-dtao"
   | "forevermoney"
+  | "chainflip"
 
 export type QuoteFee = {
   name: string
