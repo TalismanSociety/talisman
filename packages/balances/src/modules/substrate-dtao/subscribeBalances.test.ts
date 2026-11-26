@@ -1,6 +1,7 @@
 import { firstValueFrom } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import log from "../../log"
 import type { TokensWithAddresses } from "../../types/IBalanceModule"
 import { fetchBestBlockHash } from "../shared"
 import { fetchBalancesAt } from "./fetchBalances"
@@ -63,6 +64,22 @@ describe("substrate-dtao subscribeBalances", () => {
         { tokenId: "token-2", address: "address-3", error: fetchError },
       ],
     })
+  })
+
+  it("leaves a failed read of the best block to the fetch, which reports it", async () => {
+    vi.mocked(log.error).mockClear()
+    const failed = {
+      success: [],
+      errors: [{ tokenId: "token-1", address: "address-1", error: new Error("failed") }],
+    }
+    vi.mocked(fetchBestBlockHash).mockRejectedValueOnce(new Error("rpc failed"))
+    vi.mocked(fetchBalancesAt).mockResolvedValueOnce(failed)
+
+    const result = await firstValueFrom(subscribe([[makeToken("token-1"), ["address-1"]]]))
+
+    expect(result).toEqual(failed)
+    expect(vi.mocked(fetchBalancesAt).mock.calls[0]?.[1]).toBeUndefined()
+    expect(log.error).not.toHaveBeenCalled()
   })
 
   describe("polling", () => {

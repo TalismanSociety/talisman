@@ -37,10 +37,12 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
       try {
         if (abortController.signal.aborted) return
 
-        // chain state only changes from one block to the next
-        const blockHash = await fetchBestBlockHash(connector, networkId)
+        // chain state only changes from one block to the next. When the best block can't be
+        // read, `fetchBalancesAt` reads it again and reports a failure as it reports any other:
+        // a warning, and an error for each balance
+        const blockHash = await fetchBestBlockHash(connector, networkId).catch(() => undefined)
         if (abortController.signal.aborted) return
-        if (blockHash === lastGoodBlockHash) {
+        if (blockHash && blockHash === lastGoodBlockHash) {
           setTimeout(poll, SUBSCRIPTION_INTERVAL)
           return
         }
@@ -57,7 +59,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         )
 
         if (abortController.signal.aborted) return
-        lastGoodBlockHash = balances.errors.length ? null : blockHash
+        lastGoodBlockHash = balances.errors.length ? null : (blockHash ?? null)
 
         // poll-completion marker: fires even when the dedup gate below suppresses the
         // emission, so stall watchdogs can attribute the poll's fetch/decode compute
