@@ -16,8 +16,10 @@
  * A page that is hidden can't tell a freeze from timer throttling: browsers run the timers of
  * a hidden tab once a second, and Chrome once a minute after five minutes. Both leave gaps
  * between ticks while socket messages keep arriving. In a hidden page, the first gap starts a
- * suspension that lasts until the page is shown again. Taking each gap for a resume would
- * restart every timeout once a minute, so that none ever fires.
+ * suspension that lasts until the page is shown again, or until its ticks run on time again
+ * (a frozen page that resumes while hidden, or an extension's background page, which is never
+ * shown). Taking each gap for a resume would restart every timeout once a minute, so that
+ * none ever fires.
  *
  * A runtime can also be cut off while it keeps running: a webview whose network traffic goes
  * through its app's native code stays alive while the app is frozen in the background. Its
@@ -33,12 +35,25 @@ const TICK_MS = 1_000
  */
 const SUSPENSION_GAP_MS = 5_000
 
+/**
+ * A tick that comes `TICK_MS / 2` to this long after the one before is on time. Browsers
+ * align a hidden page's timers to whole seconds, so its ticks can be up to two seconds apart.
+ */
+const ON_TIME_TICK_GAP_MS = 3_000
+
+/** On-time ticks in a row that end a hidden page's suspension */
+const ON_TIME_TICKS_TO_RESUME = 5
+
 type ResumeListener = (suspendedMs: number) => void
 
 const listeners = new Set<ResumeListener>()
 let holds = 0
 let ticker: ReturnType<typeof setInterval> | null = null
 let lastRunAt = 0
+/** when the ticker last ran */
+let lastTickAt = 0
+/** on-time ticks in a row since a hidden page's suspension started */
+let onTimeTicks = 0
 let lastResumedAt = Number.NEGATIVE_INFINITY
 /** when the host marked the runtime suspended (`setSuspended(true)`), or null */
 let suspendedSince: number | null = null
@@ -83,14 +98,37 @@ const handleVisibilityChange = () => {
     checkSuspension()
     pageHidden = true
     hiddenGapMs = 0
+    onTimeTicks = 0
     return
   }
 
   const now = Date.now()
   const ms = Math.max(hiddenGapMs, ticker ? now - lastRunAt : 0)
   pageHidden = false
+  endPageHold(now, ms)
+}
+
+const endPageHold = (now: number, ms: number) => {
   hiddenGapMs = 0
+  onTimeTicks = 0
   endHold(now, ms, false)
+}
+
+/**
+ * Ends a hidden page's suspension once its ticks have run on time for a while: its timers run
+ * at their normal pace again. A tick that runs right after another (the timers that came due
+ * during a freeze, run together) counts neither way.
+ */
+const tick = () => {
+  const now = Date.now()
+  const sinceLastTick = now - lastTickAt
+  lastTickAt = now
+  checkSuspension()
+  if (!pageHidden || hiddenGapMs <= SUSPENSION_GAP_MS) return
+
+  if (sinceLastTick > ON_TIME_TICK_GAP_MS) onTimeTicks = 0
+  else if (sinceLastTick >= TICK_MS / 2) onTimeTicks++
+  if (onTimeTicks >= ON_TIME_TICKS_TO_RESUME) endPageHold(now, hiddenGapMs)
 }
 
 const watchPage = () => {
@@ -106,7 +144,8 @@ const hold = () => {
   if (ticker) return
   watchPage()
   lastRunAt = Date.now()
-  ticker = setInterval(checkSuspension, TICK_MS)
+  lastTickAt = lastRunAt
+  ticker = setInterval(tick, TICK_MS)
 }
 
 const release = () => {
@@ -118,8 +157,9 @@ const release = () => {
 
 /**
  * Records that the JS runtime is running now. When it last ran longer than
- * `SUSPENSION_GAP_MS` ago, it was suspended in between: the resume listeners run before this
- * returns. Cheap enough to call at the start of every timer callback that measures time.
+ * `SUSPENSION_GAP_MS` ago, it was suspended in between, and the resume listeners run before
+ * this returns. When the host or a hidden page holds the suspension, they run once it ends.
+ * Cheap enough to call at the start of every timer callback that measures time.
  */
 export const checkSuspension = (): void => {
   const now = Date.now()
@@ -180,8 +220,9 @@ export const isSuspended = (): boolean => {
 
 /**
  * When the JS runtime last resumed from a suspension (`Date.now()` time), or -Infinity when
- * no suspension has been seen. Suspensions are only seen while something is watching: an
- * `onResume` listener or a pending `setAwakeTimeout`.
+ * no suspension has been seen. A freeze is only seen while something is watching (an
+ * `onResume` listener or a pending `setAwakeTimeout`); the end of a suspension the host
+ * marked (`setSuspended(false)`) is a resume in any case.
  */
 export const getLastResumedAt = (): number => {
   checkSuspension()

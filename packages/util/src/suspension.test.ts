@@ -279,6 +279,37 @@ describe("suspension", () => {
       remove()
     })
 
+    it("resumes a hidden page once its timers run on time again after a freeze", () => {
+      // hidden from the start and never shown, like an extension's background page
+      setVisible(false)
+      const callback = vi.fn()
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      run(5_000)
+      suspend(90_000)
+      expect(suspension.isSuspended()).toBe(true)
+
+      run(4_000)
+      expect(listener).not.toHaveBeenCalled()
+      run(1_000)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(89_000)
+      expect(suspension.isSuspended()).toBe(false)
+
+      // the timeout starts over from the resume
+      run(29_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(200)
+      expect(callback).toHaveBeenCalledTimes(1)
+
+      // a later gap starts another suspension
+      suspend(60_000)
+      expect(suspension.isSuspended()).toBe(true)
+      remove()
+    })
+
     it("doesn't report a resume when a hidden page's timers kept running", () => {
       const listener = vi.fn()
       const remove = suspension.onResume(listener)
