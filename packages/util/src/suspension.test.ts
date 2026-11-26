@@ -80,6 +80,22 @@ describe("suspension", () => {
       expect(callback).toHaveBeenCalledTimes(1)
     })
 
+    it("fires on time when the clock moved back while nothing was watching", () => {
+      const remove = onResume(() => {})
+      run(1_000)
+      suspend(60_000)
+      // the ticker stops
+      remove()
+
+      now -= 60 * 60_000
+      const callback = vi.fn()
+      setAwakeTimeout(callback, 30_000)
+      run(29_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(200)
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
     it("doesn't fire once cancelled", () => {
       const callback = vi.fn()
       const cancel = setAwakeTimeout(callback, 30_000)
@@ -340,6 +356,24 @@ describe("suspension", () => {
       // a later gap starts another suspension
       suspend(60_000)
       expect(suspension.isSuspended()).toBe(true)
+      remove()
+    })
+
+    it("follows a clock moved back while a page was hidden", () => {
+      const remove = suspension.onResume(() => {})
+      run(1_000)
+      suspend(60_000)
+      setVisible(false)
+      run(2_000)
+      now -= 60 * 60_000
+      setVisible(true)
+
+      const callback = vi.fn()
+      suspension.setAwakeTimeout(callback, 30_000)
+      run(29_900)
+      expect(callback).not.toHaveBeenCalled()
+      run(200)
+      expect(callback).toHaveBeenCalledTimes(1)
       remove()
     })
 

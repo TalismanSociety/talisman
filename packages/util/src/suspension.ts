@@ -105,6 +105,7 @@ const handleVisibilityChange = () => {
   }
 
   const now = Date.now()
+  followClock(now)
   const ms = Math.max(hiddenGapMs, ticker ? now - lastRunAt : 0)
   pageHidden = false
   endPageHold(now, ms)
@@ -145,8 +146,10 @@ const hold = () => {
   holds++
   if (ticker) return
   watchPage()
-  lastRunAt = Date.now()
-  lastTickAt = lastRunAt
+  const now = Date.now()
+  followClock(now)
+  lastRunAt = now
+  lastTickAt = now
   ticker = setInterval(tick, TICK_MS)
 }
 
@@ -216,6 +219,8 @@ const resume = (now: number, suspendedMs: number) => {
  */
 export const setSuspended = (suspended: boolean): void => {
   if (suspended) {
+    // a gap before the mark is a suspension of its own
+    checkSuspension()
     suspendedSince ??= Date.now()
     return
   }
@@ -293,9 +298,11 @@ export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) 
     // the clock may have moved back since the timeout started
     startedAt -= clockMovedBackMs - clockMovedBackAtStartMs
     clockMovedBackAtStartMs = clockMovedBackMs
-    const countedFrom = Math.max(startedAt, lastResumedAt)
-    // a move back too small to be seen (`followClock`) never makes the wait longer than `ms`
-    const remaining = Math.min(ms, ms - (Date.now() - countedFrom))
+    // `followClock` doesn't see a move back smaller than the time since the runtime last ran,
+    // which can leave the start ahead of now
+    const now = Date.now()
+    const countedFrom = Math.min(now, Math.max(startedAt, lastResumedAt))
+    const remaining = ms - (now - countedFrom)
     if (remaining > 0) {
       token = setTimeout(fire, remaining)
       return
