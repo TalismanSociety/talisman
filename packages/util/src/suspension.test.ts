@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { getLastResumedAt, onResume, setAwakeTimeout, setSuspended } from "./suspension"
-
 // Date.now is driven by hand: while the runtime is suspended no timer runs, and on resume all
 // the timers that came due run at once, each seeing the resume time
 let now = 1_000_000
@@ -22,9 +20,13 @@ const suspend = (ms: number) => {
 }
 
 describe("suspension", () => {
-  beforeEach(() => {
+  // the state is global to the module: each test gets a copy of its own
+  let suspension: typeof import("./suspension")
+  beforeEach(async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] })
     vi.spyOn(Date, "now").mockImplementation(() => now)
+    vi.resetModules()
+    suspension = await import("./suspension")
   })
   afterEach(() => {
     vi.useRealTimers()
@@ -34,7 +36,7 @@ describe("suspension", () => {
   describe("setAwakeTimeout", () => {
     it("fires once the time is up while the runtime runs", () => {
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
 
       run(29_900)
       expect(callback).not.toHaveBeenCalled()
@@ -44,7 +46,7 @@ describe("suspension", () => {
 
     it("starts over when the runtime resumes from a suspension", () => {
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
 
       run(5_000)
       suspend(90_000)
@@ -59,7 +61,7 @@ describe("suspension", () => {
 
     it("counts a stall shorter than a suspension as running time", () => {
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
 
       run(27_000)
       // the thread was busy for 4s: a stall, not a suspension
@@ -69,7 +71,7 @@ describe("suspension", () => {
 
     it("fires on time when the clock moves back", () => {
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
 
       run(10_000)
       now -= 60 * 60_000
@@ -81,7 +83,7 @@ describe("suspension", () => {
     })
 
     it("fires on time when the clock moved back while nothing was watching", () => {
-      const remove = onResume(() => {})
+      const remove = suspension.onResume(() => {})
       run(1_000)
       suspend(60_000)
       // the ticker stops
@@ -89,7 +91,7 @@ describe("suspension", () => {
 
       now -= 60 * 60_000
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
       run(29_900)
       expect(callback).not.toHaveBeenCalled()
       run(200)
@@ -98,19 +100,19 @@ describe("suspension", () => {
 
     it("doesn't fire once cancelled", () => {
       const callback = vi.fn()
-      const cancel = setAwakeTimeout(callback, 30_000)
+      const cancel = suspension.setAwakeTimeout(callback, 30_000)
       cancel()
       run(60_000)
       expect(callback).not.toHaveBeenCalled()
     })
 
     it("stops the ticker once nothing is pending", () => {
-      const cancel = setAwakeTimeout(() => {}, 30_000)
+      const cancel = suspension.setAwakeTimeout(() => {}, 30_000)
       expect(vi.getTimerCount()).toBe(2)
       cancel()
       expect(vi.getTimerCount()).toBe(0)
 
-      setAwakeTimeout(() => {}, 1_000)
+      suspension.setAwakeTimeout(() => {}, 1_000)
       run(1_100)
       expect(vi.getTimerCount()).toBe(0)
     })
@@ -119,14 +121,14 @@ describe("suspension", () => {
   describe("onResume", () => {
     it("reports each suspension with its length", () => {
       const listener = vi.fn()
-      const remove = onResume(listener)
+      const remove = suspension.onResume(listener)
 
       run(3_000)
       suspend(90_000)
       expect(listener).toHaveBeenCalledTimes(1)
       // measured from the last tick before the suspension
       expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(89_000)
-      expect(getLastResumedAt()).toBe(now)
+      expect(suspension.getLastResumedAt()).toBe(now)
 
       run(10_000)
       expect(listener).toHaveBeenCalledTimes(1)
@@ -135,7 +137,7 @@ describe("suspension", () => {
 
     it("ignores a stall shorter than a suspension", () => {
       const listener = vi.fn()
-      const remove = onResume(listener)
+      const remove = suspension.onResume(listener)
       run(1_000)
       suspend(4_000)
       expect(listener).not.toHaveBeenCalled()
@@ -148,8 +150,8 @@ describe("suspension", () => {
         throw thrown
       })
       const listener = vi.fn()
-      const removeFailing = onResume(failing)
-      const remove = onResume(listener)
+      const removeFailing = suspension.onResume(failing)
+      const remove = suspension.onResume(listener)
       const rethrown = vi.spyOn(globalThis, "queueMicrotask").mockImplementation(() => {})
 
       run(1_000)
@@ -163,7 +165,7 @@ describe("suspension", () => {
     })
 
     it("stops the ticker once the last listener is removed", () => {
-      const remove = onResume(() => {})
+      const remove = suspension.onResume(() => {})
       expect(vi.getTimerCount()).toBe(1)
       remove()
       remove()
@@ -174,15 +176,15 @@ describe("suspension", () => {
   describe("setSuspended", () => {
     it("holds the timeouts while the host marks the runtime suspended", () => {
       const callback = vi.fn()
-      setAwakeTimeout(callback, 30_000)
+      suspension.setAwakeTimeout(callback, 30_000)
 
       run(5_000)
-      setSuspended(true)
+      suspension.setSuspended(true)
       // the runtime keeps running, but its time doesn't count
       run(60_000)
       expect(callback).not.toHaveBeenCalled()
 
-      setSuspended(false)
+      suspension.setSuspended(false)
       run(29_900)
       expect(callback).not.toHaveBeenCalled()
       run(200)
@@ -191,57 +193,57 @@ describe("suspension", () => {
 
     it("reports the resume with the time since the runtime was marked suspended", () => {
       const listener = vi.fn()
-      const remove = onResume(listener)
+      const remove = suspension.onResume(listener)
 
-      setSuspended(true)
+      suspension.setSuspended(true)
       run(20_000)
       // a second mark keeps the first one's time
-      setSuspended(true)
+      suspension.setSuspended(true)
       run(20_000)
       expect(listener).not.toHaveBeenCalled()
 
-      setSuspended(false)
+      suspension.setSuspended(false)
       expect(listener).toHaveBeenCalledTimes(1)
       expect(listener).toHaveBeenCalledWith(40_000)
-      expect(getLastResumedAt()).toBe(now)
+      expect(suspension.getLastResumedAt()).toBe(now)
 
       // nothing to resume from
-      setSuspended(false)
+      suspension.setSuspended(false)
       expect(listener).toHaveBeenCalledTimes(1)
       remove()
     })
 
     it("keeps counting the marked time when the clock moves back", () => {
       const listener = vi.fn()
-      const remove = onResume(listener)
+      const remove = suspension.onResume(listener)
 
-      setSuspended(true)
+      suspension.setSuspended(true)
       run(20_000)
       now -= 60 * 60_000
-      setSuspended(false)
+      suspension.setSuspended(false)
       // up to a tick of the marked time can be lost: the move back is seen from the last tick
       expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(19_000)
       expect(listener.mock.calls[0]?.[0]).toBeLessThanOrEqual(20_000)
-      expect(getLastResumedAt()).toBe(now)
+      expect(suspension.getLastResumedAt()).toBe(now)
 
       run(2_000)
       now -= 60 * 60_000
-      expect(Date.now() - getLastResumedAt()).toBeGreaterThanOrEqual(1_000)
-      expect(Date.now() - getLastResumedAt()).toBeLessThanOrEqual(2_000)
+      expect(Date.now() - suspension.getLastResumedAt()).toBeGreaterThanOrEqual(1_000)
+      expect(Date.now() - suspension.getLastResumedAt()).toBeLessThanOrEqual(2_000)
       remove()
     })
 
     it("reports a freeze during the marked time once, at the end of the mark", () => {
       const listener = vi.fn()
-      const remove = onResume(listener)
+      const remove = suspension.onResume(listener)
 
-      setSuspended(true)
+      suspension.setSuspended(true)
       run(1_000)
       suspend(60_000)
       run(1_000)
       expect(listener).not.toHaveBeenCalled()
 
-      setSuspended(false)
+      suspension.setSuspended(false)
       expect(listener).toHaveBeenCalledTimes(1)
       expect(listener).toHaveBeenCalledWith(62_000)
       remove()
@@ -249,10 +251,7 @@ describe("suspension", () => {
   })
 
   describe("once a host marks suspensions", () => {
-    let suspension: typeof import("./suspension")
-    beforeEach(async () => {
-      vi.resetModules()
-      suspension = await import("./suspension")
+    beforeEach(() => {
       suspension.setSuspended(false)
     })
 
@@ -282,8 +281,6 @@ describe("suspension", () => {
   })
 
   describe("in a page", () => {
-    type Suspension = typeof import("./suspension")
-    let suspension: Suspension
     let page: EventTarget & { visibilityState: "visible" | "hidden" }
 
     const setVisible = (visible: boolean) => {
@@ -296,13 +293,12 @@ describe("suspension", () => {
       for (let left = ms; left > 0; left -= 60_000) suspend(Math.min(60_000, left))
     }
 
-    beforeEach(async () => {
+    beforeEach(() => {
       page = Object.assign(new EventTarget(), {
         visibilityState: "visible" as "visible" | "hidden",
       })
+      // read when the module starts watching
       vi.stubGlobal("document", page)
-      vi.resetModules()
-      suspension = await import("./suspension")
     })
     afterEach(() => {
       vi.unstubAllGlobals()
@@ -418,6 +414,24 @@ describe("suspension", () => {
       run(60_000)
       setVisible(true)
       expect(listener).not.toHaveBeenCalled()
+      remove()
+    })
+
+    it("resumes once when the page is shown before the host lets go", () => {
+      const listener = vi.fn()
+      const remove = suspension.onResume(listener)
+
+      suspension.setSuspended(true)
+      setVisible(false)
+      throttle(120_000)
+      setVisible(true)
+      expect(listener).not.toHaveBeenCalled()
+      expect(suspension.isSuspended()).toBe(true)
+
+      suspension.setSuspended(false)
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith(120_000)
+      expect(suspension.isSuspended()).toBe(false)
       remove()
     })
 
