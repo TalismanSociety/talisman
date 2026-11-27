@@ -1,5 +1,5 @@
 import { isEqual } from "lodash-es"
-import { describe, expect, it } from "vitest"
+import { assert, describe, expect, it } from "vitest"
 
 import {
   makeChaindata,
@@ -108,6 +108,53 @@ describe("parseChaindataFileChunked", () => {
     await expect(
       parseChaindataFileChunked(makeChaindata(), { signal: controller.signal })
     ).rejects.toSatisfy((error) => error instanceof Error && error.name === "AbortError")
+  })
+})
+
+describe("parseChaindataFileChunked with substrate-gamma", () => {
+  const gammaToken = {
+    id: "bittensor:substrate-gamma:25",
+    networkId: "bittensor",
+    type: "substrate-gamma",
+    platform: "polkadot",
+    decimals: 9,
+    symbol: "GAMMA",
+    netuid: 25,
+  }
+
+  it("accepts a gamma token and defaults it to non-transferable", async () => {
+    const result = await parseChaindataFileChunked(
+      makeChaindata({ tokens: [...makeChaindata().tokens, gammaToken as never] })
+    )
+
+    assert(result.success)
+    expect(result.data.tokens.find((t) => t.id === gammaToken.id)).toEqual({
+      ...gammaToken,
+      isTransferable: false,
+    })
+  })
+
+  it("rejects a gamma token with an unknown key", async () => {
+    const result = await parseChaindataFileChunked(
+      makeChaindata({
+        tokens: [...makeChaindata().tokens, { ...gammaToken, hotkey: "5Fo2" } as never],
+      })
+    )
+
+    assert(!result.success)
+    expect(issueSummary(result.error)).toEqual([
+      { code: "unrecognized_keys", path: ["tokens", 3], message: 'Unrecognized key: "hotkey"' },
+    ])
+  })
+
+  it("accepts a network with an empty substrate-gamma balances config", async () => {
+    const network = makeDotNetwork({ balancesConfig: { "substrate-gamma": {} } })
+    const result = await parseChaindataFileChunked(
+      makeChaindata({ networks: [network, ...makeChaindata().networks.slice(1)] })
+    )
+
+    assert(result.success)
+    expect(result.data.networks[0]?.balancesConfig).toEqual({ "substrate-gamma": {} })
   })
 })
 

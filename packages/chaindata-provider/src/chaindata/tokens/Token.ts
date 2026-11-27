@@ -12,6 +12,7 @@ import {
   type ForeignAssetsTokenIdSpecs,
   SubForeignAssetsTokenSchema,
 } from "./SubstrateForeignAssetsToken"
+import { type SubGammaTokenIdSpecs, SubGammaTokenSchema } from "./SubstrateGammaToken"
 import { type SubHydrationToken, SubHydrationTokenSchema } from "./SubstrateHydrationToken"
 import { type SubNativeTokenIdSpecs, SubNativeTokenSchema } from "./SubstrateNativeToken"
 import { type SubPsp22TokenIdSpecs, SubPsp22TokenSchema } from "./SubstratePsp22Token"
@@ -27,6 +28,7 @@ export const TokenSchemaBase = z.discriminatedUnion("type", [
   SubAssetsTokenSchema,
   SubDTaoTokenSchema,
   SubForeignAssetsTokenSchema,
+  SubGammaTokenSchema,
   SubNativeTokenSchema,
   SubPsp22TokenSchema,
   SubTokensTokenSchema,
@@ -72,7 +74,9 @@ export type TokenIdSpecs<T extends TokenType> = T extends "evm-erc20"
                         ? SolSplToken
                         : T extends "sol-token2022"
                           ? SolToken2022Token
-                          : never
+                          : T extends "substrate-gamma"
+                            ? SubGammaTokenIdSpecs
+                            : never
 
 // transform to control in which order properties are output as JSON when parsed from schema
 export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {

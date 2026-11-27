@@ -5,6 +5,7 @@ import {
   SubAssetsBalancesConfigSchema,
   SubDTaoBalancesConfigSchema,
   SubForeignAssetsBalancesConfigSchema,
+  SubGammaBalancesConfigSchema,
   SubHydrationBalancesConfigSchema,
   SubNativeBalancesConfigSchema,
   SubPsp22BalancesConfigSchema,
@@ -20,6 +21,7 @@ export const DotNetworkBalancesConfigSchema = z.strictObject({
   "substrate-foreignassets": SubForeignAssetsBalancesConfigSchema.optional(),
   "substrate-hydration": SubHydrationBalancesConfigSchema.optional(),
   "substrate-dtao": SubDTaoBalancesConfigSchema.optional(),
+  "substrate-gamma": SubGammaBalancesConfigSchema.optional(),
 })
 
 export type DotNetworkBalancesConfig = z.infer<typeof DotNetworkBalancesConfigSchema>
