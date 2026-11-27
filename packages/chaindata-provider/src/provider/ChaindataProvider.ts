@@ -4,7 +4,7 @@ import {
   isPromise,
   replaySubjectFrom,
 } from "@talismn/util"
-import { isEqual, keyBy, values } from "lodash-es"
+import { keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
   firstValueFrom,
@@ -25,8 +25,6 @@ import {
   type NetworkId,
   type NetworkOfPlatform,
   type NetworkPlatform,
-  type SubDTaoToken,
-  subDTaoTokenId,
   type Token,
   type TokenId,
   type TokenOfType,
@@ -39,6 +37,7 @@ import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
 import type { Chaindata, ChaindataFile, CustomChaindata } from "../state/schema"
 import type { IChaindataProvider } from "./ChaindataProviderInterface"
+import { getSyncedDynamicTokens, isShadowingCuratedToken } from "./dynamicTokens"
 
 /**
  * This type will be used for in-memory storage of chaindata.
@@ -283,7 +282,8 @@ export class ChaindataProvider implements IChaindataProvider {
   /**
    * dynamic tokens are created when they are first detected by the balance modules.
    * this method syncs their metadata (name, symbol, logo) with custom logic specific to each token type,
-   * and removes dynamic entries that have since been curated into the default chaindata.
+   * and removes dynamic entries that have since been curated into the default chaindata
+   * (see getSyncedDynamicTokens).
    */
   async syncDynamicTokens() {
     await this.#enqueueDynamicTokensWrite(async () => {
@@ -294,40 +294,14 @@ export class ChaindataProvider implements IChaindataProvider {
       // duplicates so curated metadata wins (combined chaindata applies last-wins
       // by id, so leaving a dynamic entry in place would shadow the curated one).
       const defaultTokenIds = await this.#getCuratedTokenIds()
+      // read once for all the lookups: getTokenById builds a map of every token per call.
+      // Only the dtao positions use it, so a list of Solana tokens alone doesn't wait for it.
+      const dtaoTokensById = dynamicTokens.some((t) => t.type === "substrate-dtao")
+        ? await this.getTokensMapById("substrate-dtao")
+        : {}
 
-      const next: Token[] = []
-      let changed = false
-
-      for (const token of dynamicTokens) {
-        // drop dynamic tokens whose ids are now curated by default chaindata
-        if (isShadowingCuratedToken(token, defaultTokenIds)) {
-          changed = true
-          continue
-        }
-
-        if (token.type === "substrate-dtao") {
-          const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
-          const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
-          if (templateToken) {
-            const updatedToken: SubDTaoToken = {
-              ...token,
-              symbol: templateToken.symbol,
-              name: templateToken.name,
-              logo: templateToken.logo,
-              subnetName: templateToken.subnetName,
-            }
-            if (!isEqual(token, updatedToken)) {
-              changed = true
-              next.push(updatedToken)
-              continue
-            }
-          }
-        }
-
-        next.push(token)
-      }
-
-      if (changed) {
+      const next = getSyncedDynamicTokens(dynamicTokens, dtaoTokensById, defaultTokenIds)
+      if (next !== dynamicTokens) {
         log.debug("[ChaindataProvider] syncDynamicTokens: updating dynamic tokens", next)
         const sorted = next.slice().sort((a, b) => a.id.localeCompare(b.id))
         this.#dynamicTokens$.next(sorted)
@@ -495,10 +469,3 @@ const withErrorReason = async <T>(reason: string, task: () => Promise<T> | T): P
     throw new Error(reason, { cause })
   }
 }
-
-/**
- * A dynamic Solana token whose id is also in the curated chaindata. Combined chaindata
- * keeps the last token per id, so such an entry would replace the curated one.
- */
-const isShadowingCuratedToken = (token: Token, curatedTokenIds: Set<TokenId>) =>
-  (token.type === "sol-spl" || token.type === "sol-token2022") && curatedTokenIds.has(token.id)
