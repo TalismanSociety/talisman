@@ -1,4 +1,8 @@
-import { type EvmUniswapV2Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import {
+  type EvmUniswapV2Token,
+  evmErc20TokenId,
+  type SubGammaToken,
+} from "@talismn/chaindata-provider"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useToken } from "@ui/state/chaindata"
 import { cn } from "@ui/util/cn"
@@ -10,12 +14,21 @@ export const TokenLogo: FC<{
 }> = ({ className, tokenId }) => {
   const token = useToken(tokenId)
 
-  return token?.type === "evm-uniswapv2" ? (
-    <LpTokenLogo token={token} className={className} />
-  ) : (
-    <AssetLogo tokenId={tokenId} url={token?.logo} className={className} />
-  )
+  if (token?.type === "evm-uniswapv2") return <LpTokenLogo token={token} className={className} />
+  if (token?.type === "substrate-gamma")
+    return <GammaTokenLogo token={token} className={className} />
+
+  return <AssetLogo tokenId={tokenId} url={token?.logo} className={className} />
 }
+
+const GammaTokenLogo: FC<{ token: SubGammaToken; className?: string }> = ({ className, token }) => (
+  <div className={cn("relative block aspect-square w-[1em] shrink-0", className)}>
+    <AssetLogo tokenId={token.id} url={token.logo} className="h-full w-full" />
+    <span className="absolute -right-[0.15em] -bottom-[0.15em] flex size-[1.25em] items-center justify-center rounded-full border border-black bg-primary font-bold text-[0.4em] text-black leading-none">
+      γ
+    </span>
+  </div>
+)
 
 // constants to prevent re-renders
 const STYLE_LP_TOKEN0 = { clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }
