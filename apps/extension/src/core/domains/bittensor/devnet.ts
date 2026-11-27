@@ -69,7 +69,10 @@ const registerDevnet = async (client: SubstrateClient) => {
 
   const tokens = [
     ...(await getDevnetSubnetTokens(client, network.specVersion, metadataRpc, nativeToken)),
-    ...(await getDevnetGammaTokens(client, network.specVersion, metadataRpc)),
+    ...(await getDevnetGammaTokens(client, network.specVersion, metadataRpc).catch((err) => {
+      log.error("[bittensor-devnet] failed to fetch gamma tokens", err)
+      return []
+    })),
   ]
   await customChaindataStore.upsert([], tokens)
 
