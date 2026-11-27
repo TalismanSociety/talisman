@@ -23,6 +23,7 @@ describe("parseSubGammaTokenId", () => {
   it.each([
     "bittensor:substrate-gamma:-1",
     "bittensor:substrate-gamma:0x19",
+    "bittensor:substrate-gamma:025",
     "bittensor:substrate-gamma:25.0",
     "bittensor:substrate-gamma: 25",
     "bittensor:substrate-gamma:25:5FoHotkey",

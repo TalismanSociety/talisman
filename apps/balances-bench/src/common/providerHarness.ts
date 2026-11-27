@@ -117,7 +117,8 @@ let hasRunBalances = false
 /**
  * Runs `BalancesProvider` for `durationMs` and returns every emit. Substrate networks only.
  * One run per process: the library caches balance observables globally by argument, so a second
- * run would reuse the first run's destroyed connector and emit nothing.
+ * run would reuse the first run's destroyed connector and never reach `live`. Library timers keep
+ * the process alive for about a minute afterwards, so scripts end with `process.exit`.
  */
 export const runBalances = async (
   chaindata: ChaindataProvider,

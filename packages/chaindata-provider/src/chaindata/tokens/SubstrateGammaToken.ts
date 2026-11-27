@@ -36,7 +36,7 @@ export const subGammaTokenId = (networkId: NetworkId, netuid: number) =>
 export const parseSubGammaTokenId = (tokenId: TokenId): SubGammaTokenIdSpecs => {
   const parts = tokenId.split(":")
   const [networkId, type, netuid] = parts
-  if (parts.length !== 3 || !networkId || !netuid || !/^\d+$/.test(netuid))
+  if (parts.length !== 3 || !networkId || !netuid || !/^(0|[1-9]\d*)$/.test(netuid))
     throw new Error(`Invalid SubGammaToken ID: ${tokenId}`)
   if (type !== TOKEN_TYPE) throw new Error(`Invalid SubGammaToken type: ${type}`)
 
