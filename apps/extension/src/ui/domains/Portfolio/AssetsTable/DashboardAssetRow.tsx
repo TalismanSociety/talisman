@@ -96,6 +96,7 @@ export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> 
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={isUniswapV2LpToken ? "" : token.symbol}
+            isGammaCredit={token.type === "substrate-gamma"}
             balancesStatus={status}
             className={cn(
               "noPadRight",
@@ -106,7 +107,7 @@ export const DashboardAssetRow: FC<{ balances: Balances; noCountUp?: boolean }> 
         </div>
         <div className="flex h-16.5 flex-col items-end justify-center gap-2 text-right">
           <AssetBalanceCellValue
-            render
+            render={token.type !== "substrate-gamma"}
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={isUniswapV2LpToken ? "" : token.symbol}

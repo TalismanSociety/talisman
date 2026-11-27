@@ -4,6 +4,7 @@ import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { cn } from "@ui/util/cn"
 
 import { ConvictionLockHotkeyTag } from "../ConvictionLockHotkeyTag"
+import { GammaDepositSummary } from "../GammaDepositSummary"
 import type { BalanceDetailRow } from "../useTokenBalances"
 import { AssetState } from "./AssetState"
 import { LockedExtra } from "./LockedExtra"
@@ -29,9 +30,7 @@ export const TokenBalancesDetailRow = ({
       <div>
         <AssetState
           title={row.title}
-          titleSuffix={
-            row.lockHotkey ? <ConvictionLockHotkeyTag hotkey={row.lockHotkey} /> : undefined
-          }
+          titleSuffix={row.hotkey ? <ConvictionLockHotkeyTag hotkey={row.hotkey} /> : undefined}
           description={row.description}
           render
           address={row.address}
@@ -47,12 +46,18 @@ export const TokenBalancesDetailRow = ({
           fiat={row.fiat}
           symbol={symbol}
           locked={row.locked}
+          isGammaCredit={!!row.gammaDeposit}
           balancesStatus={status}
           className={cn(
             (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity"
           )}
         />
       </div>
+      {row.gammaDeposit && (
+        <div className="flex h-full items-center justify-end p-8 text-right">
+          <GammaDepositSummary deposit={row.gammaDeposit} symbol={symbol} stacked />
+        </div>
+      )}
       {!!row.locked && row.meta && tokenId && (
         <LockedExtra
           tokenId={tokenId}

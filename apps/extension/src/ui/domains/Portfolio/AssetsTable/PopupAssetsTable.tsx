@@ -7,6 +7,7 @@ import { PillButton } from "@ui/components/PillButton"
 import { useScrollContainer } from "@ui/components/ScrollContainer"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { GammaFaceValue } from "@ui/domains/Asset/GammaFaceValue"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
@@ -178,7 +179,13 @@ const AssetRow: FC<{
                   "group-hover:hidden"
               )}
             >
-              {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
+              {token.type === "substrate-gamma" ? (
+                <GammaFaceValue tokens={tokens} noCountUp={noCountUp} />
+              ) : fiat === null ? (
+                "-"
+              ) : (
+                <Fiat amount={fiat} isBalance noCountUp={noCountUp} />
+              )}
             </div>
           </div>
         </div>

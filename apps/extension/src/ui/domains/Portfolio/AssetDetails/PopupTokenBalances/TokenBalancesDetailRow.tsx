@@ -2,12 +2,14 @@ import type { TokenId } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { GammaFaceValue } from "@ui/domains/Asset/GammaFaceValue"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { cn } from "@ui/util/cn"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { ConvictionLockHotkeyTag } from "../ConvictionLockHotkeyTag"
+import { GammaDepositSummary } from "../GammaDepositSummary"
 import { PortfolioAccount } from "../PortfolioAccount"
 import type { BalanceDetailRow } from "../useTokenBalances"
 import { LockedExtra } from "./LockedExtra"
@@ -37,7 +39,7 @@ export const TokenBalancesDetailRow = ({
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
         <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
           <div className="shrink-0 truncate capitalize">{row.title}</div>
-          {row.lockHotkey && <ConvictionLockHotkeyTag hotkey={row.lockHotkey} />}
+          {row.hotkey && <ConvictionLockHotkeyTag hotkey={row.hotkey} />}
           {!!row.locked && tokenId && row.meta && (
             <LockedExtra
               tokenId={tokenId}
@@ -54,6 +56,11 @@ export const TokenBalancesDetailRow = ({
         )}
         {!row.address && row.isLoading && !row.description && row.locked && (
           <div className="h-7 max-w-48 animate-pulse rounded-xs bg-grey-800" />
+        )}
+        {row.gammaDeposit && (
+          <div className="text-xs">
+            <GammaDepositSummary deposit={row.gammaDeposit} symbol={symbol} />
+          </div>
         )}
         {!row.address && row.description && (
           <div className="text-left text-xs">
@@ -85,7 +92,13 @@ export const TokenBalancesDetailRow = ({
           ) : null}
         </div>
         <div className="text-xs">
-          {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
+          {row.gammaDeposit ? (
+            <GammaFaceValue tokens={row.tokens} />
+          ) : row.fiat === null ? (
+            "-"
+          ) : (
+            <Fiat amount={row.fiat} isBalance />
+          )}
         </div>
       </div>
     </div>
