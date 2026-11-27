@@ -5,7 +5,7 @@ import type { TokensWithAddresses } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
-import { fetchBalances } from "./fetchBalances"
+import { fetchBalances, fetchBalancesAt } from "./fetchBalances"
 
 vi.mock("../../log", () => ({
   default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
@@ -224,5 +224,29 @@ describe("fetchBalances root stake hold", () => {
         (value) => (value?.meta as { rootStakeHold?: unknown } | undefined)?.rootStakeHold
       )
     ).toBe(false)
+  })
+})
+
+describe("fetchBalancesAt", () => {
+  it("reports a failed read of the best block it is given, without reading it again", async () => {
+    mockMetadata()
+    const connector = makeConnector()
+    const readError = new Error("rpc failed")
+
+    const result = await fetchBalancesAt(
+      {
+        networkId: NETWORK_ID,
+        tokensWithAddresses: [[makeToken(ROOT_POSITION_TOKEN_ID), [ADDRESS]]],
+        connector,
+        miniMetadata: { data: "0x00", source: "substrate-dtao", chainId: NETWORK_ID },
+        signal: new AbortController().signal,
+      } as unknown as Parameters<typeof fetchBalances>[0],
+      Promise.reject(readError)
+    )
+
+    expect(result.errors).toEqual([
+      expect.objectContaining({ tokenId: ROOT_POSITION_TOKEN_ID, address: ADDRESS }),
+    ])
+    expect(connector.send).not.toHaveBeenCalled()
   })
 })

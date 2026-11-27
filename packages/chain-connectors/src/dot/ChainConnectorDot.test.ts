@@ -225,6 +225,85 @@ describe("ChainConnectorDot after a suspension", () => {
     expect(provider.switches).toEqual(["wss://b.example", "wss://b.example"])
   })
 
+  it("keeps the endpoint once more when the socket fails before any timer sees the resume", async () => {
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    await run(2_000)
+    // frozen for 90s, and the socket's error is the first thing to run on resume
+    now += 90_000
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example"])
+
+    // the network isn't back yet: the new socket fails, and the endpoint is kept once more
+    provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://b.example" })
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    expect(provider.switches).toEqual(["wss://b.example", "wss://b.example"])
+  })
+
+  it("keeps the socket of an extrinsic in flight across a long suspension", async () => {
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    // a new socket would send the extrinsic again
+    sockets.unanswered.add("author_submitExtrinsic")
+    connector.send("bittensor", "author_submitExtrinsic", ["0x00"]).catch(() => {})
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual([])
+  })
+
+  const watchExtrinsic = (connector: ChainConnectorDot) =>
+    connector.subscribe(
+      "bittensor",
+      "author_submitAndWatchExtrinsic",
+      "author_extrinsicUpdate",
+      ["0x00"],
+      () => {},
+      false
+    )
+
+  it("keeps the socket of an extrinsic's watch across a long suspension", async () => {
+    const connector = new Connector(chaindata)
+    // a new socket would lose the watch: author subscriptions are not re-established
+    await watchExtrinsic(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual([])
+  })
+
+  it("reconnects after a long suspension when an extrinsic's watch was rejected", async () => {
+    const connector = new Connector(chaindata)
+    sockets.failing.set("author_submitAndWatchExtrinsic", -32601)
+    await watchExtrinsic(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual(["wss://b.example"])
+  })
+
+  it("reconnects after a long suspension when an extrinsic's watch was lost with its socket", async () => {
+    const connector = new Connector(chaindata)
+    await watchExtrinsic(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    connect(provider, "wss://a.example")
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual(["wss://a.example"])
+  })
+
   it("keeps the endpoint when the socket fails just after a short suspension", async () => {
     const connector = new Connector(chaindata)
     await subscribe(connector)
@@ -299,6 +378,26 @@ describe("ChainConnectorDot after a suspension", () => {
     provider.onStatusChanged({ type: WsEvent.CONNECTING, uri: "wss://a.example" })
     provider.onStatusChanged({ type: WsEvent.ERROR })
     expect(provider.switches).toEqual([undefined, "wss://a.example"])
+  })
+
+  it("leaves an endpoint that rate-limits it when the host resumes before the next socket opens", async () => {
+    const { setSuspended } = await import("@talismn/util")
+    const connector = new Connector(chaindata)
+    await subscribe(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    setSuspended(true)
+    await run(20_000)
+    sockets.failing.set("state_call", -32097)
+    await expect(connector.send("bittensor", "state_call", [])).rejects.toThrow(
+      "Rate limit exceeded"
+    )
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+
+    // the provider waits out its backoff before it opens a socket to the next endpoint
+    setSuspended(false)
+    expect(provider.switches).toEqual([undefined])
   })
 
   it("leaves an endpoint that rate-limits it just after a resume", async () => {

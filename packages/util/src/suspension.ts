@@ -88,7 +88,10 @@ type PageDocument = {
   addEventListener: (type: "visibilitychange", listener: () => void) => void
 }
 
-const getPage = () => (globalThis as { document?: PageDocument }).document
+const getPage = () => {
+  const page = (globalThis as { document?: Partial<PageDocument> }).document
+  return typeof page?.addEventListener === "function" ? (page as PageDocument) : undefined
+}
 
 const isHeld = () => suspendedSince !== null || (pageHidden && hiddenGapMs > suspensionGapMs())
 
@@ -316,6 +319,7 @@ export const setAwakeTimeout = (callback: () => void, ms: number): (() => void) 
 
   const fire = () => {
     checkSuspension()
+    if (done) return
     if (isHeld()) {
       token = setTimeout(fire, ms)
       return

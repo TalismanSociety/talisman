@@ -37,10 +37,11 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
       try {
         if (abortController.signal.aborted) return
 
-        // chain state only changes from one block to the next. When the best block can't be
-        // read, `fetchBalancesAt` reads it again and reports a failure as it reports any other:
-        // a warning, and an error for each balance
-        const blockHash = await fetchBestBlockHash(connector, networkId).catch(() => undefined)
+        // chain state only changes from one block to the next. A failed read of the best block
+        // goes to `fetchBalancesAt`, which reports it as it reports any other failure: a
+        // warning, and an error for each balance
+        const bestBlock = fetchBestBlockHash(connector, networkId)
+        const blockHash = await bestBlock.catch(() => undefined)
         if (abortController.signal.aborted) return
         if (blockHash && blockHash === lastGoodBlockHash) {
           setTimeout(poll, SUBSCRIPTION_INTERVAL)
@@ -55,7 +56,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
             miniMetadata,
             signal: abortController.signal,
           },
-          blockHash
+          blockHash ?? bestBlock
         )
 
         if (abortController.signal.aborted) return

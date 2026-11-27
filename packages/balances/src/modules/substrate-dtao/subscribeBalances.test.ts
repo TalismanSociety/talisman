@@ -78,7 +78,7 @@ describe("substrate-dtao subscribeBalances", () => {
     const result = await firstValueFrom(subscribe([[makeToken("token-1"), ["address-1"]]]))
 
     expect(result).toEqual(failed)
-    expect(vi.mocked(fetchBalancesAt).mock.calls[0]?.[1]).toBeUndefined()
+    await expect(vi.mocked(fetchBalancesAt).mock.calls[0]?.[1]).rejects.toThrow("rpc failed")
     expect(log.error).not.toHaveBeenCalled()
   })
 

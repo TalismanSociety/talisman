@@ -106,6 +106,18 @@ describe("suspension", () => {
       expect(callback).not.toHaveBeenCalled()
     })
 
+    it("doesn't fire when a resume listener cancels it", () => {
+      const callback = vi.fn()
+      const cancel = suspension.setAwakeTimeout(callback, 100)
+      const remove = suspension.onResume(cancel)
+
+      // the timeout comes due before the ticker, so it is the one that finds the resume
+      suspend(20_000)
+      run(1_000)
+      expect(callback).not.toHaveBeenCalled()
+      remove()
+    })
+
     it("stops the ticker once nothing is pending", () => {
       const cancel = suspension.setAwakeTimeout(() => {}, 30_000)
       expect(vi.getTimerCount()).toBe(2)
@@ -277,6 +289,30 @@ describe("suspension", () => {
       expect(listener).toHaveBeenCalledTimes(1)
       expect(listener.mock.calls[0]?.[0]).toBeGreaterThanOrEqual(20_000)
       remove()
+    })
+  })
+
+  describe("in a service worker", () => {
+    beforeEach(() => {
+      // the shim the extension's background bundle defines for its dependencies
+      vi.stubGlobal("document", {
+        baseURI: "chrome-extension://id/background.js",
+        currentScript: null,
+      })
+    })
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it("treats a document without events as no page", () => {
+      const callback = vi.fn()
+      const remove = suspension.onResume(() => {})
+      suspension.setAwakeTimeout(callback, 30_000)
+
+      run(30_100)
+      expect(callback).toHaveBeenCalledTimes(1)
+      remove()
+      expect(vi.getTimerCount()).toBe(0)
     })
   })
 
