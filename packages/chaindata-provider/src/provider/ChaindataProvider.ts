@@ -294,8 +294,11 @@ export class ChaindataProvider implements IChaindataProvider {
       // duplicates so curated metadata wins (combined chaindata applies last-wins
       // by id, so leaving a dynamic entry in place would shadow the curated one).
       const defaultTokenIds = await this.#getCuratedTokenIds()
-      // read once for all the lookups: getTokenById builds a map of every token per call
-      const dtaoTokensById = await this.getTokensMapById("substrate-dtao")
+      // read once for all the lookups: getTokenById builds a map of every token per call.
+      // Only the dtao positions use it, so a list of Solana tokens alone doesn't wait for it.
+      const dtaoTokensById = dynamicTokens.some((t) => t.type === "substrate-dtao")
+        ? await this.getTokensMapById("substrate-dtao")
+        : {}
 
       const next = getSyncedDynamicTokens(dynamicTokens, dtaoTokensById, defaultTokenIds)
       if (next !== dynamicTokens) {

@@ -263,6 +263,16 @@ describe("ChaindataProvider", () => {
       expect(token!.symbol).toBe("DYN")
     })
 
+    it("doesn't read the dtao token map when there are no dtao positions", async () => {
+      const provider = new ChaindataProvider({ persistedStorage: makeChaindata() })
+      await provider.registerDynamicTokens([makeSolSplDynamicToken()])
+      const getTokensMapById = vi.spyOn(provider, "getTokensMapById")
+
+      await provider.syncDynamicTokens()
+
+      expect(getTokensMapById).not.toHaveBeenCalled()
+    })
+
     it("removes a sol-token2022 dynamic token once it is curated into default chaindata", async () => {
       const id = "solana-sol-token2022-So11111111111111111111111111111111111111112"
       const baseToken = {
