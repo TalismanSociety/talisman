@@ -41,11 +41,18 @@ describe("getGammaFaceValue", () => {
     expect(getGammaFaceValue(rates, TAO, "aud")).not.toBeNull()
   })
 
+  it("is null when TAO is worth 0 USD", () => {
+    const zeroUsd: TokenRatesList = { [TAO]: { ...rates[TAO]!, usd: { price: 0 } } }
+    expect(getGammaFaceValue(zeroUsd, TAO, "aud")).toBeNull()
+  })
+
   it("is null when TAO has no rate in the currency", () => {
     expect(getGammaFaceValue(rates, TAO, "eur")).toBeNull()
+    expect(getGammaFaceValue(rates, TAO, "aud")?.perGamma).toBe(1.5)
   })
 
   it("is null when TAO has no rates at all", () => {
     expect(getGammaFaceValue({}, TAO, "aud")).toBeNull()
+    expect(getGammaFaceValue(rates, TAO, "aud")?.perGamma).toBe(1.5)
   })
 })
