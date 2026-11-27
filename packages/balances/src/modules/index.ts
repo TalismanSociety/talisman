@@ -7,6 +7,7 @@ import { SolToken2022BalanceModule } from "./sol-token2022"
 import { SubAssetsBalanceModule } from "./substrate-assets"
 import { SubDTaoBalanceModule } from "./substrate-dtao"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
+import { SubGammaBalanceModule } from "./substrate-gamma"
 import { SubHydrationBalanceModule } from "./substrate-hydration"
 import { SubNativeBalanceModule } from "./substrate-native"
 import { SubPsp22BalanceModule } from "./substrate-psp22"
@@ -16,6 +17,7 @@ export const BALANCE_MODULES = [
   SubNativeBalanceModule,
   SubAssetsBalanceModule,
   SubDTaoBalanceModule,
+  SubGammaBalanceModule,
   SubHydrationBalanceModule,
   SubForeignAssetsBalanceModule,
   SubPsp22BalanceModule,

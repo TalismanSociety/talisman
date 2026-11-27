@@ -24,7 +24,7 @@ const UNTRANSFERABLE_TOKENS = [
 export const isTransferableToken = (t: Token) => {
   if (UNTRANSFERABLE_TOKENS.includes(t.id)) return false
 
-  if (t.type === "substrate-dtao") return t.isTransferable
+  if (t.type === "substrate-dtao" || t.type === "substrate-gamma") return t.isTransferable
 
   if (t.type === "sol-token2022") return t.isTransferable !== false
 
