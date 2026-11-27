@@ -121,14 +121,14 @@ const MATCHERS: Record<Category, (deposits: StoredDeposit[]) => boolean> = {
     deposits.some(({ ownedByColdkey }) => !ownedByColdkey),
 }
 
-export type GammaAccounts = {
+type GammaAccounts = {
   blockNumber: number
   specVersion: number
   depositCount: number
   coldkeys: Record<Category, { coldkey: string; candidates: number } | null>
 }
 
-export const findGammaAccounts = async (
+const findGammaAccounts = async (
   connector: IChainConnectorDot,
   at: string
 ): Promise<GammaAccounts> => {
