@@ -8,6 +8,7 @@ import type { ReactNode } from "react"
 
 import { currencyConfig } from "../Asset/currencyConfig"
 import { Fiat } from "../Asset/Fiat"
+import { GammaFaceValue } from "../Asset/GammaFaceValue"
 import { Tokens } from "../Asset/Tokens"
 
 type StatisticsProps = {
@@ -45,7 +46,13 @@ const TokensAndFiat = ({
       />
     </div>
     <div className="text-body-secondary text-sm">
-      {fiat === null ? "-" : <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />}
+      {token?.type === "substrate-gamma" ? (
+        <GammaFaceValue tokens={tokenAmount ?? 0} />
+      ) : fiat === null ? (
+        "-"
+      ) : (
+        <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />
+      )}
     </div>
   </div>
 )
