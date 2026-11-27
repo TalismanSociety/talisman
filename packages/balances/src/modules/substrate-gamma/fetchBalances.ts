@@ -1,3 +1,4 @@
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { subGammaTokenId } from "@talismn/chaindata-provider"
 import { uniq } from "lodash-es"
 
@@ -6,15 +7,34 @@ import type { IBalance } from "../../types"
 import type { FetchBalanceErrors, IBalanceModule } from "../../types/IBalanceModule"
 import { fetchBestBlockHash, getBalanceDefs } from "../shared"
 import type { BalanceDef } from "../shared/types"
-import { fetchOwnedGammaDeposits } from "./chain"
+import { fetchMetadataRpcAt, fetchOwnedGammaDeposits } from "./chain"
 import { MODULE_TYPE } from "./config"
 import { toGammaBalance } from "./deposits"
 import { toGammaToken } from "./fetchTokens"
+import { getMiniMetadata } from "./getMiniMetadata"
 
 type GammaBalanceDef = BalanceDef<typeof MODULE_TYPE>
 
 const toErrors = (defs: GammaBalanceDef[], error: Error): FetchBalanceErrors =>
   defs.map((def) => ({ tokenId: def.token.id, address: def.address, error }))
+
+const upgradedMetadataRpcs = new Map<string, { specVersion: number; data: `0x${string}` | null }>()
+
+const getUpgradedMetadataRpc = async (
+  connector: IChainConnectorDot,
+  networkId: string,
+  specVersion: number,
+  at: `0x${string}`
+) => {
+  const cached = upgradedMetadataRpcs.get(networkId)
+  if (cached?.specVersion === specVersion) return cached.data
+
+  const metadataRpc = await fetchMetadataRpcAt(connector, networkId, at)
+  const { data } = getMiniMetadata({ networkId, specVersion, metadataRpc })
+  upgradedMetadataRpcs.set(networkId, { specVersion, data })
+  log.info(`Built ${MODULE_TYPE} metadata for spec ${specVersion} on ${networkId}`)
+  return data
+}
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -41,17 +61,17 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       "state_getRuntimeVersion",
       [at]
     )
-    if (specVersion !== miniMetadata.specVersion)
-      return failAll(
-        new Error(
-          `miniMetadata is for spec ${miniMetadata.specVersion}, but block ${at} runs spec ${specVersion}`
-        )
-      )
+    const metadataRpc =
+      specVersion === miniMetadata.specVersion
+        ? miniMetadata.data
+        : await getUpgradedMetadataRpc(connector, networkId, specVersion, at)
+    if (!metadataRpc)
+      return failAll(new Error(`Spec ${specVersion} of ${networkId} has no ${MODULE_TYPE} support`))
 
     const depositsByColdkey = await fetchOwnedGammaDeposits({
       connector,
       networkId,
-      metadataRpc: miniMetadata.data,
+      metadataRpc,
       coldkeys: uniq(balanceDefs.map((def) => def.address)),
       at,
     })

@@ -1,13 +1,19 @@
 import { Binary } from "@polkadot-api/substrate-bindings"
+import { toHex } from "@polkadot-api/utils"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { isAddressEqual } from "@talismn/crypto"
-import { fetchStorageKeysPaged, queryStorageAt } from "@talismn/sapi"
+import {
+  fetchStorageKeysPaged,
+  MAX_SUPPORTED_METADATA_VERSION,
+  queryStorageAt,
+} from "@talismn/sapi"
 import {
   compactMetadata,
   encodeMetadata,
   getStorageKeyPrefix,
   type parseMetadataRpc,
 } from "@talismn/scale"
+import { u32 } from "scale-ts"
 import z from "zod/v4"
 
 import { fetchRuntimeCallResult, hasRuntimeApi } from "../shared"
@@ -112,6 +118,17 @@ export const fetchOwnedGammaDeposits = async ({
       })
     )
   )
+
+export const fetchMetadataRpcAt = (
+  connector: IChainConnectorDot,
+  networkId: string,
+  at: `0x${string}`
+) =>
+  connector.send<`0x${string}`>(networkId, "state_call", [
+    "Metadata_metadata_at_version",
+    toHex(u32.enc(MAX_SUPPORTED_METADATA_VERSION)),
+    at,
+  ])
 
 export const compactGammaMetadata = ({
   metadata,

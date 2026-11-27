@@ -1,4 +1,6 @@
+import { fromHex, toHex } from "@polkadot-api/utils"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import { Bytes, Option } from "scale-ts"
 import { describe, expect, it, vi } from "vitest"
 
 import type { TokensWithAddresses } from "../../types/IBalanceModule"
@@ -7,7 +9,7 @@ import { fetchBalances } from "./fetchBalances"
 import { getMiniMetadata } from "./getMiniMetadata"
 
 vi.mock("../../log", () => ({
-  default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  default: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }))
 
 const AT = "0x2222222222222222222222222222222222222222222222222222222222222222"
@@ -30,13 +32,21 @@ const miniMetadata = getMiniMetadata({
   metadataRpc: fixtureHex("metadata-497.scale.gz"),
 })
 
-const stubConnector = ({ specVersion = 497 } = {}) => {
+const metadataAtVersion = (name: string) => toHex(Option(Bytes()).enc(fromHex(fixtureHex(name))))
+
+const stubConnector = ({
+  specVersion = 497,
+  metadata = (): string => {
+    throw new Error("metadata unavailable")
+  },
+} = {}) => {
   const sent: { method: string; params: unknown[] }[] = []
   const connector = {
     send: async (_networkId: string, method: string, params: unknown[]) => {
       sent.push({ method, params })
       if (method === "chain_getBlockHash") return AT
       if (method === "state_getRuntimeVersion") return { specVersion }
+      if (method === "state_call" && params[0] === "Metadata_metadata_at_version") return metadata()
       if (method === "state_call") return RESPONSES[params[1] as string]
       throw new Error(`unexpected ${method}`)
     },
@@ -56,7 +66,7 @@ const gammaToken = (netuid: number) =>
     isTransferable: false,
   }) as TokensWithAddresses[number][0]
 
-const run = (connector: IChainConnectorDot, addresses: string[]) =>
+const run = (connector: IChainConnectorDot, addresses: string[], metadata = miniMetadata) =>
   fetchBalances({
     networkId: "bittensor",
     tokensWithAddresses: [
@@ -64,8 +74,14 @@ const run = (connector: IChainConnectorDot, addresses: string[]) =>
       [gammaToken(28), addresses],
     ],
     connector,
-    miniMetadata,
+    miniMetadata: metadata,
   })
+
+const sentCalls = (sent: { method: string; params: unknown[] }[]) =>
+  sent.map(({ method, params }) => [method, ...params])
+
+const errorMessages = (result: Awaited<ReturnType<typeof run>>) =>
+  result.errors.map(({ tokenId, address, error }) => [tokenId, address, error.message])
 
 const deposit = (hotkey: string, amount: string) => ({
   type: "reserved",
@@ -116,7 +132,7 @@ describe("substrate-gamma fetchBalances", () => {
         },
       ],
     })
-    expect(sent.map(({ method, params }) => [method, ...params])).toEqual([
+    expect(sentCalls(sent)).toEqual([
       ["chain_getBlockHash"],
       ["state_getRuntimeVersion", AT],
       ["state_call", "GammaRuntimeApi_get_gamma_deposits_for_coldkey", SINGLE_ARG, AT],
@@ -131,9 +147,7 @@ describe("substrate-gamma fetchBalances", () => {
     expect(result.success.map(({ address, tokenId }) => [address, tokenId])).toEqual([
       [SINGLE, "bittensor:substrate-gamma:25"],
     ])
-    expect(
-      result.errors.map(({ tokenId, address, error }) => [tokenId, address, error.message])
-    ).toEqual(
+    expect(errorMessages(result)).toEqual(
       ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
         tokenId,
         ALICE,
@@ -142,23 +156,84 @@ describe("substrate-gamma fetchBalances", () => {
     )
   })
 
-  it("emits errors and no balances when the pinned block runs another spec than the mini-metadata", async () => {
-    const { connector, sent } = stubConnector({ specVersion: 498 })
-    const result = await run(connector, [SINGLE])
+  it("decodes with metadata it fetches once per spec when the pinned block runs a newer spec", async () => {
+    const staleMiniMetadata = getMiniMetadata({
+      networkId: "bittensor",
+      specVersion: 488,
+      metadataRpc: fixtureHex("metadata-488.scale.gz"),
+    })
+    const { connector, sent } = stubConnector({
+      metadata: () => metadataAtVersion("metadata-497.scale.gz"),
+    })
 
-    expect(result.success).toEqual([])
-    expect(
-      result.errors.map(({ tokenId, address, error }) => [tokenId, address, error.message])
-    ).toEqual(
-      ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
-        tokenId,
-        SINGLE,
-        `miniMetadata is for spec 497, but block ${AT} runs spec 498`,
+    const first = await run(connector, [SINGLE], staleMiniMetadata)
+    const second = await run(connector, [SINGLE], staleMiniMetadata)
+
+    for (const result of [first, second])
+      expect(result.success.map(({ tokenId, values }) => [tokenId, values])).toEqual([
+        [
+          "bittensor:substrate-gamma:25",
+          [deposit("5ExmGpDd1cziNENNaogDUA6RCNUvtp3aGjag53KRGEUokHns", "154770370")],
+        ],
       ])
-    )
-    expect(sent.map(({ method }) => method)).toEqual([
-      "chain_getBlockHash",
-      "state_getRuntimeVersion",
+    expect(sentCalls(sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+      ["state_call", "GammaRuntimeApi_get_gamma_deposits_for_coldkey", SINGLE_ARG, AT],
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "GammaRuntimeApi_get_gamma_deposits_for_coldkey", SINGLE_ARG, AT],
+    ])
+  })
+
+  it("emits errors and no balances on every call while the newer spec's metadata cannot be fetched", async () => {
+    const { connector, sent } = stubConnector({ specVersion: 498 })
+
+    for (const _ of [1, 2]) {
+      const result = await run(connector, [SINGLE])
+      expect(result.success).toEqual([])
+      expect(errorMessages(result)).toEqual(
+        ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
+          tokenId,
+          SINGLE,
+          "Failed to fetch substrate-gamma balances on bittensor",
+        ])
+      )
+    }
+    expect(sentCalls(sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+    ])
+  })
+
+  it("emits errors and no balances when the newer spec has no gamma runtime api", async () => {
+    const { connector, sent } = stubConnector({
+      specVersion: 2003000,
+      metadata: () => metadataAtVersion("polkadot-metadata-v15.scale.gz"),
+    })
+
+    for (const _ of [1, 2]) {
+      const result = await run(connector, [SINGLE])
+      expect(result.success).toEqual([])
+      expect(errorMessages(result)).toEqual(
+        ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
+          tokenId,
+          SINGLE,
+          "Spec 2003000 of bittensor has no substrate-gamma support",
+        ])
+      )
+    }
+    expect(sentCalls(sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
     ])
   })
 })
