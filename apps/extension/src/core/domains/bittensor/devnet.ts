@@ -1,7 +1,7 @@
 import { log } from "@common/log"
 import { createClient, type SubstrateClient } from "@polkadot-api/substrate-client"
 import { getWsProvider } from "@polkadot-api/ws-provider"
-import { SubDTaoBalanceModule } from "@talismn/balances"
+import { SubDTaoBalanceModule, SubGammaBalanceModule } from "@talismn/balances"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   type DotNetwork,
@@ -67,7 +67,10 @@ const registerDevnet = async (client: SubstrateClient) => {
   await customChaindataStore.upsertNetwork(network, nativeToken)
   await activeNetworksStore.setActive(NETWORK_ID, true)
 
-  const tokens = await getDevnetSubnetTokens(client, network.specVersion, metadataRpc, nativeToken)
+  const tokens = [
+    ...(await getDevnetSubnetTokens(client, network.specVersion, metadataRpc, nativeToken)),
+    ...(await getDevnetGammaTokens(client, network.specVersion, metadataRpc)),
+  ]
   await customChaindataStore.upsert([], tokens)
 
   // subnets from a previous run may not exist anymore after a chain reset
@@ -75,7 +78,11 @@ const registerDevnet = async (client: SubstrateClient) => {
   const staleTokenIds = previousTokenIds.filter((id) => !freshTokenIds.has(id))
   if (staleTokenIds.length) await customChaindataStore.remove([], staleTokenIds)
 
-  log.log("[bittensor-devnet] registered %s with %d subnet tokens", NETWORK_ID, tokens.length)
+  log.log(
+    "[bittensor-devnet] registered %s with %d subnet and gamma tokens",
+    NETWORK_ID,
+    tokens.length
+  )
 }
 
 /** clears any registration left over from a previous run with the env variable set */
@@ -179,6 +186,26 @@ const getDevnetSubnetTokens = async (
   return tokens.map((token) =>
     token.netuid === 0 ? { ...token, symbol: nativeToken.symbol } : token
   )
+}
+
+const getDevnetGammaTokens = async (
+  client: SubstrateClient,
+  specVersion: number,
+  metadataRpc: `0x${string}`
+) => {
+  const miniMetadata = SubGammaBalanceModule.getMiniMetadata({
+    networkId: NETWORK_ID,
+    specVersion,
+    metadataRpc,
+  })
+
+  return SubGammaBalanceModule.fetchTokens({
+    networkId: NETWORK_ID,
+    tokens: [],
+    connector: getOneShotConnector(client),
+    miniMetadata,
+    cache: {},
+  })
 }
 
 /** the network isn't in chaindata yet when tokens are fetched, so the module talks to our own client */
