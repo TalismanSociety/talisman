@@ -4,7 +4,7 @@ import { gzipSync } from "node:zlib"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { fromHex, parseMetadataRpc, toHex } from "@talismn/scale"
 
-import { connectFinney, FINNEY_ARCHIVE_RPC, FINNEY_RPC, fetchMetadataAt } from "./gammaAccounts"
+import { connectFinney, FINNEY_ARCHIVE_RPC, fetchMetadataAt } from "./gammaAccounts"
 import { log } from "./log"
 
 const FIXTURES_DIR = path.resolve(
@@ -15,17 +15,20 @@ const FIXTURES_DIR = path.resolve(
 const SINGLE_DEPOSIT_COLDKEY = "5Fo2v1deBHBzANPFNHf9rCYfGcgSLy8PbPJUg4vwqCN1wzG3"
 const SINGLE_DEPOSIT_HOTKEY = "5ExmGpDd1cziNENNaogDUA6RCNUvtp3aGjag53KRGEUokHns"
 
-const LIVE = {
-  spec: 497,
-  coldkeys: [
-    SINGLE_DEPOSIT_COLDKEY,
-    "5CLWmDjLwkDtLQ86y9aiwfzrUCrtnnSWS9oEXianj2jMDCAo",
-    "5DbyUgRHKtebU6QwbyNpYHiUqLDAZ9xHo12A84U9ER228JDM",
-  ],
-}
-const OLDER_SPECS = [
+/** Pinned blocks: a capped deposit's spendable refills every block, so a recording at the live head drifts and its statuses change. */
+const SPECS = [
   { spec: 488, block: 9478216, coldkeys: ["5GeRaijjCS9pHHgHFid4MuAqMRtW1imS7arBuxeQRvgSgzyC"] },
+  {
+    spec: 497,
+    block: 9597631,
+    coldkeys: [
+      SINGLE_DEPOSIT_COLDKEY,
+      "5CLWmDjLwkDtLQ86y9aiwfzrUCrtnnSWS9oEXianj2jMDCAo",
+      "5DbyUgRHKtebU6QwbyNpYHiUqLDAZ9xHo12A84U9ER228JDM",
+    ],
+  },
 ]
+const CAPPED_SYNTHETIC_SPEC = 497
 
 const RUNTIME_API = "GammaRuntimeApi"
 const METHOD = "get_gamma_deposits_for_coldkey"
@@ -35,7 +38,7 @@ const metadataName = (spec: number) => `metadata-${spec}.scale.gz`
 const responseName = (spec: number, coldkey: string) => `${spec}.${coldkey}.bin.gz`
 const SPEC_FILE = /^(metadata-)?\d+\./
 const EXPECTED = new Set(
-  [LIVE, ...OLDER_SPECS].flatMap(({ spec, coldkeys }) => [
+  SPECS.flatMap(({ spec, coldkeys }) => [
     metadataName(spec),
     ...coldkeys.map((coldkey) => responseName(spec, coldkey)),
   ])
@@ -89,31 +92,24 @@ const cappedSynthetic = (metadataRpc: `0x${string}`) => {
   return toHex(response)
 }
 
-const recordLive = async (fixtures: Fixtures) => {
-  const finney = connectFinney(FINNEY_RPC)
-  try {
-    const at = await finney.send<string>("bittensor", "chain_getFinalizedHead", [])
-    log.log(`recording spec ${LIVE.spec} at ${at} from ${FINNEY_RPC}`)
-    fixtures.set(CAPPED_SYNTHETIC, cappedSynthetic(await record(finney, at, LIVE, fixtures)))
-  } finally {
-    finney.destroy()
-  }
-}
-
-const recordArchive = async (fixtures: Fixtures) => {
+const recordAll = async (): Promise<Fixtures | null> => {
   const archive = connectFinney(FINNEY_ARCHIVE_RPC)
   try {
     const hashes = await Promise.all(
-      OLDER_SPECS.map(({ block }) =>
-        archive.send<string>("bittensor", "chain_getBlockHash", [block])
-      )
+      SPECS.map(({ block }) => archive.send<string>("bittensor", "chain_getBlockHash", [block]))
     ).catch((error) => {
-      log.warn(`skipped older specs: ${FINNEY_ARCHIVE_RPC} is unreachable`, error)
+      log.warn(`recorded nothing: ${FINNEY_ARCHIVE_RPC} is unreachable`, error)
       return null
     })
-    if (!hashes) return
-    for (const [i, older] of OLDER_SPECS.entries())
-      await record(archive, hashes[i], older, fixtures)
+    if (!hashes) return null
+    const fixtures: Fixtures = new Map()
+    for (const [i, spec] of SPECS.entries()) {
+      log.log(`recording spec ${spec.spec} at block ${spec.block} from ${FINNEY_ARCHIVE_RPC}`)
+      const metadataRpc = await record(archive, hashes[i], spec, fixtures)
+      if (spec.spec === CAPPED_SYNTHETIC_SPEC)
+        fixtures.set(CAPPED_SYNTHETIC, cappedSynthetic(metadataRpc))
+    }
+    return fixtures
   } finally {
     archive.destroy()
   }
@@ -132,9 +128,8 @@ const writeFixtures = (fixtures: Fixtures) => {
 }
 
 const main = async () => {
-  const fixtures: Fixtures = new Map()
-  await recordLive(fixtures)
-  await recordArchive(fixtures)
+  const fixtures = await recordAll()
+  if (!fixtures) return
   mkdirSync(FIXTURES_DIR, { recursive: true })
   writeFixtures(fixtures)
 }

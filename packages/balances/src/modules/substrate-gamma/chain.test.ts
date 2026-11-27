@@ -64,9 +64,6 @@ const PAUSED_DEPOSITS: GammaDeposit[] = [
   },
 ]
 
-/** A capped deposit's spendable refills every block, so a re-record changes it and only it. */
-const withoutSpendable = ({ spendable: _, ...deposit }: GammaDeposit) => deposit
-
 const CAPPED = "5DbyUgRHKtebU6QwbyNpYHiUqLDAZ9xHo12A84U9ER228JDM"
 const CAPPED_DEPOSITS: GammaDeposit[] = [
   { netuid: 51, hotkey: CAPPED, balance: 0n, spendable: 0n, dailySpendCap: null },
@@ -74,7 +71,7 @@ const CAPPED_DEPOSITS: GammaDeposit[] = [
     netuid: 53,
     hotkey: "5DoMfqSMFavvTswDuvqZ5aBHgLhNCRBkQEryb1i7dpyL2yc1",
     balance: 14241315679n,
-    spendable: 2414583333n,
+    spendable: 2475694444n,
     dailySpendCap: 5000000000n,
   },
   {
@@ -88,7 +85,7 @@ const CAPPED_DEPOSITS: GammaDeposit[] = [
     netuid: 117,
     hotkey: "5CXTDHHSo4GpjFkmuQPEpwn3wvVQYWx5T3JuseKJYnKspZCz",
     balance: 9229746190n,
-    spendable: 1992166663n,
+    spendable: 2114388885n,
     dailySpendCap: 10000000000n,
   },
 ]
@@ -298,7 +295,7 @@ describe("recorded spec 497 deposits", () => {
   it("shows capped deposits and no balance for a subnet whose only deposit is empty", async () => {
     const deposits = await readDeposits(METADATA_497, CAPPED, recorded(CAPPED))
 
-    expect(deposits.map(withoutSpendable)).toEqual(CAPPED_DEPOSITS.map(withoutSpendable))
+    expect(deposits).toEqual(CAPPED_DEPOSITS)
     expect(statusesByNetuid(CAPPED, deposits)).toEqual({
       51: null,
       53: [{ hotkey: "5DoMfqSMFavvTswDuvqZ5aBHgLhNCRBkQEryb1i7dpyL2yc1", status: "capped" }],

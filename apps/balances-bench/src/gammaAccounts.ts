@@ -5,7 +5,7 @@ import { getStorageKeyPrefix, type MetadataBuilder, parseMetadataRpc } from "@ta
 
 import { log } from "./log"
 
-export const FINNEY_RPC = "wss://entrypoint-finney.opentensor.ai:443"
+const FINNEY_RPC = "wss://entrypoint-finney.opentensor.ai:443"
 export const FINNEY_ARCHIVE_RPC = "wss://archive.chain.opentensor.ai:443"
 
 export const connectFinney = (rpc: string) =>
