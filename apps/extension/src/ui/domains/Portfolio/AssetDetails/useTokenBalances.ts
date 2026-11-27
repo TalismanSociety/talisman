@@ -42,6 +42,7 @@ export type BalanceDetailRow = {
   address?: Address
   // biome-ignore lint/suspicious/noExplicitAny: legacy
   meta?: any
+  /** validator of a dtao conviction lock, or API key of a gamma deposit, if this row is one */
   hotkey?: string
   gammaDeposit?: GammaDepositRow
   isLoading?: boolean

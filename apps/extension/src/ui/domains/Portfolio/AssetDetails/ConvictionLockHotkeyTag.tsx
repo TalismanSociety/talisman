@@ -6,8 +6,9 @@ import { shortenAddress } from "@ui/util/shortenAddress"
 import type { FC } from "react"
 
 /**
- * Compact hotkey tag shown next to a dtao conviction lock's title in the portfolio:
- * the hotkey's account icon + its name (or shortened hotkey when it has no name).
+ * Compact hotkey tag shown next to a portfolio row's title, for a dtao conviction lock's validator
+ * or a gamma deposit's API key: the hotkey's account icon + its name (or shortened hotkey when it
+ * has no name).
  */
 export const ConvictionLockHotkeyTag: FC<{
   hotkey: string | null | undefined
