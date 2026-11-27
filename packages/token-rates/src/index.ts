@@ -1,4 +1,5 @@
 export * from "./fetchDTaoTokenRates"
+export * from "./gammaFaceValue"
 export * from "./getDTaoTokenRates"
 export * from "./TalismanTokenRatesDatabase"
 export * from "./TokenRates"

@@ -59,9 +59,10 @@ export async function fetchTokenRates(
       // END: LP tokens have a rate which is calculated later on, using the rates of two other tokens.
 
       // ignore tokens which don't have a coingeckoId
-      if (!token.coingeckoId) return []
+      const coingeckoId = getPricedCoingeckoId(token)
+      if (!coingeckoId) return []
 
-      return [{ id: token.id, coingeckoId: token.coingeckoId }]
+      return [{ id: token.id, coingeckoId }]
     })
 
     // get each token's coingeckoId
@@ -153,14 +154,21 @@ export async function fetchTokenRates(
 
   // build a TokenRatesList from the token prices result
   const ratesList: TokenRatesList = Object.fromEntries(
-    Object.entries(tokens).map(([tokenId, token]) => [
-      tokenId,
-      token.coingeckoId ? (tokenRates[token.coingeckoId] ?? null) : null,
-    ])
+    Object.entries(tokens).map(([tokenId, token]) => {
+      const coingeckoId = getPricedCoingeckoId(token)
+      return [tokenId, coingeckoId ? (tokenRates[coingeckoId] ?? null) : null]
+    })
   ) as TokenRatesList
 
   return ratesList
 }
+
+/**
+ * Gamma credits are never priced, even when chaindata attaches a `coingeckoId`: they have no market,
+ * so no fiat sum may count them. Replace this skip if a market ever exists.
+ */
+const getPricedCoingeckoId = (token: Token) =>
+  token.type === "substrate-gamma" ? undefined : token.coingeckoId
 
 // To save on bandwidth and work around response size limits, values are returned without json property names
 // (e.g. [[[12, 12332, 0.5]]] instead of { dot : {usd: { value: 12, marketCap: 12332, change24h: 0.5 }} })

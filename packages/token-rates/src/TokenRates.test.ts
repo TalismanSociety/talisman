@@ -127,6 +127,26 @@ describe("fetchTokenRates", () => {
     expect(body.currencyIds).toEqual(["usd"])
   })
 
+  it("skips gamma tokens even with a coingeckoId", async () => {
+    const mockFetch = mockFetchJson([[[300, 1000, 0.5]]])
+    vi.stubGlobal("fetch", mockFetch)
+
+    const tokens: Record<TokenId, Token> = {
+      tao: makeToken({ id: "tao", coingeckoId: "bittensor" }),
+      "gamma-25": makeToken({ id: "gamma-25", type: "substrate-gamma", coingeckoId: "bittensor" }),
+      "gamma-80": makeToken({ id: "gamma-80", type: "substrate-gamma", coingeckoId: "fake-gamma" }),
+    }
+
+    const result = await fetchTokenRates(tokens, ["usd"], config)
+
+    expect(JSON.parse(mockFetch.mock.calls[0][1].body).coingeckoIds).toEqual(["bittensor"])
+    expect(result).toEqual({
+      tao: { usd: { price: 300, marketCap: 1000, change24h: 0.5 } },
+      "gamma-25": null,
+      "gamma-80": null,
+    })
+  })
+
   it("handles multiple currencies", async () => {
     // polkadot rates for usd and eur
     const apiResponse = [
