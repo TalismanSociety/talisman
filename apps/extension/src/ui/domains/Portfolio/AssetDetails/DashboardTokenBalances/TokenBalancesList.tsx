@@ -47,6 +47,8 @@ export const TokenBalancesList = ({
 
   if (!token) return null
 
+  const isGammaCredit = token.type === "substrate-gamma"
+
   return (
     <div className="mb-8">
       <div
@@ -105,7 +107,8 @@ export const TokenBalancesList = ({
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={symbol}
-            tooltip={t("Total Locked Balance")}
+            tooltip={isGammaCredit ? t("Credits") : t("Total Locked Balance")}
+            isGammaCredit={isGammaCredit}
             balancesStatus={status}
             className={cn(status.status === "fetching" && "animate-pulse transition-opacity")}
           />
@@ -115,6 +118,7 @@ export const TokenBalancesList = ({
             <BondButton balances={balances} />
           </div>
           <AssetBalanceCellValue
+            render={!isGammaCredit}
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={symbol}

@@ -36,6 +36,7 @@ const HeaderRow: FC<{
 }> = ({ token, summary }) => {
   const { t } = useTranslation()
   const canHaveLockedState = Boolean(token?.networkId)
+  const isGammaCredit = token?.type === "substrate-gamma"
 
   if (summary.totalTokens.isZero()) return null
 
@@ -55,7 +56,7 @@ const HeaderRow: FC<{
           <>
             <Statistics
               className="h-auto w-auto items-end p-0 pr-8"
-              title={t("Locked")}
+              title={isGammaCredit ? t("Credits") : t("Locked")}
               tokens={summary.lockedTokens}
               fiat={summary.lockedFiat}
               token={token}
@@ -63,15 +64,19 @@ const HeaderRow: FC<{
               showTokens
               align="right"
             />
-            <Statistics
-              className="h-auto w-auto items-end p-0"
-              title={t("Available")}
-              tokens={summary.availableTokens}
-              fiat={summary.availableFiat}
-              token={token}
-              showTokens
-              align="right"
-            />
+            {isGammaCredit ? (
+              <div></div>
+            ) : (
+              <Statistics
+                className="h-auto w-auto items-end p-0"
+                title={t("Available")}
+                tokens={summary.availableTokens}
+                fiat={summary.availableFiat}
+                token={token}
+                showTokens
+                align="right"
+              />
+            )}
           </>
         ) : (
           <>

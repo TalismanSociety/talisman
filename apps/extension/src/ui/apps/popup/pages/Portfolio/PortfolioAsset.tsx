@@ -6,6 +6,7 @@ import { IconButton } from "@ui/components/IconButton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { GammaFaceValue } from "@ui/domains/Asset/GammaFaceValue"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { BittensorConvictionLockToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorConvictionLockToolbarButton"
 import { BittensorDashboardToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorDashboardToolbarButton"
@@ -16,6 +17,7 @@ import { useAssetDetails } from "@ui/domains/Portfolio/AssetDetails/useAssetDeta
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useBalances } from "@ui/state/balances"
 import { usePortfolioBalances } from "@ui/state/portfolio"
@@ -68,6 +70,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
     [balancesToDisplay]
   )
 
+  const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
+
   const { t } = useTranslation()
 
   return (
@@ -79,7 +83,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <div className="shrink-0">{symbol}</div>
         <div className="flex grow items-center justify-end gap-3">
           <div className="text-body-secondary text-sm">{t("Total")}</div>
-          <Fiat amount={total} isBalance />
+          {token?.type === "substrate-gamma" ? (
+            <GammaFaceValue tokens={summary.totalTokens} />
+          ) : (
+            <Fiat amount={total} isBalance />
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import type BigNumber from "bignumber.js"
 import type { ReactNode } from "react"
 
 import { Fiat } from "../Asset/Fiat"
+import { GammaFaceValue } from "../Asset/GammaFaceValue"
 import { Tokens } from "../Asset/Tokens"
 import { StaleBalancesIcon } from "./StaleBalancesIcon"
 
@@ -19,6 +20,7 @@ type Props = {
   tooltip?: ReactNode
   balancesStatus?: BalancesStatus
   noCountUp?: boolean
+  isGammaCredit?: boolean
 }
 
 export const AssetBalanceCellValue = ({
@@ -31,6 +33,7 @@ export const AssetBalanceCellValue = ({
   tooltip,
   balancesStatus,
   noCountUp,
+  isGammaCredit,
 }: Props) => {
   if (!render) return null
   return (
@@ -61,7 +64,15 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}</div>
+        <div>
+          {isGammaCredit ? (
+            <GammaFaceValue tokens={tokens} noCountUp={noCountUp} />
+          ) : fiat === null ? (
+            "-"
+          ) : (
+            <Fiat amount={fiat} isBalance noCountUp={noCountUp} />
+          )}
+        </div>
       </div>
     </WithTooltip>
   )
