@@ -83,7 +83,7 @@ describe("BittensorConfirmTalismanFeeLabel SEEK discount pill", () => {
   })
 
   it("is hidden when the staked SEEK fails to load", () => {
-    seekStaked.current = { planck: 0n, isLoading: false, isError: true }
+    seekStaked.current = { planck: 500n * SEEK, isLoading: false, isError: true }
 
     const { queryByText } = renderLabel()
 
@@ -106,7 +106,7 @@ describe("BittensorConfirmTalismanFeeLabel SEEK discount pill", () => {
 
     const { getByText } = renderLabel()
 
-    expect(getByText(/5% Off Fees/)).toBeTruthy()
+    expect(getByText("5% Off Fees")).toBeTruthy()
   })
 
   it("adds the subnet discount to the tier discount", () => {
@@ -115,6 +115,6 @@ describe("BittensorConfirmTalismanFeeLabel SEEK discount pill", () => {
 
     const { getByText } = renderLabel()
 
-    expect(getByText(/65% Off Fees/)).toBeTruthy()
+    expect(getByText("65% Off Fees")).toBeTruthy()
   })
 })
