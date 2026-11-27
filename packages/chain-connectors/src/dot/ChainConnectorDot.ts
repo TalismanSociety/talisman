@@ -91,7 +91,9 @@ const isSubmittingExtrinsic = (connection: Connection) =>
   connection.authorRequestsInFlight > 0 ||
   [...connection.subscriptions].some(
     (subscription) =>
-      !subscription.unsubscribed && subscription.subscribeMethod.startsWith("author_")
+      !subscription.unsubscribed &&
+      subscription.subscribeMethod.startsWith("author_") &&
+      (subscription.serverSubId !== null || subscription.cancelRequest !== null)
   )
 
 type Subscription = {
@@ -553,7 +555,11 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
     // the provider picks the endpoint of its next socket after this handler returns, so a
     // `switch()` made here decides where it reconnects
-    if (status.type === WsEvent.ERROR) this.keepEndpointAfterResume(connection)
+    if (status.type === WsEvent.ERROR) {
+      for (const subscription of connection.subscriptions)
+        if (subscription.subscribeMethod.startsWith("author_")) subscription.serverSubId = null
+      this.keepEndpointAfterResume(connection)
+    }
 
     if (status.type === WsEvent.CONNECTED) {
       if (connection.staleTimeout) {

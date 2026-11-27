@@ -257,10 +257,8 @@ describe("ChainConnectorDot after a suspension", () => {
     expect(provider.switches).toEqual([])
   })
 
-  it("keeps the socket of an extrinsic's watch across a long suspension", async () => {
-    const connector = new Connector(chaindata)
-    // a new socket would lose the watch: author subscriptions are not re-established
-    await connector.subscribe(
+  const watchExtrinsic = (connector: ChainConnectorDot) =>
+    connector.subscribe(
       "bittensor",
       "author_submitAndWatchExtrinsic",
       "author_extrinsicUpdate",
@@ -268,12 +266,42 @@ describe("ChainConnectorDot after a suspension", () => {
       () => {},
       false
     )
+
+  it("keeps the socket of an extrinsic's watch across a long suspension", async () => {
+    const connector = new Connector(chaindata)
+    // a new socket would lose the watch: author subscriptions are not re-established
+    await watchExtrinsic(connector)
     const provider = sockets.providers[0]!
     connect(provider, "wss://b.example")
 
     await run(2_000)
-    await suspend(90_000)
+    await suspend(20_000)
     expect(provider.switches).toEqual([])
+  })
+
+  it("reconnects after a long suspension when an extrinsic's watch was rejected", async () => {
+    const connector = new Connector(chaindata)
+    sockets.failing.set("author_submitAndWatchExtrinsic", -32601)
+    await watchExtrinsic(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual(["wss://b.example"])
+  })
+
+  it("reconnects after a long suspension when an extrinsic's watch was lost with its socket", async () => {
+    const connector = new Connector(chaindata)
+    await watchExtrinsic(connector)
+    const provider = sockets.providers[0]!
+    connect(provider, "wss://b.example")
+
+    provider.onStatusChanged({ type: WsEvent.ERROR })
+    connect(provider, "wss://a.example")
+    await run(2_000)
+    await suspend(20_000)
+    expect(provider.switches).toEqual(["wss://a.example"])
   })
 
   it("keeps the endpoint when the socket fails just after a short suspension", async () => {
