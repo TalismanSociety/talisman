@@ -44,6 +44,18 @@ describe("gamma deposits", () => {
     })
   })
 
+  it("keeps only the funded deposits of a subnet", () => {
+    const json = toGammaBalance(COLDKEY, subGammaTokenId("bittensor", 51), [
+      { netuid: 51, hotkey: HOTKEY_A, balance: 0n, spendable: 0n, dailySpendCap: null },
+      { netuid: 51, hotkey: HOTKEY_B, balance: 5n, spendable: 5n, dailySpendCap: null },
+    ])
+    if (!json) throw new Error("expected a balance")
+
+    expect(getGammaDeposits(json)).toEqual([
+      { hotkey: HOTKEY_B, balance: 5n, spendable: 5n, dailySpendCap: null, status: "open" },
+    ])
+  })
+
   it("gives two deposits on one subnet distinct value ids", () => {
     const json = toGammaBalance(COLDKEY, subGammaTokenId("bittensor", 80), [
       { netuid: 80, hotkey: HOTKEY_A, balance: 10n, spendable: 10n, dailySpendCap: null },
