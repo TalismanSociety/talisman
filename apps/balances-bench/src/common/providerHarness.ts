@@ -36,7 +36,7 @@ export const loadChaindata = async (source: string): Promise<ChaindataProvider> 
   await new Promise<void>((resolve, reject) => {
     subscription = chaindata.networks$.subscribe({
       next: (networks) => {
-        if (networks.length) resolve()
+        if (networks.length || !parsed.data.networks.length) resolve()
       },
       error: reject,
     })
@@ -112,26 +112,37 @@ export type BalancesRun = {
   requestsByMethod: Record<string, number>
 }
 
-/** Runs `BalancesProvider` for `durationMs` and returns every emit. Substrate networks only. */
+let hasRunBalances = false
+
+/**
+ * Runs `BalancesProvider` for `durationMs` and returns every emit. Substrate networks only.
+ * One run per process: the library caches balance observables globally by argument, so a second
+ * run would reuse the first run's destroyed connector and emit nothing.
+ */
 export const runBalances = async (
   chaindata: ChaindataProvider,
   addressesByTokenId: Record<TokenId, Address[]>,
   durationMs: number
 ): Promise<BalancesRun> => {
+  if (hasRunBalances) throw new Error("runBalances supports one run per process")
+  hasRunBalances = true
+
   const connector = new CountingChainConnectorDot(chaindata)
   const provider = new BalancesProvider(chaindata, { substrate: connector })
   const emits: BalancesResult[] = []
 
   let subscription: { unsubscribe: () => void } | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
   try {
     await new Promise<void>((resolve, reject) => {
       subscription = provider.getBalances$(addressesByTokenId).subscribe({
         next: (result) => emits.push(result),
         error: reject,
       })
-      setTimeout(resolve, durationMs)
+      timer = setTimeout(resolve, durationMs)
     })
   } finally {
+    clearTimeout(timer)
     subscription?.unsubscribe()
     await connector.destroy()
   }

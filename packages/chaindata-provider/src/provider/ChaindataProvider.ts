@@ -250,7 +250,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   /**
-   * Registers token dynamically a runtime. used for SPL and dTAO tokens.
+   * Registers tokens dynamically at runtime. Used for SPL, Token-2022, dTAO and gamma tokens.
    * @param tokens
    */
   async registerDynamicTokens(tokens: Token[]) {

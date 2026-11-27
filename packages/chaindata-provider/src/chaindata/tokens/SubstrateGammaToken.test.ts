@@ -20,10 +20,14 @@ describe("subGammaTokenId", () => {
 })
 
 describe("parseSubGammaTokenId", () => {
-  it("rejects a negative netuid", () => {
-    expect(() => parseSubGammaTokenId("bittensor:substrate-gamma:-1")).toThrow(
-      "Too small: expected number to be >=0"
-    )
+  it.each([
+    "bittensor:substrate-gamma:-1",
+    "bittensor:substrate-gamma:0x19",
+    "bittensor:substrate-gamma:25.0",
+    "bittensor:substrate-gamma: 25",
+    "bittensor:substrate-gamma:25:5FoHotkey",
+  ])("rejects the non-canonical id %s", (id) => {
+    expect(() => parseSubGammaTokenId(id)).toThrow(`Invalid SubGammaToken ID: ${id}`)
   })
 
   it("rejects another token type", () => {

@@ -34,8 +34,10 @@ export const subGammaTokenId = (networkId: NetworkId, netuid: number) =>
   generateTokenId(networkId, TOKEN_TYPE, String(netuid))
 
 export const parseSubGammaTokenId = (tokenId: TokenId): SubGammaTokenIdSpecs => {
-  const [networkId, type, netuid] = tokenId.split(":")
-  if (!networkId || !netuid) throw new Error(`Invalid SubGammaToken ID: ${tokenId}`)
+  const parts = tokenId.split(":")
+  const [networkId, type, netuid] = parts
+  if (parts.length !== 3 || !networkId || !netuid || !/^\d+$/.test(netuid))
+    throw new Error(`Invalid SubGammaToken ID: ${tokenId}`)
   if (type !== TOKEN_TYPE) throw new Error(`Invalid SubGammaToken type: ${type}`)
 
   return {
