@@ -31,6 +31,36 @@ describe("isTransferableToken", () => {
     ).toBe(false)
   })
 
+  it("returns false for gamma credits", () => {
+    expect(
+      isTransferableToken(
+        makeToken({
+          id: "bittensor:substrate-gamma:25" as never,
+          type: "substrate-gamma",
+          platform: "polkadot",
+          networkId: "bittensor",
+          netuid: 25,
+          isTransferable: false,
+        } as never)
+      )
+    ).toBe(false)
+  })
+
+  it("follows isTransferable for gamma credits", () => {
+    expect(
+      isTransferableToken(
+        makeToken({
+          id: "bittensor:substrate-gamma:25" as never,
+          type: "substrate-gamma",
+          platform: "polkadot",
+          networkId: "bittensor",
+          netuid: 25,
+          isTransferable: true,
+        } as never)
+      )
+    ).toBe(true)
+  })
+
   it("returns true for sol-spl tokens", () => {
     expect(
       isTransferableToken(
