@@ -25,6 +25,8 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
         return "HUB"
       case "substrate-dtao":
         return "DTAO"
+      case "substrate-gamma":
+        return "GAMMA"
       case "substrate-foreignassets":
         return "FOREIGN"
       case "substrate-psp22":
