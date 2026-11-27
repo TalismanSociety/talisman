@@ -37,7 +37,7 @@ export const TokenBalancesDetailRow = ({
       )}
     >
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
-        <div className="flex h-10 w-full items-center gap-2 font-bold text-white">
+        <div className="flex min-h-10 w-full flex-wrap items-center gap-2 font-bold text-white">
           <div className="shrink-0 truncate capitalize">{row.title}</div>
           {row.hotkey && <ConvictionLockHotkeyTag hotkey={row.hotkey} />}
           {!!row.locked && tokenId && row.meta && (

@@ -1,4 +1,5 @@
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { GammaDepositRow } from "./useTokenBalances"
@@ -22,7 +23,7 @@ export const GammaDepositSummary = ({
   const capText = (
     <span className="whitespace-nowrap">
       {status === "paused" ? (
-        t("Paused")
+        <span className="text-alert-warn">{t("Paused")}</span>
       ) : dailySpendCap === null ? (
         t("No cap")
       ) : (
@@ -42,8 +43,17 @@ export const GammaDepositSummary = ({
     )
 
   return (
-    <span>
-      {spendableText} · {capText}
-    </span>
+    <DotSeparatedWrap>
+      {spendableText}
+      {capText}
+    </DotSeparatedWrap>
   )
 }
+
+const DotSeparatedWrap = ({ children }: { children: ReactNode }) => (
+  <div className="overflow-hidden">
+    <div className="-ml-6 flex flex-wrap *:before:inline-block *:before:w-6 *:before:text-center *:before:content-['·']">
+      {children}
+    </div>
+  </div>
+)
