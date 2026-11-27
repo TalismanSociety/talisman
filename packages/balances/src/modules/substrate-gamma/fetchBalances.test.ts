@@ -32,6 +32,12 @@ const miniMetadata = getMiniMetadata({
   metadataRpc: fixtureHex("metadata-497.scale.gz"),
 })
 
+const staleMiniMetadata = getMiniMetadata({
+  networkId: "bittensor",
+  specVersion: 488,
+  metadataRpc: fixtureHex("metadata-488.scale.gz"),
+})
+
 const metadataAtVersion = (name: string) => toHex(Option(Bytes()).enc(fromHex(fixtureHex(name))))
 
 const stubConnector = ({
@@ -54,28 +60,35 @@ const stubConnector = ({
   return { connector, sent }
 }
 
-const gammaToken = (netuid: number) =>
+const gammaToken = (networkId: string, netuid: number) =>
   ({
-    id: `bittensor:substrate-gamma:${netuid}`,
+    id: `${networkId}:substrate-gamma:${netuid}`,
     type: "substrate-gamma",
     platform: "polkadot",
-    networkId: "bittensor",
+    networkId,
     netuid,
     symbol: `γSN${netuid}`,
     decimals: 9,
     isTransferable: false,
   }) as TokensWithAddresses[number][0]
 
-const run = (connector: IChainConnectorDot, addresses: string[], metadata = miniMetadata) =>
+const run = (
+  connector: IChainConnectorDot,
+  addresses: string[],
+  { networkId = "bittensor", metadata = miniMetadata } = {}
+) =>
   fetchBalances({
-    networkId: "bittensor",
+    networkId,
     tokensWithAddresses: [
-      [gammaToken(25), addresses],
-      [gammaToken(28), addresses],
+      [gammaToken(networkId, 25), addresses],
+      [gammaToken(networkId, 28), addresses],
     ],
     connector,
-    miniMetadata: metadata,
+    miniMetadata: { ...metadata, chainId: networkId },
   })
+
+const requestedTokenIds = (networkId: string) =>
+  [25, 28].map((netuid) => `${networkId}:substrate-gamma:${netuid}`)
 
 const sentCalls = (sent: { method: string; params: unknown[] }[]) =>
   sent.map(({ method, params }) => [method, ...params])
@@ -157,22 +170,18 @@ describe("substrate-gamma fetchBalances", () => {
   })
 
   it("decodes with metadata it fetches once per spec when the pinned block runs a newer spec", async () => {
-    const staleMiniMetadata = getMiniMetadata({
-      networkId: "bittensor",
-      specVersion: 488,
-      metadataRpc: fixtureHex("metadata-488.scale.gz"),
-    })
     const { connector, sent } = stubConnector({
       metadata: () => metadataAtVersion("metadata-497.scale.gz"),
     })
+    const options = { networkId: "upgraded", metadata: staleMiniMetadata }
 
-    const first = await run(connector, [SINGLE], staleMiniMetadata)
-    const second = await run(connector, [SINGLE], staleMiniMetadata)
+    const first = await run(connector, [SINGLE], options)
+    const second = await run(connector, [SINGLE], options)
 
     for (const result of [first, second])
       expect(result.success.map(({ tokenId, values }) => [tokenId, values])).toEqual([
         [
-          "bittensor:substrate-gamma:25",
+          "upgraded:substrate-gamma:25",
           [deposit("5ExmGpDd1cziNENNaogDUA6RCNUvtp3aGjag53KRGEUokHns", "154770370")],
         ],
       ])
@@ -187,17 +196,61 @@ describe("substrate-gamma fetchBalances", () => {
     ])
   })
 
+  it("decodes with fetched metadata when the stale spec had no gamma support and the chain now has it", async () => {
+    const { connector, sent } = stubConnector({
+      metadata: () => metadataAtVersion("metadata-497.scale.gz"),
+    })
+
+    const result = await run(connector, [SINGLE], {
+      networkId: "gamma-enabled",
+      metadata: { ...miniMetadata, specVersion: 400, data: null },
+    })
+
+    expect(result.success.map(({ tokenId, values }) => [tokenId, values])).toEqual([
+      [
+        "gamma-enabled:substrate-gamma:25",
+        [deposit("5ExmGpDd1cziNENNaogDUA6RCNUvtp3aGjag53KRGEUokHns", "154770370")],
+      ],
+    ])
+    expect(result.errors).toEqual([])
+    expect(sentCalls(sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+      ["state_call", "GammaRuntimeApi_get_gamma_deposits_for_coldkey", SINGLE_ARG, AT],
+    ])
+  })
+
+  it("emits errors without fetching metadata when the current spec has no gamma support", async () => {
+    const { connector, sent } = stubConnector()
+
+    const result = await run(connector, [SINGLE], {
+      networkId: "no-gamma",
+      metadata: { ...miniMetadata, data: null },
+    })
+
+    expect(result.success).toEqual([])
+    expect(errorMessages(result)).toEqual(
+      requestedTokenIds("no-gamma").map((tokenId) => [
+        tokenId,
+        SINGLE,
+        "Spec 497 of no-gamma has no substrate-gamma support",
+      ])
+    )
+    expect(sentCalls(sent)).toEqual([["chain_getBlockHash"], ["state_getRuntimeVersion", AT]])
+  })
+
   it("emits errors and no balances on every call while the newer spec's metadata cannot be fetched", async () => {
     const { connector, sent } = stubConnector({ specVersion: 498 })
 
     for (const _ of [1, 2]) {
-      const result = await run(connector, [SINGLE])
+      const result = await run(connector, [SINGLE], { networkId: "unfetchable" })
       expect(result.success).toEqual([])
       expect(errorMessages(result)).toEqual(
-        ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
+        requestedTokenIds("unfetchable").map((tokenId) => [
           tokenId,
           SINGLE,
-          "Failed to fetch substrate-gamma balances on bittensor",
+          "Failed to fetch substrate-gamma balances on unfetchable",
         ])
       )
     }
@@ -218,13 +271,13 @@ describe("substrate-gamma fetchBalances", () => {
     })
 
     for (const _ of [1, 2]) {
-      const result = await run(connector, [SINGLE])
+      const result = await run(connector, [SINGLE], { networkId: "gamma-removed" })
       expect(result.success).toEqual([])
       expect(errorMessages(result)).toEqual(
-        ["bittensor:substrate-gamma:25", "bittensor:substrate-gamma:28"].map((tokenId) => [
+        requestedTokenIds("gamma-removed").map((tokenId) => [
           tokenId,
           SINGLE,
-          "Spec 2003000 of bittensor has no substrate-gamma support",
+          "Spec 2003000 of gamma-removed has no substrate-gamma support",
         ])
       )
     }
@@ -234,6 +287,57 @@ describe("substrate-gamma fetchBalances", () => {
       ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
       ["chain_getBlockHash"],
       ["state_getRuntimeVersion", AT],
+    ])
+  })
+
+  it("keeps the metadata it fetched for one network out of another network at the same spec", async () => {
+    const fetched = stubConnector({ metadata: () => metadataAtVersion("metadata-497.scale.gz") })
+    const unfetchable = stubConnector()
+
+    await run(fetched.connector, [SINGLE], { networkId: "network-a", metadata: staleMiniMetadata })
+    const result = await run(unfetchable.connector, [SINGLE], {
+      networkId: "network-b",
+      metadata: staleMiniMetadata,
+    })
+
+    expect(result.success).toEqual([])
+    expect(errorMessages(result)).toEqual(
+      requestedTokenIds("network-b").map((tokenId) => [
+        tokenId,
+        SINGLE,
+        "Failed to fetch substrate-gamma balances on network-b",
+      ])
+    )
+    expect(sentCalls(unfetchable.sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
+    ])
+  })
+
+  it("fetches metadata again when a second upgrade lands in the same session", async () => {
+    const options = { networkId: "upgraded-twice", metadata: staleMiniMetadata }
+    const first = stubConnector({ metadata: () => metadataAtVersion("metadata-497.scale.gz") })
+    const second = stubConnector({
+      specVersion: 2003000,
+      metadata: () => metadataAtVersion("polkadot-metadata-v15.scale.gz"),
+    })
+
+    await run(first.connector, [SINGLE], options)
+    const result = await run(second.connector, [SINGLE], options)
+
+    expect(result.success).toEqual([])
+    expect(errorMessages(result)).toEqual(
+      requestedTokenIds("upgraded-twice").map((tokenId) => [
+        tokenId,
+        SINGLE,
+        "Spec 2003000 of upgraded-twice has no substrate-gamma support",
+      ])
+    )
+    expect(sentCalls(second.sent)).toEqual([
+      ["chain_getBlockHash"],
+      ["state_getRuntimeVersion", AT],
+      ["state_call", "Metadata_metadata_at_version", "0x0f000000", AT],
     ])
   })
 })

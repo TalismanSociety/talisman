@@ -47,8 +47,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
   const failAll = (error: Error) => ({ success: [], errors: toErrors(balanceDefs, error) })
 
-  if (!miniMetadata?.data)
-    return failAll(new Error("Minimetadata is required for fetching balances"))
+  if (!miniMetadata) return failAll(new Error("Minimetadata is required for fetching balances"))
   if (miniMetadata.source !== MODULE_TYPE)
     return failAll(new Error(`Invalid request: miniMetadata source is not ${MODULE_TYPE}`))
   if (miniMetadata.chainId !== networkId)
