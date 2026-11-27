@@ -115,6 +115,12 @@ const read = async (metadataRpc: `0x${string}`, coldkey: string, response: strin
     coldkey
   )
 
+const readDeposits = async (metadataRpc: `0x${string}`, coldkey: string, response: string) => {
+  const result = await read(metadataRpc, coldkey, response)
+  if (!Array.isArray(result)) throw new Error(`expected deposits, got ${result}`)
+  return result
+}
+
 const METADATA_497 = fixtureHex("metadata-497.scale.gz")
 const recorded = (coldkey: string) => fixtureHex(`497.${coldkey}.bin.gz`)
 
@@ -274,7 +280,7 @@ describe("fetchOwnedGammaDeposits", () => {
 
 describe("recorded spec 497 deposits", () => {
   it("shows a paused deposit beside open ones, including one on another owner's hotkey", async () => {
-    const deposits = await read(METADATA_497, PAUSED, recorded(PAUSED))
+    const deposits = await readDeposits(METADATA_497, PAUSED, recorded(PAUSED))
 
     expect(deposits).toEqual(PAUSED_DEPOSITS)
     expect(statusesByNetuid(PAUSED, deposits)).toEqual({
@@ -290,7 +296,7 @@ describe("recorded spec 497 deposits", () => {
   })
 
   it("shows capped deposits and no balance for a subnet whose only deposit is empty", async () => {
-    const deposits = await read(METADATA_497, CAPPED, recorded(CAPPED))
+    const deposits = await readDeposits(METADATA_497, CAPPED, recorded(CAPPED))
 
     expect(deposits.map(withoutSpendable)).toEqual(CAPPED_DEPOSITS.map(withoutSpendable))
     expect(statusesByNetuid(CAPPED, deposits)).toEqual({
