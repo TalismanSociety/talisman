@@ -3,7 +3,8 @@ import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useBalances } from "@ui/state/balances"
+import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -107,10 +108,17 @@ export const BittensorSeekDiscountPill: FC<{
 }> = ({ totalFeeDiscount, onOpenDrawer }) => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
+  const { tokenId } = useRemoteConfig().seek
+  const balances = useBalances("owned")
+  const heldSeek = useMemo(
+    () => balances.find((balance) => balance.tokenId === tokenId).sum.planck.total,
+    [balances, tokenId]
+  )
   const { data, isLoading, isError } = useGetSeekStaked()
 
   const hasStakedSeek = !isLoading && !isError && data.totalStaked.planck > 0n
-  if (!hasStakedSeek || !(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled)) return null
+  const hasSeek = hasStakedSeek || heldSeek > 0n
+  if (!hasSeek || !(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled)) return null
 
   const isSeekDrawerEnabled = isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT
 
