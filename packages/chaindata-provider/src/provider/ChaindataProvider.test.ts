@@ -9,7 +9,7 @@ import {
   makeLegacyPersistedData,
   makeUnknownTokenTypeData,
 } from "../__fixtures__/chaindata"
-import type { Token } from "../chaindata"
+import type { SubGammaToken, Token } from "../chaindata"
 import log from "../log"
 import { parseChaindataFileChunked } from "../state/chunkedValidation"
 import type { Chaindata, CustomChaindata } from "../state/schema"
@@ -46,6 +46,20 @@ const EMPTY_STORAGE: ChaindataStorage = {
 /** Wait for the first value that matches, however long the chunked pipeline takes */
 const until = <T>(source$: Observable<T>, predicate: (value: T) => boolean) =>
   firstValueFrom(source$.pipe(filter(predicate), timeout(3_000)))
+
+const GAMMA_25_ID = "bittensor:substrate-gamma:25"
+
+const makeSubGammaToken = (overrides: Partial<SubGammaToken> = {}): SubGammaToken => ({
+  id: GAMMA_25_ID,
+  networkId: "bittensor",
+  type: "substrate-gamma",
+  platform: "polkadot",
+  decimals: 9,
+  symbol: "GAMMA",
+  netuid: 25,
+  isTransferable: false,
+  ...overrides,
+})
 
 // ── Tests ────────────────────────────────────────────────────────────
 
@@ -214,6 +228,26 @@ describe("ChaindataProvider", () => {
       expect(combined?.symbol).toBe("CUR")
       expect(combined?.logo).toBe("https://example.com/cur.svg")
     })
+
+    it("does not let a gamma token shadow its curated entry", async () => {
+      const curatedToken = makeSubGammaToken({
+        name: "Gamma 25 (curated)",
+        logo: "https://example.com/gamma-25.svg",
+      })
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([])
+      const provider = new ChaindataProvider({
+        persistedStorage: makeChaindata({ tokens: [...makeChaindata().tokens, curatedToken] }),
+        dynamicTokens$,
+      })
+
+      await provider.registerDynamicTokens([makeSubGammaToken({ name: "Gamma 25 (runtime)" })])
+
+      expect(await firstValueFrom(dynamicTokens$)).toEqual([])
+      const combined = await firstValueFrom(provider.getTokenById$(GAMMA_25_ID))
+      expect(combined?.name).toBe("Gamma 25 (curated)")
+      expect(combined?.logo).toBe("https://example.com/gamma-25.svg")
+    })
   })
 
   describe("syncDynamicTokens", () => {
@@ -284,6 +318,26 @@ describe("ChaindataProvider", () => {
 
       const token = await firstValueFrom(provider.getTokenById$(id))
       expect(token!.symbol).toBe("T22")
+    })
+
+    it("replaces a stored runtime gamma token with its curated entry", async () => {
+      const curatedToken = makeSubGammaToken({
+        name: "Gamma 25 (curated)",
+        logo: "https://example.com/gamma-25.svg",
+      })
+      const dynamicTokens$ = new ReplaySubject<Token[]>(1)
+      dynamicTokens$.next([makeSubGammaToken({ name: "Gamma 25 (runtime)" })])
+      const provider = new ChaindataProvider({
+        persistedStorage: makeChaindata({ tokens: [...makeChaindata().tokens, curatedToken] }),
+        dynamicTokens$,
+      })
+
+      await provider.syncDynamicTokens()
+
+      expect(await firstValueFrom(dynamicTokens$)).toEqual([])
+      const token = await firstValueFrom(provider.getTokenById$(GAMMA_25_ID))
+      expect(token?.name).toBe("Gamma 25 (curated)")
+      expect(token?.logo).toBe("https://example.com/gamma-25.svg")
     })
 
     it("does not drop a registration racing with a syncDynamicTokens rewrite", async () => {

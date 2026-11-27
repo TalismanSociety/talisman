@@ -20,6 +20,7 @@ import {
   type AnyMiniMetadata,
   type DotNetwork,
   isNetworkOfPlatform,
+  isTokenInTypes,
   isTokenOfType,
   type Network,
   type NetworkId,
@@ -249,7 +250,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   /**
-   * Registers token dynamically a runtime. used for SPL and dTAO tokens.
+   * Registers tokens dynamically at runtime. Used for SPL, Token-2022, dTAO and gamma tokens.
    * @param tokens
    */
   async registerDynamicTokens(tokens: Token[]) {
@@ -497,8 +498,9 @@ const withErrorReason = async <T>(reason: string, task: () => Promise<T> | T): P
 }
 
 /**
- * A dynamic Solana token whose id is also in the curated chaindata. Combined chaindata
+ * A dynamic token whose id is also in the curated chaindata. Combined chaindata
  * keeps the last token per id, so such an entry would replace the curated one.
  */
 const isShadowingCuratedToken = (token: Token, curatedTokenIds: Set<TokenId>) =>
-  (token.type === "sol-spl" || token.type === "sol-token2022") && curatedTokenIds.has(token.id)
+  isTokenInTypes(token, ["sol-spl", "sol-token2022", "substrate-gamma"]) &&
+  curatedTokenIds.has(token.id)
