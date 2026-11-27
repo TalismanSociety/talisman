@@ -12,6 +12,7 @@ const seekStaked = vi.hoisted(() => ({
 }))
 const subnetFee = vi.hoisted(() => ({ current: 0.3 }))
 const ownedBalances = vi.hoisted(() => ({ current: [] as Balance[] }))
+const watchedBalances = vi.hoisted(() => ({ current: [] as Balance[] }))
 
 const seekToken = makeToken("seek", "SEEK")
 const otherToken = makeToken("other", "OTH")
@@ -42,7 +43,14 @@ vi.mock("@ui/domains/Staking/Seek/hooks/useGetSeekStaked", () => ({
 }))
 vi.mock("@ui/state/balances", async () => {
   const { Balances } = await import("@talismn/balances")
-  return { useBalances: () => new Balances(ownedBalances.current) }
+  return {
+    useBalances: (category = "all") =>
+      new Balances(
+        category === "owned"
+          ? ownedBalances.current
+          : [...ownedBalances.current, ...watchedBalances.current]
+      ),
+  }
 })
 vi.mock("@ui/domains/Staking/Bittensor/hooks/useGetSubnetFee", () => ({
   useGetSubnetFee: () => subnetFee.current,
@@ -69,6 +77,7 @@ describe("BittensorConfirmTalismanFeeLabel SEEK discount pill", () => {
     seekStaked.current = { planck: 0n, isLoading: false, isError: false }
     subnetFee.current = 0.3
     ownedBalances.current = []
+    watchedBalances.current = []
   })
   afterEach(cleanup)
 
@@ -88,6 +97,14 @@ describe("BittensorConfirmTalismanFeeLabel SEEK discount pill", () => {
 
   it("is hidden when the wallet holds other tokens and an empty SEEK balance", () => {
     ownedBalances.current = [makeBalance(otherToken, 5), makeBalance(seekToken, 0)]
+
+    const { queryByText } = renderLabel()
+
+    expect(queryByText(pillText)).toBeNull()
+  })
+
+  it("is hidden when only a watched account holds SEEK", () => {
+    watchedBalances.current = [makeBalance(seekToken, 50)]
 
     const { queryByText } = renderLabel()
 
