@@ -5,7 +5,7 @@ import type { TokensWithAddresses } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { parseMetadataRpcCached } from "../shared/parseMetadataRpcCached"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
-import { fetchBalances } from "./fetchBalances"
+import { fetchBalances, fetchBalancesAt } from "./fetchBalances"
 
 vi.mock("../../log", () => ({
   default: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
@@ -166,6 +166,35 @@ describe("fetchBalances root stake hold", () => {
     )
   })
 
+  it("doesn't fail a poll with no root stake when the interval can't be read", async () => {
+    mockMetadata()
+    vi.mocked(fetchRuntimeCallResult).mockImplementation(
+      async (_connector, _networkId, _builder, _apiName, method) => {
+        if (method === "get_stake_info_for_coldkeys")
+          return [[ADDRESS, [{ netuid: 5, hotkey: HOTKEY, stake: 100n }]]]
+        if (method === "get_root_basket_claim_previews") return []
+        throw new Error(`unexpected runtime call ${method}`)
+      }
+    )
+    vi.mocked(fetchRpcQueryPack).mockClear().mockRejectedValue(new Error("interval read failed"))
+
+    const result = await runFetchBalances([subDTaoTokenId(NETWORK_ID, 5, HOTKEY)])
+
+    expect(result.errors).toEqual([])
+    expect(result.success).toHaveLength(1)
+  })
+
+  it("fails a poll with root stake when the interval can't be read", async () => {
+    mockMetadata()
+    mockRuntimeCalls({ payout: 0n })
+    vi.mocked(fetchRpcQueryPack).mockClear().mockRejectedValue(new Error("interval read failed"))
+
+    const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
+
+    expect(result.success).toEqual([])
+    expect(result.errors).toHaveLength(1)
+  })
+
   it("keeps a fully-unstaked validator's claim without querying holds for it", async () => {
     mockMetadata()
     vi.mocked(fetchRuntimeCallResult).mockImplementation(
@@ -176,13 +205,16 @@ describe("fetchBalances root stake hold", () => {
         throw new Error(`unexpected runtime call ${method}`)
       }
     )
-    vi.mocked(fetchRpcQueryPack).mockClear()
+    // holds are enabled: the interval alone doesn't rule out the per-pair queries
+    vi.mocked(fetchRpcQueryPack).mockClear().mockResolvedValue([100n])
 
     const result = await runFetchBalances([ROOT_POSITION_TOKEN_ID])
 
     expect(result.errors).toEqual([])
-    // hold windows only restrict live root stake: no per-pair queries for unstaked validators
-    expect(fetchRpcQueryPack).not.toHaveBeenCalled()
+    // hold windows only restrict live root stake: no per-pair queries for unstaked validators,
+    // only the read of the interval itself
+    expect(fetchRpcQueryPack).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(fetchRpcQueryPack).mock.calls[0]?.[2]).toHaveLength(1)
     const values = result.success.flatMap((balance) => balance.values)
     expect(values).toContainEqual(
       expect.objectContaining({ type: "locked", label: "Claimable rewards", amount: "50" })
@@ -192,5 +224,29 @@ describe("fetchBalances root stake hold", () => {
         (value) => (value?.meta as { rootStakeHold?: unknown } | undefined)?.rootStakeHold
       )
     ).toBe(false)
+  })
+})
+
+describe("fetchBalancesAt", () => {
+  it("reports a failed read of the best block it is given, without reading it again", async () => {
+    mockMetadata()
+    const connector = makeConnector()
+    const readError = new Error("rpc failed")
+
+    const result = await fetchBalancesAt(
+      {
+        networkId: NETWORK_ID,
+        tokensWithAddresses: [[makeToken(ROOT_POSITION_TOKEN_ID), [ADDRESS]]],
+        connector,
+        miniMetadata: { data: "0x00", source: "substrate-dtao", chainId: NETWORK_ID },
+        signal: new AbortController().signal,
+      } as unknown as Parameters<typeof fetchBalances>[0],
+      Promise.reject(readError)
+    )
+
+    expect(result.errors).toEqual([
+      expect.objectContaining({ tokenId: ROOT_POSITION_TOKEN_ID, address: ADDRESS }),
+    ])
+    expect(connector.send).not.toHaveBeenCalled()
   })
 })

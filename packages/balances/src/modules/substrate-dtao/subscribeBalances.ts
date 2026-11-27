@@ -4,12 +4,16 @@ import { distinctUntilChanged, Observable, of } from "rxjs"
 import log from "../../log"
 import { isEqualModuleResults } from "../../types/fingerprint"
 import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
-import { getBalanceDefs } from "../shared"
+import { fetchBestBlockHash, getBalanceDefs } from "../shared"
 import { stabilizeModuleResults } from "../shared/stabilizeBalances"
 import { MODULE_TYPE } from "./config"
-import { fetchBalances } from "./fetchBalances"
+import { fetchBalancesAt } from "./fetchBalances"
 import { isEffectivelyEqualDTaoBalance } from "./isEffectivelyEqualDTaoBalance"
 
+/**
+ * Half of Bittensor's 12s block time, so a new block is read within 6s of being produced.
+ * A poll that finds the same best block as the last good poll ends after that one request.
+ */
 const SUBSCRIPTION_INTERVAL = 6_000
 
 export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBalances"] = ({
@@ -24,6 +28,8 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 
   return new Observable<FetchBalanceResults>((subscriber) => {
     const abortController = new AbortController()
+    /** the block the last poll read without errors */
+    let lastGoodBlockHash: `0x${string}` | null = null
 
     // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
     // => poll values for each block
@@ -31,15 +37,30 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
       try {
         if (abortController.signal.aborted) return
 
-        const balances = await fetchBalances({
-          networkId,
-          tokensWithAddresses: tokensWithAddresses,
-          connector,
-          miniMetadata,
-          signal: abortController.signal,
-        })
+        // chain state only changes from one block to the next. A failed read of the best block
+        // goes to `fetchBalancesAt`, which reports it as it reports any other failure: a
+        // warning, and an error for each balance
+        const bestBlock = fetchBestBlockHash(connector, networkId)
+        const blockHash = await bestBlock.catch(() => undefined)
+        if (abortController.signal.aborted) return
+        if (blockHash && blockHash === lastGoodBlockHash) {
+          setTimeout(poll, SUBSCRIPTION_INTERVAL)
+          return
+        }
+
+        const balances = await fetchBalancesAt(
+          {
+            networkId,
+            tokensWithAddresses: tokensWithAddresses,
+            connector,
+            miniMetadata,
+            signal: abortController.signal,
+          },
+          blockHash ?? bestBlock
+        )
 
         if (abortController.signal.aborted) return
+        lastGoodBlockHash = balances.errors.length ? null : (blockHash ?? null)
 
         // poll-completion marker: fires even when the dedup gate below suppresses the
         // emission, so stall watchdogs can attribute the poll's fetch/decode compute
@@ -48,6 +69,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         subscriber.next(balances)
       } catch (error) {
         if (abortController.signal.aborted) return
+        lastGoodBlockHash = null
 
         // don't kill the subscription (balances would be stuck as stale until next resubscribe),
         // emit balance errors so the provider can mark cached balances stale, then retry on next poll
