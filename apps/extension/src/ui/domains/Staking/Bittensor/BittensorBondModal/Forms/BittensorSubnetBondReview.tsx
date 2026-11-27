@@ -20,6 +20,7 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { BittensorSeekDiscountPill } from "../../components/BittensorConfirmFields"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { BittensorStakingModalHeader } from "../../components/BittensorStakingModalHeader"
 import { BittensorYieldRateLabel } from "../../components/BittensorYieldRateLabel"
@@ -110,12 +111,6 @@ export const BittensorSubnetBondReview = () => {
     // subnet fee discount only
     return subnetFeeDiscount
   }, [subnetFeeDiscount, isSeekTaoDiscountEnabled, tier.discount])
-
-  const totalDiscountPercent = useMemo(() => `${totalFeeDiscount * 100}%`, [totalFeeDiscount])
-  const isSeekDrawerEnabled = useMemo(
-    () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
-    [isSeekTaoDiscountEnabled, totalFeeDiscount]
-  )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (amountIn === null || !nativeToken?.id || !dtaoToken?.id || !hotkey) return undefined
@@ -322,26 +317,10 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled) && (
-                <button
-                  type="button"
-                  className={cn(
-                    "rounded-[43px] bg-[#D5FF5C]/10 px-3 py-1",
-                    !isSeekDrawerEnabled && "cursor-default"
-                  )}
-                  onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
-                >
-                  <div className="text-[#D5FF5C] text-tiny">
-                    {totalFeeDiscount > 0 ? (
-                      <>
-                        {totalDiscountPercent} {t("Off Fees")}
-                      </>
-                    ) : (
-                      t("Get Discount")
-                    )}
-                  </div>
-                </button>
-              )}
+              <BittensorSeekDiscountPill
+                totalFeeDiscount={totalFeeDiscount}
+                onOpenDrawer={seekDiscountDrawer.open}
+              />
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}

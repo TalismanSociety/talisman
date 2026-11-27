@@ -3,12 +3,14 @@ import { Toggle } from "@ui/components/Toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useOpenClose } from "@ui/hooks/useOpenClose"
-import { useFeatureFlag } from "@ui/state/remoteConfig"
+import { useBalances } from "@ui/state/balances"
+import { useFeatureFlag, useRemoteConfig } from "@ui/state/remoteConfig"
 import { cn } from "@ui/util/cn"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
+import { useGetSeekStaked } from "../../Seek/hooks/useGetSeekStaked"
 import { SeekGetFeeDiscountsDrawer } from "../../Seek/SeekGetFeeDiscountsDrawer"
 import { MevShieldInfoDrawer } from "../BittensorBondModal/Drawers/BittensorMevShieldInfoDrawer"
 import { useGetSubnetFee } from "../hooks/useGetSubnetFee"
@@ -100,6 +102,48 @@ export const BittensorConfirmMevShieldValue: FC<{
 
 const MAX_TOTAL_FEE_DISCOUNT = 1
 
+export const BittensorSeekDiscountPill: FC<{
+  totalFeeDiscount: number
+  onOpenDrawer: () => void
+}> = ({ totalFeeDiscount, onOpenDrawer }) => {
+  const { t } = useTranslation()
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
+  const { tokenId } = useRemoteConfig().seek
+  const balances = useBalances("owned")
+  const heldSeek = useMemo(
+    () => balances.find((balance) => balance.tokenId === tokenId).sum.planck.total,
+    [balances, tokenId]
+  )
+  const { data, isLoading, isError } = useGetSeekStaked()
+
+  const hasStakedSeek = !isLoading && !isError && data.totalStaked.planck > 0n
+  const hasSeek = hasStakedSeek || heldSeek > 0n
+  if (!hasSeek || !(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled)) return null
+
+  const isSeekDrawerEnabled = isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "rounded-[43px] bg-[#D5FF5C]/10 px-3 py-1",
+        !isSeekDrawerEnabled && "cursor-default"
+      )}
+      onClick={isSeekDrawerEnabled ? onOpenDrawer : undefined}
+    >
+      <div className="text-[#D5FF5C] text-tiny">
+        {totalFeeDiscount > 0 ? (
+          <>
+            {totalFeeDiscount * 100}% {t("Off Fees")}
+          </>
+        ) : (
+          t("Get Discount")
+        )}
+      </div>
+    </button>
+  )
+}
+
 export const BittensorConfirmTalismanFeeLabel: FC<{
   netuid?: number | null
   containerId: string
@@ -134,12 +178,6 @@ export const BittensorConfirmTalismanFeeLabel: FC<{
     return subnetFeeDiscount
   }, [subnetFeeDiscount, isSeekTaoDiscountEnabled, tier.discount])
 
-  const totalDiscountPercent = useMemo(() => `${totalFeeDiscount * 100}%`, [totalFeeDiscount])
-  const isSeekDrawerEnabled = useMemo(
-    () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
-    [isSeekTaoDiscountEnabled, totalFeeDiscount]
-  )
-
   const { isOpen, open, close } = useOpenClose()
 
   return (
@@ -159,26 +197,7 @@ export const BittensorConfirmTalismanFeeLabel: FC<{
           </span>
         </TooltipContent>
       </Tooltip>
-      {(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled) && (
-        <button
-          type="button"
-          className={cn(
-            "rounded-[43px] bg-[#D5FF5C]/10 px-3 py-1",
-            !isSeekDrawerEnabled && "cursor-default"
-          )}
-          onClick={isSeekDrawerEnabled ? open : undefined}
-        >
-          <div className="text-[#D5FF5C] text-tiny">
-            {totalFeeDiscount > 0 ? (
-              <>
-                {totalDiscountPercent} {t("Off Fees")}
-              </>
-            ) : (
-              t("Get Discount")
-            )}
-          </div>
-        </button>
-      )}
+      <BittensorSeekDiscountPill totalFeeDiscount={totalFeeDiscount} onOpenDrawer={open} />
       <SeekGetFeeDiscountsDrawer
         isOpen={isOpen}
         onDismiss={close}
