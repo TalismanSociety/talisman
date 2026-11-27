@@ -35,7 +35,7 @@ export const fetchBalances: FetchBalances = (args) => fetchBalancesAt(args)
  */
 export const fetchBalancesAt = async (
   { networkId, tokensWithAddresses, connector, miniMetadata, signal }: Parameters<FetchBalances>[0],
-  at?: `0x${string}`
+  at?: `0x${string}` | Promise<`0x${string}`>
 ): ReturnType<FetchBalances> => {
   if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
@@ -89,7 +89,7 @@ export const fetchBalancesAt = async (
     // every read below is pinned to this block: stake, basket claims and hold windows are
     // combined with each other, and unpinned reads land on whatever block is best when they
     // arrive — mixing blocks reports state that never existed
-    const blockHash = at ?? (await fetchBestBlockHash(connector, networkId))
+    const blockHash = await (at ?? fetchBestBlockHash(connector, networkId))
 
     // the reads that don't depend on each other go out together. The root stake hold read
     // below needs the stake infos, and goes out only for coldkeys with root stake on a chain

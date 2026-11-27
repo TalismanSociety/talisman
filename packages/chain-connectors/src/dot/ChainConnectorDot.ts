@@ -87,6 +87,13 @@ export class StaleRpcError extends Error {
 
 type SocketUserId = number
 
+const isSubmittingExtrinsic = (connection: Connection) =>
+  connection.authorRequestsInFlight > 0 ||
+  [...connection.subscriptions].some(
+    (subscription) =>
+      !subscription.unsubscribed && subscription.subscribeMethod.startsWith("author_")
+  )
+
 type Subscription = {
   subscribeMethod: string
   params: unknown[]
@@ -113,6 +120,7 @@ type Connection = {
    * the switch causes is not a failure of the endpoint.
    */
   switching: boolean
+  authorRequestsInFlight: number
   users: Set<SocketUserId>
   subscriptions: Set<Subscription>
   wasConnected: boolean
@@ -370,6 +378,8 @@ export class ChainConnectorDot implements IChainConnectorDot {
     params: unknown[],
     timeoutMs = RESPONSE_TIMEOUT
   ): Promise<T> {
+    const isAuthorRequest = method.startsWith("author_")
+    if (isAuthorRequest) connection.authorRequestsInFlight++
     return new Promise<T>((resolve, reject) => {
       const clearTimer = setAwakeTimeout(() => {
         cancel()
@@ -386,6 +396,8 @@ export class ChainConnectorDot implements IChainConnectorDot {
           reject(error)
         },
       })
+    }).finally(() => {
+      if (isAuthorRequest) connection.authorRequestsInFlight--
     })
   }
 
@@ -473,6 +485,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       uri: null,
       keptEndpointAfterResumeAt: Number.NEGATIVE_INFINITY,
       switching: false,
+      authorRequestsInFlight: 0,
       users: new Set(),
       subscriptions: new Set(),
       wasConnected: false,
@@ -491,7 +504,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     if (suspendedMs < RECONNECT_AFTER_SUSPENSION_MS) return
 
     for (const connection of Object.values(this.#connections)) {
-      if (!connection.uri) continue
+      if (!connection.uri || connection.switching || isSubmittingExtrinsic(connection)) continue
       log.debug(
         `ChainConnector reconnecting ${connection.chainId} to ${connection.uri} after a ${Math.round(suspendedMs / 1000)}s suspension`
       )
@@ -512,10 +525,11 @@ export class ChainConnectorDot implements IChainConnectorDot {
    * on as usual. A socket the connector closed itself goes where the connector sent it.
    */
   private keepEndpointAfterResume(connection: Connection) {
-    if (connection.switching) return
     // the provider's timers can fire before the resume listener: `isSuspended()` and
-    // `getLastResumedAt()` detect the resume now
-    if (isSuspended()) {
+    // `getLastResumedAt()` detect the resume now, and its reconnect sets `switching`
+    const suspended = isSuspended()
+    if (connection.switching) return
+    if (suspended) {
       if (connection.uri) connection.provider.switch(connection.uri)
       return
     }
